@@ -7,7 +7,7 @@
 # Import from openfisca-core the common Python objects used to code the legislation in OpenFisca
 from openfisca_core.model_api import *
 # Import the Entities specifically defined for this tax and benefit system
-from openfisca_country_template.entities import *
+from openfisca_uk.entities import *
 
 
 # This variable is a pure input: it doesn't have a formula

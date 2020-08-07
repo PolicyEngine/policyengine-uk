@@ -37,7 +37,7 @@ check-style:
 	flake8 `git ls-files | grep "\.py$$"`
 
 test: clean check-syntax-errors check-style
-	openfisca-run-test --country-package openfisca_country_template openfisca_country_template/tests
+	openfisca-run-test --country-package openfisca_uk openfisca_uk/tests
 
 serve-local: build
-	openfisca serve --country-package openfisca_country_template
+	openfisca serve --country-package openfisca_uk
