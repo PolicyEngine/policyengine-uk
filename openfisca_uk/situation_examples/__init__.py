@@ -12,6 +12,3 @@ def parse(file_name):
     with open(file_path, 'r') as file:
         return json.loads(file.read())
 
-
-single = parse('single.json')
-couple = parse('couple.json')

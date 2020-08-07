@@ -56,4 +56,24 @@ Person = build_entity(
     is_person = True,
     )
 
-entities = [Household, Person]
+Marriage = build_entity(
+    key = "marriage",
+    plural = "marriages",
+    label = u'Two people who are married or in a civil partnership.',
+    doc = '''
+    Marriage and civil partnerships provide legal and tax benefits, such as transferable personal allowances. 
+    Whilst this group is named Marriage, it is intended to include civil partnerships for simplicity.
+    ''',
+    roles = [
+        {
+            'key': 'partner',
+            'plural': 'partners',
+            'label': u'Parents',
+            'max': 2,
+            'subroles': ['first_partner', 'second_partner'],
+            'doc': u'The two partners in the marriage.'
+            }
+        ]
+    )
+
+entities = [Household, Person, Marriage]
