@@ -17,3 +17,6 @@ dist
 
 .DS_Store
 *~
+
+# Datasets
+datasets/frs/18_19
