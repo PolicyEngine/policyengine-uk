@@ -22,7 +22,7 @@ Family = build_entity(
     key = "family",
     plural = "families",
     label = u'A benefit unit, comprising of exactly one or two adults, plus any dependent children',
-    doc = u'A family is also known as a benefit unit, and contains parents and dependent children.'
+    doc = u'A family is also known as a benefit unit, and contains parents and dependent children.',
     roles = [
         {
             'key': 'parent',
@@ -44,7 +44,7 @@ Family = build_entity(
 Person = build_entity(
     key = "person",
     plural = "persons",
-    label = u'An individual. The minimal legal entity on which a legislation might be applied.'
+    label = u'An individual. The minimal legal entity on which a legislation might be applied.',
     is_person = True,
     )
 

@@ -32,29 +32,55 @@ class FRS:
     def generate_csv(self, limit=None):
         if limit is None:
             limit = -1
-        fieldnames = ['person_id', '']
-        with open(os.path.join(self.output_path, 'frs.csv'), 'w+') as f:
-
-    
-    def generate_income_csv(self, output_filename='income.csv'):
-        with open(os.path.join(self.output_path, output_filename), 'w+') as f:
-            writer = csv.DictWriter(f, fieldnames=['person_id', 'income'])
-            writer.writeheader()
-            skipped = 0
-            i = 0
-            for row in tqdm(self._reader('adult.tab'), desc='Generating CSV'):
+        fieldnames = [
+            'person_id',
+            'earnings',
+            'jsa',
+            'income_support',
+            'housing_benefit',
+            'child_benefit',
+            'child_tax_credit',
+            'working_tax_credit_childcare',
+            'tax_free_childcare',
+            'working_tax_credit'
+        ]
+        data = {}
+        for row in tqdm(self._reader('adult.tab'), desc='Reading adult.tab'):
+            identifier = row['sernum'] + 'p' + row['PERSON']
+            data[identifier] = {
+                'earnings': np.round(float(row['INEARNS']) * 30 / 7, 2)
+            }
+        benefit_name = {
+            '14': 'jsa',
+            '19': 'income_support',
+            '94': 'housing_benefit',
+            '3': 'child_benefit',
+            '106': 'child_tax_credit',
+            '105': 'working_tax_credit'
+        }
+        skipped = 0
+        for row in tqdm(self._reader('benefits.tab'), desc='Reading benefits.tab'):
+            identifier = row['sernum'] + 'p' + row['PERSON']
+            if row['BENEFIT'] in benefit_name:
+                benefit = benefit_name[row['BENEFIT']]
+                amount = row['BENAMT']
                 try:
-                    estimated_yearly_income = float(row['INDINC']) * 52
-                    if estimated_yearly_income < 0:
-                        raise Exception('Income cannot be negative')
-                    if estimated_yearly_income > 400000:
-                        raise Exception('Suspicious...')
-                    writer.writerow({'person_id': i, 'income': estimated_yearly_income })
-                    i += 1
+                    data[identifier][benefit] = np.round(float(amount) * 30 / 7, 2)
                 except:
                     skipped += 1
-        print(f'Completed, {skipped} rows skipped.')
+        print(f'Completed, skipped {skipped} rows of benefits.tab.')
+        for person in tqdm(data.values(), desc='Zeroing missing values'):
+            for name in fieldnames:
+                if name not in person:
+                    person[name] = 0
+        with open(os.path.join(self.output_path, 'frs.csv'), 'w+') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for key, value in tqdm(data.items(), desc='Writing data'):
+                row = value
+                row['person_id'] = key
+                writer.writerow(row)
 
 if __name__ == '__main__':
     frs = FRS('datasets/frs/18_19')
-    frs.generate_income_csv()
+    frs.generate_csv()
