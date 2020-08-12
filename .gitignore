@@ -17,7 +17,3 @@ dist
 
 .DS_Store
 *~
-
-# Datasets
-datasets/frs/18_19
-datasets/frs/frs.csv

@@ -1,24 +1,17 @@
 # OpenFisca UK
 
+This extension of [OpenFisca](https://github.com/openfisca/country-template) aims to model the UK Tax-Benefit system.
 
-The country whose law is modelled here has a very simple tax and benefit system.
+This is in the early stages (from the country template linked above) and documentation and better modeling is in progress - feel free to contact or open an issue with bugs/errors/inaccuracies/suggestions.
 
-- It has a flat rate tax whose rates increase every year.
-- On the first of December, 2015, it introduced a basic income for all its citizens of age who have no income.
-- On the first of December, 2016, it removed the income condition, providing all its adult citizens with a basic income.
-
-These elements are described in different folders. All the modelling happens within the `openfisca_uk` folder.
+The elements are described in different folders. All the modelling happens within the `openfisca_uk` folder.
 
 - The rates are in the `parameters` folder.
 - The formulas are in the `variables` folder.
-- This country package comes also with *reforms* in the `reforms` folder. This is optional: your country may exist without defining any reform.
-    - In this country, there is [a reform project](./openfisca_uk/reforms/modify_social_security_taxation.py) aiming to modify the social security taxation, deleting the first bracket, raising the intermediary ones and adding a new bracket with a higher tax rate of `40 %` for people earning more than `40000`. This reform project would apply starting from `2017-01-01`.
+- This country package comes also with *reforms* in the `reforms` folder.
+    - In this country, there is [a reform project](./openfisca_uk/reforms/basic_income.py) aiming to introduce a basic income and remove the personal tax-free income allowance.
 
 The files that are outside from the `openfisca_uk` folder are used to set up the development environment.
-
-## Packaging your Country Package for Distribution
-
-Country packages are python distributions. To distribute your package via `pip`, follow the steps given by the [Python Packaging Authority](https://python-packaging-user-guide.readthedocs.io/tutorials/distributing-packages/#packaging-your-project).
 
 ## Install Instructions for Users and Contributors
 

@@ -72,7 +72,9 @@ class income_tax(Variable):
         estimated_yearly_income = person('taxable_income', period) * 12
         bands = np.array([12500, 50000, 150000, np.inf])
         rates = np.array([0.2, 0.4, 0.45])
-        return tax(estimated_yearly_income, bands, rates) / 12
+        pa_null_band = np.array([100000, 125000])
+        pa_null_rate = np.array([0.5])
+        return (tax(estimated_yearly_income, bands, rates) + tax(estimated_yearly_income, pa_null_band, pa_null_rate)) / 12
 
 class net_income(Variable):
     value_type = float
@@ -81,4 +83,4 @@ class net_income(Variable):
     definition_period = MONTH
 
     def formula(person, period, parameters):
-        return person('gross_income', period) - person('income_tax', period)
+        return person('gross_income', period) - person('income_tax', period) - person('NI', period)
