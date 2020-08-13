@@ -70,11 +70,21 @@ class income_tax(Variable):
 
     def formula(person, period, parameters):
         estimated_yearly_income = person('taxable_income', period) * 12
-        bands = np.array([12500, 50000, 150000, np.inf])
-        rates = np.array([0.2, 0.4, 0.45])
         pa_null_band = np.array([100000, 125000])
         pa_null_rate = np.array([0.5])
-        return (tax(estimated_yearly_income, bands, rates) + tax(estimated_yearly_income, pa_null_band, pa_null_rate)) / 12
+        pa_discount = tax(estimated_yearly_income, pa_null_band, pa_null_rate)
+        bands = np.array([12500, 50000, 150000, np.inf])
+        rates = np.array([0.2, 0.4, 0.45])
+        return tax(estimated_yearly_income + pa_discount, bands, rates) / 12
+
+class effective_tax_rate(Variable):
+    value_type = float
+    entity = Person
+    label = u'Effective income tax rate'
+    definition_period = MONTH
+
+    def formula(person, period, parameters):
+        return where(person('earnings', period) == 0, 0, person('income_tax', period) / person('earnings', period))
 
 class net_income(Variable):
     value_type = float
