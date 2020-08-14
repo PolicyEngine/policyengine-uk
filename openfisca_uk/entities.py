@@ -25,9 +25,9 @@ Family = build_entity(
     doc = u'A family is also known as a benefit unit, and contains parents and dependent children.',
     roles = [
         {
-            'key': 'parent',
-            'plural': 'parents',
-            'label': u'Parents',
+            'key': 'adult',
+            'plural': 'adults',
+            'label': u'Adults',
             'max': 2,
             'subroles': ['first_parent', 'second_parent'],
             'doc': u'The one or two adults in the benefit unit.'

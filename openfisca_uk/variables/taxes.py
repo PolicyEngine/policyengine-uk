@@ -9,10 +9,10 @@ def tax(incomes, bands, rates):
     total_taxes = taxes.sum(axis=1)
     return total_taxes
 
-class earnings(Variable):
+class total_income(Variable):
     value_type = float
     entity = Person
-    label = u'Amount of earnings per month.'
+    label = u'Total amount of income per month.'
     definition_period = MONTH
 
 class NI(Variable):
@@ -24,7 +24,7 @@ class NI(Variable):
     def formula(person, period, parameters):
         bands = np.array([694, 3823, np.inf])
         rates = np.array([0.12, 0.02])
-        return tax(person('earnings', period), bands, rates)
+        return tax(person('total_income', period), bands, rates)
 
 class taxable_income(Variable):
     value_type = float
@@ -33,7 +33,7 @@ class taxable_income(Variable):
     definition_period = MONTH
 
     def formula(person, period, parameters):
-        return person('earnings', period) + person('jsa', period)
+        return person('total_income', period) + person('jsa', period)
 
 class non_taxable_income(Variable):
     value_type = float
@@ -84,7 +84,7 @@ class effective_tax_rate(Variable):
     definition_period = MONTH
 
     def formula(person, period, parameters):
-        return where(person('earnings', period) == 0, 0, person('income_tax', period) / person('earnings', period))
+        return where(person('total_income', period) == 0, 0, person('income_tax', period) / person('total_income', period))
 
 class net_income(Variable):
     value_type = float
@@ -94,3 +94,13 @@ class net_income(Variable):
 
     def formula(person, period, parameters):
         return person('gross_income', period) - person('income_tax', period) - person('NI', period)
+
+class household_net_income(Variable):
+    value_type = float
+    entity = Household
+    label = u'Net income per month per household'
+    definition_period = MONTH
+
+    def formula(household, period, parameters):
+        households = household.members('net_income', period)
+        return household.sum(household.members('net_income', period))
