@@ -1,0 +1,29 @@
+description: National Insurance marginal tax scale
+brackets:
+  - rate:
+      2017-04-06:
+        value: 0.12
+    threshold:
+      2017-04-06:
+        value: 680
+      2018-04-06:
+        value: 702
+      2019-04-06:
+        value: 719
+      2020-04-06:
+        value: 792
+  - rate:
+      2017-04-06:
+        value: 0.02
+    threshold:
+      2017-04-06:
+        value: 3750
+      2018-04-06:
+        value: 3863
+      2019-04-06:
+        value: 4167
+metadata:
+  type: marginal_rate
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

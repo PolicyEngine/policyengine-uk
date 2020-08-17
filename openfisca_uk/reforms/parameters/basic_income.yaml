@@ -1,0 +1,7 @@
+description: National Insurance marginal tax scale
+values:
+  2020-01-01:
+    value: 1100
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1

@@ -2,13 +2,6 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
-def tax(incomes, bands, rates):
-    incomes_ = np.broadcast_to(incomes, (bands.shape[0] - 1, incomes.shape[0]))
-    amounts_in_bands = np.clip(incomes_.transpose(), bands[:-1], bands[1:]) - bands[:-1]
-    taxes = rates * amounts_in_bands
-    total_taxes = taxes.sum(axis=1)
-    return total_taxes
-
 class total_income(Variable):
     value_type = float
     entity = Person
@@ -22,9 +15,7 @@ class NI(Variable):
     definition_period = MONTH
 
     def formula(person, period, parameters):
-        bands = np.array([694, 3823, np.inf])
-        rates = np.array([0.12, 0.02])
-        return tax(person('total_income', period), bands, rates)
+        return parameters(period).taxes.national_insurance.calc(person('total_income', period))
 
 class taxable_income(Variable):
     value_type = float
@@ -70,12 +61,8 @@ class income_tax(Variable):
 
     def formula(person, period, parameters):
         estimated_yearly_income = person('taxable_income', period) * 12
-        pa_null_band = np.array([100000, 125000])
-        pa_null_rate = np.array([0.5])
-        pa_discount = tax(estimated_yearly_income, pa_null_band, pa_null_rate)
-        bands = np.array([12500, 50000, 150000, np.inf])
-        rates = np.array([0.2, 0.4, 0.45])
-        return tax(estimated_yearly_income + pa_discount, bands, rates) / 12
+        pa_deduction = parameters(period).taxes.personal_allowance_deduction.calc(estimated_yearly_income)
+        return parameters(period).taxes.income_tax.calc(estimated_yearly_income + pa_deduction) / 12
 
 class effective_tax_rate(Variable):
     value_type = float
