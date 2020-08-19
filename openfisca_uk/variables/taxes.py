@@ -15,7 +15,7 @@ class NI(Variable):
     definition_period = MONTH
 
     def formula(person, period, parameters):
-        return parameters(period).taxes.national_insurance.calc(person('total_income', period))
+        return parameters(period).taxes.national_insurance.calc(person('taxable_income', period))
 
 class taxable_income(Variable):
     value_type = float
