@@ -13,7 +13,7 @@ class NI(Variable):
     entity = Person
     label = u'National Insurance paid per month'
     definition_period = MONTH
-
+    reference = ['https://www.gov.uk/national-insurance']
     def formula(person, period, parameters):
         return parameters(period).taxes.national_insurance.calc(person('taxable_income', period))
 
