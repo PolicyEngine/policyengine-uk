@@ -2,11 +2,29 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+# Input variables
+
+## Person
+
+class pension_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total pension income between occupational and personal pensions per month'
+    definition_period = MONTH
+
+class earnings(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total earnings per month'
+    definition_period = MONTH
+
 class total_income(Variable):
     value_type = float
     entity = Person
     label = u'Total amount of income per month.'
     definition_period = MONTH
+
+# Derived variables
 
 class NI(Variable):
     value_type = float
