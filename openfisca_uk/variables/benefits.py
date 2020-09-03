@@ -11,10 +11,52 @@ class birth_year(Variable):
     label = u'Year of birth'
     definition_period = ETERNITY
 
-class JSA_eligible(Variable):
+class JSA_contrib_eligible(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether eligible for JSA'
+    label = u'Whether eligible for JSA (contributory)'
+    definition_period = MONTH
+
+class JSA_income_eligible(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether eligible for JSA (income-based)'
+    definition_period = MONTH
+
+class income_support_eligible(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether eligible for Income Support'
+    definition_period = MONTH
+
+class housing_benefit_eligible(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether eligible for Housing Benefit'
+    definition_period = MONTH
+
+class child_benefit_eligible(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether eligible for Child Benefit'
+    definition_period = MONTH
+
+class child_tax_credit_eligible(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether eligible for Child Tax Credit'
+    definition_period = MONTH
+
+class working_tax_credit_eligible(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether eligible for Working Tax Credit'
+    definition_period = MONTH
+
+class housing_benefit_eligible(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether eligible for JSA (income-based)'
     definition_period = MONTH
 
 # Derived variables

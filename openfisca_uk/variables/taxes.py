@@ -12,10 +12,16 @@ class pension_income(Variable):
     label = u'Total pension income between occupational and personal pensions per month'
     definition_period = MONTH
 
-class earnings(Variable):
+class employee_earnings(Variable):
     value_type = float
     entity = Person
-    label = u'Total earnings per month'
+    label = u'Total earnings per month from employment'
+    definition_period = MONTH
+
+class self_employed_earnings(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total earnings per month from self-employment'
     definition_period = MONTH
 
 class total_income(Variable):
