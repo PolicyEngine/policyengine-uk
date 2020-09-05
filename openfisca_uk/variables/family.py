@@ -95,3 +95,9 @@ class is_single(Variable):
 
     def formula(family, period, parameters):
         return (family.nb_persons(Family.ADULT) == 1) * (family.nb_persons(Family.CHILD) == 0)
+
+class num_children_actual(Variable):
+    value_type = int
+    entity = Family
+    label = u'Actual number of children'
+    definition_period = ETERNITY

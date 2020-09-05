@@ -36,6 +36,12 @@ class JSA(Variable):
         pension_deduction = max_(0, family('family_pension_income', period) - parameters(period).benefits.JSA.pension_disregard)
         return max_(0, (personal_allowance - earnings_deduction - pension_deduction) * family('family_JSA_receipt', period))
 
+class JSA_actual(Variable):
+    value_type = float
+    entity = Family
+    label = u'Actual JSA amount received per week'
+    definition_period = ETERNITY
+
 class income_support(Variable):
     value_type = float
     entity = Family
@@ -49,6 +55,12 @@ class income_support(Variable):
         income_deduction = max_(0, family('family_total_income', period) - family('is_single', period) * parameters(period).benefits.income_support.income_disregard_single + family('is_couple', period) * parameters(period).benefits.income_support.income_disregard_couple + family('is_lone_parent', period) * parameters(period).benefits.income_support.income_disregard_lone)
         return max_(0, (personal_allowance - income_deduction) * family('family_IS_receipt', period))
 
+class income_support_actual(Variable):
+    value_type = float
+    entity = Family
+    label = u'Actual income support amount received per week'
+    definition_period = ETERNITY
+
 class child_benefit(Variable):
     value_type = float
     entity = Family
@@ -57,6 +69,12 @@ class child_benefit(Variable):
 
     def formula(family, period, parameters):
         num_children = family.nb_persons(Family.CHILD)
-        eldest_amount = min_(num_children, 0) * parameters(period).benefits.child_benefit.amount_eldest
+        eldest_amount = min_(num_children, 1) * parameters(period).benefits.child_benefit.amount_eldest
         additional_amount = max_(num_children - 1, 0) * parameters(period).benefits.child_benefit.amount_additional
         return eldest_amount + additional_amount
+
+class child_benefit_actual(Variable):
+    value_type = float
+    entity = Family
+    label = u'Actual child benefit amount received per week'
+    definition_period = ETERNITY
