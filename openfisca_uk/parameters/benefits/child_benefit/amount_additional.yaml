@@ -1,0 +1,7 @@
+description: Weekly child benefit amount for additional children.
+values:
+  2020-06-01:
+    value: 13.95
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/child-benefit/what-youll-get

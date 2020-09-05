@@ -9,90 +9,83 @@ import numpy as np
 class pension_income(Variable):
     value_type = float
     entity = Person
-    label = u'Total pension income between occupational and personal pensions per month'
-    definition_period = MONTH
+    label = u'Total pension income between occupational and personal pensions per week'
+    definition_period = ETERNITY
 
 class employee_earnings(Variable):
     value_type = float
     entity = Person
-    label = u'Total earnings per month from employment'
-    definition_period = MONTH
+    label = u'Total earnings per week from employment'
+    definition_period = ETERNITY
 
 class self_employed_earnings(Variable):
     value_type = float
     entity = Person
-    label = u'Total earnings per month from self-employment'
-    definition_period = MONTH
+    label = u'Total earnings per week from self-employment'
+    definition_period = ETERNITY
 
-class total_income(Variable):
+class investment_income(Variable):
     value_type = float
     entity = Person
-    label = u'Total amount of income per month.'
-    definition_period = MONTH
+    label = u'Total earnings per week from investments'
+    definition_period = ETERNITY
 
 # Derived variables
 
-class NI(Variable):
+## Person
+
+class total_earnings(Variable):
     value_type = float
     entity = Person
-    label = u'National Insurance paid per month'
-    definition_period = MONTH
-    reference = ['https://www.gov.uk/national-insurance']
+    label = u'Total earnings per week from employment, self-employment, investments and pensions'
+    definition_period = ETERNITY
+
     def formula(person, period, parameters):
-        return parameters(period).taxes.national_insurance.calc(person('taxable_income', period))
+        return person('employee_earnings', period) + person('self_employed_earnings', period) + person('investment_income', period)
+
+class income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total taxable income per week'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period) + person('investment_income', period), 0)
 
 class taxable_income(Variable):
     value_type = float
     entity = Person
-    label = u'Total taxable income per month'
-    definition_period = MONTH
+    label = u'Total taxable income per week'
+    definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person('total_income', period) + person('jsa', period)
+        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period) + person('investment_income', period) + person('JSA', period), 0)
 
-class non_taxable_income(Variable):
+class NI(Variable):
     value_type = float
     entity = Person
-    label = u'Total non-taxable income per month'
-    definition_period = MONTH
-
+    label = u'National Insurance paid per week'
+    definition_period = ETERNITY
+    reference = ['https://www.gov.uk/national-insurance']
     def formula(person, period, parameters):
-        non_taxable_benefits = [
-            'income_support',
-            'housing_benefit',
-            'child_benefit',
-            'child_tax_credit',
-            'working_tax_credit_childcare',
-            'tax_free_childcare',
-            'working_tax_credit'
-        ]
-        return sum(map(lambda benefit_name : person(benefit_name, period), non_taxable_benefits))
-
-class gross_income(Variable):
-    value_type = float
-    entity = Person
-    label = u'Gross income per month'
-    definition_period = MONTH
-
-    def formula(person, period, parameters):
-        return person('taxable_income', period) + person('non_taxable_income', period)
+        return parameters(period).taxes.national_insurance.calc(person('income', period))
     
 class income_tax(Variable):
     value_type = float
     entity = Person
-    label = u'Income tax paid per month'
-    definition_period = MONTH
+    label = u'Income tax paid per week'
+    definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        estimated_yearly_income = person('taxable_income', period) * 12
+        estimated_yearly_income = person('income', period) * 52
         pa_deduction = parameters(period).taxes.personal_allowance_deduction.calc(estimated_yearly_income)
-        return parameters(period).taxes.income_tax.calc(estimated_yearly_income + pa_deduction) / 12
+        return parameters(period).taxes.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
 
 class effective_tax_rate(Variable):
     value_type = float
     entity = Person
     label = u'Effective income tax rate'
-    definition_period = MONTH
+    definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return where(person('total_income', period) == 0, 0, person('income_tax', period) / person('total_income', period))
@@ -100,18 +93,8 @@ class effective_tax_rate(Variable):
 class net_income(Variable):
     value_type = float
     entity = Person
-    label = u'Net income per month'
-    definition_period = MONTH
+    label = u'Net income per week'
+    definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person('gross_income', period) - person('income_tax', period) - person('NI', period)
-
-class household_net_income(Variable):
-    value_type = float
-    entity = Household
-    label = u'Net income per month per household'
-    definition_period = MONTH
-
-    def formula(household, period, parameters):
-        households = household.members('net_income', period)
-        return household.sum(household.members('net_income', period))
+        return person('income', period) - person('income_tax', period) - person('NI', period)

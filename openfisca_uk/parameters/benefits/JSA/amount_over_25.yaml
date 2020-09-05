@@ -1,0 +1,7 @@
+description: Weekly contributory JSA for persons aged over 25.
+values:
+  2020-06-01:
+    value: 74.35
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://gov.uk/jobseekers-allowance

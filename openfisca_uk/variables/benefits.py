@@ -1,83 +1,62 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
+import numpy as np
 
 # Input variables
 
 ## Person
 
-class birth_year(Variable):
-    value_type = int
+class JSA_receipt(Variable):
+    value_type = bool
     entity = Person
-    label = u'Year of birth'
+    label = u'Whether receiving JSA'
     definition_period = ETERNITY
 
-class JSA_contrib_eligible(Variable):
+class IS_receipt(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether eligible for JSA (contributory)'
-    definition_period = MONTH
-
-class JSA_income_eligible(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether eligible for JSA (income-based)'
-    definition_period = MONTH
-
-class income_support_eligible(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether eligible for Income Support'
-    definition_period = MONTH
-
-class housing_benefit_eligible(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether eligible for Housing Benefit'
-    definition_period = MONTH
-
-class child_benefit_eligible(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether eligible for Child Benefit'
-    definition_period = MONTH
-
-class child_tax_credit_eligible(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether eligible for Child Tax Credit'
-    definition_period = MONTH
-
-class working_tax_credit_eligible(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether eligible for Working Tax Credit'
-    definition_period = MONTH
-
-class housing_benefit_eligible(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether eligible for JSA (income-based)'
-    definition_period = MONTH
+    label = u'Whether receiving JSA'
+    definition_period = ETERNITY
 
 # Derived variables
 
-class age(Variable):
+class JSA(Variable):
     value_type = float
-    entity = Person
-    label = u'Age in years'
-    definition_period = YEAR
+    entity = Family
+    label = u'JSA amount received per week'
+    definition_period = ETERNITY
 
-    def formula(person, period, parameters):
-        return int(period.this_year) - person('birth_year', period)
+    def formula(family, period, parameters):
+        age = family('younger_adult_age', period)
+        is_couple = family.nb_persons(Family.ADULT) == 2
+        single_young = (age >= 18) * (age < 25) * (np.logical_not(is_couple))
+        single_old = (age >= 25) * (np.logical_not(is_couple))
+        personal_allowance = single_young * parameters(period).benefits.JSA.amount_18_24 + single_old * parameters(period).benefits.JSA.amount_over_25 + is_couple * parameters(period).benefits.JSA.amount_couple
+        earnings_deduction = max_(0, family('family_earnings', period) - parameters(period).benefits.JSA.earn_disregard)
+        pension_deduction = max_(0, family('family_pension_income', period) - parameters(period).benefits.JSA.pension_disregard)
+        return max_(0, (personal_allowance - earnings_deduction - pension_deduction) * family('family_JSA_receipt', period))
 
-class JSA_contributory(Variable):
+class income_support(Variable):
     value_type = float
-    entity = Person
-    label = u'JSA (contributary) amount received per month'
-    definition_period = MONTH
+    entity = Family
+    label = u'Income Support amount received per week'
+    definition_period = ETERNITY
 
-    def formula(person, period, parameters):
-        weekly_amount = (person('age', period) >= 18 and person('age', period) < 25) * parameters(period).benefits.JSA.JSA_contrib_18_24.yaml + person('age', period) >= 25 * parameters(period).benefits.JSA.JSA_over_25
-        weekly_earnings_deduction = max_(0, person('earnings', period) / 4 - parameters(period).benefits.JSA.JSA_earn_disregard)
-        weekly_pension_deduction = max_(0, person('earnings', period) / 4 - parameters(period).benefits.JSA.JSA_earn_disregard)
-        return max_(0, 4 * (weekly_amount - weekly_earnings_deduction - weekly_pension_deduction) * person('JSA_eligible', period))
+    def formula(family, period, parameters):
+        younger_age = family('younger_adult_age', period)
+        older_age = family('older_adult_age', period)
+        personal_allowance = family('is_single', period) * ((younger_age < 25) * parameters(period).benefits.income_support.amount_16_24 + (younger_age >= 25) * parameters(period).benefits.income_support.amount_over_25) + family('is_couple', period) * ((younger_age < 18) * (older_age < 18) * parameters(period).benefits.income_support.amount_couples_16_17 + (younger_age >= 18) * (older_age >= 18) * parameters(period).benefits.income_support.amount_couples_over_18 + (younger_age < 18) * (younger_age >= 25) * parameters(period).benefits.income_support.amount_couples_age_gap) + family('is_lone_parent', period) * ((younger_age < 18) * parameters(period).benefits.income_support.amount_lone_16_17 + (younger_age >= 18) * parameters(period).benefits.income_support.amount_lone_over_18)
+        income_deduction = max_(0, family('family_total_income', period) - family('is_single', period) * parameters(period).benefits.income_support.income_disregard_single + family('is_couple', period) * parameters(period).benefits.income_support.income_disregard_couple + family('is_lone_parent', period) * parameters(period).benefits.income_support.income_disregard_lone)
+        return max_(0, (personal_allowance - income_deduction) * family('family_IS_receipt', period))
+
+class child_benefit(Variable):
+    value_type = float
+    entity = Family
+    label = u'Child Benefit amount received per week'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        num_children = family.nb_persons(Family.CHILD)
+        eldest_amount = min_(num_children, 0) * parameters(period).benefits.child_benefit.amount_eldest
+        additional_amount = max_(num_children - 1, 0) * parameters(period).benefits.child_benefit.amount_additional
+        return eldest_amount + additional_amount

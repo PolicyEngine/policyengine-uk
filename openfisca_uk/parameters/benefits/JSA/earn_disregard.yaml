@@ -5,3 +5,4 @@ values:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24

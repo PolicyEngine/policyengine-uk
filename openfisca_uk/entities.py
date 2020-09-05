@@ -29,7 +29,6 @@ Family = build_entity(
             'plural': 'adults',
             'label': u'Adults',
             'max': 2,
-            'subroles': ['first_parent', 'second_parent'],
             'doc': u'The one or two adults in the benefit unit.'
             },
         {

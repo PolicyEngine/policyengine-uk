@@ -5,23 +5,23 @@ brackets:
         value: 0.12
     threshold:
       2017-04-06:
-        value: 680
+        value: 157
       2018-04-06:
-        value: 702
+        value: 162
       2019-04-06:
-        value: 719
+        value: 166
       2020-04-06:
-        value: 792
+        value: 183
   - rate:
       2017-04-06:
         value: 0.02
     threshold:
       2017-04-06:
-        value: 3750
+        value: 866
       2018-04-06:
-        value: 3863
+        value: 892
       2019-04-06:
-        value: 4167
+        value: 962
 metadata:
   type: marginal_rate
   threshold_unit: currency-GBP

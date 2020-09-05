@@ -1,0 +1,7 @@
+description: Weekly child benefit amount for the eldest or only child.
+values:
+  2020-06-01:
+    value: 21.05
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/child-benefit/what-youll-get
