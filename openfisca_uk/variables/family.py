@@ -101,3 +101,30 @@ class num_children_actual(Variable):
     entity = Family
     label = u'Actual number of children'
     definition_period = ETERNITY
+
+class family_net_income(Variable):
+    value_type = float
+    entity = Family
+    label = u'Gross income per week, including benefits'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        return family.sum(family.members('net_income', period)) + family('JSA', period) + family('income_support', period) + family('child_benefit', period) + family('housing_benefit_actual', period) + family('child_tax_credit_actual', period) + family('working_tax_credit_actual', period)
+
+class housing_benefit_actual(Variable):
+    value_type = float
+    entity = Family
+    label = u'Actual housing benefit received per week'
+    definition_period = ETERNITY
+
+class child_tax_credit_actual(Variable):
+    value_type = float
+    entity = Family
+    label = u'Actual housing benefit received per week'
+    definition_period = ETERNITY
+
+class working_tax_credit_actual(Variable):
+    value_type = float
+    entity = Family
+    label = u'Actual housing benefit received per week'
+    definition_period = ETERNITY

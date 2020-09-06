@@ -59,7 +59,7 @@ class taxable_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return max_(person('income', period) + person('JSA', period), 0)
+        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period) + person('investment_income', period), 0)
 
 class NI(Variable):
     value_type = float
@@ -68,7 +68,11 @@ class NI(Variable):
     definition_period = ETERNITY
     reference = ['https://www.gov.uk/national-insurance']
     def formula(person, period, parameters):
-        return parameters(period).taxes.national_insurance.calc(person('taxable_income', period))
+        employee_NI = parameters(period).taxes.national_insurance.employee_rates.calc(person('employee_earnings', period))
+        estimated_yearly_self_emp = person('self_employed_earnings', period) * 52
+        self_employed_NI_basic = parameters(period).taxes.national_insurance.self_employed_basic * (estimated_yearly_self_emp > parameters(period).taxes.national_insurance.self_employed_basic_threshold)
+        self_employed_NI_higher = parameters(period).taxes.national_insurance.self_employed_higher.calc(estimated_yearly_self_emp)
+        return employee_NI + self_employed_NI_basic + self_employed_NI_higher
     
 class income_tax(Variable):
     value_type = float
@@ -78,8 +82,9 @@ class income_tax(Variable):
 
     def formula(person, period, parameters):
         estimated_yearly_income = person('taxable_income', period) * 52
-        pa_deduction = parameters(period).taxes.personal_allowance_deduction.calc(estimated_yearly_income)
-        return parameters(period).taxes.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
+        pa_deduction = parameters(period).taxes.income_tax.personal_allowance_deduction.calc(estimated_yearly_income)
+        x = parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
+        return x
 
 class net_income(Variable):
     value_type = float
@@ -89,3 +94,12 @@ class net_income(Variable):
 
     def formula(person, period, parameters):
         return person('income', period) - person('income_tax', period) - person('NI', period)
+
+class effective_tax_rate(Variable):
+    value_type = float
+    entity = Person
+    label = u'Net income per week'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return where(person('income', period) == 0, 0, 1 - person('net_income', period) / person('income', period))

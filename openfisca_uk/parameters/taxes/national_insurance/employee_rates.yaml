@@ -1,4 +1,4 @@
-description: National Insurance marginal tax scale
+description: National Insurance marginal tax scale for employees.
 brackets:
   - rate:
       2017-04-06:

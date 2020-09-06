@@ -1,0 +1,7 @@
+description: Yearly National Insurance threshold for self-employed persons paying the basic rate (Class 2).
+values:
+  2020-06-01:
+    value: 6475.00
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://gov.uk/self-employed-national-insurance-rates
