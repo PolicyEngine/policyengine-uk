@@ -67,6 +67,7 @@ class NI(Variable):
     label = u'National Insurance paid per week'
     definition_period = ETERNITY
     reference = ['https://www.gov.uk/national-insurance']
+    
     def formula(person, period, parameters):
         employee_NI = parameters(period).taxes.national_insurance.employee_rates.calc(person('employee_earnings', period))
         estimated_yearly_self_emp = person('self_employed_earnings', period) * 52

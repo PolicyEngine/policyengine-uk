@@ -1,0 +1,6 @@
+description: Yearly income threshold after which wokring and child tax credits are reduced.
+values:
+  2020-06-01:
+    value: 6420.00
+metadata:
+  threshold_unit: currency-GBP

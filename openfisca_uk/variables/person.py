@@ -8,6 +8,12 @@ class age_band(Variable):
     label = u'FRS-encoded age band'
     definition_period = ETERNITY
 
+class hours_worked(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total hours worked per week'
+    definition_period = ETERNITY
+
 class age(Variable):
     value_type = int
     entity = Person

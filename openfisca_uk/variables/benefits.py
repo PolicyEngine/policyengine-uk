@@ -78,3 +78,40 @@ class child_benefit_actual(Variable):
     entity = Family
     label = u'Actual child benefit amount received per week'
     definition_period = ETERNITY
+
+class child_tax_credit_pre_means_test(Variable):
+    value_type = float
+    entity = Family
+    label = u'Child Tax Credit amount received per year, before means testing'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        children_eligible = min_(2, family.nb_persons(Family.CHILD))
+        yearly_amount = parameters(period).benefits.child_tax_credit.family_element + parameters(period).benefits.child_tax_credit.child_element * children_eligible
+        return yearly_amount
+
+class child_working_tax_credit_combined(Variable):
+    value_type = float
+    entity = Family
+    label = u'Child and Working Tax Credit amount received per week, means tested'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameter):
+        child_tax_credit_amount = family('child_tax_credit_pre_means_test', period)
+        working_tax_credit_amount = family('working_tax_credit_pre_means_test', period)
+        eligible_for_both = (child_tax_credit_amount > 0) * (working_tax_credit_amount > 0)
+        threshold = eligible_for_both * parameters(period).benefits.working_tax_credit.income_threshold + (child_tax_credit_amount > 0) * parameters(period).benefits.child_tax_credit.income_threshold
+        reduction = (family('family_total_income', period) * 52 - threshold) * parameters(period).benefits.child_tax_credit.income_reduction_rate
+        means_tested_amount = max_(0, (child_tax_credit_amount + working_tax_credit_amount) - reduction)
+        return means_tested_amount / 52
+
+class working_tax_credit_pre_means_test(Variable):
+    value_type = float
+    entity = Family
+    label = u'Working Tax Credit amount received per year, before means testing'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        eligible = family('is_single', period) * (family('hours_worked', period) >= parameters(period).benefits.working_tax_credit.hours_requirement_single) + family('is_couple', period) * (family('hours_worked', period) >= parameters(period).benefits.working_tax_credit.hours_requirement_couple) + family('is_lone_parent', period) * (family('hours_worked', period) >= parameters(period).benefits.working_tax_credit.hours_requirement_lone_parent)
+        amount = parameters(period).benefits.working_tax_credit.amount_basic + family('is_single', period) * parameters(period).benefits.working_tax_credit.amount_worker + family('is_couple', period) * parameters(period).benefits.working_tax_credit.amount_couple + family('is_lone_parent', period) * parameters(period).benefits.working_tax_credit.amount_lone_parent
+        return amount * eligible
