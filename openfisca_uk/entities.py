@@ -10,10 +10,16 @@ Household = build_entity(
     doc = u'Each household may contain multiple families, or benefit units.',
     roles = [
         {
-            'key': 'family',
-            'plural': 'families',
-            'label': u'family',
-            'doc': u'A family, or benefit unit, of a household.'
+            'key': 'adult',
+            'plural': 'adults',
+            'label': u'Adult',
+            'doc': u'The adults in the household.'
+            },
+        {
+            'key': 'child',
+            'plural': 'children',
+            'label': u'Child',
+            'doc': u'Dependent children in the household.'
             }
         ]
     )
@@ -42,7 +48,7 @@ Family = build_entity(
 
 Person = build_entity(
     key = "person",
-    plural = "persons",
+    plural = "people",
     label = u'An individual. The minimal legal entity on which a legislation might be applied.',
     is_person = True,
     )

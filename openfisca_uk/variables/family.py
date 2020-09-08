@@ -2,6 +2,16 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+# Input variables
+
+## Family
+
+class family_weight(Variable):
+    value_type = float
+    entity = Family
+    label = u'FRS weighting of the benefit unit'
+    definition_period = ETERNITY
+
 # Derived variables
 
 ## Family

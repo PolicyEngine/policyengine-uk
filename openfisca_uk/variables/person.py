@@ -2,6 +2,12 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+class adult_weight(Variable):
+    value_type = float
+    entity = Person
+    label = u'FRS weighting of the person if they are an adult, 0 if a child (none provided by the FRS)'
+    definition_period = ETERNITY
+
 class age_band(Variable):
     value_type = int
     entity = Person
