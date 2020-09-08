@@ -14,6 +14,33 @@ class age_band(Variable):
     label = u'FRS-encoded age band'
     definition_period = ETERNITY
 
+class is_senior(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is over retirement age'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person('age', period) >= 65
+
+class is_adult(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is working age'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return (person('age', period) >= 18) * (person('age', period) < 65)
+
+class is_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is under working age'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person('age', period) < 18
+
 class hours_worked(Variable):
     value_type = float
     entity = Person

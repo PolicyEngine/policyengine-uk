@@ -1,0 +1,6 @@
+description: Amount of basic income per week to a child
+values:
+  2020-06-01:
+    value: 40
+metadata:
+  threshold_unit: currency-GBP

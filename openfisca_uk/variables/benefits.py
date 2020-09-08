@@ -96,7 +96,7 @@ class child_working_tax_credit_combined(Variable):
     label = u'Child and Working Tax Credit amount received per week, means tested'
     definition_period = ETERNITY
 
-    def formula(family, period, parameter):
+    def formula(family, period, parameters):
         child_tax_credit_amount = family('child_tax_credit_pre_means_test', period)
         working_tax_credit_amount = family('working_tax_credit_pre_means_test', period)
         eligible_for_both = (child_tax_credit_amount > 0) * (working_tax_credit_amount > 0)
@@ -112,6 +112,7 @@ class working_tax_credit_pre_means_test(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        eligible = family('is_single', period) * (family('hours_worked', period) >= parameters(period).benefits.working_tax_credit.hours_requirement_single) + family('is_couple', period) * (family('hours_worked', period) >= parameters(period).benefits.working_tax_credit.hours_requirement_couple) + family('is_lone_parent', period) * (family('hours_worked', period) >= parameters(period).benefits.working_tax_credit.hours_requirement_lone_parent)
+        hours_worked = family.sum(family.members('hours_worked', period))
+        eligible = family('is_single', period) * (hours_worked >= parameters(period).benefits.working_tax_credit.hours_requirement_single) + family('is_couple', period) * (hours_worked >= parameters(period).benefits.working_tax_credit.hours_requirement_couple) + family('is_lone_parent', period) * (hours_worked >= parameters(period).benefits.working_tax_credit.hours_requirement_lone_parent)
         amount = parameters(period).benefits.working_tax_credit.amount_basic + family('is_single', period) * parameters(period).benefits.working_tax_credit.amount_worker + family('is_couple', period) * parameters(period).benefits.working_tax_credit.amount_couple + family('is_lone_parent', period) * parameters(period).benefits.working_tax_credit.amount_lone_parent
         return amount * eligible

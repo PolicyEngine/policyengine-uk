@@ -138,3 +138,12 @@ class working_tax_credit_actual(Variable):
     entity = Family
     label = u'Actual housing benefit received per week'
     definition_period = ETERNITY
+
+class family_net_income(Variable):
+    value_type = float
+    entity = Family
+    label = u'Net income after taxes and benefits'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        return family('family_total_income', period) + family('child_working_tax_credit_combined', period) + family('child_benefit', period) + family('income_support', period) + family('housing_benefit_actual', period) + family('JSA', period) - family.sum(family.members('income_tax', period)) - family.sum(family.members('NI', period))
