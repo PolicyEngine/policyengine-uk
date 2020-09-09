@@ -130,7 +130,6 @@ class child_working_tax_credit_combined(Variable):
         threshold = eligible_for_both * parameters(period).benefits.working_tax_credit.income_threshold + (child_tax_credit_amount > 0) * (1 - eligible_for_both) * parameters(period).benefits.child_tax_credit.income_threshold
         reduction = max_(0, (family('family_total_income', period) * 52 - threshold)) * parameters(period).benefits.child_tax_credit.income_reduction_rate
         means_tested_amount = max_(0, (child_tax_credit_amount + working_tax_credit_amount) - reduction)
-        print(child_tax_credit_amount, working_tax_credit_amount, family('family_total_income', period) * 52, reduction, threshold, means_tested_amount)
         return means_tested_amount / 52
 
 class benefit_cap_reduction(Variable):
