@@ -20,10 +20,19 @@ class IS_receipt(Variable):
 
 # Derived variables
 
-class JSA(Variable):
+class looking_for_work(Variable):
+    value_type = bool
+    entity = Family
+    label = u'Whether looking for work'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        return family('family_JSA_receipt', period) > 0
+
+class contributory_JSA(Variable):
     value_type = float
     entity = Family
-    label = u'JSA amount received per week'
+    label = u'JSA (contributory) amount received per week'
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
@@ -31,10 +40,24 @@ class JSA(Variable):
         is_couple = family.nb_persons(Family.ADULT) == 2
         single_young = (age >= 18) * (age < 25) * (np.logical_not(is_couple))
         single_old = (age >= 25) * (np.logical_not(is_couple))
-        personal_allowance = single_young * parameters(period).benefits.JSA.amount_18_24 + single_old * parameters(period).benefits.JSA.amount_over_25 + is_couple * parameters(period).benefits.JSA.amount_couple
-        earnings_deduction = max_(0, family('family_earnings', period) - parameters(period).benefits.JSA.earn_disregard)
-        pension_deduction = max_(0, family('family_pension_income', period) - parameters(period).benefits.JSA.pension_disregard)
+        personal_allowance = single_young * parameters(period).benefits.JSA.contrib.amount_18_24 + single_old * parameters(period).benefits.JSA.contrib.amount_over_25 + is_couple * parameters(period).benefits.JSA.contrib.amount_couple
+        earnings_deduction = max_(0, family('family_earnings', period) - parameters(period).benefits.JSA.contrib.earn_disregard)
+        pension_deduction = max_(0, family('family_pension_income', period) - parameters(period).benefits.JSA.contrib.pension_disregard)
         return max_(0, (personal_allowance - earnings_deduction - pension_deduction) * family('family_JSA_receipt', period))
+
+class income_JSA(Variable):
+    value_type = float
+    entity = Family
+    label = u'JSA (income-based) amount received per week'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        younger_age = family('younger_adult_age', period)
+        older_age = family('older_adult_age', period)
+        personal_allowance = family('is_single', period) * ((younger_age < 25) * parameters(period).benefits.JSA.income.amount_16_24 + (younger_age >= 25) * parameters(period).benefits.JSA.income.amount_over_25) + family('is_couple', period) * ((younger_age < 18) * (older_age < 18) * parameters(period).benefits.JSA.income.amount_couples_16_17 + (younger_age >= 18) * (older_age >= 18) * parameters(period).benefits.JSA.income.amount_couples_over_18 + (younger_age < 18) * (younger_age >= 25) * parameters(period).benefits.JSA.income.amount_couples_age_gap) + family('is_lone_parent', period) * ((younger_age < 18) * parameters(period).benefits.JSA.income.amount_lone_16_17 + (younger_age >= 18) * parameters(period).benefits.JSA.income.amount_lone_over_18)
+        means_tested_income = family('family_post_tax_income', period) + family('contributory_JSA', period) + family('child_benefit', period)
+        income_deduction = max_(0, means_tested_income - family('is_single', period) * parameters(period).benefits.JSA.income.income_disregard_single + family('is_couple', period) * parameters(period).benefits.JSA.income.income_disregard_couple + family('is_lone_parent', period) * parameters(period).benefits.JSA.income.income_disregard_lone)
+        return family('looking_for_work', period) * max_(0, (personal_allowance - income_deduction))
 
 class JSA_actual(Variable):
     value_type = float
@@ -52,7 +75,8 @@ class income_support(Variable):
         younger_age = family('younger_adult_age', period)
         older_age = family('older_adult_age', period)
         personal_allowance = family('is_single', period) * ((younger_age < 25) * parameters(period).benefits.income_support.amount_16_24 + (younger_age >= 25) * parameters(period).benefits.income_support.amount_over_25) + family('is_couple', period) * ((younger_age < 18) * (older_age < 18) * parameters(period).benefits.income_support.amount_couples_16_17 + (younger_age >= 18) * (older_age >= 18) * parameters(period).benefits.income_support.amount_couples_over_18 + (younger_age < 18) * (younger_age >= 25) * parameters(period).benefits.income_support.amount_couples_age_gap) + family('is_lone_parent', period) * ((younger_age < 18) * parameters(period).benefits.income_support.amount_lone_16_17 + (younger_age >= 18) * parameters(period).benefits.income_support.amount_lone_over_18)
-        income_deduction = max_(0, family('family_total_income', period) - family('is_single', period) * parameters(period).benefits.income_support.income_disregard_single + family('is_couple', period) * parameters(period).benefits.income_support.income_disregard_couple + family('is_lone_parent', period) * parameters(period).benefits.income_support.income_disregard_lone)
+        means_tested_income = family('family_post_tax_income', period) + family('contributory_JSA', period) + family('child_benefit', period)
+        income_deduction = max_(0, means_tested_income - family('is_single', period) * parameters(period).benefits.income_support.income_disregard_single + family('is_couple', period) * parameters(period).benefits.income_support.income_disregard_couple + family('is_lone_parent', period) * parameters(period).benefits.income_support.income_disregard_lone)
         return max_(0, (personal_allowance - income_deduction) * family('family_IS_receipt', period))
 
 class income_support_actual(Variable):

@@ -1,0 +1,6 @@
+description: Weekly income-based JSA applicable amount for single persons aged 18-24.
+values:
+  2020-06-01:
+    value: 58.90
+metadata:
+  threshold_unit: currency-GBP
