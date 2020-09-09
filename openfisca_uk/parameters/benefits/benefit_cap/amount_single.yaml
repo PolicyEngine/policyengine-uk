@@ -1,0 +1,7 @@
+description: Maximum amount of benefits for a single person without dependent children per week.
+values:
+  2020-06-01:
+    value: 257.69
+metadata:
+  threshold_unit: currency-GBP
+  reference: none

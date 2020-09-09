@@ -1,0 +1,28 @@
+- name: Child Benefit with no children
+  period: 2020-09-07
+  absolute_error_margin: 0
+  input:
+    people:
+      parent1: {}
+      parent2: {}
+    families:
+      family:
+        adults: ["parent1", "parent2"]
+        children: []
+  output:
+    child_benefit: 0
+- name: Child Benefit with two children
+  period: 2020-09-07
+  absolute_error_margin: 0
+  input:
+    people:
+      parent1: {}
+      parent2: {}
+      child1: {}
+      child2: {}
+    families:
+      family:
+        adults: ["parent1", "parent2"]
+        children: ["child1", "child2"]
+  output:
+    child_benefit: 35

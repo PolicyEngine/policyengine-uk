@@ -1,0 +1,42 @@
+- name: National Insurance, median salary, employed
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    employee_earnings: 808
+  output:
+    NI: 75
+- name: National Insurance, on threshold, employed
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    employee_earnings: 191
+  output:
+    NI: 1
+- name: National Insurance, below threshold, employed
+  period: 2020-09-07
+  absolute_error_margin: 0
+  input:
+    employee_earnings: 150
+  output:
+    NI: 0
+- name: National Insurance, below threshold, self_employed
+  period: 2020-09-07
+  absolute_error_margin: 0
+  input:
+    self_employed_earnings: 77
+  output:
+    NI: 0
+- name: National Insurance, very high salary, employed
+  period: 2020-09-07
+  absolute_error_margin: 5
+  input:
+    employee_earnings: 1538
+  output:
+    NI: 105
+- name: National Insurance, very high salary, self-employed
+  period: 2020-09-07
+  absolute_error_margin: 5
+  input:
+    self_employed_earnings: 1538
+  output:
+    NI: 85

@@ -110,7 +110,10 @@ class child_tax_credit_pre_means_test(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        children_eligible = min_(2, family.nb_persons(Family.CHILD))
+        num_exempt_children = family.sum(family.members('is_CTC_child_limit_exempt', period))
+        non_exempt_children = family.nb_persons(Family.CHILD) - num_exempt_children
+        spaces_left = max_(0, 2 - num_exempt_children)
+        children_eligible = num_exempt_children + min_(spaces_left, non_exempt_children)
         yearly_amount = parameters(period).benefits.child_tax_credit.family_element + parameters(period).benefits.child_tax_credit.child_element * children_eligible
         return yearly_amount
 
@@ -127,7 +130,21 @@ class child_working_tax_credit_combined(Variable):
         threshold = eligible_for_both * parameters(period).benefits.working_tax_credit.income_threshold + (child_tax_credit_amount > 0) * (1 - eligible_for_both) * parameters(period).benefits.child_tax_credit.income_threshold
         reduction = max_(0, (family('family_total_income', period) * 52 - threshold)) * parameters(period).benefits.child_tax_credit.income_reduction_rate
         means_tested_amount = max_(0, (child_tax_credit_amount + working_tax_credit_amount) - reduction)
+        print(child_tax_credit_amount, working_tax_credit_amount, family('family_total_income', period) * 52, reduction, threshold, means_tested_amount)
         return means_tested_amount / 52
+
+class benefit_cap_reduction(Variable):
+    value_type = float
+    entity = Family
+    label = u'Amount benefit income is reduced by'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        is_exempt = family('working_tax_credit_pre_means_test', period) > 0
+        benefit_cap = family('is_single', period) * parameters(period).benefits.benefit_cap.amount_single + (family.nb_persons() > 1) * parameters(period).benefits.benefit_cap.amount_family
+        affected_benefits = family('income_support', period) + family('contributory_JSA', period) + family('income_JSA', period) + family('housing_benefit_actual', period) + family('child_benefit', period)
+        reduction = max_(0, affected_benefits - benefit_cap)
+        return where(is_exempt, 0, reduction)
 
 class working_tax_credit_pre_means_test(Variable):
     value_type = float

@@ -14,6 +14,15 @@ class age_band(Variable):
     label = u'FRS-encoded age band'
     definition_period = ETERNITY
 
+class is_CTC_child_limit_exempt(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the child was born after 2017 and therefore exempt from the two-child limit for Child Tax Credit'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return (person('age', period) >= 3) * (1 - person('is_adult', period))
+
 class is_senior(Variable):
     value_type = bool
     entity = Person
