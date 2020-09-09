@@ -1,6 +1,6 @@
 - name: Case study 1 - working parents with children, not eligible for working/child tax credits
   period: 2020-09-07
-  absolute_error_margin: 5
+  absolute_error_margin: 1
   input:
     people:
       parent1: 
@@ -25,10 +25,10 @@
         children: ["child1", "child2", "child3", "child4"]
   output:
     child_benefit: 62.90
-    child_working_tax_credit_combined: 36.20 # Not sure about this, contradiction between benefits calculators
+    child_working_tax_credit_combined: 36.20
 - name: Case study 2 - two unemployed parents with 4 children, 1 not covered by CTC
   period: 2020-09-07
-  absolute_error_margin: 5
+  absolute_error_margin: 1
   input:
     people:
       parent1: 
