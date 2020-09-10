@@ -37,9 +37,19 @@ class family_total_income(Variable):
     def formula(family, period, parameters):
         return family('family_earnings', period) + family('family_pension_income', period) + max_(0, family('family_basic_income', period) - parameters(period).benefits.basic_income.income_disregard)
 
+class family_net_income(Variable):
+    value_type = float
+    entity = Family
+    label = u'Net income after taxes and benefits'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        return family('family_total_income', period) + family('child_working_tax_credit_combined', period) + family('child_benefit', period) + family('income_support', period) + family('housing_benefit_actual', period) + family('contributory_JSA', period) + family('income_JSA', period) - family.sum(family.members('income_tax', period)) - family.sum(family.members('NI', period)) - family('benefit_cap_reduction', period) + parameters(period).benefits.basic_income.income_disregard
+
 class basic_income_reform(Reform):
     def apply(self):
         self.modify_parameters(add_basic_income_params)
         self.add_variable(basic_income)
         self.add_variable(family_basic_income)
         self.update_variable(family_total_income)
+        self.update_variable(family_net_income)
