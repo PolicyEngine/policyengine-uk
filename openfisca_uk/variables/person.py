@@ -2,6 +2,12 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+class disabled(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether disabled'
+    definition_period = ETERNITY
+
 class adult_weight(Variable):
     value_type = float
     entity = Person

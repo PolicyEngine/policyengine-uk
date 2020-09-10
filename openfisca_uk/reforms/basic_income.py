@@ -44,7 +44,7 @@ class family_net_income(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        return family('family_total_income', period) + family('child_working_tax_credit_combined', period) + family('child_benefit', period) + family('income_support', period) + family('housing_benefit_actual', period) + family('contributory_JSA', period) + family('income_JSA', period) - family.sum(family.members('income_tax', period)) - family.sum(family.members('NI', period)) - family('benefit_cap_reduction', period) + parameters(period).benefits.basic_income.income_disregard
+        return family('family_total_income', period) + family('child_tax_credit', period) + family('working_tax_credit', period) + family('child_benefit', period) + family('income_support', period) + family('housing_benefit_actual', period) + family('contributory_JSA', period) + family('income_JSA', period) - family.sum(family.members('income_tax', period)) - family.sum(family.members('NI', period)) - family('benefit_cap_reduction', period)
 
 class basic_income_reform(Reform):
     def apply(self):
