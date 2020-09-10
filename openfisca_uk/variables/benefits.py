@@ -150,6 +150,21 @@ class child_tax_credit(Variable):
         reduction_left = min_(0, family('working_tax_credit_pre_means_test', period) - family('child_working_tax_credit_reduction', period))
         return max_(0, family('child_tax_credit_pre_means_test', period) + reduction_left) / 52
 
+class child_working_tax_credit_combined(Variable):
+    value_type = float
+    entity = Family
+    label = u'Child and Working Tax Credit amount received per week, means tested'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        child_tax_credit_amount = family('child_tax_credit_pre_means_test', period)
+        working_tax_credit_amount = family('working_tax_credit_pre_means_test', period)
+        eligible_for_both = (child_tax_credit_amount > 0) * (working_tax_credit_amount > 0)
+        threshold = eligible_for_both * parameters(period).benefits.working_tax_credit.income_threshold + (child_tax_credit_amount > 0) * (1 - eligible_for_both) * parameters(period).benefits.child_tax_credit.income_threshold
+        reduction = max_(0, (family('family_total_income', period) * 52 - threshold)) * parameters(period).benefits.child_tax_credit.income_reduction_rate
+        means_tested_amount = max_(0, (child_tax_credit_amount + working_tax_credit_amount) - reduction)
+        return means_tested_amount / 52
+
 class benefit_cap_reduction(Variable):
     value_type = float
     entity = Family

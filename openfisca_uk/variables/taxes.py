@@ -84,8 +84,8 @@ class income_tax(Variable):
     def formula(person, period, parameters):
         estimated_yearly_income = (person('taxable_income', period)) * 52
         pa_deduction = parameters(period).taxes.income_tax.personal_allowance_deduction.calc(estimated_yearly_income)
-        yearly_tax = parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
-        return yearly_tax
+        weekly_tax = parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
+        return weekly_tax
 
 class net_income(Variable):
     value_type = float
