@@ -82,10 +82,10 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        estimated_yearly_income = person('taxable_income', period) * 52
+        estimated_yearly_income = (person('taxable_income', period)) * 52
         pa_deduction = parameters(period).taxes.income_tax.personal_allowance_deduction.calc(estimated_yearly_income)
-        x = parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
-        return x
+        yearly_tax = parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
+        return yearly_tax
 
 class net_income(Variable):
     value_type = float
@@ -103,4 +103,4 @@ class effective_tax_rate(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return where(person('income', period) == 0, 0, 1 - person('net_income', period) / person('income', period))
+        return where(person('income', period) == 0, 0, (person('income_tax', period) + person('NI', period)) / person('income', period))
