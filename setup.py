@@ -23,7 +23,7 @@ setup(
         ("share/openfisca/openfisca-country-template", ["CHANGELOG.md", "LICENSE", "README.md"]),
         ],
     install_requires = [
-        "OpenFisca-Core[web-api] >=27.0,<35.0",
+        "OpenFisca-Core[web-api]",
         ],
     extras_require = {
         "dev": [
