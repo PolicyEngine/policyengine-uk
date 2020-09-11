@@ -20,7 +20,7 @@
   output:
     income_tax: 279.58
     NI: 100.23
- - name: Negative income
+- name: Negative income
   period: 2020-09-07
   absolute_error_margin: 1
   input:
