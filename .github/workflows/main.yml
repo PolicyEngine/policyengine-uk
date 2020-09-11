@@ -22,10 +22,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.8.3
+      - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8.5
+          python-version: 3.7
         
       # Runs a single command using the runners shell
       - name: Install Wheel
@@ -33,7 +33,7 @@ jobs:
 
       - name: Install libyaml
         run: pip3 uninstall pyyaml && pip3 install pyyaml --no-cache-dir
-        
+
       # Runs a single command using the runners shell
       - name: Install OpenFisca-UK
         run: pip3 install .
