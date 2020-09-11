@@ -24,7 +24,7 @@ jobs:
         
       # Runs a single command using the runners shell
       - name: Install Wheel
-        run: pip3 install wheel
+        run: pip3 install wheel setuptools
 
       # Runs a single command using the runners shell
       - name: Install OpenFisca-UK
