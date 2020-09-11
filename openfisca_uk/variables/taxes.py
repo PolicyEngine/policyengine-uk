@@ -59,7 +59,20 @@ class taxable_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period) + person('investment_income', period), 0)
+        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period), 0)
+
+class capital_gains_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Capital Gains Tax on investment income'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        estimated_yearly_gains = person('investment_income', period) * 52
+        basic_amount = min_(estimated_yearly_gains, parameters(period).taxes.capital_gains_tax.higher_threshold)
+        higher_amount = max_(0, estimated_yearly_gains - parameters(period).taxes.capital_gains_tax.higher_threshold)
+        yearly_tax = basic_amount * parameters(period).taxes.capital_gains_tax.basic_rate + higher_amount * parameters(period).taxes.capital_gains_tax.higher_rate
+        return yearly_tax / 52
 
 class NI(Variable):
     value_type = float
@@ -103,4 +116,4 @@ class effective_tax_rate(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return where(person('income', period) == 0, 0, (person('income_tax', period) + person('NI', period)) / person('income', period))
+        return where(person('income', period) == 0, 0, (person('income_tax', period) + person('NI', period) + person('capital_gains_tax', period)) / person('income', period))
