@@ -8,7 +8,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.45 * person('taxable_income', period)
+        return 0.39 * person('taxable_income', period)
 
 class NI(Variable):
     value_type = float
@@ -49,7 +49,7 @@ class family_total_income(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        return family('family_earnings', period) + family('family_pension_income', period) + family('family_basic_income', period) - 25
+        return family('family_earnings', period) + family('family_pension_income', period) + family('family_basic_income', period) + 25
 
 class family_net_income(Variable):
     value_type = float
