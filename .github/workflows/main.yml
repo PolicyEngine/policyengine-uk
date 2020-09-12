@@ -28,8 +28,8 @@ jobs:
           python-version: 3.7
         
       # Runs a single command using the runners shell
-      - name: Install Wheel
-        run: pip3 install wheel setuptools
+      - name: Install Wheel and Pytest
+        run: pip3 install wheel setuptools pytest=5.3.5
 
       - name: Install libyaml
         run: pip3 uninstall pyyaml && pip3 install pyyaml --no-cache-dir
