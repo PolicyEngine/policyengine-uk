@@ -1,7 +1,0 @@
-description: Amount of basic income disregarded for means-tested benefits
-values:
-  2020-06-01:
-    value: 25.00
-metadata:
-  threshold_unit: currency-GBP
-  reference: none

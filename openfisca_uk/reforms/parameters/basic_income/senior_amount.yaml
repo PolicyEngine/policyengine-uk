@@ -1,6 +1,0 @@
-description: Amount of basic income per week to an adult
-values:
-  2020-06-01:
-    value: 175
-metadata:
-  threshold_unit: currency-GBP

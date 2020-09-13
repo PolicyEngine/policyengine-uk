@@ -8,7 +8,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.39 * person('taxable_income', period)
+        return 0.45 * person('taxable_income', period)
 
 class NI(Variable):
     value_type = float
@@ -31,7 +31,7 @@ class basic_income(Variable):
         adult_old = (person('age', period) >= 24) * (person('age', period) < 65)
         disabled_child = person('disabled', period) * person('is_child', period)
         disabled_adult = person('disabled', period) * person('is_adult', period)
-        return person('is_senior', period) * 165 + adult_young * 40 + adult_old * 60 + disabled_adult * 35 + disabled_child * 60
+        return person('is_senior', period) * 165 + adult_young * 40 + adult_old * 60 + disabled_adult * 35 + disabled_child * 60 + person('is_child', period) * 60
 
 class family_basic_income(Variable):
     value_type = float
@@ -49,7 +49,7 @@ class family_total_income(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        return family('family_earnings', period) + family('family_pension_income', period) + family('family_basic_income', period) + 25
+        return family('family_earnings', period) + family('family_pension_income', period) + family('family_basic_income', period) - 25
 
 class family_net_income(Variable):
     value_type = float
@@ -60,7 +60,7 @@ class family_net_income(Variable):
     def formula(family, period, parameters):
         return family('family_total_income', period) + family('child_tax_credit', period) + family('working_tax_credit', period) + family('child_benefit', period) + family('income_support', period) + family('housing_benefit_actual', period) + family('contributory_JSA', period) + family('income_JSA', period) - family.sum(family.members('income_tax', period)) - family.sum(family.members('NI', period)) - family('benefit_cap_reduction', period) + 25
 
-class simple_bi_reform(Reform):
+class simulation_1(Reform):
     def apply(self):
         for changed_var in [income_tax, NI, family_net_income, family_total_income]:
             self.update_variable(changed_var)
