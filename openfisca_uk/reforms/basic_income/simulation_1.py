@@ -49,7 +49,7 @@ class pension_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person('private_pension_income', period)
+        return person('private_pension_actual', period)
 
 class family_total_income(Variable):
     value_type = float

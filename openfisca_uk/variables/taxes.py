@@ -6,20 +6,11 @@ import numpy as np
 
 ## Person
 
-class pension_income_actual(Variable):
-    value_type = float
-    entity = Person
-    label = u'Total actual pension income between occupational and personal pensions per week'
-    definition_period = ETERNITY
-
-class private_pension_income(Variable):
+class private_pension_actual(Variable):
     value_type = float
     entity = Person
     label = u'Total private pension income per week'
     definition_period = ETERNITY
-
-    def formula(person, period, parameters):
-        return person('pension_income_actual', period) - person('state_pension_actual', period)
 
 class pension_income(Variable):
     value_type = float
@@ -28,7 +19,7 @@ class pension_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person('private_pension_income', period) + person('state_pension_actual', period)
+        return person('private_pension_actual', period) + person('state_pension_actual', period)
 
 class employee_earnings(Variable):
     value_type = float
