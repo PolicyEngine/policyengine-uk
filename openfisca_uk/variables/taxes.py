@@ -77,7 +77,7 @@ class taxable_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + person('pension_income', period), 0)
+        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period), 0)
 
 class capital_gains_tax(Variable):
     value_type = float
