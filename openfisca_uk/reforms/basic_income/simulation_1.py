@@ -42,6 +42,15 @@ class family_basic_income(Variable):
     def formula(family, period, parameters):
         return family.sum(family.members('basic_income', period))
 
+class pension_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total pension income per week'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person('private_pension_income', period)
+
 class family_total_income(Variable):
     value_type = float
     entity = Family
@@ -62,7 +71,7 @@ class family_net_income(Variable):
 
 class simulation_1(Reform):
     def apply(self):
-        for changed_var in [income_tax, NI, family_net_income, family_total_income]:
+        for changed_var in [income_tax, NI, family_net_income, family_total_income, pension_income]:
             self.update_variable(changed_var)
         for added_var in [basic_income, family_basic_income]:
             self.add_variable(added_var)
