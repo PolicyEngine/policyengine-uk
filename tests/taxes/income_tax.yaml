@@ -20,10 +20,17 @@
   output:
     income_tax: 0
     NI: 0
-- name: Income tax test, per week, for earnings £50k per annum
+- name: Income tax test, per week, for employee earnings £50k per annum
   period: 2020-09-07
   absolute_error_margin: 1
   input:
     employee_earnings: 958.96
   output:
     income_tax: 143.85
+- name: Income tax test, per week, for self employed earnings £50k per annum
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    employee_earnings: 958.96
+  output:
+    income_tax: 216.62
