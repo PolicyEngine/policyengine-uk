@@ -1,0 +1,13 @@
+- name: Pension income
+  period: 2020-09-07
+  absolute_error_margin: 0
+  input:
+    people:
+      senior1: {}
+    families:
+      family:
+        adults: []
+        children: []
+        seniors : ["senior1"]
+  output:
+    state_pension: 175.20
