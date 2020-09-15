@@ -28,7 +28,7 @@ class family_total_income(Variable):
     def formula(family, period, parameters):
         return family('family_earnings', period) + family('family_pension_income', period) + family('family_basic_income', period)
 
-class simulation_3(Reform):
+class simulation_4(Reform):
     def apply(self):
         for changed_var in [family_total_income]:
             self.update_variable(changed_var)
