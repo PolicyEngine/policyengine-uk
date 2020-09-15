@@ -1,6 +1,25 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 
+class income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income tax paid per week'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return 0.45 * person('taxable_income', period)
+
+class NI(Variable):
+    value_type = float
+    entity = Person
+    label = u'National Insurance paid per week'
+    definition_period = ETERNITY
+    reference = ['https://www.gov.uk/national-insurance']
+    
+    def formula(person, period, parameters):
+        return 0.12 * person('taxable_income', period)
+
 class basic_income(Variable):
     value_type = float
     entity = Person
@@ -30,7 +49,7 @@ class family_total_income(Variable):
 
 class simulation_4(Reform):
     def apply(self):
-        for changed_var in [family_total_income]:
+        for changed_var in [income_tax, NI, family_total_income]:
             self.update_variable(changed_var)
         for added_var in [basic_income, family_basic_income]:
             self.add_variable(added_var)

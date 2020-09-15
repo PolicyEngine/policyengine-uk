@@ -109,6 +109,15 @@ class income_tax(Variable):
         weekly_tax = (parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income) + pa_deduction) / 52
         return weekly_tax
 
+class income_tax_and_NI(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total NI and Income tax paid per week'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person('NI', period) + person('income_tax', period)
+
 class net_income(Variable):
     value_type = float
     entity = Person
