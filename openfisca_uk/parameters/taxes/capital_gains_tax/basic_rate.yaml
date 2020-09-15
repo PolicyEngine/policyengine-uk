@@ -1,0 +1,7 @@
+description: Rate of Capital Gains Tax for investment income below the basic income tax band.
+values:
+  2020-06-01:
+    value: 0.10
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/capital-gains-tax/rates

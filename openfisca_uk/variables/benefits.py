@@ -45,6 +45,12 @@ class contributory_JSA(Variable):
         pension_deduction = max_(0, family('family_pension_income', period) - parameters(period).benefits.JSA.contrib.pension_disregard)
         return max_(0, (personal_allowance - earnings_deduction - pension_deduction) * family('family_JSA_receipt', period))
 
+class state_pension_actual(Variable):
+    value_type = float
+    entity = Person
+    label = u'Actual amount of State Pension received per week'
+    definition_period = ETERNITY
+
 class income_JSA(Variable):
     value_type = float
     entity = Family

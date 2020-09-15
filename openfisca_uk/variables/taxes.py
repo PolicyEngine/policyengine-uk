@@ -6,11 +6,20 @@ import numpy as np
 
 ## Person
 
+class private_pension_actual(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total private pension income per week'
+    definition_period = ETERNITY
+
 class pension_income(Variable):
     value_type = float
     entity = Person
-    label = u'Total pension income between occupational and personal pensions per week'
+    label = u'Total pension income per week'
     definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person('private_pension_actual', period) + person('state_pension_actual', period)
 
 class employee_earnings(Variable):
     value_type = float
@@ -59,7 +68,20 @@ class taxable_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period) + person('investment_income', period), 0)
+        return max_(person('employee_earnings', period) + person('self_employed_earnings', period) + 0.75 * person('pension_income', period), 0)
+
+class capital_gains_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Capital Gains Tax on investment income'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        estimated_yearly_gains = person('investment_income', period) * 52
+        basic_amount = min_(estimated_yearly_gains, parameters(period).taxes.capital_gains_tax.higher_threshold)
+        higher_amount = max_(0, estimated_yearly_gains - parameters(period).taxes.capital_gains_tax.higher_threshold)
+        yearly_tax = basic_amount * parameters(period).taxes.capital_gains_tax.basic_rate + higher_amount * parameters(period).taxes.capital_gains_tax.higher_rate
+        return yearly_tax / 52
 
 class NI(Variable):
     value_type = float
@@ -73,7 +95,7 @@ class NI(Variable):
         estimated_yearly_self_emp = person('self_employed_earnings', period) * 52
         self_employed_NI_basic = parameters(period).taxes.national_insurance.self_employed_basic * (estimated_yearly_self_emp > parameters(period).taxes.national_insurance.self_employed_basic_threshold) / 52
         self_employed_NI_higher = parameters(period).taxes.national_insurance.self_employed_higher.calc(estimated_yearly_self_emp) / 52
-        return employee_NI + self_employed_NI_basic + self_employed_NI_higher
+        return (1 - person('is_state_pension_age', period)) * employee_NI + self_employed_NI_basic + self_employed_NI_higher
     
 class income_tax(Variable):
     value_type = float
@@ -84,7 +106,7 @@ class income_tax(Variable):
     def formula(person, period, parameters):
         estimated_yearly_income = (person('taxable_income', period)) * 52
         pa_deduction = parameters(period).taxes.income_tax.personal_allowance_deduction.calc(estimated_yearly_income)
-        weekly_tax = parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income + pa_deduction) / 52
+        weekly_tax = (parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income) + pa_deduction) / 52
         return weekly_tax
 
 class net_income(Variable):
@@ -95,12 +117,3 @@ class net_income(Variable):
 
     def formula(person, period, parameters):
         return person('income', period) - person('income_tax', period) - person('NI', period)
-
-class effective_tax_rate(Variable):
-    value_type = float
-    entity = Person
-    label = u'Net income per week'
-    definition_period = ETERNITY
-
-    def formula(person, period, parameters):
-        return where(person('income', period) == 0, 0, (person('income_tax', period) + person('NI', period)) / person('income', period))

@@ -6,10 +6,9 @@ This is in the early stages (from the country template linked above) and documen
 
 The elements are described in different folders. All the modelling happens within the `openfisca_uk` folder.
 
-- The rates are in the `parameters` folder.
-- The formulas are in the `variables` folder.
-- This country package comes also with *reforms* in the `reforms` folder.
-    - In this country, there is [a reform project](./openfisca_uk/reforms/basic_income.py) aiming to introduce a basic income and remove the personal tax-free income allowance.
+- The rates and other system parameters are in the `parameters` folder.
+- The formulas and inputs are in the `variables` folder.
+- This country package comes also with reforms in the `reforms` folder.
 
 The files that are outside from the `openfisca_uk` folder are used to set up the development environment.
 

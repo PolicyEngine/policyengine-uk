@@ -2,6 +2,21 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+class is_male(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is male (False if female)'
+    definition_period = ETERNITY
+
+class is_state_pension_age(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is State Pension age'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person('is_male', period) * (person('age', period) >= parameters(period).benefits.state_pension.male_state_pension_age) + (1 - person('is_male', period)) * (person('age', period) >= parameters(period).benefits.state_pension.female_state_pension_age)
+
 class disabled(Variable):
     value_type = bool
     entity = Person

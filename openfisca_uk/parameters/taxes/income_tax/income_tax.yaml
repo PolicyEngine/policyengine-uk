@@ -4,22 +4,14 @@ brackets:
       2017-04-06:
         value: 0.2
     threshold:
-      2017-04-06:
-        value: 11500
-      2018-04-06:
-        value: 11850
       2019-04-06:
         value: 12500
   - rate:
       2017-04-06:
         value: 0.4
     threshold:
-      2017-04-06:
-        value: 33500
-      2018-04-06:
-        value: 34500
       2019-04-06:
-        value: 37500
+        value: 50000
   - rate:
       2017-04-06:
         value: 0.45
