@@ -31,6 +31,6 @@
   period: 2020-09-07
   absolute_error_margin: 1
   input:
-    employee_earnings: 958.96
+    self_employed_earnings: 958.96
   output:
-    income_tax: 216.62
+    income_tax_and_NI: 216.62

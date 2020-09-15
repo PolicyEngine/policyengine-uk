@@ -93,7 +93,7 @@ class NI(Variable):
     def formula(person, period, parameters):
         employee_NI = parameters(period).taxes.national_insurance.employee_rates.calc(person('employee_earnings', period))
         estimated_yearly_self_emp = person('self_employed_earnings', period) * 52
-        self_employed_NI_basic = parameters(period).taxes.national_insurance.self_employed_basic * (estimated_yearly_self_emp > parameters(period).taxes.national_insurance.self_employed_basic_threshold) / 52
+        self_employed_NI_basic = parameters(period).taxes.national_insurance.self_employed_basic * (estimated_yearly_self_emp > parameters(period).taxes.national_insurance.self_employed_basic_threshold)
         self_employed_NI_higher = parameters(period).taxes.national_insurance.self_employed_higher.calc(estimated_yearly_self_emp) / 52
         return (1 - person('is_state_pension_age', period)) * employee_NI + self_employed_NI_basic + self_employed_NI_higher
     
