@@ -15,10 +15,10 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         super(CountryTaxBenefitSystem, self).__init__(entities.entities)
 
         # We add to our tax and benefit system all the variables
-        self.add_variables_from_directory(os.path.join(COUNTRY_DIR, 'variables'))
+        self.add_variables_from_directory(os.path.join(COUNTRY_DIR, "variables"))
 
         # We add to our tax and benefit system all the legislation parameters defined in the  parameters files
-        param_path = os.path.join(COUNTRY_DIR, 'parameters')
+        param_path = os.path.join(COUNTRY_DIR, "parameters")
         self.load_parameters(param_path)
 
         # We define which variable, parameter and simulation example will be used in the OpenAPI specification
@@ -26,4 +26,4 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             "variable_example": "JSA",
             "parameter_example": "taxes.income_tax.income_tax",
             "simulation_example": None,
-            }
+        }

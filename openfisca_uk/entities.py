@@ -4,53 +4,53 @@
 from openfisca_core.entities import build_entity
 
 Household = build_entity(
-    key = "household",
-    plural = "households",
-    label = u'All the people in a family or group who live together in the same place.',
-    doc = u'Each household may contain multiple families, or benefit units.',
-    roles = [
+    key="household",
+    plural="households",
+    label=u"All the people in a family or group who live together in the same place.",
+    doc=u"Each household may contain multiple families, or benefit units.",
+    roles=[
         {
-            'key': 'adult',
-            'plural': 'adults',
-            'label': u'Adult',
-            'doc': u'The adults in the household.'
-            },
+            "key": "adult",
+            "plural": "adults",
+            "label": u"Adult",
+            "doc": u"The adults in the household.",
+        },
         {
-            'key': 'child',
-            'plural': 'children',
-            'label': u'Child',
-            'doc': u'Dependent children in the household.'
-            }
-        ]
-    )
+            "key": "child",
+            "plural": "children",
+            "label": u"Child",
+            "doc": u"Dependent children in the household.",
+        },
+    ],
+)
 
 Family = build_entity(
-    key = "family",
-    plural = "families",
-    label = u'A benefit unit, comprising of exactly one or two adults, plus any dependent children',
-    doc = u'A family is also known as a benefit unit, and contains parents and dependent children.',
-    roles = [
+    key="family",
+    plural="families",
+    label=u"A benefit unit, comprising of exactly one or two adults, plus any dependent children",
+    doc=u"A family is also known as a benefit unit, and contains parents and dependent children.",
+    roles=[
         {
-            'key': 'adult',
-            'plural': 'adults',
-            'label': u'Adult',
-            'max': 2,
-            'doc': u'The one or two adults in the benefit unit.'
-            },
+            "key": "adult",
+            "plural": "adults",
+            "label": u"Adult",
+            "max": 2,
+            "doc": u"The one or two adults in the benefit unit.",
+        },
         {
-            'key': 'child',
-            'plural': 'children',
-            'label': u'Child',
-            'doc': u'Dependent children.'
-            }
-        ]
-    )
+            "key": "child",
+            "plural": "children",
+            "label": u"Child",
+            "doc": u"Dependent children.",
+        },
+    ],
+)
 
 Person = build_entity(
-    key = "person",
-    plural = "people",
-    label = u'An individual. The minimal legal entity on which a legislation might be applied.',
-    is_person = True,
-    )
+    key="person",
+    plural="people",
+    label=u"An individual. The minimal legal entity on which a legislation might be applied.",
+    is_person=True,
+)
 
 entities = [Household, Family, Person]
