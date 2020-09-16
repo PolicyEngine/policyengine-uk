@@ -125,14 +125,14 @@ class is_single(Variable):
         )
 
 
-class family_size(Variable):
+class per_capita_weight(Variable):
     value_type = int
     entity = Family
-    label = u"Number of people in the family"
+    label = u"Actual family weight, adjusted for number in the family"
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        return family.nb_persons()
+        return family.nb_persons() * family('family_weight', period)
 
 
 class num_children_actual(Variable):
