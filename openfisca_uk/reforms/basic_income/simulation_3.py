@@ -35,12 +35,12 @@ class basic_income(Variable):
         disabled_child = person("disabled", period) * person("is_child", period)
         disabled_adult = person("disabled", period) * person("is_adult", period)
         return (
-            person("is_senior", period) * 165
-            + adult_young * 120
-            + adult_old * 150
-            + disabled_adult * 35
-            + disabled_child * 60
-            + person("is_child", period) * 100
+            person("is_senior", period) * 170
+            + adult_young * 125
+            + adult_old * 155
+            + disabled_adult * 40
+            + disabled_child * 65
+            + person("is_child", period) * 105
         )
 
 
