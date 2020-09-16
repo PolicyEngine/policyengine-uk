@@ -30,18 +30,7 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        adult_young = (person("age", period) >= 16) * (person("age", period) < 24)
-        adult_old = (person("age", period) >= 24) * (person("age", period) < 65)
-        disabled_child = person("disabled", period) * person("is_child", period)
-        disabled_adult = person("disabled", period) * person("is_adult", period)
-        return (
-            person("is_senior", period) * 170
-            + adult_young * 125
-            + adult_old * 155
-            + disabled_adult * 40
-            + disabled_child * 65
-            + person("is_child", period) * 105
-        )
+        return 180
 
 
 class family_basic_income(Variable):
