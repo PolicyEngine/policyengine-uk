@@ -56,30 +56,3 @@
     child_benefit: 62.90
     working_tax_credit: 0
     child_tax_credit: 173.94
-- name: Case study 3 - 1 working parent with children, eligible for child tax credits
-  period: 2020-09-07
-  absolute_error_margin: 1
-  input:
-    people:
-      parent1: 
-        age: 40
-        hours_worked: 40
-        employee_earnings: 575.37
-      parent2:
-        age: 45
-        hours_worked: 0
-        employee_earnings: 0
-      child1:
-        age: 3
-      child2:
-        age: 4
-      child3:
-        age: 8
-    families:
-      family:
-        adults: ["parent1", "parent2"]
-        children: ["child1", "child2", "child3", "child4"]
-  output:
-    child_benefit: 48.95
-    working_tax_credit: 0
-    child_tax_credit: 102.66
