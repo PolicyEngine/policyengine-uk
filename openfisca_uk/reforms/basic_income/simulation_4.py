@@ -30,7 +30,7 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person('is_adult', period) * 190
+        return person("is_adult", period) * 190
 
 
 class family_basic_income(Variable):

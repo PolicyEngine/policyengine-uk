@@ -132,7 +132,7 @@ class per_capita_weight(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        return family.nb_persons() * family('family_weight', period)
+        return family.nb_persons() * family("family_weight", period)
 
 
 class num_children_actual(Variable):

@@ -115,8 +115,10 @@ class capital_gains_tax(Variable):
             - parameters(period).taxes.capital_gains_tax.higher_threshold,
         )
         yearly_tax = (
-            basic_amount * parameters(period).taxes.capital_gains_tax.basic_rate
-            + higher_amount * parameters(period).taxes.capital_gains_tax.higher_rate
+            basic_amount
+            * parameters(period).taxes.capital_gains_tax.basic_rate
+            + higher_amount
+            * parameters(period).taxes.capital_gains_tax.higher_rate
         )
         return yearly_tax / 52
 
@@ -129,18 +131,26 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        employee_NI = parameters(period).taxes.national_insurance.employee_rates.calc(
+        employee_NI = parameters(
+            period
+        ).taxes.national_insurance.employee_rates.calc(
             person("employee_earnings", period)
         )
-        estimated_yearly_self_emp = person("self_employed_earnings", period) * 52
+        estimated_yearly_self_emp = (
+            person("self_employed_earnings", period) * 52
+        )
         self_employed_NI_basic = parameters(
             period
         ).taxes.national_insurance.self_employed_basic * (
             estimated_yearly_self_emp
-            > parameters(period).taxes.national_insurance.self_employed_basic_threshold
+            > parameters(
+                period
+            ).taxes.national_insurance.self_employed_basic_threshold
         )
         self_employed_NI_higher = (
-            parameters(period).taxes.national_insurance.self_employed_higher.calc(
+            parameters(
+                period
+            ).taxes.national_insurance.self_employed_higher.calc(
                 estimated_yearly_self_emp
             )
             / 52
@@ -162,9 +172,13 @@ class income_tax(Variable):
         estimated_yearly_income = (person("taxable_income", period)) * 52
         pa_deduction = parameters(
             period
-        ).taxes.income_tax.personal_allowance_deduction.calc(estimated_yearly_income)
+        ).taxes.income_tax.personal_allowance_deduction.calc(
+            estimated_yearly_income
+        )
         weekly_tax = (
-            parameters(period).taxes.income_tax.income_tax.calc(estimated_yearly_income)
+            parameters(period).taxes.income_tax.income_tax.calc(
+                estimated_yearly_income
+            )
             + pa_deduction
         ) / 52
         return weekly_tax

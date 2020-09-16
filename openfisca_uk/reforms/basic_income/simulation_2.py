@@ -9,8 +9,12 @@ def modify_parameters(parameters):
     file_path = os.path.join(
         dir_name, "parameters", "simulation_2", "new_income_tax.yaml"
     )
-    reform_parameters_subtree = load_parameter_file(file_path, name="new_income_tax")
-    parameters.taxes.income_tax.add_child("new_income_tax", reform_parameters_subtree)
+    reform_parameters_subtree = load_parameter_file(
+        file_path, name="new_income_tax"
+    )
+    parameters.taxes.income_tax.add_child(
+        "new_income_tax", reform_parameters_subtree
+    )
     return parameters
 
 
@@ -48,8 +52,12 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        adult_young = (person("age", period) >= 16) * (person("age", period) < 24)
-        adult_old = (person("age", period) >= 24) * (person("age", period) < 65)
+        adult_young = (person("age", period) >= 16) * (
+            person("age", period) < 24
+        )
+        adult_old = (person("age", period) >= 24) * (
+            person("age", period) < 65
+        )
         return (
             person("is_senior", period) * 50
             + adult_young * 55
@@ -107,7 +115,12 @@ class family_net_income(Variable):
 class simulation_2(Reform):
     def apply(self):
         self.modify_parameters(modify_parameters)
-        for changed_var in [income_tax, NI, family_net_income, family_total_income]:
+        for changed_var in [
+            income_tax,
+            NI,
+            family_net_income,
+            family_total_income,
+        ]:
             self.update_variable(changed_var)
         for added_var in [basic_income, family_basic_income]:
             self.add_variable(added_var)
