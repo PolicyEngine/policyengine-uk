@@ -125,6 +125,16 @@ class is_single(Variable):
         )
 
 
+class family_size(Variable):
+    value_type = int
+    entity = Family
+    label = u"Number of people in the family"
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        return family.nb_persons()
+
+
 class num_children_actual(Variable):
     value_type = int
     entity = Family
