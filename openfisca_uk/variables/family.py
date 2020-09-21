@@ -135,6 +135,16 @@ class per_capita_weight(Variable):
         return family.nb_persons() * family("family_weight", period)
 
 
+class num_adults(Variable):
+    value_type = int
+    entity = Family
+    label = u"Number of adults in the family"
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        return family.nb_persons(Family.ADULT)
+
+
 class num_children_actual(Variable):
     value_type = int
     entity = Family

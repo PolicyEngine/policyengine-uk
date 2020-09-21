@@ -9,12 +9,8 @@ def modify_parameters(parameters):
     file_path = os.path.join(
         dir_name, "parameters", "simulation_2", "new_income_tax.yaml"
     )
-    reform_parameters_subtree = load_parameter_file(
-        file_path, name="new_income_tax"
-    )
-    parameters.taxes.income_tax.add_child(
-        "new_income_tax", reform_parameters_subtree
-    )
+    reform_parameters_subtree = load_parameter_file(file_path, name="new_income_tax")
+    parameters.taxes.income_tax.add_child("new_income_tax", reform_parameters_subtree)
     return parameters
 
 
@@ -52,12 +48,8 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        adult_young = (person("age", period) >= 16) * (
-            person("age", period) < 24
-        )
-        adult_old = (person("age", period) >= 24) * (
-            person("age", period) < 65
-        )
+        adult_young = (person("age", period) >= 16) * (person("age", period) < 24)
+        adult_old = (person("age", period) >= 24) * (person("age", period) < 65)
         return (
             person("is_senior", period) * 50
             + adult_young * 55

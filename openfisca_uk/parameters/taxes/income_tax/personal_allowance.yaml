@@ -1,0 +1,7 @@
+description: Personal allowance amount per year
+values:
+  2020-06-01:
+    value: 12500
+metadata:
+  threshold_unit: currency-GBP
+  reference: none

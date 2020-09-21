@@ -22,9 +22,7 @@ class is_state_pension_age(Variable):
             >= parameters(period).benefits.state_pension.male_state_pension_age
         ) + (1 - person("is_male", period)) * (
             person("age", period)
-            >= parameters(
-                period
-            ).benefits.state_pension.female_state_pension_age
+            >= parameters(period).benefits.state_pension.female_state_pension_age
         )
 
 

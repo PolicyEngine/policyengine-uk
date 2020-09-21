@@ -47,8 +47,7 @@ class contributory_JSA(Variable):
         single_old = (age >= 25) * (np.logical_not(is_couple))
         personal_allowance = (
             single_young * parameters(period).benefits.JSA.contrib.amount_18_24
-            + single_old
-            * parameters(period).benefits.JSA.contrib.amount_over_25
+            + single_old * parameters(period).benefits.JSA.contrib.amount_over_25
             + is_couple * parameters(period).benefits.JSA.contrib.amount_couple
         )
         earnings_deduction = max_(
@@ -87,8 +86,7 @@ class income_JSA(Variable):
         personal_allowance = (
             family("is_single", period)
             * (
-                (younger_age < 25)
-                * parameters(period).benefits.JSA.income.amount_16_24
+                (younger_age < 25) * parameters(period).benefits.JSA.income.amount_16_24
                 + (younger_age >= 25)
                 * parameters(period).benefits.JSA.income.amount_over_25
             )
@@ -112,9 +110,9 @@ class income_JSA(Variable):
                 * parameters(period).benefits.JSA.income.amount_lone_over_18
             )
         )
-        means_tested_income = family(
-            "family_post_tax_income", period
-        ) + family("contributory_JSA", period)
+        means_tested_income = family("family_post_tax_income", period) + family(
+            "contributory_JSA", period
+        )
         income_deduction = max_(
             0,
             means_tested_income
@@ -158,44 +156,32 @@ class income_support(Variable):
             * (
                 (younger_age < 18)
                 * (older_age < 18)
-                * parameters(
-                    period
-                ).benefits.income_support.amount_couples_16_17
+                * parameters(period).benefits.income_support.amount_couples_16_17
                 + (younger_age >= 18)
                 * (older_age >= 18)
-                * parameters(
-                    period
-                ).benefits.income_support.amount_couples_over_18
+                * parameters(period).benefits.income_support.amount_couples_over_18
                 + (younger_age < 18)
                 * (younger_age >= 25)
-                * parameters(
-                    period
-                ).benefits.income_support.amount_couples_age_gap
+                * parameters(period).benefits.income_support.amount_couples_age_gap
             )
             + family("is_lone_parent", period)
             * (
                 (younger_age < 18)
                 * parameters(period).benefits.income_support.amount_lone_16_17
                 + (younger_age >= 18)
-                * parameters(
-                    period
-                ).benefits.income_support.amount_lone_over_18
+                * parameters(period).benefits.income_support.amount_lone_over_18
             )
         )
-        means_tested_income = family(
-            "family_post_tax_income", period
-        ) + family("contributory_JSA", period)
+        means_tested_income = family("family_post_tax_income", period) + family(
+            "contributory_JSA", period
+        )
         income_deduction = max_(
             0,
             means_tested_income
             - family("is_single", period)
-            * parameters(
-                period
-            ).benefits.income_support.income_disregard_single
+            * parameters(period).benefits.income_support.income_disregard_single
             + family("is_couple", period)
-            * parameters(
-                period
-            ).benefits.income_support.income_disregard_couple
+            * parameters(period).benefits.income_support.income_disregard_couple
             + family("is_lone_parent", period)
             * parameters(period).benefits.income_support.income_disregard_lone,
         )
@@ -249,19 +235,15 @@ class child_tax_credit_pre_means_test(Variable):
         num_exempt_children = family.sum(
             family.members("is_CTC_child_limit_exempt", period)
         )
-        non_exempt_children = (
-            family.nb_persons(Family.CHILD) - num_exempt_children
-        )
+        non_exempt_children = family.nb_persons(Family.CHILD) - num_exempt_children
         spaces_left = max_(0, 2 - num_exempt_children)
-        children_eligible = num_exempt_children + min_(
-            spaces_left, non_exempt_children
-        )
+        children_eligible = num_exempt_children + min_(spaces_left, non_exempt_children)
         yearly_amount = (
             parameters(period).benefits.child_tax_credit.family_element
             + parameters(period).benefits.child_tax_credit.child_element
             * children_eligible
         )
-        return yearly_amount
+        return yearly_amount * (children_eligible > 0)
 
 
 class child_working_tax_credit_reduction(Variable):
@@ -271,12 +253,8 @@ class child_working_tax_credit_reduction(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        child_tax_credit_amount = family(
-            "child_tax_credit_pre_means_test", period
-        )
-        working_tax_credit_amount = family(
-            "working_tax_credit_pre_means_test", period
-        )
+        child_tax_credit_amount = family("child_tax_credit_pre_means_test", period)
+        working_tax_credit_amount = family("working_tax_credit_pre_means_test", period)
         eligible_for_both = (child_tax_credit_amount > 0) * (
             working_tax_credit_amount > 0
         )
@@ -289,9 +267,7 @@ class child_working_tax_credit_reduction(Variable):
         )
         reduction = (
             max_(0, (family("family_total_income", period) * 52 - threshold))
-            * parameters(
-                period
-            ).benefits.child_tax_credit.income_reduction_rate
+            * parameters(period).benefits.child_tax_credit.income_reduction_rate
         )
         return reduction
 
@@ -328,8 +304,7 @@ class child_tax_credit(Variable):
         return (
             max_(
                 0,
-                family("child_tax_credit_pre_means_test", period)
-                + reduction_left,
+                family("child_tax_credit_pre_means_test", period) + reduction_left,
             )
             / 52
         )
@@ -338,18 +313,12 @@ class child_tax_credit(Variable):
 class child_working_tax_credit_combined(Variable):
     value_type = float
     entity = Family
-    label = (
-        u"Child and Working Tax Credit amount received per week, means tested"
-    )
+    label = u"Child and Working Tax Credit amount received per week, means tested"
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        child_tax_credit_amount = family(
-            "child_tax_credit_pre_means_test", period
-        )
-        working_tax_credit_amount = family(
-            "working_tax_credit_pre_means_test", period
-        )
+        child_tax_credit_amount = family("child_tax_credit_pre_means_test", period)
+        working_tax_credit_amount = family("working_tax_credit_pre_means_test", period)
         eligible_for_both = (child_tax_credit_amount > 0) * (
             working_tax_credit_amount > 0
         )
@@ -362,9 +331,7 @@ class child_working_tax_credit_combined(Variable):
         )
         reduction = (
             max_(0, (family("family_total_income", period) * 52 - threshold))
-            * parameters(
-                period
-            ).benefits.child_tax_credit.income_reduction_rate
+            * parameters(period).benefits.child_tax_credit.income_reduction_rate
         )
         means_tested_amount = max_(
             0,
@@ -401,9 +368,7 @@ class benefit_cap_reduction(Variable):
 class working_tax_credit_pre_means_test(Variable):
     value_type = float
     entity = Family
-    label = (
-        u"Working Tax Credit amount received per year, before means testing"
-    )
+    label = u"Working Tax Credit amount received per year, before means testing"
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
