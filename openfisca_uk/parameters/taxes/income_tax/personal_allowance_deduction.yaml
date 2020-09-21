@@ -2,7 +2,7 @@ description: Income tax on deducted personal allowance for high incomes per year
 brackets:
   - rate:
       2017-04-06:
-        value: 0.1
+        value: 0.5
     threshold:
       2017-04-06:
         value: 100000
