@@ -151,10 +151,11 @@ class NI(Variable):
             + self_employed_NI_higher
         )
 
+
 class personal_allowance(Variable):
     value_type = float
     entity = Person
-    label = u'Amount of personal allowance per year'
+    label = u"Amount of personal allowance per year"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -163,6 +164,7 @@ class personal_allowance(Variable):
             period
         ).taxes.income_tax.personal_allowance_deduction.calc(estimated_yearly_income)
         return parameters(period).taxes.income_tax.personal_allowance - pa_deduction
+
 
 class income_tax(Variable):
     value_type = float
@@ -174,7 +176,7 @@ class income_tax(Variable):
         estimated_yearly_income = (person("taxable_income", period)) * 52
         weekly_tax = (
             parameters(period).taxes.income_tax.income_tax.calc(
-                max_(estimated_yearly_income - person('personal_allowance', period), 0)
+                max_(estimated_yearly_income - person("personal_allowance", period), 0)
             )
         ) / 52
         return weekly_tax
