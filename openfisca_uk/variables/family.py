@@ -19,6 +19,13 @@ class family_weight(Variable):
 ## Family
 
 
+class rent(Variable):
+    value_type = float
+    entity = Family
+    label = u"Rental costs per week"
+    definition_period = ETERNITY
+
+
 class younger_adult_age(Variable):
     value_type = int
     entity = Family
@@ -194,15 +201,32 @@ class family_net_income(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
+        benefits = [
+            "child_tax_credit",
+            "working_tax_credit",
+            "child_benefit",
+            "income_support",
+            "housing_benefit_actual",
+            "contributory_JSA",
+            "income_JSA",
+            "DLA_SC_actual",
+            "DLA_M_actual",
+            "pension_credit_actual",
+            "BSP_actual",
+            "AFCS_actual",
+            "SDA_actual",
+            "AA_actual",
+            "carers_allowance_actual",
+            "IIDB_actual",
+            "ESA_actual",
+            "incapacity_benefit_actual",
+            "maternity_allowance_actual",
+            "guardians_allowance_actual",
+            "winter_fuel_payments_actual",
+        ]
         return (
             family("family_total_income", period)
-            + family("child_tax_credit", period)
-            + family("working_tax_credit", period)
-            + family("child_benefit", period)
-            + family("income_support", period)
-            + family("housing_benefit_actual", period)
-            + family("contributory_JSA", period)
-            + family("income_JSA", period)
+            + sum(map(lambda benefit: family(benefit, period), benefits))
             - family.sum(family.members("income_tax", period))
             - family.sum(family.members("NI", period))
             - family("benefit_cap_reduction", period)

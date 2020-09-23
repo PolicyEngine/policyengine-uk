@@ -9,8 +9,12 @@ def modify_parameters(parameters):
     file_path = os.path.join(
         dir_name, "parameters", "simulation_2", "new_income_tax.yaml"
     )
-    reform_parameters_subtree = load_parameter_file(file_path, name="new_income_tax")
-    parameters.taxes.income_tax.add_child("new_income_tax", reform_parameters_subtree)
+    reform_parameters_subtree = load_parameter_file(
+        file_path, name="new_income_tax"
+    )
+    parameters.taxes.income_tax.add_child(
+        "new_income_tax", reform_parameters_subtree
+    )
     return parameters
 
 
@@ -48,8 +52,12 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        adult_young = (person("age", period) >= 16) * (person("age", period) < 24)
-        adult_old = (person("age", period) >= 24) * (person("age", period) < 65)
+        adult_young = (person("age", period) >= 16) * (
+            person("age", period) < 24
+        )
+        adult_old = (person("age", period) >= 24) * (
+            person("age", period) < 65
+        )
         return (
             person("is_senior", period) * 50
             + adult_young * 55
@@ -89,15 +97,32 @@ class family_net_income(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
+        benefits = [
+            "child_tax_credit",
+            "working_tax_credit",
+            "child_benefit",
+            "income_support",
+            "housing_benefit_actual",
+            "contributory_JSA",
+            "income_JSA",
+            "DLA_SC_actual",
+            "DLA_M_actual",
+            "pension_credit_actual",
+            "BSP_actual",
+            "AFCS_actual",
+            "SDA_actual",
+            "AA_actual",
+            "carers_allowance_actual",
+            "IIDB_actual",
+            "ESA_actual",
+            "incapacity_benefit_actual",
+            "maternity_allowance_actual",
+            "guardians_allowance_actual",
+            "winter_fuel_payments_actual",
+        ]
         return (
             family("family_total_income", period)
-            + family("child_tax_credit", period)
-            + family("working_tax_credit", period)
-            + family("child_benefit", period)
-            + family("income_support", period)
-            + family("housing_benefit_actual", period)
-            + family("contributory_JSA", period)
-            + family("income_JSA", period)
+            + sum(map(lambda benefit: family(benefit, period), benefits))
             - family.sum(family.members("income_tax", period))
             - family.sum(family.members("NI", period))
             - family("benefit_cap_reduction", period)
