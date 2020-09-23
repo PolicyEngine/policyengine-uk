@@ -74,32 +74,9 @@ class family_net_income(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        benefits = [
-            "child_tax_credit",
-            "working_tax_credit",
-            "child_benefit",
-            "income_support",
-            "housing_benefit_actual",
-            "contributory_JSA",
-            "income_JSA",
-            "DLA_SC_actual",
-            "DLA_M_actual",
-            "pension_credit_actual",
-            "BSP_actual",
-            "AFCS_actual",
-            "SDA_actual",
-            "AA_actual",
-            "carers_allowance_actual",
-            "IIDB_actual",
-            "ESA_actual",
-            "incapacity_benefit_actual",
-            "maternity_allowance_actual",
-            "guardians_allowance_actual",
-            "winter_fuel_payments_actual",
-        ]
         return (
             family("family_total_income", period)
-            + sum(map(lambda benefit: family(benefit, period), benefits))
+            + family("total_benefit_value", period)
             - family.sum(family.members("income_tax", period))
             - family.sum(family.members("NI", period))
             - family("benefit_cap_reduction", period)
