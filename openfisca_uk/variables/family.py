@@ -19,6 +19,60 @@ class family_weight(Variable):
 ## Family
 
 
+class equivalised_income(Variable):
+    value_type = float
+    entity = Family
+    label = u"Equivalised income per week, accounting for family structure"
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        second_adult = family.nb_persons(Family.ADULT) == 2
+        num_young_children = family.sum(
+            family.members("is_young_child", period)
+        )
+        num_older_children = family.sum(
+            family.members("is_older_child", period)
+        )
+        weighting = (
+            0.67
+            + 0.33 * second_adult
+            + 0.33 * num_older_children
+            + 0.2 * num_young_children
+        )
+        return family("family_net_income", period) / weighting
+
+
+class in_absolute_poverty(Variable):
+    value_type = bool
+    entity = Family
+    label = u"Whether the family is in absolute poverty"
+    definition_period = ETERNITY
+    reference = ["https://www.ifs.org.uk/comms/comm118.pdf#page=7"]
+
+    def formula(family, period, parameters):
+        return family("equivalised_income", period) < 414
+
+
+class in_relative_poverty(Variable):
+    value_type = bool
+    entity = Family
+    label = u"Whether the family is in relative poverty"
+    definition_period = ETERNITY
+    reference = [
+        "https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/875261/households-below-average-income-1994-1995-2018-2019.pdf#page=3"
+    ]
+
+    def formula(family, period, parameters):
+        return family("equivalised_income", period) < 447
+
+
+class rent(Variable):
+    value_type = float
+    entity = Family
+    label = u"Rental costs per week"
+    definition_period = ETERNITY
+
+
 class younger_adult_age(Variable):
     value_type = int
     entity = Family
@@ -194,15 +248,32 @@ class family_net_income(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
+        benefits = [
+            "child_tax_credit",
+            "working_tax_credit",
+            "child_benefit",
+            "income_support",
+            "housing_benefit_actual",
+            "contributory_JSA",
+            "income_JSA",
+            "DLA_SC_actual",
+            "DLA_M_actual",
+            "pension_credit_actual",
+            "BSP_actual",
+            "AFCS_actual",
+            "SDA_actual",
+            "AA_actual",
+            "carers_allowance_actual",
+            "IIDB_actual",
+            "ESA_actual",
+            "incapacity_benefit_actual",
+            "maternity_allowance_actual",
+            "guardians_allowance_actual",
+            "winter_fuel_payments_actual",
+        ]
         return (
             family("family_total_income", period)
-            + family("child_tax_credit", period)
-            + family("working_tax_credit", period)
-            + family("child_benefit", period)
-            + family("income_support", period)
-            + family("housing_benefit_actual", period)
-            + family("contributory_JSA", period)
-            + family("income_JSA", period)
+            + sum(map(lambda benefit: family(benefit, period), benefits))
             - family.sum(family.members("income_tax", period))
             - family.sum(family.members("NI", period))
             - family("benefit_cap_reduction", period)

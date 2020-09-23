@@ -22,7 +22,9 @@ class is_state_pension_age(Variable):
             >= parameters(period).benefits.state_pension.male_state_pension_age
         ) + (1 - person("is_male", period)) * (
             person("age", period)
-            >= parameters(period).benefits.state_pension.female_state_pension_age
+            >= parameters(
+                period
+            ).benefits.state_pension.female_state_pension_age
         )
 
 
@@ -117,3 +119,23 @@ class age(Variable):
             + (band == 15) * 73
             + (band == 16) * 80
         )
+
+
+class is_young_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is under 14"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("age", period) < 14
+
+
+class is_older_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is over 14 but under 18"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return (person("age", period) >= 14) * (person("age", period) < 18)
