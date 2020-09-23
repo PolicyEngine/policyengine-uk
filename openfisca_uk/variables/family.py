@@ -41,29 +41,23 @@ class equivalised_income(Variable):
         )
         return family("family_net_income", period) / weighting
 
-
 class in_absolute_poverty(Variable):
     value_type = bool
     entity = Family
     label = u"Whether the family is in absolute poverty"
     definition_period = ETERNITY
-    reference = ["https://www.ifs.org.uk/comms/comm118.pdf#page=7"]
 
     def formula(family, period, parameters):
-        return family("equivalised_income", period) < 414
-
+        return family("equivalised_income", period) < parameters(period).poverty.absolute_poverty
 
 class in_relative_poverty(Variable):
     value_type = bool
     entity = Family
     label = u"Whether the family is in relative poverty"
     definition_period = ETERNITY
-    reference = [
-        "https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/875261/households-below-average-income-1994-1995-2018-2019.pdf#page=3"
-    ]
 
     def formula(family, period, parameters):
-        return family("equivalised_income", period) < 447
+        return family("equivalised_income", period) < parameters(period).poverty.relative_poverty
 
 
 class rent(Variable):
