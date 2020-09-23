@@ -241,10 +241,10 @@ class family_post_tax_income(Variable):
         )
 
 
-class family_net_income(Variable):
+class total_benefit_value(Variable):
     value_type = float
     entity = Family
-    label = u"Net income after taxes and benefits"
+    label = u"Total amount in benefits per week"
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
@@ -271,9 +271,20 @@ class family_net_income(Variable):
             "guardians_allowance_actual",
             "winter_fuel_payments_actual",
         ]
+        return sum(map(lambda benefit: family(benefit, period), benefits))
+
+
+class family_net_income(Variable):
+    value_type = float
+    entity = Family
+    label = u"Net income after taxes and benefits"
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+
         return (
             family("family_total_income", period)
-            + sum(map(lambda benefit: family(benefit, period), benefits))
+            + family("total_benefit_value", period)
             - family.sum(family.members("income_tax", period))
             - family.sum(family.members("NI", period))
             - family("benefit_cap_reduction", period)
