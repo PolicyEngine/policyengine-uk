@@ -248,7 +248,7 @@ class total_benefit_value(Variable):
     definition_period = ETERNITY
 
     def formula(family, period, parameters):
-        benefits = [
+        BENEFITS = [
             "child_tax_credit",
             "working_tax_credit",
             "child_benefit",
