@@ -18,6 +18,39 @@ class family_weight(Variable):
 
 ## Family
 
+class equivalised_income(Variable):
+    value_type = float
+    entity = Family
+    label = u'Equivalised income per week, accounting for family structure'
+    definition_period = ETERNITY
+
+    def formula(family, period, parameters):
+        second_adult = family.nb_persons(Family.ADULT) == 2
+        num_young_children = family.sum(family.members('is_young_child', period))
+        num_older_children = family.sum(family.members('is_older_child', period))
+        weighting = 0.67 + 0.33 * second_adult + 0.33 * num_older_children + 0.2 * num_young_children
+        return family('family_net_income', period) / weighting
+
+
+class in_absolute_poverty(Variable):
+    value_type = bool
+    entity = Family
+    label = u'Whether the family is in absolute poverty'
+    definition_period = ETERNITY
+    reference = ["https://www.ifs.org.uk/comms/comm118.pdf#page=7"]
+
+    def formula(family, period, parameters):
+        return family('equivalised_income', period) < 414
+
+class in_relative_poverty(Variable):
+    value_type = bool
+    entity = Family
+    label = u'Whether the family is in relative poverty'
+    definition_period = ETERNITY
+    reference = ["https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/875261/households-below-average-income-1994-1995-2018-2019.pdf#page=3"]
+
+    def formula(family, period, parameters):
+        return family('equivalised_income', period) < 447
 
 class rent(Variable):
     value_type = float
