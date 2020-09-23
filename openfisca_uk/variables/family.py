@@ -271,7 +271,7 @@ class total_benefit_value(Variable):
             "guardians_allowance_actual",
             "winter_fuel_payments_actual",
         ]
-        return sum(map(lambda benefit: family(benefit, period), benefits))
+        return sum(map(lambda benefit: family(benefit, period), BENEFITS))
 
 
 class family_net_income(Variable):
