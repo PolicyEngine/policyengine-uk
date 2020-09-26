@@ -2,16 +2,18 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class benunit_weight(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class benunit_equivalisation(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -29,6 +31,7 @@ class benunit_equivalisation(Variable):
             + 0.2 * num_young_children
         )
         return weighting
+
 
 class younger_adult_age(Variable):
     value_type = int
@@ -48,6 +51,7 @@ class older_adult_age(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.max(max_(benunit.members("age", period), 16))
+
 
 class is_lone_parent(Variable):
     value_type = bool

@@ -2,17 +2,20 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class is_male(Variable):
     value_type = bool
     entity = Person
     label = u"Whether the person is male (False if female)"
     definition_period = ETERNITY
 
+
 class is_head(Variable):
     value_type = bool
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class is_state_pension_age(Variable):
     value_type = bool
@@ -123,6 +126,7 @@ class age(Variable):
             + (band == 15) * 73
             + (band == 16) * 80
         )
+
 
 class is_young_child(Variable):
     value_type = bool

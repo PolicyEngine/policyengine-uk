@@ -2,16 +2,18 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class household_weight(Variable):
     value_type = float
     entity = Household
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class household_equivalisation(Variable):
     value_type = float
     entity = Household
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
@@ -30,28 +32,31 @@ class household_equivalisation(Variable):
         )
         return weighting
 
+
 class people_in_household(Variable):
     value_type = int
     entity = Household
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
         return household.nb_persons()
 
+
 class adults_in_household(Variable):
     value_type = int
     entity = Household
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
         return household.nb_persons(Household.ADULT)
 
+
 class children_in_household(Variable):
     value_type = int
     entity = Household
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):

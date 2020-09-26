@@ -2,6 +2,7 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class income_support(Variable):
     value_type = float
     entity = BenUnit
@@ -70,10 +71,11 @@ class income_support(Variable):
             * (benunit("income_support_reported", period) > 0),
         )
 
+
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -87,6 +89,7 @@ class child_benefit(Variable):
             * parameters(period).benefits.child_benefit.amount_additional
         )
         return eldest_amount + additional_amount
+
 
 class child_tax_credit_pre_means_test(Variable):
     value_type = float

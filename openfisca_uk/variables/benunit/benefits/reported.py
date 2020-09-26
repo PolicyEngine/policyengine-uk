@@ -2,47 +2,55 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class JSA_contributory_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class JSA_income_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class JSA_combined_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class child_tax_credit_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class working_tax_credit_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class income_support_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class child_benefit_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
+
 
 class DLA_SC_reported(Variable):
     value_type = float
@@ -162,8 +170,9 @@ class PIP_M_reported(Variable):
     label = u"Amount of Personal Independence Payment (Mobility)"
     definition_period = ETERNITY
 
+
 class housing_benefit_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
