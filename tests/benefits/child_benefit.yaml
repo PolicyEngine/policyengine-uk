@@ -5,8 +5,8 @@
     people:
       parent1: {}
       parent2: {}
-    families:
-      family:
+    benunits:
+      benunit:
         adults: ["parent1", "parent2"]
         children: []
   output:
@@ -20,8 +20,8 @@
       parent2: {}
       child1: {}
       child2: {}
-    families:
-      family:
+    benunits:
+      benunit:
         adults: ["parent1", "parent2"]
         children: ["child1", "child2"]
   output:
