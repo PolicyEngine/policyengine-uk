@@ -179,61 +179,6 @@ class misc_income(Variable):
     def formula(person, period, parameters):
         return person("INRINC", period)
 
-class untaxed_means_tested_bonus(Variable):
-    value_type = float
-    entity = Person
-    label = u'label'
-    definition_period = ETERNITY
-
-class non_means_tested_bonus(Variable):
-    value_type = float
-    entity = Person
-    label = u'label'
-    definition_period = ETERNITY
-
-
-class income(Variable):
-    value_type = float
-    entity = Person
-    label = u"label"
-    definition_period = ETERNITY
-
-    def formula(person, period, parameters):
-        COMPONENTS = [
-            "employee_earnings",
-            "self_employed_earnings",
-            "state_pension",
-            "private_pension",
-            "investment_income",
-            "untaxed_means_tested_bonus"
-        ]
-        return sum(
-            map(lambda component: person(component, period), COMPONENTS)
-        )
-
-
-class gross_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"label"
-    definition_period = ETERNITY
-
-    def formula(person, period, parameters):
-        COMPONENTS = [
-            "employee_earnings",
-            "self_employed_earnings",
-            "tax_credits",
-            "state_pension",
-            "private_pension",
-            "disability_benefits",
-            "non_disability_benefits",
-            "investment_income",
-            "misc_income",
-        ]
-        return sum(
-            map(lambda component: person(component, period), COMPONENTS)
-        )
-
 
 class pension_income(Variable):
     value_type = float
@@ -380,6 +325,63 @@ class income_tax_and_NI(Variable):
         return person("NI", period) + person("income_tax", period)
 
 
+class untaxed_means_tested_bonus(Variable):
+    value_type = float
+    entity = Person
+    label = u'label'
+    definition_period = ETERNITY
+
+class non_means_tested_bonus(Variable):
+    value_type = float
+    entity = Person
+    label = u'label'
+    definition_period = ETERNITY
+
+
+class income(Variable):
+    value_type = float
+    entity = Person
+    label = u"label"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        COMPONENTS = [
+            "employee_earnings",
+            "self_employed_earnings",
+            "state_pension",
+            "private_pension",
+            "investment_income",
+            "untaxed_means_tested_bonus"
+        ]
+        return sum(
+            map(lambda component: person(component, period), COMPONENTS)
+        )
+
+
+class gross_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"label"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        COMPONENTS = [
+            "employee_earnings",
+            "self_employed_earnings",
+            "tax_credits",
+            "state_pension",
+            "private_pension",
+            "disability_benefits",
+            "non_disability_benefits",
+            "investment_income",
+            "misc_income",
+            "untaxed_means_tested_bonus",
+            "non_means_tested_bonus"
+        ]
+        return sum(
+            map(lambda component: person(component, period), COMPONENTS)
+        )
+
 class net_income(Variable):
     value_type = float
     entity = Person
@@ -393,7 +395,6 @@ class net_income(Variable):
         return (
             person("gross_income", period)
             + benefit_modelling
-            + person("non_means_tested_bonus", period)
             - person("income_tax", period)
             - person("NI", period)
             - person("capital_gains_tax", period)

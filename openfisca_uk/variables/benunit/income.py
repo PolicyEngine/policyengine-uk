@@ -24,18 +24,6 @@ class benefit_modelling(Variable):
             )
         )
 
-class benunit_untaxed_means_tested_bonus(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u'label'
-    definition_period = ETERNITY
-
-class benunit_non_means_tested_bonus(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u'label'
-    definition_period = ETERNITY
-
 class benunit_income(Variable):
     value_type = float
     entity = BenUnit
@@ -43,7 +31,7 @@ class benunit_income(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("income", period)) + benunit("benunit_untaxed_means_tested_bonus", period)
+        return benunit.sum(benunit.members("income", period))
 
 
 class benunit_post_tax_income(Variable):
@@ -53,7 +41,7 @@ class benunit_post_tax_income(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("post_tax_income", period)) + benunit("benunit_untaxed_means_tested_bonus", period)
+        return benunit.sum(benunit.members("post_tax_income", period))
 
 
 class benunit_gross_income(Variable):
@@ -63,7 +51,7 @@ class benunit_gross_income(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("gross_income", period)) + benunit("benunit_untaxed_means_tested_bonus", period)
+        return benunit.sum(benunit.members("gross_income", period))
 
 
 class benunit_net_income(Variable):
@@ -73,7 +61,7 @@ class benunit_net_income(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("net_income", period)) + benunit("benunit_non_means_tested_bonus", period) + benunit("benunit_untaxed_means_tested_bonus", period)
+        return benunit.sum(benunit.members("net_income", period))
 
 
 class equiv_benunit_net_income(Variable):
