@@ -179,6 +179,18 @@ class misc_income(Variable):
     def formula(person, period, parameters):
         return person("INRINC", period)
 
+class untaxed_means_tested_bonus(Variable):
+    value_type = float
+    entity = Person
+    label = u'label'
+    definition_period = ETERNITY
+
+class non_means_tested_bonus(Variable):
+    value_type = float
+    entity = Person
+    label = u'label'
+    definition_period = ETERNITY
+
 
 class income(Variable):
     value_type = float
@@ -193,6 +205,7 @@ class income(Variable):
             "state_pension",
             "private_pension",
             "investment_income",
+            "untaxed_means_tested_bonus"
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
@@ -380,6 +393,7 @@ class net_income(Variable):
         return (
             person("gross_income", period)
             + benefit_modelling
+            + person("non_means_tested_bonus", period)
             - person("income_tax", period)
             - person("NI", period)
             - person("capital_gains_tax", period)
