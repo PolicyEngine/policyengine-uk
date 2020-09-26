@@ -25,7 +25,9 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        estimated_yearly_income = (person("income_tax_applicable_amount", period)) * 52
+        estimated_yearly_income = (
+            person("income_tax_applicable_amount", period)
+        ) * 52
         weekly_tax = (
             parameters(period).taxes.income_tax.new_income_tax.calc(
                 estimated_yearly_income
@@ -65,10 +67,11 @@ class basic_income(Variable):
             + person("is_child", period) * 22
         )
 
+
 class benunit_basic_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -78,16 +81,17 @@ class benunit_basic_income(Variable):
 class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return min_(25, person("basic_income", period))
 
+
 class untaxed_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):

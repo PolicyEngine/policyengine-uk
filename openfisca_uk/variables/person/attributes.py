@@ -112,7 +112,7 @@ class age(Variable):
     def formula(person, period, parameters):
         band = person("age_band", period)
         AGES = [0, 5, 10, 16, 23, 27, 33, 37, 43, 47, 53, 57, 63, 67, 73, 80]
-        return sum(map(lambda i : (band == i) * AGES[i - 1], range(1, 17)))
+        return sum(map(lambda i: (band == i) * AGES[i - 1], range(1, 17)))
 
 
 class is_young_child(Variable):

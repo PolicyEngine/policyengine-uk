@@ -24,6 +24,7 @@ class benefit_modelling(Variable):
             )
         )
 
+
 class benunit_income(Variable):
     value_type = float
     entity = BenUnit

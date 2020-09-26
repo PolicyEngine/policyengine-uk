@@ -51,28 +51,31 @@ class basic_income(Variable):
             + person("is_child", period) * 105
         )
 
+
 class benunit_basic_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("basic_income", period))
 
+
 class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return min_(25, person("basic_income", period))
 
+
 class untaxed_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -85,7 +88,7 @@ class reform_2(Reform):
             income_tax,
             NI,
             untaxed_means_tested_bonus,
-            non_means_tested_bonus
+            non_means_tested_bonus,
         ]:
             self.update_variable(changed_var)
         for added_var in [basic_income, benunit_basic_income]:
