@@ -1,4 +1,4 @@
-description: Relative poverty threshold for equivalised household net income after housing costs.
+description: Relative poverty threshold for equivalised household net income.
 values:
   2020-06-01:
     value: 248.40
