@@ -1,7 +1,0 @@
-description: Relative poverty threshold for equivalised household net income after housing costs.
-values:
-  2020-06-01:
-    value: 339.24
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/875261/households-below-average-income-1994-1995-2018-2019.pdf#page=3
