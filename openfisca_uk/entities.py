@@ -24,9 +24,9 @@ Household = build_entity(
     ],
 )
 
-Family = build_entity(
-    key="family",
-    plural="families",
+BenUnit = build_entity(
+    key="benunit",
+    plural="benunits",
     label=u"A benefit unit, comprising of exactly one or two adults, plus any dependent children",
     doc=u"A family is also known as a benefit unit, and contains parents and dependent children.",
     roles=[
@@ -53,4 +53,4 @@ Person = build_entity(
     is_person=True,
 )
 
-entities = [Household, Family, Person]
+entities = [Household, BenUnit, Person]
