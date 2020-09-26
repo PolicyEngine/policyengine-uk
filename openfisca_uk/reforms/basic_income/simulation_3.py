@@ -9,7 +9,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.45 * person("taxable_income", period)
+        return 0.45 * person("income_tax_applicable_amount", period)
 
 
 class NI(Variable):
@@ -20,7 +20,7 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * person("taxable_income", period)
+        return 0.12 * person("income_tax_applicable_amount", period)
 
 
 class basic_income(Variable):
@@ -32,55 +32,23 @@ class basic_income(Variable):
     def formula(person, period, parameters):
         return 148
 
-
-class family_basic_income(Variable):
+class benunit_basic_income(Variable):
     value_type = float
-    entity = Family
-    label = u"Amount of total basic income per week across the family"
+    entity = BenUnit
+    label = u'label'
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-        return family.sum(family.members("basic_income", period))
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("basic_income", period))
 
-
-class pension_income(Variable):
+class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u"Total pension income per week"
+    label = u'label'
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("private_pension_actual", period)
-
-
-class family_total_income(Variable):
-    value_type = float
-    entity = Family
-    label = u"Amount of total income per week across the family"
-    definition_period = ETERNITY
-
-    def formula(family, period, parameters):
-        return (
-            family("family_earnings", period)
-            + family("family_pension_income", period)
-            + family("family_basic_income", period)
-        )
-
-
-class family_net_income(Variable):
-    value_type = float
-    entity = Family
-    label = u"Net income after taxes and benefits"
-    definition_period = ETERNITY
-
-    def formula(family, period, parameters):
-        return (
-            family("family_total_income", period)
-            + family("total_benefit_value", period)
-            - family.sum(family.members("income_tax", period))
-            - family.sum(family.members("NI", period))
-            - family("benefit_cap_reduction", period)
-        )
+        return person("basic_income", period)
 
 
 class simulation_3(Reform):
@@ -88,19 +56,16 @@ class simulation_3(Reform):
         for changed_var in [
             income_tax,
             NI,
-            family_net_income,
-            family_total_income,
-            pension_income,
+            non_means_tested_bonus
         ]:
             self.update_variable(changed_var)
-        for added_var in [basic_income, family_basic_income]:
+        for added_var in [basic_income, benunit_basic_income]:
             self.add_variable(added_var)
         for removed_var in [
             "child_benefit",
-            "housing_benefit_actual",
-            "income_JSA",
             "income_support",
             "child_tax_credit",
             "working_tax_credit",
+            "state_pension"
         ]:
             self.neutralize_variable(removed_var)

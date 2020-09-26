@@ -9,7 +9,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.45 * person("taxable_income", period)
+        return 0.45 * person("income_tax_applicable_amount", period)
 
 
 class NI(Variable):
@@ -20,7 +20,7 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * person("taxable_income", period)
+        return 0.12 * person("income_tax_applicable_amount", period)
 
 
 class basic_income(Variable):
@@ -32,36 +32,28 @@ class basic_income(Variable):
     def formula(person, period, parameters):
         return person("is_adult", period) * 190
 
-
-class family_basic_income(Variable):
+class benunit_basic_income(Variable):
     value_type = float
-    entity = Family
-    label = u"Amount of total basic income per week across the family"
+    entity = BenUnit
+    label = u'label'
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-        return family.sum(family.members("basic_income", period))
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("basic_income", period))
 
-
-class family_net_income(Variable):
+class benunit_untaxed_means_tested_bonus(Variable):
     value_type = float
-    entity = Family
-    label = u"Net income after taxes and benefits"
+    entity = BenUnit
+    label = u'label'
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-        return (
-            family("family_total_income", period)
-            + family("total_benefit_value", period)
-            - family.sum(family.members("income_tax", period))
-            - family.sum(family.members("NI", period))
-            - family("benefit_cap_reduction", period)
-        )
+    def formula(person, period, parameters):
+        return person("benunit_basic_income", period)
 
 
 class simulation_4(Reform):
     def apply(self):
-        for changed_var in [income_tax, NI, family_net_income]:
+        for changed_var in [income_tax, NI, benunit_basic_income, benunit_untaxed_means_tested_bonus]:
             self.update_variable(changed_var)
-        for added_var in [basic_income, family_basic_income]:
+        for added_var in [basic_income]:
             self.add_variable(added_var)
