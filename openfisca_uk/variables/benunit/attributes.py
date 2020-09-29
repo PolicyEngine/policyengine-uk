@@ -85,3 +85,12 @@ class is_single(Variable):
         return (benunit.nb_persons(BenUnit.ADULT) == 1) * (
             benunit.nb_persons(BenUnit.CHILD) == 0
         )
+
+class looking_for_work(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether looking for work"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit("JSA_contributory_reported", period) + benunit("JSA_income_reported", period) + benunit("JSA_combined_reported", period) > 0
