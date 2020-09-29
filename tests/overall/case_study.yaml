@@ -19,8 +19,8 @@
         age: 8
       child4:
         age: 2
-    families:
-      family:
+    benunits:
+      benunit:
         adults: ["parent1", "parent2"]
         children: ["child1", "child2", "child3", "child4"]
   output:
@@ -48,8 +48,8 @@
         age: 8
       child4:
         age: 2
-    families:
-      family:
+    benunits:
+      benunit:
         adults: ["parent1", "parent2"]
         children: ["child1", "child2", "child3", "child4"]
   output:

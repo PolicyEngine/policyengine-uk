@@ -7,7 +7,7 @@ dir_name = os.path.dirname(__file__)
 
 def modify_parameters(parameters):
     file_path = os.path.join(
-        dir_name, "parameters", "simulation_2", "new_income_tax.yaml"
+        dir_name, "parameters", "reform_1", "new_income_tax.yaml"
     )
     reform_parameters_subtree = load_parameter_file(
         file_path, name="new_income_tax"
@@ -25,7 +25,9 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        estimated_yearly_income = (person("taxable_income", period)) * 52
+        estimated_yearly_income = (
+            person("income_tax_applicable_amount", period)
+        ) * 52
         weekly_tax = (
             parameters(period).taxes.income_tax.new_income_tax.calc(
                 estimated_yearly_income
@@ -42,7 +44,10 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * person("taxable_income", period)
+        return 0.12 * (
+            person("employee_earnings", period)
+            + person("self_employed_earnings", period)
+        )
 
 
 class basic_income(Variable):
@@ -59,63 +64,52 @@ class basic_income(Variable):
             person("age", period) < 65
         )
         return (
-            person("is_senior", period) * 50
-            + adult_young * 55
-            + adult_old * 65
-            + person("is_child", period) * 22
+            person("is_senior", period) * 40
+            + adult_young * 45
+            + adult_old * 55
+            + person("is_child", period) * 20
         )
 
 
-class family_basic_income(Variable):
+class benunit_basic_income(Variable):
     value_type = float
-    entity = Family
-    label = u"Amount of total basic income per week across the family"
+    entity = BenUnit
+    label = u"Amount of basic income per week for the benefit unit"
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-        return family.sum(family.members("basic_income", period))
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("basic_income", period))
 
 
-class family_total_income(Variable):
+class non_means_tested_bonus(Variable):
     value_type = float
-    entity = Family
-    label = u"Amount of total income per week across the family"
+    entity = Person
+    label = u"Amount of the basic income which is not subject to means tests"
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-        return (
-            family("family_earnings", period)
-            + family("family_pension_income", period)
-            + family("family_basic_income", period)
-        )
+    def formula(person, period, parameters):
+        return min_(25, person("basic_income", period))
 
 
-class family_net_income(Variable):
+class untaxed_means_tested_bonus(Variable):
     value_type = float
-    entity = Family
-    label = u"Net income after taxes and benefits"
+    entity = Person
+    label = u"Amount of the basic income which is subject to means tests"
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-
-        return (
-            family("family_total_income", period)
-            + family("total_benefit_value", period)
-            - family.sum(family.members("income_tax", period))
-            - family.sum(family.members("NI", period))
-            - family("benefit_cap_reduction", period)
-        )
+    def formula(person, period, parameters):
+        return max_(0, person("basic_income", period) - 25)
 
 
-class simulation_2(Reform):
+class reform_1(Reform):
     def apply(self):
         self.modify_parameters(modify_parameters)
         for changed_var in [
             income_tax,
             NI,
-            family_net_income,
-            family_total_income,
+            untaxed_means_tested_bonus,
+            non_means_tested_bonus,
         ]:
             self.update_variable(changed_var)
-        for added_var in [basic_income, family_basic_income]:
+        for added_var in [basic_income, benunit_basic_income]:
             self.add_variable(added_var)

@@ -9,7 +9,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.45 * person("taxable_income", period)
+        return 0.45 * person("income_tax_applicable_amount", period)
 
 
 class NI(Variable):
@@ -20,7 +20,10 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * person("taxable_income", period)
+        return 0.12 * (
+            person("employee_earnings", period)
+            + person("self_employed_earnings", period)
+        )
 
 
 class basic_income(Variable):
@@ -43,79 +46,55 @@ class basic_income(Variable):
             "is_adult", period
         )
         return (
-            person("is_senior", period) * 290
-            + adult_young * 70
+            person("is_senior", period) * 250
+            + adult_young * 80
             + adult_old * 105
             + disabled_adult * 60
-            + disabled_child * 105
+            + disabled_child * 100
             + person("is_child", period) * 105
         )
 
 
-class family_basic_income(Variable):
+class benunit_basic_income(Variable):
     value_type = float
-    entity = Family
-    label = u"Amount of total basic income per week across the family"
+    entity = BenUnit
+    label = u"Amount of basic income per week for the benefit unit"
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-        return family.sum(family.members("basic_income", period))
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("basic_income", period))
 
 
-class pension_income(Variable):
+class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u"Total pension income per week"
+    label = u"Amount of the basic income which is not subject to means tests"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("private_pension_actual", period)
+        return min_(25, person("basic_income", period))
 
 
-class family_total_income(Variable):
+class untaxed_means_tested_bonus(Variable):
     value_type = float
-    entity = Family
-    label = u"Amount of total income per week across the family"
+    entity = Person
+    label = u"Amount of the basic income which is subject to means tests"
     definition_period = ETERNITY
 
-    def formula(family, period, parameters):
-        return (
-            family("family_earnings", period)
-            + family("family_pension_income", period)
-            + family("family_basic_income", period)
-            - 25
-        )
+    def formula(person, period, parameters):
+        return max_(0, person("basic_income", period) - 25)
 
 
-class family_net_income(Variable):
-    value_type = float
-    entity = Family
-    label = u"Net income after taxes and benefits"
-    definition_period = ETERNITY
-
-    def formula(family, period, parameters):
-
-        return (
-            family("family_total_income", period)
-            + family("total_benefit_value", period)
-            + 25
-            - family.sum(family.members("income_tax", period))
-            - family.sum(family.members("NI", period))
-            - family("benefit_cap_reduction", period)
-        )
-
-
-class simulation_1(Reform):
+class reform_2(Reform):
     def apply(self):
         for changed_var in [
             income_tax,
             NI,
-            family_net_income,
-            family_total_income,
-            pension_income,
+            untaxed_means_tested_bonus,
+            non_means_tested_bonus,
         ]:
             self.update_variable(changed_var)
-        for added_var in [basic_income, family_basic_income]:
+        for added_var in [basic_income, benunit_basic_income]:
             self.add_variable(added_var)
-        for removed_var in ["child_benefit"]:
+        for removed_var in ["child_benefit", "state_pension"]:
             self.neutralize_variable(removed_var)
