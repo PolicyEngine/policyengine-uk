@@ -6,8 +6,9 @@ import numpy as np
 class HHINC(Variable):
     value_type = float
     entity = Household
-    label = u'Gross household income FRS variable'
+    label = u"Gross household income FRS variable"
     definition_period = ETERNITY
+
 
 class council_tax(Variable):
     value_type = float
@@ -22,10 +23,11 @@ class housing_cost(Variable):
     label = u"Housing costs per week"
     definition_period = ETERNITY
 
+
 class household_gross_income(Variable):
     value_type = float
     entity = Household
-    label = u'Gross household income per week'
+    label = u"Gross household income per week"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):

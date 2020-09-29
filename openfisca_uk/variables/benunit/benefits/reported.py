@@ -6,7 +6,7 @@ import numpy as np
 class state_pension_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Reported amount of State Pension receipt'
+    label = u"Reported amount of State Pension receipt"
     definition_period = ETERNITY
 
 
@@ -62,7 +62,9 @@ class child_benefit_reported(Variable):
 class DLA_SC_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Reported amount of Disability Living Allowance (self-care) per week"
+    label = (
+        u"Reported amount of Disability Living Allowance (self-care) per week"
+    )
     definition_period = ETERNITY
 
 
@@ -118,7 +120,9 @@ class carers_allowance_reported(Variable):
 class IIDB_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Reported amount of Industrial Injury Disablement Benefit per week"
+    label = (
+        u"Reported amount of Industrial Injury Disablement Benefit per week"
+    )
     definition_period = ETERNITY
 
 

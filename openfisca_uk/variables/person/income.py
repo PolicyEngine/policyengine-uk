@@ -2,29 +2,34 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class SSPADJ(Variable):
     value_type = float
     entity = Person
-    label = u'Statutory Sick Pay FRS variable'
+    label = u"Statutory Sick Pay FRS variable"
     definition_period = ETERNITY
+
 
 class SHPPADJ(Variable):
     value_type = float
     entity = Person
-    label = u'Shared Parental Pay FRS variable'
+    label = u"Shared Parental Pay FRS variable"
     definition_period = ETERNITY
+
 
 class SMPADJ(Variable):
     value_type = float
     entity = Person
-    label = u'Statutory Maternity Pay FRS variable'
+    label = u"Statutory Maternity Pay FRS variable"
     definition_period = ETERNITY
+
 
 class SPPADJ(Variable):
     value_type = float
     entity = Person
-    label = u'Statutory Paternity Pay FRS variable'
+    label = u"Statutory Paternity Pay FRS variable"
     definition_period = ETERNITY
+
 
 class INEARNS(Variable):
     value_type = float
@@ -140,7 +145,13 @@ class employee_earnings(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("INEARNS", period) + person("SSPADJ", period) + person("SPPADJ", period) + person("SMPADJ", period) + person("SHPPADJ", period)
+        return (
+            person("INEARNS", period)
+            + person("SSPADJ", period)
+            + person("SPPADJ", period)
+            + person("SMPADJ", period)
+            + person("SHPPADJ", period)
+        )
 
 
 class self_employed_earnings(Variable):
@@ -228,16 +239,20 @@ class income_tax_applicable_amount(Variable):
             "ESA_reported",
             "incapacity_benefit_reported",
             "JSA_contributory_reported",
-            "maternity_allowance_reported"
+            "maternity_allowance_reported",
         ]
-        taxed_benefit_sum = sum(map(lambda benefit : person.benunit(benefit, period), taxed_benefits))
+        taxed_benefit_sum = sum(
+            map(
+                lambda benefit: person.benunit(benefit, period), taxed_benefits
+            )
+        )
         return max_(
             person("employee_earnings", period)
             + person("self_employed_earnings", period)
             + 0.75 * person("state_pension", period)
             + 0.75 * person("private_pension", period)
             + person("is_head", period) * taxed_benefit_sum,
-            0
+            0,
         )
 
 
@@ -299,10 +314,8 @@ class NI(Variable):
             )
             / 52
         )
-        return (
-            (1 - person("is_state_pension_age", period)) * (employee_NI
-            + self_employed_NI_basic
-            + self_employed_NI_higher)
+        return (1 - person("is_state_pension_age", period)) * (
+            employee_NI + self_employed_NI_basic + self_employed_NI_higher
         )
 
 
@@ -321,10 +334,11 @@ class personal_allowance(Variable):
         ).taxes.income_tax.personal_allowance_deduction.calc(
             estimated_yearly_income
         )
-        return (max_(0,
+        return max_(
+            0,
             parameters(period).taxes.income_tax.personal_allowance
-            - pa_deduction
-        ))
+            - pa_deduction,
+        )
 
 
 class income_tax(Variable):
@@ -372,14 +386,20 @@ class non_means_tested_bonus(Variable):
     label = u"Variable for a future untaxed, non-means-tested benefit"
     definition_period = ETERNITY
 
+
 class child_benefit_reduction(Variable):
     value_type = float
     entity = Person
-    label = u'High income tax charge on the Child Benefit'
+    label = u"High income tax charge on the Child Benefit"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("is_head", period) * person.benunit("child_benefit", period) * 1e-4 * max_(0, person("income_tax_applicable_amount", period) - 961)
+        return (
+            person("is_head", period)
+            * person.benunit("child_benefit", period)
+            * 1e-4
+            * max_(0, person("income_tax_applicable_amount", period) - 961)
+        )
 
 
 class income(Variable):
@@ -425,6 +445,7 @@ class gross_income(Variable):
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
         )
+
 
 class net_income(Variable):
     value_type = float
