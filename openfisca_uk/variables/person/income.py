@@ -163,14 +163,18 @@ class self_employed_earnings(Variable):
     def formula(person, period, parameters):
         return person("SEINCAM2", period)
 
+
 class earnings(Variable):
     value_type = float
     entity = Person
-    label = u'Total earnings per week'
+    label = u"Total earnings per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("employee_earnings", period) + person("self_employed_earnings", period)
+        return person("employee_earnings", period) + person(
+            "self_employed_earnings", period
+        )
+
 
 class tax_credits(Variable):
     value_type = float

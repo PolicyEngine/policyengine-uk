@@ -16,7 +16,7 @@ class benefit_modelling(Variable):
             "working_tax_credit",
             "income_support",
             "JSA_contributory",
-            "JSA_income"
+            "JSA_income",
         ]
         return sum(
             map(
@@ -36,19 +36,21 @@ class benunit_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("income", period))
 
+
 class benunit_pension_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Pension income of the benefit unit'
+    label = "Pension income of the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("pension_income", period))
 
+
 class benunit_earnings(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Earnings of the benefit unit'
+    label = "Earnings of the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
