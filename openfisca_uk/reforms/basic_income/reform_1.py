@@ -7,7 +7,7 @@ dir_name = os.path.dirname(__file__)
 
 def modify_parameters(parameters):
     file_path = os.path.join(
-        dir_name, "parameters", "simulation_2", "new_income_tax.yaml"
+        dir_name, "parameters", "reform_1", "new_income_tax.yaml"
     )
     reform_parameters_subtree = load_parameter_file(
         file_path, name="new_income_tax"
@@ -44,7 +44,7 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * person("income_tax_applicable_amount", period)
+        return 0.12 * (person("employee_earnings", period) + person("self_employed_earnings", period))
 
 
 class basic_income(Variable):
@@ -61,17 +61,17 @@ class basic_income(Variable):
             person("age", period) < 65
         )
         return (
-            person("is_senior", period) * 50
-            + adult_young * 55
-            + adult_old * 65
-            + person("is_child", period) * 22
+            person("is_senior", period) * 40
+            + adult_young * 45
+            + adult_old * 55
+            + person("is_child", period) * 20
         )
 
 
 class benunit_basic_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"label"
+    label = u"Amount of basic income per week for the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -81,7 +81,7 @@ class benunit_basic_income(Variable):
 class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Amount of the basic income which is not subject to means tests"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -91,7 +91,7 @@ class non_means_tested_bonus(Variable):
 class untaxed_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Amount of the basic income which is subject to means tests"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):

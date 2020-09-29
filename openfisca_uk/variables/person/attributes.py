@@ -6,14 +6,14 @@ import numpy as np
 class is_male(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is male (False if female)"
+    label = u"Whether the person is male"
     definition_period = ETERNITY
 
 
 class is_head(Variable):
     value_type = bool
     entity = Person
-    label = u"label"
+    label = u"Whether the person is the head of the benefit unit"
     definition_period = ETERNITY
 
 
@@ -24,15 +24,7 @@ class is_state_pension_age(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("is_male", period) * (
-            person("age", period)
-            >= parameters(period).benefits.state_pension.male_state_pension_age
-        ) + (1 - person("is_male", period)) * (
-            person("age", period)
-            >= parameters(
-                period
-            ).benefits.state_pension.female_state_pension_age
-        )
+        return person("INRPINC", period) > 0
 
 
 class disabled(Variable):

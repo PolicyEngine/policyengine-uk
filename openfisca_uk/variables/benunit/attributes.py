@@ -6,14 +6,14 @@ import numpy as np
 class benunit_weight(Variable):
     value_type = float
     entity = BenUnit
-    label = u"label"
+    label = u"Weighting of the benefit unit"
     definition_period = ETERNITY
 
 
 class benunit_equivalisation(Variable):
     value_type = float
     entity = BenUnit
-    label = u"label"
+    label = u"Equivalisation factor to account for household composition"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):

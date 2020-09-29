@@ -20,7 +20,7 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * person("income_tax_applicable_amount", period)
+        return 0.12 * (person("employee_earnings", period) + person("self_employed_earnings", period))
 
 
 class basic_income(Variable):
@@ -30,13 +30,13 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 148
+        return 150
 
 
 class benunit_basic_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"label"
+    label = u"Amount of basic income per week for the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -46,7 +46,7 @@ class benunit_basic_income(Variable):
 class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Amount of the basic income which is not subject to means tests"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):

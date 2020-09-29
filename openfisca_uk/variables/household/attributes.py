@@ -6,14 +6,14 @@ import numpy as np
 class household_weight(Variable):
     value_type = float
     entity = Household
-    label = u"label"
+    label = u"Weighting of the household"
     definition_period = ETERNITY
 
 
 class household_equivalisation(Variable):
     value_type = float
     entity = Household
-    label = u"label"
+    label = u"Equivalisation factor to account for household composition"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
@@ -36,7 +36,7 @@ class household_equivalisation(Variable):
 class people_in_household(Variable):
     value_type = int
     entity = Household
-    label = u"label"
+    label = u"Number of people in the household"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
@@ -46,7 +46,7 @@ class people_in_household(Variable):
 class adults_in_household(Variable):
     value_type = int
     entity = Household
-    label = u"label"
+    label = u"Number of adults in the household"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
@@ -56,7 +56,7 @@ class adults_in_household(Variable):
 class children_in_household(Variable):
     value_type = int
     entity = Household
-    label = u"label"
+    label = u"Number of children in the household"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):

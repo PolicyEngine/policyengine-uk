@@ -2,74 +2,97 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+class SSPADJ(Variable):
+    value_type = float
+    entity = Person
+    label = u'Statutory Sick Pay FRS variable'
+    definition_period = ETERNITY
+
+class SHPPADJ(Variable):
+    value_type = float
+    entity = Person
+    label = u'Shared Parental Pay FRS variable'
+    definition_period = ETERNITY
+
+class SMPADJ(Variable):
+    value_type = float
+    entity = Person
+    label = u'Statutory Maternity Pay FRS variable'
+    definition_period = ETERNITY
+
+class SPPADJ(Variable):
+    value_type = float
+    entity = Person
+    label = u'Statutory Paternity Pay FRS variable'
+    definition_period = ETERNITY
 
 class INEARNS(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Employee earnings FRS variable"
     definition_period = ETERNITY
 
 
 class SEINCAM2(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Self-employed earnings FRS variable"
     definition_period = ETERNITY
 
 
 class ININV(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Investment income FRS variable"
     definition_period = ETERNITY
 
 
 class INTXCRED(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Tax credits FRS variable"
     definition_period = ETERNITY
 
 
 class INDISBEN(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Disability benefits FRS variable"
     definition_period = ETERNITY
 
 
 class INOTHBEN(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Other benefits FRS variable"
     definition_period = ETERNITY
 
 
 class INRPINC(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Retirement (State) Pension FRS variable"
     definition_period = ETERNITY
 
 
 class INPENINC(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Private pension FRS variable"
     definition_period = ETERNITY
 
 
-class INRINC(Variable):
+class NINRINC(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Net remaining income FRS variable (Property Tax deducted)"
     definition_period = ETERNITY
 
 
 class INDUC(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Universal Credit FRS variable"
     definition_period = ETERNITY
 
 
@@ -79,14 +102,14 @@ class INDUC(Variable):
 class INDINC(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Gross income FRS variable"
     definition_period = ETERNITY
 
 
 class NINDINC(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Net income FRS variable"
     definition_period = ETERNITY
 
 
@@ -103,7 +126,7 @@ class private_pension(Variable):
 class state_pension(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"State pension income per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -117,7 +140,7 @@ class employee_earnings(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("INEARNS", period)
+        return person("INEARNS", period) + person("SSPADJ", period) + person("SPPADJ", period) + person("SMPADJ", period) + person("SHPPADJ", period)
 
 
 class self_employed_earnings(Variable):
@@ -133,7 +156,7 @@ class self_employed_earnings(Variable):
 class tax_credits(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Tax credits received per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -153,7 +176,7 @@ class investment_income(Variable):
 class disability_benefits(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Disability benefits received per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -163,7 +186,7 @@ class disability_benefits(Variable):
 class non_disability_benefits(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Non-disability benefits received per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -173,17 +196,17 @@ class non_disability_benefits(Variable):
 class misc_income(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Remaining income per week (odd jobs, FSM, etc.)"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("INRINC", period)
+        return person("NINRINC", period)
 
 
 class pension_income(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Total pension income per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -199,11 +222,22 @@ class income_tax_applicable_amount(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
+        taxed_benefits = [
+            "BSP_reported",
+            "carers_allowance_reported",
+            "ESA_reported",
+            "incapacity_benefit_reported",
+            "JSA_contributory_reported",
+            "maternity_allowance_reported"
+        ]
+        taxed_benefit_sum = sum(map(lambda benefit : person.benunit(benefit, period), taxed_benefits))
         return max_(
             person("employee_earnings", period)
             + person("self_employed_earnings", period)
-            + 0.75 * person("pension_income", period),
-            0,
+            + 0.75 * person("state_pension", period)
+            + 0.75 * person("private_pension", period)
+            + person("is_head", period) * taxed_benefit_sum,
+            0
         )
 
 
@@ -266,9 +300,9 @@ class NI(Variable):
             / 52
         )
         return (
-            (1 - person("is_state_pension_age", period)) * employee_NI
+            (1 - person("is_state_pension_age", period)) * (employee_NI
             + self_employed_NI_basic
-            + self_employed_NI_higher
+            + self_employed_NI_higher)
         )
 
 
@@ -287,10 +321,10 @@ class personal_allowance(Variable):
         ).taxes.income_tax.personal_allowance_deduction.calc(
             estimated_yearly_income
         )
-        return (
+        return (max_(0,
             parameters(period).taxes.income_tax.personal_allowance
             - pa_deduction
-        )
+        ))
 
 
 class income_tax(Variable):
@@ -312,7 +346,7 @@ class income_tax(Variable):
                 )
             )
         ) / 52
-        return weekly_tax
+        return weekly_tax + person("child_benefit_reduction", period)
 
 
 class income_tax_and_NI(Variable):
@@ -328,15 +362,24 @@ class income_tax_and_NI(Variable):
 class untaxed_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Variable for a future untaxed, but means-tested benefit"
     definition_period = ETERNITY
 
 
 class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Variable for a future untaxed, non-means-tested benefit"
     definition_period = ETERNITY
+
+class child_benefit_reduction(Variable):
+    value_type = float
+    entity = Person
+    label = u'High income tax charge on the Child Benefit'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("is_head", period) * person.benunit("child_benefit", period) * 1e-4 * max_(0, person("income_tax_applicable_amount", period) - 961)
 
 
 class income(Variable):
@@ -383,7 +426,6 @@ class gross_income(Variable):
             map(lambda component: person(component, period), COMPONENTS)
         )
 
-
 class net_income(Variable):
     value_type = float
     entity = Person
@@ -406,7 +448,7 @@ class net_income(Variable):
 class post_tax_income(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Post-tax income per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):

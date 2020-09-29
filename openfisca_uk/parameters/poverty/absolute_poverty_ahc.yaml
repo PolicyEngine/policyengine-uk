@@ -1,0 +1,7 @@
+description: Absolute poverty threshold for equivalised household net income, after housing costs.
+values:
+  2020-06-01:
+    value: 270
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.ifs.org.uk/comms/comm118.pdf#page=7

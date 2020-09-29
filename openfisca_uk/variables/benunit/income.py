@@ -6,7 +6,7 @@ import numpy as np
 class benefit_modelling(Variable):
     value_type = float
     entity = BenUnit
-    label = "label"
+    label = "Difference between reported benefits and simulated benefits"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -28,7 +28,7 @@ class benefit_modelling(Variable):
 class benunit_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "label"
+    label = "Earned income of the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -38,7 +38,7 @@ class benunit_income(Variable):
 class benunit_post_tax_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "label"
+    label = "Post-tax income of the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -48,7 +48,7 @@ class benunit_post_tax_income(Variable):
 class benunit_gross_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "label"
+    label = "Gross income of the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -58,7 +58,7 @@ class benunit_gross_income(Variable):
 class benunit_net_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "label"
+    label = "Net income of the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -68,7 +68,7 @@ class benunit_net_income(Variable):
 class equiv_benunit_net_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "label"
+    label = "Equivalised net income of the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
