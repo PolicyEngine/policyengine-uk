@@ -116,18 +116,6 @@ class earnings(Variable):
         )
 
 
-class pension_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Total pension income per week"
-    definition_period = ETERNITY
-
-    def formula(person, period, parameters):
-        return person("state_pension_reported", period) + person(
-            "pension_income", period
-        )
-
-
 class state_pension(Variable):
     value_type = float
     entity = Person
