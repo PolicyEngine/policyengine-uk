@@ -47,7 +47,7 @@ class NI(Variable):
         return 0.12 * (
             person("employee_earnings", period)
             + person("self_employed_earnings", period)
-        )
+        ) * (1 - person("is_state_pension_age", period))
 
 
 class basic_income(Variable):
@@ -64,9 +64,9 @@ class basic_income(Variable):
             person("age", period) < 65
         )
         return (
-            person("is_senior", period) * 40
+            person("is_senior", period) * 35
             + adult_young * 45
-            + adult_old * 55
+            + adult_old * 50
             + person("is_child", period) * 20
         )
 
