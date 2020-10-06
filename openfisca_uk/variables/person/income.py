@@ -4,88 +4,105 @@ import numpy as np
 
 # Input variables
 
+
 class employee_earnings(Variable):
     value_type = float
     entity = Person
-    label = u'Gross employee_earnings per week'
+    label = u"Gross employee_earnings per week"
     definition_period = ETERNITY
+
 
 class deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Deductions from earnings per week'
+    label = u"Deductions from earnings per week"
     definition_period = ETERNITY
+
 
 class self_employed_earnings(Variable):
     value_type = float
     entity = Person
-    label = u'Earnings from self-employment per week'
+    label = u"Earnings from self-employment per week"
     definition_period = ETERNITY
+
 
 class maintenance_income(Variable):
     value_type = float
     entity = Person
-    label = u'Income from maintenance payments per week'
+    label = u"Income from maintenance payments per week"
     definition_period = ETERNITY
+
 
 class interest(Variable):
     value_type = float
     entity = Person
-    label = u'Income from interest per week'
+    label = u"Income from interest per week"
     definition_period = ETERNITY
+
 
 class assets(Variable):
     value_type = float
     entity = Person
-    label = u'Total value of reported assets'
+    label = u"Total value of reported assets"
     definition_period = ETERNITY
+
 
 class maintenance_expense(Variable):
     value_type = float
     entity = Person
-    label = u'Expense fro maintenance payments per week'
+    label = u"Expense fro maintenance payments per week"
     definition_period = ETERNITY
+
 
 class misc_income(Variable):
     value_type = float
     entity = Person
-    label = u'Miscellaneous income per week'
+    label = u"Miscellaneous income per week"
     definition_period = ETERNITY
+
 
 class pension_income(Variable):
     value_type = float
     entity = Person
-    label = u'Reported gross amount of occupational or private pension income per week'
+    label = u"Reported gross amount of occupational or private pension income per week"
     definition_period = ETERNITY
+
 
 class total_benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Total amount of benefits received per week'
+    label = u"Total amount of benefits received per week"
     definition_period = ETERNITY
+
 
 class student_loan_repayments(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of weeklyised student loan payments'
+    label = u"Reported amount of weeklyised student loan payments"
     definition_period = ETERNITY
+
 
 class net_income_adjustment(Variable):
     value_type = float
     entity = Person
-    label = u'Adjustment for FRS net income disparities'
+    label = u"Adjustment for FRS net income disparities"
     definition_period = ETERNITY
 
+
 # Derived variables
+
 
 class external_child_payment(Variable):
     value_type = float
     entity = Person
-    label = u'Amount of the benefit units external child maintenance paid by this person'
+    label = u"Amount of the benefit units external child maintenance paid by this person"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("is_head", period) * person.benunit("external_child_maintenance", period)
+        return person("is_head", period) * person.benunit(
+            "external_child_maintenance", period
+        )
+
 
 class earnings(Variable):
     value_type = float
@@ -98,6 +115,7 @@ class earnings(Variable):
             "self_employed_earnings", period
         )
 
+
 class pension_income(Variable):
     value_type = float
     entity = Person
@@ -109,23 +127,28 @@ class pension_income(Variable):
             "pension_income", period
         )
 
+
 class state_pension(Variable):
     value_type = float
     entity = Person
-    label = u'Amount of State Pension income per week'
+    label = u"Amount of State Pension income per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person("state_pension_reported", period)
 
+
 class benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Non-State Pension benefit total'
+    label = u"Non-State Pension benefit total"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("total_benefits", period) - person("state_pension_reported", period)
+        return person("total_benefits", period) - person(
+            "state_pension_reported", period
+        )
+
 
 class income_tax_applicable_amount(Variable):
     value_type = float
@@ -140,9 +163,14 @@ class income_tax_applicable_amount(Variable):
             "ESA_contrib",
             "incapacity_benefit",
             "JSA_contrib",
-            "IIDB"
+            "IIDB",
         ]
-        taxed_benefit_sum = sum(map(lambda benefit : person(benefit + "_reported", period), TAXABLE_BENEFITS))
+        taxed_benefit_sum = sum(
+            map(
+                lambda benefit: person(benefit + "_reported", period),
+                TAXABLE_BENEFITS,
+            )
+        )
         return max_(
             person("employee_earnings", period)
             + person("self_employed_earnings", period)
@@ -297,10 +325,11 @@ class child_benefit_reduction(Variable):
             * max_(0, person("income_tax_applicable_amount", period) - 961)
         )
 
+
 class income(Variable):
     value_type = float
     entity = Person
-    label = u'Income per week (not including benefits)'
+    label = u"Income per week (not including benefits)"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -312,26 +341,34 @@ class income(Variable):
             "interest",
             "untaxed_means_tested_bonus",
             "non_means_tested_bonus",
-            "misc_income"
+            "misc_income",
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
         ) - person("deductions", period)
 
+
 class actual_net_income(Variable):
     value_type = float
     entity = Person
-    label = u'Actual net income from FRS'
+    label = u"Actual net income from FRS"
     definition_period = ETERNITY
+
 
 class post_tax_income(Variable):
     value_type = float
     entity = Person
-    label = u'Post-tax income, before benefits, per week'
+    label = u"Post-tax income, before benefits, per week"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("income", period) - person("income_tax", period) - person("NI", period) - person("capital_gains_tax", period)
+        return (
+            person("income", period)
+            - person("income_tax", period)
+            - person("NI", period)
+            - person("capital_gains_tax", period)
+        )
+
 
 class gross_income(Variable):
     value_type = float
@@ -340,7 +377,9 @@ class gross_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        benefit_modelling = person("is_head", period) * person.benunit("benefit_modelling", period)
+        benefit_modelling = person("is_head", period) * person.benunit(
+            "benefit_modelling", period
+        )
         COMPONENTS = [
             "employee_earnings",
             "self_employed_earnings",
@@ -350,11 +389,12 @@ class gross_income(Variable):
             "untaxed_means_tested_bonus",
             "benefits",
             "non_means_tested_bonus",
-            "maintenance_income"
+            "maintenance_income",
         ]
-        return sum(
-            map(lambda component: person(component, period), COMPONENTS)
-        ) + benefit_modelling
+        return (
+            sum(map(lambda component: person(component, period), COMPONENTS))
+            + benefit_modelling
+        )
 
 
 class net_income(Variable):

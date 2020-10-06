@@ -2,20 +2,23 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class benunit_weight(Variable):
     value_type = float
     entity = BenUnit
     label = u"Weighting of the benefit unit"
     definition_period = ETERNITY
 
+
 class children_in_benunit(Variable):
     value_type = int
     entity = BenUnit
-    label = u'Number of children in the benefit unit'
+    label = u"Number of children in the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.nb_persons(BenUnit.CHILD)
+
 
 class benunit_equivalisation(Variable):
     value_type = float

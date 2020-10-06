@@ -32,6 +32,7 @@ class household_equivalisation_bhc(Variable):
         )
         return weighting
 
+
 class household_equivalisation_ahc(Variable):
     value_type = float
     entity = Household
@@ -53,6 +54,7 @@ class household_equivalisation_ahc(Variable):
             + 0.2 * num_young_children
         )
         return weighting
+
 
 class people_in_household(Variable):
     value_type = int

@@ -73,7 +73,11 @@ class income_support(Variable):
         return max_(
             0,
             (personal_allowance - income_deduction)
-            * (benunit.sum(benunit.members("income_support_reported", period) > 0))
+            * (
+                benunit.sum(
+                    benunit.members("income_support_reported", period) > 0
+                )
+            )
             * takeup,
         )
 

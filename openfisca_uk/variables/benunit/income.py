@@ -4,13 +4,16 @@ import numpy as np
 
 # Input variables
 
+
 class external_child_maintenance(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Reported weeklyised amount of maintenance paid to dependent children living away from home'
+    label = "Reported weeklyised amount of maintenance paid to dependent children living away from home"
     definition_period = ETERNITY
 
+
 # Derived variables
+
 
 class benefit_modelling(Variable):
     value_type = float
@@ -19,11 +22,7 @@ class benefit_modelling(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = [
-            "child_benefit",
-            "JSA_contrib",
-            "JSA_income"
-        ]
+        MODELLED_BENEFITS = ["child_benefit", "JSA_contrib", "JSA_income"]
         return sum(
             map(
                 lambda benefit: benunit(benefit, period)
@@ -31,6 +30,7 @@ class benefit_modelling(Variable):
                 MODELLED_BENEFITS,
             )
         )
+
 
 class benunit_income(Variable):
     value_type = float

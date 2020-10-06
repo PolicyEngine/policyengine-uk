@@ -2,6 +2,7 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class state_pension_reported(Variable):
     value_type = float
     entity = Person
@@ -124,10 +125,11 @@ class ESA_contrib_reported(Variable):
     label = u"Reported amount of Employment and Support Allowance (contributory) per week"
     definition_period = ETERNITY
 
+
 class ESA_income_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of Employment and Support Allowance (income-based) per week'
+    label = u"Reported amount of Employment and Support Allowance (income-based) per week"
     definition_period = ETERNITY
 
 
@@ -186,98 +188,114 @@ class housing_benefit_reported(Variable):
     label = u"Reported amount of Housing Benefit receipt"
     definition_period = ETERNITY
 
+
 class war_pension_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of War Widows Pension receipt'
+    label = u"Reported amount of War Widows Pension receipt"
     definition_period = ETERNITY
+
 
 class GTA_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of Government training allowances receipt'
+    label = u"Reported amount of Government training allowances receipt"
     definition_period = ETERNITY
+
 
 class other_benefit_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of any other benefit'
+    label = u"Reported amount of any other benefit"
     definition_period = ETERNITY
+
 
 class WTC_lump_sum_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported weeklyised lump sum payment for Working Tax Credit'
+    label = u"Reported weeklyised lump sum payment for Working Tax Credit"
     definition_period = ETERNITY
+
 
 class CTC_lump_sum_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported weeklyised lump sum payment for Child Tax Credit'
+    label = u"Reported weeklyised lump sum payment for Child Tax Credit"
     definition_period = ETERNITY
+
 
 class SFL_IS_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of Income Support, net of Social Fund Loan repayments'
+    label = u"Reported amount of Income Support, net of Social Fund Loan repayments"
     definition_period = ETERNITY
+
 
 class SFL_JSA_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of JSA, net of Social Fund Loan repayments'
+    label = u"Reported amount of JSA, net of Social Fund Loan repayments"
     definition_period = ETERNITY
+
 
 class SFL_UC_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of universal credit, net of Social Fund Loan repayments'
+    label = u"Reported amount of universal credit, net of Social Fund Loan repayments"
     definition_period = ETERNITY
+
 
 class DWP_IS_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported third party IS payments from DWP, after deductions'
+    label = u"Reported third party IS payments from DWP, after deductions"
     definition_period = ETERNITY
+
 
 class DWP_JSA_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported third party JSA payments from DWP, after deductions'
+    label = u"Reported third party JSA payments from DWP, after deductions"
     definition_period = ETERNITY
+
 
 class DWP_UC_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported third party UC payments from DWP, after deductions'
+    label = u"Reported third party UC payments from DWP, after deductions"
     definition_period = ETERNITY
+
 
 class FG_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported weeklyised Funeral Grant payment'
+    label = u"Reported weeklyised Funeral Grant payment"
     definition_period = ETERNITY
+
 
 class MG_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported weeklyised Maternity Grant payment'
+    label = u"Reported weeklyised Maternity Grant payment"
     definition_period = ETERNITY
+
 
 class widows_payment_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported weeklyised Widows Payment'
+    label = u"Reported weeklyised Widows Payment"
     definition_period = ETERNITY
+
 
 class DWP_loan_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported loan from DWP'
+    label = u"Reported loan from DWP"
     definition_period = ETERNITY
+
 
 class LA_loan_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported loan or grant from the Local Authority'
+    label = u"Reported loan or grant from the Local Authority"
     definition_period = ETERNITY

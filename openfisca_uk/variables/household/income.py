@@ -16,11 +16,13 @@ class housing_costs(Variable):
     label = u"Housing costs per week"
     definition_period = ETERNITY
 
+
 class service_charges(Variable):
     value_type = float
     entity = Household
-    label = u'Amount paid for Service Charges/Ground Rent'
+    label = u"Amount paid for Service Charges/Ground Rent"
     definition_period = ETERNITY
+
 
 class household_gross_income(Variable):
     value_type = float
@@ -39,9 +41,11 @@ class household_net_income_bhc(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.sum(
-            household.members("net_income", period)
-        ) - household("council_tax", period) - household("service_charges", period)
+        return (
+            household.sum(household.members("net_income", period))
+            - household("council_tax", period)
+            - household("service_charges", period)
+        )
 
 
 class equiv_household_net_income_bhc(Variable):
