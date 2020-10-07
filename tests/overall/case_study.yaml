@@ -25,8 +25,6 @@
         children: ["child1", "child2", "child3", "child4"]
   output:
     child_benefit: 62.90
-    working_tax_credit: 0
-    child_tax_credit: 36.20
 - name: Case study 2 - two unemployed parents with 4 children, 1 not covered by CTC
   period: 2020-09-07
   absolute_error_margin: 1
@@ -54,5 +52,3 @@
         children: ["child1", "child2", "child3", "child4"]
   output:
     child_benefit: 62.90
-    working_tax_credit: 0
-    child_tax_credit: 173.94

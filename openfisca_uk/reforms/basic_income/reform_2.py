@@ -20,9 +20,13 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * (
-            person("employee_earnings", period)
-            + person("self_employed_earnings", period)
+        return (
+            0.12
+            * (
+                person("employee_earnings", period)
+                + person("self_employed_earnings", period)
+            )
+            * (1 - person("is_state_pension_age", period))
         )
 
 
@@ -46,9 +50,9 @@ class basic_income(Variable):
             "is_adult", period
         )
         return (
-            person("is_senior", period) * 250
+            person("is_senior", period) * 235
             + adult_young * 80
-            + adult_old * 105
+            + adult_old * 100
             + disabled_adult * 60
             + disabled_child * 100
             + person("is_child", period) * 105

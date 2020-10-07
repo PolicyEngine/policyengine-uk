@@ -10,10 +10,20 @@ class benunit_weight(Variable):
     definition_period = ETERNITY
 
 
+class children_in_benunit(Variable):
+    value_type = int
+    entity = BenUnit
+    label = u"Number of children in the benefit unit"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.nb_persons(BenUnit.CHILD)
+
+
 class benunit_equivalisation(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Equivalisation factor to account for household composition"
+    label = u"Equivalisation factor to account for household composition, before housing costs"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -95,8 +105,7 @@ class looking_for_work(Variable):
 
     def formula(benunit, period, parameters):
         return (
-            benunit("JSA_contributory_reported", period)
-            + benunit("JSA_income_reported", period)
-            + benunit("JSA_combined_reported", period)
+            benunit.sum(benunit.members("JSA_contrib_reported", period))
+            + benunit.sum(benunit.members("JSA_income_reported", period))
             > 0
         )

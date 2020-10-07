@@ -20,9 +20,13 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return 0.12 * (
-            person("employee_earnings", period)
-            + person("self_employed_earnings", period)
+        return (
+            0.12
+            * (
+                person("employee_earnings", period)
+                + person("self_employed_earnings", period)
+            )
+            * (1 - person("is_state_pension_age", period))
         )
 
 
@@ -33,7 +37,7 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 150
+        return 140
 
 
 class benunit_basic_income(Variable):

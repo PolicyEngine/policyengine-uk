@@ -50,7 +50,7 @@ class income_support(Variable):
         )
         means_tested_income = benunit(
             "benunit_post_tax_income", period
-        ) + benunit("JSA_contributory_reported", period)
+        ) + benunit.sum(benunit.members("JSA_contrib_reported", period))
         income_deduction = max_(
             0,
             means_tested_income
@@ -73,7 +73,11 @@ class income_support(Variable):
         return max_(
             0,
             (personal_allowance - income_deduction)
-            * (benunit("income_support_reported", period) > 0)
+            * (
+                benunit.sum(
+                    benunit.members("income_support_reported", period) > 0
+                )
+            )
             * takeup,
         )
 
@@ -81,7 +85,7 @@ class income_support(Variable):
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"label"
+    label = u"Child Benefit amount received per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -255,7 +259,7 @@ class working_tax_credit_pre_means_test(Variable):
         return amount * eligible
 
 
-class JSA_contributory(Variable):
+class JSA_contrib(Variable):
     value_type = float
     entity = BenUnit
     label = u"JSA (contributory) amount received per week"
@@ -286,8 +290,7 @@ class JSA_contributory(Variable):
             0,
             (personal_allowance - earnings_deduction - pension_deduction)
             * (
-                benunit("JSA_contributory_reported", period)
-                + benunit("JSA_combined_reported", period)
+                benunit.sum(benunit.members("JSA_contrib_reported", period))
                 > 0
             ),
         )
@@ -332,7 +335,7 @@ class JSA_income(Variable):
         )
         means_tested_income = benunit(
             "benunit_post_tax_income", period
-        ) + benunit("JSA_contributory", period)
+        ) + benunit("JSA_contrib", period)
         income_deduction = max_(
             0,
             means_tested_income

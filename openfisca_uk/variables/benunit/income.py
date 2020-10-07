@@ -2,6 +2,18 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+# Input variables
+
+
+class external_child_maintenance(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Reported weeklyised amount of maintenance paid to dependent children living away from home"
+    definition_period = ETERNITY
+
+
+# Derived variables
+
 
 class benefit_modelling(Variable):
     value_type = float
@@ -10,18 +22,11 @@ class benefit_modelling(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = [
-            "child_benefit",
-            "child_tax_credit",
-            "working_tax_credit",
-            "income_support",
-            "JSA_contributory",
-            "JSA_income",
-        ]
+        MODELLED_BENEFITS = ["child_benefit", "JSA_contrib", "JSA_income"]
         return sum(
             map(
                 lambda benefit: benunit(benefit, period)
-                - benunit(f"{benefit}_reported", period),
+                - benunit.sum(benunit.members(f"{benefit}_reported", period)),
                 MODELLED_BENEFITS,
             )
         )
@@ -30,7 +35,7 @@ class benefit_modelling(Variable):
 class benunit_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "Earned income of the benefit unit"
+    label = "Income of the benefit unit (not including benefits)"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
