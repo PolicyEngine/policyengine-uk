@@ -69,8 +69,6 @@ class reform_3(Reform):
         for removed_var in [
             "child_benefit",
             "income_support",
-            "child_tax_credit",
-            "working_tax_credit",
             "state_pension",
         ]:
             self.neutralize_variable(removed_var)
