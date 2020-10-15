@@ -22,7 +22,12 @@ class benefit_modelling(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = ["child_benefit", "income_support", "child_tax_credit", "working_tax_credit"]
+        MODELLED_BENEFITS = [
+            "child_benefit",
+            "income_support",
+            "child_tax_credit",
+            "working_tax_credit",
+        ]
         return sum(
             map(
                 lambda benefit: benunit(benefit, period)

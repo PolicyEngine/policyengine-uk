@@ -2,6 +2,7 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
@@ -20,34 +21,42 @@ class child_benefit(Variable):
         )
         return eldest_amount + additional_amount
 
+
 class income_support(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Income Support amount received per week'
+    label = u"Income Support amount received per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("income_support_reported", period))
 
+
 class child_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Child Tax Credit amount received per week'
+    label = u"Child Tax Credit amount received per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("child_tax_credit_reported", period))
+        return benunit.sum(
+            benunit.members("child_tax_credit_reported", period)
+        )
+
 
 class working_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Child Tax Credit amount received per week'
+    label = u"Child Tax Credit amount received per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("working_tax_credit_reported", period))
+        return benunit.sum(
+            benunit.members("working_tax_credit_reported", period)
+        )
 
-'''
+
+"""
 
 class income_support(Variable):
     value_type = float
@@ -380,4 +389,4 @@ class JSA_income(Variable):
             0, (personal_allowance - income_deduction)
         )
 
-'''
+"""
