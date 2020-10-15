@@ -4,7 +4,6 @@ import numpy as np
 
 # Input variables
 
-
 class employee_earnings(Variable):
     value_type = float
     entity = Person
@@ -308,7 +307,7 @@ class child_benefit_reduction(Variable):
 
     def formula(person, period, parameters):
         return (
-            person("child_benefit_reported", period)
+            person("is_head", period) * person.benunit("child_benefit", period)
             * 1e-4
             * max_(0, person("income_tax_applicable_amount", period) - 961)
         )
@@ -328,8 +327,7 @@ class income(Variable):
             "state_pension_reported",
             "interest",
             "untaxed_means_tested_bonus",
-            "non_means_tested_bonus",
-            "misc_income",
+            "non_means_tested_bonus"
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)

@@ -22,7 +22,7 @@ class benefit_modelling(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = ["child_benefit", "JSA_contrib", "JSA_income"]
+        MODELLED_BENEFITS = ["child_benefit", "income_support", "child_tax_credit", "working_tax_credit"]
         return sum(
             map(
                 lambda benefit: benunit(benefit, period)
@@ -100,5 +100,5 @@ class equiv_benunit_net_income(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("benunit_net_income", period) / benunit(
-            "benunit_equivalisation"
+            "benunit_equivalisation", period
         )
