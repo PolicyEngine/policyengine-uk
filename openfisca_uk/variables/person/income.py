@@ -162,9 +162,10 @@ class income_tax_applicable_amount(Variable):
         return max_(
             person("employee_earnings", period)
             + person("self_employed_earnings", period)
-            + 0.75 * person("state_pension", period)
+            + person("state_pension", period)
             + 0.75 * person("pension_income", period)
-            + taxed_benefit_sum,
+            + taxed_benefit_sum
+            - person("deductions", period),
             0,
         )
 
