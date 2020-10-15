@@ -9,7 +9,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.45 * person("income_tax_applicable_amount", period)
+        return 0.47 * person("income_tax_applicable_amount", period)
 
 
 class NI(Variable):
@@ -37,7 +37,7 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 140
+        return 145
 
 
 class benunit_basic_income(Variable):
@@ -68,7 +68,6 @@ class reform_3(Reform):
             self.add_variable(added_var)
         for removed_var in [
             "child_benefit",
-            "income_support",
             "state_pension",
         ]:
             self.neutralize_variable(removed_var)

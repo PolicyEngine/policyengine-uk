@@ -68,8 +68,8 @@ class basic_income(Variable):
             person("age", period) < 65
         )
         return (
-            person("is_senior", period) * 35
-            + adult_young * 45
+            person("is_senior", period) * 40
+            + adult_young * 40
             + adult_old * 50
             + person("is_child", period) * 20
         )
@@ -92,17 +92,7 @@ class non_means_tested_bonus(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return min_(25, person("basic_income", period))
-
-
-class untaxed_means_tested_bonus(Variable):
-    value_type = float
-    entity = Person
-    label = u"Amount of the basic income which is subject to means tests"
-    definition_period = ETERNITY
-
-    def formula(person, period, parameters):
-        return max_(0, person("basic_income", period) - 25)
+        return person("basic_income", period)
 
 
 class reform_1(Reform):
@@ -111,7 +101,6 @@ class reform_1(Reform):
         for changed_var in [
             income_tax,
             NI,
-            untaxed_means_tested_bonus,
             non_means_tested_bonus,
         ]:
             self.update_variable(changed_var)
