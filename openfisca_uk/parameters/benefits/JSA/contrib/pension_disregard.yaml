@@ -1,6 +1,6 @@
 description: Threshold in pounds per week from occupational and personal pensions, above which the contributory JSA amount is reduced equally.
 values:
-  2020-06-01:
+  2016-06-01:
     value: 50.00
 metadata:
   threshold_unit: currency-GBP
