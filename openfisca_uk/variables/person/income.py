@@ -174,9 +174,10 @@ class income_tax_applicable_amount(Variable):
         return max_(
             person("employee_earnings", period)
             + person("self_employed_earnings", period)
-            + 0.75 * person("state_pension", period)
+            + person("state_pension", period)
             + 0.75 * person("pension_income", period)
-            + taxed_benefit_sum,
+            + taxed_benefit_sum
+            + person("taxed_means_tested_bonus", period),
             0,
         )
 
@@ -297,6 +298,11 @@ class income_tax_and_NI(Variable):
     def formula(person, period, parameters):
         return person("NI", period) + person("income_tax", period)
 
+class taxed_means_tested_bonus(Variable):
+    value_type = float
+    entity = Person
+    label = u'Variable for a future taxed and means-tested benefit'
+    definition_period = ETERNITY
 
 class untaxed_means_tested_bonus(Variable):
     value_type = float
@@ -341,6 +347,7 @@ class income(Variable):
             "interest",
             "untaxed_means_tested_bonus",
             "non_means_tested_bonus",
+            "taxed_means_tested_bonus",
             "misc_income",
         ]
         return sum(

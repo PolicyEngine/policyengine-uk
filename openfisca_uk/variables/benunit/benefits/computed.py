@@ -219,8 +219,8 @@ class income_support_JSA_ib(Variable):
                 ).benefits.income_support.amount_lone_over_18
             )
         )
-        has_carer = benunit.max(benunit.members("carers_allowance_reported", period))
-        has_disabled_adult = benunit.max(benunit.members("is_adult", period) * benunit.members("disabled", period))
+        has_carer = benunit.max(benunit.members("carers_allowance_reported", period)) > 0
+        has_disabled_adult = benunit.max(benunit.members("is_adult", period) * benunit.members("disabled", period)) > 0
         premiums = parameters(period).benefits.income_support.carer_premium * has_carer + parameters(period).benefits.income_support.disability_premium * has_disabled_adult
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "working_tax_credit",
@@ -250,7 +250,7 @@ class income_support_JSA_ib(Variable):
         )
         return max_(
             0,
-            (personal_allowance - income_deduction)
+            (personal_allowance + premiums - income_deduction)
         )
 
 class income_support(Variable):
