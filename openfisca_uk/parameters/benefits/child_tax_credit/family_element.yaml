@@ -1,6 +1,7 @@
-description: Yearly child tax credit amount for the family - the basic amount.
+description: Yearly child tax credit amount for the family.
 values:
-  2020-06-01:
+  2016-06-01:
     value: 545.00
 metadata:
   threshold_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
