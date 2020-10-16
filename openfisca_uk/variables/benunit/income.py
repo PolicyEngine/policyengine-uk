@@ -22,7 +22,7 @@ class benefit_modelling(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = ["child_benefit", "JSA_contrib", "JSA_income"]
+        MODELLED_BENEFITS = []
         return sum(
             map(
                 lambda benefit: benunit(benefit, period)
@@ -50,6 +50,15 @@ class benunit_pension_income(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("pension_income", period))
+
+class benunit_state_pension(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Pension income of the benefit unit"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("state_pension", period))
 
 
 class benunit_earnings(Variable):
