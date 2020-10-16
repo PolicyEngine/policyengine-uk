@@ -68,9 +68,9 @@ class basic_income(Variable):
             person("age", period) < 65
         )
         return (
-            person("is_senior", period) * 35
+            person("is_senior", period) * 30
             + adult_young * 45
-            + adult_old * 50
+            + adult_old * 55
             + person("is_child", period) * 20
         )
 
