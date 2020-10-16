@@ -9,6 +9,12 @@ class state_pension_reported(Variable):
     label = u"Reported amount of State Pension receipt"
     definition_period = ETERNITY
 
+class JSA_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u'Reported amount of JSA (total)'
+    definition_period = ETERNITY
+
 
 class JSA_contrib_reported(Variable):
     value_type = float
@@ -154,10 +160,10 @@ class guardians_allowance_reported(Variable):
     definition_period = ETERNITY
 
 
-class winter_fuel_payments_reported(Variable):
+class winter_fuel_allowance_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Reported amount of Winter Fuel Payments per week"
+    label = u"Reported amount of Winter Fuel Allowance per week"
     definition_period = ETERNITY
 
 
