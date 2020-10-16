@@ -320,7 +320,7 @@ class child_benefit_reduction(Variable):
 
     def formula(person, period, parameters):
         return (
-            person("child_benefit_reported", period)
+            person("is_head", period) * person.benunit("child_benefit", period)
             * 1e-4
             * max_(0, person("income_tax_applicable_amount", period) - 961)
         )
@@ -377,8 +377,8 @@ class gross_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        benefit_modelling = person("is_head", period) * person.benunit(
-            "benefit_modelling", period
+        benunit_benefit_modelling = person("is_head", period) * person.benunit(
+            "benunit_benefit_modelling", period
         )
         COMPONENTS = [
             "employee_earnings",
@@ -393,7 +393,7 @@ class gross_income(Variable):
         ]
         return (
             sum(map(lambda component: person(component, period), COMPONENTS))
-            + benefit_modelling
+            + benunit_benefit_modelling
         )
 
 

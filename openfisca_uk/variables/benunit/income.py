@@ -15,14 +15,14 @@ class external_child_maintenance(Variable):
 # Derived variables
 
 
-class benefit_modelling(Variable):
+class benunit_benefit_modelling(Variable):
     value_type = float
     entity = BenUnit
     label = "Difference between reported benefits and simulated benefits"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = []
+        MODELLED_BENEFITS = ["working_tax_credit", "child_tax_credit", "child_benefit", "income_support", "JSA_income"]
         return sum(
             map(
                 lambda benefit: benunit(benefit, period)
@@ -111,3 +111,21 @@ class equiv_benunit_net_income(Variable):
         return benunit("benunit_net_income", period) / benunit(
             "benunit_equivalisation"
         )
+
+class benunit_income_tax(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Amount of Income Tax per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("income_tax", period))
+
+class benunit_NI(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Amount of National Insurance per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("NI", period))

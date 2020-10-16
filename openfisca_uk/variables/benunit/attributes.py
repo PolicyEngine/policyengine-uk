@@ -118,11 +118,3 @@ class has_worker_over_60(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.max(benunit.members("is_worker_over_60", period))
-
-class has_disabled_adult(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u'label'
-    definition_period = ETERNITY
-
-    

@@ -83,12 +83,101 @@ class child_tax_credit_pre_means_test(Variable):
         )
         return yearly_amount * (children_eligible > 0)
 
-
-
-class income_support(Variable):
+class tax_credit_reduction(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Income Support amount received per week"
+    label = u"Child and Working Tax Credit amount reduced per week from means testing"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        child_tax_credit_amount = benunit(
+            "child_tax_credit_pre_means_test", period
+        )
+        working_tax_credit_amount = benunit(
+            "working_tax_credit_pre_means_test", period
+        )
+        eligible_for_both = (child_tax_credit_amount > 0) * (
+            working_tax_credit_amount > 0
+        )
+        CTC_only = (child_tax_credit_amount > 0) * (1 - eligible_for_both)
+        threshold = (
+            eligible_for_both
+            * parameters(period).benefits.working_tax_credit.income_threshold
+            + CTC_only
+            * parameters(period).benefits.child_tax_credit.income_threshold_CTC_only
+        )
+        means_tested_SSP = max_(0, benunit.sum(benunit.members("SSP", period)) - parameters(period).benefits.working_tax_credit.SSP_disregard)
+        means_tested_earnings = benunit("benunit_earnings", period) - means_tested_SSP
+        means_tested_SP = max_(0, benunit("benunit_state_pension", period) + benunit("benunit_pension_income", period) - parameters(period).benefits.working_tax_credit.pension_disregard)
+        means_tested_benefit_income = benunit.sum(benunit.members("incapacity_benefit_reported", period))
+        means_tested_income = means_tested_earnings + means_tested_SP + means_tested_SSP + means_tested_benefit_income
+        reduction = (
+            max_(0, (means_tested_income * 52 - threshold))
+            * parameters(
+                period
+            ).benefits.working_tax_credit.income_reduction_rate
+        )
+        return reduction
+
+class working_tax_credit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Amount of Working Tax Credit received per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (
+            max_(
+                0,
+                benunit("working_tax_credit_pre_means_test", period)
+                - benunit("tax_credit_reduction", period),
+            ) * (benunit("benunit_WTC_reported", period) > 0)
+            / 52
+        )
+
+class child_tax_credit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Amount of Working Tax Credit received per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        reduction_left = min_(
+            0,
+            benunit("working_tax_credit_pre_means_test", period)
+            - benunit("tax_credit_reduction", period),
+        )
+        return (
+            max_(
+                0,
+                benunit("child_tax_credit_pre_means_test", period)
+                + reduction_left,
+            ) * (benunit("benunit_CTC_reported", period) > 0)
+            / 52
+        )
+
+class child_benefit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Child Benefit amount received per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        num_children = benunit.nb_persons(BenUnit.CHILD)
+        eldest_amount = (
+            min_(num_children, 1)
+            * parameters(period).benefits.child_benefit.amount_eldest
+        )
+        additional_amount = (
+            max_(num_children - 1, 0)
+            * parameters(period).benefits.child_benefit.amount_additional
+        )
+        return (eldest_amount + additional_amount) * (benunit("benunit_CB_reported", period) > 0)
+
+class income_support_JSA_ib(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Income Support/JSA (income-based) amount received per week before eligibility is applied"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -130,9 +219,21 @@ class income_support(Variable):
                 ).benefits.income_support.amount_lone_over_18
             )
         )
+        has_carer = benunit.max(benunit.members("carers_allowance_reported", period))
+        has_disabled_adult = benunit.max(benunit.members("is_adult", period) * benunit.members("disabled", period))
+        premiums = parameters(period).benefits.income_support.carer_premium * has_carer + parameters(period).benefits.income_support.disability_premium * has_disabled_adult
+        BENUNIT_MEANS_TESTED_BENEFITS = [
+            "working_tax_credit",
+            "child_tax_credit",
+            "child_benefit"
+        ]
+        PERSON_MEANS_TESTED_BENEFITS = [
+            "JSA_contrib"
+        ]
+        benefits = sum(map(lambda benefit: benunit(benefit, period), BENUNIT_MEANS_TESTED_BENEFITS)) + sum(map(lambda benefit: benunit.sum(benunit.members(benefit, period)), PERSON_MEANS_TESTED_BENEFITS))
         means_tested_income = benunit(
             "benunit_post_tax_income", period
-        ) + benunit.sum(benunit.members("JSA_contrib_reported", period))
+        ) + benefits
         income_deduction = max_(
             0,
             means_tested_income
@@ -147,176 +248,27 @@ class income_support(Variable):
             + benunit("is_lone_parent", period)
             * parameters(period).benefits.income_support.income_disregard_lone,
         )
-        has_children = benunit.nb_persons(BenUnit.CHILD) > 0
-        random = np.random.rand(*has_children.shape)
-        takeup = (random < 0.89) * has_children + (random < 0.82) * (
-            1 - has_children
-        )
         return max_(
             0,
             (personal_allowance - income_deduction)
-            * (
-                benunit.sum(
-                    benunit.members("income_support_reported", period) > 0
-                )
-            )
-            * takeup,
         )
 
-
-class child_benefit(Variable):
+class income_support(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Benefit amount received per week"
+    label = u'Income Support amount per week'
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        num_children = benunit.nb_persons(BenUnit.CHILD)
-        eldest_amount = (
-            min_(num_children, 1)
-            * parameters(period).benefits.child_benefit.amount_eldest
-        )
-        additional_amount = (
-            max_(num_children - 1, 0)
-            * parameters(period).benefits.child_benefit.amount_additional
-        )
-        return eldest_amount + additional_amount
-
-
-
-
-
-class tax_credit_reduction(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Child and Working Tax Credit amount reduced per week from means testing"
-    definition_period = ETERNITY
-
-    def formula(benunit, period, parameters):
-        child_tax_credit_amount = benunit(
-            "child_tax_credit_pre_means_test", period
-        )
-        working_tax_credit_amount = benunit(
-            "working_tax_credit_pre_means_test", period
-        )
-        eligible_for_both = (child_tax_credit_amount > 0) * (
-            working_tax_credit_amount > 0
-        )
-        CTC_only = (child_tax_credit_amount > 0) * (1 - eligible_for_both)
-        threshold = (
-            eligible_for_both
-            * parameters(period).benefits.working_tax_credit.income_threshold
-            + CTC_only
-            * parameters(period).benefits.child_tax_credit.income_threshold_CTC_only
-        )
-        means_tested_SSP = max_(0, benunit.sum(benunit.members("SSP", period)) - parameters(period).benefits.working_tax_credit.SSP_disregard)
-        means_tested_earnings = benunit("benunit_earnings", period) - means_tested_SSP
-        means_tested_SP = max_(0, benunit("benunit_state_pension", period) + benunit("benunit_pension_income", period) - parameters(period).benefits.working_tax_credit.pension_disregard)
-        means_tested_benefit_income = benunit.sum(benunit.members("incapacity_benefit_reported", period))
-        means_tested_income = means_tested_earnings + means_tested_SP + means_tested_SSP + means_tested_benefit_income
-        reduction = (
-            max_(0, (means_tested_income * 52 - threshold))
-            * parameters(
-                period
-            ).benefits.working_tax_credit.income_reduction_rate
-        )
-        return reduction
-
-
-class working_tax_credit(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Amount of Working Tax Credit received per week"
-    definition_period = ETERNITY
-
-    def formula(benunit, period, parameters):
-        return (
-            max_(
-                0,
-                benunit("working_tax_credit_pre_means_test", period)
-                - benunit("tax_credit_reduction", period),
-            )
-            / 52
-        )
-
-
-class child_tax_credit(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Amount of Working Tax Credit received per week"
-    definition_period = ETERNITY
-
-    def formula(benunit, period, parameters):
-        reduction_left = min_(
-            0,
-            benunit("working_tax_credit_pre_means_test", period)
-            - benunit("tax_credit_reduction", period),
-        )
-        return (
-            max_(
-                0,
-                benunit("child_tax_credit_pre_means_test", period)
-                + reduction_left,
-            )
-            / 52
-        )
-
-
-
-
-
-
+        eligible = benunit("benunit_IS_reported", period) > 0
+        return eligible * benunit("income_support_JSA_ib", period)
 
 class JSA_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"JSA (income-based) amount received per week"
+    label = u'JSA (income-based) amount per week'
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        younger_age = benunit("younger_adult_age", period)
-        older_age = benunit("older_adult_age", period)
-        personal_allowance = (
-            benunit("is_single", period)
-            * (
-                (younger_age < 25)
-                * parameters(period).benefits.JSA.income.amount_16_24
-                + (younger_age >= 25)
-                * parameters(period).benefits.JSA.income.amount_over_25
-            )
-            + benunit("is_couple", period)
-            * (
-                (younger_age < 18)
-                * (older_age < 18)
-                * parameters(period).benefits.JSA.income.amount_couples_16_17
-                + (younger_age >= 18)
-                * (older_age >= 18)
-                * parameters(period).benefits.JSA.income.amount_couples_over_18
-                + (younger_age < 18)
-                * (younger_age >= 25)
-                * parameters(period).benefits.JSA.income.amount_couples_age_gap
-            )
-            + benunit("is_lone_parent", period)
-            * (
-                (younger_age < 18)
-                * parameters(period).benefits.JSA.income.amount_lone_16_17
-                + (younger_age >= 18)
-                * parameters(period).benefits.JSA.income.amount_lone_over_18
-            )
-        )
-        means_tested_income = benunit(
-            "benunit_post_tax_income", period
-        ) + benunit.sum(benunit.members("JSA_contrib", period))
-        income_deduction = max_(
-            0,
-            means_tested_income
-            - benunit("is_single", period)
-            * parameters(period).benefits.JSA.income.income_disregard_single
-            + benunit("is_couple", period)
-            * parameters(period).benefits.JSA.income.income_disregard_couple
-            + benunit("is_lone_parent", period)
-            * parameters(period).benefits.JSA.income.income_disregard_lone,
-        )
-        return benunit("looking_for_work", period) * max_(
-            0, (personal_allowance - income_deduction)
-        )
+        eligible = benunit("benunit_JSA_income_reported", period) > 0
+        return eligible * benunit("income_support_JSA_ib", period)
