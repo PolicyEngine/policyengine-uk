@@ -1,7 +1,0 @@
-description: Minimum hours requirement to claim Working Tax Credit for a lone parent
-values:
-  2020-06-01:
-    value: 16
-metadata:
-  threshold_unit: currency-GBP
-  reference: None
