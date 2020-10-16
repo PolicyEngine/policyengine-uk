@@ -110,7 +110,7 @@ class tax_credit_reduction(Variable):
         means_tested_earnings = benunit("benunit_earnings", period) - means_tested_SSP
         means_tested_SP = max_(0, benunit("benunit_state_pension", period) + benunit("benunit_pension_income", period) - parameters(period).benefits.working_tax_credit.pension_disregard)
         means_tested_benefit_income = benunit.sum(benunit.members("incapacity_benefit_reported", period))
-        means_tested_income = means_tested_earnings + means_tested_SP + means_tested_SSP + means_tested_benefit_income
+        means_tested_income = means_tested_earnings + means_tested_SP + means_tested_SSP + means_tested_benefit_income + benunit.sum(benunit.members("untaxed_means_tested_bonus", period))
         reduction = (
             max_(0, (means_tested_income * 52 - threshold))
             * parameters(
