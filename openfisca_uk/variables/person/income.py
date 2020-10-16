@@ -88,6 +88,18 @@ class net_income_adjustment(Variable):
     label = u"Adjustment for FRS net income disparities"
     definition_period = ETERNITY
 
+class SSP(Variable):
+    value_type = float
+    entity = Person
+    label = u'Amount of Statutory Sick Pay per week'
+    definition_period = ETERNITY
+
+class eligible_childcare_cost(Variable):
+    value_type = float
+    entity = Person
+    label = u'Costs of registered childcare for this person per week'
+    definition_period = ETERNITY
+
 
 # Derived variables
 
