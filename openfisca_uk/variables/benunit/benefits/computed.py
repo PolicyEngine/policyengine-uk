@@ -2,6 +2,88 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 
+class working_tax_credit_pre_means_test(Variable):
+    value_type = float
+    entity = BenUnit
+    label = (
+        u"Working Tax Credit amount received per year, before means testing"
+    )
+    definition_period = ETERNITY
+    reference = ["https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=25"]
+
+    def formula(benunit, period, parameters):
+        hours_worked = benunit.sum(benunit.members("hours_worked", period))
+        has_disabled_adult = benunit.max(benunit.members("is_adult", period) * benunit.members("disabled", period))
+        eligible = (
+            benunit("is_single", period)
+            * (
+                hours_worked
+                >= parameters(
+                    period
+                ).benefits.working_tax_credit.hours_requirement_single
+            )
+            + benunit("is_couple", period)
+            * (
+                hours_worked
+                >= parameters(
+                    period
+                ).benefits.working_tax_credit.hours_requirement_couple
+            )
+            + (benunit("is_lone_parent", period) + benunit("has_worker_over_60", period) + has_disabled_adult > 0)
+            * (
+                hours_worked
+                >= parameters(
+                    period
+                ).benefits.working_tax_credit.hours_requirement_disadvantaged
+            )
+        )
+        eligible = eligible + benunit("benunit_WTC_reported", period) > 0
+        basic_amount = parameters(period).benefits.working_tax_credit.basic_element
+        works_over_30_hours = hours_worked >= parameters(period).benefits.working_tax_credit.hours_requirement_single
+        premiums = (
+            works_over_30_hours
+            * parameters(period).benefits.working_tax_credit.worker_element
+            + benunit("is_couple", period)
+            * parameters(period).benefits.working_tax_credit.couple_element
+            + benunit("is_lone_parent", period)
+            * parameters(period).benefits.working_tax_credit.lone_parent_element
+            + benunit.max(benunit.members("is_adult", period) * benunit.members("disabled", period))
+            * parameters(period).benefits.working_tax_credit.disabled_element
+        )
+        num_children = benunit.sum(benunit.members("is_child", period))
+        max_childcare_amount = (num_children == 1) * parameters(period).benefits.working_tax_credit.max_childcare_amount_1 + (num_children > 1) * parameters(period).benefits.working_tax_credit.max_childcare_amount_over_2
+        childcare_element = min_(max_childcare_amount, parameters(period).benefits.working_tax_credit.childcare_element_rate * benunit.sum(benunit.members("eligible_childcare_cost", period)))
+        total_amount = basic_amount + premiums + childcare_element
+        return total_amount * eligible
+
+class child_tax_credit_pre_means_test(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Child Tax Credit amount received per year, before means testing"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        num_exempt_children = benunit.sum(
+            benunit.members("is_CTC_child_limit_exempt", period)
+        )
+        non_exempt_children = (
+            benunit.nb_persons(BenUnit.CHILD) - num_exempt_children
+        )
+        spaces_left = max_(0, 2 - num_exempt_children)
+        children_eligible = num_exempt_children + min_(
+            spaces_left, non_exempt_children
+        )
+        num_disabled_children = benunit.sum(benunit.members("is_child", period) * benunit.members("disabled", period))
+        yearly_amount = (
+            parameters(period).benefits.child_tax_credit.family_element
+            + parameters(period).benefits.child_tax_credit.child_element
+            * children_eligible
+            + parameters(period).benefits.child_tax_credit.disabled_child_element
+            * num_disabled_children
+        )
+        return yearly_amount * (children_eligible > 0)
+
+
 
 class income_support(Variable):
     value_type = float
@@ -101,32 +183,10 @@ class child_benefit(Variable):
         return eldest_amount + additional_amount
 
 
-class child_tax_credit_pre_means_test(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Child Tax Credit amount received per year, before means testing"
-    definition_period = ETERNITY
-
-    def formula(benunit, period, parameters):
-        num_exempt_children = benunit.sum(
-            benunit.members("is_CTC_child_limit_exempt", period)
-        )
-        non_exempt_children = (
-            benunit.nb_persons(BenUnit.CHILD) - num_exempt_children
-        )
-        spaces_left = max_(0, 2 - num_exempt_children)
-        children_eligible = num_exempt_children + min_(
-            spaces_left, non_exempt_children
-        )
-        yearly_amount = (
-            parameters(period).benefits.child_tax_credit.family_element
-            + parameters(period).benefits.child_tax_credit.child_element
-            * children_eligible
-        )
-        return yearly_amount * (children_eligible > 0)
 
 
-class child_working_tax_credit_reduction(Variable):
+
+class tax_credit_reduction(Variable):
     value_type = float
     entity = BenUnit
     label = u"Child and Working Tax Credit amount reduced per week from means testing"
@@ -142,18 +202,23 @@ class child_working_tax_credit_reduction(Variable):
         eligible_for_both = (child_tax_credit_amount > 0) * (
             working_tax_credit_amount > 0
         )
+        CTC_only = (child_tax_credit_amount > 0) * (1 - eligible_for_both)
         threshold = (
             eligible_for_both
             * parameters(period).benefits.working_tax_credit.income_threshold
-            + (child_tax_credit_amount > 0)
-            * (1 - eligible_for_both)
-            * parameters(period).benefits.child_tax_credit.income_threshold
+            + CTC_only
+            * parameters(period).benefits.child_tax_credit.income_threshold_CTC_only
         )
+        means_tested_SSP = max_(0, benunit.sum(benunit.members("SSP", period)) - parameters(period).benefits.working_tax_credit.SSP_disregard)
+        means_tested_earnings = benunit("benunit_earnings", period) - means_tested_SSP
+        means_tested_SP = max_(0, benunit("benunit_state_pension", period) + benunit("benunit_pension_income", period) - parameters(period).benefits.working_tax_credit.pension_disregard)
+        means_tested_benefit_income = benunit.sum(benunit.members("incapacity_benefit_reported", period))
+        means_tested_income = means_tested_earnings + means_tested_SP + means_tested_SSP + means_tested_benefit_income
         reduction = (
-            max_(0, (benunit("benunit_income", period) * 52 - threshold))
+            max_(0, (means_tested_income * 52 - threshold))
             * parameters(
                 period
-            ).benefits.child_tax_credit.income_reduction_rate
+            ).benefits.working_tax_credit.income_reduction_rate
         )
         return reduction
 
@@ -165,21 +230,11 @@ class working_tax_credit(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        single = benunit("is_single", period)
-        couple = benunit("is_couple", period)
-        random = np.random.rand(*single.shape)
-        no_CTC = benunit("child_tax_credit", period) == 0
-        takeup = (
-            (random < 0.35) * single * no_CTC
-            + (random < 0.23) * couple * no_CTC
-            + (random < 0.84) * (1 - no_CTC)
-        )
         return (
-            takeup
-            * max_(
+            max_(
                 0,
                 benunit("working_tax_credit_pre_means_test", period)
-                - benunit("child_working_tax_credit_reduction", period),
+                - benunit("tax_credit_reduction", period),
             )
             / 52
         )
@@ -192,12 +247,10 @@ class child_tax_credit(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        random = np.random.rand(*benunit("is_single", period).shape)
-        takeup = random < 0.84
-        reduction_left = takeup * min_(
+        reduction_left = min_(
             0,
             benunit("working_tax_credit_pre_means_test", period)
-            - benunit("child_working_tax_credit_reduction", period),
+            - benunit("tax_credit_reduction", period),
         )
         return (
             max_(
@@ -209,91 +262,9 @@ class child_tax_credit(Variable):
         )
 
 
-class working_tax_credit_pre_means_test(Variable):
-    value_type = float
-    entity = BenUnit
-    label = (
-        u"Working Tax Credit amount received per year, before means testing"
-    )
-    definition_period = ETERNITY
-
-    def formula(benunit, period, parameters):
-        hours_worked = benunit.sum(benunit.members("hours_worked", period))
-        eligible = (
-            benunit("is_single", period)
-            * (
-                hours_worked
-                >= parameters(
-                    period
-                ).benefits.working_tax_credit.hours_requirement_single
-            )
-            + benunit("is_couple", period)
-            * (
-                hours_worked
-                >= parameters(
-                    period
-                ).benefits.working_tax_credit.hours_requirement_couple
-            )
-            + benunit("is_lone_parent", period)
-            * (
-                hours_worked
-                >= parameters(
-                    period
-                ).benefits.working_tax_credit.hours_requirement_lone_parent
-            )
-        )
-        amount = (
-            parameters(period).benefits.working_tax_credit.amount_basic
-            + (
-                hours_worked
-                >= parameters(
-                    period
-                ).benefits.working_tax_credit.hours_requirement_single
-            )
-            * parameters(period).benefits.working_tax_credit.amount_worker
-            + benunit("is_couple", period)
-            * parameters(period).benefits.working_tax_credit.amount_couple
-            + benunit("is_lone_parent", period)
-            * parameters(period).benefits.working_tax_credit.amount_lone_parent
-        )
-        return amount * eligible
 
 
-class JSA_contrib(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"JSA (contributory) amount received per week"
-    definition_period = ETERNITY
 
-    def formula(benunit, period, parameters):
-        age = benunit("younger_adult_age", period)
-        is_couple = benunit.nb_persons(BenUnit.ADULT) == 2
-        single_young = (age >= 18) * (age < 25) * (np.logical_not(is_couple))
-        single_old = (age >= 25) * (np.logical_not(is_couple))
-        personal_allowance = (
-            single_young * parameters(period).benefits.JSA.contrib.amount_18_24
-            + single_old
-            * parameters(period).benefits.JSA.contrib.amount_over_25
-            + is_couple * parameters(period).benefits.JSA.contrib.amount_couple
-        )
-        earnings_deduction = max_(
-            0,
-            benunit("benunit_earnings", period)
-            - parameters(period).benefits.JSA.contrib.earn_disregard,
-        )
-        pension_deduction = max_(
-            0,
-            benunit("benunit_pension_income", period)
-            - parameters(period).benefits.JSA.contrib.pension_disregard,
-        )
-        return max_(
-            0,
-            (personal_allowance - earnings_deduction - pension_deduction)
-            * (
-                benunit.sum(benunit.members("JSA_contrib_reported", period))
-                > 0
-            ),
-        )
 
 
 class JSA_income(Variable):
@@ -335,7 +306,7 @@ class JSA_income(Variable):
         )
         means_tested_income = benunit(
             "benunit_post_tax_income", period
-        ) + benunit("JSA_contrib", period)
+        ) + benunit.sum(benunit.members("JSA_contrib", period))
         income_deduction = max_(
             0,
             means_tested_income
