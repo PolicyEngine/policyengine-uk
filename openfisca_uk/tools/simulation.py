@@ -101,5 +101,4 @@ def entity_df(model, entity="benunit", period="2020-09-12"):
     )
     for var in entity_variables:
         df[var] = model.calculate(var, period)
-        df[f"{var}_m"] = model.calculate(weight_col, period)
     return df

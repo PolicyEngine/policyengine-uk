@@ -162,9 +162,10 @@ class income_tax_applicable_amount(Variable):
         return max_(
             person("employee_earnings", period)
             + person("self_employed_earnings", period)
-            + 0.75 * person("state_pension", period)
+            + person("state_pension", period)
             + 0.75 * person("pension_income", period)
-            + taxed_benefit_sum,
+            + taxed_benefit_sum
+            - person("deductions", period),
             0,
         )
 
@@ -308,7 +309,8 @@ class child_benefit_reduction(Variable):
 
     def formula(person, period, parameters):
         return (
-            person("child_benefit_reported", period)
+            person("is_head", period)
+            * person.benunit("child_benefit", period)
             * 1e-4
             * max_(0, person("income_tax_applicable_amount", period) - 961)
         )
@@ -329,7 +331,6 @@ class income(Variable):
             "interest",
             "untaxed_means_tested_bonus",
             "non_means_tested_bonus",
-            "misc_income",
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)

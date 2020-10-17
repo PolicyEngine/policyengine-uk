@@ -1,0 +1,7 @@
+description: Threshold for the higher amount of WFA.
+values:
+  2020-06-01:
+    value: 80
+metadata:
+  threshold_unit: age
+  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=26

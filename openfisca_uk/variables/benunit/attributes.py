@@ -27,7 +27,7 @@ class benunit_equivalisation(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        second_adult = benunit.nb_persons(benunit.ADULT) == 2
+        second_adult = benunit.nb_persons(BenUnit.ADULT) == 2
         num_young_children = benunit.sum(
             benunit.members("is_young_child", period)
         )
@@ -78,7 +78,7 @@ class is_lone_parent(Variable):
 class is_couple(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether the benunit structure is a lone parent"
+    label = u"Whether the benunit structure is a couple"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -88,7 +88,7 @@ class is_couple(Variable):
 class is_single(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether the benunit structure is a lone parent"
+    label = u"Whether the benunit structure is a single person"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):

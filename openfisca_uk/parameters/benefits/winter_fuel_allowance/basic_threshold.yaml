@@ -1,0 +1,7 @@
+description: Age threshold for the basic amount of WFA.
+values:
+  2018-06-01:
+    value: 65
+metadata:
+  threshold_unit: age
+  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=26

@@ -73,7 +73,7 @@ class adults_in_household(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.nb_persons(Household.ADULT)
+        return household.sum(household.members("is_adult", period))
 
 
 class children_in_household(Variable):
@@ -84,3 +84,12 @@ class children_in_household(Variable):
 
     def formula(household, period, parameters):
         return household.nb_persons(Household.CHILD)
+
+class seniors_in_household(Variable):
+    value_type = int
+    entity = Household
+    label = u"Number of children in the household"
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("is_senior", period))
