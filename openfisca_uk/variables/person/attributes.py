@@ -153,4 +153,8 @@ class is_child(Variable):
     def formula(person, period, parameters):
         return person("age", period) < 18
 
-
+class is_householder(Variable):
+    value_type = float
+    entity = Person
+    label = u'Whether the person is the household owner'
+    definition_period = ETERNITY

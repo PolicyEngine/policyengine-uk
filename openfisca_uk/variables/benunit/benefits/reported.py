@@ -45,3 +45,30 @@ class benunit_JSA_income_reported(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("JSA_income_reported", period))
+
+class benunit_housing_benefit_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Reported amount of Housing Benefit'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("housing_benefit_reported", period))
+
+class benunit_pension_credit_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Reported amount of Pension Credit'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("pension_credit_reported", period))
+
+class benunit_universal_credit_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Reported amount of Pension Credit'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("universal_credit_reported", period))

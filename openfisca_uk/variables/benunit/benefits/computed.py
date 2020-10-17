@@ -219,6 +219,7 @@ class income_support_JSA_ib(Variable):
                 ).benefits.income_support.amount_lone_over_18
             )
         )
+        eligible_housing_costs = max_(0, benunit("benunit_housing_costs", period) - benunit("housing_benefit", period))
         has_carer = benunit.max(benunit.members("carers_allowance_reported", period)) > 0
         has_disabled_adult = benunit.max(benunit.members("is_adult", period) * benunit.members("disabled", period)) > 0
         premiums = parameters(period).benefits.income_support.carer_premium * has_carer + parameters(period).benefits.income_support.disability_premium * has_disabled_adult
@@ -250,7 +251,7 @@ class income_support_JSA_ib(Variable):
         )
         return max_(
             0,
-            (personal_allowance + premiums - income_deduction)
+            (personal_allowance + premiums + eligible_housing_costs - income_deduction)
         )
 
 class income_support(Variable):
@@ -272,3 +273,121 @@ class JSA_income(Variable):
     def formula(benunit, period, parameters):
         eligible = benunit("benunit_JSA_income_reported", period) > 0
         return eligible * benunit("income_support_JSA_ib", period)
+
+class pension_credit_MG(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Pension Credit (Minimum Guarantee) amount per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        PC_params = parameters(period).benefits.pension_credit
+        eligible = benunit.max(benunit.members("is_state_pension_age", period)) > 0
+        personal_allowance = benunit("is_single", period) * PC_params.minimum_guarantee_single + benunit("is_couple", period) * PC_params.minimum_guarantee_couple
+        has_carer = benunit.max(benunit.members("carers_allowance_reported", period)) > 0
+        premiums = has_carer * PC_params.carer_premium
+        applicable_amount = personal_allowance + premiums
+        return applicable_amount * eligible
+        
+class pension_credit_GC(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Pension Credit (Guarantee Credit) amount per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        means_tested_income = benunit("benunit_income", period)
+        return max_(0, benunit("pension_credit_MG", period) - means_tested_income)
+
+
+class pension_credit_SC(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Pension Credit (Savings Credit) amount per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        PC_params = parameters(period).benefits.pension_credit
+        income = benunit("benunit_income", period)
+        MG_amount = benunit("pension_credit_MG", period)
+        threshold = PC_params.savings_credit_threshold_single * benunit("is_single", period) + PC_params.savings_credit_threshold_couple * benunit("is_couple", period)
+        maximum_amount = PC_params.savings_credit_max_single * benunit("is_single", period) + PC_params.savings_credit_max_couple * benunit("is_couple", period)
+        means_tested_income = max_(0, income - threshold) * 0.6
+        deduction = max_(0, income - MG_amount) * 0.4
+        SG_amount = max_(0, min_(maximum_amount, maximum_amount + means_tested_income - deduction))
+        return SG_amount
+
+class pension_credit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Pension Credit amount per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (benunit("pension_credit_GC", period) + benunit("pension_credit_SC", period)) * (benunit("benunit_pension_credit_reported", period) > 0)
+
+class benunit_housing_costs(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Housing costs per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("personal_housing_costs", period))
+
+class housing_benefit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Housing Benefit per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        HB_params = parameters(period).benefits.housing_benefit
+        eligible_housing_costs = benunit.sum(benunit.members("personal_housing_costs", period))
+        num_children = benunit.sum(benunit.members("is_child", period))
+        num_disabled_children = benunit.sum(benunit.members("disabled", period) * benunit.members("is_child", period))
+        is_pensioner_couple = benunit("is_couple", period) * (benunit.sum(benunit.members("is_state_pension_age", period)) > 0)
+        is_single_pensioner = benunit("is_single", period) * (benunit.sum(benunit.members("is_state_pension_age", period)) > 0)
+        applicable_amount = HB_params.family_element + HB_params.child_premium * num_children + HB_params.disability_premium * num_disabled_children + HB_params.single_pensioner_premium * is_single_pensioner + HB_params.couple_pensioner_premium * is_pensioner_couple
+        BENUNIT_MEANS_TESTED_BENEFITS = [
+            "working_tax_credit",
+            "child_tax_credit",
+            "child_benefit"
+        ]
+        PERSON_MEANS_TESTED_BENEFITS = [
+            "JSA_contrib"
+        ]
+        benefits = sum(map(lambda benefit: benunit(benefit, period), BENUNIT_MEANS_TESTED_BENEFITS)) + sum(map(lambda benefit: benunit.sum(benunit.members(benefit, period)), PERSON_MEANS_TESTED_BENEFITS))
+        means_tested_income = benunit(
+            "benunit_post_tax_income", period
+        ) + benefits
+        reduction = max_(0, means_tested_income - applicable_amount) * 0.65
+        return max_(0, applicable_amount - reduction) * (benunit("benunit_housing_benefit_reported", period) > 0)
+
+class universal_credit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Universal Credit amount per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        UC_params = parameters(period).benefits.universal_credit
+        is_single = benunit("is_single", period)
+        is_couple = benunit("is_couple", period)
+        is_over_25 = benunit("younger_adult_age", period) >= 25
+        basic_amount = is_single * (1 - is_over_25) * UC_params.basic_single_young + is_single * is_over_25 * UC_params.basic_single_older + is_couple * (1 - is_over_25) * UC_params.basic_couple_young + is_couple * is_over_25 * UC_params.basic_couple_older
+        has_carer = benunit.max(benunit.members("carers_allowance_reported", period)) > 0
+        num_eligible_children = min_(2, benunit.nb_persons(BenUnit.CHILD))
+        num_eligible_disabled_children = benunit.sum(benunit.members("is_child", period) * benunit.members("disabled", period))
+        childcare_limit = (num_eligible_children == 1) * UC_params.max_childcare_1 + (num_eligible_children > 1) * UC_params.max_childcare_2
+        is_disabled = benunit.sum((1 - benunit.members("is_child", period)) * benunit.members("disabled", period))
+        premiums = has_carer * UC_params.carer_element + num_eligible_children * UC_params.child_element + num_eligible_disabled_children * UC_params.disabled_child_element + is_disabled * UC_params.disabled_element
+        eligible_childcare_costs = benunit.sum(benunit.members("eligible_childcare_cost", period))
+        childcare_element = min_(childcare_limit, eligible_childcare_costs * UC_params.childcare_cost_rate)
+        applicable_amount = basic_amount + premiums + childcare_element
+        earned_income = benunit("benunit_earnings", period) - benunit("benunit_income_tax", period) - benunit("benunit_NI", period)
+        unearned_income = benunit("benunit_pension_income", period) + benunit("benunit_state_pension", period) + benunit.sum(benunit.members("carers_allowance_reported", period)) + benunit.sum(benunit.members("JSA_contrib", period))
+        earnings_reduction = max_(0, earned_income * 4 - UC_params.earn_disregard)
+        final_amount = max_(0, applicable_amount - unearned_income * 4 - UC_params.reduction_rate * earnings_reduction) / 4
+        already_claiming = benunit("benunit_universal_credit_reported", period) > 0
+        return final_amount * already_claiming

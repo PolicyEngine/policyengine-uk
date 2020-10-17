@@ -435,3 +435,12 @@ class net_income(Variable):
             - person("student_loan_repayments", period)
             - person("external_child_payment", period)
         )
+
+class personal_housing_costs(Variable):
+    value_type = float
+    entity = Person
+    label = u'Amount paid for houshold housing costs'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("is_householder", period) * person.household("housing_costs", period)
