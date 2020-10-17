@@ -8,7 +8,7 @@ class taxed_means_tested_bonus(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 100
+        return 2 * (1 - person("is_child", period))
 
 class small_earnings_increase(Reform):
     def apply(self):

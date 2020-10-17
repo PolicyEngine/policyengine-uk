@@ -8,7 +8,7 @@ import os
 import pandas as pd
 
 
-def model(*reforms, data_dir="inputs", period="2020"):
+def model(*reforms, data_dir="inputs", period="ETERNITY"):
     """
     Create and populate a tax-benefit simulation model from OpenFisca.
 
