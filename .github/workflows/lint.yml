@@ -23,6 +23,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Black Code Formatter
-        uses: lgeiger/black-action@v1.0.1
+        uses: mflaxman/black-action@v1.0.1
         with:
           args: ". --check --line-length 79"
