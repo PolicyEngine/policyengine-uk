@@ -37,7 +37,7 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 155
+        return 125 + person("is_state_pension_age", period) * 50
 
 
 class benunit_basic_income(Variable):
@@ -69,8 +69,11 @@ class reform_3(Reform):
         for removed_var in [
             "child_benefit",
             "income_support",
+            "JSA_contrib",
+            "JSA_income",
             "child_tax_credit",
             "working_tax_credit",
+            "universal_credit",
             "state_pension"
         ]:
             self.neutralize_variable(removed_var)
