@@ -1,0 +1,11 @@
+description: Earnings disregard for means testing Universal Credit per month
+values:
+  2016-06-01:
+    value: 397.00
+  2018-06-01:
+    value: 409.00
+  2019-06-01:
+    value: 503.00
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47
