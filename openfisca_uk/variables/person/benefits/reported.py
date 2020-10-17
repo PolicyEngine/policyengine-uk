@@ -9,10 +9,11 @@ class state_pension_reported(Variable):
     label = u"Reported amount of State Pension receipt"
     definition_period = ETERNITY
 
+
 class JSA_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Reported amount of JSA (total)'
+    label = u"Reported amount of JSA (total)"
     definition_period = ETERNITY
 
 

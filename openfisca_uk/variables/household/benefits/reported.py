@@ -9,4 +9,6 @@ class household_WFA_reported(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.sum(household.members("winter_fuel_allowance_reported", period))
+        return household.sum(
+            household.members("winter_fuel_allowance_reported", period)
+        )

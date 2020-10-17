@@ -47,23 +47,30 @@ class household_net_income_bhc(Variable):
             - household("service_charges", period)
         )
 
+
 class household_taxed_means_tested_bonus(Variable):
     value_type = float
     entity = Household
-    label = u'Total untaxed means tested bonus'
+    label = u"Total untaxed means tested bonus"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.sum(household.members("taxed_means_tested_bonus", period))
+        return household.sum(
+            household.members("taxed_means_tested_bonus", period)
+        )
+
 
 class household_income(Variable):
     value_type = float
     entity = Household
-    label = u'Amount of income per week from employment and pensions'
+    label = u"Amount of income per week from employment and pensions"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.sum(household.members("earnings", period) + household.members("pension_income", period))
+        return household.sum(
+            household.members("earnings", period)
+            + household.members("pension_income", period)
+        )
 
 
 class equiv_household_net_income_bhc(Variable):

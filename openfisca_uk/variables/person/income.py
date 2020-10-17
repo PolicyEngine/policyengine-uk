@@ -88,16 +88,18 @@ class net_income_adjustment(Variable):
     label = u"Adjustment for FRS net income disparities"
     definition_period = ETERNITY
 
+
 class SSP(Variable):
     value_type = float
     entity = Person
-    label = u'Amount of Statutory Sick Pay per week'
+    label = u"Amount of Statutory Sick Pay per week"
     definition_period = ETERNITY
+
 
 class eligible_childcare_cost(Variable):
     value_type = float
     entity = Person
-    label = u'Costs of registered childcare for this person per week'
+    label = u"Costs of registered childcare for this person per week"
     definition_period = ETERNITY
 
 
@@ -298,11 +300,13 @@ class income_tax_and_NI(Variable):
     def formula(person, period, parameters):
         return person("NI", period) + person("income_tax", period)
 
+
 class taxed_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u'Variable for a future taxed and means-tested benefit'
+    label = u"Variable for a future taxed and means-tested benefit"
     definition_period = ETERNITY
+
 
 class untaxed_means_tested_bonus(Variable):
     value_type = float
@@ -326,7 +330,8 @@ class child_benefit_reduction(Variable):
 
     def formula(person, period, parameters):
         return (
-            person("is_head", period) * person.benunit("child_benefit", period)
+            person("is_head", period)
+            * person.benunit("child_benefit", period)
             * 1e-4
             * max_(0, person("income_tax_applicable_amount", period) - 961)
         )
@@ -376,17 +381,22 @@ class post_tax_income(Variable):
             - person("capital_gains_tax", period)
         )
 
+
 class benefit_modelling(Variable):
     value_type = float
     entity = Person
-    label = u'Difference between reported person-level benefits and modelled benefits'
+    label = u"Difference between reported person-level benefits and modelled benefits"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         ADDED_BENEFITS = ["JSA_contrib"]
         REMOVED_BENEFITS = ["JSA_contrib_reported"]
-        added_sum = sum(map(lambda benefit : person(benefit, period), ADDED_BENEFITS))
-        removed_sum = sum(map(lambda benefit : person(benefit, period), REMOVED_BENEFITS))
+        added_sum = sum(
+            map(lambda benefit: person(benefit, period), ADDED_BENEFITS)
+        )
+        removed_sum = sum(
+            map(lambda benefit: person(benefit, period), REMOVED_BENEFITS)
+        )
         return added_sum - removed_sum
 
 
@@ -413,7 +423,8 @@ class gross_income(Variable):
         ]
         return (
             sum(map(lambda component: person(component, period), COMPONENTS))
-            + benunit_benefit_modelling + person("benefit_modelling", period)
+            + benunit_benefit_modelling
+            + person("benefit_modelling", period)
         )
 
 
@@ -436,11 +447,14 @@ class net_income(Variable):
             - person("external_child_payment", period)
         )
 
+
 class personal_housing_costs(Variable):
     value_type = float
     entity = Person
-    label = u'Amount paid for houshold housing costs'
+    label = u"Amount paid for houshold housing costs"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("is_householder", period) * person.household("housing_costs", period)
+        return person("is_householder", period) * person.household(
+            "housing_costs", period
+        )

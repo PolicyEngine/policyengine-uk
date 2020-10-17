@@ -12,18 +12,22 @@ class winter_fuel_allowance(Variable):
         max_age_in_household = household.max(household.members("age", period))
         reporting_claim = household("household_WFA_reported", period) > 0
         weeks_in_year = 365.25 / 7
-        return reporting_claim * (
-            max_age_in_household
-            >= parameters(
-                period
-            ).benefits.winter_fuel_allowance.basic_age_threshold
-        ) * parameters(
-            period
-        ).benefits.winter_fuel_allowance.basic_amount / weeks_in_year + (
-            max_age_in_household
-            >= parameters(
-                period
-            ).benefits.winter_fuel_allowance.higher_age_threshold
-        ) * parameters(
-            period
-        ).benefits.winter_fuel_allowance.higher_amount / weeks_in_year
+        return (
+            reporting_claim
+            * (
+                max_age_in_household
+                >= parameters(
+                    period
+                ).benefits.winter_fuel_allowance.basic_age_threshold
+            )
+            * parameters(period).benefits.winter_fuel_allowance.basic_amount
+            / weeks_in_year
+            + (
+                max_age_in_household
+                >= parameters(
+                    period
+                ).benefits.winter_fuel_allowance.higher_age_threshold
+            )
+            * parameters(period).benefits.winter_fuel_allowance.higher_amount
+            / weeks_in_year
+        )

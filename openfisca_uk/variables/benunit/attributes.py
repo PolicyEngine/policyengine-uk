@@ -110,10 +110,11 @@ class looking_for_work(Variable):
             > 0
         )
 
+
 class has_worker_over_60(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Whether the benefit unit contains a member over 60 but below the State Pension Age'
+    label = u"Whether the benefit unit contains a member over 60 but below the State Pension Age"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):

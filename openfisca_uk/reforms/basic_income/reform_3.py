@@ -74,6 +74,6 @@ class reform_3(Reform):
             "child_tax_credit",
             "working_tax_credit",
             "universal_credit",
-            "state_pension"
+            "state_pension",
         ]:
             self.neutralize_variable(removed_var)
