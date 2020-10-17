@@ -93,3 +93,21 @@ class seniors_in_household(Variable):
 
     def formula(household, period, parameters):
         return household.sum(household.members("is_state_pension_age", period))
+
+class household_archetype(Variable):
+    value_type = int
+    entity = Household
+    label = u'Coded archetype of the household'
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        num_adults = household.sum(household.members("is_working_age_adult", period))
+        num_children = household.sum(household.members("is_child", period))
+        num_seniors = household.sum(household.members("is_senior", period))
+        return num_seniors * 100 + num_adults * 10 + num_children
+
+class region(Variable):
+    value_type = float
+    entity = Household
+    label = u'FRS-coded region of the UK'
+    definition_period = ETERNITY
