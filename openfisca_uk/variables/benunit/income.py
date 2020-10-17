@@ -22,14 +22,11 @@ class benunit_benefit_modelling(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = ["working_tax_credit", "child_tax_credit", "child_benefit", "income_support", "JSA_income"]
-        return sum(
-            map(
-                lambda benefit: benunit(benefit, period)
-                - benunit.sum(benunit.members(f"{benefit}_reported", period)),
-                MODELLED_BENEFITS,
-            )
-        )
+        ADDED_BENEFITS = ["working_tax_credit", "child_tax_credit", "child_benefit", "income_support", "JSA_income"]
+        REMOVED_BENEFITS = ["working_tax_credit_reported", "WTC_lump_sum_reported", "child_tax_credit_reported", "CTC_lump_sum_reported", "JSA_income_reported", "child_benefit_reported", "income_support_reported", "SFL_IS_reported", "SFL_JSA_reported", "DWP_IS_reported", "DWP_JSA_reported"]
+        added_sum = sum(map(lambda benefit : benunit(benefit, period), ADDED_BENEFITS))
+        removed_sum = sum(map(lambda benefit : benunit.sum(benunit.members(benefit, period)), REMOVED_BENEFITS))
+        return added_sum - removed_sum
 
 
 class benunit_income(Variable):

@@ -376,6 +376,19 @@ class post_tax_income(Variable):
             - person("capital_gains_tax", period)
         )
 
+class benefit_modelling(Variable):
+    value_type = float
+    entity = Person
+    label = u'Difference between reported person-level benefits and modelled benefits'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        ADDED_BENEFITS = ["JSA_contrib"]
+        REMOVED_BENEFITS = ["JSA_contrib_reported"]
+        added_sum = sum(map(lambda benefit : person(benefit, period), ADDED_BENEFITS))
+        removed_sum = sum(map(lambda benefit : person(benefit, period), REMOVED_BENEFITS))
+        return added_sum - removed_sum
+
 
 class gross_income(Variable):
     value_type = float
@@ -400,7 +413,7 @@ class gross_income(Variable):
         ]
         return (
             sum(map(lambda component: person(component, period), COMPONENTS))
-            + benunit_benefit_modelling
+            + benunit_benefit_modelling + person("benefit_modelling", period)
         )
 
 
