@@ -1,0 +1,7 @@
+description: Reduction rate for Savings Credit over the threshold
+values:
+  2020-06-01:
+    value: 0.4
+metadata:
+  threshold_unit: rate
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=36
