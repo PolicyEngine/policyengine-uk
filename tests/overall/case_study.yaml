@@ -7,6 +7,7 @@
         age: 42
         hours_worked: 34
         employee_earnings: 577
+        child_benefit_reported: 1
       parent2:
         age: 39
         hours_worked: 19
@@ -34,6 +35,7 @@
         age: 42
         hours_worked: 0
         employee_earnings: 0
+        child_benefit_reported: 1
       parent2:
         age: 39
         hours_worked: 0
