@@ -9,7 +9,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.45 * person("income_tax_applicable_amount", period)
+        return 0.47 * person("income_tax_applicable_amount", period)
 
 
 class NI(Variable):

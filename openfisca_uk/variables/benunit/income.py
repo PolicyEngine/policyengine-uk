@@ -121,6 +121,24 @@ class benunit_gross_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("gross_income", period))
 
+class benunit_income_tax(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Income Tax paid by the benefit unit'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("income_tax", period))
+
+class benunit_NI(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'National Insurance paid by the benefit unit'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("NI", period))
+
 
 class benunit_net_income(Variable):
     value_type = float
@@ -140,7 +158,7 @@ class equiv_benunit_net_income(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("benunit_net_income", period) / benunit(
-            "benunit_equivalisation"
+            "benunit_equivalisation", period
         )
 
 
