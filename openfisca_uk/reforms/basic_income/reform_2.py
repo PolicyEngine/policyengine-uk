@@ -55,7 +55,7 @@ class basic_income(Variable):
             + adult_old * 95
             + disabled_adult * 80
             + disabled_child * 120
-            + person("is_child", period) * 65
+            + person("is_child", period) * 60
         )
 
 
