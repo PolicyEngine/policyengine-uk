@@ -84,6 +84,7 @@ class household_income(Variable):
         return household.sum(
             household.members("earnings", period)
             + household.members("pension_income", period)
+            + household.members("state_pension", period)
         )
 
 

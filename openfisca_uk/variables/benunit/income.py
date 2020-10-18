@@ -62,6 +62,17 @@ class benunit_benefit_modelling(Variable):
         return added_sum - removed_sum
 
 
+class benunit_taxed_means_tested_bonus(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Total untaxed means tested bonus"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(
+            benunit.members("taxed_means_tested_bonus", period)
+        )
+
 class benunit_income(Variable):
     value_type = float
     entity = BenUnit
@@ -71,6 +82,23 @@ class benunit_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("income", period))
 
+class benunit_interest(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Interest received per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("interest", period))
+
+class benunit_misc(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Miscellaneous income per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("misc_income", period))
 
 class benunit_pension_income(Variable):
     value_type = float

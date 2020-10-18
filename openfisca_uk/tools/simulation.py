@@ -1,6 +1,7 @@
 import pandas as pd
 from openfisca_uk import CountryTaxBenefitSystem
 from openfisca_core.simulation_builder import SimulationBuilder
+from openfisca_uk.reforms.marginal_tax_rates import small_earnings_increase
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
@@ -69,10 +70,29 @@ def model(*reforms, data_dir="inputs", period="ETERNITY"):
             )  # input data for household data
     return model
 
+def calc_mtr(*reforms, entity="benunit", period="2020-10-18"):
+    net_income_var = {
+        "person": "net_income",
+        "benunit": "benunit_net_income",
+        "household": "household_net_income_bhc"
+    }
+    bonus_var = {
+        "person": "taxed_means_tested_bonus",
+        "benunit": "benunit_taxed_means_tested_bonus",
+        "household": "household_taxed_means_tested_bonus"
+    }
+    baseline = model(*reforms)
+    reformed = model(*reforms, small_earnings_increase)
+    bonus_amount = reformed.calculate(bonus_var[entity], period)
+    current_net_income = baseline.calculate(net_income_var[entity], period)
+    new_net_income = reformed.calculate(net_income_var[entity], period)
+    marginal_tax_rate = 1 - (new_net_income - current_net_income) / bonus_amount
+    return marginal_tax_rate
 
-def entity_df(model, entity="benunit", period="2020-09-12"):
+
+def entity_df(model, entity="benunit", period="2020-10-18"):
     """
-    Create and populate a DataFram with all variables in the simulation
+    Create and populate a DataFrame with all variables in the simulation
 
     Arguments:
         model: the model to use.

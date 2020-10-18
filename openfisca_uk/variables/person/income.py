@@ -352,12 +352,11 @@ class income(Variable):
             "interest",
             "untaxed_means_tested_bonus",
             "non_means_tested_bonus",
-            "taxed_means_tested_bonus",
-            "misc_income",
+            "taxed_means_tested_bonus"
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
-        ) - person("deductions", period)
+        )
 
 
 class actual_net_income(Variable):
@@ -417,6 +416,7 @@ class gross_income(Variable):
             "state_pension",
             "interest",
             "untaxed_means_tested_bonus",
+            "taxed_means_tested_bonus",
             "benefits",
             "non_means_tested_bonus",
             "maintenance_income",
@@ -437,7 +437,6 @@ class net_income(Variable):
     def formula(person, period, parameters):
         return (
             person("gross_income", period)
-            + person("net_income_adjustment", period)
             - person("income_tax", period)
             - person("NI", period)
             - person("capital_gains_tax", period)
