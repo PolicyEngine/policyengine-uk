@@ -23,10 +23,11 @@ class service_charges(Variable):
     label = u"Amount paid for Service Charges/Ground Rent"
     definition_period = ETERNITY
 
+
 class household_earned_income(Variable):
     value_type = float
     entity = Household
-    label = u'Earned household income per week'
+    label = u"Earned household income per week"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
@@ -34,9 +35,17 @@ class household_earned_income(Variable):
             "employee_earnings",
             "self_employed_earnings",
             "pension_income",
-            "interest"
+            "interest",
         ]
-        return sum(map(lambda component : household.sum(household.members(component, period)), COMPONENTS))
+        return sum(
+            map(
+                lambda component: household.sum(
+                    household.members(component, period)
+                ),
+                COMPONENTS,
+            )
+        )
+
 
 class household_gross_income(Variable):
     value_type = float

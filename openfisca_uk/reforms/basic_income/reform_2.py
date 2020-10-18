@@ -81,11 +81,7 @@ class non_means_tested_bonus(Variable):
 
 class reform_2(Reform):
     def apply(self):
-        for changed_var in [
-            income_tax,
-            NI,
-            non_means_tested_bonus
-        ]:
+        for changed_var in [income_tax, NI, non_means_tested_bonus]:
             self.update_variable(changed_var)
         for added_var in [basic_income, benunit_basic_income]:
             self.add_variable(added_var)

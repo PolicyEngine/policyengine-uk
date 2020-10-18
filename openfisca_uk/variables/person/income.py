@@ -352,7 +352,7 @@ class income(Variable):
             "interest",
             "untaxed_means_tested_bonus",
             "non_means_tested_bonus",
-            "taxed_means_tested_bonus"
+            "taxed_means_tested_bonus",
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)

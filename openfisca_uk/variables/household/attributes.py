@@ -85,7 +85,7 @@ class children_in_household(Variable):
     def formula(household, period, parameters):
         return household.nb_persons(Household.CHILD)
 
-      
+
 class seniors_in_household(Variable):
     value_type = int
     entity = Household

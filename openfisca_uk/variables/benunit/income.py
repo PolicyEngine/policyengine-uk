@@ -69,9 +69,8 @@ class benunit_taxed_means_tested_bonus(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(
-            benunit.members("taxed_means_tested_bonus", period)
-        )
+        return benunit.sum(benunit.members("taxed_means_tested_bonus", period))
+
 
 class benunit_income(Variable):
     value_type = float
@@ -82,23 +81,26 @@ class benunit_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("income", period))
 
+
 class benunit_interest(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Interest received per week'
+    label = u"Interest received per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("interest", period))
 
+
 class benunit_misc(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Miscellaneous income per week'
+    label = u"Miscellaneous income per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("misc_income", period))
+
 
 class benunit_pension_income(Variable):
     value_type = float
@@ -149,19 +151,21 @@ class benunit_gross_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("gross_income", period))
 
+
 class benunit_income_tax(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Income Tax paid by the benefit unit'
+    label = u"Income Tax paid by the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("income_tax", period))
 
+
 class benunit_NI(Variable):
     value_type = float
     entity = BenUnit
-    label = u'National Insurance paid by the benefit unit'
+    label = u"National Insurance paid by the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
