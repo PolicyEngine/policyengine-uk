@@ -225,14 +225,19 @@ class child_tax_credit(Variable):
             / 52
         )
 
+
 class WTC_CTC_combined(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Combined value of Working Tax Credit and Child Tax Credit per week'
+    label = (
+        u"Combined value of Working Tax Credit and Child Tax Credit per week"
+    )
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit("working_tax_credit", period) + benunit("child_tax_credit", period)
+        return benunit("working_tax_credit", period) + benunit(
+            "child_tax_credit", period
+        )
 
 
 class child_benefit(Variable):
@@ -321,7 +326,7 @@ class income_support_JSA_ib(Variable):
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "working_tax_credit",
             "child_tax_credit",
-            "child_benefit"
+            "child_benefit",
         ]
         PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
         benefits = sum(
@@ -335,9 +340,7 @@ class income_support_JSA_ib(Variable):
                 PERSON_MEANS_TESTED_BENEFITS,
             )
         )
-        means_tested_income = (
-            benunit("benunit_income", period) + benefits
-        )
+        means_tested_income = benunit("benunit_income", period) + benefits
         income_deduction = max_(
             0,
             means_tested_income
@@ -354,11 +357,7 @@ class income_support_JSA_ib(Variable):
         )
         return max_(
             0,
-            (
-                personal_allowance
-                + premiums
-                - income_deduction
-            ),
+            (personal_allowance + premiums - income_deduction),
         )
 
 
@@ -533,7 +532,7 @@ class housing_benefit_post_means_test(Variable):
             "child_benefit",
             "income_support",
             "JSA_income",
-            "pension_credit"
+            "pension_credit",
         ]
         PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
         benefits = sum(
@@ -554,9 +553,7 @@ class housing_benefit_post_means_test(Variable):
                 period
             ).benefits.working_tax_credit.hours_requirement_single
         )
-        means_tested_income = (
-            benunit("benunit_income", period) + benefits
-        )
+        means_tested_income = benunit("benunit_income", period) + benefits
         income_deduction = max_(
             0,
             means_tested_income
@@ -571,11 +568,19 @@ class housing_benefit_post_means_test(Variable):
             + benunit("is_lone_parent", period)
             * parameters(period).benefits.income_support.income_disregard_lone
             + works_over_30_hours
-            * parameters(period).benefits.housing_benefit.working_disregard_bonus,
+            * parameters(
+                period
+            ).benefits.housing_benefit.working_disregard_bonus,
         )
         reduction = max_(0, means_tested_income - applicable_amount) * 0.65
-        receiving_IS_or_PC = benunit("income_support", period) + benunit("pension_credit", period) > 0
-        eligible_amount = (1 - receiving_IS_or_PC) * (eligible_housing_costs - reduction) + receiving_IS_or_PC * eligible_housing_costs
+        receiving_IS_or_PC = (
+            benunit("income_support", period)
+            + benunit("pension_credit", period)
+            > 0
+        )
+        eligible_amount = (1 - receiving_IS_or_PC) * (
+            eligible_housing_costs - reduction
+        ) + receiving_IS_or_PC * eligible_housing_costs
         return max_(0, eligible_amount)
 
 
@@ -586,7 +591,11 @@ class housing_benefit(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit("housing_benefit_post_means_test", period) * (benunit("benunit_universal_credit_reported", period) == 0) * (benunit("benunit_housing_benefit_reported", period) > 0)
+        return (
+            benunit("housing_benefit_post_means_test", period)
+            * (benunit("benunit_universal_credit_reported", period) == 0)
+            * (benunit("benunit_housing_benefit_reported", period) > 0)
+        )
 
 
 class universal_credit(Variable):
