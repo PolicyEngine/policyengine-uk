@@ -156,7 +156,7 @@ class tax_credit_reduction(Variable):
             - parameters(period).benefits.working_tax_credit.SSP_disregard,
         )
         means_tested_earnings = (
-            benunit("benunit_earnings", period) - means_tested_SSP
+            benunit("benunit_earnings", period) + means_tested_SSP
         )
         means_tested_SP = max_(
             0,
@@ -175,6 +175,7 @@ class tax_credit_reduction(Variable):
             + benunit.sum(
                 benunit.members("untaxed_means_tested_bonus", period)
             )
+            + benunit.sum(benunit.members("taxed_means_tested_bonus", period))
         )
         reduction = (
             max_(0, (means_tested_income * 52 - threshold))
@@ -340,7 +341,9 @@ class income_support_JSA_ib(Variable):
                 PERSON_MEANS_TESTED_BENEFITS,
             )
         )
-        means_tested_income = benunit("benunit_income", period) + benefits
+        means_tested_income = (
+            benunit("benunit_post_tax_income", period) + benefits
+        )
         income_deduction = max_(
             0,
             means_tested_income
@@ -390,6 +393,23 @@ class JSA_income(Variable):
         not_claiming_IS = benunit("benunit_IS_reported", period) == 0
         eligible = already_claiming_JSA_IB * not_claiming_PC * not_claiming_IS
         return eligible * benunit("income_support_JSA_ib", period)
+
+
+class pension_credit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"JSA (income-based) amount per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        already_claiming_PC = (
+            benunit("benunit_pension_credit_reported", period) > 0
+        )
+        eligible = already_claiming_PC
+        PC = benunit("pension_credit_GC", period) + benunit(
+            "pension_credit_SC", period
+        )
+        return eligible * PC
 
 
 class pension_credit_MG(Variable):
@@ -447,30 +467,15 @@ class pension_credit_SC(Variable):
         maximum_amount = PC_params.savings_credit_max_single * benunit(
             "is_single", period
         ) + PC_params.savings_credit_max_couple * benunit("is_couple", period)
-        means_tested_income = max_(0, income - threshold)
-        deduction = max_(0, income - MG_amount) * 0.6
-        SG_amount = max_(
-            0,
-            min_(
-                maximum_amount,
-                maximum_amount + means_tested_income - deduction,
-            ),
-        )
+        income_above_threshold = max_(0, income - threshold)
+        income_above_MG = max_(0, income - MG_amount)
         claiming_PC = benunit("benunit_pension_credit_reported", period) > 0
-        return SG_amount * claiming_PC
-
-
-class pension_credit(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Pension Credit amount per week"
-    definition_period = ETERNITY
-
-    def formula(benunit, period, parameters):
-        return (
-            benunit("pension_credit_GC", period)
-            + benunit("pension_credit_SC", period)
-        ) * (benunit("benunit_pension_credit_reported", period) > 0)
+        SG_amount = min_(
+            income_above_threshold
+            * (1 - PC_params.savings_credit_reduction_rate),
+            maximum_amount,
+        )
+        return max_(0, SG_amount * claiming_PC)
 
 
 class benunit_housing_costs(Variable):
@@ -530,9 +535,6 @@ class housing_benefit_post_means_test(Variable):
             "working_tax_credit",
             "child_tax_credit",
             "child_benefit",
-            "income_support",
-            "JSA_income",
-            "pension_credit",
         ]
         PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
         benefits = sum(
@@ -553,7 +555,9 @@ class housing_benefit_post_means_test(Variable):
                 period
             ).benefits.working_tax_credit.hours_requirement_single
         )
-        means_tested_income = benunit("benunit_income", period) + benefits
+        means_tested_income = (
+            benunit("benunit_post_tax_income", period) + benefits
+        )
         income_deduction = max_(
             0,
             means_tested_income
