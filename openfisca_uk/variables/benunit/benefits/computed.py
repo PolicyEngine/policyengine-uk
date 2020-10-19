@@ -67,7 +67,7 @@ class working_tax_credit_pre_means_test(Variable):
             * parameters(
                 period
             ).benefits.working_tax_credit.lone_parent_element
-            + benunit.max(
+            + benunit.sum(
                 benunit.members("is_adult", period)
                 * benunit.members("disabled", period)
             )
@@ -225,6 +225,15 @@ class child_tax_credit(Variable):
             / 52
         )
 
+class WTC_CTC_combined(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Combined value of Working Tax Credit and Child Tax Credit per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit("working_tax_credit", period) + benunit("child_tax_credit", period)
+
 
 class child_benefit(Variable):
     value_type = float
@@ -292,17 +301,12 @@ class income_support_JSA_ib(Variable):
                 ).benefits.income_support.amount_lone_over_18
             )
         )
-        eligible_housing_costs = max_(
-            0,
-            benunit("benunit_housing_costs", period)
-            - benunit("housing_benefit", period),
-        )
         has_carer = (
             benunit.max(benunit.members("carers_allowance_reported", period))
             > 0
         )
         has_disabled_adult = (
-            benunit.max(
+            benunit.sum(
                 benunit.members("is_adult", period)
                 * benunit.members("disabled", period)
             )
@@ -317,8 +321,7 @@ class income_support_JSA_ib(Variable):
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "working_tax_credit",
             "child_tax_credit",
-            "child_benefit",
-            "universal_credit",
+            "child_benefit"
         ]
         PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
         benefits = sum(
@@ -333,7 +336,7 @@ class income_support_JSA_ib(Variable):
             )
         )
         means_tested_income = (
-            benunit("benunit_post_tax_income", period) + benefits
+            benunit("benunit_income", period) + benefits
         )
         income_deduction = max_(
             0,
@@ -354,7 +357,6 @@ class income_support_JSA_ib(Variable):
             (
                 personal_allowance
                 + premiums
-                + eligible_housing_costs
                 - income_deduction
             ),
         )
@@ -411,10 +413,7 @@ class pension_credit_MG(Variable):
             > 0
         )
         premiums = has_carer * PC_params.carer_premium
-        housing = benunit("benunit_housing_costs", period) - benunit(
-            "housing_benefit", period
-        )
-        applicable_amount = personal_allowance + premiums + housing
+        applicable_amount = personal_allowance + premiums
         return applicable_amount * eligible
 
 
@@ -425,7 +424,7 @@ class pension_credit_GC(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        means_tested_income = benunit("benunit_income", period)
+        means_tested_income = benunit("benunit_post_tax_income", period)
         return max_(
             0, benunit("pension_credit_MG", period) - means_tested_income
         )
@@ -439,9 +438,7 @@ class pension_credit_SC(Variable):
 
     def formula(benunit, period, parameters):
         PC_params = parameters(period).benefits.pension_credit
-        income = benunit("benunit_income", period) + benunit(
-            "housing_benefit", period
-        )
+        income = benunit("benunit_post_tax_income", period)
         MG_amount = benunit("pension_credit_MG", period)
         threshold = PC_params.savings_credit_threshold_single * benunit(
             "is_single", period
@@ -451,8 +448,8 @@ class pension_credit_SC(Variable):
         maximum_amount = PC_params.savings_credit_max_single * benunit(
             "is_single", period
         ) + PC_params.savings_credit_max_couple * benunit("is_couple", period)
-        means_tested_income = max_(0, income - threshold) * 0.6
-        deduction = max_(0, income - MG_amount)
+        means_tested_income = max_(0, income - threshold)
+        deduction = max_(0, income - MG_amount) * 0.6
         SG_amount = max_(
             0,
             min_(
@@ -527,10 +524,16 @@ class housing_benefit_post_means_test(Variable):
 
     def formula(benunit, period, parameters):
         applicable_amount = benunit("housing_benefit_pre_means_test", period)
+        eligible_housing_costs = benunit.sum(
+            benunit.members("personal_housing_costs", period)
+        )
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "working_tax_credit",
             "child_tax_credit",
             "child_benefit",
+            "income_support",
+            "JSA_income",
+            "pension_credit"
         ]
         PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
         benefits = sum(
@@ -544,11 +547,36 @@ class housing_benefit_post_means_test(Variable):
                 PERSON_MEANS_TESTED_BENEFITS,
             )
         )
+        hours_worked = benunit.sum(benunit.members("hours_worked", period))
+        works_over_30_hours = (
+            hours_worked
+            >= parameters(
+                period
+            ).benefits.working_tax_credit.hours_requirement_single
+        )
         means_tested_income = (
-            benunit("benunit_post_tax_income", period) + benefits
+            benunit("benunit_income", period) + benefits
+        )
+        income_deduction = max_(
+            0,
+            means_tested_income
+            - benunit("is_single", period)
+            * parameters(
+                period
+            ).benefits.income_support.income_disregard_single
+            + benunit("is_couple", period)
+            * parameters(
+                period
+            ).benefits.income_support.income_disregard_couple
+            + benunit("is_lone_parent", period)
+            * parameters(period).benefits.income_support.income_disregard_lone
+            + works_over_30_hours
+            * parameters(period).benefits.housing_benefit.working_disregard_bonus,
         )
         reduction = max_(0, means_tested_income - applicable_amount) * 0.65
-        return max_(0, applicable_amount - reduction)
+        receiving_IS_or_PC = benunit("income_support", period) + benunit("pension_credit", period) > 0
+        eligible_amount = (1 - receiving_IS_or_PC) * (eligible_housing_costs - reduction) + receiving_IS_or_PC * eligible_housing_costs
+        return max_(0, eligible_amount)
 
 
 class housing_benefit(Variable):
@@ -558,7 +586,7 @@ class housing_benefit(Variable):
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit("housing_benefit_post_means_test", period)
+        return benunit("housing_benefit_post_means_test", period) * (benunit("benunit_universal_credit_reported", period) == 0) * (benunit("benunit_housing_benefit_reported", period) > 0)
 
 
 class universal_credit(Variable):
