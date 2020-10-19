@@ -409,7 +409,7 @@ class gross_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        
+
         COMPONENTS = [
             "employee_earnings",
             "self_employed_earnings",
@@ -422,10 +422,9 @@ class gross_income(Variable):
             "non_means_tested_bonus",
             "maintenance_income",
         ]
-        return (
-            sum(map(lambda component: person(component, period), COMPONENTS))
-            + person("benefit_modelling", period)
-        )
+        return sum(
+            map(lambda component: person(component, period), COMPONENTS)
+        ) + person("benefit_modelling", period)
 
 
 class net_income(Variable):
