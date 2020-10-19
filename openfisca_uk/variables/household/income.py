@@ -134,3 +134,12 @@ class equiv_household_net_income_ahc(Variable):
         return household("household_net_income_ahc", period) / household(
             "household_equivalisation_ahc", period
         )
+
+class on_benefits(Variable):
+    value_type = float
+    entity = Household
+    label = u'Whether the household receives benefits'
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("benefit_modelling", period)) > 0

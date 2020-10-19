@@ -396,7 +396,10 @@ class benefit_modelling(Variable):
         removed_sum = sum(
             map(lambda benefit: person(benefit, period), REMOVED_BENEFITS)
         )
-        return added_sum - removed_sum
+        benunit_benefit_modelling = person("is_head", period) * person.benunit(
+            "benunit_benefit_modelling", period
+        )
+        return added_sum - removed_sum + benunit_benefit_modelling
 
 
 class gross_income(Variable):
@@ -406,9 +409,7 @@ class gross_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        benunit_benefit_modelling = person("is_head", period) * person.benunit(
-            "benunit_benefit_modelling", period
-        )
+        
         COMPONENTS = [
             "employee_earnings",
             "self_employed_earnings",
@@ -423,7 +424,6 @@ class gross_income(Variable):
         ]
         return (
             sum(map(lambda component: person(component, period), COMPONENTS))
-            + benunit_benefit_modelling
             + person("benefit_modelling", period)
         )
 
