@@ -1,7 +1,7 @@
-description: Basic amount of WFA.
+description: Higher amount of Winter Fuel Allowance
 values:
-  2018-06-01:
-    value: 300
+  2016-06-01:
+    value: 300.00
 metadata:
   threshold_unit: currency-GBP
-  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=26
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=23

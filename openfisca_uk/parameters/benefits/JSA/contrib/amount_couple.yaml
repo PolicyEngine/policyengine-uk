@@ -1,7 +1,0 @@
-description: Weekly Income Support for single persons aged 16-24.
-values:
-  2020-06-01:
-    value: 74.35
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://gov.uk/jobseekers-allowance

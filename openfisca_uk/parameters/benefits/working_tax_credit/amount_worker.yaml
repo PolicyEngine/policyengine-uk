@@ -1,7 +1,0 @@
-description: Amount of Working Tax Credit for a couple per year.
-values:
-  2020-06-01:
-    value: 825
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://gov.uk/working-tax-credit/what-youll-get

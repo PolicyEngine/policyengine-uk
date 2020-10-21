@@ -1,0 +1,9 @@
+description: Amount of Working Tax Credit for a lone parent per year.
+values:
+  2016-06-01:
+    value: 2010
+  2020-06-01:
+    value: 2055
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

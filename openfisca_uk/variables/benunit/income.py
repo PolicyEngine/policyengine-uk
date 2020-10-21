@@ -15,26 +15,61 @@ class external_child_maintenance(Variable):
 # Derived variables
 
 
-class benefit_modelling(Variable):
+class benunit_benefit_modelling(Variable):
     value_type = float
     entity = BenUnit
     label = "Difference between reported benefits and simulated benefits"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        MODELLED_BENEFITS = [
+        ADDED_BENEFITS = [
+            "working_tax_credit",
+            "child_tax_credit",
             "child_benefit",
             "income_support",
-            "child_tax_credit",
-            "working_tax_credit"
+            "JSA_income",
+            "pension_credit",
+            "housing_benefit",
+            "universal_credit",
         ]
-        return sum(
+        REMOVED_BENEFITS = [
+            "working_tax_credit_reported",
+            "WTC_lump_sum_reported",
+            "child_tax_credit_reported",
+            "CTC_lump_sum_reported",
+            "JSA_income_reported",
+            "child_benefit_reported",
+            "income_support_reported",
+            "SFL_IS_reported",
+            "SFL_JSA_reported",
+            "DWP_IS_reported",
+            "DWP_JSA_reported",
+            "universal_credit_reported",
+            "DWP_UC_reported",
+            "SFL_UC_reported",
+            "housing_benefit_reported",
+            "pension_credit_reported",
+        ]
+        added_sum = sum(
+            map(lambda benefit: benunit(benefit, period), ADDED_BENEFITS)
+        )
+        removed_sum = sum(
             map(
-                lambda benefit: benunit(benefit, period)
-                - benunit.sum(benunit.members(f"{benefit}_reported", period)),
-                MODELLED_BENEFITS,
+                lambda benefit: benunit.sum(benunit.members(benefit, period)),
+                REMOVED_BENEFITS,
             )
         )
+        return added_sum - removed_sum
+
+
+class benunit_taxed_means_tested_bonus(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Total untaxed means tested bonus"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("taxed_means_tested_bonus", period))
 
 
 class benunit_income(Variable):
@@ -47,6 +82,26 @@ class benunit_income(Variable):
         return benunit.sum(benunit.members("income", period))
 
 
+class benunit_interest(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Interest received per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("interest", period))
+
+
+class benunit_misc(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Miscellaneous income per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("misc_income", period))
+
+
 class benunit_pension_income(Variable):
     value_type = float
     entity = BenUnit
@@ -55,6 +110,16 @@ class benunit_pension_income(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("pension_income", period))
+
+
+class benunit_state_pension(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Pension income of the benefit unit"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("state_pension", period))
 
 
 class benunit_earnings(Variable):
@@ -86,19 +151,21 @@ class benunit_gross_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("gross_income", period))
 
+
 class benunit_income_tax(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Income Tax paid by the benefit unit'
+    label = u"Income Tax paid by the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("income_tax", period))
 
+
 class benunit_NI(Variable):
     value_type = float
     entity = BenUnit
-    label = u'National Insurance paid by the benefit unit'
+    label = u"National Insurance paid by the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -125,3 +192,23 @@ class equiv_benunit_net_income(Variable):
         return benunit("benunit_net_income", period) / benunit(
             "benunit_equivalisation", period
         )
+
+
+class benunit_income_tax(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Amount of Income Tax per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("income_tax", period))
+
+
+class benunit_NI(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Amount of National Insurance per week"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("NI", period))

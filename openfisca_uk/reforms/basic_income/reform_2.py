@@ -50,12 +50,12 @@ class basic_income(Variable):
             "is_adult", period
         )
         return (
-            person("is_senior", period) * 235
-            + adult_young * 85
+            person("is_senior", period) * 175
+            + adult_young * 80
             + adult_old * 95
-            + disabled_adult * 60
-            + disabled_child * 100
-            + person("is_child", period) * 105
+            + disabled_adult * 80
+            + disabled_child * 120
+            + person("is_child", period) * 60
         )
 
 
@@ -81,11 +81,7 @@ class non_means_tested_bonus(Variable):
 
 class reform_2(Reform):
     def apply(self):
-        for changed_var in [
-            income_tax,
-            NI,
-            non_means_tested_bonus
-        ]:
+        for changed_var in [income_tax, NI, non_means_tested_bonus]:
             self.update_variable(changed_var)
         for added_var in [basic_income, benunit_basic_income]:
             self.add_variable(added_var)

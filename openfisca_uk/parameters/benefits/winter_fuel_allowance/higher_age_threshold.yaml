@@ -1,0 +1,7 @@
+description: Age threshold for the basic amount of Winter Fuel Allowance
+values:
+  2016-06-01:
+    value: 80
+metadata:
+  threshold_unit: age
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=23

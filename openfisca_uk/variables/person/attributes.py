@@ -39,6 +39,16 @@ class disabled(Variable):
     definition_period = ETERNITY
 
 
+class is_worker_over_60(Variable):
+    value_type = float
+    entity = Person
+    label = u"Whether the person is over 60 but below State Pension Age"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return (person("age", period) >= 60) * (person("age", period) < 65)
+
+
 class adult_weight(Variable):
     value_type = float
     entity = Person
@@ -118,13 +128,25 @@ class is_senior(Variable):
 
 
 class is_adult(Variable):
+    value_type = float
+    entity = Person
+    label = u"Whether the person is an adult"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("age", period) >= 18
+
+
+class is_working_age_adult(Variable):
     value_type = bool
     entity = Person
     label = u"Whether the person is working age"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return (person("age", period) >= 18) * (person("age", period) < 65)
+        return (person("age", period) >= 18) * (
+            1 - person("is_state_pension_age", period)
+        )
 
 
 class is_child(Variable):
@@ -135,3 +157,10 @@ class is_child(Variable):
 
     def formula(person, period, parameters):
         return person("age", period) < 18
+
+
+class is_householder(Variable):
+    value_type = float
+    entity = Person
+    label = u"Whether the person is the household owner"
+    definition_period = ETERNITY

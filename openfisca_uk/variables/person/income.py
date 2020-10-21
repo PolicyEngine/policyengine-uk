@@ -89,6 +89,20 @@ class net_income_adjustment(Variable):
     definition_period = ETERNITY
 
 
+class SSP(Variable):
+    value_type = float
+    entity = Person
+    label = u"Amount of Statutory Sick Pay per week"
+    definition_period = ETERNITY
+
+
+class eligible_childcare_cost(Variable):
+    value_type = float
+    entity = Person
+    label = u"Costs of registered childcare for this person per week"
+    definition_period = ETERNITY
+
+
 # Derived variables
 
 
@@ -165,7 +179,7 @@ class income_tax_applicable_amount(Variable):
             + person("state_pension", period)
             + 0.75 * person("pension_income", period)
             + taxed_benefit_sum
-            - person("deductions", period),
+            + person("taxed_means_tested_bonus", period),
             0,
         )
 
@@ -287,6 +301,13 @@ class income_tax_and_NI(Variable):
         return person("NI", period) + person("income_tax", period)
 
 
+class taxed_means_tested_bonus(Variable):
+    value_type = float
+    entity = Person
+    label = u"Variable for a future taxed and means-tested benefit"
+    definition_period = ETERNITY
+
+
 class untaxed_means_tested_bonus(Variable):
     value_type = float
     entity = Person
@@ -331,10 +352,11 @@ class income(Variable):
             "interest",
             "untaxed_means_tested_bonus",
             "non_means_tested_bonus",
+            "taxed_means_tested_bonus",
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
-        ) - person("deductions", period)
+        )
 
 
 class actual_net_income(Variable):
@@ -359,6 +381,27 @@ class post_tax_income(Variable):
         )
 
 
+class benefit_modelling(Variable):
+    value_type = float
+    entity = Person
+    label = u"Difference between reported person-level benefits and modelled benefits"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        ADDED_BENEFITS = ["JSA_contrib"]
+        REMOVED_BENEFITS = ["JSA_contrib_reported"]
+        added_sum = sum(
+            map(lambda benefit: person(benefit, period), ADDED_BENEFITS)
+        )
+        removed_sum = sum(
+            map(lambda benefit: person(benefit, period), REMOVED_BENEFITS)
+        )
+        benunit_benefit_modelling = person("is_head", period) * person.benunit(
+            "benunit_benefit_modelling", period
+        )
+        return added_sum - removed_sum + benunit_benefit_modelling
+
+
 class gross_income(Variable):
     value_type = float
     entity = Person
@@ -366,9 +409,7 @@ class gross_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        benefit_modelling = person("is_head", period) * person.benunit(
-            "benefit_modelling", period
-        )
+
         COMPONENTS = [
             "employee_earnings",
             "self_employed_earnings",
@@ -376,14 +417,14 @@ class gross_income(Variable):
             "state_pension",
             "interest",
             "untaxed_means_tested_bonus",
+            "taxed_means_tested_bonus",
             "benefits",
             "non_means_tested_bonus",
             "maintenance_income",
         ]
-        return (
-            sum(map(lambda component: person(component, period), COMPONENTS))
-            + benefit_modelling
-        )
+        return sum(
+            map(lambda component: person(component, period), COMPONENTS)
+        ) + person("benefit_modelling", period)
 
 
 class net_income(Variable):
@@ -395,7 +436,6 @@ class net_income(Variable):
     def formula(person, period, parameters):
         return (
             person("gross_income", period)
-            + person("net_income_adjustment", period)
             - person("income_tax", period)
             - person("NI", period)
             - person("capital_gains_tax", period)
@@ -403,4 +443,16 @@ class net_income(Variable):
             - person("deductions", period)
             - person("student_loan_repayments", period)
             - person("external_child_payment", period)
+        )
+
+
+class personal_housing_costs(Variable):
+    value_type = float
+    entity = Person
+    label = u"Amount paid for houshold housing costs"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("is_householder", period) * person.household(
+            "housing_costs", period
         )

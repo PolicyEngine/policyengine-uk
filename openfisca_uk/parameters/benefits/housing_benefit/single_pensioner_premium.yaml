@@ -1,0 +1,15 @@
+description: Single pensioner premium for Housing Benefit
+values:
+  2016-06-01:
+    value: 168.70
+  2017-06-01:
+    value: 172.55
+  2018-06-01:
+    value: 176.40
+  2019-06-01:
+    value: 181.00
+  2020-06-01:
+    value: 184.67
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=41

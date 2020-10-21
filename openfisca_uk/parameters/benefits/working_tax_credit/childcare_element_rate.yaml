@@ -1,0 +1,7 @@
+description: Proportion of eligible childcare costs covered
+values:
+  2020-06-01:
+    value: 0.7
+metadata:
+  threshold_unit: rate
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

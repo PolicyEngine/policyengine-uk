@@ -23,10 +23,11 @@ class service_charges(Variable):
     label = u"Amount paid for Service Charges/Ground Rent"
     definition_period = ETERNITY
 
+
 class household_earned_income(Variable):
     value_type = float
     entity = Household
-    label = u'Earned household income per week'
+    label = u"Earned household income per week"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
@@ -34,9 +35,17 @@ class household_earned_income(Variable):
             "employee_earnings",
             "self_employed_earnings",
             "pension_income",
-            "interest"
+            "interest",
         ]
-        return sum(map(lambda component : household.sum(household.members(component, period)), COMPONENTS))
+        return sum(
+            map(
+                lambda component: household.sum(
+                    household.members(component, period)
+                ),
+                COMPONENTS,
+            )
+        )
+
 
 class household_gross_income(Variable):
     value_type = float
@@ -59,6 +68,32 @@ class household_net_income_bhc(Variable):
             household.sum(household.members("net_income", period))
             - household("council_tax", period)
             - household("service_charges", period)
+        )
+
+
+class household_taxed_means_tested_bonus(Variable):
+    value_type = float
+    entity = Household
+    label = u"Total untaxed means tested bonus"
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        return household.sum(
+            household.members("taxed_means_tested_bonus", period)
+        )
+
+
+class household_income(Variable):
+    value_type = float
+    entity = Household
+    label = u"Amount of income per week from employment and pensions"
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        return household.sum(
+            household.members("earnings", period)
+            + household.members("pension_income", period)
+            + household.members("state_pension", period)
         )
 
 
@@ -98,4 +133,16 @@ class equiv_household_net_income_ahc(Variable):
     def formula(household, period, parameters):
         return household("household_net_income_ahc", period) / household(
             "household_equivalisation_ahc", period
+        )
+
+
+class on_benefits(Variable):
+    value_type = float
+    entity = Household
+    label = u"Whether the household receives benefits"
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        return (
+            household.sum(household.members("benefit_modelling", period)) > 0
         )
