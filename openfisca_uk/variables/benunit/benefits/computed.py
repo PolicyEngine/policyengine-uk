@@ -200,6 +200,7 @@ class working_tax_credit(Variable):
                 - benunit("tax_credit_reduction", period),
             )
             * (benunit("benunit_WTC_reported", period) > 0)
+            * (benunit("benunit_universal_credit_reported", period) == 0)
             / 52
         )
 
@@ -207,7 +208,7 @@ class working_tax_credit(Variable):
 class child_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Amount of Working Tax Credit received per week"
+    label = u"Amount of Child Tax Credit received per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -223,6 +224,7 @@ class child_tax_credit(Variable):
                 + reduction_left,
             )
             * (benunit("benunit_CTC_reported", period) > 0)
+            * (benunit("benunit_universal_credit_reported", period) == 0)
             / 52
         )
 
@@ -580,6 +582,7 @@ class housing_benefit_post_means_test(Variable):
         receiving_IS_or_PC = (
             benunit("income_support", period)
             + benunit("pension_credit", period)
+            + benunit("JSA_income", period)
             > 0
         )
         eligible_amount = (1 - receiving_IS_or_PC) * (

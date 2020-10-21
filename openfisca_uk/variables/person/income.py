@@ -222,6 +222,7 @@ class NI(Variable):
             period
         ).taxes.national_insurance.employee_rates.calc(
             person("employee_earnings", period)
+            + person("taxed_means_tested_bonus", period)
         )
         estimated_yearly_self_emp = (
             person("self_employed_earnings", period) * 52
@@ -350,9 +351,8 @@ class income(Variable):
             "pension_income",
             "state_pension_reported",
             "interest",
-            "untaxed_means_tested_bonus",
-            "non_means_tested_bonus",
             "taxed_means_tested_bonus",
+            "untaxed_means_tested_bonus",
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
@@ -455,4 +455,31 @@ class personal_housing_costs(Variable):
     def formula(person, period, parameters):
         return person("is_householder", period) * person.household(
             "housing_costs", period
+        )
+
+
+class receives_means_tested_benefits(Variable):
+    value_type = float
+    entity = Person
+    label = u"Whether the person receives means-tested benefits"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        MEANS_TESTED_BENEFITS = [
+            "working_tax_credit",
+            "child_tax_credit",
+            "pension_credit",
+            "JSA_income",
+            "income_support",
+            "housing_benefit",
+            "universal_credit",
+        ]
+        return (
+            sum(
+                map(
+                    lambda benefit: person.benunit(benefit, period),
+                    MEANS_TESTED_BENEFITS,
+                )
+            )
+            > 0
         )
