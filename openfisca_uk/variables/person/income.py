@@ -352,7 +352,7 @@ class income(Variable):
             "state_pension_reported",
             "interest",
             "taxed_means_tested_bonus",
-            "untaxed_means_tested_bonus"
+            "untaxed_means_tested_bonus",
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
@@ -457,10 +457,11 @@ class personal_housing_costs(Variable):
             "housing_costs", period
         )
 
+
 class receives_means_tested_benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Whether the person receives means-tested benefits'
+    label = u"Whether the person receives means-tested benefits"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -471,6 +472,14 @@ class receives_means_tested_benefits(Variable):
             "JSA_income",
             "income_support",
             "housing_benefit",
-            "universal_credit"
+            "universal_credit",
         ]
-        return sum(map(lambda benefit : person.benunit(benefit, period), MEANS_TESTED_BENEFITS)) > 0
+        return (
+            sum(
+                map(
+                    lambda benefit: person.benunit(benefit, period),
+                    MEANS_TESTED_BENEFITS,
+                )
+            )
+            > 0
+        )

@@ -65,7 +65,7 @@ class benunit_basic_income(Variable):
 class non_means_tested_bonus(Variable):
     value_type = float
     entity = Person
-    label = u'Amount of the basic income which is not subject to means tests'
+    label = u"Amount of the basic income which is not subject to means tests"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -84,7 +84,12 @@ class untaxed_means_tested_bonus(Variable):
 
 class reform_2(Reform):
     def apply(self):
-        for changed_var in [income_tax, NI, untaxed_means_tested_bonus, non_means_tested_bonus]:
+        for changed_var in [
+            income_tax,
+            NI,
+            untaxed_means_tested_bonus,
+            non_means_tested_bonus,
+        ]:
             self.update_variable(changed_var)
         for added_var in [basic_income, benunit_basic_income]:
             self.add_variable(added_var)

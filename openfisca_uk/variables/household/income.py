@@ -143,4 +143,9 @@ class household_receives_means_tested_benefits(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.sum(household.members("receives_means_tested_benefits", period)) > 0
+        return (
+            household.sum(
+                household.members("receives_means_tested_benefits", period)
+            )
+            > 0
+        )

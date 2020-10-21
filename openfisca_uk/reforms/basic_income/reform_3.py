@@ -69,6 +69,6 @@ class reform_3(Reform):
             "universal_credit",
             "state_pension",
             "housing_benefit",
-            "pension_credit"
+            "pension_credit",
         ]:
             self.neutralize_variable(removed_var)

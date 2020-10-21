@@ -70,6 +70,7 @@ def model(*reforms, data_dir="inputs", period="ETERNITY"):
             )  # input data for household data
     return model
 
+
 def derivative_of(var, *reforms, entity="benunit", period="2020-10-18"):
     bonus_var = {
         "person": "taxed_means_tested_bonus",
@@ -81,10 +82,9 @@ def derivative_of(var, *reforms, entity="benunit", period="2020-10-18"):
     bonus_amount = reformed.calculate(bonus_var[entity], period)
     current_val = baseline.calculate(var, period)
     new_val = reformed.calculate(var, period)
-    derivative = (
-        (new_val - current_val) / bonus_amount
-    )
+    derivative = (new_val - current_val) / bonus_amount
     return derivative
+
 
 def calc_mtr(*reforms, entity="benunit", period="2020-10-18"):
     net_income_var = {
