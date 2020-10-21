@@ -32,14 +32,14 @@ hours_worked
 
 is_CTC_child_limit_exempt
   - description: Whether the child was born after 2017 and therefore exempt from the two-child limit for Child Tax Credit
-  - mean: 0.42
-  - stddev: 0.49
+  - mean: 0.14
+  - stddev: 0.35
   - median: 0.0
 
 is_adult
-  - description: Whether the person is working age
-  - mean: 0.58
-  - stddev: 0.49
+  - description: Whether the person is an adult
+  - mean: 0.86
+  - stddev: 0.35
   - median: 1.0
 
 is_child
@@ -50,8 +50,14 @@ is_child
 
 is_head
   - description: Whether the person is the head of the benefit unit
-  - mean: 1.0
-  - stddev: 0.0
+  - mean: 0.44
+  - stddev: 0.5
+  - median: 0.0
+
+is_householder
+  - description: Whether the person is the household owner
+  - mean: 0.65
+  - stddev: 0.48
   - median: 1.0
 
 is_male
@@ -78,6 +84,18 @@ is_state_pension_age
   - stddev: 0.45
   - median: 0.0
 
+is_worker_over_60
+  - description: Whether the person is over 60 but below State Pension Age
+  - mean: 0.07
+  - stddev: 0.25
+  - median: 0.0
+
+is_working_age_adult
+  - description: Whether the person is working age
+  - mean: 0.58
+  - stddev: 0.49
+  - median: 1.0
+
 is_young_child
   - description: Whether the person is under 14
   - mean: 0.14
@@ -86,8 +104,14 @@ is_young_child
 
 NI
   - description: National Insurance paid per week
-  - mean: 15.0
-  - stddev: 50.28
+  - mean: 14.86
+  - stddev: 50.53
+  - median: 0.0
+
+SSP
+  - description: Amount of Statutory Sick Pay per week
+  - mean: 0.07
+  - stddev: 2.53
   - median: 0.0
 
 actual_net_income
@@ -102,10 +126,16 @@ assets
   - stddev: 11224.89
   - median: 0.0
 
+benefit_modelling
+  - description: Difference between reported person-level benefits and modelled benefits
+  - mean: 0.06
+  - stddev: 50.69
+  - median: 0.0
+
 benefits
   - description: Non-State Pension benefit total
-  - mean: 24.64
-  - stddev: 134.64
+  - mean: 30.56
+  - stddev: 142.19
   - median: 0.0
 
 capital_gains_tax
@@ -116,8 +146,8 @@ capital_gains_tax
 
 child_benefit_reduction
   - description: High income tax charge on the Child Benefit
-  - mean: 0.06
-  - stddev: 1.13
+  - mean: 0.01
+  - stddev: 0.31
   - median: 0.0
 
 deductions
@@ -128,51 +158,57 @@ deductions
 
 earnings
   - description: Total earnings per week
-  - mean: 252.59
-  - stddev: 2125.57
+  - mean: 248.9
+  - stddev: 2128.96
+  - median: 0.0
+
+eligible_childcare_cost
+  - description: Costs of registered childcare for this person per week
+  - mean: 2.33
+  - stddev: 21.09
   - median: 0.0
 
 employee_earnings
   - description: Gross employee_earnings per week
-  - mean: 211.8
-  - stddev: 400.88
+  - mean: 208.11
+  - stddev: 417.1
   - median: 0.0
 
 external_child_payment
   - description: Amount of the benefit units external child maintenance paid by this person
-  - mean: 1.6
-  - stddev: 64.83
+  - mean: 0.86
+  - stddev: 61.31
   - median: 0.0
 
 gross_income
   - description: Gross income per week
-  - mean: 352.85
-  - stddev: 2129.42
-  - median: 236.3699951171875
+  - mean: 352.24
+  - stddev: 2132.26
+  - median: 237.67999267578125
 
 income
   - description: Income per week (not including benefits)
-  - mean: 316.07
-  - stddev: 2124.09
-  - median: 189.5500030517578
+  - mean: 321.62
+  - stddev: 2129.35
+  - median: 177.2100067138672
 
 income_tax
   - description: Income tax paid per week
-  - mean: 44.75
-  - stddev: 943.28
+  - mean: 46.48
+  - stddev: 944.79
   - median: 0.0
 
 income_tax_and_NI
   - description: Total NI and Income tax paid per week
-  - mean: 59.75
-  - stddev: 988.06
+  - mean: 61.33
+  - stddev: 988.84
   - median: 0.0
 
 income_tax_applicable_amount
   - description: Total taxable income per week
-  - mean: 304.74
-  - stddev: 2124.5
-  - median: 160.0
+  - mean: 308.83
+  - stddev: 2127.04
+  - median: 169.1699981689453
 
 interest
   - description: Income from interest per week
@@ -200,14 +236,14 @@ misc_income
 
 net_income
   - description: Net income per week
-  - mean: 279.81
-  - stddev: 2134.67
-  - median: 224.52999877929688
+  - mean: 278.9
+  - stddev: 1151.57
+  - median: 232.33999633789062
 
 net_income_adjustment
   - description: Adjustment for FRS net income disparities
-  - mean: -0.54
-  - stddev: 1092.52
+  - mean: 0.0
+  - stddev: 0.0
   - median: 0.0
 
 non_means_tested_bonus
@@ -224,15 +260,27 @@ pension_income
 
 personal_allowance
   - description: Amount of personal allowance per year
-  - mean: 12422.82
-  - stddev: 958.92
+  - mean: 12405.81
+  - stddev: 1057.24
   - median: 12500.0
+
+personal_housing_costs
+  - description: Amount paid for houshold housing costs
+  - mean: 46.72
+  - stddev: 88.96
+  - median: 11.0
 
 post_tax_income
   - description: Post-tax income, before benefits, per week
-  - mean: 255.8
-  - stddev: 1143.19
-  - median: 188.7100067138672
+  - mean: 259.77
+  - stddev: 1147.94
+  - median: 176.50999450683594
+
+receives_means_tested_benefits
+  - description: Whether the person receives means-tested benefits
+  - mean: 0.23
+  - stddev: 0.42
+  - median: 0.0
 
 self_employed_earnings
   - description: Earnings from self-employment per week
@@ -242,8 +290,8 @@ self_employed_earnings
 
 state_pension
   - description: Amount of State Pension income per week
-  - mean: 30.77
-  - stddev: 62.52
+  - mean: 30.83
+  - stddev: 62.55
   - median: 0.0
 
 student_loan_repayments
@@ -252,16 +300,28 @@ student_loan_repayments
   - stddev: 13.21
   - median: 0.0
 
+taxed_means_tested_bonus
+  - description: Variable for a future taxed and means-tested benefit
+  - mean: 0.0
+  - stddev: 0.0
+  - median: 0.0
+
 total_benefits
   - description: Total amount of benefits received per week
-  - mean: 55.42
-  - stddev: 148.06
+  - mean: 61.38
+  - stddev: 155.31
   - median: 0.0
 
 untaxed_means_tested_bonus
   - description: Variable for a future untaxed, but means-tested benefit
   - mean: 0.0
   - stddev: 0.0
+  - median: 0.0
+
+JSA_contrib
+  - description: Amount of JSA (contribution-based) per week
+  - mean: 0.03
+  - stddev: 1.61
   - median: 0.0
 
 AA_reported
@@ -279,7 +339,7 @@ AFCS_reported
 BSP_reported
   - description: Reported amount of Bereavement Support Payment / Widowed Parents Allowance per week
   - mean: 0.09
-  - stddev: 3.17
+  - stddev: 3.2
   - median: 0.0
 
 CTC_lump_sum_reported
@@ -356,12 +416,18 @@ IIDB_reported
 
 JSA_contrib_reported
   - description: Reported amount of JSA (contributory) receipt
-  - mean: 0.0
-  - stddev: 0.0
+  - mean: 0.04
+  - stddev: 1.74
   - median: 0.0
 
 JSA_income_reported
   - description: Reported amount of JSA (income-based) receipt
+  - mean: 0.39
+  - stddev: 5.67
+  - median: 0.0
+
+JSA_reported
+  - description: Reported amount of JSA (total)
   - mean: 0.0
   - stddev: 0.0
   - median: 0.0
@@ -446,8 +512,8 @@ guardians_allowance_reported
 
 housing_benefit_reported
   - description: Reported amount of Housing Benefit receipt
-  - mean: 0.0
-  - stddev: 0.0
+  - mean: 5.49
+  - stddev: 22.91
   - median: 0.0
 
 incapacity_benefit_reported
@@ -482,8 +548,8 @@ pension_credit_reported
 
 state_pension_reported
   - description: Reported amount of State Pension receipt
-  - mean: 30.77
-  - stddev: 62.52
+  - mean: 30.83
+  - stddev: 62.55
   - median: 0.0
 
 universal_credit_reported
@@ -504,8 +570,8 @@ widows_payment_reported
   - stddev: 0.0
   - median: 0.0
 
-winter_fuel_payments_reported
-  - description: Reported amount of Winter Fuel Payments per week
+winter_fuel_allowance_reported
+  - description: Reported amount of Winter Fuel Allowance per week
   - mean: 0.69
   - stddev: 1.45
   - median: 0.0
@@ -535,6 +601,12 @@ children_in_benunit
   - stddev: 0.89
   - median: 0.0
 
+has_worker_over_60
+  - description: Whether the benefit unit contains a member over 60 but below the State Pension Age
+  - mean: 0.11
+  - stddev: 0.31
+  - median: 0.0
+
 is_couple
   - description: Whether the benunit structure is a couple
   - mean: 0.48
@@ -555,8 +627,8 @@ is_single
 
 looking_for_work
   - description: Whether looking for work
-  - mean: 0.0
-  - stddev: 0.0
+  - mean: 0.01
+  - stddev: 0.1
   - median: 0.0
 
 older_adult_age
@@ -571,35 +643,59 @@ younger_adult_age
   - stddev: 24.33
   - median: 52.0
 
-benefit_modelling
+benunit_NI
+  - description: Amount of National Insurance per week
+  - mean: 28.58
+  - stddev: 73.14
+  - median: 0.0
+
+benunit_benefit_modelling
   - description: Difference between reported benefits and simulated benefits
-  - mean: 1.43
-  - stddev: 6.67
+  - mean: 0.29
+  - stddev: 70.62
   - median: 0.0
 
 benunit_earnings
   - description: Earnings of the benefit unit
-  - mean: 485.73
-  - stddev: 2964.23
-  - median: 248.77000427246094
+  - mean: 478.63
+  - stddev: 2967.18
+  - median: 201.0
 
 benunit_gross_income
   - description: Gross income of the benefit unit
-  - mean: 678.49
-  - stddev: 2963.45
-  - median: 477.4100036621094
+  - mean: 677.37
+  - stddev: 2962.34
+  - median: 470.1099853515625
 
 benunit_income
   - description: Income of the benefit unit (not including benefits)
-  - mean: 607.81
-  - stddev: 2956.69
-  - median: 414.25
+  - mean: 618.49
+  - stddev: 2963.33
+  - median: 405.45001220703125
+
+benunit_income_tax
+  - description: Amount of Income Tax per week
+  - mean: 89.37
+  - stddev: 1311.31
+  - median: 19.1200008392334
+
+benunit_interest
+  - description: Interest received per week
+  - mean: 9.58
+  - stddev: 75.2
+  - median: 0.0
+
+benunit_misc
+  - description: Miscellaneous income per week
+  - mean: 18.85
+  - stddev: 82.7
+  - median: 0.0
 
 benunit_net_income
   - description: Net income of the benefit unit
-  - mean: 538.04
-  - stddev: 2962.5
-  - median: 410.0400085449219
+  - mean: 536.32
+  - stddev: 1598.28
+  - median: 419.7699890136719
 
 benunit_pension_income
   - description: Pension income of the benefit unit
@@ -609,15 +705,27 @@ benunit_pension_income
 
 benunit_post_tax_income
   - description: Post-tax income of the benefit unit
-  - mean: 491.91
-  - stddev: 1593.32
-  - median: 375.1300048828125
+  - mean: 499.54
+  - stddev: 1600.79
+  - median: 368.6499938964844
+
+benunit_state_pension
+  - description: Pension income of the benefit unit
+  - mean: 59.28
+  - stddev: 99.09
+  - median: 0.0
+
+benunit_taxed_means_tested_bonus
+  - description: Total untaxed means tested bonus
+  - mean: 0.0
+  - stddev: 0.0
+  - median: 0.0
 
 equiv_benunit_net_income
   - description: Equivalised net income of the benefit unit
-  - mean: 580.85
-  - stddev: 2950.28
-  - median: 484.8999938964844
+  - mean: 581.61
+  - stddev: 1599.96
+  - median: 489.4599914550781
 
 external_child_maintenance
   - description: Reported weeklyised amount of maintenance paid to dependent children living away from home
@@ -625,65 +733,173 @@ external_child_maintenance
   - stddev: 85.01
   - median: 0.0
 
+JSA_income
+  - description: JSA (income-based) amount per week
+  - mean: 0.6
+  - stddev: 7.54
+  - median: 0.0
+
+WTC_CTC_combined
+  - description: Combined value of Working Tax Credit and Child Tax Credit per week
+  - mean: 11.57
+  - stddev: 45.69
+  - median: 0.0
+
+benunit_housing_costs
+  - description: Housing costs per week
+  - mean: 89.85
+  - stddev: 141.28
+  - median: 43.0
+
 child_benefit
   - description: Child Benefit amount received per week
-  - mean: 7.86
-  - stddev: 15.1
+  - mean: 6.56
+  - stddev: 14.22
   - median: 0.0
 
 child_tax_credit
-  - description: Child Tax Credit amount received per week
-  - mean: 8.57
-  - stddev: 34.05
+  - description: Amount of Child Tax Credit received per week
+  - mean: 8.64
+  - stddev: 33.97
   - median: 0.0
 
+child_tax_credit_pre_means_test
+  - description: Child Tax Credit amount received per year, before means testing
+  - mean: 1376.69
+  - stddev: 2703.06
+  - median: 0.0
+
+housing_benefit
+  - description: Housing Benefit amount per week
+  - mean: 11.41
+  - stddev: 72.83
+  - median: 0.0
+
+housing_benefit_post_means_test
+  - description: Housing Benefit per week, given eligibility
+  - mean: 24.19
+  - stddev: 95.18
+  - median: 0.0
+
+housing_benefit_pre_means_test
+  - description: Housing Benefit per week, before means tests
+  - mean: 40.4
+  - stddev: 52.61
+  - median: 17.799999237060547
+
 income_support
-  - description: Income Support amount received per week
-  - mean: 1.42
-  - stddev: 11.6
+  - description: Income Support amount per week
+  - mean: 0.95
+  - stddev: 10.79
+  - median: 0.0
+
+income_support_JSA_ib
+  - description: Income Support/JSA (income-based) amount received per week before eligibility is applied
+  - mean: 12.03
+  - stddev: 32.47
+  - median: 0.0
+
+pension_credit
+  - description: JSA (income-based) amount per week
+  - mean: 1.98
+  - stddev: 13.18
+  - median: 0.0
+
+pension_credit_GC
+  - description: Pension Credit (Guarantee Credit) amount per week
+  - mean: 8.1
+  - stddev: 51.96
+  - median: 0.0
+
+pension_credit_MG
+  - description: Pension Credit (Minimum Guarantee) amount per week
+  - mean: 83.46
+  - stddev: 109.83
+  - median: 0.0
+
+pension_credit_SC
+  - description: Pension Credit (Savings Credit) amount per week
+  - mean: 0.15
+  - stddev: 1.38
+  - median: 0.0
+
+tax_credit_reduction
+  - description: Child and Working Tax Credit amount reduced per week from means testing
+  - mean: 10679.3
+  - stddev: 63144.82
+  - median: 5898.5
+
+universal_credit
+  - description: Universal Credit amount per week
+  - mean: 2.49
+  - stddev: 19.74
   - median: 0.0
 
 working_tax_credit
-  - description: Child Tax Credit amount received per week
-  - mean: 2.0
-  - stddev: 13.34
+  - description: Amount of Working Tax Credit received per week
+  - mean: 2.94
+  - stddev: 18.72
   - median: 0.0
 
+working_tax_credit_pre_means_test
+  - description: Working Tax Credit amount received per year, before means testing
+  - mean: 3062.84
+  - stddev: 3367.61
+  - median: 2830.0
+
 benunit_CB_reported
-  - description: Amount of Child Benefit reported for the Benefit Unit per week
+  - description: Reported amount of Child Benefit per week
   - mean: 6.43
   - stddev: 13.9
   - median: 0.0
 
-benunit_IS_reported
-  - description: Amount of Income Support reported for the Benefit Unit per week
-  - mean: 1.42
-  - stddev: 11.6
-  - median: 0.0
-
-benunit_JSA_reported
-  - description: Amount of JSA reported for the Benefit Unit per week
-  - mean: 0.0
-  - stddev: 0.0
-  - median: 0.0
-
-benunit_ctc_reported
-  - description: Amount of Child Tax Credit reported for the Benefit Unit per week
+benunit_CTC_reported
+  - description: Reported amount of Child Tax Credit per week
   - mean: 8.57
   - stddev: 34.05
   - median: 0.0
 
-benunit_wtc_reported
-  - description: Amount of Working Tax Credit reported for the Benefit Unit per week
+benunit_IS_reported
+  - description: Reported amount of Income Support per week
+  - mean: 1.42
+  - stddev: 11.6
+  - median: 0.0
+
+benunit_JSA_income_reported
+  - description: Reported amount of Income Support per week
+  - mean: 0.74
+  - stddev: 7.95
+  - median: 0.0
+
+benunit_WTC_reported
+  - description: Reported amount of Working Tax Credit per week
   - mean: 2.0
   - stddev: 13.34
+  - median: 0.0
+
+benunit_housing_benefit_reported
+  - description: Reported amount of Housing Benefit
+  - mean: 10.56
+  - stddev: 30.92
+  - median: 0.0
+
+benunit_pension_credit_reported
+  - description: Reported amount of Pension Credit
+  - mean: 2.18
+  - stddev: 14.52
+  - median: 0.0
+
+benunit_universal_credit_reported
+  - description: Reported amount of Pension Credit
+  - mean: 3.0
+  - stddev: 24.42
   - median: 0.0
 
 ## Household
 adults_in_household
   - description: Number of adults in the household
-  - mean: 1.73
-  - stddev: 0.71
+  - mean: 1.92
+  - stddev: 0.93
   - median: 2.0
 
 children_in_household
@@ -691,6 +907,12 @@ children_in_household
   - mean: 0.51
   - stddev: 0.94
   - median: 0.0
+
+household_archetype
+  - description: Coded archetype of the household
+  - mean: 76.18
+  - stddev: 69.47
+  - median: 40.0
 
 household_equivalisation_ahc
   - description: Equivalisation factor to account for household composition, after housing costs
@@ -716,6 +938,18 @@ people_in_household
   - stddev: 1.24
   - median: 2.0
 
+region
+  - description: FRS-coded region of the UK
+  - mean: 7.88
+  - stddev: 3.68
+  - median: 8.0
+
+seniors_in_household
+  - description: Number of senior citizens in the household
+  - mean: 0.63
+  - stddev: 0.78
+  - median: 0.0
+
 council_tax
   - description: Council Tax amount per week
   - mean: 25.88
@@ -724,33 +958,57 @@ council_tax
 
 equiv_household_net_income_ahc
   - description: Equivalised net household income per week, after housing costs
-  - mean: 618.33
-  - stddev: 3210.88
-  - median: 477.80999755859375
+  - mean: 620.16
+  - stddev: 1765.13
+  - median: 479.5199890136719
 
 equiv_household_net_income_bhc
   - description: Equivalised net household income per week, before housing costs
-  - mean: 661.96
-  - stddev: 3199.06
-  - median: 518.6400146484375
+  - mean: 662.55
+  - stddev: 1746.3
+  - median: 523.9600219726562
+
+household_earned_income
+  - description: Earned household income per week
+  - mean: 653.64
+  - stddev: 3207.26
+  - median: 416.5400085449219
 
 household_gross_income
   - description: Gross household income per week
-  - mean: 793.07
-  - stddev: 3200.51
-  - median: 584.530029296875
+  - mean: 791.76
+  - stddev: 3199.16
+  - median: 570.0700073242188
+
+household_income
+  - description: Amount of income per week from employment and pensions
+  - mean: 711.74
+  - stddev: 3199.42
+  - median: 498.0
 
 household_net_income_ahc
   - description: Net household income per week, after housing costs
-  - mean: 532.61
-  - stddev: 3200.32
-  - median: 411.4599914550781
+  - mean: 530.59
+  - stddev: 1720.78
+  - median: 418.69000244140625
 
 household_net_income_bhc
   - description: Net household income per week, before housing costs
-  - mean: 603.03
-  - stddev: 3200.32
-  - median: 473.3999938964844
+  - mean: 601.01
+  - stddev: 1723.39
+  - median: 483.67999267578125
+
+household_receives_means_tested_benefits
+  - description: Whether the household receives benefits
+  - mean: 0.23
+  - stddev: 0.42
+  - median: 0.0
+
+household_taxed_means_tested_bonus
+  - description: Total untaxed means tested bonus
+  - mean: 0.0
+  - stddev: 0.0
+  - median: 0.0
 
 housing_costs
   - description: Housing costs per week
@@ -766,13 +1024,25 @@ service_charges
 
 in_poverty_ahc
   - description: Whether the household is in absolute poverty, after housing costs
-  - mean: 0.24
-  - stddev: 0.43
+  - mean: 0.23
+  - stddev: 0.42
   - median: 0.0
 
 in_poverty_bhc
   - description: Whether the household is in absolute poverty, before housing costs
-  - mean: 0.23
-  - stddev: 0.42
+  - mean: 0.2
+  - stddev: 0.4
+  - median: 0.0
+
+winter_fuel_allowance
+  - description: label
+  - mean: 2.32
+  - stddev: 3.55
+  - median: 0.0
+
+household_WFA_reported
+  - description: Reported amount of Winter Fuel Allowance per week
+  - mean: 1.56
+  - stddev: 2.16
   - median: 0.0
 
