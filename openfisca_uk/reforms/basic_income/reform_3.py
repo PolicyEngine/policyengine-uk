@@ -9,7 +9,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 0.45 * person("income_tax_applicable_amount", period)
+        return 0.5 * person("income_tax_applicable_amount", period)
 
 
 class NI(Variable):
@@ -20,14 +20,7 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return (
-            0.12
-            * (
-                person("employee_earnings", period)
-                + person("self_employed_earnings", period)
-            )
-            * (1 - person("is_state_pension_age", period))
-        )
+        return 0
 
 
 class basic_income(Variable):
@@ -37,7 +30,7 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 130 + person("is_state_pension_age", period) * 35
+        return 110 + person("is_state_pension_age", period) * 60
 
 
 class benunit_basic_income(Variable):
@@ -75,5 +68,7 @@ class reform_3(Reform):
             "working_tax_credit",
             "universal_credit",
             "state_pension",
+            "housing_benefit",
+            "pension_credit"
         ]:
             self.neutralize_variable(removed_var)

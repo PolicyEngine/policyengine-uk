@@ -136,13 +136,11 @@ class equiv_household_net_income_ahc(Variable):
         )
 
 
-class on_benefits(Variable):
+class household_receives_means_tested_benefits(Variable):
     value_type = float
     entity = Household
     label = u"Whether the household receives benefits"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return (
-            household.sum(household.members("benefit_modelling", period)) > 0
-        )
+        return household.sum(household.members("receives_means_tested_benefits", period)) > 0
