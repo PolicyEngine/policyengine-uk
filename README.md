@@ -14,7 +14,7 @@ The files that are outside from the `openfisca_uk` folder are used to set up the
 
 ## Contact
 
-The maintainer for OpenFisca-UK is Nikhil Woodruff - feel free to contact via [email](nikhil.woodruff@ubicenter.org).
+The maintainer for OpenFisca-UK is Nikhil Woodruff - feel free to contact via [email](mailto:nikhil.woodruff@ubicenter.org).
 
 ## Disclaimer
 
