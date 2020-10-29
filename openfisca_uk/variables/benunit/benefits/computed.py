@@ -690,3 +690,12 @@ class universal_credit(Variable):
             benunit("benunit_universal_credit_reported", period) > 0
         )
         return final_amount * already_claiming
+
+class ESA_income(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Amount of Employment and Support Allowance per week'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit("benunit_ESA_income_reported", period)

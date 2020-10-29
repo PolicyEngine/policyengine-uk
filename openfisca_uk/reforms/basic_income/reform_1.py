@@ -1,21 +1,23 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
-import os
-
-dir_name = os.path.dirname(__file__)
 
 
-def modify_parameters(parameters):
-    file_path = os.path.join(
-        dir_name, "parameters", "reform_1", "new_income_tax.yaml"
-    )
-    reform_parameters_subtree = load_parameter_file(
-        file_path, name="new_income_tax"
-    )
-    parameters.taxes.income_tax.add_child(
-        "new_income_tax", reform_parameters_subtree
-    )
-    return parameters
+class income_tax_applicable_amount(Variable):
+    value_type = float
+    entity = Person
+    label = u"Total taxable income per week"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return max_(
+            person("employee_earnings", period)
+            + person("self_employed_earnings", period)
+            + person("state_pension", period)
+            + person("pension_income", period)
+            + person("taxed_means_tested_bonus", period)
+            + person("interest", period),
+            0,
+        )
 
 
 class income_tax(Variable):
@@ -25,15 +27,7 @@ class income_tax(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        estimated_yearly_income = (
-            person("income_tax_applicable_amount", period)
-        ) * 52
-        weekly_tax = (
-            parameters(period).taxes.income_tax.new_income_tax.calc(
-                estimated_yearly_income
-            )
-        ) / 52
-        return weekly_tax
+        return 0.5 * person("income_tax_applicable_amount", period)
 
 
 class NI(Variable):
@@ -44,14 +38,7 @@ class NI(Variable):
     reference = ["https://www.gov.uk/national-insurance"]
 
     def formula(person, period, parameters):
-        return (
-            0.12
-            * (
-                person("employee_earnings", period)
-                + person("self_employed_earnings", period)
-            )
-            * (1 - person("is_state_pension_age", period))
-        )
+        return 0
 
 
 class basic_income(Variable):
@@ -61,18 +48,10 @@ class basic_income(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        adult_young = (person("age", period) >= 16) * (
-            person("age", period) < 24
-        )
-        adult_old = (person("age", period) >= 24) * (
-            person("age", period) < 65
-        )
-        return (
-            person("is_senior", period) * 45
-            + adult_young * 45
-            + adult_old * 50
-            + person("is_child", period) * 25
-        )
+        seniors = person("is_senior", period)
+        WA_adults = person("is_working_age_adult", period)
+        children = person("is_child", period)
+        return 175 * seniors + 119 * WA_adults + 59.5 * children
 
 
 class benunit_basic_income(Variable):
@@ -84,6 +63,15 @@ class benunit_basic_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("basic_income", period))
 
+class household_basic_income(Variable):
+    value_type = float
+    entity = Household
+    label = u'Amount of basic income per week for the benefit unit'
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("basic_income", period))
+
 
 class non_means_tested_bonus(Variable):
     value_type = float
@@ -92,28 +80,26 @@ class non_means_tested_bonus(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return min_(10, person("basic_income", period))
-
-
-class untaxed_means_tested_bonus(Variable):
-    value_type = float
-    entity = Person
-    label = u"Amount of the basic income which is subject to means tests"
-    definition_period = ETERNITY
-
-    def formula(person, period, parameters):
-        return max_(0, person("basic_income", period) - 10)
+        return person("basic_income", period)
 
 
 class reform_1(Reform):
     def apply(self):
-        self.modify_parameters(modify_parameters)
-        for changed_var in [
-            income_tax,
-            NI,
-            untaxed_means_tested_bonus,
-            non_means_tested_bonus,
-        ]:
+        for changed_var in [income_tax, NI, non_means_tested_bonus]:
             self.update_variable(changed_var)
-        for added_var in [basic_income, benunit_basic_income]:
+        for added_var in [basic_income, benunit_basic_income, household_basic_income]:
             self.add_variable(added_var)
+        for removed_var in [
+            "child_benefit",
+            "income_support",
+            "JSA_contrib",
+            "JSA_income",
+            "child_tax_credit",
+            "working_tax_credit",
+            "universal_credit",
+            "state_pension",
+            "housing_benefit",
+            "pension_credit",
+            "ESA_income"
+        ]:
+            self.neutralize_variable(removed_var)

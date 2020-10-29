@@ -9,9 +9,9 @@ class taxed_means_tested_bonus(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 25 * (1 - person("is_child", period))
+        return 10 * (1 - person("is_adult_1", period)) * person("is_adult", period)
 
 
-class small_earnings_increase(Reform):
+class small_earnings_increase_for_non_head(Reform):
     def apply(self):
         self.update_variable(taxed_means_tested_bonus)

@@ -1,7 +1,8 @@
 import pandas as pd
 from openfisca_uk import CountryTaxBenefitSystem
 from openfisca_core.simulation_builder import SimulationBuilder
-from openfisca_uk.reforms.marginal_tax_rates import small_earnings_increase
+from openfisca_uk.reforms.marginal_tax_rates.head_bonus import small_earnings_increase_for_head
+from openfisca_uk.reforms.marginal_tax_rates.non_head_bonus import small_earnings_increase_for_non_head
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
@@ -70,40 +71,18 @@ def model(*reforms, data_dir="inputs", period="ETERNITY"):
             )  # input data for household data
     return model
 
-
-def derivative_of(var, *reforms, entity="benunit", period="2020-10-18"):
-    bonus_var = {
-        "person": "taxed_means_tested_bonus",
-        "benunit": "benunit_taxed_means_tested_bonus",
-        "household": "household_taxed_means_tested_bonus",
-    }
+def calc_mtr(*reforms, period="2020-10-18"):
     baseline = model(*reforms)
-    reformed = model(*reforms, small_earnings_increase)
-    bonus_amount = reformed.calculate(bonus_var[entity], period)
-    current_val = baseline.calculate(var, period)
-    new_val = reformed.calculate(var, period)
-    derivative = (new_val - current_val) / bonus_amount
-    return derivative
-
-
-def calc_mtr(*reforms, entity="benunit", period="2020-10-18"):
-    net_income_var = {
-        "person": "net_income",
-        "benunit": "benunit_net_income",
-        "household": "household_net_income_bhc",
-    }
-    bonus_var = {
-        "person": "taxed_means_tested_bonus",
-        "benunit": "benunit_taxed_means_tested_bonus",
-        "household": "household_taxed_means_tested_bonus",
-    }
-    baseline = model(*reforms)
-    reformed = model(*reforms, small_earnings_increase)
-    bonus_amount = reformed.calculate(bonus_var[entity], period)
-    current_net_income = baseline.calculate(net_income_var[entity], period)
-    new_net_income = reformed.calculate(net_income_var[entity], period)
+    current_net_income = baseline.calculate("person_benunit_net_income", period)
+    head_given_bonus = model(*reforms, small_earnings_increase_for_head)
+    head_bonus = head_given_bonus.calculate("taxed_means_tested_bonus", period)
+    new_head_net_income = head_given_bonus.calculate("person_benunit_net_income", period)
+    non_head_given_bonus = model(*reforms, small_earnings_increase_for_non_head)
+    non_head_bonus = non_head_given_bonus.calculate("taxed_means_tested_bonus", period)
+    new_non_head_net_income = non_head_given_bonus.calculate("person_benunit_net_income", period)
+    new_net_income = new_head_net_income * (head_bonus > 0) + new_non_head_net_income * (non_head_bonus > 0)
     marginal_tax_rate = (
-        1 - (new_net_income - current_net_income) / bonus_amount
+        1 - (new_net_income - current_net_income) / (head_bonus + non_head_bonus)
     )
     return marginal_tax_rate
 

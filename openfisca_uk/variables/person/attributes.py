@@ -18,6 +18,12 @@ class is_head(Variable):
     label = u"Whether the person is the head of the benefit unit"
     definition_period = ETERNITY
 
+class is_adult_1(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is the first adult entered in the data'
+    definition_period = ETERNITY
+
 
 class is_state_pension_age(Variable):
     value_type = bool

@@ -31,6 +31,7 @@ class benunit_benefit_modelling(Variable):
             "pension_credit",
             "housing_benefit",
             "universal_credit",
+            "ESA_income"
         ]
         REMOVED_BENEFITS = [
             "working_tax_credit_reported",
@@ -49,6 +50,7 @@ class benunit_benefit_modelling(Variable):
             "SFL_UC_reported",
             "housing_benefit_reported",
             "pension_credit_reported",
+            "ESA_income_reported"
         ]
         added_sum = sum(
             map(lambda benefit: benunit(benefit, period), ADDED_BENEFITS)

@@ -86,3 +86,12 @@ class benunit_universal_credit_reported(Variable):
         return benunit.sum(
             benunit.members("universal_credit_reported", period)
         )
+
+class benunit_ESA_income_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Reported amount of ESA (income)'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("ESA_income_reported", period))
