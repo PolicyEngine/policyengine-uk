@@ -349,7 +349,7 @@ class income(Variable):
             "employee_earnings",
             "self_employed_earnings",
             "pension_income",
-            "state_pension_reported",
+            "state_pension",
             "interest",
             "taxed_means_tested_bonus",
             "untaxed_means_tested_bonus",
@@ -420,7 +420,7 @@ class gross_income(Variable):
             "taxed_means_tested_bonus",
             "benefits",
             "non_means_tested_bonus",
-            "maintenance_income",
+            "maintenance_income"
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
@@ -483,3 +483,21 @@ class receives_means_tested_benefits(Variable):
             )
             > 0
         )
+
+class person_household_net_income_ahc(Variable):
+    value_type = float
+    entity = Person
+    label = u'The persons household net income AHC'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person.household("household_net_income_ahc", period)
+
+class person_benunit_net_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'The persons benefit unit net income'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person.benunit("benunit_net_income", period)
