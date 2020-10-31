@@ -170,3 +170,30 @@ class is_householder(Variable):
     entity = Person
     label = u"Whether the person is the household owner"
     definition_period = ETERNITY
+
+class basic_income_u18(Variable):
+    value_type = float
+    entity = Person
+    label = u'Child for basic income purposes'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("is_child", period)
+
+class basic_income_adult(Variable):
+    value_type = float
+    entity = Person
+    label = u'Working-age adult for basic income purposes'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("is_working_age_adult", period)
+
+class basic_income_pensioner(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Pensioner for basic income purposes'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("is_senior", period)
