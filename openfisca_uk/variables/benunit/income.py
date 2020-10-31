@@ -113,6 +113,15 @@ class benunit_pension_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("pension_income", period))
 
+class benunit_earned_income(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Pension and earnings for the benefit unit'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("pension_income", period) + benunit.members("earnings", period) + benunit.members("interest", period))
+
 
 class benunit_state_pension(Variable):
     value_type = float

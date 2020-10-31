@@ -443,6 +443,7 @@ class net_income(Variable):
             - person("deductions", period)
             - person("student_loan_repayments", period)
             - person("external_child_payment", period)
+            - person("misc_income", period)
         )
 
 
