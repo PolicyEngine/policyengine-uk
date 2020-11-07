@@ -31,7 +31,7 @@ class benunit_benefit_modelling(Variable):
             "pension_credit",
             "housing_benefit",
             "universal_credit",
-            "ESA_income"
+            "ESA_income",
         ]
         REMOVED_BENEFITS = [
             "working_tax_credit_reported",
@@ -50,7 +50,7 @@ class benunit_benefit_modelling(Variable):
             "SFL_UC_reported",
             "housing_benefit_reported",
             "pension_credit_reported",
-            "ESA_income_reported"
+            "ESA_income_reported",
         ]
         added_sum = sum(
             map(lambda benefit: benunit(benefit, period), ADDED_BENEFITS)
@@ -113,14 +113,19 @@ class benunit_pension_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("pension_income", period))
 
+
 class benunit_earned_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Pension and earnings for the benefit unit'
+    label = u"Pension and earnings for the benefit unit"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("pension_income", period) + benunit.members("earnings", period) + benunit.members("interest", period))
+        return benunit.sum(
+            benunit.members("pension_income", period)
+            + benunit.members("earnings", period)
+            + benunit.members("interest", period)
+        )
 
 
 class benunit_state_pension(Variable):
@@ -223,3 +228,114 @@ class benunit_NI(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("NI", period))
+
+
+class benunit_receiving_unemployment_benefits(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether the benunit receives JSA"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (benunit("JSA_income", period) > 0) + (
+            benunit.sum(benunit.members("JSA_contrib", period)) > 0
+        ) > 0
+
+
+class benunit_receiving_disability_benefits(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether the benunit receives disability benefits"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (
+            benunit.sum(benunit.members("total_disability_benefits", period))
+            > 0
+        )
+
+
+class benunit_receiving_income_support(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether the benunit receives IS"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (
+            benunit.sum(benunit.members("income_support_reported", period)) > 0
+        )
+
+
+class benunit_receiving_tax_credits(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether the person receives the Tax Credits"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (
+            benunit.sum(benunit.members("working_tax_credit_reported", period))
+            + benunit.sum(benunit.members("child_tax_credit_reported", period))
+            > 0
+        )
+
+
+class couple_childless_benunit(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether a benefit unit with two adults and no children"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit("is_couple", period) * (
+            benunit.nb_persons(BenUnit.CHILD) == 0
+        )
+
+
+class couple_parents_benunit(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether a benefit unit with two adults and dependent children"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit("is_couple", period) * (
+            benunit.nb_persons(BenUnit.CHILD) > 0
+        )
+
+
+class self_emp_benunit(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether a benefit unit with a self-employed person"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (
+            benunit.sum(benunit.members("self_employed_earnings", period)) > 0
+        )
+
+
+class capital_benunit(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether a benefit unit with all income from capital"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return (
+            benunit.sum(benunit.members("interest", period))
+            + benunit.sum(benunit.members("pension_income", period))
+            > 0
+        ) * (benunit.sum(benunit.members("earnings", period)) == 0)
+
+
+class benunit_in_poverty_bhc(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether the benefit unit is in a household in BHC poverty"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.any(benunit.members("person_in_poverty_bhc", period))

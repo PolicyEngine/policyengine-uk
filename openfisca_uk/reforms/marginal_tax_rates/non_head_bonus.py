@@ -9,7 +9,11 @@ class taxed_means_tested_bonus(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return 10 * (1 - person("is_adult_1", period)) * person("is_adult", period)
+        return (
+            10
+            * (1 - person("is_adult_1", period))
+            * person("is_adult", period)
+        )
 
 
 class small_earnings_increase_for_non_head(Reform):

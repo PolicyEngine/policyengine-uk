@@ -306,3 +306,10 @@ class LA_loan_reported(Variable):
     entity = Person
     label = u"Reported loan or grant from the Local Authority"
     definition_period = ETERNITY
+
+
+class total_disability_benefits(Variable):
+    value_type = float
+    entity = Person
+    label = u"Total disability benefits reported"
+    definition_period = ETERNITY

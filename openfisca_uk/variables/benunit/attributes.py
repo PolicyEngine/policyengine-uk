@@ -19,6 +19,7 @@ class children_in_benunit(Variable):
     def formula(benunit, period, parameters):
         return benunit.nb_persons(BenUnit.CHILD)
 
+
 class adults_in_benunit(Variable):
     value_type = int
     entity = BenUnit
@@ -28,14 +29,26 @@ class adults_in_benunit(Variable):
     def formula(benunit, period, parameters):
         return benunit.nb_persons(BenUnit.ADULT)
 
+
+class people_in_benunit(Variable):
+    value_type = int
+    entity = BenUnit
+    label = u"Number of people in the benefit unit"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        return benunit.nb_persons()
+
+
 class heads_in_benunit(Variable):
     value_type = float
     entity = BenUnit
-    label = u'label'
+    label = u"label"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("is_head", period))
+
 
 class benunit_equivalisation(Variable):
     value_type = float
