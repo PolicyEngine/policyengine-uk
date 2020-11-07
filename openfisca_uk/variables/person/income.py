@@ -420,7 +420,7 @@ class gross_income(Variable):
             "taxed_means_tested_bonus",
             "benefits",
             "non_means_tested_bonus",
-            "maintenance_income"
+            "maintenance_income",
         ]
         return sum(
             map(lambda component: person(component, period), COMPONENTS)
@@ -485,20 +485,76 @@ class receives_means_tested_benefits(Variable):
             > 0
         )
 
+
 class person_household_net_income_ahc(Variable):
     value_type = float
     entity = Person
-    label = u'The persons household net income AHC'
+    label = u"The persons household net income AHC"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("household_net_income_ahc", period)
 
+
 class person_benunit_net_income(Variable):
     value_type = float
     entity = Person
-    label = u'The persons benefit unit net income'
+    label = u"The persons benefit unit net income"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.benunit("benunit_net_income", period)
+
+
+class person_benunit_IS(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income Support received by the persons benefit unit"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person.benunit("income_support", period)
+
+
+class person_benunit_UC(Variable):
+    value_type = float
+    entity = Person
+    label = u"Universal Credit received by the persons benefit unit"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person.benunit("universal_credit", period)
+
+
+class person_benunit_PC(Variable):
+    value_type = float
+    entity = Person
+    label = u"Pension Credit received by the persons benefit unit"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person.benunit("pension_credit", period)
+
+
+class person_benunit_TC(Variable):
+    value_type = float
+    entity = Person
+    label = u"Tax Credits received by the persons benefit unit"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person.benunit("working_tax_credit", period) + person.benunit(
+            "child_tax_credit", period
+        )
+
+
+class person_benunit_JSA(Variable):
+    value_type = float
+    entity = Person
+    label = u"JSA received by the persons benefit unit"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person.benunit("JSA_income", period) + person(
+            "JSA_contrib", period
+        )

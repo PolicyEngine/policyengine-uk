@@ -36,3 +36,25 @@ class JSA_contrib(Variable):
             0, base_amount - earnings_over_threshold - pension_over_threshold
         )
         return means_tested_amount
+
+
+class ESA_contrib(Variable):
+    value_type = float
+    entity = Person
+    label = u"Amount of ESA (contribution-based) per week"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("ESA_income_reported", period)
+
+
+class DLA(Variable):
+    value_type = float
+    entity = Person
+    label = u"Amount of Disability Living Allowance per week"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("DLA_SC_reported", period) + person(
+            "DLA_M_reported", period
+        )
