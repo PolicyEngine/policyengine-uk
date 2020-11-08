@@ -691,6 +691,7 @@ class universal_credit(Variable):
         )
         return final_amount * already_claiming
 
+
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit

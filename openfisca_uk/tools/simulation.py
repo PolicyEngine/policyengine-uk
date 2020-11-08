@@ -1,8 +1,12 @@
 import pandas as pd
 from openfisca_uk import CountryTaxBenefitSystem
 from openfisca_core.simulation_builder import SimulationBuilder
-from openfisca_uk.reforms.marginal_tax_rates.head_bonus import small_earnings_increase_for_head
-from openfisca_uk.reforms.marginal_tax_rates.non_head_bonus import small_earnings_increase_for_non_head
+from openfisca_uk.reforms.marginal_tax_rates.head_bonus import (
+    small_earnings_increase_for_head,
+)
+from openfisca_uk.reforms.marginal_tax_rates.non_head_bonus import (
+    small_earnings_increase_for_non_head,
+)
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
@@ -71,19 +75,29 @@ def model(*reforms, data_dir="inputs", period="ETERNITY"):
             )  # input data for household data
     return model
 
-def calc_mtr(*reforms, period="2020-10-18"):
+
+def calc_mtr(*reforms, var="person_benunit_net_income", period="2020-10-18"):
     baseline = model(*reforms)
-    current_net_income = baseline.calculate("person_benunit_net_income", period)
+    current_net_income = baseline.calculate(var, period)
     head_given_bonus = model(*reforms, small_earnings_increase_for_head)
     head_bonus = head_given_bonus.calculate("taxed_means_tested_bonus", period)
-    new_head_net_income = head_given_bonus.calculate("person_benunit_net_income", period)
-    non_head_given_bonus = model(*reforms, small_earnings_increase_for_non_head)
-    non_head_bonus = non_head_given_bonus.calculate("taxed_means_tested_bonus", period)
-    new_non_head_net_income = non_head_given_bonus.calculate("person_benunit_net_income", period)
-    new_net_income = new_head_net_income * (head_bonus > 0) + new_non_head_net_income * (non_head_bonus > 0)
-    marginal_tax_rate = (
-        1 - (new_net_income - current_net_income) / (head_bonus + non_head_bonus)
+    new_head_net_income = head_given_bonus.calculate(var, period)
+    non_head_given_bonus = model(
+        *reforms, small_earnings_increase_for_non_head
     )
+    non_head_bonus = non_head_given_bonus.calculate(
+        "taxed_means_tested_bonus", period
+    )
+    new_non_head_net_income = non_head_given_bonus.calculate(var, period)
+    new_net_income = new_head_net_income * (
+        head_bonus > 0
+    ) + new_non_head_net_income * (non_head_bonus > 0)
+    with np.errstate(divide="ignore"):
+        marginal_tax_rate = 1 - (new_net_income - current_net_income) / (
+            head_bonus + non_head_bonus
+        )
+    invalid = np.isinf(marginal_tax_rate)
+    marginal_tax_rate[invalid] = 0
     return marginal_tax_rate
 
 
