@@ -48,7 +48,6 @@ class working_tax_credit_pre_means_test(Variable):
                 ).benefits.working_tax_credit.hours_requirement_disadvantaged
             )
         )
-        eligible = eligible + benunit("benunit_WTC_reported", period) > 0
         basic_amount = parameters(
             period
         ).benefits.working_tax_credit.basic_element
@@ -141,11 +140,11 @@ class tax_credit_reduction(Variable):
         eligible_for_both = (child_tax_credit_amount > 0) * (
             working_tax_credit_amount > 0
         )
-        CTC_only = (child_tax_credit_amount > 0) * (1 - eligible_for_both)
+        only_one = (child_tax_credit_amount + working_tax_credit_amount > 0) * (1 - eligible_for_both)
         threshold = (
             eligible_for_both
             * parameters(period).benefits.working_tax_credit.income_threshold
-            + CTC_only
+            + only_one
             * parameters(
                 period
             ).benefits.child_tax_credit.income_threshold_CTC_only
