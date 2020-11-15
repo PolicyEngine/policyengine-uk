@@ -1,0 +1,35 @@
+- name: Universal credit basic single amount
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    age: 18
+    universal_credit_reported: true
+  output:
+    universal_credit: 85
+- name: Check earnings allowance exists
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    age: 18
+    employee_earnings: 8
+    universal_credit_reported: true
+  output:
+    universal_credit: 85
+- name: Person in taper
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    age: 18
+    employee_earnings: 130
+    universal_credit_reported: true
+  output:
+    universal_credit: 83
+- name: Check that taper is correct
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    age: 18
+    employee_earnings: 140
+    universal_credit_reported: true
+  output:
+    universal_credit: 77

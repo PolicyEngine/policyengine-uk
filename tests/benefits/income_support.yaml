@@ -1,0 +1,24 @@
+- name: Income support after phase-out
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    pension_income: 342
+    income_support_reported: true
+  output:
+    income_support: 0
+- name: Income support basic single amount, some earnings within allowance
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    employee_earnings: 23
+    income_support_reported: true
+  output:
+    income_support: 40
+- name: Check that withdrawal rate is correct
+  period: 2020-09-07
+  absolute_error_margin: 1
+  input:
+    employee_earnings: 33
+    income_support_reported: true
+  output:
+    income_support: 30
