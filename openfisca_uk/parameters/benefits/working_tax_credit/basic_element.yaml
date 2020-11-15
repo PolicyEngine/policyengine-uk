@@ -1,9 +1,7 @@
 description: Basic amount of Working Tax Credit per year.
 values:
-  2016-06-01:
-    value: 1960
   2020-06-01:
-    value: 2000
+    value: 3040
 metadata:
   threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27
+  reference: https://www.gov.uk/working-tax-credit/what-youll-get

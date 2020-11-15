@@ -3,7 +3,7 @@ values:
   2016-06-01:
     value: 395.20
   2020-06-01:
-    value: 403.21
+    value: 488
 metadata:
   threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=45
+  reference: https://www.gov.uk/universal-credit/what-youll-get

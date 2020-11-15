@@ -1,7 +1,7 @@
 description: Personal allowance for a single person over 25 but under State Pension Age, per month
 values:
   2016-06-01:
-    value: 317.82
+    value: 409
 metadata:
   threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=45
+  reference: https://www.gov.uk/universal-credit/what-youll-get
