@@ -140,7 +140,9 @@ class tax_credit_reduction(Variable):
         eligible_for_both = (child_tax_credit_amount > 0) * (
             working_tax_credit_amount > 0
         )
-        only_one = (child_tax_credit_amount + working_tax_credit_amount > 0) * (1 - eligible_for_both)
+        only_one = (
+            child_tax_credit_amount + working_tax_credit_amount > 0
+        ) * (1 - eligible_for_both)
         threshold = (
             eligible_for_both
             * parameters(period).benefits.working_tax_credit.income_threshold
@@ -694,7 +696,7 @@ class universal_credit(Variable):
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Amount of Employment and Support Allowance per week'
+    label = u"Amount of Employment and Support Allowance per week"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
