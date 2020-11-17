@@ -6,7 +6,7 @@ class NI_class_1(Variable):
     value_type = float
     entity = Person
     label = u'National Insurance (Class 1)'
-    definition_period = MONTH
+    definition_period = YEAR
     reference = u'https://www.gov.uk/national-insurance'
 
     def formula(person, period, parameters):

@@ -131,7 +131,7 @@ class trading_deduction(Variable):
 
     def formula(person, period, parameters):
         trading_allowance = parameters(period).taxes.income_tax.allowances.trading_allowance
-        return min_(person("profit", period), trading_allowance)
+        return min_(person("misc_income", period), trading_allowance)
 
 class rental_deduction(Variable):
     value_type = float
@@ -227,3 +227,12 @@ class income_tax(Variable):
         base_income_tax = where(is_in_scotland, income_tax.rates.scotland.calc(applicable_amount), income_tax.rates.uk.calc(applicable_amount))
         additional_taxes = add(person, period, ["dividend_income_tax", "CB_HITC"])
         return base_income_tax + additional_taxes
+
+class total_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income Tax and NI'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("income_tax", period) + person("NI", period)

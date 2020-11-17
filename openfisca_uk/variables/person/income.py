@@ -81,3 +81,9 @@ class dividend_income(Variable):
     entity = Person
     label = u'Dividend income'
     definition_period = YEAR
+
+class misc_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Miscellaneous income'
+    definition_period = YEAR

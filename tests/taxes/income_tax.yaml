@@ -51,3 +51,19 @@
   output:
     income_tax: 9941
     NI: 4982
+- name: High income, pension contributions
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 56111
+    pension_contributions: 2000
+  output:
+    income_tax: 9144.40
+    NI: 4982.22
+- name: High income, self-employed
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    profit: 52000
+  output:
+    total_tax: 12143.60
