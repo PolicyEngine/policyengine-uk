@@ -1,0 +1,77 @@
+- name: Low salary, employed
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 
+      2020: 13000
+  output:
+    NI: 420
+- name: No salary, employed
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 
+      2020: 0
+  output:
+    NI: 0
+- name: Medium salary, employed
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 
+      2020: 26000
+  output:
+    NI: 1980
+- name: Medium salary, employed, state pension age
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 
+      2020: 26000
+    age:
+      2020:
+        67
+  output:
+    NI: 0
+- name: High salary, employed
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 
+      2020: 104000
+  output:
+    NI: 5940
+- name: No profit
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    profit: 
+      2020: 0
+  output:
+    NI: 0
+- name: Some profit
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    profit: 
+      2020: 14550
+  output:
+    NI: 613.10
+- name: Large profit
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    profit: 
+      2020: 140550
+  output:
+    NI: 5614.60
+- name: Large profit, state pension age
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    profit: 
+      2020: 140550
+    is_SP_age:
+      2020: true
+  output:
+    NI: 0
