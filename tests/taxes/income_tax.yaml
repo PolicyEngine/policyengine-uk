@@ -1,36 +1,53 @@
-- name: Income tax test, per week, for earnings £25k per annum
-  period: 2020-09-07
-  absolute_error_margin: 1
+- name: No income
+  period: 2020
+  absolute_error_margin: 5
   input:
-    employee_earnings: 480
-  output:
-    income_tax: 48
-- name: Income tax test, per week, for earnings below the personal allowance
-  period: 2020-09-07
-  absolute_error_margin: 1
-  input:
-    employee_earnings: 200
+    earnings: 0
   output:
     income_tax: 0
-- name: Negative income
-  period: 2020-09-07
-  absolute_error_margin: 1
+- name: Some income
+  period: 2020
+  absolute_error_margin: 5
   input:
-    employee_earnings: -300
+    earnings: 13400
   output:
-    income_tax: 0
-    NI: 0
-- name: Income tax test, per week, for employee earnings £50k per annum
-  period: 2020-09-07
-  absolute_error_margin: 1
+    income_tax: 178
+    NI: 468
+- name: Some income, pension contributions, lives in Scotland
+  period: 2020
+  absolute_error_margin: 5
   input:
-    employee_earnings: 958.96
+    earnings: 23415
+    pension_contributions: 804
+    region: SCOTLAND
   output:
-    income_tax: 143.85
-- name: Income tax test, per week, for self employed earnings £50k per annum
-  period: 2020-09-07
-  absolute_error_margin: 1
+    income_tax: 2000
+    NI: 1670
+- name: Some income, pension contributions, lives in England
+  period: 2020
+  absolute_error_margin: 5
   input:
-    self_employed_earnings: 958.96
+    earnings: 23415
+    pension_contributions: 804
+    region: ENGLAND
   output:
-    income_tax_and_NI: 216.62
+    income_tax: 2020
+    NI: 1670
+- name: Some income, pension contributions, lives in England
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 23415
+    pension_contributions: 804
+    region: ENGLAND
+  output:
+    income_tax: 2020
+    NI: 1670
+- name: High income, pension contributions
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    earnings: 56111
+  output:
+    income_tax: 9941
+    NI: 4982
