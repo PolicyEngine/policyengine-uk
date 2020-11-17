@@ -1,7 +1,7 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 
-class pension_contrib(Variable):
+class pension_contributions(Variable):
     value_type = float
     entity = Person
     label = u'Pension contributions'

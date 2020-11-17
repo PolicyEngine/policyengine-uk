@@ -13,7 +13,7 @@ class profit(Variable):
     label = u'Profit from self-employment'
     definition_period = YEAR
 
-class interest(Variable):
+class savings_interest(Variable):
     value_type = float
     entity = Person
     label = u'Interest from savings'
@@ -59,4 +59,25 @@ class holiday_pay(Variable):
     value_type = float
     entity = Person
     label = u'Holiday pay'
+    definition_period = YEAR
+
+class earned_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Earnings and self-employment profit'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("earnings", period) + person("profit", period)
+
+class ISA_interest(Variable):
+    value_type = float
+    entity = Person
+    label = u'Interest received from an Individual Savings Account'
+    definition_period = YEAR
+
+class dividend_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Dividend income'
     definition_period = YEAR
