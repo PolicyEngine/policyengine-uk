@@ -1,0 +1,7 @@
+description: Rate of reduction for the Starter rate for savings
+values:
+  2020-01-01:
+    value: 0.5
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/apply-tax-free-interest-on-savings

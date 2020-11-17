@@ -1,0 +1,7 @@
+description: Savings allowance in the additional threshold
+values:
+  2020-01-01:
+    value: 0
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/apply-tax-free-interest-on-savings

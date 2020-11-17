@@ -1,0 +1,25 @@
+description: Income tax scale
+brackets:
+  - rate:
+      2020-01-01:
+        value: 0.075
+    threshold:
+      2020-01-01:
+        value: 0
+  - rate:
+      2020-01-01:
+        value: 0.325
+    threshold:
+      2020-01-01:
+        value: 37500
+  - rate:
+      2020-01-01:
+        value: 0.381
+    threshold:
+      2020-01-01:
+        value: 150000
+metadata:
+  type: marginal_rate
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference: https://www.gov.uk/tax-on-dividends
