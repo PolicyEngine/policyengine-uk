@@ -1,0 +1,7 @@
+description: PA for Housing Benefit
+values:
+  2020-01-01:
+    value: 87.50
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020

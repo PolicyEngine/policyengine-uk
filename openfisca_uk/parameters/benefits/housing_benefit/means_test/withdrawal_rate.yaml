@@ -1,0 +1,7 @@
+description: Withdrawal rate of Housing Benefit
+values:
+  2020-01-01:
+    value: 0.65
+metadata:
+  threshold_unit: currency-GBP
+  reference: http://www.oecd.org/els/soc/TaxBEN-United-Kingdom-2018.pdf

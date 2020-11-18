@@ -1,0 +1,8 @@
+description: Threshold in pounds per week from earnings per week, above which the contributory JSA amount is reduced equally.
+values:
+  2016-06-01:
+    value: 5.00
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
