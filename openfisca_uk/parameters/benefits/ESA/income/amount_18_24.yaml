@@ -1,9 +1,9 @@
-description: Weekly contributory JSA for persons aged over 25.
+description: Weekly contributory JSA for persons aged 18-24.
 values:
   2016-06-01:
-    value: 73.10
+    value: 57.90
   2020-01-01:
-    value: 74.58
+    value: 58.90
 metadata:
   threshold_unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24

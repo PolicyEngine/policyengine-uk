@@ -1,7 +1,7 @@
-description: Threshold in pounds per week from income for a couple, above which the Income Support amount is reduced equally.
+description: Threshold in pounds per week from income for a lone parent, above which the Income Support amount is reduced equally.
 values:
-  2020-06-01:
-    value: 10.00
+  2020-01-01:
+    value: 20.00
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1

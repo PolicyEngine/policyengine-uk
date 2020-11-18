@@ -1,9 +1,0 @@
-description: Family element for Housing Benefit
-values:
-  2016-06-01:
-    value: 17.45
-  2020-06-01:
-    value: 17.80
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=41

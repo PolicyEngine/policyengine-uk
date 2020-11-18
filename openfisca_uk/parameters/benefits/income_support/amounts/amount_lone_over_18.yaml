@@ -1,6 +1,6 @@
 description: Weekly income_support applicable amount for lone parents aged over 18.
 values:
-  2020-06-01:
+  2020-01-01:
     value: 74.35
 metadata:
   threshold_unit: currency-GBP

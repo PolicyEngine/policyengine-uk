@@ -1,0 +1,7 @@
+description: Minimum number of hours spent providing care
+values:
+  2020-01-01:
+    value: 35
+metadata:
+  threshold_unit: hour
+  reference: https://www.euromod.ac.uk/sites/default/files/country-reports/year8/Y8_CR_UK_Final.pdf#page=55

@@ -1,9 +1,0 @@
-description: Dependent child premium for Housing Benefit
-values:
-  2016-06-01:
-    value: 66.90
-  2020-06-01:
-    value: 68.26
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=41
