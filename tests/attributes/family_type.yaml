@@ -1,0 +1,26 @@
+- name: Family type for couple
+  period: 2019-06-01
+  absolute_error_margin: 1
+  input:
+    people:
+      p1: {}
+      p2: {}
+    benunits:
+      b1:
+        adults: [p1, p2]
+  output:
+    family_type: 'COUPLE_NO_KIDS'
+- name: Family type for full
+  period: 2019-06-01
+  absolute_error_margin: 1
+  input:
+    people:
+      p1: {}
+      p2: {}
+      p3: {}
+    benunits:
+      b1:
+        adults: [p1, p2]
+        children: [p3]
+  output:
+    family_type: 'COUPLE_KIDS'
