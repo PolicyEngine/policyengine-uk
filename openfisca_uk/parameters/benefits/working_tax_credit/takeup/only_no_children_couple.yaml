@@ -1,0 +1,6 @@
+description: Take-up rate for adults claiming only WTC with no children
+values:
+  2020-01-01:
+    value: 0.27
+metadata:
+  reference: https://www.euromod.ac.uk/sites/default/files/country-reports/year8/Y8_CR_UK_Final.pdf#page=60

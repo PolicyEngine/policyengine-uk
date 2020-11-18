@@ -1,0 +1,6 @@
+description: Lower hours requirement
+values:
+  2020-01-01:
+    value: 16
+metadata:
+  reference: https://www.gov.uk/working-tax-credit
