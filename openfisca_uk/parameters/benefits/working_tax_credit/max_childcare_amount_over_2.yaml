@@ -1,7 +1,0 @@
-description: The maximum childcare costs paid by WTC per week for a benefit unit with more than one child.
-values:
-  2020-06-01:
-    value: 300
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

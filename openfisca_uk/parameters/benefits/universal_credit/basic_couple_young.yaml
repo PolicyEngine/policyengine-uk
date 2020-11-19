@@ -1,9 +1,0 @@
-description: Personal allowance for a couple, both under 25, per month
-values:
-  2016-06-01:
-    value: 395.20
-  2020-06-01:
-    value: 488
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.gov.uk/universal-credit/what-youll-get

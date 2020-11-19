@@ -1,9 +1,0 @@
-description: Premium for Working Tax Credit for benefit units working over 30 hours a week
-values:
-  2016-06-01:
-    value: 810
-  2020-06-01:
-    value: 825
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

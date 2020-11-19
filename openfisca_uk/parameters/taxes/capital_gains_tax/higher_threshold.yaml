@@ -1,7 +1,0 @@
-description: Threshold for higher rate of Capital Gains Tax.
-values:
-  2020-06-01:
-    value: 50000
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.gov.uk/capital-gains-tax/rates

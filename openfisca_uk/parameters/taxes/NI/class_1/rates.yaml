@@ -1,17 +1,17 @@
-description: NI Class 1 rates and thresholds per month
+description: NI Class 1 rates and thresholds per year
 brackets:
   - rate:
       2019-06-01:
         value: 0.12
     threshold:
       2019-06-01:
-        value: 792
+        value: 9500
   - rate:
       2019-06-01:
         value: 0.02
     threshold:
       2019-06-01:
-        value: 4167
+        value: 50000
 metadata:
   type: marginal_rate
   threshold_unit: currency-GBP

@@ -1,0 +1,7 @@
+description: Savings Credit (Pension Credit) maximum amount for a single person per week
+values:
+  2020-01-01:
+    value: 13.97
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=37

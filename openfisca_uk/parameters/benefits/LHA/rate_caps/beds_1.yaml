@@ -1,7 +1,7 @@
 description: LHA maximum rate for accommodation in Maidstone, Kent
 values:
   2020-01-01:
-    value: 68.28
+    value: 123.57
 metadata:
   threshold_unit: currency-GBP
   reference: http://www.oecd.org/els/soc/TaxBEN-United-Kingdom-2018.pdf

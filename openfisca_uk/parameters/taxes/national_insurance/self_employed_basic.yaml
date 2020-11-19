@@ -1,7 +1,0 @@
-description: Yearly National Insurance for self-employed persons earning lower amounts (Class 2).
-values:
-  2020-06-01:
-    value: 3.05
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://gov.uk/self-employed-national-insurance-rates

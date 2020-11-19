@@ -1,0 +1,15 @@
+description: Carer element for Universal Credit, per month
+values:
+  2016-06-01:
+    value: 150.39
+  2017-06-01:
+    value: 150.89
+  2018-06-01:
+    value: 156.45
+  2019-06-01:
+    value: 160.20
+  2020-01-01:
+    value: 163.45
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=46

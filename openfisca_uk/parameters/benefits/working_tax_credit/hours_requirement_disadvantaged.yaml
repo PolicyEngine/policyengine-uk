@@ -1,7 +1,0 @@
-description: Minimum hours requirement to claim Working Tax Credit for a lone parent, disabled person, or over the age of 60 but under the State Pension Age
-values:
-  2016-06-01:
-    value: 16
-metadata:
-  threshold_unit: hours
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=25

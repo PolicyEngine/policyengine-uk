@@ -1,0 +1,7 @@
+description: Minimum income guarantee (basic amount) for Pension Credit for a couple per week
+values:
+  2020-01-01:
+    value: 265.20
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=36

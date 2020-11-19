@@ -1,0 +1,7 @@
+description: Minimum wage for over-25s
+values:
+  2020-01-01:
+    value: 8.72
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/national-minimum-wage-rates
