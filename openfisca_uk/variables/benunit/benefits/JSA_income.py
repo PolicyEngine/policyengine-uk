@@ -11,7 +11,7 @@ class disability_premium(Variable):
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefits.disability_premia
-        amount = (benunit("disabled_adults", period, options=[MATCH]) > 0) * (
+        amount = (benunit("disabled_adults", period.this_year) > 0) * (
             benunit("is_single", period) * dis.disability_single
             + benunit("is_couple", period) * dis.disability_couple
         )
@@ -27,7 +27,7 @@ class severe_disability_premium(Variable):
     def formula(benunit, period, parameters):
         dis = parameters(period).benefits.disability_premia
         amount = (
-            benunit("severely_disabled_adults", period, options=[MATCH]) > 0
+            benunit("severely_disabled_adults", period.this_year) > 0
         ) * (
             benunit("is_single", period) * dis.severe_single
             + benunit("is_couple", period) * dis.severe_couple
@@ -44,7 +44,7 @@ class enhanced_disability_premium(Variable):
     def formula(benunit, period, parameters):
         dis = parameters(period).benefits.disability_premia
         amount = (
-            benunit("enhanced_disabled_adults", period, options=[MATCH]) > 0
+            benunit("enhanced_disabled_adults", period.this_year) > 0
         ) * (
             benunit("is_single", period) * dis.enhanced_single
             + benunit("is_couple", period) * dis.enhanced_couple

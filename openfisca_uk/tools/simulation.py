@@ -1,27 +1,21 @@
+from openfisca_core.model_api import *
+from openfisca_uk.entities import *
+from openfisca_core.periods import period
 import pandas as pd
 from openfisca_uk import CountryTaxBenefitSystem
 from openfisca_core.simulation_builder import SimulationBuilder
-from openfisca_uk.reforms.marginal_tax_rates.head_bonus import (
-    small_earnings_increase_for_head,
-)
-from openfisca_uk.reforms.marginal_tax_rates.non_head_bonus import (
-    small_earnings_increase_for_non_head,
-)
-from openfisca_core.model_api import *
-from openfisca_uk.entities import *
 import numpy as np
 import os
-import pandas as pd
 
 
-def model(*reforms, data_dir="inputs", period="ETERNITY"):
+def load_frs(*reforms, data_dir="frs", input_period="2020"):
     """
     Create and populate a tax-benefit simulation model from OpenFisca.
 
     Arguments:
         reforms: any reforms to apply, in order.
         data: any data to use instead of the loaded Family Resources Survey.
-        period: the period in which to enter all data (at the moment, all data is entered under this period).
+        input_period: the period in which to enter all data (at the moment, all data is entered under this period).
 
     Returns:
         A Simulation object.
@@ -33,8 +27,6 @@ def model(*reforms, data_dir="inputs", period="ETERNITY"):
     builder.create_entities(
         system
     )  # create the entities (person, benunit, etc.)
-    if data_dir is None:
-        data_dir = "inputs"
     person_file = pd.read_csv(
         os.path.join(data_dir, "person.csv"), low_memory=False
     )
@@ -57,51 +49,34 @@ def model(*reforms, data_dir="inputs", period="ETERNITY"):
     builder.join_with_persons(
         households, np.array(person_file["household_id"]), person_roles
     )
+    person_file["index"] = np.arange(start=0, stop=len(person_file))
     model = builder.build(system)
-    for column in person_file.columns:
-        if "_id" not in column and column != "role":
-            model.set_input(
-                column, period, np.array(person_file[column])
-            )  # input data for person data
-    for column in benunit_file.columns:
-        if "_id" not in column and column != "role":
-            model.set_input(
-                column, period, np.array(benunit_file[column])
-            )  # input data for benunit data
-    for column in household_file.columns:
-        if "_id" not in column and column != "role":
-            model.set_input(
-                column, period, np.array(household_file[column])
-            )  # input data for household data
+    skipped = []
+    for input_file in [person_file, benunit_file, household_file]:
+        for column in input_file.columns:
+            if column != "role":
+                try:
+                    def_period = system.get_variable(column).definition_period
+                    if def_period in ["eternity", "year"]:
+                        input_periods = [input_period]
+                    else:
+                        input_periods = period(input_period).get_subperiods(
+                            def_period
+                        )
+                    for subperiod in input_periods:
+                        model.set_input(
+                            column, subperiod, np.array(input_file[column])
+                        )
+                except Exception as e:
+                    skipped += [column]
+    if skipped:
+        print(f"Incomplete initialisation: skipped {len(skipped)} variables:")
+        for var in skipped:
+            print(f"{var}")
     return model
 
 
-def calc_mtr(*reforms, var="person_benunit_net_income", period="2020-10-18"):
-    baseline = model(*reforms)
-    current_net_income = baseline.calculate(var, period)
-    head_given_bonus = model(*reforms, small_earnings_increase_for_head)
-    head_bonus = head_given_bonus.calculate("taxed_means_tested_bonus", period)
-    new_head_net_income = head_given_bonus.calculate(var, period)
-    non_head_given_bonus = model(
-        *reforms, small_earnings_increase_for_non_head
-    )
-    non_head_bonus = non_head_given_bonus.calculate(
-        "taxed_means_tested_bonus", period
-    )
-    new_non_head_net_income = non_head_given_bonus.calculate(var, period)
-    new_net_income = new_head_net_income * (
-        head_bonus > 0
-    ) + new_non_head_net_income * (non_head_bonus > 0)
-    with np.errstate(divide="ignore"):
-        marginal_tax_rate = 1 - (new_net_income - current_net_income) / (
-            head_bonus + non_head_bonus
-        )
-    invalid = np.isinf(marginal_tax_rate)
-    marginal_tax_rate[invalid] = 0
-    return marginal_tax_rate
-
-
-def entity_df(model, entity="benunit", period="2020-10-18"):
+def entity_df(model, entity="benunit", input_period="2020"):
     """
     Create and populate a DataFrame with all variables in the simulation
 
@@ -131,5 +106,12 @@ def entity_df(model, entity="benunit", period="2020-10-18"):
         )
     )
     for var in entity_variables:
-        df[var] = model.calculate(var, period)
+        def_period = model.tax_benefit_system.get_variable(
+            var
+        ).definition_period
+        if def_period in ["eternity", "year"]:
+            inp_period = input_period
+        else:
+            inp_period = period(input_period).get_subperiods(def_period)[-1]
+        df[var] = model.calculate(var, inp_period)
     return df
