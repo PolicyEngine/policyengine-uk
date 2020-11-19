@@ -1,24 +1,131 @@
-- name: Income support after phase-out
-  period: 2020-09-07
-  absolute_error_margin: 1
+- name: Lone parent, two children
+  period: 2020
+  absolute_error_margin: 5
   input:
-    pension_income: 342
-    income_support_reported: true
+    people:
+      p1:
+        age: 26
+      c1:
+        age: 4
+      c2:
+        age: 4
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2]
+        income_support_reported: true
+        WTC_reported: true
+        CTC_reported: true
   output:
-    income_support: 0
-- name: Income support basic single amount, some earnings within allowance
-  period: 2020-09-07
-  absolute_error_margin: 1
+    child_tax_credit: 
+      week:2020-02-01:
+        119.47
+    child_benefit:
+      week:2020-02-01:
+        35
+    income_support_eligible: true
+    income_support:
+      week:2020-02-01:
+        74.35
+- name: Lone parent, two children, some earnings
+  period: 2020
+  absolute_error_margin: 5
   input:
-    employee_earnings: 23
-    income_support_reported: true
+    people:
+      p1:
+        age: 26
+        earnings: 6000
+        hours: 6
+        pension_contributions: 1000
+      c1:
+        age: 4
+      c2:
+        age: 4
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2]
+        income_support_reported: true
+        WTC_reported: true
+        CTC_reported: true
   output:
-    income_support: 40
-- name: Check that withdrawal rate is correct
-  period: 2020-09-07
-  absolute_error_margin: 1
+    child_tax_credit: 
+      week:2020-02-01:
+        119.47
+    child_benefit:
+      week:2020-02-01:
+        35
+    income_support_eligible: true
+    income_support:
+      week:2020-02-01:
+        0
+- name: Lone parent, two children, very little earnings
+  period: 2020
+  absolute_error_margin: 5
   input:
-    employee_earnings: 33
-    income_support_reported: true
+    people:
+      p1:
+        age: 26
+        earnings: 2000
+        hours: 6
+        pension_contributions: 400
+      c1:
+        age: 4
+      c2:
+        age: 4
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2]
+        income_support_reported: true
+        WTC_reported: true
+        CTC_reported: true
   output:
-    income_support: 30
+    child_tax_credit: 
+      week:2020-02-01:
+        119.47
+    child_benefit:
+      week:2020-02-01:
+        35
+    income_support_eligible: true
+    income_support_applicable_income:
+      week:2020-02-01:
+        18
+    income_support:
+      week:2020-02-01:
+        55.89
+- name: Check withdrawal rate is 100%
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    people:
+      p1:
+        age: 26
+        earnings: 2520
+        hours: 6
+        pension_contributions: 400
+      c1:
+        age: 4
+      c2:
+        age: 4
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2]
+        income_support_reported: true
+        WTC_reported: true
+        CTC_reported: true
+  output:
+    child_tax_credit: 
+      week:2020-02-01:
+        119.47
+    child_benefit:
+      week:2020-02-01:
+        35
+    income_support_eligible: true
+    income_support_applicable_income:
+      week:2020-02-01:
+        28
+    income_support:
+      week:2020-02-01:
+        45.89

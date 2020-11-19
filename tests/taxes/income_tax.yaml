@@ -19,7 +19,7 @@
   input:
     earnings: 23415
     pension_contributions: 804
-    region: SCOTLAND
+    country: SCOTLAND
   output:
     income_tax: 2000
     NI: 1670
@@ -29,7 +29,7 @@
   input:
     earnings: 23415
     pension_contributions: 804
-    region: ENGLAND
+    country: ENGLAND
   output:
     income_tax: 2020
     NI: 1670
@@ -39,7 +39,7 @@
   input:
     earnings: 23415
     pension_contributions: 804
-    region: ENGLAND
+    country: ENGLAND
   output:
     income_tax: 2020
     NI: 1670

@@ -1,0 +1,9 @@
+- name: Pension Credit received
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    age: 75
+    pension_income: 5200
+  output:
+    pension_credit:
+      week:2020-01-06: 73.75
