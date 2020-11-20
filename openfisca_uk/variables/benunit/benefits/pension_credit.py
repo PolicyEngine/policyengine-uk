@@ -70,7 +70,7 @@ class pension_credit_applicable_income(Variable):
 
     def formula(benunit, period, parameters):
         BENUNIT_MEANS_TESTED_BENEFITS = ["working_tax_credit"]
-        PERSON_MEANS_TESTED_BENEFITS = ["total_disability_benefits", "state_pension"]
+        PERSON_MEANS_TESTED_BENEFITS = ["state_pension"]
         benefits = aggr(benunit, period, PERSON_MEANS_TESTED_BENEFITS, options=[MATCH]) + add(
             benunit, period, BENUNIT_MEANS_TESTED_BENEFITS
         )

@@ -92,7 +92,7 @@ class ESA_income_applicable_income(Variable):
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u""
+    label = u"ESA (income-based)"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):

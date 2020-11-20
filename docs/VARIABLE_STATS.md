@@ -1033,7 +1033,7 @@ benunit_CB_reported
   - stddev: 13.899999618530273
   - median: 0.0
 
-benunit_CTC_reported
+benunit_child_tax_credit_reported
   - description: Reported amount of Child Tax Credit per week
   - mean: 8.569999694824219
   - stddev: 34.040000915527344
@@ -1057,7 +1057,7 @@ benunit_JSA_income_reported
   - stddev: 7.949999809265137
   - median: 0.0
 
-benunit_WTC_reported
+benunit_working_tax_credit_reported
   - description: Reported amount of Working Tax Credit per week
   - mean: 2.0
   - stddev: 13.329999923706055

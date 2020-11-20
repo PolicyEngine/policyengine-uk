@@ -46,6 +46,14 @@ class is_adult(Variable):
     def formula(person, period, parameters):
         return person("age", period.this_year) >= 18
 
+class is_WA_age_adult(Variable):
+    value_type = float
+    entity = Person
+    label = u'Whether is a working-age adult'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return (person("age", period.this_year) >= 18) * (person("age", period.this_year) < 165)
 
 class is_child(Variable):
     value_type = bool
@@ -75,10 +83,6 @@ class hours(Variable):
     entity = Person
     label = u"Hours worked per week"
     definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("earned_income", period) / person("minimum_wage", period)
-
 
 class care_hours(Variable):
     value_type = float
@@ -130,3 +134,22 @@ class person_region(Variable):
 
     def formula(person, period, parameters):
         return person.household("region", period)
+
+class is_young_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is under 14"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period.this_year) < 14
+
+
+class is_older_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is over 14 but under 18"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return (person("age", period.this_year) >= 14) * (person("age", period.this_year) < 18)

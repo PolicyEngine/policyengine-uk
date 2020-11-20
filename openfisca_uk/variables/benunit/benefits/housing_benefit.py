@@ -117,7 +117,7 @@ class housing_benefit(Variable):
         already_claiming = benunit("housing_benefit_reported", period.this_year) > 0
         amount = where(LHA, min_(final_amount, benunit("LHA_cap", period)), final_amount)
         other_capped_benefits = add(benunit, period, ["child_benefit", "child_tax_credit", "JSA_income", "income_support", "ESA_income"], options=[MATCH]) + aggr(benunit, period, ["JSA_contrib", "incapacity_benefit", "ESA_contrib", "SDA"], options=[MATCH])
-        final_amount = min_(amount * already_claiming, benunit("benefit_cap", period))
+        final_amount = min_(amount * already_claiming, benunit("benefit_cap", period) - other_capped_benefits)
         return final_amount
 
 class housing_benefit_reported(Variable):

@@ -5,7 +5,7 @@
     age: 26
     hours: 31
     earnings: 2000
-    WTC_reported: true
+    working_tax_credit_reported: true
     housing_type: SOCIAL
     housing_benefit_reported: true
     is_household_head: true
@@ -25,7 +25,7 @@
     age: 26
     hours: 31
     earnings: 2520
-    WTC_reported: true
+    working_tax_credit_reported: true
     housing_type: SOCIAL
     housing_benefit_reported: true
     is_household_head: true

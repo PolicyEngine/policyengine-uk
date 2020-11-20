@@ -15,7 +15,7 @@
         adults: p1
         children: [c1]
         ESA_income_reported: true
-        CTC_reported: true
+        child_tax_credit_reported: true
   output:
     is_disabled: [1, 0]
     CTC_applicable_amount: 3379

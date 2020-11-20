@@ -9,7 +9,7 @@
     benunits:
       b1:
         adults: p1
-        WTC_reported: true
+        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -26,7 +26,7 @@
     benunits:
       b1:
         adults: p1
-        WTC_reported: true
+        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -44,7 +44,7 @@
     benunits:
       b1:
         adults: p1
-        WTC_reported: true
+        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -62,7 +62,7 @@
     benunits:
       b1:
         adults: p1
-        WTC_reported: true
+        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -84,7 +84,7 @@
     benunits:
       b1:
         adults: [p1, p2]
-        WTC_reported: true
+        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -108,7 +108,7 @@
     benunits:
       b1:
         adults: [p1, p2]
-        WTC_reported: true
+        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -132,7 +132,7 @@
     benunits:
       b1:
         adults: [p1, p2]
-        WTC_reported: true
+        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -157,8 +157,8 @@
       b1:
         adults: [p1, p2]
         children: [c1, c2]
-        WTC_reported: true
-        CTC_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:
@@ -186,8 +186,8 @@
       b1:
         adults: [p1, p2]
         children: [c1, c2]
-        WTC_reported: true
-        CTC_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2020-02-01:

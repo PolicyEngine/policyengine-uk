@@ -1,6 +1,6 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
-
+from openfisca_uk.tools.general import *
 
 class earnings(Variable):
     value_type = float
@@ -133,14 +133,48 @@ class post_tax_income(Variable):
     def formula(person, period, parameters):
         return person("taxable_income", period) - person("total_tax", period)
 
-class total_disability_benefits(Variable):
+
+class total_benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Total disability benefits'
+    label = u'Total benefits received by the person'
     definition_period = WEEK
+
+class benefits_modelling(Variable):
+    value_type = float
+    entity = Person
+    label = u'Difference between simulated and reported benefits'
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        SIMULATED = ["working_tax_credit", "child_tax_credit", "child_benefit", "ESA_income", "housing_benefit", "income_support", "JSA_income", "pension_credit", "universal_credit"]
+        difference = sum(map(lambda benefit : person.benunit(benefit, period, options=[MATCH]) - person.benunit(benefit + "_reported", period, options=[MATCH]), SIMULATED))
+        return difference
+
+class gross_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Gross income'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        COMPONENTS = ["earnings", "profit","state_pension", "pension_income", "savings_interest", "rental_income", "SSP", "SPP", "SMP", "holiday_pay", "dividend_income", "misc_income", "total_benefits", "benefits_modelling"]
+        return add(person, period, COMPONENTS, options=[MATCH])
+
 
 class net_income(Variable):
     value_type = float
     entity = Person
-    label = u'FRS net income'
+    label = u'Net income'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        EXPENSES = ["income_tax", "NI"]
+        net_income = person("gross_income", period) - add(person, period, EXPENSES, options=[MATCH])
+        return net_income
+
+class FRS_net_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Net income in the FRS'
     definition_period = YEAR

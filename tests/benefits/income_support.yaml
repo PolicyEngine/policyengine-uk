@@ -14,8 +14,8 @@
         adults: p1
         children: [c1, c2]
         income_support_reported: true
-        WTC_reported: true
-        CTC_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2020-02-01:
@@ -46,8 +46,8 @@
         adults: p1
         children: [c1, c2]
         income_support_reported: true
-        WTC_reported: true
-        CTC_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2020-02-01:
@@ -78,8 +78,8 @@
         adults: p1
         children: [c1, c2]
         income_support_reported: true
-        WTC_reported: true
-        CTC_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2020-02-01:
@@ -113,8 +113,8 @@
         adults: p1
         children: [c1, c2]
         income_support_reported: true
-        WTC_reported: true
-        CTC_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2020-02-01:

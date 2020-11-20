@@ -25,7 +25,7 @@ class benunit_post_tax_income(Variable):
 class benunit_net_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'FRS net income'
+    label = u'Net income for the benefit unit'
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
