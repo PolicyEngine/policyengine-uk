@@ -59,7 +59,7 @@ class household_equivalisation_bhc(Variable):
     value_type = float
     entity = Household
     label = u"Equivalisation factor to account for household composition, before housing costs"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(household, period, parameters):
         second_adult = household.nb_persons(Household.ADULT) == 2
@@ -82,7 +82,7 @@ class household_equivalisation_ahc(Variable):
     value_type = float
     entity = Household
     label = u"Equivalisation factor to account for household composition, after housing costs"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(household, period, parameters):
         second_adult = household.nb_persons(Household.ADULT) == 2
@@ -148,7 +148,7 @@ class seniors_in_household(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.sum(household.members("is_SP_age", period))
+        return household.sum(household.members("is_SP_age", period.this_year))
 
 class in_poverty_bhc(Variable):
     value_type = bool

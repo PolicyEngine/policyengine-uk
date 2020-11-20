@@ -158,7 +158,7 @@ class gross_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        COMPONENTS = ["earnings", "profit","state_pension", "pension_income", "savings_interest", "rental_income", "SSP", "SPP", "SMP", "holiday_pay", "dividend_income", "misc_income", "total_benefits", "benefits_modelling"]
+        COMPONENTS = ["earnings", "profit","state_pension", "pension_income", "savings_interest", "rental_income", "SSP", "SPP", "SMP", "holiday_pay", "dividend_income", "total_benefits", "benefits_modelling"]
         return add(person, period, COMPONENTS, options=[MATCH])
 
 

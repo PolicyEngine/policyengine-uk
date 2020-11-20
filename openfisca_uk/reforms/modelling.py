@@ -92,3 +92,19 @@ class reported_benefits(Reform):
         SIMULATED = [working_tax_credit, child_tax_credit, child_benefit, ESA_income, housing_benefit, income_support, JSA_income, pension_credit, universal_credit]
         for benefit in SIMULATED:
             self.update_variable(benefit)
+
+class net_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Net income'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("FRS_net_income", period)
+
+class just_data(Reform):
+    name = u'Just use the net income data, no simulation'
+
+    def apply(self):
+        self.update_variable(net_income)
+

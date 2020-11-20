@@ -9,7 +9,7 @@ class household_net_income(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return max_(0, aggr(household, period, ["net_income"]))
+        return max_(0, aggr(household, period, ["net_income"])) - household("council_tax", period)
 
 class household_net_income_ahc(Variable):
     value_type = float
@@ -18,7 +18,7 @@ class household_net_income_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return max_(0, aggr(household, period, ["net_income"]) - household("housing_costs", period, options=[MATCH]))
+        return max_(0, aggr(household, period, ["net_income"]) - household("council_tax", period) - household("housing_costs", period, options=[MATCH]))
 
 class equiv_household_net_income(Variable):
     value_type = float

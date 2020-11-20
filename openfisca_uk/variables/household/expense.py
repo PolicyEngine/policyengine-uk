@@ -77,3 +77,9 @@ class is_shared(Variable):
     entity = Household
     label = u"Whether using a shared household agreement"
     definition_period = ETERNITY
+
+class council_tax(Variable):
+    value_type = float
+    entity = Household
+    label = u'Council Tax'
+    definition_period = YEAR
