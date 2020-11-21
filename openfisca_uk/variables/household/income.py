@@ -2,6 +2,15 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class household_earnings(Variable):
+    value_type = float
+    entity = Household
+    label = u'Earnings in the household'
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return aggr(household, period, ["earned_income"])
+
 class household_net_income(Variable):
     value_type = float
     entity = Household

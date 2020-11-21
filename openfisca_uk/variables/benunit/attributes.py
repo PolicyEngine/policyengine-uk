@@ -161,7 +161,7 @@ class benunit_weight(Variable):
 
 
 class benunit_id(Variable):
-    value_type = str
+    value_type = int
     entity = BenUnit
     label = u"ID of the benefit unit"
     definition_period = ETERNITY

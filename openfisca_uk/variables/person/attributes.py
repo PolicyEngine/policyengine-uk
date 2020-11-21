@@ -12,7 +12,7 @@ class index(Variable):
 
 
 class person_id(Variable):
-    value_type = str
+    value_type = int
     entity = Person
     label = u"ID of the person"
     definition_period = ETERNITY

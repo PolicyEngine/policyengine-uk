@@ -149,7 +149,7 @@ class benefits_modelling(Variable):
     def formula(person, period, parameters):
         SIMULATED = ["working_tax_credit", "child_tax_credit", "child_benefit", "ESA_income", "housing_benefit", "income_support", "JSA_income", "pension_credit", "universal_credit"]
         difference = sum(map(lambda benefit : person.benunit(benefit, period, options=[MATCH]) - person.benunit(benefit + "_reported", period, options=[MATCH]), SIMULATED))
-        return difference
+        return difference * person("is_benunit_head", period)
 
 class gross_income(Variable):
     value_type = float

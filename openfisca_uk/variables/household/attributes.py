@@ -27,7 +27,7 @@ class household_weight(Variable):
 
 
 class household_id(Variable):
-    value_type = str
+    value_type = int
     entity = Household
     label = u"ID of the household"
     definition_period = ETERNITY

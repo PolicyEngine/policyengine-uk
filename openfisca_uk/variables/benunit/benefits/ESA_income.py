@@ -64,7 +64,7 @@ class ESA_income_applicable_income(Variable):
 
     def formula(benunit, period, parameters):
         ESA_income = parameters(period).benefits.ESA.income
-        BENUNIT_MEANS_TESTED_BENEFITS = []
+        BENUNIT_MEANS_TESTED_BENEFITS = ["child_tax_credit"]
         PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
         benefits = aggr(
             benunit, period, PERSON_MEANS_TESTED_BENEFITS, options=[MATCH]
