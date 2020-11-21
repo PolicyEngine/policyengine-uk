@@ -136,7 +136,7 @@ class Simulation:
         return model
 
 
-    def entity_df(self, model, entity="benunit"):
+    def entity_df(self, entity="benunit"):
         """
         Create and populate a DataFrame with all variables in the simulation
 
@@ -150,30 +150,24 @@ class Simulation:
         """
         if entity not in ["benunit", "person", "household"]:
             raise Exception("Unsupported entity.")
-        if entity == "benunit":
-            weight_col = "benunit_weight"
-        elif entity == "person":
-            weight_col = "adult_weight"
-        else:
-            weight_col = "household_weight"
         df = pd.DataFrame()
-        variables = model.tax_benefit_system.variables.keys()
+        variables = self.model.tax_benefit_system.variables.keys()
         entity_variables = list(
             filter(
-                lambda x: model.tax_benefit_system.variables[x].entity.key
+                lambda x: self.model.tax_benefit_system.variables[x].entity.key
                 == entity,
                 variables,
             )
         )
         for var in entity_variables:
-            def_period = model.tax_benefit_system.get_variable(
+            def_period = self.model.tax_benefit_system.get_variable(
                 var
             ).definition_period
             if def_period in ["eternity", "year"]:
                 inp_period = self.input_period
             else:
                 inp_period = period(self.input_period).get_subperiods(def_period)[-1]
-            df[var] = model.calculate(var, inp_period)
+            df[var] = self.model.calculate(var, inp_period)
         return df
 
     def calc_mtr(self, *reforms, return_change_df=False):
