@@ -12,19 +12,21 @@ class benunit_pension_contributions(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("pension_contributions", period))
 
+
 class benunit_rent(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Total benefit unit rental costs'
+    label = u"Total benefit unit rental costs"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("personal_rent", period))
 
+
 class benunit_housing_costs(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Total benefit unit rental costs'
+    label = u"Total benefit unit rental costs"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):

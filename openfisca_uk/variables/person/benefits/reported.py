@@ -69,9 +69,19 @@ class DLA_SC(Variable):
 class personal_benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Personal, non-means-tested benefits'
+    label = u"Personal, non-means-tested benefits"
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        BENEFITS = ["DLA_SC", "DLA_M", "AA", "SDA", "incapacity_benefit", "carers_allowance", "BSP", "JSA_contrib", "ESA_contrib"]
+        BENEFITS = [
+            "DLA_SC",
+            "DLA_M",
+            "AA",
+            "SDA",
+            "incapacity_benefit",
+            "carers_allowance",
+            "BSP",
+            "JSA_contrib",
+            "ESA_contrib",
+        ]
         return add(person, period, BENEFITS)

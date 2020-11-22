@@ -1,7 +1,9 @@
 from openfisca_uk.tools.simulation import Simulation
 import numpy as np
 
-sim = Simulation(data_dir="C:\\Users\\Nikhil\\Documents\\Projects\\new-frs\\frs\\frs")
+sim = Simulation(
+    data_dir="C:\\Users\\Nikhil\\Documents\\Projects\\new-frs\\frs\\frs"
+)
 person = sim.entity_df(entity="person")
 benunit = sim.entity_df(entity="benunit")
 household = sim.entity_df(entity="household")

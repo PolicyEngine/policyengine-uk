@@ -166,10 +166,11 @@ class benunit_id(Variable):
     label = u"ID of the benefit unit"
     definition_period = ETERNITY
 
+
 class benunit_SP_age(Variable):
     value_type = bool
     entity = BenUnit
-    label = u'Whether either member of the benefit unit is State Pension age'
+    label = u"Whether either member of the benefit unit is State Pension age"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

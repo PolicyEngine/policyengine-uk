@@ -60,5 +60,3 @@ class is_carer(Variable):
             >= parameters(period).benefits.carers_allowance.min_hours
         )
         return already_claiming + meets_requirements
-
-

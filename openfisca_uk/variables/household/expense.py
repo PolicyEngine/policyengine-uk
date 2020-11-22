@@ -16,10 +16,11 @@ class housing_type(Variable):
     label = u"Whether private or social housing"
     definition_period = ETERNITY
 
+
 class is_social(Variable):
     value_type = bool
     entity = Household
-    label = u'Whether is social housing'
+    label = u"Whether is social housing"
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
@@ -52,16 +53,18 @@ class rent(Variable):
     def formula(household, period, parameters):
         return household("weekly_rent", period.this_year)
 
+
 class weekly_rent(Variable):
     value_type = float
     entity = Household
-    label = u'Weekly rent for the year'
+    label = u"Weekly rent for the year"
     definition_period = YEAR
+
 
 class mortgage(Variable):
     value_type = float
     entity = Household
-    label = u'Total mortgage payments'
+    label = u"Total mortgage payments"
     definition_period = WEEK
 
 
@@ -78,8 +81,9 @@ class is_shared(Variable):
     label = u"Whether using a shared household agreement"
     definition_period = ETERNITY
 
+
 class council_tax(Variable):
     value_type = float
     entity = Household
-    label = u'Council Tax'
+    label = u"Council Tax"
     definition_period = YEAR

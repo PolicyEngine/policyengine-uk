@@ -38,6 +38,7 @@ class is_CTC_child_limit_exempt(Variable):
             1 - person("is_adult", period)
         )
 
+
 class WTC_eligible(Variable):
     value_type = bool
     entity = BenUnit
@@ -222,7 +223,9 @@ class yearly_working_tax_credit(Variable):
             benunit("WTC_applicable_amount", period)
             - benunit("tax_credits_reduction", period),
         )
-        already_claiming = benunit("working_tax_credit_reported", period, options=[MATCH]) > 0
+        already_claiming = (
+            benunit("working_tax_credit_reported", period, options=[MATCH]) > 0
+        )
         return amount * already_claiming
 
 
@@ -242,7 +245,9 @@ class yearly_child_tax_credit(Variable):
             0,
             benunit("CTC_applicable_amount", period) - reduction_left,
         )
-        already_claiming = benunit("child_tax_credit_reported", period, options=[MATCH]) > 0
+        already_claiming = (
+            benunit("child_tax_credit_reported", period, options=[MATCH]) > 0
+        )
         return amount * already_claiming
 
 

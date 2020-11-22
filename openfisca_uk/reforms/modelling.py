@@ -2,6 +2,7 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
@@ -10,6 +11,7 @@ class child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("child_benefit_reported", period)
+
 
 class ESA_income(Variable):
     value_type = float
@@ -20,14 +22,16 @@ class ESA_income(Variable):
     def formula(benunit, period, parameters):
         return benunit("ESA_income_reported", period.this_year)
 
+
 class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Housing Benefit'
+    label = u"Housing Benefit"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
         return benunit("housing_benefit_reported", period.this_year)
+
 
 class income_support(Variable):
     value_type = float
@@ -38,6 +42,7 @@ class income_support(Variable):
     def formula(benunit, period, parameters):
         return benunit("income_support_reported", period.this_year)
 
+
 class JSA_income(Variable):
     value_type = float
     entity = BenUnit
@@ -47,6 +52,7 @@ class JSA_income(Variable):
     def formula(benunit, period, parameters):
         return benunit("JSA_income_reported", period.this_year)
 
+
 class pension_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -55,6 +61,7 @@ class pension_credit(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("pension_credit_reported", period.this_year)
+
 
 class working_tax_credit(Variable):
     value_type = float
@@ -75,6 +82,7 @@ class child_tax_credit(Variable):
     def formula(benunit, period, parameters):
         return benunit("child_tax_credit_reported", period.this_year)
 
+
 class universal_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -84,27 +92,21 @@ class universal_credit(Variable):
     def formula(benunit, period, parameters):
         return benunit("universal_credit_reported", period.this_year)
 
+
 class reported_benefits(Reform):
-    name = u'Disable simulation of benefits'
+    name = u"Disable simulation of benefits"
 
     def apply(self):
-        self.neutralize_variable("benefits_modelling")
-        SIMULATED = [working_tax_credit, child_tax_credit, child_benefit, ESA_income, housing_benefit, income_support, JSA_income, pension_credit, universal_credit]
+        SIMULATED = [
+            working_tax_credit,
+            child_tax_credit,
+            child_benefit,
+            ESA_income,
+            housing_benefit,
+            income_support,
+            JSA_income,
+            pension_credit,
+            universal_credit,
+        ]
         for benefit in SIMULATED:
             self.update_variable(benefit)
-
-class net_income(Variable):
-    value_type = float
-    entity = Person
-    label = u'Net income'
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("FRS_net_income", period)
-
-class just_data(Reform):
-    name = u'Just use the net income data, no simulation'
-
-    def apply(self):
-        self.update_variable(net_income)
-

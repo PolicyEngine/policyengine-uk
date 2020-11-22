@@ -22,10 +22,11 @@ class benunit_post_tax_income(Variable):
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("post_tax_income", period))
 
+
 class benunit_net_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Net income for the benefit unit'
+    label = u"Net income for the benefit unit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

@@ -18,10 +18,11 @@ class childcare(Variable):
     def formula(person, period, parameters):
         return person("weekly_childcare", period.this_year)
 
+
 class weekly_childcare(Variable):
     value_type = float
     entity = Person
-    label = u'Weekly childcare for the year'
+    label = u"Weekly childcare for the year"
     definition_period = YEAR
 
 
@@ -32,7 +33,10 @@ class personal_rent(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person.household("rent", period) * person("is_household_head", period)
+        return person.household("rent", period) * person(
+            "is_household_head", period
+        )
+
 
 class personal_housing_costs(Variable):
     value_type = float
@@ -41,12 +45,15 @@ class personal_housing_costs(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person.household("housing_costs", period) * person("is_household_head", period)
+        return person.household("housing_costs", period) * person(
+            "is_household_head", period
+        )
+
 
 class is_renting(Variable):
     value_type = float
     entity = Person
-    label = u'Whether renting'
+    label = u"Whether renting"
     definition_period = WEEK
 
     def formula(person, period, parameters):

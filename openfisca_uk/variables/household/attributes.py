@@ -32,29 +32,31 @@ class household_id(Variable):
     label = u"ID of the household"
     definition_period = ETERNITY
 
+
 class Region(Enum):
-    NORTH_EAST = u'North East'
-    NORTH_WEST = u'North West',
-    YORKSHIRE = u'Yorkshire and the Humber'
-    EAST_MIDLANDS = u'East Midlands'
-    WEST_MIDLANDS = u'West Midlands'
-    EAST_OF_ENGLAND = u'East of England'
-    LONDON = u'London'
-    SOUTH_EAST = u'South East'
-    SOUTH_WEST = u'South West'
-    WALES = u'Wales'
-    SCOTLAND = u'Scotland'
-    NORTHERN_IRELAND = u'Northern Ireland'
+    NORTH_EAST = u"North East"
+    NORTH_WEST = (u"North West",)
+    YORKSHIRE = u"Yorkshire and the Humber"
+    EAST_MIDLANDS = u"East Midlands"
+    WEST_MIDLANDS = u"West Midlands"
+    EAST_OF_ENGLAND = u"East of England"
+    LONDON = u"London"
+    SOUTH_EAST = u"South East"
+    SOUTH_WEST = u"South West"
+    WALES = u"Wales"
+    SCOTLAND = u"Scotland"
+    NORTHERN_IRELAND = u"Northern Ireland"
+
 
 class region(Variable):
     value_type = Enum
     possible_values = Region
     default_value = Region.LONDON
     entity = Household
-    label = u'Region of the UK'
+    label = u"Region of the UK"
     definition_period = ETERNITY
 
-    
+
 class household_equivalisation_bhc(Variable):
     value_type = float
     entity = Household
@@ -128,7 +130,7 @@ class working_age_adults_in_household(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        return household.sum(household.members("is_WA_age_adult", period))
+        return household.sum(household.members("is_WA_adult", period))
 
 
 class children_in_household(Variable):
@@ -149,6 +151,7 @@ class seniors_in_household(Variable):
 
     def formula(household, period, parameters):
         return household.sum(household.members("is_SP_age", period.this_year))
+
 
 class in_poverty_bhc(Variable):
     value_type = bool
@@ -175,6 +178,8 @@ class in_poverty_ahc(Variable):
 
     def formula(household, period, parameters):
         return (
-            household("equiv_household_net_income_ahc", period, options=[DIVIDE])
+            household(
+                "equiv_household_net_income_ahc", period, options=[DIVIDE]
+            )
             < parameters(period).poverty.absolute_poverty_ahc
         )

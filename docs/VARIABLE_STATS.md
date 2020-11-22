@@ -42,7 +42,7 @@ is_SP_age
   - stddev: 0.41
   - median: 0.0
 
-is_WA_age_adult
+is_WA_adult
   - description: Whether is a working-age adult
   - mean: 0.78
   - stddev: 0.42
@@ -1189,6 +1189,12 @@ household_earnings
   - mean: 29133.66
   - stddev: 166872.25
   - median: 14404.0
+
+household_income
+  - description: Taxable income in the household
+  - mean: 37756.11
+  - stddev: 166531.89
+  - median: 26436.80078125
 
 household_net_income
   - description: Household net income, before housing costs

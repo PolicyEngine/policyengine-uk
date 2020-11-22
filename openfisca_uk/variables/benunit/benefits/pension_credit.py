@@ -2,10 +2,11 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class pension_credit_eligible(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Whether eligible for Pension Credit'
+    label = u"Whether eligible for Pension Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -14,11 +15,13 @@ class pension_credit_eligible(Variable):
         claiming_HB = benunit("housing_benefit", period, options=[ADD]) > 0
         return both_SP_age + (one_SP_age * claiming_HB) > 0
 
+
 class pension_credit_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Reported amount of Pension Credit per week'
+    label = u"Reported amount of Pension Credit per week"
     definition_period = YEAR
+
 
 class pension_credit(Variable):
     value_type = float
@@ -45,7 +48,9 @@ class pension_credit_MG(Variable):
             benunit("is_single", period) * PC.min_guarantee.single
             + benunit("is_couple", period) * PC.min_guarantee.couple
         )
-        premiums = benunit("severe_disability_premium", period) + benunit("carer_premium", period)
+        premiums = benunit("severe_disability_premium", period) + benunit(
+            "carer_premium", period
+        )
         applicable_amount = personal_allowance + premiums
         return applicable_amount
 
@@ -62,18 +67,22 @@ class pension_credit_GC(Variable):
             0, benunit("pension_credit_MG", period) - income
         )
 
+
 class pension_credit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Applicable income for Pension Credit'
+    label = u"Applicable income for Pension Credit"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
-        BENUNIT_MEANS_TESTED_BENEFITS = ["working_tax_credit", "child_tax_credit"]
+        BENUNIT_MEANS_TESTED_BENEFITS = [
+            "working_tax_credit",
+            "child_tax_credit",
+        ]
         PERSON_MEANS_TESTED_BENEFITS = []
-        benefits = aggr(benunit, period, PERSON_MEANS_TESTED_BENEFITS, options=[MATCH]) + add(
-            benunit, period, BENUNIT_MEANS_TESTED_BENEFITS
-        )
+        benefits = aggr(
+            benunit, period, PERSON_MEANS_TESTED_BENEFITS, options=[MATCH]
+        ) + add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         means_tested_income = (
             benunit("benunit_post_tax_income", period, options=[MATCH])
             + benefits
@@ -93,17 +102,14 @@ class pension_credit_SC(Variable):
         MG_amount = benunit("pension_credit_MG", period)
         threshold = PC.savings_credit.single_threshold * benunit(
             "is_single", period
-        ) + PC.savings_credit.couple_threshold * benunit(
-            "is_couple", period
-        )
+        ) + PC.savings_credit.couple_threshold * benunit("is_couple", period)
         maximum_amount = PC.savings_credit.max_single * benunit(
             "is_single", period
         ) + PC.savings_credit.max_single * benunit("is_couple", period)
         income_above_threshold = max_(0, income - threshold)
         income_above_MG = max_(0, income - MG_amount)
         SC_amount = min_(
-            income_above_threshold
-            * (1 - PC.savings_credit.withdrawal_rate),
+            income_above_threshold * (1 - PC.savings_credit.withdrawal_rate),
             maximum_amount,
         )
         deduction = income_above_MG * PC.savings_credit.withdrawal_rate

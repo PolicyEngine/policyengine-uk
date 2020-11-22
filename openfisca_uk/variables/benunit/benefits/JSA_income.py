@@ -128,7 +128,10 @@ class JSA_income_applicable_income(Variable):
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).benefits.JSA
-        BENUNIT_MEANS_TESTED_BENEFITS = ["working_tax_credit", "child_tax_credit"]
+        BENUNIT_MEANS_TESTED_BENEFITS = [
+            "working_tax_credit",
+            "child_tax_credit",
+        ]
         PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
         benefits = aggr(
             benunit, period, PERSON_MEANS_TESTED_BENEFITS, options=[MATCH]

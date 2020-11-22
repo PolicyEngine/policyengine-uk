@@ -1,6 +1,7 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
-from openfisca_uk.tools.simulation import load_frs
+from openfisca_uk.tools.simulation import Simulation
+from openfisca_uk.tools.general import *
 import numpy as np
 from rdbl import gbp
 
@@ -28,27 +29,24 @@ def ft_funded_ubi_reform(
     flat_tax_rate=0.5,
     abolish_benefits=CORE_BENEFITS,
 ):
-    
     class income_tax(Variable):
         value_type = float
         entity = Person
-        label = u"Income tax paid per year"
+        label = "Income tax paid per year"
         definition_period = YEAR
 
         def formula(person, period, parameters):
-            return flat_tax_rate * person(
-                "taxable_income", period
-            )
+            return flat_tax_rate * person("taxable_income", period)
 
     class basic_income(Variable):
         value_type = float
         entity = Person
-        label = u"Amount of basic income received per week"
+        label = "Amount of basic income received per week"
         definition_period = WEEK
 
         def formula(person, period, parameters):
             return (
-                pensioner_amount * person("is_senior", period.this_year)
+                pensioner_amount * person("is_SP_age", period.this_year)
                 + wa_adult_amount * person("is_WA_adult", period.this_year)
                 + child_amount * person("is_child", period.this_year)
                 + person("is_disabled", period.this_year)
@@ -62,7 +60,7 @@ def ft_funded_ubi_reform(
     class benunit_basic_income(Variable):
         value_type = float
         entity = BenUnit
-        label = u"Amount of basic income per week for the benefit unit"
+        label = "Amount of basic income per week for the benefit unit"
         definition_period = WEEK
 
         def formula(benunit, period, parameters):
@@ -71,17 +69,40 @@ def ft_funded_ubi_reform(
     class household_basic_income(Variable):
         value_type = float
         entity = Household
-        label = u"Amount of basic income per week for the household"
+        label = "Amount of basic income per week for the household"
         definition_period = WEEK
 
         def formula(household, period, parameters):
             return household.sum(household.members("basic_income", period))
 
+    class gross_income(Variable):
+        value_type = float
+        entity = Person
+        label = "Gross income"
+        definition_period = YEAR
+
+        def formula(person, period, parameters):
+            COMPONENTS = [
+                "basic_income",
+                "earnings",
+                "profit",
+                "state_pension",
+                "pension_income",
+                "savings_interest",
+                "rental_income",
+                "SSP",
+                "SPP",
+                "SMP",
+                "holiday_pay",
+                "dividend_income",
+                "total_benefits",
+                "benefits_modelling",
+            ]
+            return add(person, period, COMPONENTS, options=[MATCH])
+
     class reform(Reform):
         def apply(self):
-            for changed_var in [
-                income_tax
-            ]:
+            for changed_var in [income_tax, gross_income]:
                 self.update_variable(changed_var)
             for added_var in [
                 basic_income,
@@ -96,17 +117,15 @@ def ft_funded_ubi_reform(
 
 
 def net_cost_of_reform(reform, data_dir="frs", period="2020"):
-    baseline = load_frs(data_dir=data_dir, input_period=period)
-    reformed = load_frs(reform, data_dir=data_dir, input_period=period)
-    households = baseline.calculate("household_weight", period)
-    net_cost = (
-        np.sum(
-            (
-                reformed.calculate("household_net_income_ahc", period)
-                - baseline.calculate("household_net_income_ahc", period)
-            )
-            * households
+    baseline = Simulation(data_dir=data_dir, input_period=period)
+    reformed = Simulation(reform, data_dir=data_dir, input_period=period)
+    households = baseline.calc("household_weight")
+    net_cost = np.sum(
+        (
+            reformed.calc("household_net_income_ahc")
+            - baseline.calc("household_net_income_ahc")
         )
+        * households
     )
     return net_cost
 
@@ -122,6 +141,7 @@ def solve_ft_ubi_reform(
     min_cost=-1e9,
     max_cost=0,
     max_steps=16,
+    verbose=False,
 ):
     min_x = 0
     max_x = 200
@@ -158,6 +178,8 @@ def solve_ft_ubi_reform(
             abolish_benefits=abolish_benefits,
         )
         y = net_cost_of_reform(reform)
+        if verbose:
+            print(f"Step {step}: cost = {gbp(y)}")
     return reform, [
         x * wa_adult_coef,
         x * child_coef,

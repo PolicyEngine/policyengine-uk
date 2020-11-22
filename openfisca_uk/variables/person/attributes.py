@@ -46,14 +46,18 @@ class is_adult(Variable):
     def formula(person, period, parameters):
         return person("age", period.this_year) >= 18
 
-class is_WA_age_adult(Variable):
+
+class is_WA_adult(Variable):
     value_type = float
     entity = Person
-    label = u'Whether is a working-age adult'
+    label = u"Whether is a working-age adult"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (person("age", period.this_year) >= 18) * (person("age", period.this_year) < 165)
+        return (person("age", period.this_year) >= 18) * (
+            person("age", period.this_year) < 165
+        )
+
 
 class is_child(Variable):
     value_type = bool
@@ -71,6 +75,7 @@ class is_benunit_head(Variable):
     label = u"Whether the head of the benefit unit"
     definition_period = ETERNITY
 
+
 class is_household_head(Variable):
     value_type = bool
     entity = Person
@@ -83,6 +88,7 @@ class hours(Variable):
     entity = Person
     label = u"Hours worked per week"
     definition_period = YEAR
+
 
 class care_hours(Variable):
     value_type = float
@@ -97,43 +103,48 @@ class adult_weight(Variable):
     label = u"Weight of the adult"
     definition_period = ETERNITY
 
+
 class num_rooms_in_household(Variable):
     value_type = float
     entity = Person
-    label = u'Number of rooms in this person\'s household'
+    label = u"Number of rooms in this person's household"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("num_rooms", period)
 
+
 class living_in_shared_accomodation(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether living in shared accommodation'
+    label = u"Whether living in shared accommodation"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("is_shared", period)
 
+
 class living_in_social_housing(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether living in shared accommodation'
+    label = u"Whether living in shared accommodation"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("is_social", period)
+
 
 class person_region(Variable):
     value_type = Enum
     possible_values = Region
     default_value = Region.LONDON
     entity = Person
-    label = u'Region of the UK'
+    label = u"Region of the UK"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("region", period)
+
 
 class is_young_child(Variable):
     value_type = bool
@@ -152,4 +163,6 @@ class is_older_child(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (person("age", period.this_year) >= 14) * (person("age", period.this_year) < 18)
+        return (person("age", period.this_year) >= 14) * (
+            person("age", period.this_year) < 18
+        )
