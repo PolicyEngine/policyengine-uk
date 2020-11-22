@@ -116,9 +116,9 @@ def ft_funded_ubi_reform(
     return reform
 
 
-def net_cost_of_reform(reform, data_dir="frs", period="2020"):
+def net_cost_of_reform(*reforms, data_dir="frs", period="2020"):
     baseline = Simulation(data_dir=data_dir, input_period=period)
-    reformed = Simulation(reform, data_dir=data_dir, input_period=period)
+    reformed = Simulation(*reforms, data_dir=data_dir, input_period=period)
     households = baseline.calc("household_weight")
     net_cost = np.sum(
         (
@@ -131,6 +131,7 @@ def net_cost_of_reform(reform, data_dir="frs", period="2020"):
 
 
 def solve_ft_ubi_reform(
+    *reforms,
     pensioner_amount=175,
     wa_adult_coef=1,
     child_coef=1,
@@ -157,7 +158,7 @@ def solve_ft_ubi_reform(
         flat_tax_rate=flat_tax_rate,
         abolish_benefits=abolish_benefits,
     )
-    y = net_cost_of_reform(reform)
+    y = net_cost_of_reform(*reforms, reform)
     step = 0
     while (y > max_cost or y < min_cost) and step < max_steps:
         step += 1
