@@ -1,0 +1,7 @@
+description: Starter allowance for savings
+values:
+  2020-01-01:
+    value: 5000
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/apply-tax-free-interest-on-savings

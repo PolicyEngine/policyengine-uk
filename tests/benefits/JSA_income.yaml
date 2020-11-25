@@ -1,26 +1,36 @@
 - name: JSA income-based, just after phase-out
-  period: 2020-09-07
-  absolute_error_margin: 1
+  period: 2020
+  absolute_error_margin: 5
   input:
-    employee_earnings: 200
+    earnings: 4200
+    hours: 4
+    age: 27
     JSA_income_reported: true
   output:
-    JSA_income: 0
+    JSA_income:
+      week:2020-02-01:
+        0
 - name: JSA income-based, basic amount
-  period: 2020-09-07
-  absolute_error_margin: 1
+  period: 2020
+  absolute_error_margin: 5
   input:
     age: 18
-    employee_earnings: 10
+    hours: 5
+    earnings: 100
     JSA_income_reported: true
   output:
-    JSA_income: 53.90
+    JSA_income:
+      week:2020-02-01:
+        58
 - name: JSA income-based, higher age amount
-  period: 2020-09-07
-  absolute_error_margin: 1
+  period: 2020
+  absolute_error_margin: 5
   input:
     age: 26
-    employee_earnings: 10
+    hours: 1
+    earnings: 20
     JSA_income_reported: true
   output:
-    JSA_income: 70
+    JSA_income:
+      week:2020-02-01:
+        74

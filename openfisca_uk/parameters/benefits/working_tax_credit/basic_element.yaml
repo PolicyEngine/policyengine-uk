@@ -1,7 +1,0 @@
-description: Basic amount of Working Tax Credit per year.
-values:
-  2020-06-01:
-    value: 3040
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.gov.uk/working-tax-credit/what-youll-get

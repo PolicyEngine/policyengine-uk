@@ -1,0 +1,66 @@
+- name: Lone parent, housing and childcare costs, legacy benefits
+  period: 2020
+  absolute_error_margin: 5
+  input:
+    people:
+      p1:
+        age: 26
+        profit: 12300
+        hours: 17
+        weekly_childcare: 150
+        is_household_head: true
+        is_benunit_head: true
+      c1:
+        age: 2
+      c2:
+        age: 4
+      c3:
+        age: 5
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2, c3]
+        housing_benefit_reported: true
+    households:
+      h1:
+        weekly_rent: 300
+        num_rooms: 3
+        housing_type: SOCIAL
+  output:
+    child_benefit:
+      week:2020-01-06: 48.95
+    housing_benefit:
+      week:2020-01-06: 300
+- name: Lone parent, housing and childcare costs, UC
+  period: 2020
+  absolute_error_margin: 25
+  input:
+    people:
+      p1:
+        age: 26
+        earnings: 12300
+        hours: 17
+        is_household_head: true
+        is_benunit_head: true
+      c1:
+        age: 2
+      c2:
+        age: 4
+      c3:
+        age: 5
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2, c3]
+        universal_credit_reported: true
+    households:
+      h1:
+        weekly_rent: 300
+        num_rooms: 3
+        housing_type: SOCIAL
+  output:
+    NI: [336, 0, 0, 0]
+    child_benefit:
+      week:2020-01-06: 48.95
+    universal_credit:
+      month:2020-01: 1782

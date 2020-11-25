@@ -1,7 +1,0 @@
-description: Basic amount of Winter Fuel Allowance
-values:
-  2016-06-01:
-    value: 200.00
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=23

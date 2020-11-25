@@ -1,7 +1,0 @@
-description: State Pension age for women
-values:
-  2020-06-01:
-    value: 67
-metadata:
-  threshold_unit: year
-  reference: https://www.gov.uk/state-pension-age/

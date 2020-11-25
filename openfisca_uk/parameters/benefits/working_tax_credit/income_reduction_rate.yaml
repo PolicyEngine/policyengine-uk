@@ -1,7 +1,0 @@
-description: Rate after income threshold reached by which Child Tax Credit is reduced per £1.
-values:
-  2020-06-01:
-    value: 0.41
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28

@@ -1,7 +1,0 @@
-description: Bonus to the income disregard for working families.
-values:
-  2020-06-01:
-    value: 17.10
-metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=42

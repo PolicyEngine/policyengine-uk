@@ -10,3 +10,11 @@
   - Four budget-neutral UBI reforms are implemented.
   - 15 test cases (unit and integration) testing benefits and taxes.
   - Simulation helper tools.
+
+### 0.2.0
+
+* Improvements to handling of time periods, MTRs and more
+* Details:
+  - Time periods now appropriate, using an implementation of WEEK for most benefits
+  - MTRs handled properly and include a breakdown
+  - Simulation tools are improved and included in a class

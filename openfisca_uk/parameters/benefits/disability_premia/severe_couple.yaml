@@ -1,0 +1,6 @@
+description: Severe disability premium for a couple where both are eligible
+values:
+  2020-01-01:
+    value: 133.90
+metadata:
+  reference: https://www.gov.uk/disability-premiums/what-youll-get

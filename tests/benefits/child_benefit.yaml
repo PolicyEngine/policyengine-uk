@@ -16,9 +16,7 @@
   absolute_error_margin: 1
   input:
     people:
-      parent1: {
-        child_benefit_reported: 1
-      }
+      parent1: {}
       parent2: {}
       child1: {}
       child2: {}

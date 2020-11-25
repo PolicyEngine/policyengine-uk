@@ -1,7 +1,0 @@
-description: Minimum hours requirement to claim Working Tax Credit for a couple
-values:
-  2016-06-01:
-    value: 24
-metadata:
-  threshold_unit: hours
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=25

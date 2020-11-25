@@ -1,0 +1,7 @@
+description: Minimum wage for under-18s
+values:
+  2020-01-01:
+    value: 4.55
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/national-minimum-wage-rates

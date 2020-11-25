@@ -1,8 +1,0 @@
-description: Threshold in pounds per week from income for a couple, above which the Income Support amount is reduced equally.
-values:
-  2020-06-01:
-    value: 10.00
-metadata:
-  threshold_unit: currency-GBP
-  rate_unit: /1
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33

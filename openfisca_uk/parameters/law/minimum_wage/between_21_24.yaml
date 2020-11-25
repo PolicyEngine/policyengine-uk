@@ -1,0 +1,7 @@
+description: Minimum wage for 21-24ss
+values:
+  2020-01-01:
+    value: 8.20
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/national-minimum-wage-rates

@@ -1,0 +1,6 @@
+description: Couple with children hours requirement
+values:
+  2020-01-01:
+    value: 24
+metadata:
+  reference: https://www.gov.uk/working-tax-credit

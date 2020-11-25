@@ -17,7 +17,7 @@
 		"body": [
 			"description: ${1:Description}",
 			"values:",
-			"  2020-06-01:",
+			"  2019-06-01:",
 			"    value: ${2:0.00}",
 			"metadata:",
 			"  threshold_unit: currency-GBP",
@@ -29,7 +29,7 @@
 		"prefix": "test",
 		"body": [
 			"- name: ${1:Name}",
-			"  period: 2020-09-07",
+			"  period: 2019-06-01",
 			"  absolute_error_margin: ${2:50}",
 			"  input:",
 			"    ${3:variable values here}",
