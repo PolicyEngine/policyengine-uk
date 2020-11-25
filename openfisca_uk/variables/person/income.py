@@ -166,7 +166,7 @@ class benefits_modelling(Variable):
                     benefit, period, options=[MATCH]
                 )
                 - person.benunit(
-                    benefit + "_reported", period, options=[MATCH]
+                    benefit + "_reported", period.this_year
                 ),
                 SIMULATED,
             )

@@ -10,7 +10,7 @@ class child_benefit(Variable):
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
-        return benunit("child_benefit_reported", period)
+        return benunit("child_benefit_reported", period.this_year)
 
 
 class ESA_income(Variable):

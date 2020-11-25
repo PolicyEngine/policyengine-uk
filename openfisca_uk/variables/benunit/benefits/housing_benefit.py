@@ -83,8 +83,11 @@ class housing_benefit_applicable_income(Variable):
             "working_tax_credit",
             "child_tax_credit",
             "child_benefit",
+            "income_support",
+            "JSA_income",
+            "ESA_income"
         ]
-        PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib"]
+        PERSON_MEANS_TESTED_BENEFITS = ["JSA_contrib", "ESA_contrib"]
         benefits = aggr(benunit, period, PERSON_MEANS_TESTED_BENEFITS) + add(
             benunit, period, BENUNIT_MEANS_TESTED_BENEFITS
         )

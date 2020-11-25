@@ -116,7 +116,7 @@ def ft_funded_ubi_reform(
     return reform
 
 
-def net_cost_of_reform(*reforms, data_dir="frs", period="2020"):
+def net_cost_of_reform(*reforms, reform, data_dir="frs", period="2020"):
     baseline = Simulation(data_dir=data_dir, input_period=period)
     reformed = Simulation(*reforms, data_dir=data_dir, input_period=period)
     households = baseline.calc("household_weight")
