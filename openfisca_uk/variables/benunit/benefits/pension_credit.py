@@ -13,7 +13,8 @@ class pension_credit_eligible(Variable):
         both_SP_age = benunit.min(benunit.members("is_SP_age", period))
         one_SP_age = benunit.max(benunit.members("is_SP_age", period))
         claiming_HB = benunit("housing_benefit", period, options=[ADD]) > 0
-        return both_SP_age + (one_SP_age * claiming_HB) > 0
+        already_claiming = benunit("pension_credit_reported", period.this_year) > 0
+        return (both_SP_age + (one_SP_age * claiming_HB)) * already_claiming > 0
 
 
 class pension_credit_reported(Variable):
