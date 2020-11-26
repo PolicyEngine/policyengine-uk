@@ -78,7 +78,7 @@ def ft_funded_ubi_reform(
     class gross_income(Variable):
         value_type = float
         entity = Person
-        label = "Gross income"
+        label = u"Gross income"
         definition_period = YEAR
 
         def formula(person, period, parameters):
@@ -100,6 +100,7 @@ def ft_funded_ubi_reform(
             ]
             return add(person, period, COMPONENTS, options=[MATCH])
 
+
     class reform(Reform):
         def apply(self):
             for changed_var in [income_tax, gross_income]:
@@ -116,22 +117,21 @@ def ft_funded_ubi_reform(
     return reform
 
 
-def net_cost_of_reform(*reforms, reform, data_dir="frs", period="2020"):
+def net_cost_of_reform(reform, data_dir="frs", period="2020"):
     baseline = Simulation(data_dir=data_dir, input_period=period)
-    reformed = Simulation(*reforms, data_dir=data_dir, input_period=period)
+    reformed = Simulation(reform, data_dir=data_dir, input_period=period)
     households = baseline.calc("household_weight")
     net_cost = np.sum(
         (
-            reformed.calc("household_net_income_ahc")
-            - baseline.calc("household_net_income_ahc")
+            reformed.calc("household_net_income_ahc", period="week:2020-01-06")
+            - baseline.calc("household_net_income_ahc", period="week:2020-01-06")
         )
-        * households
+        * households * 52
     )
     return net_cost
 
 
 def solve_ft_ubi_reform(
-    *reforms,
     pensioner_amount=175,
     wa_adult_coef=1,
     child_coef=1,
@@ -144,8 +144,8 @@ def solve_ft_ubi_reform(
     max_steps=16,
     verbose=False,
 ):
-    min_x = 0
-    max_x = 200
+    min_x = 50
+    max_x = 150
     x_hist = []
     y_hist = []
     x = (min_x + max_x) / 2
@@ -158,7 +158,7 @@ def solve_ft_ubi_reform(
         flat_tax_rate=flat_tax_rate,
         abolish_benefits=abolish_benefits,
     )
-    y = net_cost_of_reform(*reforms, reform)
+    y = net_cost_of_reform(reform)
     step = 0
     while (y > max_cost or y < min_cost) and step < max_steps:
         step += 1
