@@ -206,7 +206,7 @@ class net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        EXPENSES = ["income_tax", "NI"]
+        EXPENSES = ["income_tax", "NI", "maintenance_payments", "pension_contributions", "student_loan_repayment"]
         net_income = person("gross_income", period) - add(
             person, period, EXPENSES, options=[MATCH]
         )
