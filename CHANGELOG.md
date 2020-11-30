@@ -18,3 +18,9 @@
   - Time periods now appropriate, using an implementation of WEEK for most benefits
   - MTRs handled properly and include a breakdown
   - Simulation tools are improved and included in a class
+
+### 0.2.1
+
+* Improved documentation of parameters
+* Tests now occur in 2021 to ensure FY20-21 parameters are used
+* Fixed bug in CB-HITC that caused overestimation
