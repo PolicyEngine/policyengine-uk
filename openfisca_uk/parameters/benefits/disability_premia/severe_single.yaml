@@ -1,6 +1,8 @@
 description: Severe disability premium for a single person
 values:
-  2020-01-01:
+  2016-06-01:
     value: 66.95
 metadata:
+  period: week
+  unit: currency
   reference: https://www.gov.uk/disability-premiums/what-youll-get

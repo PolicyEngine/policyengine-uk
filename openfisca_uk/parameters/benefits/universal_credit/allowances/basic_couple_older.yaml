@@ -2,8 +2,9 @@ description: Personal allowance for a couple, at least one aged over 25 and one 
 values:
   2016-06-01:
     value: 498.89
-  2020-01-01:
+  2020-06-01:
     value: 594
 metadata:
-  threshold_unit: currency-GBP
+  period: month
+  unit: currency
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=45

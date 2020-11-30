@@ -1,7 +1,8 @@
 description: Savings allowance in the higher threshold
 values:
-  2020-01-01:
+  2016-06-01:
     value: 500
 metadata:
-  threshold_unit: currency-GBP
+  period: week
+  unit: currency
   reference: https://www.gov.uk/apply-tax-free-interest-on-savings

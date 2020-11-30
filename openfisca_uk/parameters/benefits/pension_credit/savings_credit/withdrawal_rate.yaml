@@ -3,5 +3,6 @@ values:
   2016-06-01:
     value: 0.4
 metadata:
-  threshold_unit: rate
+  period: week
+  unit: /1
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=36

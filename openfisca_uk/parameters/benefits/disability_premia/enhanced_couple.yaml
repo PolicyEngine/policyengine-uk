@@ -1,6 +1,8 @@
 description: Enhanced disability premium for a couple, invalid for ESA
 values:
-  2020-01-01:
+  2016-06-01:
     value: 24.50
 metadata:
+  period: week
+  unit: currency
   reference: https://www.gov.uk/disability-premiums/what-youll-get

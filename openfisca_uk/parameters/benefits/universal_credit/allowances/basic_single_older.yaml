@@ -3,5 +3,6 @@ values:
   2016-06-01:
     value: 409
 metadata:
-  threshold_unit: currency-GBP
+  period: month
+  unit: currency
   reference: https://www.gov.uk/universal-credit/what-youll-get
