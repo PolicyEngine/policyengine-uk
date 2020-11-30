@@ -1,5 +1,5 @@
 - name: Lone parent, two children
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -18,17 +18,17 @@
         child_tax_credit_reported: true
   output:
     child_tax_credit: 
-      week:2020-02-01:
+      week:2021-02-01:
         119.47
     child_benefit:
-      week:2020-02-01:
+      week:2021-02-01:
         35
     income_support_eligible: true
     income_support:
-      week:2020-02-01:
+      week:2021-02-01:
         74.35
 - name: Lone parent, two children, some earnings
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -50,17 +50,17 @@
         child_tax_credit_reported: true
   output:
     child_tax_credit: 
-      week:2020-02-01:
+      week:2021-02-01:
         119.47
     child_benefit:
-      week:2020-02-01:
+      week:2021-02-01:
         35
     income_support_eligible: true
     income_support:
-      week:2020-02-01:
+      week:2021-02-01:
         0
 - name: Lone parent, two children, very little earnings
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -82,20 +82,20 @@
         child_tax_credit_reported: true
   output:
     child_tax_credit: 
-      week:2020-02-01:
+      week:2021-02-01:
         119.47
     child_benefit:
-      week:2020-02-01:
+      week:2021-02-01:
         35
     income_support_eligible: true
     income_support_applicable_income:
-      week:2020-02-01:
+      week:2021-02-01:
         18
     income_support:
-      week:2020-02-01:
+      week:2021-02-01:
         55.89
 - name: Check withdrawal rate is 100%
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -117,15 +117,15 @@
         child_tax_credit_reported: true
   output:
     child_tax_credit: 
-      week:2020-02-01:
+      week:2021-02-01:
         119.47
     child_benefit:
-      week:2020-02-01:
+      week:2021-02-01:
         35
     income_support_eligible: true
     income_support_applicable_income:
-      week:2020-02-01:
+      week:2021-02-01:
         28
     income_support:
-      week:2020-02-01:
+      week:2021-02-01:
         45.89

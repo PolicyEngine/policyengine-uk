@@ -1,5 +1,5 @@
 - name: Lone parent, housing and childcare costs, legacy benefits
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -28,11 +28,11 @@
         housing_type: SOCIAL
   output:
     child_benefit:
-      week:2020-01-06: 48.95
+      week:2021-01-06: 48.95
     housing_benefit:
-      week:2020-01-06: 300
+      week:2021-01-06: 300
 - name: Lone parent, housing and childcare costs, UC
-  period: 2020
+  period: 2021
   absolute_error_margin: 25
   input:
     people:
@@ -61,6 +61,6 @@
   output:
     NI: [336, 0, 0, 0]
     child_benefit:
-      week:2020-01-06: 48.95
+      week:2021-01-06: 48.95
     universal_credit:
-      month:2020-01: 1782
+      month:2021-01: 1782
