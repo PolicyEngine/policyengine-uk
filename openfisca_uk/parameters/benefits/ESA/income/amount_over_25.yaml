@@ -1,9 +1,10 @@
-description: Weekly contributory JSA for persons aged over 25.
+description: Income-based ESA personal allowance for persons aged over 25
 values:
   2016-06-01:
     value: 73.10
-  2020-01-01:
+  2020-06-01:
     value: 74.35
 metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.gov.uk/government/publications/benefit-and-pension-rates-2020-to-2021/benefit-and-pension-rates-2020-to-2021#jobseekers-allowance-jsa
+  period: week
+  unit: currency
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38

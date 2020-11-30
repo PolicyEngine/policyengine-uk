@@ -1,8 +1,8 @@
-description: Threshold in pounds per week from occupational and personal pensions, above which the contributory JSA amount is reduced equally.
+description: Threshold for occupational and personal pensions, above which the income-based ESA amount is reduced
 values:
   2016-06-01:
     value: 50.00
 metadata:
-  threshold_unit: currency-GBP
-  rate_unit: /1
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
+  period: week
+  unit: currency
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38

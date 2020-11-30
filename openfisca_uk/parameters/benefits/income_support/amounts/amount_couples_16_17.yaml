@@ -1,7 +1,8 @@
-description: Weekly income_support applicable amount for couples aged under 18.
+description: Income Support applicable amount for couples both aged under 18
 values:
-  2020-01-01:
+  2016-06-01:
     value: 58.90
 metadata:
-  threshold_unit: currency-GBP
+  period: week
+  unit: currency
   reference: https://www.gov.uk/income-support/what-youll-get

@@ -1,7 +1,8 @@
 description: Amount of self-employment income untaxed per year
 values:
-  2020-01-01:
+  2016-06-01:
     value: 1000
 metadata:
-  threshold_unit: currency-GBP
+  period: week
+  unit: currency
   reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

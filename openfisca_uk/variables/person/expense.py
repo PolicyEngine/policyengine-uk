@@ -59,14 +59,16 @@ class is_renting(Variable):
     def formula(person, period, parameters):
         return person.household("rent", period) > 0
 
+
 class maintenance_payments(Variable):
     value_type = float
     entity = Person
-    label = u'Amount paid in maintenance per week'
+    label = u"Amount paid in maintenance per week"
     definition_period = WEEK
+
 
 class student_loan_repayment(Variable):
     value_type = float
     entity = Person
-    label = u'Amount paid in student loan repayment per week'
+    label = u"Amount paid in student loan repayment per week"
     definition_period = WEEK

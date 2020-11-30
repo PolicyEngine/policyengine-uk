@@ -13,7 +13,8 @@ brackets:
       2019-06-01:
         value: 50000.00
 metadata:
+  period: year
   type: marginal_rate
-  threshold_unit: currency-GBP
+  threshold_unit: currency
   rate_unit: /1
   reference: https://gov.uk/self-employed-national-insurance-rates

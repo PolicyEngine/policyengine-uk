@@ -1,4 +1,4 @@
-description: NI Class 1 rates and thresholds per year
+description: NI Class 1 rates and thresholds
 brackets:
   - rate:
       2019-06-01:
@@ -13,7 +13,8 @@ brackets:
       2019-06-01:
         value: 50000
 metadata:
+  period: year
   type: marginal_rate
-  threshold_unit: currency-GBP
+  threshold_unit: currency
   rate_unit: /1
   reference: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

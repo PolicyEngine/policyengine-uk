@@ -1,7 +1,8 @@
-description: Disregard for means tested Statutory Sick Pay per week
+description: Disregard for means tested Statutory Sick Pay
 values:
   2016-06-01:
     value: 100.00
 metadata:
-  threshold_unit: currency-GBP
+  period: year
+  unit: currency
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=26

@@ -1,6 +1,8 @@
-description: Default hours requirement
+description: Default hours requirement for the WTC-hours-related element of Housing Benefit
 values:
-  2020-01-01:
-    value: 30
+  2016-06-01:
+    value: 30.00
 metadata:
+  period: week
+  unit: hour
   reference: https://www.gov.uk/working-tax-credit

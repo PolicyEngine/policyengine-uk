@@ -78,7 +78,7 @@ def ft_funded_ubi_reform(
     class gross_income(Variable):
         value_type = float
         entity = Person
-        label = u"Gross income"
+        label = "Gross income"
         definition_period = YEAR
 
         def formula(person, period, parameters):
@@ -99,7 +99,6 @@ def ft_funded_ubi_reform(
                 "benefits_modelling",
             ]
             return add(person, period, COMPONENTS, options=[MATCH])
-
 
     class reform(Reform):
         def apply(self):
@@ -124,9 +123,12 @@ def net_cost_of_reform(reform, data_dir="frs", period="2020"):
     net_cost = np.sum(
         (
             reformed.calc("household_net_income_ahc", period="week:2020-01-06")
-            - baseline.calc("household_net_income_ahc", period="week:2020-01-06")
+            - baseline.calc(
+                "household_net_income_ahc", period="week:2020-01-06"
+            )
         )
-        * households * 52
+        * households
+        * 52
     )
     return net_cost
 

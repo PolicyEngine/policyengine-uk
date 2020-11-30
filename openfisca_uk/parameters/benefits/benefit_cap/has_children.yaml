@@ -1,7 +1,8 @@
 description: Benefit cap for benefit units with children outside of London
 values:
-  2020-01-01:
+  2013-08-12:
     value: 384.62
 metadata:
-  threshold_unit: currency-GBP
-  reference: https://www.entitledto.co.uk/help/benefits-cap#:~:text=Benefit%20Cap%20Rules,benefits%20a%20household%20can%20receive.&text=The%20benefit%20cap%20is%3A,children%20and%20live%20outside%20London
+  period: week
+  threshold_unit: currency
+  reference: https://www.gov.uk/benefit-cap/benefit-cap-amounts

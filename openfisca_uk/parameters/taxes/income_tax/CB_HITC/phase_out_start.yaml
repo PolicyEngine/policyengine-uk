@@ -1,7 +1,8 @@
 description: Earnings after which the Child Benefit phases out
 values:
-  2020-01-01:
+  2016-06-01:
     value: 50000
 metadata:
-  threshold_unit: currency-GBP
+  period: year
+  unit: currency
   reference: https://www.moneyadviceservice.org.uk/en/articles/changes-to-child-benefit-from-2013

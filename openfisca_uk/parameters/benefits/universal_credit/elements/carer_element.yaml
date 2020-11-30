@@ -8,8 +8,9 @@ values:
     value: 156.45
   2019-06-01:
     value: 160.20
-  2020-01-01:
+  2020-06-01:
     value: 163.45
 metadata:
-  threshold_unit: currency-GBP
+  period: month
+  unit: currency
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=46

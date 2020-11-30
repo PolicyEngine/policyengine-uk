@@ -1,5 +1,5 @@
 - name: Not eligible for anything
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -12,10 +12,10 @@
         working_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         0
 - name: Small WTC
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -29,10 +29,10 @@
         working_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         31.27
 - name: WTC, disabled
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -47,10 +47,10 @@
         working_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         93.25
 - name: WTC, disabled
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -65,10 +65,10 @@
         working_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         93.25
 - name: WTC, severely disabled, pension contributions, inactive partner
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -87,10 +87,10 @@
         working_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         167.26
 - name: WTC, severely disabled, pension contributions
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -111,10 +111,10 @@
         working_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         0
 - name: WTC, both partners severely disabled
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -135,10 +135,10 @@
         working_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         194
 - name: WTC and CTC
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -161,13 +161,13 @@
         child_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         70.65
     child_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         119.47
 - name: Check withdrawal rate is 41%
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     people:
@@ -190,8 +190,8 @@
         child_tax_credit_reported: true
   output:
     working_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         66.66
     child_tax_credit:
-      week:2020-02-01:
+      week:2021-02-01:
         119.47

@@ -1,5 +1,5 @@
 - name: Pension Credit received
-  period: 2020
+  period: 2021
   absolute_error_margin: 5
   input:
     age: 75
@@ -7,4 +7,4 @@
     pension_credit_reported: True
   output:
     pension_credit:
-      week:2020-01-06: 73.75
+      week:2021-01-06: 73.75
