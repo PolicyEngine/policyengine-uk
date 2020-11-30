@@ -165,9 +165,7 @@ class benefits_modelling(Variable):
                 lambda benefit: person.benunit(
                     benefit, period, options=[MATCH]
                 )
-                - person.benunit(
-                    benefit + "_reported", period.this_year
-                ),
+                - person.benunit(benefit + "_reported", period.this_year),
                 SIMULATED,
             )
         )
@@ -206,7 +204,13 @@ class net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        EXPENSES = ["income_tax", "NI", "maintenance_payments", "pension_contributions", "student_loan_repayment"]
+        EXPENSES = [
+            "income_tax",
+            "NI",
+            "maintenance_payments",
+            "pension_contributions",
+            "student_loan_repayment",
+        ]
         net_income = person("gross_income", period) - add(
             person, period, EXPENSES, options=[MATCH]
         )

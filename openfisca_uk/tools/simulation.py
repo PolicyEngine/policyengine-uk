@@ -54,12 +54,16 @@ class Simulation:
             result = self.model.calculate(var, period)
         except:
             if verbose:
-                print(f"Initial period calculation failed for {var}; attempting to gross up periods")
+                print(
+                    f"Initial period calculation failed for {var}; attempting to gross up periods"
+                )
             try:
                 result = self.model.calculate_add(var, period)
             except:
                 if verbose:
-                    print(f"Grossing up period calculation failed for {var}; attempting to divide period")
+                    print(
+                        f"Grossing up period calculation failed for {var}; attempting to divide period"
+                    )
                 result = self.model.calculate_divide(var, period)
         entity = self.model.tax_benefit_system.variables[var].entity.key
         return self.map_to(result, entity=entity, target_entity=map_to)

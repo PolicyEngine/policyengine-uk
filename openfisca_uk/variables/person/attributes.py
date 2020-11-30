@@ -75,11 +75,13 @@ class is_benunit_head(Variable):
     label = u"Whether the head of the benefit unit"
     definition_period = ETERNITY
 
+
 class is_household_head(Variable):
     value_type = bool
     entity = Person
     label = u"Whether the head of the household"
     definition_period = ETERNITY
+
 
 class hours(Variable):
     value_type = float
