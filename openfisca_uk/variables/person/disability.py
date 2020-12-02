@@ -94,4 +94,4 @@ class is_standard_disabled(Variable):
             "registered_disabled",
             "dis_equality_act_core"
         ]
-        return add(person, period, QUALIFYING, options=[MATCH]) + person.benunit("ESA_income", period, options=[MATCH]) > 0
+        return add(person, period, QUALIFYING, options=[MATCH])
