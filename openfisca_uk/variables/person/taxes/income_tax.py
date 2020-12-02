@@ -282,9 +282,13 @@ class CB_HITC(Variable):
     def formula(person, period, parameters):
         HITC = parameters(period).taxes.income_tax.CB_HITC
         income = person("taxable_income", period)
-        phase = min_(
-            HITC.phase_out_end - HITC.phase_out_start, max_(0, income - HITC.phase_out_start)
-        ) / (HITC.phase_out_end - HITC.phase_out_start)
+        phase = (
+            min_(
+                HITC.phase_out_end - HITC.phase_out_start,
+                max_(0, income - HITC.phase_out_start),
+            )
+            / (HITC.phase_out_end - HITC.phase_out_start)
+        )
         return (
             phase
             * person.benunit("child_benefit", period, options=[ADD])
