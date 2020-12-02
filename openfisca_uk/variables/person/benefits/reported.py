@@ -6,14 +6,16 @@ from openfisca_uk.tools.general import *
 class PIP_DL(Variable):
     value_type = float
     entity = Person
-    label = u'Personal Independence Payment (Daily Living)'
+    label = u"Personal Independence Payment (Daily Living)"
     definition_period = WEEK
+
 
 class PIP_M(Variable):
     value_type = float
     entity = Person
-    label = u'Personal Independence Payment (Mobility)'
+    label = u"Personal Independence Payment (Mobility)"
     definition_period = WEEK
+
 
 class BSP(Variable):
     value_type = float
@@ -21,10 +23,11 @@ class BSP(Variable):
     label = u"Bereavement Support Payment"
     definition_period = WEEK
 
+
 class IIDB(Variable):
     value_type = float
     entity = Person
-    label = u'Industrial Injuries Disablement Benefit'
+    label = u"Industrial Injuries Disablement Benefit"
     definition_period = WEEK
 
 
