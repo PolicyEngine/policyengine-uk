@@ -1,22 +1,127 @@
+import openfisca_uk
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_core.periods import period
 import pandas as pd
-from openfisca_uk import CountryTaxBenefitSystem
 from openfisca_core.simulation_builder import SimulationBuilder
+from openfisca_uk.tools.internals import VariableGraph
 import numpy as np
 import os
 from tqdm import tqdm
 import warnings
+import frs
+import copy
 
 warnings.filterwarnings("ignore")
 
+class IndividualSim:
+    def __init__(self, *reforms):
+        self.reforms = reforms
+        self.tax_benefit_system = openfisca_uk.CountryTaxBenefitSystem()
+        self.entities = {var.key: var for var in self.tax_benefit_system.entities}
+        for reform in reforms:
+            self.tax_benefit_system = reform(self.tax_benefit_system)
+        self.situation_data = {"people": {}, "benunits": {}, "households": {}}
+        self.varying = False
+        self.num_points = None
+    
+    def build(self):
+        self.sim_builder = SimulationBuilder()
+        self.sim = self.sim_builder.build_from_entities(openfisca_uk.CountryTaxBenefitSystem(), self.situation_data)
+    
+    def add_data(self, entity="people", name=None, input_period="2020", auto_period=True, **kwargs):
+        entity_plural = self.entities[entity].plural
+        if name is None:
+            name = entity + "_" + str(len(self.situation_data[entity_plural]) + 1)
+        if auto_period:
+            data = {}
+            for var, value in kwargs.items():
+                try:
+                    def_period = self.tax_benefit_system.get_variable(var).definition_period
+                    if def_period in ["eternity", "year"]:
+                        input_periods = [input_period]
+                    else:
+                        input_periods = period(
+                            input_period
+                        ).get_subperiods(def_period)
+                    data[var] = {str(subperiod): value for subperiod in input_periods}
+                except:
+                    data[var] = value
+        self.situation_data[entity_plural][name] = data
+        self.build()
 
-class Simulation:
-    def __init__(self, *reforms, data_dir="frs", input_period="2020"):
-        self.data_dir = data_dir
+    def add_person(self, **kwargs):
+        self.add_data(entity="person", **kwargs)
+
+    def add_benunit(self, **kwargs):
+        self.add_data(entity="benunit", **kwargs)
+
+    def add_household(self, **kwargs):
+        self.add_data(entity="household", **kwargs)
+    
+    def get_entity(self, name):
+        entity_type = [entity for entity in self.entities.values() if name in self.situation_data[entity.plural]][0]
+        return entity_type
+    
+    def get_group(self, entity, name):
+        containing_entity = [group for group in self.situation_data[entity.plural] if name in self.situation_data[entity.plural][group]["adults"] or name in self.situation_data[entity.plural][group]["children"]][0]
+        return containing_entity
+
+    def calc(self, var, period="2020", target=None, index=None):
+        entity = self.sim_builder.get_variable_entity(var)
+        if target is not None:
+            target_entity = self.get_entity(target)
+            if target_entity.key != entity.key:
+                target = self.get_group(entity, target)
+        try:
+            result = self.sim.calculate(var, period)
+        except:
+            try:
+                result = self.sim.calculate_add(var, period)
+            except:
+                result = self.sim.calculate_divide(var, period)
+        if self.varying:
+            result = result.reshape((self.num_points, len(self.situation_data[entity.plural]))).transpose()
+        members = list(self.situation_data[entity.plural])
+        if index is not None:
+            index = min(len(members) - 1, index)
+        if target is not None:
+            index = members.index(target)
+        if target is not None or index is not None:
+            return result[index]
+        return result
+    
+    def calc_deriv(self, var, wrt="earnings", period="2020", target=None):
+        y = self.calc(var, period=period, target=target)
+        x = self.calc(wrt, period=period, target=target)
+        assert len(y) > 1 and len(x) > 1, "Simulation must vary on an axis to calculate derivatives."
+        deriv = (y[1:] - y[:-1]) / (x[1:] - x[:-1])
+        deriv = np.append(deriv, deriv[-1])
+        return deriv
+    
+    def calc_mtr(self, target=None):
+        return 1 - self.calc_deriv("household_net_income", wrt="earnings", target=target)
+    
+    def reset_vary(self):
+        del self.situation_data["axes"]
+        self.varying = False
+        self.num_points = None
+
+    def vary(self, var, min=0, max=200000, step=100, index=0, period="2020"):
+        if "axes" not in self.situation_data:
+            self.situation_data["axes"] = [[]]
+        count = int((max - min) / step)
+        self.situation_data["axes"][0] += [{"count": count, "name": var, "min": min, "max": max, "period": period, "index": index}]
+        self.build()
+        self.varying = True
+        self.num_points = count
+
+class PopulationSim:
+    def __init__(self, *reforms, frs_data=None, input_period="2020"):
+        self.reforms = reforms
         self.input_period = input_period
-        self.model = self.load_frs(*reforms)
+        self.model = self.load_frs(frs_data=frs_data)
+        self.variable_graph = VariableGraph(self.model.tax_benefit_system)
 
     def map_to(self, arr, entity="person", target_entity="benunit"):
         LEVELS = {"person": 1, "benunit": 2, "household": 3}
@@ -46,8 +151,10 @@ class Simulation:
             df = df.groupby(by="entity_id", as_index=False).sum()
             df.set_index("entity_id")
             return np.array(df["values"])
-        else:  # benunit level -> household level and vice versa, to be implemented
-            return
+        else: # benunit_level -> household_level and vice versa - assume equally distributed in source entity
+            person_level = self.map_to(arr, entity=entity, target_entity="person") / self.calc("people_in_household")
+            entity_level = self.map_to(person_level, entity="person", target_entity=target_entity)
+            return entity_level
 
     def calc(self, var, map_to=None, period="2020", verbose=False):
         try:
@@ -68,6 +175,10 @@ class Simulation:
         entity = self.model.tax_benefit_system.variables[var].entity.key
         return self.map_to(result, entity=entity, target_entity=map_to)
 
+    def decache(self, var, period):
+        self.model.get_variable_population(var).get_holder(var).delete_arrays(period)
+
+
     def df(self, include_mtr=False):
         person = self.entity_df(entity="person").set_index("person_id")
         person["benunit_id"] = self.relations["person-benunit"]
@@ -83,7 +194,7 @@ class Simulation:
         )
         return df
 
-    def load_frs(self, *reforms, verbose=False, bonus={}):
+    def load_frs(self, frs_data=None, verbose=False, change={}):
         """
         Create and populate a tax-benefit simulation model from OpenFisca.
 
@@ -95,27 +206,29 @@ class Simulation:
         Returns:
             A Simulation object.
         """
-        system = CountryTaxBenefitSystem()
-        for reform in reforms:
+        system = openfisca_uk.CountryTaxBenefitSystem()
+        for reform in self.reforms:
             system = reform(system)  # apply each reform in order
         builder = SimulationBuilder()
         builder.create_entities(
             system
         )  # create the entities (person, benunit, etc.)
-        person_file = pd.read_csv(
-            os.path.join(self.data_dir, "person.csv"), low_memory=False
-        )
-        benunit_file = pd.read_csv(
-            os.path.join(self.data_dir, "benunit.csv"), low_memory=False
-        )
-        household_file = pd.read_csv(
-            os.path.join(self.data_dir, "household.csv"), low_memory=False
-        )
-        person_file.sort_values(by=["person_id"], inplace=True)
-        benunit_file.sort_values(by=["benunit_id"], inplace=True)
-        household_file.sort_values(by=["household_id"], inplace=True)
-        for input_file in [person_file, benunit_file, household_file]:
-            input_file = input_file.sort_index()
+        if not frs_data:
+            person_file, benunit_file, household_file = frs.load()
+        else:
+            person_file, benunit_file, household_file = frs_data
+        person_file.sort_values("person_id", inplace=True)
+        benunit_file.sort_values("benunit_id", inplace=True)
+        household_file.sort_values("household_id", inplace=True)
+        person_file["id"] = person_file["person_id"]
+        benunit_file["id"] = benunit_file["benunit_id"]
+        household_file["id"] = household_file["household_id"]
+        person_file.sort_values("id", inplace=True)
+        person_file.reset_index(inplace=True, drop=True)
+        benunit_file.sort_values("id", inplace=True)
+        benunit_file.reset_index(inplace=True, drop=True)
+        household_file.sort_values("id", inplace=True)
+        household_file.reset_index(inplace=True, drop=True)
         self.relations = {
             "person": np.array(person_file["person_id"]),
             "benunit": np.array(benunit_file["benunit_id"]),
@@ -136,13 +249,12 @@ class Simulation:
         builder.join_with_persons(
             households, np.array(person_file["household_id"]), person_roles
         )
-        person_file["index"] = np.arange(start=0, stop=len(person_file))
         model = builder.build(system)
         skipped = []
         for input_file in [person_file, benunit_file, household_file]:
             for column in input_file.columns:
-                if column in bonus:
-                    input_file[column] += bonus[column]
+                if column in change:
+                    input_file[column] += change[column]
                 if column != "role":
                     try:
                         def_period = system.get_variable(
@@ -204,67 +316,67 @@ class Simulation:
             df[var] = self.model.calculate(var, inp_period)
         return df
 
-    def calc_mtr(self, *reforms, return_change_df=False):
-        baseline = self.load_frs(*reforms)
-        household_net_income = self.calc(
-            "household_net_income_ahc", map_to_person=True
-        )
-        MAX_PEOPLE_IN_HOUSEHOLD = 9
+    def calc_mtr(self, return_change_df=False):
         EARNINGS_BONUS_PER_YEAR = 100
-        person_id = self.calc("person_id")
-        person_number = person_id % 100000
-        mtrs = np.zeros_like(person_id, dtype=float)
-        bonuses = np.zeros_like(person_id, dtype=float)
-        change_vars = [
-            "earnings",
-            "household_net_income",
-            "income_tax",
-            "NI",
-            "working_tax_credit",
-            "child_tax_credit",
-            "pension_credit",
-            "income_support",
-            "JSA_income",
-            "ESA_income",
-            "housing_benefit",
-            "universal_credit",
-        ]
-        for i in tqdm(
-            range(MAX_PEOPLE_IN_HOUSEHOLD),
-            desc="Calculating MTRs for household members",
-        ):
+        people = pd.DataFrame()
+        people["person_id"] = self.calc("person_id")
+        people["benunit_id"] = self.calc("benunit_id", map_to="person")
+        index_in_benunit = people.groupby("benunit_id").cumcount()
+        net_income = self.map_to(self.calc("net_income", map_to="benunit"), entity="benunit", target_entity="person")
+        mtrs = np.zeros_like(people["person_id"], dtype=float)
+        bonuses = np.zeros_like(people["person_id"], dtype=float)
+        for i in range(2):
             with np.errstate(divide="ignore"):
                 bonus_amount = (
-                    person_number == i + 1
-                ) * EARNINGS_BONUS_PER_YEAR
-                bonus_sim = Simulation(
-                    *reforms,
-                    data_dir=self.data_dir,
+                    index_in_benunit == i
+                ) * EARNINGS_BONUS_PER_YEAR * self.calc("is_adult")
+                bonus_sim = PopulationSim(
+                    *self.reforms,
                     input_period=self.input_period,
                 )
                 bonus_sim.model = bonus_sim.load_frs(
-                    bonus={"earnings": bonus_amount}
+                    change={"earnings": bonus_amount}
                 )
-                new_household_net_income = bonus_sim.calc(
-                    "household_net_income_ahc", map_to_person=True
-                )
-                changes = {}
-                for var in change_vars:
-                    changes[var] = bonus_sim.calc(
-                        var, map_to_person=True
-                    ) - self.calc(var, map_to_person=True)
-                change = new_household_net_income - household_net_income
+                bonus_given_to_benunit = self.map_to(bonus_sim.calc("earnings", map_to="benunit"), entity="benunit", target_entity="person") - self.map_to(self.calc("earnings", map_to="benunit"), entity="benunit", target_entity="person")
+                new_net_income = self.map_to(bonus_sim.calc("net_income", map_to="benunit"), entity="benunit", target_entity="person")
+                if return_change_df:
+                    CHANGE_VARS = [
+                        "earnings",
+                        "taxable_income",
+                        "gross_income",
+                        "net_income",
+                        "income_tax",
+                        "NI",
+                        "tax_credits",
+                        "child_benefit",
+                        "housing_benefit",
+                        "income_support",
+                        "JSA_income",
+                        "pension_credit",
+                        "ESA_income",
+                        "universal_credit"
+                    ]
+                    changes = {}
+                    for var in CHANGE_VARS:
+                        original_amount = self.map_to(self.calc(var, map_to="benunit"), entity="benunit", target_entity="person")
+                        new_amount = self.map_to(bonus_sim.calc(var, map_to="benunit"), entity="benunit", target_entity="person")
+                        changes[var] = new_amount - original_amount
+                        changes[var + "_original"] = original_amount
+                        changes[var + "_new"] = new_amount
+                change = new_net_income - net_income
+                mtr_calculated = (bonus_amount > 0) * (bonus_given_to_benunit == 100)
                 mtr = np.where(
-                    bonus_amount > 0, 1 - (change / bonus_amount), 0
+                    mtr_calculated, 1 - (change / bonus_amount), 0
                 )
-                mtrs += mtr
+                mtrs += np.round(mtr, 2)
                 bonuses += bonus_amount
+        mtrs = np.where(self.calc("is_adult"), mtrs, np.nan)
         if not return_change_df:
             return mtrs
         else:
             df = pd.DataFrame()
             df["MTR"] = mtrs
-            for var in change_vars:
+            for var in changes:
                 df[var] = changes[var]
             df["earnings"] = self.calc("taxable_income")
             return df
