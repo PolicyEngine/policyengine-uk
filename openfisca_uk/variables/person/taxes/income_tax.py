@@ -25,7 +25,7 @@ class taxable_income(Variable):
             "JSA_contrib",
             "savings_interest",
         ]
-        return add(person, period, COMPONENTS, options=[MATCH])
+        return max_(0, add(person, period, COMPONENTS, options=[MATCH]))
 
 
 class personal_allowance(Variable):
