@@ -4,48 +4,48 @@
         "end_header": null,
         "source": null,
         "type": "html",
-        "data": "<p>OpenFisca-UK is a static microsimulation model of the UK Tax-Benefit system using the OpenFisca framework.</p>",
+        "data": "<p>OpenFisca-UK is a static microsimulation model of the UK Tax-Benefit system using the OpenFisca framework.</p>"
     },
     "project_overview": {
         "start_header": null,
         "end_header": null,
         "source": null,
         "type": "html",
-        "data": '<a href="https://github.com/nikhilwoodruff/openfisca-uk">What is OpenFisca-UK?</a>',
+        "data": "<a href=\"https://github.com/nikhilwoodruff/openfisca-uk\">What is OpenFisca-UK?</a>"
     },
     "core_maintainers": {
         "start_header": null,
         "end_header": null,
         "source": null,
         "type": "html",
-        "data": "<ul><li>Nikhil Woodruff</li><ul><li>email: nikhil.woodruff@ubicenter.org</li></ul>",
+        "data": "<ul><li>Nikhil Woodruff</li><ul><li>email: nikhil.woodruff@ubicenter.org</li></ul>"
     },
     "user_documentation": {
         "start_header": null,
         "end_header": null,
         "source": null,
         "type": "html",
-        "data": '<a href="https://github.com/nikhilwoodruff/openfisca-uk/blob/master/docs/"></a>',
+        "data": "<a href=\"https://github.com/nikhilwoodruff/openfisca-uk/blob/master/docs/\"></a>"
     },
     "contributor_overview": {
         "start_header": null,
         "end_header": null,
         "source": null,
         "type": "html",
-        "data": '<a href="https://github.com/nikhilwoodruff/openfisca-uk"></a>',
+        "data": "<a href=\"https://github.com/nikhilwoodruff/openfisca-uk\"></a>"
     },
     "user_changelog_recent": {
         "start_header": null,
         "end_header": null,
         "source": null,
         "type": "html",
-        "data": '<a href="https://github.com/nikhilwoodruff/openfisca-uk/blob/master/CHANGELOG.md"></a>',
+        "data": "<a href=\"https://github.com/nikhilwoodruff/openfisca-uk/blob/master/CHANGELOG.md\"></a>"
     },
     "link_to_webapp": {
         "start_header": null,
         "end_header": null,
         "source": null,
         "type": null,
-        "data": null,
-    },
+        "data": null
+    }
 }
