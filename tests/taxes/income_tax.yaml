@@ -23,6 +23,7 @@
   output:
     income_tax: 2000
     NI: 1670
+    household_net_income: 18940
 - name: Some income, pension contributions, lives in England
   period: 2021
   absolute_error_margin: 5
