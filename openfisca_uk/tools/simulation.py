@@ -8,7 +8,10 @@ from openfisca_uk.tools.internals import VariableGraph
 import numpy as np
 import os
 import warnings
-import frs
+try:
+    import frs
+except:
+    pass
 import copy
 
 warnings.filterwarnings("ignore")
