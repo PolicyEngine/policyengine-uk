@@ -13,37 +13,55 @@ import copy
 
 warnings.filterwarnings("ignore")
 
+
 class IndividualSim:
     def __init__(self, *reforms):
         self.reforms = reforms
         self.tax_benefit_system = openfisca_uk.CountryTaxBenefitSystem()
-        self.entities = {var.key: var for var in self.tax_benefit_system.entities}
+        self.entities = {
+            var.key: var for var in self.tax_benefit_system.entities
+        }
         for reform in reforms:
             self.tax_benefit_system = reform(self.tax_benefit_system)
         self.situation_data = {"people": {}, "benunits": {}, "households": {}}
         self.varying = False
         self.num_points = None
-    
+
     def build(self):
         self.sim_builder = SimulationBuilder()
-        self.sim = self.sim_builder.build_from_entities(openfisca_uk.CountryTaxBenefitSystem(), self.situation_data)
-    
-    def add_data(self, entity="people", name=None, input_period="2020", auto_period=True, **kwargs):
+        self.sim = self.sim_builder.build_from_entities(
+            openfisca_uk.CountryTaxBenefitSystem(), self.situation_data
+        )
+
+    def add_data(
+        self,
+        entity="people",
+        name=None,
+        input_period="2020",
+        auto_period=True,
+        **kwargs,
+    ):
         entity_plural = self.entities[entity].plural
         if name is None:
-            name = entity + "_" + str(len(self.situation_data[entity_plural]) + 1)
+            name = (
+                entity + "_" + str(len(self.situation_data[entity_plural]) + 1)
+            )
         if auto_period:
             data = {}
             for var, value in kwargs.items():
                 try:
-                    def_period = self.tax_benefit_system.get_variable(var).definition_period
+                    def_period = self.tax_benefit_system.get_variable(
+                        var
+                    ).definition_period
                     if def_period in ["eternity", "year"]:
                         input_periods = [input_period]
                     else:
-                        input_periods = period(
-                            input_period
-                        ).get_subperiods(def_period)
-                    data[var] = {str(subperiod): value for subperiod in input_periods}
+                        input_periods = period(input_period).get_subperiods(
+                            def_period
+                        )
+                    data[var] = {
+                        str(subperiod): value for subperiod in input_periods
+                    }
                 except:
                     data[var] = value
         self.situation_data[entity_plural][name] = data
@@ -57,13 +75,22 @@ class IndividualSim:
 
     def add_household(self, **kwargs):
         self.add_data(entity="household", **kwargs)
-    
+
     def get_entity(self, name):
-        entity_type = [entity for entity in self.entities.values() if name in self.situation_data[entity.plural]][0]
+        entity_type = [
+            entity
+            for entity in self.entities.values()
+            if name in self.situation_data[entity.plural]
+        ][0]
         return entity_type
-    
+
     def get_group(self, entity, name):
-        containing_entity = [group for group in self.situation_data[entity.plural] if name in self.situation_data[entity.plural][group]["adults"] or name in self.situation_data[entity.plural][group]["children"]][0]
+        containing_entity = [
+            group
+            for group in self.situation_data[entity.plural]
+            if name in self.situation_data[entity.plural][group]["adults"]
+            or name in self.situation_data[entity.plural][group]["children"]
+        ][0]
         return containing_entity
 
     def calc(self, var, period="2020", target=None, index=None):
@@ -80,7 +107,9 @@ class IndividualSim:
             except:
                 result = self.sim.calculate_divide(var, period)
         if self.varying:
-            result = result.reshape((self.num_points, len(self.situation_data[entity.plural]))).transpose()
+            result = result.reshape(
+                (self.num_points, len(self.situation_data[entity.plural]))
+            ).transpose()
         members = list(self.situation_data[entity.plural])
         if index is not None:
             index = min(len(members) - 1, index)
@@ -89,18 +118,22 @@ class IndividualSim:
         if target is not None or index is not None:
             return result[index]
         return result
-    
+
     def calc_deriv(self, var, wrt="earnings", period="2020", target=None):
         y = self.calc(var, period=period, target=target)
         x = self.calc(wrt, period=period, target=target)
-        assert len(y) > 1 and len(x) > 1, "Simulation must vary on an axis to calculate derivatives."
+        assert (
+            len(y) > 1 and len(x) > 1
+        ), "Simulation must vary on an axis to calculate derivatives."
         deriv = (y[1:] - y[:-1]) / (x[1:] - x[:-1])
         deriv = np.append(deriv, deriv[-1])
         return deriv
-    
+
     def calc_mtr(self, target=None):
-        return 1 - self.calc_deriv("household_net_income", wrt="earnings", target=target)
-    
+        return 1 - self.calc_deriv(
+            "household_net_income", wrt="earnings", target=target
+        )
+
     def reset_vary(self):
         del self.situation_data["axes"]
         self.varying = False
@@ -110,10 +143,20 @@ class IndividualSim:
         if "axes" not in self.situation_data:
             self.situation_data["axes"] = [[]]
         count = int((max - min) / step)
-        self.situation_data["axes"][0] += [{"count": count, "name": var, "min": min, "max": max, "period": period, "index": index}]
+        self.situation_data["axes"][0] += [
+            {
+                "count": count,
+                "name": var,
+                "min": min,
+                "max": max,
+                "period": period,
+                "index": index,
+            }
+        ]
         self.build()
         self.varying = True
         self.num_points = count
+
 
 class PopulationSim:
     def __init__(self, *reforms, frs_data=None, input_period="2020"):
@@ -150,9 +193,13 @@ class PopulationSim:
             df = df.groupby(by="entity_id", as_index=False).sum()
             df.set_index("entity_id")
             return np.array(df["values"])
-        else: # benunit_level -> household_level and vice versa - assume equally distributed in source entity
-            person_level = self.map_to(arr, entity=entity, target_entity="person") / self.calc("people_in_household")
-            entity_level = self.map_to(person_level, entity="person", target_entity=target_entity)
+        else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
+            person_level = self.map_to(
+                arr, entity=entity, target_entity="person"
+            ) / self.calc("people_in_household")
+            entity_level = self.map_to(
+                person_level, entity="person", target_entity=target_entity
+            )
             return entity_level
 
     def calc(self, var, map_to=None, period="2020", verbose=False):
@@ -175,8 +222,9 @@ class PopulationSim:
         return self.map_to(result, entity=entity, target_entity=map_to)
 
     def decache(self, var, period):
-        self.model.get_variable_population(var).get_holder(var).delete_arrays(period)
-
+        self.model.get_variable_population(var).get_holder(var).delete_arrays(
+            period
+        )
 
     def df(self, include_mtr=False):
         person = self.entity_df(entity="person").set_index("person_id")
@@ -321,14 +369,20 @@ class PopulationSim:
         people["person_id"] = self.calc("person_id")
         people["benunit_id"] = self.calc("benunit_id", map_to="person")
         index_in_benunit = people.groupby("benunit_id").cumcount()
-        net_income = self.map_to(self.calc("net_income", map_to="benunit"), entity="benunit", target_entity="person")
+        net_income = self.map_to(
+            self.calc("net_income", map_to="benunit"),
+            entity="benunit",
+            target_entity="person",
+        )
         mtrs = np.zeros_like(people["person_id"], dtype=float)
         bonuses = np.zeros_like(people["person_id"], dtype=float)
         for i in range(2):
             with np.errstate(divide="ignore"):
                 bonus_amount = (
-                    index_in_benunit == i
-                ) * EARNINGS_BONUS_PER_YEAR * self.calc("is_adult")
+                    (index_in_benunit == i)
+                    * EARNINGS_BONUS_PER_YEAR
+                    * self.calc("is_adult")
+                )
                 bonus_sim = PopulationSim(
                     *self.reforms,
                     input_period=self.input_period,
@@ -336,8 +390,20 @@ class PopulationSim:
                 bonus_sim.model = bonus_sim.load_frs(
                     change={"earnings": bonus_amount}
                 )
-                bonus_given_to_benunit = self.map_to(bonus_sim.calc("earnings", map_to="benunit"), entity="benunit", target_entity="person") - self.map_to(self.calc("earnings", map_to="benunit"), entity="benunit", target_entity="person")
-                new_net_income = self.map_to(bonus_sim.calc("net_income", map_to="benunit"), entity="benunit", target_entity="person")
+                bonus_given_to_benunit = self.map_to(
+                    bonus_sim.calc("earnings", map_to="benunit"),
+                    entity="benunit",
+                    target_entity="person",
+                ) - self.map_to(
+                    self.calc("earnings", map_to="benunit"),
+                    entity="benunit",
+                    target_entity="person",
+                )
+                new_net_income = self.map_to(
+                    bonus_sim.calc("net_income", map_to="benunit"),
+                    entity="benunit",
+                    target_entity="person",
+                )
                 if return_change_df:
                     CHANGE_VARS = [
                         "earnings",
@@ -353,20 +419,28 @@ class PopulationSim:
                         "JSA_income",
                         "pension_credit",
                         "ESA_income",
-                        "universal_credit"
+                        "universal_credit",
                     ]
                     changes = {}
                     for var in CHANGE_VARS:
-                        original_amount = self.map_to(self.calc(var, map_to="benunit"), entity="benunit", target_entity="person")
-                        new_amount = self.map_to(bonus_sim.calc(var, map_to="benunit"), entity="benunit", target_entity="person")
+                        original_amount = self.map_to(
+                            self.calc(var, map_to="benunit"),
+                            entity="benunit",
+                            target_entity="person",
+                        )
+                        new_amount = self.map_to(
+                            bonus_sim.calc(var, map_to="benunit"),
+                            entity="benunit",
+                            target_entity="person",
+                        )
                         changes[var] = new_amount - original_amount
                         changes[var + "_original"] = original_amount
                         changes[var + "_new"] = new_amount
                 change = new_net_income - net_income
-                mtr_calculated = (bonus_amount > 0) * (bonus_given_to_benunit == 100)
-                mtr = np.where(
-                    mtr_calculated, 1 - (change / bonus_amount), 0
+                mtr_calculated = (bonus_amount > 0) * (
+                    bonus_given_to_benunit == 100
                 )
+                mtr = np.where(mtr_calculated, 1 - (change / bonus_amount), 0)
                 mtrs += np.round(mtr, 2)
                 bonuses += bonus_amount
         mtrs = np.where(self.calc("is_adult"), mtrs, np.nan)
