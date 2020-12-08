@@ -8,6 +8,7 @@ from openfisca_uk.tools.internals import VariableGraph
 import numpy as np
 import os
 import warnings
+
 try:
     import frs
 except:
