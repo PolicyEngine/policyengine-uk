@@ -26,7 +26,11 @@ setup(
         ),
     ],
     install_requires=[
-        "OpenFisca-Core[web-api] >=27.0,<35.0",
+        "pandas==1.1.4",
+        "numpy==1.17.5",
+        "pyyaml==5.3.1",
+        "pytest==5.4.3",
+        "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core"
     ],
     extras_require={
         "dev": [
@@ -34,6 +38,7 @@ setup(
             "flake8 >=3.5.0,<3.8.0",
             "flake8-print",
             "pycodestyle >=2.3.0,<2.6.0",  # To avoid incompatibility with flake
+            "frs==0.0.1"
         ]
     },
     packages=find_packages(),
