@@ -3,7 +3,6 @@ from openfisca_uk.entities import *
 from openfisca_uk.tools.simulation import Simulation
 from openfisca_uk.tools.general import *
 import numpy as np
-from rdbl import gbp
 
 CORE_BENEFITS = [
     "child_benefit",

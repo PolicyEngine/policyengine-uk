@@ -7,7 +7,6 @@ from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_uk.tools.internals import VariableGraph
 import numpy as np
 import os
-from tqdm import tqdm
 import warnings
 import frs
 import copy
