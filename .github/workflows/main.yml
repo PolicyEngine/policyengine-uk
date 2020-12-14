@@ -23,11 +23,6 @@ jobs:
         uses: "lgeiger/black-action@master"
         with:
           args: ". -l 79 --check"
-      
-      - name: Check files end in a newline
-        uses: Logerfo/newline-action@0.0.2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }} # The `GITHUB_TOKEN` secret.
 
   test:
     # The type of runner that the job will run on
