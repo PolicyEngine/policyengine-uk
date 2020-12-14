@@ -1,0 +1,38 @@
+- name: Poverty gap AHC for household below threshold
+  period: 2020
+  absolute_error_margin: 1
+  input:
+    people:
+      parent: 
+        age: 21
+      child: 
+        age: 15
+    households:
+      household:
+        adults: parent
+        children: child
+        household_net_income_ahc: 153 * 52
+  output:
+    household_equivalisation_ahc: 1
+    poverty_gap_ahc: 
+      week:2020-01-06: 100
+- name: Poverty gap AHC for household above threshold
+  period: 2020
+  absolute_error_margin: 1
+  input:
+    people:
+      parent: 
+        age: 21
+      second_adult:
+        age: 20
+      child: 
+        age: 15
+    households:
+      household:
+        adults: [parent, second_adult]
+        children: child
+        household_net_income_ahc: 450 * 52
+  output:
+    household_equivalisation_bhc: 1.33
+    poverty_gap_ahc: 
+      week:2020-01-06: 0
