@@ -1,0 +1,553 @@
+
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Populations &#8212; OpenFisca-UK documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
+    <link href="_static/css/index.css" rel="stylesheet">
+    <link rel="stylesheet" href="_static/sphinx-book-theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/sphinx-book-theme.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/sphinx-book-theme.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Individual Simulations" href="Individuals.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="docsearch:language" content="en">
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="index.html">
+  
+  
+  <h1 class="site-logo" id="site-title">OpenFisca-UK documentation</h1>
+  
+</a>
+</div>
+
+<form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <ul class="current nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="Individuals.html">
+   Individual Simulations
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Populations
+  </a>
+ </li>
+</ul>
+
+</nav>
+
+ <!-- To handle the deprecated key -->
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="row topbar fixed-top container-xl">
+    <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show">
+    </div>
+    <div class="col pl-2 topbar-main">
+        
+        <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+            data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+            aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+            title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+            <i class="fas fa-bars"></i>
+            <i class="fas fa-arrow-left"></i>
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        
+        <div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/Populations.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+    
+</div>
+        <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/PSLmodels/openfisca-uk"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/PSLmodels/openfisca-uk/issues/new?title=Issue%20on%20page%20%2FPopulations.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        <a class="edit-button" href="https://github.com/PSLmodels/openfisca-uk/edit/master/docs/book/Populations.ipynb"><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
+    </div>
+</div>
+
+
+        <!-- Full screen (wrap in <a> to have style consistency -->
+        <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                data-placement="bottom" onclick="toggleFullScreen()" title="Fullscreen mode"><i
+                    class="fas fa-expand"></i></button></a>
+
+        <!-- Launch buttons -->
+
+    </div>
+
+    <!-- Table of contents -->
+    <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i> Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#prerequisite-install-and-initialise-frs">
+   Prerequisite: install and initialise
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     frs
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#using-populationsim">
+   Using
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PopulationSim
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+        </nav>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="populations">
+<h1>Populations<a class="headerlink" href="#populations" title="Permalink to this headline">¶</a></h1>
+<p>In calculating over weighted survey microdata, we use the Family Resources Survey. This isn’t redistributable, but is available to academics. We use the package <code class="docutils literal notranslate"><span class="pre">frs</span></code> to convert the source TAB files into OpenFisca-compatible CSV files.</p>
+<div class="section" id="prerequisite-install-and-initialise-frs">
+<h2>Prerequisite: install and initialise <code class="docutils literal notranslate"><span class="pre">frs</span></code><a class="headerlink" href="#prerequisite-install-and-initialise-frs" title="Permalink to this headline">¶</a></h2>
+<p>First, install and initialise the package <code class="docutils literal notranslate"><span class="pre">frs</span></code> (via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">frs</span></code>):</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>frs status
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FRS status:
+	FRS TAB files stored?				Yes
+	FRS OpenFisca-UK input files generated?		Yes
+	OpenFisca-UK input files outdated?		No (files generated with current version, 0.2.0)
+</pre></div>
+</div>
+</div>
+</div>
+<p>The FRS package needs to be pointed to a folder containing the source TAB files for a year of the FRS. Command-line hints are provided:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>frs --help
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>usage: frs [-h] [--path PATH] {status,gen,regen}
+
+Utility for managing Family Resources Survey microdata
+
+positional arguments:
+  {status,gen,regen}  The action to take on stored data
+
+optional arguments:
+  -h, --help          show this help message and exit
+  --path PATH         The path to the FRS data
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="using-populationsim">
+<h2>Using <code class="docutils literal notranslate"><span class="pre">PopulationSim</span></code><a class="headerlink" href="#using-populationsim" title="Permalink to this headline">¶</a></h2>
+<p>The helper class <code class="docutils literal notranslate"><span class="pre">PopulationSim</span></code> uses the FRS package to load the input data:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk</span> <span class="kn">import</span> <span class="n">PopulationSim</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">PopulationSim</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This helper class contains an OpenFisca Simulation object in <code class="docutils literal notranslate"><span class="pre">sim.model</span></code>; the <code class="docutils literal notranslate"><span class="pre">PopulationSim</span></code> class provides some functions such as mapping between entity types, effective marginal tax rate calculation and DataFrame generation.</p>
+<p>For example, we can generate a DataFrame containing all the variables for the <code class="docutils literal notranslate"><span class="pre">person</span></code> entity:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">person_df</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">entity_df</span><span class="p">(</span><span class="n">entity</span><span class="o">=</span><span class="s2">&quot;person&quot;</span><span class="p">)</span>
+<span class="n">person_df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>adult_weight</th>
+      <th>age</th>
+      <th>care_hours</th>
+      <th>hours</th>
+      <th>index</th>
+      <th>is_SP_age</th>
+      <th>is_WA_adult</th>
+      <th>num_rooms_in_household</th>
+      <th>person_id</th>
+      <th>person_region</th>
+      <th>...</th>
+      <th>savings_starter_allowance_deduction</th>
+      <th>taxable_income</th>
+      <th>taxable_income_deductions</th>
+      <th>total_tax</th>
+      <th>trading_deduction</th>
+      <th>unused_personal_allowance</th>
+      <th>NI</th>
+      <th>NI_class_1</th>
+      <th>NI_class_2</th>
+      <th>NI_class_4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.0</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>4.308700e+04</td>
+      <td>43087.000000</td>
+      <td>...</td>
+      <td>43087.000000</td>
+      <td>4.308700e+04</td>
+      <td>43087.000000</td>
+      <td>4.308700e+04</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+      <td>43087.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>1196.495728</td>
+      <td>41.514309</td>
+      <td>1.940168</td>
+      <td>15.404361</td>
+      <td>0.0</td>
+      <td>0.218952</td>
+      <td>0.557384</td>
+      <td>5.722561</td>
+      <td>1.096032e+06</td>
+      <td>5.973379</td>
+      <td>...</td>
+      <td>58.392147</td>
+      <td>1.681093e+04</td>
+      <td>7166.048340</td>
+      <td>3.506760e+03</td>
+      <td>85.381966</td>
+      <td>5442.554688</td>
+      <td>822.033203</td>
+      <td>743.129822</td>
+      <td>0.126000</td>
+      <td>72.351021</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>1175.479980</td>
+      <td>23.953661</td>
+      <td>10.537108</td>
+      <td>19.480444</td>
+      <td>0.0</td>
+      <td>0.413466</td>
+      <td>0.496693</td>
+      <td>1.732688</td>
+      <td>5.528418e+04</td>
+      <td>3.428809</td>
+      <td>...</td>
+      <td>333.981201</td>
+      <td>1.107430e+05</td>
+      <td>5774.407227</td>
+      <td>5.258323e+04</td>
+      <td>306.407013</td>
+      <td>5662.850098</td>
+      <td>2645.757080</td>
+      <td>1462.057739</td>
+      <td>0.606934</td>
+      <td>2222.071777</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.000000</td>
+      <td>1.000011e+06</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>-19968.000000</td>
+      <td>0.000000e+00</td>
+      <td>-19968.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>268.000000</td>
+      <td>21.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5.000000</td>
+      <td>1.048348e+06</td>
+      <td>3.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>1254.000000</td>
+      <td>43.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+      <td>1.000000</td>
+      <td>5.000000</td>
+      <td>1.095931e+06</td>
+      <td>6.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>9.308000e+03</td>
+      <td>9164.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>3192.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>1654.000000</td>
+      <td>62.000000</td>
+      <td>0.000000</td>
+      <td>37.000000</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+      <td>1.000000</td>
+      <td>7.000000</td>
+      <td>1.143886e+06</td>
+      <td>9.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>2.311764e+04</td>
+      <td>12500.000000</td>
+      <td>3.147150e+03</td>
+      <td>0.000000</td>
+      <td>12500.000000</td>
+      <td>1075.199951</td>
+      <td>863.039978</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>50654.000000</td>
+      <td>80.000000</td>
+      <td>100.000000</td>
+      <td>132.000000</td>
+      <td>0.0</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>10.000000</td>
+      <td>1.191752e+06</td>
+      <td>11.000000</td>
+      <td>...</td>
+      <td>5000.000000</td>
+      <td>2.189985e+07</td>
+      <td>19222.140625</td>
+      <td>1.049953e+07</td>
+      <td>1000.000000</td>
+      <td>12500.000000</td>
+      <td>440800.531250</td>
+      <td>9783.839844</td>
+      <td>3.050000</td>
+      <td>440641.937500</td>
+    </tr>
+  </tbody>
+</table>
+<p>8 rows × 78 columns</p>
+</div></div></div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        </div>
+    </div>
+    
+    
+    <div class='prev-next-bottom'>
+        
+    <a class='left-prev' id="prev-link" href="Individuals.html" title="previous page">Individual Simulations</a>
+
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By Nikhil Woodruff<br/>
+        
+            &copy; Copyright 2020.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    <script src="_static/js/index.js"></script>
+    
+  </body>
+</html>
