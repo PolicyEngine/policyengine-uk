@@ -134,7 +134,7 @@ class personal_savings_allowance_deduction(Variable):
     def formula(person, period, parameters):
         return min_(
             person("personal_savings_allowance", period),
-            person("savings_interest", period),
+            max_(0, person("savings_interest", period)),
         )
 
 
@@ -147,7 +147,7 @@ class savings_starter_allowance_deduction(Variable):
     def formula(person, period, parameters):
         return min_(
             person("savings_starter_allowance", period),
-            person("savings_interest", period),
+            max_(0, person("savings_interest", period)),
         )
 
 
@@ -180,7 +180,7 @@ class trading_deduction(Variable):
         trading_allowance = parameters(
             period
         ).taxes.income_tax.allowances.trading_allowance
-        return min_(person("misc_income", period), trading_allowance)
+        return max_(0, min_(person("misc_income", period), trading_allowance))
 
 
 class rental_deduction(Variable):
@@ -193,7 +193,7 @@ class rental_deduction(Variable):
         rental_allowance = parameters(
             period
         ).taxes.income_tax.allowances.rental_allowance
-        return min_(person("rental_income", period), rental_allowance)
+        return max_(0, min_(person("rental_income", period), rental_allowance))
 
 
 class dividend_deduction(Variable):
@@ -206,7 +206,7 @@ class dividend_deduction(Variable):
         dividend_allowance = parameters(
             period
         ).taxes.income_tax.allowances.dividend_allowance
-        return min_(dividend_allowance, person("dividend_income", period))
+        return max_(0, min_(dividend_allowance, person("dividend_income", period)))
 
 
 class dividend_income_tax(Variable):
@@ -315,7 +315,7 @@ class taxable_income_deductions(Variable):
             "pension_contributions",
         ]
         total_deductions = add(person, period, DEDUCTIBLE)
-        return total_deductions
+        return max_(0, total_deductions)
 
 
 class income_tax(Variable):
