@@ -164,7 +164,7 @@ class in_poverty_bhc(Variable):
     def formula(household, period, parameters):
         return (
             household("equiv_household_net_income", period, options=[DIVIDE])
-            < parameters(period).poverty.absolute_poverty_bhc
+            < parameters(period).poverty.absolute_poverty_threshold_bhc
         )
 
 
@@ -181,5 +181,5 @@ class in_poverty_ahc(Variable):
             household(
                 "equiv_household_net_income_ahc", period, options=[DIVIDE]
             )
-            < parameters(period).poverty.absolute_poverty_ahc
+            < parameters(period).poverty.absolute_poverty_threshold_ahc
         )
