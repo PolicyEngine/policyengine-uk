@@ -206,7 +206,9 @@ class dividend_deduction(Variable):
         dividend_allowance = parameters(
             period
         ).taxes.income_tax.allowances.dividend_allowance
-        return max_(0, min_(dividend_allowance, person("dividend_income", period)))
+        return max_(
+            0, min_(dividend_allowance, person("dividend_income", period))
+        )
 
 
 class dividend_income_tax(Variable):
