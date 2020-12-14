@@ -23,6 +23,7 @@ jobs:
         uses: "lgeiger/black-action@master"
         with:
           args: ". -l 79 --check"
+
   test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest

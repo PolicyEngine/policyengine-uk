@@ -1,0 +1,6 @@
+rdbl==0.1.2
+tqdm==4.48.2
+pandas==1.1.4
+numpy==1.17.5
+openfisca_core[web-api] @ git+https://github.com/nikhilwoodruff/openfisca-core
+git+https://github.com/pslmodels/openfisca-uk

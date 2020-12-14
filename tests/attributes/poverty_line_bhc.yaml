@@ -1,0 +1,38 @@
+- name: Poverty line for a lone parent, one child
+  period: 2020
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 26
+      child:
+        age: 5
+    households:
+      household:
+        adults: [parent]
+        children: [child]
+  output:
+    poverty_line_bhc: 
+      week:2020-01-06: 256
+- name: Poverty line for a couple with three children
+  period: 2020
+  absolute_error_margin: 1
+  input:
+    people:
+      parent1:
+        age: 26
+      parent2:
+        age: 25
+      child1:
+        age: 5
+      child2:
+        age: 7
+      child3:
+        age: 15
+    households:
+      household:
+        adults: [parent1, parent2]
+        children: [child1, child2, child3]
+  output:
+    poverty_line_bhc: 
+      week:2020-01-06: 510
