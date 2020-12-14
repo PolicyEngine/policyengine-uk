@@ -184,10 +184,11 @@ class in_poverty_ahc(Variable):
             < parameters(period).poverty.absolute_poverty_threshold_ahc
         )
 
+
 class poverty_line_bhc(Variable):
     value_type = float
     entity = Household
-    label = u'The poverty line for the household, before housing costs'
+    label = u"The poverty line for the household, before housing costs"
     definition_period = WEEK
 
     def formula(household, period, parameters):
@@ -197,10 +198,11 @@ class poverty_line_bhc(Variable):
             "household_equivalisation_bhc", period.this_year
         )
 
+
 class poverty_line_ahc(Variable):
     value_type = float
     entity = Household
-    label = u'The poverty line for the household, after housing costs'
+    label = u"The poverty line for the household, after housing costs"
     definition_period = WEEK
 
     def formula(household, period, parameters):
