@@ -13,15 +13,25 @@ Note that ```universal_credit_reported``` is required here - the UK is currently
 from openfisca_uk import IndividualSim
 import plotly.express as px
 
+# define the simulation and populate it
+
 sim = IndividualSim()
 sim.add_person(name="parent", age=24, is_benunit_head=True)
 sim.add_person(name="child", age=2)
 sim.add_benunit(adults=["parent"], children=["child"], universal_credit_reported=True)
 sim.add_household(adults=["parent"], children=["child"])
 
-sim.vary("earnings")
+# replicate the simulation along the earnings dimension
+
+sim.vary("earnings", min=0, max=200000, step=100)
+
+# retrive the arrays of earnings and marginal tax rates
+
 earnings = sim.calc("earnings", target="parent")
 mtr = sim.calc_mtr(target="parent")
+
+# plot the results
+
 fig = px.line(x=earnings, y=mtr, title="Effective marginal tax schedule")
 fig.update_layout(yaxis_tickformat="%", xaxis_tickprefix="£", xaxis_title="Earnings", yaxis_title="Marginal tax rate")
 fig.show()

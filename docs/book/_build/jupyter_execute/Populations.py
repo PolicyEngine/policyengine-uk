@@ -4,6 +4,8 @@ In calculating over weighted survey microdata, we use the Family Resources Surve
 
 ## Prerequisite: install and initialise ```frs```
 
+The FRS package converts the Family Resources Survey into OpenFisca-UK input files by calculating the required variables for each person, benefit unit and household from the relational database format. It only needs to be set up once with the original files.
+
 First, install and initialise the package ```frs``` (via ```pip install frs```):
 
 !frs status
@@ -25,6 +27,13 @@ This helper class contains an OpenFisca Simulation object in ```sim.model```; th
 For example, we can generate a DataFrame containing all the variables for the ```person``` entity:
 
 import pandas as pd
-person_df = sim.entity_df(entity="person")
-person_df.describe()
 
+# entity_df(entity) generates a DataFrame with all entity-level variables
+
+person_df = sim.entity_df(entity="person")
+
+# display the results
+
+person_df = person_df.filter(items=["age", "hours", "taxable_income", "total_tax", "unused_personal_allowance", "NI"])
+
+person_df.describe()

@@ -162,6 +162,11 @@
         <nav id="bd-toc-nav">
             <ul class="nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#contents">
+   Contents
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#short-demo">
    Short demo
   </a>
@@ -179,24 +184,49 @@
   <div class="section" id="openfisca-uk">
 <h1>OpenFisca-UK<a class="headerlink" href="#openfisca-uk" title="Permalink to this headline">¶</a></h1>
 <p>This book contains an introduction to using OpenFisca-UK to model UK taxes and benefits. It is currently a work in progress and may be added to.</p>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<p>This book contains two main pages:</p>
+<ul class="simple">
+<li><p>Populations: demonstrating country-wide simulations using survey microdata.</p></li>
+<li><p>Individuals: demonstrating calculations and projections for hypothetical manually-defined people and groups.</p></li>
+</ul>
+</div>
 <div class="section" id="short-demo">
 <h2>Short demo<a class="headerlink" href="#short-demo" title="Permalink to this headline">¶</a></h2>
 <p>Calculating, for example, the average (employee-side) National Insurance liability by region can be done with the following code:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk</span> <span class="kn">import</span> <span class="n">PopulationSim</span> <span class="c1"># shortcut to FRS-populated simulations</span>
-<span class="kn">from</span> <span class="nn">openfisca_uk.variables.household.attributes</span> <span class="kn">import</span> <span class="n">Region</span>
+<span class="kn">from</span> <span class="nn">openfisca_uk.variables.household.attributes</span> <span class="kn">import</span> <span class="n">Region</span> <span class="c1"># for decoding region IDs</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">rdbl</span> <span class="kn">import</span> <span class="n">gbp</span>
 
+<span class="c1"># generate a UK simulation from survey microdata</span>
+
 <span class="n">sim</span> <span class="o">=</span> <span class="n">PopulationSim</span><span class="p">()</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+<span class="c1"># calculate each variable by specifying the name and time period</span>
+
+<span class="c1"># weights are needed to extrapolate to the UK population from</span>
+<span class="c1"># survey respondents</span>
+
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Region&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;2020&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode_to_str</span><span class="p">()</span>
-<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Population&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;people_in_household&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;household_weight&quot;</span><span class="p">)</span>
-<span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;NI&quot;</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;2020&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;household_weight&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Population&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;people_in_household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;2020&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;household_weight&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;2020&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;NI&quot;</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;2020&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;household_weight&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;2020&quot;</span><span class="p">)</span>
+
+<span class="c1"># sum over UK regions</span>
+
 <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;Region&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="c1"># calculate per-capita NI</span>
+
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance per capita&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Population&quot;</span><span class="p">]</span>
+
+<span class="c1"># make figures readable and display results</span>
+
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Population&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Population&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">gbp</span><span class="p">)</span>
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">gbp</span><span class="p">)</span>
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance per capita&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;National Insurance per capita&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">gbp</span><span class="p">)</span>

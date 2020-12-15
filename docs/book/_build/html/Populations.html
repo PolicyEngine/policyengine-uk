@@ -196,6 +196,7 @@
 <p>In calculating over weighted survey microdata, we use the Family Resources Survey. This isn’t redistributable, but is available to academics. We use the package <code class="docutils literal notranslate"><span class="pre">frs</span></code> to convert the source TAB files into OpenFisca-compatible CSV files.</p>
 <div class="section" id="prerequisite-install-and-initialise-frs">
 <h2>Prerequisite: install and initialise <code class="docutils literal notranslate"><span class="pre">frs</span></code><a class="headerlink" href="#prerequisite-install-and-initialise-frs" title="Permalink to this headline">¶</a></h2>
+<p>The FRS package converts the Family Resources Survey into OpenFisca-UK input files by calculating the required variables for each person, benefit unit and household from the relational database format. It only needs to be set up once with the original files.</p>
 <p>First, install and initialise the package <code class="docutils literal notranslate"><span class="pre">frs</span></code> (via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">frs</span></code>):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -252,7 +253,15 @@ optional arguments:
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># entity_df(entity) generates a DataFrame with all entity-level variables</span>
+
 <span class="n">person_df</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">entity_df</span><span class="p">(</span><span class="n">entity</span><span class="o">=</span><span class="s2">&quot;person&quot;</span><span class="p">)</span>
+
+<span class="c1"># display the results</span>
+
+<span class="n">person_df</span> <span class="o">=</span> <span class="n">person_df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;hours&quot;</span><span class="p">,</span> <span class="s2">&quot;taxable_income&quot;</span><span class="p">,</span> <span class="s2">&quot;total_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;unused_personal_allowance&quot;</span><span class="p">,</span> <span class="s2">&quot;NI&quot;</span><span class="p">])</span>
+
 <span class="n">person_df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -276,27 +285,12 @@ optional arguments:
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>adult_weight</th>
       <th>age</th>
-      <th>care_hours</th>
       <th>hours</th>
-      <th>index</th>
-      <th>is_SP_age</th>
-      <th>is_WA_adult</th>
-      <th>num_rooms_in_household</th>
-      <th>person_id</th>
-      <th>person_region</th>
-      <th>...</th>
-      <th>savings_starter_allowance_deduction</th>
       <th>taxable_income</th>
-      <th>taxable_income_deductions</th>
       <th>total_tax</th>
-      <th>trading_deduction</th>
       <th>unused_personal_allowance</th>
       <th>NI</th>
-      <th>NI_class_1</th>
-      <th>NI_class_2</th>
-      <th>NI_class_4</th>
     </tr>
   </thead>
   <tbody>
@@ -304,197 +298,76 @@ optional arguments:
       <th>count</th>
       <td>43087.000000</td>
       <td>43087.000000</td>
-      <td>43087.000000</td>
-      <td>43087.000000</td>
-      <td>43087.0</td>
-      <td>43087.000000</td>
-      <td>43087.000000</td>
-      <td>43087.000000</td>
       <td>4.308700e+04</td>
-      <td>43087.000000</td>
-      <td>...</td>
-      <td>43087.000000</td>
       <td>4.308700e+04</td>
-      <td>43087.000000</td>
-      <td>4.308700e+04</td>
-      <td>43087.000000</td>
-      <td>43087.000000</td>
-      <td>43087.000000</td>
-      <td>43087.000000</td>
       <td>43087.000000</td>
       <td>43087.000000</td>
     </tr>
     <tr>
       <th>mean</th>
-      <td>1196.495728</td>
       <td>41.514309</td>
-      <td>1.940168</td>
       <td>15.404361</td>
-      <td>0.0</td>
-      <td>0.218952</td>
-      <td>0.557384</td>
-      <td>5.722561</td>
-      <td>1.096032e+06</td>
-      <td>5.973379</td>
-      <td>...</td>
-      <td>58.392147</td>
       <td>1.681093e+04</td>
-      <td>7166.048340</td>
-      <td>3.506760e+03</td>
-      <td>85.381966</td>
+      <td>3.506071e+03</td>
       <td>5442.554688</td>
       <td>822.033203</td>
-      <td>743.129822</td>
-      <td>0.126000</td>
-      <td>72.351021</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>1175.479980</td>
       <td>23.953661</td>
-      <td>10.537108</td>
       <td>19.480444</td>
-      <td>0.0</td>
-      <td>0.413466</td>
-      <td>0.496693</td>
-      <td>1.732688</td>
-      <td>5.528418e+04</td>
-      <td>3.428809</td>
-      <td>...</td>
-      <td>333.981201</td>
       <td>1.107430e+05</td>
-      <td>5774.407227</td>
-      <td>5.258323e+04</td>
-      <td>306.407013</td>
+      <td>5.258324e+04</td>
       <td>5662.850098</td>
       <td>2645.757080</td>
-      <td>1462.057739</td>
-      <td>0.606934</td>
-      <td>2222.071777</td>
     </tr>
     <tr>
       <th>min</th>
       <td>0.000000</td>
       <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>1.000000</td>
-      <td>1.000011e+06</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
       <td>0.000000e+00</td>
-      <td>-19968.000000</td>
       <td>0.000000e+00</td>
-      <td>-19968.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>268.000000</td>
       <td>21.000000</td>
       <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>5.000000</td>
-      <td>1.048348e+06</td>
-      <td>3.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
       <td>0.000000e+00</td>
-      <td>0.000000</td>
       <td>0.000000e+00</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>1254.000000</td>
       <td>43.000000</td>
       <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-      <td>1.000000</td>
-      <td>5.000000</td>
-      <td>1.095931e+06</td>
-      <td>6.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
       <td>9.308000e+03</td>
-      <td>9164.000000</td>
       <td>0.000000e+00</td>
-      <td>0.000000</td>
       <td>3192.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>1654.000000</td>
       <td>62.000000</td>
-      <td>0.000000</td>
       <td>37.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-      <td>1.000000</td>
-      <td>7.000000</td>
-      <td>1.143886e+06</td>
-      <td>9.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
       <td>2.311764e+04</td>
-      <td>12500.000000</td>
-      <td>3.147150e+03</td>
-      <td>0.000000</td>
+      <td>3.147070e+03</td>
       <td>12500.000000</td>
       <td>1075.199951</td>
-      <td>863.039978</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>50654.000000</td>
       <td>80.000000</td>
-      <td>100.000000</td>
       <td>132.000000</td>
-      <td>0.0</td>
-      <td>1.000000</td>
-      <td>1.000000</td>
-      <td>10.000000</td>
-      <td>1.191752e+06</td>
-      <td>11.000000</td>
-      <td>...</td>
-      <td>5000.000000</td>
       <td>2.189985e+07</td>
-      <td>19222.140625</td>
       <td>1.049953e+07</td>
-      <td>1000.000000</td>
       <td>12500.000000</td>
       <td>440800.531250</td>
-      <td>9783.839844</td>
-      <td>3.050000</td>
-      <td>440641.937500</td>
     </tr>
   </tbody>
 </table>
-<p>8 rows × 78 columns</p>
 </div></div></div>
 </div>
 </div>

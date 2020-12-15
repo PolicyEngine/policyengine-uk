@@ -193,15 +193,25 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk</span> <span class="kn">import</span> <span class="n">IndividualSim</span>
 <span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
 
+<span class="c1"># define the simulation and populate it</span>
+
 <span class="n">sim</span> <span class="o">=</span> <span class="n">IndividualSim</span><span class="p">()</span>
 <span class="n">sim</span><span class="o">.</span><span class="n">add_person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;parent&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">is_benunit_head</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">sim</span><span class="o">.</span><span class="n">add_person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;child&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">sim</span><span class="o">.</span><span class="n">add_benunit</span><span class="p">(</span><span class="n">adults</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">],</span> <span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;child&quot;</span><span class="p">],</span> <span class="n">universal_credit_reported</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">sim</span><span class="o">.</span><span class="n">add_household</span><span class="p">(</span><span class="n">adults</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">],</span> <span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;child&quot;</span><span class="p">])</span>
 
-<span class="n">sim</span><span class="o">.</span><span class="n">vary</span><span class="p">(</span><span class="s2">&quot;earnings&quot;</span><span class="p">)</span>
+<span class="c1"># replicate the simulation along the earnings dimension</span>
+
+<span class="n">sim</span><span class="o">.</span><span class="n">vary</span><span class="p">(</span><span class="s2">&quot;earnings&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">200000</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># retrive the arrays of earnings and marginal tax rates</span>
+
 <span class="n">earnings</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;earnings&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;parent&quot;</span><span class="p">)</span>
 <span class="n">mtr</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calc_mtr</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s2">&quot;parent&quot;</span><span class="p">)</span>
+
+<span class="c1"># plot the results</span>
+
 <span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">earnings</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">mtr</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Effective marginal tax schedule&quot;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">yaxis_tickformat</span><span class="o">=</span><span class="s2">&quot;%&quot;</span><span class="p">,</span> <span class="n">xaxis_tickprefix</span><span class="o">=</span><span class="s2">&quot;£&quot;</span><span class="p">,</span> <span class="n">xaxis_title</span><span class="o">=</span><span class="s2">&quot;Earnings&quot;</span><span class="p">,</span> <span class="n">yaxis_title</span><span class="o">=</span><span class="s2">&quot;Marginal tax rate&quot;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
