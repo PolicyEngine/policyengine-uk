@@ -25,7 +25,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e .
-          jb build docs/.
+          jb build docs/book/.
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
