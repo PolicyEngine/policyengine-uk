@@ -1,4 +1,4 @@
-# Individual Simulations
+# Individuals
 
 Individual-focused simulations calculate variables for hypothetical, manually specified people, benefit units and households. This can be useful for different applications:
 - Calculating taxes and benefits for a specific group

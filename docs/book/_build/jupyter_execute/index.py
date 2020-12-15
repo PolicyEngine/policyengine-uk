@@ -53,6 +53,6 @@ df.sort_values(by="National Insurance per capita")
 :titlesonly:
 
 
-Individuals
 Populations
+Individuals
 ```
