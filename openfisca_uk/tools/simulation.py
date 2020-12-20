@@ -233,7 +233,7 @@ class PopulationSim:
     def df(self, cols, map_to="person", period=None):
         df = {}
         for var in cols:
-            df[var] = sim.calc(var, map_to=map_to, period=period)
+            df[var] = self.calc(var, map_to=map_to, period=period)
         return pd.DataFrame(df)
 
     def load_frs(self, frs_data=None, verbose=False, change={}):
