@@ -38,11 +38,20 @@ class pension_income(Variable):
     definition_period = YEAR
 
 
+class state_pension_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income from the State Pension (reported)"
+    definition_period = YEAR
+
 class state_pension(Variable):
     value_type = float
     entity = Person
     label = u"Income from the State Pension"
     definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("state_pension_reported", period)
 
 
 class SSP(Variable):
