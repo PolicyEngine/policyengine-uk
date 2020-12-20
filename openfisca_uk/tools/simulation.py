@@ -230,10 +230,10 @@ class PopulationSim:
             period
         )
 
-    def df(self, cols, map_to="person", period=None):
+    def df(self, cols, map_to="person"):
         df = {}
         for var in cols:
-            df[var] = self.calc(var, map_to=map_to, period=period)
+            df[var] = self.calc(var, map_to=map_to)
         return pd.DataFrame(df)
 
     def load_frs(self, frs_data=None, verbose=False, change={}):
