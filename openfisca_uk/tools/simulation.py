@@ -230,20 +230,11 @@ class PopulationSim:
             period
         )
 
-    def df(self, include_mtr=False):
-        person = self.entity_df(entity="person").set_index("person_id")
-        person["benunit_id"] = self.relations["person-benunit"]
-        person["household_id"] = self.relations["person-household"]
-        if include_mtr:
-            person["MTR"] = self.calc_mtr()
-        benunit = self.entity_df(entity="benunit").set_index("benunit_id")
-        household = self.entity_df(entity="household").set_index(
-            "household_id"
-        )
-        df = person.join(benunit, on="benunit_id").join(
-            household, on="household_id"
-        )
-        return df
+    def df(self, cols, map_to="person", period=None):
+        df = {}
+        for var in cols:
+            df[var] = sim.calc(var, map_to=map_to, period=period)
+        return pd.DataFrame(df)
 
     def load_frs(self, frs_data=None, verbose=False, change={}):
         """
