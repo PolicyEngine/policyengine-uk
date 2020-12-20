@@ -20,7 +20,7 @@ class PIP_M(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("PIP_M_reported", period)
 
 
 class BSP(Variable):
@@ -30,7 +30,7 @@ class BSP(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("BSP_reported", period)
 
 
 class IIDB(Variable):
@@ -40,7 +40,7 @@ class IIDB(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("IIDB_reported", period)
 
 
 class ESA_contrib(Variable):
@@ -50,7 +50,7 @@ class ESA_contrib(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("ESA_contrib_reported", period)
 
 
 class JSA_contrib(Variable):
@@ -60,7 +60,7 @@ class JSA_contrib(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("JSA_contrib_reported", period)
 
 
 class carers_allowance(Variable):
@@ -70,7 +70,7 @@ class carers_allowance(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("carers_allowance_reported", period)
 
 
 class incapacity_benefit(Variable):
@@ -80,7 +80,7 @@ class incapacity_benefit(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("incapacity_benefit_reported", period)
 
 
 class SDA(Variable):
@@ -90,7 +90,7 @@ class SDA(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("SDA_reported", period)
 
 
 class AA(Variable):
@@ -100,7 +100,7 @@ class AA(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("AA_reported", period)
 
 
 class DLA_M(Variable):
@@ -110,7 +110,7 @@ class DLA_M(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("DLA_M_reported", period)
 
 
 class DLA_SC(Variable):
@@ -120,7 +120,7 @@ class DLA_SC(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("PIP_DL_reported", period)
+        return person("DLA_SC_reported", period)
 
 class PIP_DL_reported(Variable):
     value_type = float
