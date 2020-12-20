@@ -159,6 +159,18 @@ class benefits_modelling(Variable):
             "JSA_income",
             "pension_credit",
             "universal_credit",
+            "PIP_DL",
+            "PIP_M",
+            "BSP",
+            "IIDB",
+            "ESA_contrib",
+            "JSA_contrib",
+            "carers_allowance",
+            "incapacity_benefit",
+            "SDA",
+            "AA",
+            "DLA_M",
+            "DLA_SC"
         ]
         difference = sum(
             map(
