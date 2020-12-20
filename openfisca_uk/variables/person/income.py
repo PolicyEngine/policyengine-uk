@@ -158,7 +158,7 @@ class benefits_modelling(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        SIMULATED = [
+        BENUNIT_SIMULATED = [
             "working_tax_credit",
             "child_tax_credit",
             "child_benefit",
@@ -168,6 +168,8 @@ class benefits_modelling(Variable):
             "JSA_income",
             "pension_credit",
             "universal_credit",
+        ]
+        PERSON_SIMULATED = [
             "PIP_DL",
             "PIP_M",
             "BSP",
@@ -179,7 +181,7 @@ class benefits_modelling(Variable):
             "SDA",
             "AA",
             "DLA_M",
-            "DLA_SC"
+            "DLA_SC",
         ]
         difference = sum(
             map(
@@ -187,7 +189,15 @@ class benefits_modelling(Variable):
                     benefit, period, options=[MATCH]
                 )
                 - person.benunit(benefit + "_reported", period.this_year),
-                SIMULATED,
+                BENUNIT_SIMULATED,
+            )
+        ) + sum(
+            map(
+                lambda benefit: person(
+                    benefit, period, options=[MATCH]
+                )
+                - person(benefit + "_reported", period),
+                PERSON_SIMULATED,
             )
         )
         return difference * person("is_benunit_head", period)
