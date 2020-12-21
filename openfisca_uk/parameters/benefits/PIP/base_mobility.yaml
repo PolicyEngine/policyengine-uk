@@ -1,7 +1,7 @@
-description: Base daily living part of the personal independence payment.
+description: Base mobility part of the personal independence payment.
 values:
   2016-06-01:  # TODO: confirm start year.
-    value: 59.70
+    value: 23.60
 metadata:
   period: week
   unit: currency
