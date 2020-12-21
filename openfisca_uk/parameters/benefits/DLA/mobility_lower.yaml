@@ -1,0 +1,8 @@
+description: Lower Disability Living Allowance (DLA) for adults for mobility.
+values:
+  2016-06-01:  # TODO: confirm start year.
+    value: 23.60
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.gov.uk/dla-disability-living-allowance-benefit/DLA-rates
