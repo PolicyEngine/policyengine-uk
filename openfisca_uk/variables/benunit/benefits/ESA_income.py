@@ -96,11 +96,4 @@ class ESA_income(Variable):
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
-
-        return max_(
-            0,
-            (
-                benunit("ESA_income_applicable_amount", period)
-                - benunit("ESA_income_applicable_income", period)
-            ),
-        )
+        return benunit("ESA_income_reported", period.this_year)
