@@ -38,11 +38,21 @@ class pension_income(Variable):
     definition_period = YEAR
 
 
+class state_pension_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income from the State Pension (reported)"
+    definition_period = YEAR
+
+
 class state_pension(Variable):
     value_type = float
     entity = Person
     label = u"Income from the State Pension"
     definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("state_pension_reported", period)
 
 
 class SSP(Variable):
@@ -149,7 +159,7 @@ class benefits_modelling(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        SIMULATED = [
+        BENUNIT_SIMULATED = [
             "working_tax_credit",
             "child_tax_credit",
             "child_benefit",
@@ -160,13 +170,33 @@ class benefits_modelling(Variable):
             "pension_credit",
             "universal_credit",
         ]
+        PERSON_SIMULATED = [
+            "PIP_DL",
+            "PIP_M",
+            "BSP",
+            "IIDB",
+            "ESA_contrib",
+            "JSA_contrib",
+            "carers_allowance",
+            "incapacity_benefit",
+            "SDA",
+            "AA",
+            "DLA_M",
+            "DLA_SC",
+        ]
         difference = sum(
             map(
                 lambda benefit: person.benunit(
                     benefit, period, options=[MATCH]
                 )
                 - person.benunit(benefit + "_reported", period.this_year),
-                SIMULATED,
+                BENUNIT_SIMULATED,
+            )
+        ) + sum(
+            map(
+                lambda benefit: person(benefit, period, options=[MATCH])
+                - person(benefit + "_reported", period),
+                PERSON_SIMULATED,
             )
         )
         return difference * person("is_benunit_head", period)

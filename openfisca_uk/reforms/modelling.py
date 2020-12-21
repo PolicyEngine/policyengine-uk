@@ -50,7 +50,7 @@ class JSA_income(Variable):
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
-        return benunit("JSA_income_reported", period.this_year)
+        return benunit("JSA_income", period.this_year)
 
 
 class pension_credit(Variable):
@@ -60,7 +60,7 @@ class pension_credit(Variable):
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
-        return benunit("pension_credit_reported", period.this_year)
+        return benunit("pension_credit", period.this_year)
 
 
 class working_tax_credit(Variable):
@@ -76,7 +76,7 @@ class working_tax_credit(Variable):
 class child_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Tax Credit"
+    label = u"Working Tax Credit"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
@@ -94,19 +94,17 @@ class universal_credit(Variable):
 
 
 class reported_benefits(Reform):
-    name = u"Disable simulation of benefits"
-
     def apply(self):
-        SIMULATED = [
-            working_tax_credit,
-            child_tax_credit,
+        BENEFITS = [
             child_benefit,
             ESA_income,
             housing_benefit,
             income_support,
             JSA_income,
             pension_credit,
+            working_tax_credit,
+            child_tax_credit,
             universal_credit,
         ]
-        for benefit in SIMULATED:
+        for benefit in BENEFITS:
             self.update_variable(benefit)
