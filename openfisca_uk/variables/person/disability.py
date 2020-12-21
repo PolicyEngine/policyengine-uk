@@ -99,3 +99,48 @@ class is_standard_disabled(Variable):
             "dis_equality_act_core",
         ]
         return add(person, period, QUALIFYING, options=[MATCH])
+    
+   
+class is_disabled_for_ubi(Variable):
+    value_type = float
+    entity = Person
+    label = u"For purposes of UBI supplement"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        QUALIFYING_BENEFITS = [
+            "ESA_contrib",
+            "incapacity_benefit",
+            "SDA",
+            "AA",
+            "DLA_M",
+            "DLA_SC",
+            "IIDB"
+            
+            # Given to a single person at benunit level
+            "PIP_DL",
+            "PIP_M",
+            
+            # ESA_income omitted since it is reported at benunit level
+        ]
+        return add(person, period, QUALIFYING_BENEFITS, options=[MATCH]) > 0
+
+    
+class is_severely_disabled_for_ubi(Variable):
+    value_type = float
+    entity = Person
+    label = u"Whether is eligible for higher UBI supplements due to disability"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        
+        
+        def compare(ben, value):
+            return person(ben, period, options=[MATCH]) > value
+    
+    
+        # First check if person gets at least middle amount of DLA_SC
+        sufficient_DLA_SC = compare("DLA_SC", parameters(period).benefits.DLA.care_middle)
+        sufficient_DLA_M = compare("DLA_M", parameters(period).benefits.DLA.mobility_upper)
+        claiming_SDA = person("SDA", period, options=[MATCH]) > 0
+        return (sufficient_DLA_SC + sufficient_DLA_M + claiming_SDA) > 0
