@@ -1,0 +1,8 @@
+description: Weekly Carer's Allowance amount.
+values:
+  2016-06-01:  # TODO: confirm start year.
+    value: 67.25
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.gov.uk/carers-allowance

@@ -1,0 +1,8 @@
+description: Part day rate for Constant Attendance Allowance.
+values:
+  2016-06-01:  # TODO: confirm start year.
+    value: 36.40
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
