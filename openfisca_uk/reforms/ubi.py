@@ -2,7 +2,10 @@ from openfisca_uk.tools.general import add
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 
-def ubi_reform(senior, adult, child, dis_1, dis_2, dis_3, geo, removed_benefits=[]):
+
+def ubi_reform(
+    senior, adult, child, dis_1, dis_2, dis_3, geo, removed_benefits=[]
+):
     """Create an OpenFisca-UK reform class.
     Args:
         senior (float): Pensioner UBI amount per week

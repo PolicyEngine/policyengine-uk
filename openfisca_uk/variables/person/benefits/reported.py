@@ -122,6 +122,7 @@ class DLA_SC(Variable):
     def formula(person, period, parameters):
         return person("DLA_SC_reported", period)
 
+
 class PIP_DL_reported(Variable):
     value_type = float
     entity = Person

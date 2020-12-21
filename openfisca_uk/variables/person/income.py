@@ -44,6 +44,7 @@ class state_pension_reported(Variable):
     label = u"Income from the State Pension (reported)"
     definition_period = YEAR
 
+
 class state_pension(Variable):
     value_type = float
     entity = Person
@@ -193,9 +194,7 @@ class benefits_modelling(Variable):
             )
         ) + sum(
             map(
-                lambda benefit: person(
-                    benefit, period, options=[MATCH]
-                )
+                lambda benefit: person(benefit, period, options=[MATCH])
                 - person(benefit + "_reported", period),
                 PERSON_SIMULATED,
             )

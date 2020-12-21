@@ -2,6 +2,7 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
@@ -10,6 +11,7 @@ class child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("child_benefit_reported", period.this_year)
+
 
 class ESA_income(Variable):
     value_type = float
@@ -20,6 +22,7 @@ class ESA_income(Variable):
     def formula(benunit, period, parameters):
         return benunit("ESA_income_reported", period.this_year)
 
+
 class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
@@ -28,6 +31,7 @@ class housing_benefit(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("housing_benefit_reported", period.this_year)
+
 
 class income_support(Variable):
     value_type = float
@@ -38,6 +42,7 @@ class income_support(Variable):
     def formula(benunit, period, parameters):
         return benunit("income_support_reported", period.this_year)
 
+
 class JSA_income(Variable):
     value_type = float
     entity = BenUnit
@@ -47,6 +52,7 @@ class JSA_income(Variable):
     def formula(benunit, period, parameters):
         return benunit("JSA_income", period.this_year)
 
+
 class pension_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -55,6 +61,7 @@ class pension_credit(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("pension_credit", period.this_year)
+
 
 class working_tax_credit(Variable):
     value_type = float
@@ -75,6 +82,7 @@ class child_tax_credit(Variable):
     def formula(benunit, period, parameters):
         return benunit("child_tax_credit_reported", period.this_year)
 
+
 class universal_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -83,6 +91,7 @@ class universal_credit(Variable):
 
     def formula(benunit, period, parameters):
         return benunit("universal_credit_reported", period.this_year)
+
 
 class reported_benefits(Reform):
     def apply(self):
@@ -95,7 +104,7 @@ class reported_benefits(Reform):
             pension_credit,
             working_tax_credit,
             child_tax_credit,
-            universal_credit
+            universal_credit,
         ]
         for benefit in BENEFITS:
             self.update_variable(benefit)
