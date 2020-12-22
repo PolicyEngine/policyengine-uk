@@ -115,7 +115,7 @@ class is_disabled_for_ubi(Variable):
             "AA",
             "DLA_M",
             "DLA_SC",
-            "IIDB"
+            "IIDB",
             # Given to a single person at benunit level
             "PIP_DL",
             "PIP_M",
