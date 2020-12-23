@@ -10,6 +10,15 @@ class ESA_income_reported(Variable):
     definition_period = YEAR
 
 
+class ESA_income_reported_personal(Variable):
+    value_type = float
+    entity = Person
+    label = (
+        u"ESA (income-based) (reported amount per week, given to this person)"
+    )
+    definition_period = YEAR
+
+
 class ESA_income_eligible(Variable):
     value_type = bool
     entity = BenUnit
