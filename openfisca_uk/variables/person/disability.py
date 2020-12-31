@@ -30,7 +30,9 @@ class is_severely_disabled(Variable):
     def formula(person, period, parameters):
         claiming_SDA = person("SDA_reported", period, options=[MATCH]) > 0
         no_non_dependents = person.benunit.nb_persons(BenUnit.ADULT) == 1
-        sufficient_DLA = person("DLA_SC_reported", period, options=[MATCH]) > 50
+        sufficient_DLA = (
+            person("DLA_SC_reported", period, options=[MATCH]) > 50
+        )
         return (claiming_SDA + sufficient_DLA > 0) * no_non_dependents
 
 
@@ -41,7 +43,9 @@ class is_enhanced_disabled(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        sufficient_DLA = person("DLA_SC_reported", period, options=[MATCH]) > 80
+        sufficient_DLA = (
+            person("DLA_SC_reported", period, options=[MATCH]) > 80
+        )
         return sufficient_DLA
 
 
