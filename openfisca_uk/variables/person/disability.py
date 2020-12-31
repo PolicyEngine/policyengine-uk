@@ -11,12 +11,12 @@ class is_disabled(Variable):
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
-            "ESA_contrib",
-            "incapacity_benefit",
-            "SDA",
-            "AA",
-            "DLA_M",
-            "DLA_SC",
+            "ESA_contrib_reported",
+            "incapacity_benefit_reported",
+            "SDA_reported",
+            "AA_reported",
+            "DLA_M_reported",
+            "DLA_SC_reported",
         ]
         return add(person, period, QUALIFYING_BENEFITS, options=[MATCH]) > 0
 
@@ -28,9 +28,9 @@ class is_severely_disabled(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        claiming_SDA = person("SDA", period, options=[MATCH]) > 0
+        claiming_SDA = person("SDA_reported", period, options=[MATCH]) > 0
         no_non_dependents = person.benunit.nb_persons(BenUnit.ADULT) == 1
-        sufficient_DLA = person("DLA_SC", period, options=[MATCH]) > 50
+        sufficient_DLA = person("DLA_SC_reported", period, options=[MATCH]) > 50
         return (claiming_SDA + sufficient_DLA > 0) * no_non_dependents
 
 
@@ -41,7 +41,7 @@ class is_enhanced_disabled(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        sufficient_DLA = person("DLA_SC", period, options=[MATCH]) > 80
+        sufficient_DLA = person("DLA_SC_reported", period, options=[MATCH]) > 80
         return sufficient_DLA
 
 
@@ -53,7 +53,7 @@ class is_carer(Variable):
 
     def formula(person, period, parameters):
         already_claiming = (
-            person("carers_allowance", period, options=[MATCH]) > 0
+            person("carers_allowance_reported", period, options=[MATCH]) > 0
         )
         meets_requirements = (
             person("care_hours", period)
@@ -94,7 +94,7 @@ class is_standard_disabled(Variable):
             "is_disabled",
             "is_severely_disabled",
             "is_enhanced_disabled",
-            "IIDB",
+            "IIDB_reported",
             "registered_disabled",
             "dis_equality_act_core",
         ]
@@ -109,16 +109,16 @@ class is_disabled_for_ubi(Variable):
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
-            "ESA_contrib",
-            "incapacity_benefit",
-            "SDA",
-            "AA",
-            "DLA_M",
-            "DLA_SC",
-            "IIDB",
+            "ESA_contrib_reported",
+            "incapacity_benefit_reported",
+            "SDA_reported",
+            "AA_reported",
+            "DLA_M_reported",
+            "DLA_SC_reported",
+            "IIDB_reported",
             # Given to a single person at benunit level
-            "PIP_DL",
-            "PIP_M",
+            "PIP_DL_reported",
+            "PIP_M_reported",
             # ESA_income omitted since it is reported at benunit level
         ]
         return add(person, period, QUALIFYING_BENEFITS, options=[MATCH]) > 0
