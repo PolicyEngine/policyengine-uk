@@ -123,6 +123,6 @@ class is_disabled_for_ubi(Variable):
             # Given to a single person at benunit level
             "PIP_DL_reported",
             "PIP_M_reported",
-            "ESA_income_reported",
+            "ESA_income_reported_personal",
         ]
         return add(person, period, QUALIFYING_BENEFITS, options=[MATCH]) > 0
