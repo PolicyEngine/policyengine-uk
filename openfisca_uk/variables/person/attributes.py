@@ -154,6 +154,37 @@ class is_young_child(Variable):
         return person("age", period.this_year) < 14
 
 
+class age_0_17(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is age 0 to 17"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period.this_year) < 18
+
+
+class age_18_64(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is age 18 to 64"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        age = person("age", period.this_year)
+        return (age >= 18) & (age <= 64)
+
+
+class age_65_plus(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is age 65 or older"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period.this_year) >= 65
+
+
 class is_older_child(Variable):
     value_type = bool
     entity = Person
