@@ -41,6 +41,7 @@ class income_support_applicable_amount(Variable):
     entity = BenUnit
     label = u"Applicable amount of Income Support"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefits.income_support
@@ -92,6 +93,7 @@ class income_support_applicable_income(Variable):
     entity = BenUnit
     label = u"Means-tested income for Income Support"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefits.income_support
@@ -122,6 +124,7 @@ class income_support(Variable):
     entity = BenUnit
     label = u"Income Support"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefits.income_support

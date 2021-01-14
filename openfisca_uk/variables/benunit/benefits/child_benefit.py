@@ -15,6 +15,7 @@ class child_benefit(Variable):
     entity = BenUnit
     label = u"Child Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         num_children = benunit.nb_persons(BenUnit.CHILD)

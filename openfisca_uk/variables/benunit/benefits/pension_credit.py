@@ -33,6 +33,7 @@ class pension_credit(Variable):
     entity = BenUnit
     label = u"Pension credit amount per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         PC = benunit("pension_credit_GC", period) + benunit(
@@ -46,6 +47,7 @@ class pension_credit_MG(Variable):
     entity = BenUnit
     label = u"Pension Credit (Minimum Guarantee) amount per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         PC = parameters(period).benefits.pension_credit
@@ -65,6 +67,7 @@ class pension_credit_GC(Variable):
     entity = BenUnit
     label = u"Pension Credit (Guarantee Credit) amount per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         income = benunit("pension_credit_applicable_income", period)
@@ -78,6 +81,7 @@ class pension_credit_applicable_income(Variable):
     entity = BenUnit
     label = u"Applicable income for Pension Credit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         BENUNIT_MEANS_TESTED_BENEFITS = [
@@ -100,6 +104,7 @@ class pension_credit_SC(Variable):
     entity = BenUnit
     label = u"Pension Credit (Savings Credit) amount per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         PC = parameters(period).benefits.pension_credit

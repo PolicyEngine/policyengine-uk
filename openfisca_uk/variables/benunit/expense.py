@@ -18,6 +18,7 @@ class benunit_rent(Variable):
     entity = BenUnit
     label = u"Total benefit unit rental costs"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("personal_rent", period))
@@ -28,6 +29,7 @@ class benunit_housing_costs(Variable):
     entity = BenUnit
     label = u"Total benefit unit rental costs"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("personal_housing_costs", period))

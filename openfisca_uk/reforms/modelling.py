@@ -8,6 +8,7 @@ class child_benefit(Variable):
     entity = BenUnit
     label = u"Child Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("child_benefit_reported", period.this_year)
@@ -18,6 +19,7 @@ class ESA_income(Variable):
     entity = BenUnit
     label = u"ESA (income-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("ESA_income_reported", period.this_year)
@@ -28,6 +30,7 @@ class housing_benefit(Variable):
     entity = BenUnit
     label = u"Housing Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("housing_benefit_reported", period.this_year)
@@ -38,6 +41,7 @@ class income_support(Variable):
     entity = BenUnit
     label = u"Income Support"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("income_support_reported", period.this_year)
@@ -48,6 +52,7 @@ class JSA_income(Variable):
     entity = BenUnit
     label = u"Job Seeker's Allowance (income-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("JSA_income", period.this_year)
@@ -58,6 +63,7 @@ class pension_credit(Variable):
     entity = BenUnit
     label = u"Pension credit amount per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("pension_credit", period.this_year)
@@ -68,6 +74,7 @@ class working_tax_credit(Variable):
     entity = BenUnit
     label = u"Working Tax Credit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("working_tax_credit_reported", period.this_year)
@@ -78,6 +85,7 @@ class child_tax_credit(Variable):
     entity = BenUnit
     label = u"Working Tax Credit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("child_tax_credit_reported", period.this_year)
@@ -88,6 +96,7 @@ class universal_credit(Variable):
     entity = BenUnit
     label = u"Universal Credit amount per week"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("universal_credit_reported", period.this_year)

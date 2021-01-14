@@ -23,6 +23,7 @@ class age(Variable):
     entity = Person
     label = u"Age in years"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
 
 class is_SP_age(Variable):
@@ -30,6 +31,7 @@ class is_SP_age(Variable):
     entity = Person
     label = u"Whether over the State Pension Age"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
         return (person("age", period.this_year) >= 65) + (

@@ -150,6 +150,7 @@ class total_benefits(Variable):
     entity = Person
     label = u"Total benefits received by the person"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class benefits_modelling(Variable):
@@ -157,6 +158,7 @@ class benefits_modelling(Variable):
     entity = Person
     label = u"Difference between simulated and reported benefits"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         BENUNIT_SIMULATED = [

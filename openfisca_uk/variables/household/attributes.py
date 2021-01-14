@@ -160,6 +160,7 @@ class in_poverty_bhc(Variable):
         u"Whether the household is in absolute poverty, before housing costs"
     )
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return (
@@ -175,6 +176,7 @@ class in_poverty_ahc(Variable):
         u"Whether the household is in absolute poverty, after housing costs"
     )
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return (
@@ -190,6 +192,7 @@ class poverty_line_bhc(Variable):
     entity = Household
     label = u"The poverty line for the household, before housing costs"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return parameters(
@@ -204,6 +207,7 @@ class poverty_line_ahc(Variable):
     entity = Household
     label = u"The poverty line for the household, after housing costs"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return parameters(
@@ -218,6 +222,7 @@ class poverty_gap_bhc(Variable):
     entity = Household
     label = u"Positive financial gap between net household income and the poverty line"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         net_income = household(
@@ -231,6 +236,7 @@ class poverty_gap_ahc(Variable):
     entity = Household
     label = u"Positive financial gap between net household income and the poverty line, after housing costs"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         net_income = household(

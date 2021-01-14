@@ -256,6 +256,7 @@ class working_tax_credit(Variable):
     entity = BenUnit
     label = u"Working Tax Credit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("yearly_working_tax_credit", period, options=[MATCH])
@@ -266,6 +267,7 @@ class child_tax_credit(Variable):
     entity = BenUnit
     label = u"Working Tax Credit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("yearly_child_tax_credit", period, options=[MATCH])
@@ -276,6 +278,7 @@ class tax_credits(Variable):
     entity = BenUnit
     label = u"Total Tax Credits receipt per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("working_tax_credit", period) + benunit(

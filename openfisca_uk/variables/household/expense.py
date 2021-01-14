@@ -39,6 +39,7 @@ class housing_costs(Variable):
     entity = Household
     label = u"Total housing costs per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return household("rent", period) + household("mortgage", period)
@@ -49,6 +50,7 @@ class rent(Variable):
     entity = Household
     label = u"Rent per week"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return household("weekly_rent", period.this_year)
@@ -66,6 +68,7 @@ class mortgage(Variable):
     entity = Household
     label = u"Total mortgage payments"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class num_rooms(Variable):

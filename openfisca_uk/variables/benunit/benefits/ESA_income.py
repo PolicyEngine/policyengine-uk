@@ -42,6 +42,7 @@ class ESA_income_applicable_amount(Variable):
     entity = BenUnit
     label = u"Applicable amount of ESA (income-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         ESA_income = parameters(period).benefits.ESA.income
@@ -70,6 +71,7 @@ class ESA_income_applicable_income(Variable):
     entity = BenUnit
     label = u"Relevant income for ESA (income-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         ESA_income = parameters(period).benefits.ESA.income
@@ -103,6 +105,7 @@ class ESA_income(Variable):
     entity = BenUnit
     label = u"ESA (income-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit("ESA_income_reported", period.this_year)

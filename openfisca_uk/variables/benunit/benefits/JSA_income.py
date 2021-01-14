@@ -8,6 +8,7 @@ class disability_premium(Variable):
     entity = BenUnit
     label = u"Disability premium"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefits.disability_premia
@@ -23,6 +24,7 @@ class severe_disability_premium(Variable):
     entity = BenUnit
     label = u"Severe disability premium"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefits.disability_premia
@@ -40,6 +42,7 @@ class enhanced_disability_premium(Variable):
     entity = BenUnit
     label = u"Enhanced disability premium"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefits.disability_premia
@@ -57,6 +60,7 @@ class carer_premium(Variable):
     entity = BenUnit
     label = u"Carer premium"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return (
@@ -97,6 +101,7 @@ class JSA_income_applicable_amount(Variable):
     entity = BenUnit
     label = u"Applicable amount of JSA (income-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).benefits.JSA
@@ -125,6 +130,7 @@ class JSA_income_applicable_income(Variable):
     entity = BenUnit
     label = u"Relevant income for JSA (income-based) means test"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).benefits.JSA
@@ -159,6 +165,7 @@ class JSA_income(Variable):
     entity = BenUnit
     label = u"Job Seeker's Allowance (income-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         amount = benunit("JSA_income_applicable_amount", period)

@@ -9,6 +9,7 @@ class benefit_cap(Variable):
     entity = BenUnit
     label = u"Benefit cap"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         children = benunit("has_children", period)
@@ -39,6 +40,7 @@ class is_benefit_cap_exempt(Variable):
     entity = BenUnit
     label = u"Whether exempt from the benefits cap"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         QUAL_PERSONAL_BENEFITS = [

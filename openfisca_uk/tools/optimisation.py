@@ -42,6 +42,7 @@ def ft_funded_ubi_reform(
         entity = Person
         label = "Amount of basic income received per week"
         definition_period = WEEK
+        set_input = set_input_divide_by_period
 
         def formula(person, period, parameters):
             return (
@@ -61,6 +62,7 @@ def ft_funded_ubi_reform(
         entity = BenUnit
         label = "Amount of basic income per week for the benefit unit"
         definition_period = WEEK
+        set_input = set_input_divide_by_period
 
         def formula(benunit, period, parameters):
             return benunit.sum(benunit.members("basic_income", period))
@@ -70,6 +72,7 @@ def ft_funded_ubi_reform(
         entity = Household
         label = "Amount of basic income per week for the household"
         definition_period = WEEK
+        set_input = set_input_divide_by_period
 
         def formula(household, period, parameters):
             return household.sum(household.members("basic_income", period))

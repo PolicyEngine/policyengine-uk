@@ -15,6 +15,7 @@ class UC_personal_allowance(Variable):
     entity = BenUnit
     label = u"Personal allowance for Universal Credit"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefits.universal_credit
@@ -35,6 +36,7 @@ class UC_premiums(Variable):
     entity = BenUnit
     label = u"Premiums for Universal Credit"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefits.universal_credit
@@ -68,6 +70,7 @@ class UC_eligible_rent(Variable):
     entity = BenUnit
     label = u"Eligible rent in Universal Credit"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefits.universal_credit
@@ -85,6 +88,7 @@ class universal_credit_applicable_amount(Variable):
     entity = BenUnit
     label = u"Relevant income for Universal Credit"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefits.universal_credit
@@ -101,6 +105,7 @@ class universal_credit_income_reduction(Variable):
     entity = BenUnit
     label = u"Reduction from income for Universal Credit"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefits.universal_credit
@@ -138,6 +143,7 @@ class universal_credit_eligible(Variable):
     entity = BenUnit
     label = u"Whether eligible for Universal Credit"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         DISQUALIFYING_BENEFITS = [
@@ -164,6 +170,7 @@ class universal_credit(Variable):
     entity = BenUnit
     label = u"Universal Credit amount per week"
     definition_period = MONTH
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         eligible = benunit("universal_credit_eligible", period)
