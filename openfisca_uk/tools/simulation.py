@@ -33,8 +33,11 @@ class IndividualSim:
 
     def build(self):
         self.sim_builder = SimulationBuilder()
+        system = openfisca_uk.CountryTaxBenefitSystem()
+        for reform in self.reforms:
+            system = reform(system)
         self.sim = self.sim_builder.build_from_entities(
-            openfisca_uk.CountryTaxBenefitSystem(), self.situation_data
+            system, self.situation_data
         )
 
     def add_data(
@@ -200,7 +203,7 @@ class PopulationSim:
         else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
             person_level = self.map_to(
                 arr, entity=entity, target_entity="person"
-            ) / self.calc("people_in_household")
+            ) / self.calc("people_in_household", map_to="person")
             entity_level = self.map_to(
                 person_level, entity="person", target_entity=target_entity
             )
