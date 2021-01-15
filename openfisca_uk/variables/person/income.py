@@ -254,3 +254,12 @@ class FRS_net_income(Variable):
     entity = Person
     label = u"Net income in the FRS"
     definition_period = YEAR
+
+class person_household_net_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'The person\'s household\'s disposable income, before housing costs'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person.household("household_net_income", period)
