@@ -73,7 +73,7 @@ class JSA_income_reported(Variable):
     value_type = float
     entity = BenUnit
     label = u"JSA (income-based) (reported amount per week)"
-    definition_period = YEAR
+    definition_period = WEEK
 
 
 class JSA_income_eligible(Variable):

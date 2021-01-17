@@ -177,10 +177,10 @@ class housing_benefit(Variable):
             ["JSA_contrib", "incapacity_benefit", "ESA_contrib", "SDA"],
             options=[MATCH],
         )
-        final_amount = min_(
+        final_amount = max_(0, min_(
             amount * already_claiming,
             benunit("benefit_cap", period) - other_capped_benefits,
-        )
+        ))
         return final_amount
 
 

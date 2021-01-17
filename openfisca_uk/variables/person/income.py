@@ -191,7 +191,7 @@ class benefits_modelling(Variable):
                 lambda benefit: person.benunit(
                     benefit, period, options=[MATCH]
                 )
-                - person.benunit(benefit + "_reported", period.this_year),
+                - person.benunit(benefit + "_reported", period, options=[DIVIDE]),
                 BENUNIT_SIMULATED,
             )
         ) + sum(

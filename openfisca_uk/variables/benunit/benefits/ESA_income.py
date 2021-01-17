@@ -108,4 +108,4 @@ class ESA_income(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit("ESA_income_reported", period.this_year)
+        return benunit("ESA_income_reported", period, options=[DIVIDE])
