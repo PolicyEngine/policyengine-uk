@@ -2,14 +2,9 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+# Input from FRS
 
-class earnings(Variable):
-    value_type = float
-    entity = Person
-    label = u"Earnings from employment"
-    definition_period = YEAR
-
-class gross_wage(Variable):
+class gross_wages(Variable):
     value_type = float
     entity = Person
     label = u'Gross earnings from employment, before deductions'
@@ -21,11 +16,52 @@ class gross_profit(Variable):
     label = u'Gross earnings from employment, before deductions'
     definition_period = YEAR
 
-
-class profit(Variable):
+class alimony_payments_received(Variable):
     value_type = float
     entity = Person
-    label = u"Profit from self-employment"
+    label = u'Amount received from maintanence payments, directly or via DWP'
+    definition_period = YEAR
+
+class parental_contributions(Variable):
+    value_type = float
+    entity = Person
+    label = u'Amount received from parents'
+    definition_period = YEAR
+
+class edu_grants(Variable):
+    value_type = float
+    entity = Person
+    label = u'Grants for education'
+    definition_period = YEAR
+
+class gross_pension_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Gross pension income before tax'
+    definition_period = YEAR
+
+class free_tv_license_value(Variable):
+    value_type = float
+    entity = Person
+    label = u'Value of free TV licenses'
+    definition_period = YEAR
+
+class FRS_net_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Net income from FRS tables'
+    definition_period = YEAR
+
+class child_maintenance_received(Variable):
+    value_type = float
+    entity = Person
+    label = u'Amount of child maintenance received'
+    definition_period = YEAR
+
+class misc_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Miscellaneous income'
     definition_period = YEAR
 
 

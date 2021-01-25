@@ -35,7 +35,7 @@ class household_id(Variable):
 
 class Region(Enum):
     NORTH_EAST = u"North East"
-    NORTH_WEST = (u"North West",)
+    NORTH_WEST = u"North West"
     YORKSHIRE = u"Yorkshire and the Humber"
     EAST_MIDLANDS = u"East Midlands"
     WEST_MIDLANDS = u"West Midlands"

@@ -11,7 +11,7 @@ class taxable_income(Variable):
 
     def formula(person, period, parameters):
         COMPONENTS = [
-            "gross_wage",
+            "gross_wages",
             "gross_profit",
             "SSP",
             "SMP",
