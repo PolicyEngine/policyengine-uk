@@ -8,6 +8,7 @@ class LHA_eligible(Variable):
     entity = BenUnit
     label = u"Whether eligible for Local Housing Allowance"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit.all(
@@ -21,6 +22,7 @@ class LHA_cap(Variable):
     entity = BenUnit
     label = u"Applicable amount for LHA"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         rates = parameters(period).benefits.LHA.rate_caps

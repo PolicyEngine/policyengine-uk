@@ -25,6 +25,7 @@ class NI_class_2(Variable):
     entity = Person
     label = u"National Insurance (Class 2)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
     reference = u"https://www.gov.uk/national-insurance"
 
     def formula(person, period, parameters):

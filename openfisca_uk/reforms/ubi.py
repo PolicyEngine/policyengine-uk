@@ -33,6 +33,7 @@ def ubi_reform(
         entity = Person
         label = "Amount of basic income received per week"
         definition_period = WEEK
+    set_input = set_input_divide_by_period
 
         def formula(person, period, parameters):
             region = person.household("region", period)

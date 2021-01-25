@@ -8,6 +8,7 @@ class PIP_DL(Variable):
     entity = Person
     label = u"Personal Independence Payment (Daily Living)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("PIP_DL_reported", period)
@@ -18,6 +19,7 @@ class PIP_M(Variable):
     entity = Person
     label = u"Personal Independence Payment (Mobility)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("PIP_M_reported", period)
@@ -28,6 +30,7 @@ class BSP(Variable):
     entity = Person
     label = u"Bereavement Support Payment"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("BSP_reported", period)
@@ -38,6 +41,7 @@ class IIDB(Variable):
     entity = Person
     label = u"Industrial Injuries Disablement Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("IIDB_reported", period)
@@ -48,6 +52,7 @@ class ESA_contrib(Variable):
     entity = Person
     label = u"Employment and Support Allowance (contribution-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("ESA_contrib_reported", period)
@@ -58,6 +63,7 @@ class JSA_contrib(Variable):
     entity = Person
     label = u"Job Seeker's Allowance (contribution-based)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("JSA_contrib_reported", period)
@@ -68,6 +74,7 @@ class carers_allowance(Variable):
     entity = Person
     label = u"Carer's Allowance"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("carers_allowance_reported", period)
@@ -78,6 +85,7 @@ class incapacity_benefit(Variable):
     entity = Person
     label = u"Incapacity Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("incapacity_benefit_reported", period)
@@ -88,6 +96,7 @@ class SDA(Variable):
     entity = Person
     label = u"Severe Disablement Allowance"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("SDA_reported", period)
@@ -98,6 +107,7 @@ class AA(Variable):
     entity = Person
     label = u"Attendance Allowance"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("AA_reported", period)
@@ -108,6 +118,7 @@ class DLA_M(Variable):
     entity = Person
     label = u"Disability Living Allowance (mobility component)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("DLA_M_reported", period)
@@ -118,6 +129,7 @@ class DLA_SC(Variable):
     entity = Person
     label = u"Disability Living Allowance (self-care)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         return person("DLA_SC_reported", period)
@@ -128,6 +140,7 @@ class PIP_DL_reported(Variable):
     entity = Person
     label = u"Personal Independence Payment (Daily Living) (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class PIP_M_reported(Variable):
@@ -135,6 +148,7 @@ class PIP_M_reported(Variable):
     entity = Person
     label = u"Personal Independence Payment (Mobility) (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class BSP_reported(Variable):
@@ -142,6 +156,7 @@ class BSP_reported(Variable):
     entity = Person
     label = u"Bereavement Support Payment (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class IIDB_reported(Variable):
@@ -149,6 +164,7 @@ class IIDB_reported(Variable):
     entity = Person
     label = u"Industrial Injuries Disablement Benefit (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class ESA_contrib_reported(Variable):
@@ -156,6 +172,7 @@ class ESA_contrib_reported(Variable):
     entity = Person
     label = u"Employment and Support Allowance (contribution-based) (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class JSA_contrib_reported(Variable):
@@ -163,6 +180,7 @@ class JSA_contrib_reported(Variable):
     entity = Person
     label = u"Job Seeker's Allowance (contribution-based) (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class carers_allowance_reported(Variable):
@@ -170,6 +188,7 @@ class carers_allowance_reported(Variable):
     entity = Person
     label = u"Carer's Allowance (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class incapacity_benefit_reported(Variable):
@@ -177,6 +196,7 @@ class incapacity_benefit_reported(Variable):
     entity = Person
     label = u"Incapacity Benefit (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class SDA_reported(Variable):
@@ -184,6 +204,7 @@ class SDA_reported(Variable):
     entity = Person
     label = u"Severe Disablement Allowance (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class AA_reported(Variable):
@@ -191,6 +212,7 @@ class AA_reported(Variable):
     entity = Person
     label = u"Attendance Allowance (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class DLA_M_reported(Variable):
@@ -198,6 +220,7 @@ class DLA_M_reported(Variable):
     entity = Person
     label = u"Disability Living Allowance (mobility component) (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class DLA_SC_reported(Variable):
@@ -205,6 +228,7 @@ class DLA_SC_reported(Variable):
     entity = Person
     label = u"Disability Living Allowance (self-care) (reported)"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class personal_benefits(Variable):
@@ -212,6 +236,7 @@ class personal_benefits(Variable):
     entity = Person
     label = u"Personal, non-means-tested benefits"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         BENEFITS = [

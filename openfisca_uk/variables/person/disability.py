@@ -8,6 +8,7 @@ class is_disabled(Variable):
     entity = Person
     label = u"Whether claims a core disability benefit"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
@@ -26,6 +27,7 @@ class is_severely_disabled(Variable):
     entity = Person
     label = u"Whether is eligible for higher payments of disability benefits"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
         claiming_SDA = person("SDA_reported", period, options=[MATCH]) > 0
@@ -41,6 +43,7 @@ class is_enhanced_disabled(Variable):
     entity = Person
     label = u"Whether meets the highest disability benefit entitlement"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
         sufficient_DLA = (
@@ -54,6 +57,7 @@ class is_carer(Variable):
     entity = Person
     label = u"Whether meets eligibility requirements for Carers Allowance"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
         already_claiming = (
@@ -71,6 +75,7 @@ class registered_disabled(Variable):
     entity = Person
     label = u"Whether registered disabled"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
 
 class dis_equality_act_core(Variable):
@@ -78,6 +83,7 @@ class dis_equality_act_core(Variable):
     entity = Person
     label = u"Whether disabled under the Equality Act (core definition)"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
 
 class dis_equality_act_wider(Variable):
@@ -85,6 +91,7 @@ class dis_equality_act_wider(Variable):
     entity = Person
     label = u"Whether disabled under the Equality Act (wider definition)"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
 
 class is_standard_disabled(Variable):
@@ -92,6 +99,7 @@ class is_standard_disabled(Variable):
     entity = Person
     label = u"Whether meets a basic level of disability"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
         QUALIFYING = [
@@ -110,6 +118,7 @@ class is_disabled_for_ubi(Variable):
     entity = Person
     label = u"Whether person is classified as disabled for the purposes of UBI supplements"
     definition_period = YEAR
+    set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [

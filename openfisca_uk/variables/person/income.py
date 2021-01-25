@@ -150,6 +150,7 @@ class total_benefits(Variable):
     entity = Person
     label = u"Total benefits received by the person"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
 
 class benefits_modelling(Variable):
@@ -157,6 +158,7 @@ class benefits_modelling(Variable):
     entity = Person
     label = u"Difference between simulated and reported benefits"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
         BENUNIT_SIMULATED = [
@@ -189,7 +191,7 @@ class benefits_modelling(Variable):
                 lambda benefit: person.benunit(
                     benefit, period, options=[MATCH]
                 )
-                - person.benunit(benefit + "_reported", period.this_year),
+                - person.benunit(benefit + "_reported", period, options=[DIVIDE]),
                 BENUNIT_SIMULATED,
             )
         ) + sum(
@@ -252,3 +254,12 @@ class FRS_net_income(Variable):
     entity = Person
     label = u"Net income in the FRS"
     definition_period = YEAR
+
+class person_household_net_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'The person\'s household\'s disposable income, before housing costs'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person.household("household_net_income", period)

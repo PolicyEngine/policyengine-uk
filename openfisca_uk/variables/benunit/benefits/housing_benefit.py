@@ -8,6 +8,7 @@ class housing_benefit_eligible(Variable):
     entity = BenUnit
     label = u"Whether eligible for Housing Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         return benunit.max(
@@ -21,6 +22,7 @@ class housing_benefit_applicable_amount(Variable):
     entity = BenUnit
     label = u"Applicable amount for Housing Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         HB = parameters(period).benefits.housing_benefit
@@ -75,6 +77,7 @@ class housing_benefit_applicable_income(Variable):
     entity = BenUnit
     label = u"Relevant income for Housing Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefits.working_tax_credit
@@ -136,6 +139,7 @@ class housing_benefit(Variable):
     entity = BenUnit
     label = u"Housing Benefit"
     definition_period = WEEK
+    set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
         rent = benunit.sum(benunit.members("personal_rent", period))
@@ -173,10 +177,10 @@ class housing_benefit(Variable):
             ["JSA_contrib", "incapacity_benefit", "ESA_contrib", "SDA"],
             options=[MATCH],
         )
-        final_amount = min_(
+        final_amount = max_(0, min_(
             amount * already_claiming,
             benunit("benefit_cap", period) - other_capped_benefits,
-        )
+        ))
         return final_amount
 
 
