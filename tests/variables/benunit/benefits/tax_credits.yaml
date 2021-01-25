@@ -78,7 +78,7 @@
         hours: 33
         is_disabled: true
         is_severely_disabled: true
-        pension_contributions: 1000
+        pension_deductions: 1000
       p2:
         age: 24
     benunits:
@@ -100,7 +100,7 @@
         hours: 33
         is_disabled: true
         is_severely_disabled: true
-        pension_contributions: 1000
+        pension_deductions: 1000
       p2:
         age: 24
         profit: 60000
@@ -124,7 +124,7 @@
         hours: 33
         is_disabled: true
         is_severely_disabled: true
-        pension_contributions: 1000
+        pension_deductions: 1000
       p2:
         age: 24
         is_disabled: true

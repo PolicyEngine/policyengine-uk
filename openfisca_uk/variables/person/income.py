@@ -6,7 +6,19 @@ from openfisca_uk.tools.general import *
 class earnings(Variable):
     value_type = float
     entity = Person
-    label = u"Gross earnings from employment"
+    label = u"Earnings from employment"
+    definition_period = YEAR
+
+class gross_wage(Variable):
+    value_type = float
+    entity = Person
+    label = u'Gross earnings from employment, before deductions'
+    definition_period = YEAR
+
+class gross_profit(Variable):
+    value_type = float
+    entity = Person
+    label = u'Gross earnings from employment, before deductions'
     definition_period = YEAR
 
 
@@ -240,7 +252,7 @@ class net_income(Variable):
             "income_tax",
             "NI",
             "maintenance_payments",
-            "pension_contributions",
+            "pension_deductions",
             "student_loan_repayment",
         ]
         net_income = person("gross_income", period) - add(

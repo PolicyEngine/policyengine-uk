@@ -11,8 +11,8 @@ class taxable_income(Variable):
 
     def formula(person, period, parameters):
         COMPONENTS = [
-            "earnings",
-            "profit",
+            "gross_wage",
+            "gross_profit",
             "SSP",
             "SMP",
             "SPP",
@@ -314,7 +314,7 @@ class taxable_income_deductions(Variable):
             "personal_allowance_deduction",
             "marriage_allowance_deduction",
             "ISA_interest",
-            "pension_contributions",
+            "pension_deductions",
         ]
         total_deductions = add(person, period, DEDUCTIBLE)
         return max_(0, total_deductions)

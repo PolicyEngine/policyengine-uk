@@ -147,7 +147,7 @@ class JSA_income_applicable_income(Variable):
         means_tested_income = (
             benunit("benunit_post_tax_income", period, options=[MATCH])
             + benefits
-        ) - benunit("benunit_pension_contributions", period, options=[MATCH])
+        ) - benunit("benunit_pension_deductions", period, options=[MATCH])
         income = max_(
             0,
             means_tested_income

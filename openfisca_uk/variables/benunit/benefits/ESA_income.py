@@ -86,7 +86,7 @@ class ESA_income_applicable_income(Variable):
             benunit("benunit_post_tax_income", period, options=[MATCH])
             + benefits
         ) - benunit.sum(
-            benunit.members("pension_contributions", period, options=[MATCH])
+            benunit.members("pension_deductions", period, options=[MATCH])
         )
         income = max_(
             0,

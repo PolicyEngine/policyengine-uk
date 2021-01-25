@@ -18,7 +18,7 @@
   absolute_error_margin: 5
   input:
     earnings: 23415
-    pension_contributions: 804
+    pension_deductions: 804
     country: SCOTLAND
   output:
     income_tax: 2000
@@ -29,7 +29,7 @@
   absolute_error_margin: 5
   input:
     earnings: 23415
-    pension_contributions: 804
+    pension_deductions: 804
     country: ENGLAND
   output:
     income_tax: 2021
@@ -39,7 +39,7 @@
   absolute_error_margin: 5
   input:
     earnings: 23415
-    pension_contributions: 804
+    pension_deductions: 804
     country: ENGLAND
   output:
     income_tax: 2021
@@ -57,7 +57,7 @@
   absolute_error_margin: 5
   input:
     earnings: 56111
-    pension_contributions: 2000
+    pension_deductions: 2000
   output:
     income_tax: 9144.40
     NI: 4982.22

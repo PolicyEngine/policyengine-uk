@@ -253,7 +253,16 @@ class PopulationSim:
         return self.variables[var].entity.key
 
     def calc(self, var, period="2020", copy_to_members=False, share_among_members=False, sum_by=None, average_by=None):
-        result = self.simulation.calculate(var, period)
+        try:
+            result = self.simulation.calculate(var, period)
+        except Exception as e:
+            try:
+                result = self.simulation.calculate_add(var, period)
+            except Exception as f:
+                try:
+                    result = self.simulation.calculate_divide(var, period)
+                except Exception as g:
+                    print(f"Error in calculation: {e} -> {f} -> {g}")
         entity = self.get_entity(var)
         population = self.populations[entity]
         if copy_to_members and entity != "person":

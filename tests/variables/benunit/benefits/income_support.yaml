@@ -36,7 +36,7 @@
         age: 26
         earnings: 6000
         hours: 6
-        pension_contributions: 1000
+        pension_deductions: 1000
       c1:
         age: 4
       c2:
@@ -68,7 +68,7 @@
         age: 26
         earnings: 2000
         hours: 6
-        pension_contributions: 400
+        pension_deductions: 400
       c1:
         age: 4
       c2:
@@ -103,7 +103,7 @@
         age: 26
         earnings: 2520
         hours: 6
-        pension_contributions: 400
+        pension_deductions: 400
       c1:
         age: 4
       c2:

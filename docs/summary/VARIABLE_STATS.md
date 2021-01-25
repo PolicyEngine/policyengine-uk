@@ -150,7 +150,7 @@ is_renting
   - stddev: 0.48
   - median: 0.0
 
-pension_contributions
+pension_deductions
   - description: Pension contributions
   - mean: 0.0
   - stddev: 0.0
@@ -643,7 +643,7 @@ benunit_housing_costs
   - stddev: 245.8
   - median: 76.0
 
-benunit_pension_contributions
+benunit_pension_deductions
   - description: Pension contributions by the benefit unit
   - mean: 0.0
   - stddev: 0.0

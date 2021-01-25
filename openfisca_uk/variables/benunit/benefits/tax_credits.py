@@ -5,14 +5,14 @@ from openfisca_uk.tools.general import *
 
 class working_tax_credit_reported(Variable):
     value_type = float
-    entity = BenUnit
+    entity = Person
     label = u"Working Tax Credit (reported amount)"
     definition_period = YEAR
 
 
 class child_tax_credit_reported(Variable):
     value_type = float
-    entity = BenUnit
+    entity = Person
     label = u"Working Tax Credit (reported amount)"
     definition_period = YEAR
 
@@ -194,7 +194,7 @@ class tax_credits_reduction(Variable):
         )
         means_tested_earnings = (
             benunit("benunit_earnings", period)
-        ) - benunit("benunit_pension_contributions", period)
+        ) - benunit("benunit_pension_deductions", period)
         means_tested_SP = max_(
             0,
             benunit.sum(benunit.members("state_pension", period))
@@ -224,7 +224,7 @@ class yearly_working_tax_credit(Variable):
             - benunit("tax_credits_reduction", period),
         )
         already_claiming = (
-            benunit("working_tax_credit_reported", period, options=[MATCH]) > 0
+            benunit.sum(benunit.members("working_tax_credit_reported", period, options=[MATCH])) > 0
         )
         return amount * already_claiming
 
@@ -246,7 +246,7 @@ class yearly_child_tax_credit(Variable):
             benunit("CTC_applicable_amount", period) - reduction_left,
         )
         already_claiming = (
-            benunit("child_tax_credit_reported", period, options=[MATCH]) > 0
+            benunit.sum(benunit.members("child_tax_credit_reported", period, options=[MATCH])) > 0
         )
         return amount * already_claiming
 
