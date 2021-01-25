@@ -166,69 +166,28 @@ class PopulationSim:
     def __init__(self, *reforms, frs_data=None, input_period="2020"):
         self.reforms = reforms
         self.input_period = input_period
-        self.model = self.load_frs(frs_data=frs_data)
-        self.variable_graph = VariableGraph(self.model.tax_benefit_system)
+        self.simulation = self.load_frs(frs_data=frs_data)
+        self.populations = self.simulation.populations
+        self.benunits = self.simulation.populations["benunit"]
+        self.households = self.simulation.populations["household"]
+        self.variables = self.simulation.tax_benefit_system.variables
+    
+    def get_entity(self, var):
+        return self.variables[var].entity.key
 
-    def map_to(self, arr, entity="person", target_entity="benunit"):
-        LEVELS = {"person": 1, "benunit": 2, "household": 3}
-        if (
-            not target_entity or LEVELS[target_entity] == LEVELS[entity]
-        ):  # no change
-            return arr
-        elif target_entity == "person":  # group level -> person level
-            person_df = pd.DataFrame()
-            entity_df = pd.DataFrame()
-            entity_df["entity_id"] = self.relations[entity]
-            entity_df["values"] = arr
-            person_df["person_id"] = self.relations["person"]
-            person_df["entity_id"] = self.relations[f"person-{entity}"]
-            person_df.set_index("person_id")
-            entity_df.set_index("entity_id")
-            df = person_df.merge(entity_df, on="entity_id")
-            df.set_index("person_id")
-            return np.array(df["values"])
-        elif (
-            entity == "person"
-        ):  # person level -> (sum by group entity) -> group entity level
-            df = pd.DataFrame()
-            df["values"] = arr
-            df["person_id"] = self.relations["person"]
-            df["entity_id"] = self.relations[f"person-{target_entity}"]
-            df = df.groupby(by="entity_id", as_index=False).sum()
-            df.set_index("entity_id")
-            return np.array(df["values"])
-        else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
-            person_level = self.map_to(
-                arr, entity=entity, target_entity="person"
-            ) / self.calc("people_in_household")
-            entity_level = self.map_to(
-                person_level, entity="person", target_entity=target_entity
-            )
-            return entity_level
-
-    def calc(self, var, map_to=None, period="2020", verbose=False):
-        try:
-            result = self.model.calculate(var, period)
-        except:
-            if verbose:
-                print(
-                    f"Initial period calculation failed for {var}; attempting to gross up periods"
-                )
-            try:
-                result = self.model.calculate_add(var, period)
-            except:
-                if verbose:
-                    print(
-                        f"Grossing up period calculation failed for {var}; attempting to divide period"
-                    )
-                result = self.model.calculate_divide(var, period)
-        entity = self.model.tax_benefit_system.variables[var].entity.key
-        return self.map_to(result, entity=entity, target_entity=map_to)
-
-    def decache(self, var, period):
-        self.model.get_variable_population(var).get_holder(var).delete_arrays(
-            period
-        )
+    def calc(self, var, period="2020", copy_to_members=False, share_among_members=False, sum_by=None, average_by=None):
+        result = self.simulation.calculate(var, period)
+        entity = self.get_entity(var)
+        population = self.populations[entity]
+        if copy_to_members and entity != "person":
+            return population.project(result)
+        elif share_among_members and entity != "person":
+            return population.project(result) / population.nb_persons()
+        elif sum_by is not None and entity == "person":
+            return self.populations[sum_by].sum(result)
+        elif average_by is not None and entity == "person":
+            return self.populations[average_by].sum(result) / self.populations[average_by].nb_persons()
+        return result
 
     def df(self, cols, map_to="person"):
         df = {}
@@ -259,35 +218,16 @@ class PopulationSim:
             person_file, benunit_file, household_file = frs.load()
         else:
             person_file, benunit_file, household_file = frs_data
-        person_file.sort_values("person_id", inplace=True)
-        benunit_file.sort_values("benunit_id", inplace=True)
-        household_file.sort_values("household_id", inplace=True)
-        person_file["id"] = person_file["person_id"]
-        benunit_file["id"] = benunit_file["benunit_id"]
-        household_file["id"] = household_file["household_id"]
-        person_file.sort_values("id", inplace=True)
-        person_file.reset_index(inplace=True, drop=True)
-        benunit_file.sort_values("id", inplace=True)
-        benunit_file.reset_index(inplace=True, drop=True)
-        household_file.sort_values("id", inplace=True)
-        household_file.reset_index(inplace=True, drop=True)
-        self.relations = {
-            "person": np.array(person_file["person_id"]),
-            "benunit": np.array(benunit_file["benunit_id"]),
-            "household": np.array(household_file["household_id"]),
-            "person-benunit": np.array(person_file["benunit_id"]),
-            "person-household": np.array(person_file["household_id"]),
-        }
         person_ids = np.array(person_file["person_id"])
         benunit_ids = np.array(benunit_file["benunit_id"])
         household_ids = np.array(household_file["household_id"])
         builder.declare_person_entity("person", person_ids)
         benunits = builder.declare_entity("benunit", benunit_ids)
         households = builder.declare_entity("household", household_ids)
-        person_roles = person_file["role"]
+        person_roles = np.where(person_file["is_adult"], "adult", "child")
         builder.join_with_persons(
             benunits, np.array(person_file["benunit_id"]), person_roles
-        )  # define person-benunit memberships
+        )
         builder.join_with_persons(
             households, np.array(person_file["household_id"]), person_roles
         )
@@ -299,19 +239,7 @@ class PopulationSim:
                     input_file[column] += change[column]
                 if column != "role":
                     try:
-                        def_period = system.get_variable(
-                            column
-                        ).definition_period
-                        if def_period in ["eternity", "year"]:
-                            input_periods = [self.input_period]
-                        else:
-                            input_periods = period(
-                                self.input_period
-                            ).get_subperiods(def_period)
-                        for subperiod in input_periods:
-                            model.set_input(
-                                column, subperiod, np.array(input_file[column])
-                            )
+                        model.set_input(column, self.input_period, np.array(input_file[column]))
                     except Exception as e:
                         skipped += [column]
         if skipped and verbose:
