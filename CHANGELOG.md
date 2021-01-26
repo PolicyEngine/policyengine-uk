@@ -25,7 +25,13 @@
 * Tests now occur in 2021 to ensure FY20-21 parameters are used
 * Fixed bug in CB-HITC that caused overestimation
 
-## 0.2.2
+### 0.2.2
+
+* Added Jupyter-Book documentation
+* More detailed disability variables
+* Fixed IndividualSim reform handling
+
+## 0.2.3
 
 * Standardised reporting variable periods and levels
 * Uses new FRS variables

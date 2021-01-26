@@ -196,3 +196,38 @@ class num_bedrooms_in_household(Variable):
 
     def formula(person, period, parameters):
         return person.household("num_bedrooms", period)
+
+class age_under_18(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is under age 18"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period.this_year) < 18
+
+
+class age_18_64(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is age 18 to 64"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        age = person("age", period.this_year)
+        return (age >= 18) & (age <= 64)
+
+
+class age_over_64(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is over age 64"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period.this_year) > 64
+
+
+class is_older_child(Variable):
+    value_type = bool
+    
