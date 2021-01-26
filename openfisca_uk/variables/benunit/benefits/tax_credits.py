@@ -135,7 +135,9 @@ class WTC_applicable_amount(Variable):
         childcare_element = min_(
             max_childcare_amount,
             WTC.elements.childcare_coverage
-            * benunit.sum(benunit.members("childcare_cost", period.first_week)),
+            * benunit.sum(
+                benunit.members("childcare_cost", period.first_week)
+            ),
         )
         return benunit("WTC_eligible", period) * (
             applicable_amount + childcare_element
@@ -224,7 +226,12 @@ class yearly_working_tax_credit(Variable):
             - benunit("tax_credits_reduction", period),
         )
         already_claiming = (
-            benunit.sum(benunit.members("working_tax_credit_reported", period, options=[MATCH])) > 0
+            benunit.sum(
+                benunit.members(
+                    "working_tax_credit_reported", period, options=[MATCH]
+                )
+            )
+            > 0
         )
         return amount * already_claiming
 
@@ -246,7 +253,12 @@ class yearly_child_tax_credit(Variable):
             benunit("CTC_applicable_amount", period) - reduction_left,
         )
         already_claiming = (
-            benunit.sum(benunit.members("child_tax_credit_reported", period, options=[MATCH])) > 0
+            benunit.sum(
+                benunit.members(
+                    "child_tax_credit_reported", period, options=[MATCH]
+                )
+            )
+            > 0
         )
         return amount * already_claiming
 

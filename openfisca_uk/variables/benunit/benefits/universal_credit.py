@@ -9,14 +9,17 @@ class universal_credit_reported(Variable):
     label = u"Reported amount of Universal Credit"
     definition_period = YEAR
 
+
 class benunit_universal_credit_reported(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Reported amount of Universal Credit'
+    label = u"Reported amount of Universal Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("universal_credit_reported", period))
+        return benunit.sum(
+            benunit.members("universal_credit_reported", period)
+        )
 
 
 class UC_personal_allowance(Variable):

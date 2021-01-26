@@ -75,6 +75,7 @@ class JSA_income_reported(Variable):
     label = u"JSA (income-based) (reported amount)"
     definition_period = YEAR
 
+
 class benunit_JSA_income_reported(Variable):
     value_type = float
     entity = BenUnit
@@ -99,9 +100,7 @@ class JSA_income_eligible(Variable):
         ) * (hours < 24)
         under_SP_age = benunit.min(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
-        already_claiming = (
-            benunit("benunit_JSA_income_reported", period) > 0
-        )
+        already_claiming = benunit("benunit_JSA_income_reported", period) > 0
         return eligible * already_claiming
 
 

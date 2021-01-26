@@ -27,6 +27,7 @@ class pension_credit_reported(Variable):
     label = u"Reported amount of Pension Credit"
     definition_period = YEAR
 
+
 class benunit_pension_credit_reported(Variable):
     value_type = float
     entity = BenUnit

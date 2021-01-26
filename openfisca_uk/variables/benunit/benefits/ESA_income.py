@@ -9,6 +9,7 @@ class ESA_income_reported(Variable):
     label = u"ESA (income-based) (reported amount)"
     definition_period = YEAR
 
+
 class benunit_ESA_income_reported(Variable):
     value_type = float
     entity = BenUnit
@@ -17,6 +18,7 @@ class benunit_ESA_income_reported(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("ESA_income_reported", period))
+
 
 class ESA_income_reported_personal(Variable):
     value_type = float

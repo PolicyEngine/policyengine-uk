@@ -166,43 +166,57 @@ class IndividualSim:
         self.varying = True
         self.num_points = count
 
+
 class UKSurveyScenario(AbstractSurveyScenario):
-    def __init__(self, tax_benefit_system = None, baseline_tax_benefit_system = None,
-            data = None, year = None):
+    def __init__(
+        self,
+        tax_benefit_system=None,
+        baseline_tax_benefit_system=None,
+        data=None,
+        year=None,
+    ):
         super(UKSurveyScenario, self).__init__()
         if tax_benefit_system is None:
             tax_benefit_system = UKTaxBenefitSystem()
         self.set_tax_benefit_systems(
-            tax_benefit_system = tax_benefit_system,
-            baseline_tax_benefit_system = baseline_tax_benefit_system,
-            )
+            tax_benefit_system=tax_benefit_system,
+            baseline_tax_benefit_system=baseline_tax_benefit_system,
+        )
         self.year = year
         self.varying_variable = "earnings"
         self.weight_variable_by_entity = {
             "person": "adult_weight",
             "benunit": "benunit_weight",
-            "household": "household_weight"
+            "household": "household_weight",
         }
         self.role_variable_by_entity_key = {
             "benunit": "role",
             "household": "role",
-            }
+        }
         self.mtr_group = "household"
         if data is None:
             return
 
-        input_data_frame_by_entity_by_period = data['input_data_frame_by_entity_by_period']
-        for period, input_data_frame_by_entity in input_data_frame_by_entity_by_period.items():
-            entity_variables = [set(df.columns) for df in input_data_frame_by_entity.values()]
+        input_data_frame_by_entity_by_period = data[
+            "input_data_frame_by_entity_by_period"
+        ]
+        for (
+            period,
+            input_data_frame_by_entity,
+        ) in input_data_frame_by_entity_by_period.items():
+            entity_variables = [
+                set(df.columns) for df in input_data_frame_by_entity.values()
+            ]
 
         variables_from_data = set.union(*entity_variables)
         self.used_as_input_variables = list(
             set(tax_benefit_system.variables.keys()).intersection(
                 set(variables_from_data)
-                )
             )
+        )
         self.used_as_input_variables = set(self.used_as_input_variables)
-        self.init_from_data(data = data, use_marginal_tax_rate=True)
+        self.init_from_data(data=data, use_marginal_tax_rate=True)
+
 
 class SurveySim:
     def __init__(self, *reforms, year=2020):
@@ -212,7 +226,11 @@ class SurveySim:
         self.tax_benefit_system = openfisca_uk.CountryTaxBenefitSystem()
         for reform in reforms:
             self.tax_benefit_system = reform(self.tax_benefit_system)
-        self.scenario = UKSurveyScenario(tax_benefit_system=self.tax_benefit_system, data=self.data, year=self.year)
+        self.scenario = UKSurveyScenario(
+            tax_benefit_system=self.tax_benefit_system,
+            data=self.data,
+            year=self.year,
+        )
 
     def calc(self, variable, period="2020", map_to=None):
         values = self.scenario.calculate_variable(variable, period)
@@ -223,19 +241,30 @@ class SurveySim:
         target_entities = self.scenario.simulation.populations[map_to]
         if map_to == "person":
             return original_entities.project(values)
-        if "benunit" in [entity_key, map_to] and "household" in [entity_key, map_to]:
-            personal_averages = original_entities.project(values) / original_entities.project(original_entities.nb_persons())
+        if "benunit" in [entity_key, map_to] and "household" in [
+            entity_key,
+            map_to,
+        ]:
+            personal_averages = original_entities.project(
+                values
+            ) / original_entities.project(original_entities.nb_persons())
             return target_entities.sum(personal_averages)
         return target_entities.sum(values)
-    
+
     def build_entity_dataframe(self):
         person, benunit, household = frs.load()
         del household["country"]
-        input_data_frame_by_entity = dict(person=person, benunit=benunit, household=household)
+        input_data_frame_by_entity = dict(
+            person=person, benunit=benunit, household=household
+        )
         person["role"] = person["role"].replace({"adult": 0, "child": 1})
-        input_data_frame_by_entity_by_period = {periods.period(self.year): input_data_frame_by_entity}
+        input_data_frame_by_entity_by_period = {
+            periods.period(self.year): input_data_frame_by_entity
+        }
         data = dict()
-        data['input_data_frame_by_entity_by_period'] = input_data_frame_by_entity_by_period
+        data[
+            "input_data_frame_by_entity_by_period"
+        ] = input_data_frame_by_entity_by_period
         return data
 
 
@@ -248,12 +277,25 @@ class PopulationSim:
         self.benunits = self.simulation.populations["benunit"]
         self.households = self.simulation.populations["household"]
         self.variables = self.simulation.tax_benefit_system.variables
-        self.weight_vars = dict(person=self.calc("household_weight", copy_to_members=True), benunit=self.calc("benunit_weight"), household=self.calc("household_weight"))
-    
+        self.weight_vars = dict(
+            person=self.calc("household_weight", copy_to_members=True),
+            benunit=self.calc("benunit_weight"),
+            household=self.calc("household_weight"),
+        )
+
     def get_entity(self, var):
         return self.variables[var].entity.key
 
-    def calc(self, var, period="2020", aggregate=False, copy_to_members=False, share_among_members=False, sum_by=None, average_by=None):
+    def calc(
+        self,
+        var,
+        period="2020",
+        aggregate=False,
+        copy_to_members=False,
+        share_among_members=False,
+        sum_by=None,
+        average_by=None,
+    ):
         try:
             result = self.simulation.calculate(var, period)
         except Exception as e:
@@ -276,7 +318,10 @@ class PopulationSim:
             result = self.populations[sum_by].sum(result)
             entity = sum_by
         elif average_by is not None and entity == "person":
-            result = self.populations[average_by].sum(result) / self.populations[average_by].nb_persons()
+            result = (
+                self.populations[average_by].sum(result)
+                / self.populations[average_by].nb_persons()
+            )
             entity = average_by
         if aggregate:
             weight = self.weight_vars[entity]
@@ -333,7 +378,11 @@ class PopulationSim:
                     input_file[column] += change[column]
                 if column != "role":
                     try:
-                        model.set_input(column, self.input_period, np.array(input_file[column]))
+                        model.set_input(
+                            column,
+                            self.input_period,
+                            np.array(input_file[column]),
+                        )
                     except Exception as e:
                         skipped += [(column, e)]
         if skipped and verbose:

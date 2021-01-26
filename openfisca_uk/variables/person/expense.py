@@ -23,10 +23,11 @@ class weekly_childcare_hours(Variable):
     label = u"Weekly childcare hours"
     definition_period = WEEK
 
+
 class tax_free_childcare_paid_in(Variable):
     value_type = float
     entity = Person
-    label = u'Amount paid in to a Tax-Free childcare account'
+    label = u"Amount paid in to a Tax-Free childcare account"
     definition_period = YEAR
 
 
@@ -58,74 +59,86 @@ class student_loan_repayment(Variable):
     definition_period = WEEK
     set_input = set_input_divide_by_period
 
+
 class pension_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for pension contributions'
+    label = u"Amount deducted from wages for pension contributions"
     definition_period = YEAR
+
 
 class AVC_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for AVC'
+    label = u"Amount deducted from wages for AVC"
     definition_period = YEAR
+
 
 class union_fee_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for union fees'
+    label = u"Amount deducted from wages for union fees"
     definition_period = YEAR
+
 
 class friendly_society_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for Friendly Society fees'
+    label = u"Amount deducted from wages for Friendly Society fees"
     definition_period = YEAR
+
 
 class club_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for work social/sports club fees'
+    label = u"Amount deducted from wages for work social/sports club fees"
     definition_period = YEAR
+
 
 class loan_repayment_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for loan repayments'
+    label = u"Amount deducted from wages for loan repayments"
     definition_period = ETERNITY
+
 
 class medical_insurance_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for medical insurance'
+    label = u"Amount deducted from wages for medical insurance"
     definition_period = YEAR
+
 
 class charity_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for charitable donations'
+    label = u"Amount deducted from wages for charitable donations"
     definition_period = YEAR
+
 
 class student_loan_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for student loan repayments'
+    label = u"Amount deducted from wages for student loan repayments"
     definition_period = YEAR
+
 
 class other_deductions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount deducted from wages for other purposes'
+    label = u"Amount deducted from wages for other purposes"
     definition_period = YEAR
+
 
 class payments_to_absent_partner(Variable):
     value_type = float
     entity = Person
-    label = u'Amount paid to an absent partner'
+    label = u"Amount paid to an absent partner"
     definition_period = YEAR
+
 
 class salary_sacrifice_pension(Variable):
     value_type = float
     entity = Person
-    label = u'Amount paid as a part of a Salary Sacrifice Pension scheme'
+    label = u"Amount paid as a part of a Salary Sacrifice Pension scheme"
     definition_period = YEAR

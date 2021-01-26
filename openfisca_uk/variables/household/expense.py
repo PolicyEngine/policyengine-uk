@@ -77,6 +77,7 @@ class num_rooms(Variable):
     label = u"Number of rooms in the household"
     definition_period = ETERNITY
 
+
 class num_bedrooms(Variable):
     value_type = int
     entity = Household

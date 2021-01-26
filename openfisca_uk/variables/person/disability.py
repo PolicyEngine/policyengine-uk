@@ -30,9 +30,7 @@ class is_severely_disabled(Variable):
     def formula(person, period, parameters):
         claiming_SDA = person("SDA_reported", period, options=[ADD]) > 0
         no_non_dependents = person.benunit.nb_persons(BenUnit.ADULT) == 1
-        sufficient_DLA = (
-            person("DLA_SC_reported", period, options=[ADD]) > 50
-        )
+        sufficient_DLA = person("DLA_SC_reported", period, options=[ADD]) > 50
         return (claiming_SDA + sufficient_DLA > 0) * no_non_dependents
 
 
@@ -43,9 +41,7 @@ class is_enhanced_disabled(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        sufficient_DLA = (
-            person("DLA_SC_reported", period, options=[ADD]) > 80
-        )
+        sufficient_DLA = person("DLA_SC_reported", period, options=[ADD]) > 80
         return sufficient_DLA
 
 
@@ -79,64 +75,74 @@ class dis_equality_act_core(Variable):
     label = u"Whether disabled under the Equality Act (core definition)"
     definition_period = YEAR
 
+
 class vision_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with vision'
+    label = u"Whether has difficulty with vision"
     definition_period = YEAR
+
 
 class hearing_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with hearing'
+    label = u"Whether has difficulty with hearing"
     definition_period = YEAR
+
 
 class mobility_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with mobility'
+    label = u"Whether has difficulty with mobility"
     definition_period = YEAR
+
 
 class dexterity_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with dexterity'
+    label = u"Whether has difficulty with dexterity"
     definition_period = YEAR
+
 
 class learning_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with learning'
+    label = u"Whether has difficulty with learning"
     definition_period = YEAR
+
 
 class memory_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with memory'
+    label = u"Whether has difficulty with memory"
     definition_period = YEAR
+
 
 class mental_health_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with mental health'
+    label = u"Whether has difficulty with mental health"
     definition_period = YEAR
+
 
 class stamina_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has difficulty with stamina'
+    label = u"Whether has difficulty with stamina"
     definition_period = YEAR
+
 
 class social_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has social difficulty'
+    label = u"Whether has social difficulty"
     definition_period = YEAR
+
 
 class other_difficulty(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether has another difficulty'
+    label = u"Whether has another difficulty"
     definition_period = YEAR
 
 

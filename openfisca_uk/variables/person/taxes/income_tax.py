@@ -25,7 +25,7 @@ class taxable_income(Variable):
             "ESA_contrib",
             "JSA_contrib",
             "savings_interest_income",
-            "dividend_income"
+            "dividend_income",
         ]
         return max_(0, add(person, period, COMPONENTS, options=[MATCH]))
 
@@ -85,7 +85,8 @@ class marriage_allowance(Variable):
         ) - person("unused_personal_allowance", period)
         return min_(
             max_amount,
-            spousal_personal_allowance * person.benunit("benunit_is_married", period),
+            spousal_personal_allowance
+            * person.benunit("benunit_is_married", period),
         )
 
 
@@ -139,10 +140,11 @@ class personal_savings_allowance_deduction(Variable):
             max_(0, person("savings_interest_income", period)),
         )
 
+
 class ISA_deduction(Variable):
     value_type = float
     entity = Person
-    label = u'Deduction for tax-free ISA interest'
+    label = u"Deduction for tax-free ISA interest"
     definition_period = YEAR
 
 
@@ -305,14 +307,21 @@ class CB_HITC(Variable):
             * person("is_higher_earner", period)
         )
 
+
 class private_pension_deduction(Variable):
     value_type = float
     entity = Person
-    label = u'Deduction for private pension contributions'
+    label = u"Deduction for private pension contributions"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return max_(0, min_(person("pension_deductions", period), person("earned_income", period)))
+        return max_(
+            0,
+            min_(
+                person("pension_deductions", period),
+                person("earned_income", period),
+            ),
+        )
 
 
 class taxable_income_deductions(Variable):

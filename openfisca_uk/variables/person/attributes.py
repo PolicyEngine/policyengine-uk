@@ -4,6 +4,7 @@ from openfisca_uk.tools.general import *
 
 # Input from FRS
 
+
 class person_id(Variable):
     value_type = int
     entity = Person
@@ -67,6 +68,7 @@ class care_hours_given(Variable):
     label = u"Hours spent per week providing care"
     definition_period = WEEK
 
+
 class care_hours_recieved(Variable):
     value_type = float
     entity = Person
@@ -80,23 +82,26 @@ class adult_weight(Variable):
     label = u"Weight of the adult"
     definition_period = ETERNITY
 
+
 class is_married(Variable):
     value_type = float
     entity = Person
-    label = u'Whether is married'
+    label = u"Whether is married"
     definition_period = YEAR
-    
+
 
 # Derived variables
+
 
 class weekly_hours(Variable):
     value_type = float
     entity = Person
-    label = u'Average weekly hours for the year'
+    label = u"Average weekly hours for the year"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("hours", period, options=[ADD]) / 52
+
 
 class is_young_child(Variable):
     value_type = bool
@@ -119,6 +124,7 @@ class is_older_child(Variable):
             person("age", period.this_year) < 18
         )
 
+
 class is_SP_age(Variable):
     value_type = float
     entity = Person
@@ -131,6 +137,7 @@ class is_SP_age(Variable):
             person("state_pension", period) > 0
         )
 
+
 class is_WA_adult(Variable):
     value_type = float
     entity = Person
@@ -140,46 +147,51 @@ class is_WA_adult(Variable):
     def formula(person, period, parameters):
         return person("is_adult", period) * not_(person("is_SP_age", period))
 
+
 class living_in_social_housing(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether is living in social housing'
+    label = u"Whether is living in social housing"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("is_social", period)
 
+
 class living_in_shared_accomodation(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether is living in social housing'
+    label = u"Whether is living in social housing"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("is_shared", period)
 
+
 class person_region(Variable):
     value_type = int
     entity = Person
-    label = u'This person\'s region'
+    label = u"This person's region"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person.household("region", period)
 
+
 class is_renting(Variable):
     value_type = float
     entity = Person
-    label = u'Whether is renting'
+    label = u"Whether is renting"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         return person.household("is_rented", period)
 
+
 class num_bedrooms_in_household(Variable):
     value_type = float
     entity = Person
-    label = u'The number of bedrooms in this person\'s household'
+    label = u"The number of bedrooms in this person's household"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):

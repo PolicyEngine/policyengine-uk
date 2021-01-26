@@ -9,6 +9,7 @@ class income_support_reported(Variable):
     label = u"Income Support (reported amount)"
     definition_period = YEAR
 
+
 class benunit_income_support_reported(Variable):
     value_type = float
     entity = BenUnit
@@ -17,7 +18,6 @@ class benunit_income_support_reported(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("income_support_reported", period))
-
 
 
 class income_support_eligible(Variable):

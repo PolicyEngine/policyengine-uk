@@ -20,8 +20,6 @@ def add(entity, period, variable_names, options=None):
     )
 
 
-
-
 def aggr(entity, period, variable_names, options=None):
     """Sums a list of variables over each member of a group.
 

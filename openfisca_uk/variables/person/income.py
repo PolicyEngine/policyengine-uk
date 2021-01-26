@@ -4,71 +4,83 @@ from openfisca_uk.tools.general import *
 
 # Input from FRS
 
+
 class earnings(Variable):
     value_type = float
     entity = Person
-    label = u'Gross earnings from employment, before deductions'
+    label = u"Gross earnings from employment, before deductions"
     definition_period = YEAR
+
 
 class profit(Variable):
     value_type = float
     entity = Person
-    label = u'Gross earnings from employment, before deductions'
+    label = u"Gross earnings from employment, before deductions"
     definition_period = YEAR
+
 
 class alimony_payments_received(Variable):
     value_type = float
     entity = Person
-    label = u'Amount received from maintanence payments, directly or via DWP'
+    label = u"Amount received from maintanence payments, directly or via DWP"
     definition_period = YEAR
+
 
 class parental_contributions(Variable):
     value_type = float
     entity = Person
-    label = u'Amount received from parents'
+    label = u"Amount received from parents"
     definition_period = YEAR
+
 
 class edu_grants(Variable):
     value_type = float
     entity = Person
-    label = u'Grants for education'
+    label = u"Grants for education"
     definition_period = YEAR
+
 
 class pension_income(Variable):
     value_type = float
     entity = Person
-    label = u'Gross pension income before tax'
+    label = u"Gross pension income before tax"
     definition_period = YEAR
+
 
 class free_tv_license_value(Variable):
     value_type = float
     entity = Person
-    label = u'Value of free TV licenses'
+    label = u"Value of free TV licenses"
     definition_period = YEAR
+
 
 class FRS_net_income(Variable):
     value_type = float
     entity = Person
-    label = u'Net income from FRS tables'
+    label = u"Net income from FRS tables"
     definition_period = YEAR
+
 
 class child_maintenance_received(Variable):
     value_type = float
     entity = Person
-    label = u'Amount of child maintenance received'
+    label = u"Amount of child maintenance received"
     definition_period = YEAR
+
 
 class misc_income(Variable):
     value_type = float
     entity = Person
-    label = u'Miscellaneous income'
+    label = u"Miscellaneous income"
     definition_period = YEAR
+
 
 class rental_income(Variable):
     value_type = float
     entity = Person
     label = u"Income from letting"
     definition_period = YEAR
+
 
 class state_pension_reported(Variable):
     value_type = float
@@ -97,10 +109,11 @@ class SPP(Variable):
     label = u"Statutory Paternity Pay"
     definition_period = YEAR
 
+
 class SHPP(Variable):
     value_type = float
     entity = Person
-    label = u'Shared Parental Pay'
+    label = u"Shared Parental Pay"
     definition_period = YEAR
 
 
@@ -110,7 +123,9 @@ class holiday_pay(Variable):
     label = u"Holiday pay"
     definition_period = YEAR
 
+
 # Derived variables
+
 
 class state_pension(Variable):
     value_type = float
@@ -206,9 +221,7 @@ class benefits_modelling(Variable):
         ]
         difference = sum(
             map(
-                lambda benefit: person.benunit(
-                    benefit, period, options=[ADD]
-                )
+                lambda benefit: person.benunit(benefit, period, options=[ADD])
                 - person(benefit + "_reported", period, options=[ADD]),
                 BENUNIT_SIMULATED,
             )
@@ -271,7 +284,7 @@ class net_income(Variable):
 class person_household_net_income(Variable):
     value_type = float
     entity = Person
-    label = u'The person\'s household\'s disposable income, before housing costs'
+    label = u"The person's household's disposable income, before housing costs"
     definition_period = YEAR
 
     def formula(person, period, parameters):

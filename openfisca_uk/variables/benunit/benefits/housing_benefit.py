@@ -107,7 +107,9 @@ class housing_benefit_applicable_income(Variable):
         ) * WTC.elements.childcare_2
         childcare_element = min_(
             max_childcare_amount,
-            benunit.sum(benunit.members("childcare_cost", period, options=[ADD])),
+            benunit.sum(
+                benunit.members("childcare_cost", period, options=[ADD])
+            ),
         )
         applicable_income = max_(
             0,
@@ -177,10 +179,13 @@ class housing_benefit(Variable):
             ["JSA_contrib", "incapacity_benefit", "ESA_contrib", "SDA"],
             options=[MATCH],
         )
-        final_amount = max_(0, min_(
-            amount * already_claiming,
-            benunit("benefit_cap", period) - other_capped_benefits,
-        ))
+        final_amount = max_(
+            0,
+            min_(
+                amount * already_claiming,
+                benunit("benefit_cap", period) - other_capped_benefits,
+            ),
+        )
         return final_amount
 
 
@@ -189,6 +194,7 @@ class housing_benefit_reported(Variable):
     entity = Person
     label = u"Housing Benefit (reported amount)"
     definition_period = YEAR
+
 
 class benunit_housing_benefit_reported(Variable):
     value_type = float
