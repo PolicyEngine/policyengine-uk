@@ -3,11 +3,14 @@ from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
 
-class is_married(Variable):
+class benunit_is_married(Variable):
     value_type = bool
     entity = BenUnit
     label = u"Whether the benefit unit adults are married"
-    definition_period = ETERNITY
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.any(benunit.members("is_married", period))
 
 
 class FamilyType(Enum):

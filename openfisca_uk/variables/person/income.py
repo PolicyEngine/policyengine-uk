@@ -64,43 +64,17 @@ class misc_income(Variable):
     label = u'Miscellaneous income'
     definition_period = YEAR
 
-
-class savings_interest(Variable):
-    value_type = float
-    entity = Person
-    label = u"Interest from savings"
-    definition_period = YEAR
-
-
 class rental_income(Variable):
     value_type = float
     entity = Person
     label = u"Income from letting"
     definition_period = YEAR
 
-
-class pension_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Income from non-state pensions"
-    definition_period = YEAR
-
-
 class state_pension_reported(Variable):
     value_type = float
     entity = Person
     label = u"Income from the State Pension (reported)"
     definition_period = YEAR
-
-
-class state_pension(Variable):
-    value_type = float
-    entity = Person
-    label = u"Income from the State Pension"
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("state_pension_reported", period)
 
 
 class SSP(Variable):
@@ -123,12 +97,30 @@ class SPP(Variable):
     label = u"Statutory Paternity Pay"
     definition_period = YEAR
 
+class SHPP(Variable):
+    value_type = float
+    entity = Person
+    label = u'Shared Parental Pay'
+    definition_period = YEAR
+
 
 class holiday_pay(Variable):
     value_type = float
     entity = Person
     label = u"Holiday pay"
     definition_period = YEAR
+
+# Derived variables
+
+
+class state_pension(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income from the State Pension"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("state_pension_reported", period)
 
 
 class earned_income(Variable):
@@ -138,28 +130,7 @@ class earned_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("earnings", period) + person("profit", period)
-
-
-class ISA_interest(Variable):
-    value_type = float
-    entity = Person
-    label = u"Interest received from an Individual Savings Account"
-    definition_period = YEAR
-
-
-class dividend_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Dividend income"
-    definition_period = YEAR
-
-
-class misc_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Miscellaneous income"
-    definition_period = YEAR
+        return person("gross_wages", period) + person("gross_profit", period)
 
 
 class minimum_wage(Variable):
@@ -296,12 +267,6 @@ class net_income(Variable):
         )
         return net_income
 
-
-class FRS_net_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Net income in the FRS"
-    definition_period = YEAR
 
 class person_household_net_income(Variable):
     value_type = float

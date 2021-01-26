@@ -248,11 +248,12 @@ class PopulationSim:
         self.benunits = self.simulation.populations["benunit"]
         self.households = self.simulation.populations["household"]
         self.variables = self.simulation.tax_benefit_system.variables
+        self.weight_vars = dict(person=self.calc("household_weight", copy_to_members=True), benunit=self.calc("benunit_weight"), household=self.calc("household_weight"))
     
     def get_entity(self, var):
         return self.variables[var].entity.key
 
-    def calc(self, var, period="2020", copy_to_members=False, share_among_members=False, sum_by=None, average_by=None):
+    def calc(self, var, period="2020", aggregate=False, copy_to_members=False, share_among_members=False, sum_by=None, average_by=None):
         try:
             result = self.simulation.calculate(var, period)
         except Exception as e:
@@ -262,23 +263,30 @@ class PopulationSim:
                 try:
                     result = self.simulation.calculate_divide(var, period)
                 except Exception as g:
-                    print(f"Error in calculation: {e} -> {f} -> {g}")
+                    print(e.with_traceback())
         entity = self.get_entity(var)
         population = self.populations[entity]
         if copy_to_members and entity != "person":
-            return population.project(result)
+            result = population.project(result)
+            entity = copy_to_members
         elif share_among_members and entity != "person":
-            return population.project(result) / population.nb_persons()
+            result = population.project(result) / population.nb_persons()
+            entity = share_among_members
         elif sum_by is not None and entity == "person":
-            return self.populations[sum_by].sum(result)
+            result = self.populations[sum_by].sum(result)
+            entity = sum_by
         elif average_by is not None and entity == "person":
-            return self.populations[average_by].sum(result) / self.populations[average_by].nb_persons()
+            result = self.populations[average_by].sum(result) / self.populations[average_by].nb_persons()
+            entity = average_by
+        if aggregate:
+            weight = self.weight_vars[entity]
+            return np.sum(result * weight)
         return result
 
-    def df(self, cols, map_to="person"):
+    def df(self, cols, **kwargs):
         df = {}
         for var in cols:
-            df[var] = self.calc(var, map_to=map_to)
+            df[var] = self.calc(var, **kwargs)
         return pd.DataFrame(df)
 
     def load_frs(self, frs_data=None, verbose=False, change={}):

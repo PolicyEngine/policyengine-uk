@@ -78,6 +78,12 @@ class adult_weight(Variable):
     entity = Person
     label = u"Weight of the adult"
     definition_period = ETERNITY
+
+class is_married(Variable):
+    value_type = float
+    entity = Person
+    label = u'Whether is married'
+    definition_period = YEAR
     
 
 # Derived variables

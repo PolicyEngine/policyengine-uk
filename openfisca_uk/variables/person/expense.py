@@ -123,3 +123,9 @@ class payments_to_absent_partner(Variable):
     entity = Person
     label = u'Amount paid to an absent partner'
     definition_period = YEAR
+
+class salary_sacrifice_pension(Variable):
+    value_type = float
+    entity = Person
+    label = u'Amount paid as a part of a Salary Sacrifice Pension scheme'
+    definition_period = YEAR

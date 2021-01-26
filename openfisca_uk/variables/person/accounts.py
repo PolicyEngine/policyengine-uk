@@ -34,6 +34,29 @@ ACCOUNTS = [
     'post_office_card_account'
 ]
 
+class dividend_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Amount of income from dividend-paying accounts'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return add(person, period, [
+            "unit_or_inv_trusts_income",
+            "credit_unions_income",
+            "stocks_and_shares_income"
+        ])
+
+class savings_interest_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Amount of income from savings interest'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        accounts = map(lambda name : name + "_income", ACCOUNTS)
+        return add(person, period, accounts) - person("dividend_income", period)
+
 class current_account_value(Variable):
     value_type = float
     entity = Person

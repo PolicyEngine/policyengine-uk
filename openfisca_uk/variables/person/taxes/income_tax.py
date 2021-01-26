@@ -16,14 +16,16 @@ class taxable_income(Variable):
             "SSP",
             "SMP",
             "SPP",
+            "SHPP",
             "holiday_pay",
             "state_pension",
-            "pension_income",
+            "gross_pension_income",
             "rental_income",
             "BSP",
             "ESA_contrib",
             "JSA_contrib",
-            "savings_interest",
+            "savings_interest_income",
+            "dividend_income"
         ]
         return max_(0, add(person, period, COMPONENTS, options=[MATCH]))
 
@@ -83,7 +85,7 @@ class marriage_allowance(Variable):
         ) - person("unused_personal_allowance", period)
         return min_(
             max_amount,
-            spousal_personal_allowance * person.benunit("is_married", period),
+            spousal_personal_allowance * person.benunit("benunit_is_married", period),
         )
 
 
@@ -134,8 +136,14 @@ class personal_savings_allowance_deduction(Variable):
     def formula(person, period, parameters):
         return min_(
             person("personal_savings_allowance", period),
-            max_(0, person("savings_interest", period)),
+            max_(0, person("savings_interest_income", period)),
         )
+
+class ISA_deduction(Variable):
+    value_type = float
+    entity = Person
+    label = u'Deduction for tax-free ISA interest'
+    definition_period = YEAR
 
 
 class savings_starter_allowance_deduction(Variable):
@@ -147,7 +155,7 @@ class savings_starter_allowance_deduction(Variable):
     def formula(person, period, parameters):
         return min_(
             person("savings_starter_allowance", period),
-            max_(0, person("savings_interest", period)),
+            max_(0, person("savings_interest_income", period)),
         )
 
 
@@ -219,7 +227,7 @@ class dividend_income_tax(Variable):
 
     def formula(person, period, parameters):
         rates = parameters(period).taxes.income_tax.rates
-        taxable_dividends = person("dividend_income", period) * 52 - person(
+        taxable_dividends = person("dividend_income", period) - person(
             "dividend_deduction", period
         )
         other_income = person("taxable_income", period)
@@ -297,6 +305,15 @@ class CB_HITC(Variable):
             * person("is_higher_earner", period)
         )
 
+class private_pension_deduction(Variable):
+    value_type = float
+    entity = Person
+    label = u'Deduction for private pension contributions'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return max_(0, min_(person("pension_deductions", period), person("earned_income", period)))
+
 
 class taxable_income_deductions(Variable):
     value_type = float
@@ -313,8 +330,8 @@ class taxable_income_deductions(Variable):
             "personal_savings_allowance_deduction",
             "personal_allowance_deduction",
             "marriage_allowance_deduction",
-            "ISA_interest",
-            "pension_deductions",
+            "ISA_deduction",
+            "private_pension_deduction",
         ]
         total_deductions = add(person, period, DEDUCTIBLE)
         return max_(0, total_deductions)
