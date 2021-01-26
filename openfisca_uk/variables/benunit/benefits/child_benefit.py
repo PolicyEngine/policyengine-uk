@@ -5,9 +5,18 @@ from openfisca_uk.tools.general import *
 
 class child_benefit_reported(Variable):
     value_type = float
+    entity = Person
+    label = u"Child Benefit (reported amount)"
+    definition_period = YEAR
+
+class benunit_child_benefit_reported(Variable):
+    value_type = float
     entity = BenUnit
     label = u"Child Benefit (reported amount)"
     definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("child_benefit_reported", period))
 
 
 class child_benefit(Variable):
@@ -27,4 +36,4 @@ class child_benefit(Variable):
             max_(num_children - 1, 0)
             * parameters(period).benefits.child_benefit.amount_additional
         )
-        return eldest_amount + additional_amount
+        return (eldest_amount + additional_amount) * (benunit("benunit_child_benefit_reported", period.this_year) > 0)

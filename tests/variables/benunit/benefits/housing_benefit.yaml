@@ -3,7 +3,7 @@
   absolute_error_margin: 5
   input:
     age: 26
-    hours: 31
+    weekly_hours: 31
     earnings: 2000
     working_tax_credit_reported: true
     housing_type: SOCIAL
@@ -23,7 +23,7 @@
   absolute_error_margin: 5
   input:
     age: 26
-    hours: 31
+    weekly_hours: 31
     earnings: 2520
     working_tax_credit_reported: true
     housing_type: SOCIAL

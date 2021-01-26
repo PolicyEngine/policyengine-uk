@@ -5,9 +5,18 @@ from openfisca_uk.tools.general import *
 
 class universal_credit_reported(Variable):
     value_type = float
-    entity = BenUnit
-    label = u"Reported amount of Universal Credit per month"
+    entity = Person
+    label = u"Reported amount of Universal Credit"
     definition_period = YEAR
+
+class benunit_universal_credit_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Reported amount of Universal Credit'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("universal_credit_reported", period))
 
 
 class UC_personal_allowance(Variable):
@@ -56,7 +65,7 @@ class UC_premiums(Variable):
             * UC.elements.disabled_element
         )
         eligible_childcare_costs = benunit.sum(
-            benunit.members("childcare", period, options=[ADD])
+            benunit.members("childcare_cost", period, options=[ADD])
         )
         childcare_element = min_(
             childcare_limit,
@@ -161,7 +170,7 @@ class universal_credit_eligible(Variable):
             not_(benunit.min(benunit.members("is_SP_age", period.this_year)))
         )
         return eligible * benunit(
-            "universal_credit_reported", period.this_year
+            "benunit_universal_credit_reported", period.this_year
         )
 
 

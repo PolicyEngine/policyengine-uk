@@ -11,7 +11,7 @@ class NI_class_1(Variable):
     reference = u"https://www.gov.uk/national-insurance"
 
     def formula(person, period, parameters):
-        COMPONENTS = ["gross_wages", "SSP", "SMP", "SPP", "SHPP", "holiday_pay"]
+        COMPONENTS = ["earnings", "SSP", "SMP", "SPP", "SHPP", "holiday_pay"]
         applicable_income = add(person, period, COMPONENTS)
         amount = parameters(period).taxes.NI.class_1.rates.calc(
             applicable_income
@@ -31,7 +31,7 @@ class NI_class_2(Variable):
     def formula(person, period, parameters):
         class_2 = parameters(period).taxes.NI.class_2
         over_threshold = (
-            person("gross_profit", period.this_year)
+            person("profit", period.this_year)
             >= class_2.small_earnings_exception
         )
         amount = class_2.flat_rate * over_threshold
@@ -47,7 +47,7 @@ class NI_class_4(Variable):
     reference = u"https://www.gov.uk/national-insurance"
 
     def formula(person, period, parameters):
-        applicable_income = person("gross_profit", period)
+        applicable_income = person("profit", period)
         amount = parameters(period).taxes.NI.class_4.rates.calc(
             applicable_income
         )

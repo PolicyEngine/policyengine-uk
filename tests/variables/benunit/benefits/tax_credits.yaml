@@ -6,10 +6,10 @@
       p1:
         age: 21
         earnings: 14000
+        working_tax_credit_reported: true
     benunits:
       b1:
         adults: p1
-        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -22,11 +22,11 @@
       p1:
         age: 26
         earnings: 12000
-        hours: 33
+        weekly_hours: 33
+        working_tax_credit_reported: true
     benunits:
       b1:
         adults: p1
-        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -39,12 +39,12 @@
       p1:
         age: 26
         earnings: 12000
-        hours: 33
+        weekly_hours: 33
         is_disabled: true
+        working_tax_credit_reported: true
     benunits:
       b1:
         adults: p1
-        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -57,12 +57,12 @@
       p1:
         age: 26
         earnings: 12000
-        hours: 33
+        weekly_hours: 33
         is_disabled: true
+        working_tax_credit_reported: true
     benunits:
       b1:
         adults: p1
-        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -75,16 +75,16 @@
       p1:
         age: 26
         earnings: 12000
-        hours: 33
+        weekly_hours: 33
         is_disabled: true
         is_severely_disabled: true
         pension_deductions: 1000
+        working_tax_credit_reported: true
       p2:
         age: 24
     benunits:
       b1:
         adults: [p1, p2]
-        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -97,18 +97,18 @@
       p1:
         age: 26
         earnings: 12000
-        hours: 33
+        weekly_hours: 33
         is_disabled: true
         is_severely_disabled: true
         pension_deductions: 1000
+        working_tax_credit_reported: true
       p2:
         age: 24
         profit: 60000
-        hours: 20
+        weekly_hours: 20
     benunits:
       b1:
         adults: [p1, p2]
-        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -121,10 +121,11 @@
       p1:
         age: 26
         earnings: 12000
-        hours: 33
+        weekly_hours: 33
         is_disabled: true
         is_severely_disabled: true
         pension_deductions: 1000
+        working_tax_credit_reported: true
       p2:
         age: 24
         is_disabled: true
@@ -132,7 +133,6 @@
     benunits:
       b1:
         adults: [p1, p2]
-        working_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -145,8 +145,10 @@
       p1:
         age: 26
         earnings: 12000
-        hours: 33
-        weekly_childcare: 5200
+        weekly_hours: 33
+        childcare_cost: 5200
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
       p2:
         age: 24
       c1:
@@ -157,8 +159,6 @@
       b1:
         adults: [p1, p2]
         children: [c1, c2]
-        working_tax_credit_reported: true
-        child_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:
@@ -174,8 +174,10 @@
       p1:
         age: 26
         earnings: 12520
-        hours: 33
-        weekly_childcare: 5200
+        weekly_hours: 33
+        childcare_cost: 5200
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
       p2:
         age: 24
       c1:
@@ -186,8 +188,6 @@
       b1:
         adults: [p1, p2]
         children: [c1, c2]
-        working_tax_credit_reported: true
-        child_tax_credit_reported: true
   output:
     working_tax_credit:
       week:2021-02-01:

@@ -8,14 +8,15 @@
         SDA:
           week:2021-01-07:
             80
+        ESA_income_reported: true
+        child_tax_credit_reported: true
+        child_benefit_reported: true
       c1:
         age: 4
     benunits:
       b1:
         adults: p1
         children: [c1]
-        ESA_income_reported: true
-        child_tax_credit_reported: true
   output:
     is_disabled: [1, 0]
     CTC_applicable_amount: 3379

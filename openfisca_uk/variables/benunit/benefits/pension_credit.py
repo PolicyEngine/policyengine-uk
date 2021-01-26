@@ -14,7 +14,7 @@ class pension_credit_eligible(Variable):
         one_SP_age = benunit.max(benunit.members("is_SP_age", period))
         claiming_HB = benunit("housing_benefit", period, options=[ADD]) > 0
         already_claiming = (
-            benunit("pension_credit_reported", period.this_year) > 0
+            benunit("benunit_pension_credit_reported", period.this_year) > 0
         )
         return (
             both_SP_age + (one_SP_age * claiming_HB)
@@ -23,9 +23,18 @@ class pension_credit_eligible(Variable):
 
 class pension_credit_reported(Variable):
     value_type = float
-    entity = BenUnit
-    label = u"Reported amount of Pension Credit per week"
+    entity = Person
+    label = u"Reported amount of Pension Credit"
     definition_period = YEAR
+
+class benunit_pension_credit_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Reported amount of Pension Credit"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("pension_credit_reported", period))
 
 
 class pension_credit(Variable):

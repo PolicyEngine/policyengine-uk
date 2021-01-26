@@ -12,8 +12,8 @@ class LHA_eligible(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.all(
-            not_(benunit.members("living_in_social_housing", period))
-            * benunit.members("is_renting", period)
+            not_(benunit.members("living_in_social_housing", period.this_year))
+            * benunit.members("is_renting", period.this_year)
         )
 
 
@@ -28,7 +28,7 @@ class LHA_cap(Variable):
         rates = parameters(period).benefits.LHA.rate_caps
         rent = benunit.max(benunit.members("personal_rent", period))
         num_rooms = benunit.max(
-            benunit.members("num_rooms_in_household", period)
+            benunit.members("num_bedrooms_in_household", period)
         )
         is_shared = (
             benunit.max(

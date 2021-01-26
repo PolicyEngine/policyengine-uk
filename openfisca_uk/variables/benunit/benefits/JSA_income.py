@@ -71,9 +71,18 @@ class carer_premium(Variable):
 
 class JSA_income_reported(Variable):
     value_type = float
+    entity = Person
+    label = u"JSA (income-based) (reported amount)"
+    definition_period = YEAR
+
+class benunit_JSA_income_reported(Variable):
+    value_type = float
     entity = BenUnit
-    label = u"JSA (income-based) (reported amount per week)"
-    definition_period = WEEK
+    label = u"JSA (income-based) (reported amount)"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("JSA_income_reported", period))
 
 
 class JSA_income_eligible(Variable):
@@ -91,7 +100,7 @@ class JSA_income_eligible(Variable):
         under_SP_age = benunit.min(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
         already_claiming = (
-            benunit("JSA_income_reported", period, options=[MATCH]) > 0
+            benunit("benunit_JSA_income_reported", period) > 0
         )
         return eligible * already_claiming
 

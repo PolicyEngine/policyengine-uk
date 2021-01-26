@@ -60,7 +60,7 @@ class is_carer(Variable):
             person("carers_allowance_reported", period, options=[ADD]) > 0
         )
         meets_requirements = (
-            person("care_hours_given", period)
+            person("care_hours_given", period, options=[ADD])
             >= parameters(period).benefits.carers_allowance.min_hours
         )
         return already_claiming + meets_requirements > 0

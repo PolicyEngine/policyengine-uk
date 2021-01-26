@@ -5,6 +5,10 @@
     people:
       p1:
         age: 26
+        income_support_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
+        child_benefit_reported: true
       c1:
         age: 4
       c2:
@@ -13,9 +17,6 @@
       b1:
         adults: p1
         children: [c1, c2]
-        income_support_reported: true
-        working_tax_credit_reported: true
-        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2021-02-01:
@@ -37,6 +38,10 @@
         earnings: 6000
         hours: 6
         pension_deductions: 1000
+        income_support_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
+        child_benefit_reported: true
       c1:
         age: 4
       c2:
@@ -45,9 +50,6 @@
       b1:
         adults: p1
         children: [c1, c2]
-        income_support_reported: true
-        working_tax_credit_reported: true
-        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2021-02-01:
@@ -69,6 +71,10 @@
         earnings: 2000
         hours: 6
         pension_deductions: 400
+        income_support_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
+        child_benefit_reported: true
       c1:
         age: 4
       c2:
@@ -77,9 +83,6 @@
       b1:
         adults: p1
         children: [c1, c2]
-        income_support_reported: true
-        working_tax_credit_reported: true
-        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2021-02-01:
@@ -104,6 +107,10 @@
         earnings: 2520
         hours: 6
         pension_deductions: 400
+        income_support_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
+        child_benefit_reported: true
       c1:
         age: 4
       c2:
@@ -112,9 +119,6 @@
       b1:
         adults: p1
         children: [c1, c2]
-        income_support_reported: true
-        working_tax_credit_reported: true
-        child_tax_credit_reported: true
   output:
     child_tax_credit: 
       week:2021-02-01:

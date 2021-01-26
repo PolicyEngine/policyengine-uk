@@ -5,10 +5,18 @@ from openfisca_uk.tools.general import *
 
 class ESA_income_reported(Variable):
     value_type = float
-    entity = BenUnit
-    label = u"ESA (income-based) (reported amount per week)"
+    entity = Person
+    label = u"ESA (income-based) (reported amount)"
     definition_period = YEAR
 
+class benunit_ESA_income_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"ESA (income-based) (reported amount)"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("ESA_income_reported", period))
 
 class ESA_income_reported_personal(Variable):
     value_type = float
@@ -30,7 +38,7 @@ class ESA_income_eligible(Variable):
         under_SP_age = benunit.max(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
         already_claiming = (
-            benunit("ESA_income_reported", period, options=[MATCH])
+            benunit("benunit_ESA_income_reported", period, options=[MATCH])
             + aggr(benunit, period, ["ESA_contrib"], options=[MATCH])
             > 0
         )
@@ -108,4 +116,4 @@ class ESA_income(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit("ESA_income_reported", period, options=[DIVIDE])
+        return benunit("benunit_ESA_income_reported", period, options=[DIVIDE])

@@ -5,9 +5,19 @@ from openfisca_uk.tools.general import *
 
 class income_support_reported(Variable):
     value_type = float
-    entity = BenUnit
-    label = u"Income Support (reported amount per week)"
+    entity = Person
+    label = u"Income Support (reported amount)"
     definition_period = YEAR
+
+class benunit_income_support_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Income Support (reported amount)"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("income_support_reported", period))
+
 
 
 class income_support_eligible(Variable):
@@ -27,7 +37,7 @@ class income_support_eligible(Variable):
         under_SP_age = benunit.max(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
         already_claiming = (
-            benunit("income_support_reported", period, options=[MATCH]) > 0
+            benunit("benunit_income_support_reported", period) > 0
         )
         return (
             not_(benunit("ESA_income_eligible", period))

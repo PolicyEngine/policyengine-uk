@@ -4,13 +4,13 @@ from openfisca_uk.tools.general import *
 
 # Input from FRS
 
-class gross_wages(Variable):
+class earnings(Variable):
     value_type = float
     entity = Person
     label = u'Gross earnings from employment, before deductions'
     definition_period = YEAR
 
-class gross_profit(Variable):
+class profit(Variable):
     value_type = float
     entity = Person
     label = u'Gross earnings from employment, before deductions'
@@ -34,7 +34,7 @@ class edu_grants(Variable):
     label = u'Grants for education'
     definition_period = YEAR
 
-class gross_pension_income(Variable):
+class pension_income(Variable):
     value_type = float
     entity = Person
     label = u'Gross pension income before tax'
@@ -112,7 +112,6 @@ class holiday_pay(Variable):
 
 # Derived variables
 
-
 class state_pension(Variable):
     value_type = float
     entity = Person
@@ -130,7 +129,7 @@ class earned_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("gross_wages", period) + person("gross_profit", period)
+        return person("earnings", period) + person("profit", period)
 
 
 class minimum_wage(Variable):
@@ -176,7 +175,7 @@ class benefits_modelling(Variable):
     value_type = float
     entity = Person
     label = u"Difference between simulated and reported benefits"
-    definition_period = WEEK
+    definition_period = YEAR
     set_input = set_input_divide_by_period
 
     def formula(person, period, parameters):
@@ -208,15 +207,15 @@ class benefits_modelling(Variable):
         difference = sum(
             map(
                 lambda benefit: person.benunit(
-                    benefit, period, options=[MATCH]
+                    benefit, period, options=[ADD]
                 )
-                - person.benunit(benefit + "_reported", period, options=[DIVIDE]),
+                - person(benefit + "_reported", period, options=[ADD]),
                 BENUNIT_SIMULATED,
             )
         ) + sum(
             map(
-                lambda benefit: person(benefit, period, options=[MATCH])
-                - person(benefit + "_reported", period),
+                lambda benefit: person(benefit, period, options=[ADD])
+                - person(benefit + "_reported", period, options=[ADD]),
                 PERSON_SIMULATED,
             )
         )
@@ -235,11 +234,12 @@ class gross_income(Variable):
             "profit",
             "state_pension",
             "pension_income",
-            "savings_interest",
+            "savings_interest_income",
             "rental_income",
             "SSP",
             "SPP",
             "SMP",
+            "SHPP",
             "holiday_pay",
             "dividend_income",
             "total_benefits",

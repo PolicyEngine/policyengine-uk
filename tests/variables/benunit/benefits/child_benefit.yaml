@@ -3,7 +3,9 @@
   absolute_error_margin: 1
   input:
     people:
-      parent1: {}
+      parent1: 
+        child_benefit_reported: 
+          2021: true
       parent2: {}
     benunits:
       benunit:
@@ -16,7 +18,9 @@
   absolute_error_margin: 1
   input:
     people:
-      parent1: {}
+      parent1: 
+        child_benefit_reported:
+          2021: true
       parent2: {}
       child1: {}
       child2: {}

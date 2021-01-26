@@ -335,13 +335,13 @@ class PopulationSim:
                     try:
                         model.set_input(column, self.input_period, np.array(input_file[column]))
                     except Exception as e:
-                        skipped += [column]
+                        skipped += [(column, e)]
         if skipped and verbose:
             print(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"
             )
             for var in skipped:
-                print(f"{var}")
+                print(f"{var[0]}: {var[1]}")
         return model
 
     def entity_df(self, entity="benunit"):

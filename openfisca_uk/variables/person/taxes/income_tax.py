@@ -11,15 +11,15 @@ class taxable_income(Variable):
 
     def formula(person, period, parameters):
         COMPONENTS = [
-            "gross_wages",
-            "gross_profit",
+            "earnings",
+            "profit",
             "SSP",
             "SMP",
             "SPP",
             "SHPP",
             "holiday_pay",
             "state_pension",
-            "gross_pension_income",
+            "pension_income",
             "rental_income",
             "BSP",
             "ESA_contrib",

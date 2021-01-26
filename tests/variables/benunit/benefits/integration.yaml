@@ -6,10 +6,12 @@
       p1:
         age: 26
         profit: 12300
-        hours: 17
-        weekly_childcare: 150
+        weekly_hours: 17
+        childcare_cost: 7800
         is_household_head: true
         is_benunit_head: true
+        housing_benefit_reported: true
+        child_benefit_reported: true
       c1:
         age: 2
       c2:
@@ -20,11 +22,10 @@
       b1:
         adults: p1
         children: [c1, c2, c3]
-        housing_benefit_reported: true
     households:
       h1:
         weekly_rent: 300
-        num_rooms: 3
+        num_bedrooms: 3
         housing_type: SOCIAL
   output:
     child_benefit:
@@ -39,9 +40,11 @@
       p1:
         age: 26
         earnings: 12300
-        hours: 17
+        weekly_hours: 17
         is_household_head: true
         is_benunit_head: true
+        universal_credit_reported: true
+        child_benefit_reported: true
       c1:
         age: 2
       c2:
@@ -52,11 +55,10 @@
       b1:
         adults: p1
         children: [c1, c2, c3]
-        universal_credit_reported: true
     households:
       h1:
         weekly_rent: 300
-        num_rooms: 3
+        num_bedrooms: 3
         housing_type: SOCIAL
   output:
     NI: [336, 0, 0, 0]

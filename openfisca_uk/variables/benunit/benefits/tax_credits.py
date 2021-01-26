@@ -24,7 +24,7 @@ class benunit_hours(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["hours"])
+        return aggr(benunit, period, ["weekly_hours"])
 
 
 class is_CTC_child_limit_exempt(Variable):
@@ -47,8 +47,8 @@ class WTC_eligible(Variable):
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefits.working_tax_credit
-        hours = benunit.sum(benunit.members("hours", period))
-        max_hours = benunit.max(benunit.members("hours", period))
+        hours = benunit("benunit_hours", period)
+        max_hours = benunit.max(benunit.members("weekly_hours", period))
         disabled_adults = benunit("disabled_adults", period)
         has_old = benunit.max(
             benunit.members("age", period.this_year) > WTC.min_hours.old_age
@@ -113,7 +113,7 @@ class WTC_applicable_amount(Variable):
                 (
                     benunit.sum(
                         benunit.members("is_disabled", period)
-                        * benunit.members("hours", period)
+                        * benunit.members("weekly_hours", period)
                     )
                     > WTC.min_hours.lower
                 )
@@ -135,7 +135,7 @@ class WTC_applicable_amount(Variable):
         childcare_element = min_(
             max_childcare_amount,
             WTC.elements.childcare_coverage
-            * benunit.sum(benunit.members("childcare", period.first_week)),
+            * benunit.sum(benunit.members("childcare_cost", period.first_week)),
         )
         return benunit("WTC_eligible", period) * (
             applicable_amount + childcare_element

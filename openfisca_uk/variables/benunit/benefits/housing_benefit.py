@@ -12,9 +12,9 @@ class housing_benefit_eligible(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.max(
-            benunit.members("living_in_social_housing", period)
-            * benunit.members("is_renting", period)
-        ) * (benunit("housing_benefit_reported", period.this_year) > 0)
+            benunit.members("living_in_social_housing", period.this_year)
+            * benunit.members("is_renting", period.this_year)
+        ) * (benunit("benunit_housing_benefit_reported", period.this_year) > 0)
 
 
 class housing_benefit_applicable_amount(Variable):
@@ -107,7 +107,7 @@ class housing_benefit_applicable_income(Variable):
         ) * WTC.elements.childcare_2
         childcare_element = min_(
             max_childcare_amount,
-            benunit.sum(benunit.members("childcare", period, options=[ADD])),
+            benunit.sum(benunit.members("childcare_cost", period, options=[ADD])),
         )
         applicable_income = max_(
             0,
@@ -155,7 +155,7 @@ class housing_benefit(Variable):
             0, rent - max_(0, income - applicable_amount) * withdrawal_rate
         )
         already_claiming = (
-            benunit("housing_benefit_reported", period.this_year) > 0
+            benunit("benunit_housing_benefit_reported", period.this_year) > 0
         )
         amount = where(
             LHA, min_(final_amount, benunit("LHA_cap", period)), final_amount
@@ -186,6 +186,15 @@ class housing_benefit(Variable):
 
 class housing_benefit_reported(Variable):
     value_type = float
-    entity = BenUnit
-    label = u"Housing Benefit (reported amount per week)"
+    entity = Person
+    label = u"Housing Benefit (reported amount)"
     definition_period = YEAR
+
+class benunit_housing_benefit_reported(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Housing Benefit (reported amount)"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("housing_benefit_reported", period))
