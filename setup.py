@@ -31,6 +31,7 @@ setup(
         "pyyaml==5.3.1",
         "pytest==5.4.3",
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
+        "openfisca-survey-manager"
     ],
     extras_require={
         "dev": [

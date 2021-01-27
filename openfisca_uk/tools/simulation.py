@@ -303,15 +303,14 @@ class PopulationSim:
             entity_level = self.populations[target_entity].sum(person_shares)
             return entity_level
 
-    def calc_agg(self, var, period="2020", total=False, average=False, count=False, **kwargs):
+    def calc_agg(self, var, period="2020", average=False, count=False, **kwargs):
         result = self.calc(var, period=period, **kwargs)
         entity = self.get_entity(var)
-        if total:
-            return np.sum(result * self.weight_vars[entity])
-        elif average:
+        if average:
             return np.average(result, weights=self.weight_vars[entity])
         elif count:
             return np.sum((result > 0) * self.weight_vars[entity])
+        return np.sum(result * self.weight_vars[entity])
 
     def calc(
         self,
