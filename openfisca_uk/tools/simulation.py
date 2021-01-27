@@ -433,16 +433,16 @@ class PopulationSim:
         if entity not in ["benunit", "person", "household"]:
             raise Exception("Unsupported entity.")
         df = pd.DataFrame()
-        variables = self.model.tax_benefit_system.variables.keys()
+        variables = self.simulation.tax_benefit_system.variables.keys()
         entity_variables = list(
             filter(
-                lambda x: self.model.tax_benefit_system.variables[x].entity.key
+                lambda x: self.simulation.tax_benefit_system.variables[x].entity.key
                 == entity,
                 variables,
             )
         )
         for var in entity_variables:
-            def_period = self.model.tax_benefit_system.get_variable(
+            def_period = self.simulation.tax_benefit_system.get_variable(
                 var
             ).definition_period
             if def_period in ["eternity", "year"]:
@@ -451,7 +451,7 @@ class PopulationSim:
                 inp_period = period(self.input_period).get_subperiods(
                     def_period
                 )[-1]
-            df[var] = self.model.calculate(var, inp_period)
+            df[var] = self.simulation.calculate(var, inp_period)
         return df
 
     def calc_mtr(self, return_change_df=False):
@@ -478,7 +478,7 @@ class PopulationSim:
                     *self.reforms,
                     input_period=self.input_period,
                 )
-                bonus_sim.model = bonus_sim.load_frs(
+                bonus_sim.simulation = bonus_sim.load_frs(
                     change={"earnings": bonus_amount}
                 )
                 bonus_given_to_benunit = self.map_to(
