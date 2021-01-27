@@ -159,13 +159,13 @@ class in_poverty_bhc(Variable):
     label = (
         u"Whether the household is in absolute poverty, before housing costs"
     )
-    definition_period = WEEK
+    definition_period = YEAR
     set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return (
-            household("equiv_household_net_income", period, options=[DIVIDE])
-            < parameters(period).poverty.absolute_poverty_threshold_bhc
+            household("equiv_household_net_income", period)
+            < parameters(period).poverty.absolute_poverty_threshold_bhc * 52
         )
 
 
@@ -175,15 +175,15 @@ class in_poverty_ahc(Variable):
     label = (
         u"Whether the household is in absolute poverty, after housing costs"
     )
-    definition_period = WEEK
+    definition_period = YEAR
     set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
         return (
             household(
-                "equiv_household_net_income_ahc", period, options=[DIVIDE]
+                "equiv_household_net_income_ahc", period
             )
-            < parameters(period).poverty.absolute_poverty_threshold_ahc
+            < parameters(period).poverty.absolute_poverty_threshold_ahc * 52
         )
 
 

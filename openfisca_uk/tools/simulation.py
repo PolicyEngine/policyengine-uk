@@ -278,7 +278,7 @@ class PopulationSim:
         self.households = self.simulation.populations["household"]
         self.variables = self.simulation.tax_benefit_system.variables
         self.weight_vars = dict(
-            person=self.calc("household_weight", copy_to_members=True),
+            person=self.calc("household_weight", copy_to_person=True),
             benunit=self.calc("benunit_weight"),
             household=self.calc("household_weight"),
         )
@@ -286,15 +286,42 @@ class PopulationSim:
     def get_entity(self, var):
         return self.variables[var].entity.key
 
+    def map_to(self, arr, entity="person", target_entity="benunit"):
+        LEVELS = {"person": 1, "benunit": 2, "household": 3}
+        if (
+            not target_entity or LEVELS[target_entity] == LEVELS[entity]
+        ):  # no change
+            return arr
+        elif target_entity == "person":  # group level -> person level
+            return self.populations[entity].project()
+        elif (
+            entity == "person"
+        ):  # person level -> (sum by group entity) -> group entity level
+            return self.populations[entity].sum(arr)
+        else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
+            person_shares = self.populations[entity].project(arr) / self.populations[entity].nb_persons()
+            entity_level = self.populations[target_entity].sum(person_shares)
+            return entity_level
+
+    def calc_agg(self, var, period="2020", total=False, average=False, count=False, **kwargs):
+        result = self.calc(var, period=period, **kwargs)
+        entity = self.get_entity(var)
+        if total:
+            return np.sum(result * self.weight_vars[entity])
+        elif average:
+            return np.average(result, weights=self.weight_vars[entity])
+        elif count:
+            return np.sum((result > 0) * self.weight_vars[entity])
+
     def calc(
         self,
         var,
         period="2020",
-        aggregate=False,
-        copy_to_members=False,
+        copy_to_person=False,
         share_among_members=False,
         sum_by=None,
         average_by=None,
+        map_to=None
     ):
         try:
             result = self.simulation.calculate(var, period)
@@ -307,10 +334,11 @@ class PopulationSim:
                 except Exception as g:
                     print(e.with_traceback())
         entity = self.get_entity(var)
+        entity = self.get_entity(var)
         population = self.populations[entity]
-        if copy_to_members and entity != "person":
+        if copy_to_person and entity != "person":
             result = population.project(result)
-            entity = copy_to_members
+            entity = copy_to_person
         elif share_among_members and entity != "person":
             result = population.project(result) / population.nb_persons()
             entity = share_among_members
@@ -323,9 +351,6 @@ class PopulationSim:
                 / self.populations[average_by].nb_persons()
             )
             entity = average_by
-        if aggregate:
-            weight = self.weight_vars[entity]
-            return np.sum(result * weight)
         return result
 
     def df(self, cols, **kwargs):
@@ -384,13 +409,13 @@ class PopulationSim:
                             np.array(input_file[column]),
                         )
                     except Exception as e:
-                        skipped += [(column, e)]
+                        skipped += [column]
         if skipped and verbose:
             print(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"
             )
             for var in skipped:
-                print(f"{var[0]}: {var[1]}")
+                print(f"Skipped variable {var}")
         return model
 
     def entity_df(self, entity="benunit"):

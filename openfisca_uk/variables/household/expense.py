@@ -42,7 +42,7 @@ class housing_costs(Variable):
     set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
-        return household("rent", period) + household("mortgage", period)
+        return household("rent", period) + household("mortgage_payments", period)
 
 
 class rent(Variable):
@@ -63,7 +63,7 @@ class weekly_rent(Variable):
     definition_period = YEAR
 
 
-class mortgage(Variable):
+class mortgage_payments(Variable):
     value_type = float
     entity = Household
     label = u"Total mortgage payments"

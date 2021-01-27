@@ -226,8 +226,3 @@ class age_over_64(Variable):
 
     def formula(person, period, parameters):
         return person("age", period.this_year) > 64
-
-
-class is_older_child(Variable):
-    value_type = bool
-    
