@@ -293,11 +293,11 @@ class PopulationSim:
         ):  # no change
             return arr
         elif target_entity == "person":  # group level -> person level
-            return self.populations[entity].project()
+            return self.populations[entity].project(arr)
         elif (
             entity == "person"
         ):  # person level -> (sum by group entity) -> group entity level
-            return self.populations[entity].sum(arr)
+            return self.populations[target_entity].sum(arr)
         else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
             person_shares = self.populations[entity].project(arr) / self.populations[entity].nb_persons()
             entity_level = self.populations[target_entity].sum(person_shares)
@@ -333,7 +333,6 @@ class PopulationSim:
                 except Exception as g:
                     print(e.with_traceback())
         entity = self.get_entity(var)
-        entity = self.get_entity(var)
         population = self.populations[entity]
         if copy_to_person and entity != "person":
             result = population.project(result)
@@ -349,7 +348,8 @@ class PopulationSim:
                 self.populations[average_by].sum(result)
                 / self.populations[average_by].nb_persons()
             )
-            entity = average_by
+        elif map_to is not None:
+            return self.map_to(result, entity=entity, target_entity=map_to)
         return result
 
     def df(self, cols, **kwargs):
