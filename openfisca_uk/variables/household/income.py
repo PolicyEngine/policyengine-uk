@@ -31,7 +31,7 @@ class household_net_income(Variable):
 
     def formula(household, period, parameters):
         return max_(0, aggr(household, period, ["net_income"])) - household(
-            "council_tax", period
+            "council_tax_bill", period
         )
 
 
@@ -45,7 +45,7 @@ class household_net_income_ahc(Variable):
         return max_(
             0,
             aggr(household, period, ["net_income"])
-            - household("council_tax", period)
+            - household("council_tax_bill", period)
             - household("housing_costs", period, options=[MATCH]),
         )
 

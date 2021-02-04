@@ -14,14 +14,14 @@ class housing_type(Variable):
     default_value = HousingType.PRIVATE
     entity = Household
     label = u"Whether private or social housing"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
 
 class is_social(Variable):
     value_type = bool
     entity = Household
     label = u"Whether is social housing"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(household, period, parameters):
         return household("housing_type", period) == HousingType.SOCIAL
@@ -31,7 +31,25 @@ class is_rented(Variable):
     value_type = bool
     entity = Household
     label = u"Whether rented"
-    definition_period = ETERNITY
+    definition_period = YEAR
+
+
+class TenureType(Enum):
+    mortgage = u"Mortgaged"
+    owned = u"Owned"
+    part_own_part_rent = u"Part-owned"
+    rent_free = u"Rent-free"
+    rented = u"Rented"
+    squatting = u"Squatting"
+
+
+class tenure(Variable):
+    value_type = Enum
+    entity = Household
+    possible_values = TenureType
+    default_value = TenureType.rented
+    label = u'The type of housing tenure'
+    definition_period = YEAR
 
 
 class housing_costs(Variable):
@@ -42,7 +60,7 @@ class housing_costs(Variable):
     set_input = set_input_divide_by_period
 
     def formula(household, period, parameters):
-        return household("rent", period) + household("mortgage_payments", period)
+        return household("rent", period)
 
 
 class rent(Variable):
@@ -75,25 +93,51 @@ class num_rooms(Variable):
     value_type = int
     entity = Household
     label = u"Number of rooms in the household"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
 
 class num_bedrooms(Variable):
     value_type = int
     entity = Household
     label = u"Number of bedrooms in the household"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
 
 class is_shared(Variable):
     value_type = bool
     entity = Household
     label = u"Whether using a shared household agreement"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
 
 class council_tax(Variable):
     value_type = float
     entity = Household
     label = u"Council Tax"
+    definition_period = YEAR
+
+class council_tax_liable(Variable):
+    value_type = bool
+    entity = Household
+    label = u'Whether liable for Council Tax'
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        tenure = household("tenure", period)
+        return (tenure == TenureType.owned) + (tenure == TenureType.mortgage) > 0
+
+
+class council_tax_bill(Variable):
+    value_type = float
+    entity = Household
+    label = u'Council Tax bill, after discounts'
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return (1 - household("council_tax_discount", period)) * (household("council_tax", period) * household("council_tax_liable", period))
+
+class council_tax_discount(Variable):
+    value_type = float
+    entity = Household
+    label = u'Discount for Council Tax'
     definition_period = YEAR
