@@ -25,8 +25,7 @@ class taxable_income(Variable):
             "taxable_dividend_income",
             "state_pension",
             "pension_income",
-            "carers_allowance",
-            "odd_job_income"
+            "odd_job_income",
         ]
         return max_(0, add(person, period, COMPONENTS, options=[MATCH]))
 
@@ -84,10 +83,11 @@ class marriage_allowance(Variable):
         spousal_personal_allowance = person.benunit.sum(
             person.benunit.members("unused_personal_allowance", period)
         ) - person("unused_personal_allowance", period)
-        return min_(
-            max_amount,
-            spousal_personal_allowance
-        ) * person.benunit("benunit_is_married", period) * person("is_adult", period),
+        return (
+            min_(max_amount, spousal_personal_allowance)
+            * person.benunit("benunit_is_married", period)
+            * person("is_adult", period),
+        )
 
 
 class marriage_allowance_deduction(Variable):
@@ -183,7 +183,9 @@ class trading_deduction(Variable):
         trading_allowance = parameters(
             period
         ).taxes.income_tax.allowances.trading_allowance
-        return max_(0, min_(person("profit", period), trading_allowance)) * (person("profit", period) < 1000)
+        return max_(0, min_(person("profit", period), trading_allowance)) * (
+            person("profit", period) < 1000
+        )
 
 
 class rental_deduction(Variable):
@@ -210,7 +212,10 @@ class dividend_deduction(Variable):
             period
         ).taxes.income_tax.allowances.dividend_allowance
         return max_(
-            0, min_(dividend_allowance, person("taxable_dividend_income", period))
+            0,
+            min_(
+                dividend_allowance, person("taxable_dividend_income", period)
+            ),
         )
 
 
@@ -331,14 +336,16 @@ class taxable_income_deductions(Variable):
             "savings_starter_allowance_deduction",
             "personal_savings_allowance_deduction",
             "personal_allowance_deduction",
+            "private_pension_deduction",
         ]
         total_deductions = add(person, period, DEDUCTIBLE)
         return max_(0, total_deductions)
 
+
 class basic_rate_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u'Basic rate tax'
+    label = u"Basic rate tax"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -351,10 +358,11 @@ class basic_rate_income_tax(Variable):
         rate = income_tax.rates.uk.rates[0]
         return (min_(applicable_amount, ceil) - floor) * rate
 
+
 class higher_rate_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u'Basic rate tax'
+    label = u"Basic rate tax"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -367,17 +375,20 @@ class higher_rate_income_tax(Variable):
         rate = income_tax.rates.uk.rates[1]
         return max_(0, min_(applicable_amount, ceil) - floor) * rate
 
+
 class additional_rate_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u'Basic rate tax'
+    label = u"Basic rate tax"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         income_tax = parameters(period).taxes.income_tax
-        applicable_amount = max_(0, person("taxable_income", period) - person(
-            "taxable_income_deductions", period
-        ))
+        applicable_amount = max_(
+            0,
+            person("taxable_income", period)
+            - person("taxable_income_deductions", period),
+        )
         floor = income_tax.rates.uk.thresholds[2]
         rate = income_tax.rates.uk.rates[2]
         return max_(0, applicable_amount - floor) * rate

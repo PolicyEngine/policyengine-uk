@@ -89,16 +89,18 @@ class is_married(Variable):
     label = u"Whether is married"
     definition_period = YEAR
 
+
 class is_employee(Variable):
     value_type = float
     entity = Person
-    label = u'Whether is an employee'
+    label = u"Whether is an employee"
     definition_period = YEAR
+
 
 class is_self_employed(Variable):
     value_type = float
     entity = Person
-    label = u'Whether is self-employed'
+    label = u"Whether is self-employed"
     definition_period = YEAR
 
 
@@ -159,6 +161,7 @@ class is_WA_adult(Variable):
     def formula(person, period, parameters):
         return person("is_adult", period) * not_(person("is_SP_age", period))
 
+
 class Age_group(Enum):
     child = u"child"
     WA_adult = u"WA adult"
@@ -170,11 +173,18 @@ class age_group(Variable):
     possible_values = Age_group
     default_value = Age_group.WA_adult
     entity = Person
-    label = u'Whether a child, adult or pensioner'
+    label = u"Whether a child, adult or pensioner"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return select([person("is_child", period), person("is_WA_adult", period), person("is_SP_age", period)], [Age_group.child, Age_group.WA_adult, Age_group.pensioner])
+        return select(
+            [
+                person("is_child", period),
+                person("is_WA_adult", period),
+                person("is_SP_age", period),
+            ],
+            [Age_group.child, Age_group.WA_adult, Age_group.pensioner],
+        )
 
 
 class living_in_social_housing(Variable):
@@ -226,6 +236,7 @@ class num_bedrooms_in_household(Variable):
     def formula(person, period, parameters):
         return person.household("num_bedrooms", period)
 
+
 class age_under_18(Variable):
     value_type = bool
     entity = Person
@@ -256,7 +267,9 @@ class age_over_64(Variable):
     def formula(person, period, parameters):
         return person("age", period.this_year) > 64
 
+
 # Enums
+
 
 class Highest_qualification(Enum):
     unknown = u"unknown"
@@ -347,6 +360,7 @@ class Highest_qualification(Enum):
     entry_level_award = u"entry_level_award"
     other_qual = u"other_qual"
 
+
 class Education_type(Enum):
     unknown = u"unknown"
     school_full_time = u"school_full_time"
@@ -360,6 +374,7 @@ class Education_type(Enum):
     other_correspondence_course = u"other_correspondence_course"
     other_course = u"other_course"
 
+
 class Ethnicity(Enum):
     unknown = u"unknown"
     white = u"white"
@@ -367,6 +382,7 @@ class Ethnicity(Enum):
     asian = u"asian"
     black = u"black"
     other = u"other"
+
 
 class Ethicity_detailed(Enum):
     unknown = u"unknown"
@@ -389,6 +405,7 @@ class Ethicity_detailed(Enum):
     arab = u"arab"
     other = u"other"
 
+
 class Marital_status(Enum):
     unknown = u"unknown"
     married = u"married"
@@ -397,6 +414,7 @@ class Marital_status(Enum):
     widowed = u"widowed"
     separated = u"separated"
     divorced = u"divorced"
+
 
 class Standard_occ_class(Enum):
     unknown = u"unknown"

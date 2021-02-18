@@ -11,7 +11,9 @@ class child_benefit(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("child_benefit_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members("child_benefit_reported", period, options=[DIVIDE])
+        )
 
 
 class ESA_income(Variable):
@@ -22,7 +24,9 @@ class ESA_income(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("ESA_income_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members("ESA_income_reported", period, options=[DIVIDE])
+        )
 
 
 class housing_benefit(Variable):
@@ -33,7 +37,11 @@ class housing_benefit(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("housing_benefit_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members(
+                "housing_benefit_reported", period, options=[DIVIDE]
+            )
+        )
 
 
 class income_support(Variable):
@@ -44,7 +52,11 @@ class income_support(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("income_support_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members(
+                "income_support_reported", period, options=[DIVIDE]
+            )
+        )
 
 
 class JSA_income(Variable):
@@ -55,7 +67,9 @@ class JSA_income(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("JSA_income_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members("JSA_income_reported", period, options=[DIVIDE])
+        )
 
 
 class pension_credit(Variable):
@@ -66,7 +80,11 @@ class pension_credit(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("pension_credit_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members(
+                "pension_credit_reported", period, options=[DIVIDE]
+            )
+        )
 
 
 class working_tax_credit(Variable):
@@ -77,7 +95,11 @@ class working_tax_credit(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("working_tax_credit_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members(
+                "working_tax_credit_reported", period, options=[DIVIDE]
+            )
+        )
 
 
 class child_tax_credit(Variable):
@@ -88,7 +110,11 @@ class child_tax_credit(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("child_tax_credit_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members(
+                "child_tax_credit_reported", period, options=[DIVIDE]
+            )
+        )
 
 
 class universal_credit(Variable):
@@ -99,7 +125,11 @@ class universal_credit(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("universal_credit_reported", period, options=[DIVIDE]))
+        return benunit.sum(
+            benunit.members(
+                "universal_credit_reported", period, options=[DIVIDE]
+            )
+        )
 
 
 class reported_benefits(Reform):

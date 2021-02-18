@@ -3,7 +3,7 @@
   absolute_error_margin: 0
   input:
     PIP_DL_reported:
-      2020-01-06:
+      2020:
         80
   output:
     is_disabled_for_ubi: true

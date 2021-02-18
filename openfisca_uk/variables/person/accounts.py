@@ -79,21 +79,24 @@ class dividend_income(Variable):
         return add(
             person,
             period,
-            map(lambda name : name + "_income", DIVIDEND_ACCOUNTS),
+            map(lambda name: name + "_income", DIVIDEND_ACCOUNTS),
         )
+
 
 class taxable_dividend_income(Variable):
     value_type = float
     entity = Person
-    label = u'Taxable income from dividends'
+    label = u"Taxable income from dividends"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         total = np.zeros_like(person("current_account_income", period))
         for account in DIVIDEND_ACCOUNTS:
-            total += person(account + "_income", period) * person(account + "_pre_tax", period)
+            total += person(account + "_income", period) * person(
+                account + "_pre_tax", period
+            )
         return total
-        
+
 
 class savings_interest_income(Variable):
     value_type = float
@@ -105,20 +108,24 @@ class savings_interest_income(Variable):
         return add(
             person,
             period,
-            map(lambda name : name + "_income", INTEREST_ACCOUNTS),
+            map(lambda name: name + "_income", INTEREST_ACCOUNTS),
         )
+
 
 class taxable_savings_interest_income(Variable):
     value_type = float
     entity = Person
-    label = u'Taxable income from dividends'
+    label = u"Taxable income from dividends"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         total = np.zeros_like(person("current_account_income", period))
         for account in INTEREST_ACCOUNTS:
-            total += person(account + "_income", period) * person(account + "_pre_tax", period)
+            total += person(account + "_income", period) * person(
+                account + "_pre_tax", period
+            )
         return total
+
 
 class current_account_value(Variable):
     value_type = float

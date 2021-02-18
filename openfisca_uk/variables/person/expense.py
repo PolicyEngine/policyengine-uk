@@ -136,8 +136,9 @@ class salary_sacrifice_pension(Variable):
     label = u"Amount paid as a part of a Salary Sacrifice Pension scheme"
     definition_period = YEAR
 
+
 class fuel_expenses(Variable):
     value_type = float
     entity = Person
-    label = u'Fuel expenses included in gross pay'
+    label = u"Fuel expenses included in gross pay"
     definition_period = YEAR

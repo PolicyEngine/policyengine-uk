@@ -270,7 +270,9 @@ class SurveySim:
 
 
 class PopulationSim:
-    def __init__(self, *reforms, frs_data=None, input_period="2020", use_microdf=False):
+    def __init__(
+        self, *reforms, frs_data=None, input_period="2020", use_microdf=False
+    ):
         self.reforms = reforms
         self.use_microdf = use_microdf
         self.input_period = input_period
@@ -302,11 +304,15 @@ class PopulationSim:
         ):  # person level -> (sum by group entity) -> group entity level
             return self.populations[target_entity].sum(arr)
         else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
-            person_shares = self.populations[entity].project(arr / self.populations[entity].nb_persons())
+            person_shares = self.populations[entity].project(
+                arr / self.populations[entity].nb_persons()
+            )
             entity_level = self.populations[target_entity].sum(person_shares)
             return entity_level
 
-    def calc_agg(self, var, period="2020", average=False, count=False, **kwargs):
+    def calc_agg(
+        self, var, period="2020", average=False, count=False, **kwargs
+    ):
         result = self.calc(var, period=period, **kwargs)
         entity = self.get_entity(var)
         if average:
@@ -323,7 +329,7 @@ class PopulationSim:
         share_among_members=False,
         sum_by=None,
         average_by=None,
-        map_to=None
+        map_to=None,
     ):
         try:
             result = self.simulation.calculate(var, period)
@@ -354,7 +360,14 @@ class PopulationSim:
         elif map_to is not None:
             result = self.map_to(result, entity=entity, target_entity=map_to)
             entity = map_to
-        if not share_among_members and not sum_by and hasattr(self.simulation.tax_benefit_system.variables[var], "possible_values"):
+        if (
+            not share_among_members
+            and not sum_by
+            and hasattr(
+                self.simulation.tax_benefit_system.variables[var],
+                "possible_values",
+            )
+        ):
             return result.decode_to_str()
         if self.use_microdf and self.weight_vars is not None:
             return MicroSeries(result, weights=self.weight_vars[entity])
@@ -445,7 +458,9 @@ class PopulationSim:
         variables = self.simulation.tax_benefit_system.variables.keys()
         entity_variables = list(
             filter(
-                lambda x: self.simulation.tax_benefit_system.variables[x].entity.key
+                lambda x: self.simulation.tax_benefit_system.variables[
+                    x
+                ].entity.key
                 == entity,
                 variables,
             )

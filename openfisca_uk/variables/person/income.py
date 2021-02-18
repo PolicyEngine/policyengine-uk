@@ -123,10 +123,11 @@ class holiday_pay(Variable):
     label = u"Holiday pay"
     definition_period = YEAR
 
+
 class odd_job_income(Variable):
     value_type = float
     entity = Person
-    label = u'Income from odd jobs'
+    label = u"Income from odd jobs"
     definition_period = YEAR
 
 
@@ -224,7 +225,7 @@ class benefits_modelling(Variable):
             "AA",
             "DLA_M",
             "DLA_SC",
-            "state_pension"
+            "state_pension",
         ]
         difference = sum(
             map(
@@ -292,7 +293,9 @@ class person_household_net_income(Variable):
     def formula(person, period, parameters):
         return person.household("household_net_income", period)
 
+
 # Enums
+
 
 class Reason_for_absence(Enum):
     unknown = u"unknown"
@@ -307,12 +310,14 @@ class Reason_for_absence(Enum):
     parental_leave = u"parental_leave"
     other = u"other"
 
+
 class Absence_pay(Enum):
     unknown = u"unknown"
     full_pay = u"full_pay"
     over_half_pay = u"over_half_pay"
     under_half_pay = u"under_half_pay"
     no_pay = u"no_pay"
+
 
 class Employment_status(Enum):
     unknown = u"unknown"

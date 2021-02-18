@@ -37,4 +37,4 @@ class child_benefit(Variable):
             max_(num_children - 1, 0)
             * parameters(period).benefits.child_benefit.amount_additional
         )
-        return (eldest_amount + additional_amount)
+        return eldest_amount + additional_amount

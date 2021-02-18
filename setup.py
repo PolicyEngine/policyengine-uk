@@ -33,7 +33,7 @@ setup(
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
         "openfisca-survey-manager",
         "frs",
-        "rdbl"
+        "rdbl",
     ],
     extras_require={
         "dev": [

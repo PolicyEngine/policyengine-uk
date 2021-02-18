@@ -49,13 +49,14 @@ class tenure(Variable):
     entity = Household
     possible_values = Tenure
     default_value = Tenure.rented
-    label = u'The type of housing tenure'
+    label = u"The type of housing tenure"
     definition_period = ETERNITY
+
 
 class total_housing_costs(Variable):
     value_type = float
     entity = Household
-    label = u'Total housing costs (reported)'
+    label = u"Total housing costs (reported)"
     definition_period = YEAR
 
 
@@ -127,25 +128,31 @@ class council_tax(Variable):
 class council_tax_bill(Variable):
     value_type = float
     entity = Household
-    label = u'Council Tax bill, after discounts'
+    label = u"Council Tax bill, after discounts"
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return (1 - household("council_tax_discount", period)) * (household("council_tax", period))
+        return (1 - household("council_tax_discount", period)) * (
+            household("council_tax", period)
+        )
+
 
 class council_tax_discount(Variable):
     value_type = float
     entity = Household
-    label = u'Discount for Council Tax'
+    label = u"Discount for Council Tax"
     definition_period = YEAR
+
 
 class council_tax_benefit(Variable):
     value_type = float
     entity = Household
-    label = u'Council Tax Benefit'
+    label = u"Council Tax Benefit"
     definition_period = YEAR
 
+
 # Enums
+
 
 class Council_tax_band(Enum):
     unknown = u"unknown"
@@ -160,6 +167,7 @@ class Council_tax_band(Enum):
     I = u"I"
     reported_unknown = u"unknown"
 
+
 class Mortgage_type(Enum):
     unknown = u"unknown"
     endowment = u"endowment"
@@ -171,11 +179,13 @@ class Mortgage_type(Enum):
     interest_only_non_inv_linked = u"interest_only_non_inv_linked"
     other = u"other"
 
+
 class Furnished(Enum):
     unknown = u"unknown"
     furnished = u"furnished"
     partially_furnished = u"partially_furnished"
     unfirnished = u"unfirnished"
+
 
 class Landlord(Enum):
     unknown = u"unknown"

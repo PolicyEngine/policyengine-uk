@@ -2,12 +2,14 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class Country(Enum):
     unknown = u"unknown"
     england = u"england"
     wales = u"wales"
     scotland = u"scotland"
     northern_ireland = u"northern_ireland"
+
 
 class country(Variable):
     value_type = Enum
@@ -179,9 +181,7 @@ class in_poverty_ahc(Variable):
 
     def formula(household, period, parameters):
         return (
-            household(
-                "equiv_household_net_income_ahc", period
-            )
+            household("equiv_household_net_income_ahc", period)
             < parameters(period).poverty.absolute_poverty_threshold_ahc * 52
         )
 
@@ -243,7 +243,9 @@ class poverty_gap_ahc(Variable):
         )
         return max_(0, household("poverty_line_ahc", period) - net_income)
 
+
 # Enums
+
 
 class household_type(Enum):
     unknown = u"unknown"
