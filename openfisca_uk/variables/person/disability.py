@@ -172,7 +172,6 @@ class is_disabled_for_ubi(Variable):
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
-            "ESA_contrib_reported",
             "incapacity_benefit_reported",
             "SDA_reported",
             "AA_reported",
@@ -181,6 +180,5 @@ class is_disabled_for_ubi(Variable):
             "IIDB_reported",
             "PIP_DL_reported",
             "PIP_M_reported",
-            "ESA_income_reported",
         ]
         return add(person, period, QUALIFYING_BENEFITS, options=[ADD]) > 0
