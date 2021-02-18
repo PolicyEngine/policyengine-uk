@@ -34,6 +34,40 @@ ACCOUNTS = [
     "post_office_card_account",
 ]
 
+INTEREST_ACCOUNTS = [
+    "current_account",
+    "NSI_direct_saver",
+    "NSI_investment",
+    "savings_and_investment",
+    "GGES",
+    "PEP",
+    "NS_capital_bonds",
+    "ILNSC",
+    "FINSC",
+    "PGB",
+    "SAYE",
+    "premium_bonds",
+    "NS_income_bonds",
+    "NS_deposit_bonds",
+    "first_option_bonds",
+    "yearly_plan",
+    "ISA",
+    "profit_sharing",
+    "CSOP",
+    "guaranteed_income",
+    "GEB",
+    "basic_account",
+    "EPNL",
+    "post_office_card_account",
+]
+
+DIVIDEND_ACCOUNTS = [
+    "unit_or_inv_trusts",
+    "credit_unions",
+    "stocks_and_shares",
+    "member_of_share_club",
+]
+
 
 class dividend_income(Variable):
     value_type = float
@@ -45,13 +79,21 @@ class dividend_income(Variable):
         return add(
             person,
             period,
-            [
-                "unit_or_inv_trusts_income",
-                "credit_unions_income",
-                "stocks_and_shares_income",
-            ],
+            map(lambda name : name + "_income", DIVIDEND_ACCOUNTS),
         )
 
+class taxable_dividend_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Taxable income from dividends'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        total = np.zeros_like(person("current_account_income", period))
+        for account in DIVIDEND_ACCOUNTS:
+            total += person(account + "_income", period) * person(account + "_pre_tax", period)
+        return total
+        
 
 class savings_interest_income(Variable):
     value_type = float
@@ -60,11 +102,23 @@ class savings_interest_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        accounts = map(lambda name: name + "_income", ACCOUNTS)
-        return add(person, period, accounts) - person(
-            "dividend_income", period
+        return add(
+            person,
+            period,
+            map(lambda name : name + "_income", INTEREST_ACCOUNTS),
         )
 
+class taxable_savings_interest_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Taxable income from dividends'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        total = np.zeros_like(person("current_account_income", period))
+        for account in INTEREST_ACCOUNTS:
+            total += person(account + "_income", period) * person(account + "_pre_tax", period)
+        return total
 
 class current_account_value(Variable):
     value_type = float

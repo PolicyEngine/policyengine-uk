@@ -10,6 +10,7 @@ from openfisca_survey_manager.scenarios import AbstractSurveyScenario
 import numpy as np
 import os
 import warnings
+from microdf import MicroSeries, MicroDataFrame
 
 try:
     import frs
@@ -269,14 +270,16 @@ class SurveySim:
 
 
 class PopulationSim:
-    def __init__(self, *reforms, frs_data=None, input_period="2020"):
+    def __init__(self, *reforms, frs_data=None, input_period="2020", use_microdf=False):
         self.reforms = reforms
+        self.use_microdf = use_microdf
         self.input_period = input_period
         self.simulation = self.load_frs(frs_data=frs_data)
         self.populations = self.simulation.populations
         self.benunits = self.simulation.populations["benunit"]
         self.households = self.simulation.populations["household"]
         self.variables = self.simulation.tax_benefit_system.variables
+        self.weight_vars = None
         self.weight_vars = dict(
             person=self.calc("household_weight", copy_to_person=True),
             benunit=self.calc("benunit_weight"),
@@ -299,7 +302,7 @@ class PopulationSim:
         ):  # person level -> (sum by group entity) -> group entity level
             return self.populations[target_entity].sum(arr)
         else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
-            person_shares = self.populations[entity].project(arr) / self.populations[entity].nb_persons()
+            person_shares = self.populations[entity].project(arr / self.populations[entity].nb_persons())
             entity_level = self.populations[target_entity].sum(person_shares)
             return entity_level
 
@@ -338,7 +341,7 @@ class PopulationSim:
             result = population.project(result)
             entity = copy_to_person
         elif share_among_members and entity != "person":
-            result = population.project(result) / population.nb_persons()
+            result = population.project(result / population.nb_persons())
             entity = share_among_members
         elif sum_by is not None and entity == "person":
             result = self.populations[sum_by].sum(result)
@@ -349,13 +352,20 @@ class PopulationSim:
                 / self.populations[average_by].nb_persons()
             )
         elif map_to is not None:
-            return self.map_to(result, entity=entity, target_entity=map_to)
+            result = self.map_to(result, entity=entity, target_entity=map_to)
+            entity = map_to
+        if not share_among_members and not sum_by and hasattr(self.simulation.tax_benefit_system.variables[var], "possible_values"):
+            return result.decode_to_str()
+        if self.use_microdf and self.weight_vars is not None:
+            return MicroSeries(result, weights=self.weight_vars[entity])
         return result
 
-    def df(self, cols, **kwargs):
+    def df(self, cols, map_to="person"):
         df = {}
         for var in cols:
-            df[var] = self.calc(var, **kwargs)
+            df[var] = self.calc(var, map_to=map_to)
+        if self.use_microdf:
+            return MicroDataFrame(df, weights=self.weight_vars[map_to])
         return pd.DataFrame(df)
 
     def load_frs(self, frs_data=None, verbose=False, change={}):
@@ -408,7 +418,7 @@ class PopulationSim:
                             np.array(input_file[column]),
                         )
                     except Exception as e:
-                        skipped += [column]
+                        skipped += [e]
         if skipped and verbose:
             print(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"

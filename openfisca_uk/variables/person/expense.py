@@ -2,13 +2,6 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 
 
-class pension_deductions(Variable):
-    value_type = float
-    entity = Person
-    label = u"Pension contributions"
-    definition_period = YEAR
-
-
 class childcare_cost(Variable):
     value_type = float
     entity = Person
@@ -141,4 +134,10 @@ class salary_sacrifice_pension(Variable):
     value_type = float
     entity = Person
     label = u"Amount paid as a part of a Salary Sacrifice Pension scheme"
+    definition_period = YEAR
+
+class fuel_expenses(Variable):
+    value_type = float
+    entity = Person
+    label = u'Fuel expenses included in gross pay'
     definition_period = YEAR

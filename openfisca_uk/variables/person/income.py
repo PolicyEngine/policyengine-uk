@@ -47,7 +47,7 @@ class pension_income(Variable):
     definition_period = YEAR
 
 
-class free_tv_license_value(Variable):
+class free_TV_license_value(Variable):
     value_type = float
     entity = Person
     label = u"Value of free TV licenses"
@@ -121,6 +121,12 @@ class holiday_pay(Variable):
     value_type = float
     entity = Person
     label = u"Holiday pay"
+    definition_period = YEAR
+
+class odd_job_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income from odd jobs'
     definition_period = YEAR
 
 
@@ -218,6 +224,7 @@ class benefits_modelling(Variable):
             "AA",
             "DLA_M",
             "DLA_SC",
+            "state_pension"
         ]
         difference = sum(
             map(
@@ -245,18 +252,13 @@ class gross_income(Variable):
         COMPONENTS = [
             "earnings",
             "profit",
-            "state_pension",
             "pension_income",
             "savings_interest_income",
             "rental_income",
-            "SSP",
-            "SPP",
-            "SMP",
-            "SHPP",
-            "holiday_pay",
             "dividend_income",
             "total_benefits",
             "benefits_modelling",
+            "misc_income",
         ]
         return add(person, period, COMPONENTS, options=[MATCH])
 
@@ -289,3 +291,42 @@ class person_household_net_income(Variable):
 
     def formula(person, period, parameters):
         return person.household("household_net_income", period)
+
+# Enums
+
+class Reason_for_absence(Enum):
+    unknown = u"unknown"
+    pattern_of_shifts = u"pattern_of_shifts"
+    illness_or_accident = u"illness_or_accident"
+    holiday = u"holiday"
+    strike = u"strike"
+    laid_off = u"laid_off"
+    maternity_leave = u"maternity_leave"
+    paternity_leave = u"paternity_leave"
+    compassionate_leave = u"compassionate_leave"
+    parental_leave = u"parental_leave"
+    other = u"other"
+
+class Absence_pay(Enum):
+    unknown = u"unknown"
+    full_pay = u"full_pay"
+    over_half_pay = u"over_half_pay"
+    under_half_pay = u"under_half_pay"
+    no_pay = u"no_pay"
+
+class Employment_status(Enum):
+    unknown = u"unknown"
+    self_employed = u"self_employed"
+    FT_employee = u"FT_employee"
+    PT_employee = u"PT_employee"
+    FT_employee_sick = u"FT_employee_sick"
+    PT_employee_sick = u"PT_employee_sick"
+    industrial_action = u"industrial_action"
+    unemployed = u"unemployed"
+    work_govt_training = u"work_govt_training"
+    retired = u"retired"
+    unocupied_under_SP_age = u"unocupied_under_SP_age"
+    temp_sick = u"temp_sick"
+    long_term_sick = u"long_term_sick"
+    student = u"student"
+    unpaid_family_worker = u"unpaid_family_worker"

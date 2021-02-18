@@ -19,7 +19,7 @@
   input:
     earnings: 23415
     pension_deductions: 804
-    country: SCOTLAND
+    country: scotland
   output:
     income_tax: 2000
     NI: 1670
@@ -30,7 +30,7 @@
   input:
     earnings: 23415
     pension_deductions: 804
-    country: ENGLAND
+    country: england
   output:
     income_tax: 2021
     NI: 1670
@@ -40,7 +40,7 @@
   input:
     earnings: 23415
     pension_deductions: 804
-    country: ENGLAND
+    country: england
   output:
     income_tax: 2021
     NI: 1670

@@ -37,6 +37,4 @@ class child_benefit(Variable):
             max_(num_children - 1, 0)
             * parameters(period).benefits.child_benefit.amount_additional
         )
-        return (eldest_amount + additional_amount) * (
-            benunit("benunit_child_benefit_reported", period.this_year) > 0
-        )
+        return (eldest_amount + additional_amount)

@@ -16,16 +16,17 @@ class taxable_income(Variable):
             "SSP",
             "SMP",
             "SPP",
-            "SHPP",
             "holiday_pay",
-            "state_pension",
-            "pension_income",
             "rental_income",
             "BSP",
             "ESA_contrib",
             "JSA_contrib",
-            "savings_interest_income",
-            "dividend_income",
+            "taxable_savings_interest_income",
+            "taxable_dividend_income",
+            "state_pension",
+            "pension_income",
+            "carers_allowance",
+            "odd_job_income"
         ]
         return max_(0, add(person, period, COMPONENTS, options=[MATCH]))
 
@@ -86,8 +87,7 @@ class marriage_allowance(Variable):
         return min_(
             max_amount,
             spousal_personal_allowance
-            * person.benunit("benunit_is_married", period),
-        )
+        ) * person.benunit("benunit_is_married", period) * person("is_adult", period),
 
 
 class marriage_allowance_deduction(Variable):
@@ -137,15 +137,8 @@ class personal_savings_allowance_deduction(Variable):
     def formula(person, period, parameters):
         return min_(
             person("personal_savings_allowance", period),
-            max_(0, person("savings_interest_income", period)),
+            max_(0, person("taxable_savings_interest_income", period)),
         )
-
-
-class ISA_deduction(Variable):
-    value_type = float
-    entity = Person
-    label = u"Deduction for tax-free ISA interest"
-    definition_period = YEAR
 
 
 class savings_starter_allowance_deduction(Variable):
@@ -157,7 +150,7 @@ class savings_starter_allowance_deduction(Variable):
     def formula(person, period, parameters):
         return min_(
             person("savings_starter_allowance", period),
-            max_(0, person("savings_interest_income", period)),
+            max_(0, person("taxable_savings_interest_income", period)),
         )
 
 
@@ -190,7 +183,7 @@ class trading_deduction(Variable):
         trading_allowance = parameters(
             period
         ).taxes.income_tax.allowances.trading_allowance
-        return max_(0, min_(person("misc_income", period), trading_allowance))
+        return max_(0, min_(person("profit", period), trading_allowance)) * (person("profit", period) < 1000)
 
 
 class rental_deduction(Variable):
@@ -217,7 +210,7 @@ class dividend_deduction(Variable):
             period
         ).taxes.income_tax.allowances.dividend_allowance
         return max_(
-            0, min_(dividend_allowance, person("dividend_income", period))
+            0, min_(dividend_allowance, person("taxable_dividend_income", period))
         )
 
 
@@ -229,7 +222,7 @@ class dividend_income_tax(Variable):
 
     def formula(person, period, parameters):
         rates = parameters(period).taxes.income_tax.rates
-        taxable_dividends = person("dividend_income", period) - person(
+        taxable_dividends = person("taxable_dividend_income", period) - person(
             "dividend_deduction", period
         )
         other_income = person("taxable_income", period)
@@ -338,12 +331,56 @@ class taxable_income_deductions(Variable):
             "savings_starter_allowance_deduction",
             "personal_savings_allowance_deduction",
             "personal_allowance_deduction",
-            "marriage_allowance_deduction",
-            "ISA_deduction",
-            "private_pension_deduction",
         ]
         total_deductions = add(person, period, DEDUCTIBLE)
         return max_(0, total_deductions)
+
+class basic_rate_income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Basic rate tax'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        income_tax = parameters(period).taxes.income_tax
+        applicable_amount = person("taxable_income", period) - person(
+            "taxable_income_deductions", period
+        )
+        floor = income_tax.rates.uk.thresholds[0]
+        ceil = income_tax.rates.uk.thresholds[1]
+        rate = income_tax.rates.uk.rates[0]
+        return (min_(applicable_amount, ceil) - floor) * rate
+
+class higher_rate_income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Basic rate tax'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        income_tax = parameters(period).taxes.income_tax
+        applicable_amount = person("taxable_income", period) - person(
+            "taxable_income_deductions", period
+        )
+        floor = income_tax.rates.uk.thresholds[1]
+        ceil = income_tax.rates.uk.thresholds[2]
+        rate = income_tax.rates.uk.rates[1]
+        return max_(0, min_(applicable_amount, ceil) - floor) * rate
+
+class additional_rate_income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Basic rate tax'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        income_tax = parameters(period).taxes.income_tax
+        applicable_amount = max_(0, person("taxable_income", period) - person(
+            "taxable_income_deductions", period
+        ))
+        floor = income_tax.rates.uk.thresholds[2]
+        rate = income_tax.rates.uk.rates[2]
+        return max_(0, applicable_amount - floor) * rate
 
 
 class income_tax(Variable):
@@ -358,7 +395,7 @@ class income_tax(Variable):
             "taxable_income_deductions", period
         )
         country = person.household("country", period)
-        is_in_scotland = country == country.possible_values.SCOTLAND
+        is_in_scotland = country == country.possible_values.scotland
         base_income_tax = where(
             is_in_scotland,
             income_tax.rates.scotland.calc(applicable_amount),

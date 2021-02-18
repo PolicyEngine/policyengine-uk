@@ -55,7 +55,7 @@ class JSA_income(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("JSA_income", period, options=[DIVIDE]))
+        return benunit.sum(benunit.members("JSA_income_reported", period, options=[DIVIDE]))
 
 
 class pension_credit(Variable):
@@ -66,7 +66,7 @@ class pension_credit(Variable):
     set_input = set_input_divide_by_period
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("pension_credit", period, options=[DIVIDE]))
+        return benunit.sum(benunit.members("pension_credit_reported", period, options=[DIVIDE]))
 
 
 class working_tax_credit(Variable):

@@ -2,18 +2,17 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
-
 class Country(Enum):
-    SCOTLAND = u"Scotland"
-    ENGLAND = u"England"
-    WALES = u"Wales"
-    NI = u"Northern Ireland"
-
+    unknown = u"unknown"
+    england = u"england"
+    wales = u"wales"
+    scotland = u"scotland"
+    northern_ireland = u"northern_ireland"
 
 class country(Variable):
     value_type = Enum
     possible_values = Country
-    default_value = Country.ENGLAND
+    default_value = Country.england
     entity = Household
     label = u"Country of the UK"
     definition_period = ETERNITY
@@ -34,24 +33,24 @@ class household_id(Variable):
 
 
 class Region(Enum):
-    NORTH_EAST = u"North East"
-    NORTH_WEST = u"North West"
-    YORKSHIRE = u"Yorkshire and the Humber"
-    EAST_MIDLANDS = u"East Midlands"
-    WEST_MIDLANDS = u"West Midlands"
-    EAST_OF_ENGLAND = u"East of England"
-    LONDON = u"London"
-    SOUTH_EAST = u"South East"
-    SOUTH_WEST = u"South West"
-    WALES = u"Wales"
-    SCOTLAND = u"Scotland"
-    NORTHERN_IRELAND = u"Northern Ireland"
+    north_east = u"north_east"
+    north_west = u"north_west"
+    yorkshire = u"yorkshire"
+    east_midlands = u"east_midlands"
+    west_midlands = u"west_midlands"
+    east_of_england = u"east_of_england"
+    london = u"london"
+    south_east = u"south_east"
+    south_west = u"south_west"
+    wales = u"wales"
+    scotland = u"scotland"
+    northern_ireland = u"northern_ireland"
 
 
 class region(Variable):
     value_type = Enum
     possible_values = Region
-    default_value = Region.LONDON
+    default_value = Region.london
     entity = Household
     label = u"Region of the UK"
     definition_period = ETERNITY
@@ -243,3 +242,12 @@ class poverty_gap_ahc(Variable):
             "household_net_income_ahc", period, options=[DIVIDE]
         )
         return max_(0, household("poverty_line_ahc", period) - net_income)
+
+# Enums
+
+class household_type(Enum):
+    unknown = u"unknown"
+    house = u"house"
+    flat = u"flat"
+    room = u"room"
+    other = u"other"
