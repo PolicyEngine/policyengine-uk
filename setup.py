@@ -31,6 +31,8 @@ setup(
         "pyyaml==5.3.1",
         "pytest==5.4.3",
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
+        "frs @ git+https://github.com/nikhilwoodruff/frs",
+        "microdf @ git+https://github.com/pslmodels/microdf"
     ],
     extras_require={
         "dev": [
@@ -38,7 +40,6 @@ setup(
             "flake8 >=3.5.0,<3.8.0",
             "flake8-print",
             "pycodestyle >=2.3.0,<2.6.0",  # To avoid incompatibility with flake
-            "frs==0.0.1",
         ]
     },
     packages=find_packages(),
