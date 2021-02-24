@@ -252,7 +252,7 @@ class PopulationSim:
         df = {}
         for var in cols:
             df[var] = self.calc(var, map_to=map_to)
-        return mdf.MicroDataFrame(df, weights=map_to)
+        return mdf.MicroDataFrame(df, weights=self.weight_vars[map_to])
 
     def load_frs(self, frs_data=None, verbose=False, change={}):
         """
