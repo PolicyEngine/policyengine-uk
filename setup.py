@@ -32,7 +32,7 @@ setup(
         "pytest==5.4.3",
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
         "frs @ git+https://github.com/nikhilwoodruff/frs",
-        "microdf @ git+https://github.com/pslmodels/microdf"
+        "microdf @ git+https://github.com/pslmodels/microdf",
     ],
     extras_require={
         "dev": [

@@ -167,7 +167,9 @@ class IndividualSim:
 
 
 class PopulationSim:
-    def __init__(self, *reforms, frs_data=None, input_period="2020", use_microdf=False):
+    def __init__(
+        self, *reforms, frs_data=None, input_period="2020", use_microdf=False
+    ):
         self.reforms = reforms
         self.input_period = input_period
         self.model = self.load_frs(frs_data=frs_data)
@@ -237,7 +239,9 @@ class PopulationSim:
         result = self.map_to(result, entity=entity, target_entity=map_to)
         if not self.use_microdf or self.weight_vars is None:
             return result
-        return mdf.MicroSeries(result, weights=self.weight_vars[map_to or entity])
+        return mdf.MicroSeries(
+            result, weights=self.weight_vars[map_to or entity]
+        )
 
     def decache(self, var, period):
         self.model.get_variable_population(var).get_holder(var).delete_arrays(
