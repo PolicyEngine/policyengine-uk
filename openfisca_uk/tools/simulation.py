@@ -8,6 +8,7 @@ from openfisca_uk.tools.internals import VariableGraph
 import numpy as np
 import os
 import warnings
+import microdf as mdf
 
 try:
     import frs
@@ -166,11 +167,18 @@ class IndividualSim:
 
 
 class PopulationSim:
-    def __init__(self, *reforms, frs_data=None, input_period="2020"):
+    def __init__(self, *reforms, frs_data=None, input_period="2020", use_microdf=False):
         self.reforms = reforms
         self.input_period = input_period
         self.model = self.load_frs(frs_data=frs_data)
         self.variable_graph = VariableGraph(self.model.tax_benefit_system)
+        self.use_microdf = use_microdf
+        self.weight_vars = None
+        self.weight_vars = dict(
+            person=self.calc("household_weight", map_to="person"),
+            benunit=self.calc("benunit_weight"),
+            household=self.calc("household_weight"),
+        )
 
     def map_to(self, arr, entity="person", target_entity="benunit"):
         LEVELS = {"person": 1, "benunit": 2, "household": 3}
@@ -226,7 +234,10 @@ class PopulationSim:
                     )
                 result = self.model.calculate_divide(var, period)
         entity = self.model.tax_benefit_system.variables[var].entity.key
-        return self.map_to(result, entity=entity, target_entity=map_to)
+        result = self.map_to(result, entity=entity, target_entity=map_to)
+        if not self.use_microdf or self.weight_vars is None:
+            return result
+        return mdf.MicroSeries(result, weights=self.weight_vars[map_to or entity])
 
     def decache(self, var, period):
         self.model.get_variable_population(var).get_holder(var).delete_arrays(
@@ -237,7 +248,7 @@ class PopulationSim:
         df = {}
         for var in cols:
             df[var] = self.calc(var, map_to=map_to)
-        return pd.DataFrame(df)
+        return mdf.MicroDataFrame(df, weights=map_to)
 
     def load_frs(self, frs_data=None, verbose=False, change={}):
         """
