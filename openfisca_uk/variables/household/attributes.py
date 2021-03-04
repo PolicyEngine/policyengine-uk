@@ -185,6 +185,30 @@ class in_poverty_ahc(Variable):
         )
 
 
+class in_deep_poverty_bhc(Variable):
+    value_type = bool
+    entity = Household
+    label = u"Whether the household is in deep absolute poverty (below half the poverty line), before housing costs"
+    definition_period = WEEK
+
+    def formula(household, period, parameters):
+        return household(
+            "equiv_household_net_income", period, options=[DIVIDE]
+        ) < (parameters(period).poverty.absolute_poverty_threshold_bhc / 2)
+
+
+class in_deep_poverty_ahc(Variable):
+    value_type = bool
+    entity = Household
+    label = u"Whether the household is in deep absolute poverty (below half the poverty line), after housing costs"
+    definition_period = WEEK
+
+    def formula(household, period, parameters):
+        return household(
+            "equiv_household_net_income_ahc", period, options=[DIVIDE]
+        ) < (parameters(period).poverty.absolute_poverty_threshold_ahc / 2)
+
+
 class poverty_line_bhc(Variable):
     value_type = float
     entity = Household
