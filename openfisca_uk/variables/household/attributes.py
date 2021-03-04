@@ -240,7 +240,7 @@ class poverty_line_ahc(Variable):
 class poverty_gap_bhc(Variable):
     value_type = float
     entity = Household
-    label = u"Positive financial gap between net household income and the poverty line"
+    label = u"Positive financial gap between net household income and the poverty line, before housing costs"
     definition_period = WEEK
 
     def formula(household, period, parameters):
@@ -261,3 +261,29 @@ class poverty_gap_ahc(Variable):
             "household_net_income_ahc", period, options=[DIVIDE]
         )
         return max_(0, household("poverty_line_ahc", period) - net_income)
+
+
+class squared_poverty_gap_bhc(Variable):
+    value_type = float
+    entity = Household
+    label = u"Squared positive financial gap between net household income and the poverty line, before housing costs"
+    definition_period = WEEK
+
+    def formula(household, period, parameters):
+        net_income = household(
+            "household_net_income", period, options=[DIVIDE]
+        )
+        return max_(0, household("poverty_line_bhc", period) - net_income) ** 2
+
+
+class squared_poverty_gap_ahc(Variable):
+    value_type = float
+    entity = Household
+    label = u"Squared positive financial gap between net household income and the poverty line, after housing costs"
+    definition_period = WEEK
+
+    def formula(household, period, parameters):
+        net_income = household(
+            "household_net_income_ahc", period, options=[DIVIDE]
+        )
+        return max_(0, household("poverty_line_ahc", period) - net_income) ** 2
