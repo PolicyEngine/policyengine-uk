@@ -11,8 +11,16 @@ dist
 .pydevproject
 .settings
 .spyderproject
+.vscode/settings.json
+.vscode/launch.json
 
 # OS stuff
 
 .DS_Store
 *~
+
+# Data storage
+
+person.csv
+benunit.csv
+household.csv
