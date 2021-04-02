@@ -5,7 +5,9 @@ import openfisca_uk
 from openfisca_uk.entities import *
 from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_uk.microdata.frs.dataset import FRSDataset
+from openfisca_uk.microdata.spi.dataset import SPIDataset
 from openfisca_uk.microdata.frs.config import from_FRS
+from openfisca_uk.microdata.spi.config import from_SPI
 from openfisca_core.model_api import *
 import numpy as np
 import microdf as mdf
@@ -13,10 +15,11 @@ import microdf as mdf
 
 class Microsimulation:
     def __init__(
-        self, mode: str = "frs", year: int = 2018, *reforms: Tuple[Reform]
+        self, mode: str = "frs", year: int = 2018, input_year: int = None, *reforms: Tuple[Reform]
     ):
         self.mode = mode
         self.year = year
+        self.input_year = input_year or year
         self.reforms = reforms
         if mode == "frs":
             self.reforms = from_FRS, *self.reforms
@@ -26,6 +29,15 @@ class Microsimulation:
                 benunit=self.calc("B_GROSS4", weighted=False),
                 household=self.calc("H_GROSS4", weighted=False)
             )
+        elif mode == "spi":
+            self.reforms = from_SPI, *self.reforms
+            self.simulation = self.load_dataset(SPIDataset(year).entity_dfs)
+            self.entity_weights = dict(
+                person=self.calc("FACT", weighted=False),
+                benunit=self.calc("FACT", weighted=False),
+                household=self.calc("FACT", weighted=False)
+            )
+
     def map_to(self, arr: np.array, entity: str, target_entity: str, how: str = None):
         entity_pop = self.simulation.populations[entity]
         target_pop = self.simulation.populations[target_entity]
@@ -43,7 +55,7 @@ class Microsimulation:
 
     def calc(self, var: str, period: Union[str, int] = None, weighted: bool = True, map_to: str = None, how: str = None):
         if period is None:
-            period = self.year
+            period = self.input_year
         arr = self.simulation.calculate(var, period)
         if not weighted:
             return arr
@@ -55,7 +67,7 @@ class Microsimulation:
             return mdf.MicroSeries(arr, weights=self.entity_weights[entity])
 
     def load_dataset(
-        self, entity_dfs: Tuple[pd.DataFrame], verbose: bool = False
+        self, entity_dfs: Tuple[pd.DataFrame], verbose: bool = True
     ) -> None:
         person, benunit, household = entity_dfs
         system = openfisca_uk.CountryTaxBenefitSystem()
@@ -106,16 +118,16 @@ class Microsimulation:
                             column
                         ).definition_period
                         if def_period in ["eternity", "year"]:
-                            input_periods = [self.year]
+                            input_periods = [self.input_year]
                         else:
                             input_periods = period(
-                                self.year
+                                self.input_year
                             ).get_subperiods(def_period)
                         for subperiod in input_periods:
                             model.set_input(
                                 column, subperiod, np.array(input_file[column])
                             )
-                    except Exception as e:
+                    except Exception:
                         skipped += [column]
         if skipped and verbose:
             print(
