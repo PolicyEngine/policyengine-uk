@@ -1,0 +1,7 @@
+description: Starter rate limit for savings interest income
+values:
+  2007-07-22:
+    value: 5000.00
+metadata:
+  threshold_unit: currency-GBP
+  reference: Income Tax Act 2007 s. 12
