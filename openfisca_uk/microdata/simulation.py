@@ -67,7 +67,7 @@ class Microsimulation:
             return mdf.MicroSeries(arr, weights=self.entity_weights[entity])
 
     def load_dataset(
-        self, entity_dfs: Tuple[pd.DataFrame], verbose: bool = True
+        self, entity_dfs: Tuple[pd.DataFrame], verbose: bool = False
     ) -> None:
         person, benunit, household = entity_dfs
         system = openfisca_uk.CountryTaxBenefitSystem()
