@@ -75,3 +75,6 @@ def select(conditions, choices):
         Array: Array of values
     """
     return np.select(conditions, choices)
+
+clip = np.clip
+inf = np.inf

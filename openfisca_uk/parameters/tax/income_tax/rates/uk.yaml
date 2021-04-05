@@ -1,17 +1,15 @@
 description: Income tax scale
 brackets:
   - rate:
-      2010-06-01:
+      2016-06-01:
         value: 0.2
     threshold:
-      2010-06-01:
+      2016-06-01:
         value: 0
   - rate:
-      2015-06-01:
+      2016-06-01:
         value: 0.4
     threshold:
-      2015-06-01:
-        value: 31785
       2016-06-01:
         value: 32000
       2017-06-01:
@@ -23,7 +21,7 @@ brackets:
       2020-06-01:
         value: 37500
   - rate:
-      2010-06-01:
+      2016-06-01:
         value: 0.45
     threshold:
       2016-06-01:

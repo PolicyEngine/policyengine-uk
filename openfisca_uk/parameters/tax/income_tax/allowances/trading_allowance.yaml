@@ -1,0 +1,8 @@
+description: Amount of self-employment income untaxed per year
+values:
+  2005-06-01:
+    value: 1000
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

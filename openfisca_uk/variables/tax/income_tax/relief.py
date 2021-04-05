@@ -57,9 +57,10 @@ class pension_contributions_relief(Variable):
 
     def formula_2004_07_22(person, period, parameters):
         contributions = person("pension_contributions", period)
+        pay = person("employment_income", period)
         under_75 = person("age", period) < 75
-        basic_amount = parameters(period).taxes.income_tax.relief.pension_contributions
-        tax_relief = max_(basic_amount, contributions) * under_75
+        basic_amount = parameters(period).tax.income_tax.reliefs.pension_contribution.basic_amount
+        tax_relief = min_(pay, max_(basic_amount, contributions)) * under_75
         return tax_relief
 
 # Savings interest income

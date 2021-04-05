@@ -1,4 +1,4 @@
-description: Income tax scale
+description: Income tax scale for Scotland
 brackets:
   - rate:
       2010-06-01:
@@ -15,13 +15,7 @@ brackets:
       2016-06-01:
         value: 32000
       2017-06-01:
-        value: 33500
-      2018-06-01:
-        value: 34500
-      2019-06-01:
-        value: 37500
-      2020-06-01:
-        value: 37500
+        value: 31500
   - rate:
       2010-06-01:
         value: 0.45

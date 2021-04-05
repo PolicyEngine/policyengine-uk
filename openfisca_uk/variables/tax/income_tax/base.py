@@ -9,7 +9,8 @@ should be added together, but the Act itself does not specify what those compone
 Instead, other Acts (the Income Tax (Earnings and Pensions) Act 2003 and the Income Tax 
 (Trading and Other Income) Act 2005) impose the charges to income tax on each component of
 income. The relevant sections of each act imposing charges to income tax are given 
-for each component of income below. The components are guided by the article at https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-steps-required-to-calculate-an-individuals-income-tax-liability/
+for each component of income below. The components are guided by the article at 
+https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-steps-required-to-calculate-an-individuals-income-tax-liability/
 """
 
 class employment_income(Variable):

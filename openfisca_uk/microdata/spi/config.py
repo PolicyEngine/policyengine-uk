@@ -9,6 +9,11 @@ class PAY(Variable):
     entity = Person
     definition_period = YEAR
 
+class TAXTERM(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
 class EXPS(Variable):
     value_type = float
     entity = Person
@@ -104,6 +109,46 @@ class SCOT_TXP(Variable):
     entity = Person
     definition_period = YEAR
 
+class GIFTAID(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class GIFTINV(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class CAPALL(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class COVNTS(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class DEFICIEN(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class EPB(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class MOTHDED(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class PENSRLF(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
 # Input variables
 
 class pays_scottish_income_tax(Variable):
@@ -123,7 +168,7 @@ class employment_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
 
     def formula(person, period, parameters):
-        return person("PAY", period) + person("EXPS", period)
+        return person("PAY", period) + person("EPB", period) + person("TAXTERM", period)
 
 class pension_income(Variable):
     value_type = float
@@ -149,6 +194,7 @@ class social_security_income(Variable):
             "UBISJA",
             "OSSBEN"
         ]
+        return add(person, period, BENEFITS)
 
 class trading_income(Variable):
     value_type = float
@@ -216,18 +262,95 @@ class blind_persons_allowance(Variable):
         return person("BPADUE", period)
 
 
-class marriage_allowance(Variable):
+class married_couples_allowance(Variable):
     value_type = float
     entity = Person
-    label = u'Marriage Allowance for the year'
+    label = u'Married Couples\' allowance for the year'
     definition_period = YEAR
-    reference = "Income Tax Act 2007 s. 55"
 
     def formula(person, period, parameters):
         return person("MCAS", period)
 
+class gift_aid(Variable):
+    value_type = float
+    entity = Person
+    label = u'Expenditure under Gift Aid'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("GIFTAID", period)
+
+
+class capital_allowance_deduction(Variable):
+    value_type = float
+    entity = Person
+    label = u'Deduction from capital expenditure allowances'
+    definition_period = YEAR
+    reference = "Capital Allowances Act 2001 s. 1"
+
+    def formula(person, period, parameters):
+        return person("CAPALL", period)
+
+class deficiency_relief(Variable):
+    value_type = float
+    entity = Person
+    label = u'Deficiency relief'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("DEFICIEN", period)
+
+class covenanted_payments(Variable):
+    value_type = float
+    entity = Person
+    label = u'Covenanted payments to charities'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("COVNTS", period)
+
+class charitable_investment_gifts(Variable):
+    value_type = float
+    entity = Person
+    label = u'Gifts of qualifying investment or property to charities'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("GIFTINV", period)
+
+class employment_expenses(Variable):
+    value_type = float
+    entity = Person
+    label = u'Cost of expenses necessarily incurred and reimbursed by employment'
+    definition_period = YEAR
+    reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 333"
+
+    def formula(person, period, parameters):
+        return person("EPB", period)
+
+class other_deductions(Variable):
+    value_type = float
+    entity = Person
+    label = u'All other tax deductions'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("MOTHDED", period)
+
+class pension_contributions_relief(Variable):
+    value_type = float
+    entity = Person
+    label = u'Tax relief from pension contributions'
+    definition_period = YEAR
+    reference = "Finance Act 2004 s. 188-194"
+
+    def formula(person, period, parameters):
+        return person("PENSRLF", period)
+
+
 SPI_variables = [
     PAY,
+    TAXTERM,
     EXPS,
     PENSION,
     SRP,
@@ -247,6 +370,14 @@ SPI_variables = [
     SCOT_TXP,
     TAXINC,
     TOTTAX,
+    GIFTAID,
+    GIFTINV,
+    CAPALL,
+    COVNTS,
+    DEFICIEN,
+    EPB,
+    MOTHDED,
+    PENSRLF,
 ]
 
 input_variables = [
@@ -259,8 +390,15 @@ input_variables = [
     dividend_income,
     miscellaneous_income,
     blind_persons_allowance,
-    marriage_allowance,
-    pays_scottish_income_tax
+    married_couples_allowance,
+    pays_scottish_income_tax,
+    gift_aid,
+    deficiency_relief,
+    covenanted_payments,
+    charitable_investment_gifts,
+    other_deductions,
+    pension_contributions_relief,
+    capital_allowance_deduction
 ]
 
 

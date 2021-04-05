@@ -1,0 +1,8 @@
+description: Savings allowance in the higher threshold
+values:
+  2005-06-01:
+    value: 500
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.gov.uk/apply-tax-free-interest-on-savings
