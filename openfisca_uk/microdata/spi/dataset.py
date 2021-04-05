@@ -31,6 +31,7 @@ class SPIDataset:
         spi = SPI(year)
         
         person = spi.main
+        person.columns = [col.upper() for col in person.columns]
         ids = np.arange(len(person))
         person["P_person_id"] = ids
         person["P_benunit_id"] = ids
