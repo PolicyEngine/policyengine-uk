@@ -61,13 +61,6 @@ class trading_allowance(Variable):
     def formula(person, period, parameters):
         return parameters(period).tax.income_tax.allowances.trading_allowance
 
-class capital_allowance_deduction(Variable):
-    value_type = float
-    entity = Person
-    label = u'Deduction from capital expenditure allowances'
-    definition_period = YEAR
-    reference = "Capital Allowances Act 2001 s. 1"
-
 class trading_income_allowance_deduction(Variable):
     value_type = float
     entity = Person
@@ -76,7 +69,7 @@ class trading_income_allowance_deduction(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
 
     def formula(person, period, parameters):
-        amount = max_(0, person("trading_allowance", period) - person("trading_income", period))
+        amount = min_(person("trading_allowance", period), person("trading_income", period))
         return amount
 
 class property_allowance(Variable):
@@ -97,7 +90,7 @@ class property_income_allowance_deduction(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
 
     def formula(person, period, parameters):
-        amount = max_(0, person("property_allowance", period) - person("property_income", period))
+        amount = min_(person("property_income", period), person("property_allowance", period))
         return amount
 
 
@@ -142,12 +135,6 @@ class gift_aid(Variable):
     label = u'Expenditure under Gift Aid'
     definition_period = YEAR
 
-class deficiency_relief(Variable):
-    value_type = float
-    entity = Person
-    label = u'Deficiency relief'
-    definition_period = YEAR
-
 class covenanted_payments(Variable):
     value_type = float
     entity = Person
@@ -177,11 +164,8 @@ class allowances(Variable):
             "personal_allowance",
             "blind_persons_allowance",
             "property_income_allowance_deduction",
-            "trading_income_allowance_deduction",
-            "capital_allowance_deduction",
             "pension_contributions_relief",
             "gift_aid",
-            "deficiency_relief",
             "covenanted_payments",
             "charitable_investment_gifts",
             "other_deductions"

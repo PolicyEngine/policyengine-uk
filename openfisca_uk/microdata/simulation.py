@@ -1,4 +1,4 @@
-from typing import Tuple, Union, Dict
+from typing import List, Tuple, Union, Dict
 from openfisca_core.populations import Population
 import pandas as pd
 import openfisca_uk
@@ -65,6 +65,12 @@ class Microsimulation:
                 arr = self.map_to(arr, entity, map_to, how=how)
                 entity = map_to
             return mdf.MicroSeries(arr, weights=self.entity_weights[entity])
+    
+    def df(self, vars: List[str], period: Union[str, int] = None) -> pd.DataFrame:
+        df = pd.DataFrame()
+        for var in vars:
+            df[var] = self.calc(var, period=period)
+        return df
 
     def load_dataset(
         self, entity_dfs: Tuple[pd.DataFrame], verbose: bool = False

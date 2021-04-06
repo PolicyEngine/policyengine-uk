@@ -280,11 +280,10 @@ class gift_aid(Variable):
     def formula(person, period, parameters):
         return person("GIFTAID", period)
 
-
-class capital_allowance_deduction(Variable):
+class capital_allowances(Variable):
     value_type = float
     entity = Person
-    label = u'Deduction from capital expenditure allowances'
+    label = u'Full relief from capital expenditure allowances'
     definition_period = YEAR
     reference = "Capital Allowances Act 2001 s. 1"
 
@@ -398,7 +397,7 @@ input_variables = [
     charitable_investment_gifts,
     other_deductions,
     pension_contributions_relief,
-    capital_allowance_deduction
+    capital_allowances
 ]
 
 

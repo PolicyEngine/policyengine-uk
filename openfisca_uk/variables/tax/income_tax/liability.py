@@ -22,16 +22,8 @@ class earned_taxable_income(Variable):
             "taxable_property_income",
             "taxable_miscellaneous_income"
         ]
-        ALLOWANCES = [
-            "personal_allowance",
-            "blind_persons_allowance",
-            "marriage_allowance",
-            "married_couples_allowance_deduction",
-            "trading_allowance",
-            "property_allowance"
-        ]
         amount = add(person, period, COMPONENTS)
-        reductions = add(person, period, ALLOWANCES)
+        reductions = person("allowances", period)
         final_amount = max_(0, amount - reductions)
         return final_amount
 
@@ -48,6 +40,77 @@ class taxed_income(Variable):
             "taxed_dividend_income"
         ]
         return add(person, period, COMPONENTS)
+
+class basic_rate_earned_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Earned income (non-savings, non-dividend) at the basic rate'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        income = person("earned_taxable_income", period)
+        rates = parameters(period).tax.income_tax.rates
+        amount = clip(income, rates.uk.thresholds[0], rates.uk.thresholds[1])
+        return amount
+
+class higher_rate_earned_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Earned income (non-savings, non-dividend) at the higher rate'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        income = person("earned_taxable_income", period)
+        rates = parameters(period).tax.income_tax.rates
+        amount = clip(income, rates.uk.thresholds[1], rates.uk.thresholds[2])
+        return amount
+
+class add_rate_earned_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Earned income (non-savings, non-dividend) at the additional rate'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        income = person("earned_taxable_income", period)
+        rates = parameters(period).tax.income_tax.rates
+        amount = clip(income, rates.uk.thresholds[2], inf)
+        return amount
+
+class basic_rate_earned_income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income tax on earned income at the basic rate'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        amount = person("basic_rate_earned_income", period)
+        charge = parameters(period).tax.income_tax.rates.uk.rates[0] * amount
+        return charge
+
+
+class higher_rate_earned_income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income tax on earned income at the higher rate'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        amount = person("higher_rate_earned_income", period)
+        charge = parameters(period).tax.income_tax.rates.uk.rates[0] * amount
+        return charge
+
+
+class add_rate_earned_income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income tax on earned income at the additional rate'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        amount = person("add_rate_earned_income", period)
+        charge = parameters(period).tax.income_tax.rates.uk.rates[0] * amount
+        return charge
 
 class earned_income_tax(Variable):
     value_type = float

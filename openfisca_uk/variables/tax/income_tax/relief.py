@@ -92,6 +92,14 @@ class trading_loss(Variable):
     definition_period = YEAR
 
 
+class capital_allowances(Variable):
+    value_type = float
+    entity = Person
+    label = u'Full relief from capital expenditure allowances'
+    definition_period = YEAR
+    reference = "Capital Allowances Act 2001 s. 1"
+
+
 class loss_relief(Variable):
     value_type = float
     entity = Person
@@ -139,7 +147,9 @@ class taxable_trading_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 5"
 
     def formula(person, period, parameters):
-        return person("trading_income", period)
+        DEDUCTIONS = ["loss_relief", "capital_allowances"]
+        amount = max_(0, person("trading_income", period) - add(person, period, DEDUCTIONS))
+        return amount
 
 # Property income
 
@@ -155,6 +165,12 @@ class taxable_property_income(Variable):
 
 # Dividend income
 
+class deficiency_relief(Variable):
+    value_type = float
+    entity = Person
+    label = u'Deficiency relief'
+    definition_period = YEAR
+
 class taxable_dividend_income(Variable):
     value_type = float
     entity = Person
@@ -163,7 +179,7 @@ class taxable_dividend_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 383"
 
     def formula(person, period, parameters):
-        return person("dividend_income", period)
+        return max_(0, person("dividend_income", period) - person("deficiency_relief", period))
 
 
 # Miscellaneous income
@@ -177,6 +193,28 @@ class taxable_miscellaneous_income(Variable):
 
     def formula(person, period, parameters):
         return person("miscellaneous_income", period)
+
+class total_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Taxable income after tax reliefs and before allowances'
+    definition_period = YEAR
+    reference = "Income Tax Act 2007 s. 23"
+
+    def formula(person, period, parameters):
+        COMPONENTS = [
+            "employment_income",
+            "pension_income",
+            "social_security_income",
+            "trading_income",
+            "property_income",
+            "savings_interest_income",
+            "dividend_income",
+            "miscellaneous_income"
+        ]
+        return add(person, period, COMPONENTS)
+
+
 
 class adjusted_net_income(Variable):
     value_type = float
