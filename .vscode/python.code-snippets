@@ -38,6 +38,18 @@
 			],
 			"description": "Insert a new SPI input variable."
 		},
+	"OpenFisca FRS Variable": {
+				"prefix": "frs",
+				"body": [
+					"class ${1:name}(Variable):",
+				   "	value_type = float",
+				   "	entity = Person",
+				   "	definition_period = WEEK",
+				   "",
+				   ""
+				],
+				"description": "Insert a new FRS input variable."
+			},
 	"OpenFisca Formula": {
 			"prefix": "form",
 			"body": [
