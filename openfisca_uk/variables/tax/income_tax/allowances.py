@@ -51,6 +51,19 @@ class married_couples_allowance_deduction(Variable):
     def formula(person, period, parameters):
         return person("married_couples_allowance", period) * 0.1
 
+class pension_annual_allowance(Variable):
+    value_type = float
+    entity = Person
+    label = u'Annual Allowance for pension contributions'
+    definition_period = YEAR
+    
+    def formula(person, period, parameters):
+        allowance = parameters(period).tax.income_tax.allowances.annual_allowance
+        ANI = person("adjusted_net_income", period)
+        reduction = max_(0, ANI - allowance.taper) * allowance.reduction_rate
+        amount = max_(allowance.minimum, allowance.default - reduction)
+        return amount
+
 class trading_allowance(Variable):
     value_type = float
     entity = Person
@@ -164,7 +177,6 @@ class allowances(Variable):
             "personal_allowance",
             "blind_persons_allowance",
             "property_income_allowance_deduction",
-            "pension_contributions_relief",
             "gift_aid",
             "covenanted_payments",
             "charitable_investment_gifts",

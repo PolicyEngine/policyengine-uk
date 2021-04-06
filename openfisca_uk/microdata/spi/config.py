@@ -336,12 +336,11 @@ class other_deductions(Variable):
     def formula(person, period, parameters):
         return person("MOTHDED", period)
 
-class pension_contributions_relief(Variable):
+class pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u'Tax relief from pension contributions'
+    label = u'Amount contributed to registered pension schemes paid by the individual (not the employer)'
     definition_period = YEAR
-    reference = "Finance Act 2004 s. 188-194"
 
     def formula(person, period, parameters):
         return person("PENSRLF", period)
@@ -396,7 +395,7 @@ input_variables = [
     covenanted_payments,
     charitable_investment_gifts,
     other_deductions,
-    pension_contributions_relief,
+    pension_contributions,
     capital_allowances
 ]
 

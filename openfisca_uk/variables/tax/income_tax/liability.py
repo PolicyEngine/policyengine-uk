@@ -22,7 +22,8 @@ class earned_taxable_income(Variable):
             "taxable_property_income",
             "taxable_miscellaneous_income"
         ]
-        amount = add(person, period, COMPONENTS)
+        pension_contributions_over_limit = max_(0, person("pension_contributions", period) - person("pension_contributions_relief", period))
+        amount = add(person, period, COMPONENTS) + pension_contributions_over_limit
         reductions = person("allowances", period)
         final_amount = max_(0, amount - reductions)
         return final_amount

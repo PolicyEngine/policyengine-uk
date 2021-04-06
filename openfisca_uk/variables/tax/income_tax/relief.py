@@ -32,7 +32,7 @@ class employment_deductions(Variable):
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 327"
 
     def formula(person, period, parameters):
-        deductions = ["pension_contributions_relief", "employment_expenses"]
+        deductions = ["pension_contributions", "employment_expenses"]
         return add(person, period, deductions)
 
 class employment_expenses(Variable):
@@ -61,7 +61,8 @@ class pension_contributions_relief(Variable):
         under_75 = person("age", period) < 75
         basic_amount = parameters(period).tax.income_tax.reliefs.pension_contribution.basic_amount
         tax_relief = min_(pay, max_(basic_amount, contributions)) * under_75
-        return tax_relief
+        capped_relief = min_(tax_relief, person("pension_annual_allowance", period))
+        return capped_relief
 
 # Savings interest income
 

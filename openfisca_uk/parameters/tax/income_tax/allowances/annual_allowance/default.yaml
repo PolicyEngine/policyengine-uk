@@ -1,0 +1,7 @@
+description: Annual allowance for relief on pension contributions.
+values:
+  2015-06-01:
+    value: 40000
+metadata:
+  threshold_unit: currency-GBP
+  reference: :none
