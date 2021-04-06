@@ -63,7 +63,7 @@ class higher_rate_earned_income(Variable):
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
         rates = parameters(period).tax.income_tax.rates
-        amount = clip(income, rates.uk.thresholds[1], rates.uk.thresholds[2])
+        amount = clip(income, rates.uk.thresholds[1], rates.uk.thresholds[2]) - rates.uk.thresholds[1]
         return amount
 
 class add_rate_earned_income(Variable):
@@ -75,7 +75,7 @@ class add_rate_earned_income(Variable):
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
         rates = parameters(period).tax.income_tax.rates
-        amount = clip(income, rates.uk.thresholds[2], inf)
+        amount = clip(income, rates.uk.thresholds[2], inf) - rates.uk.thresholds[2]
         return amount
 
 class basic_rate_earned_income_tax(Variable):
@@ -98,7 +98,7 @@ class higher_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("higher_rate_earned_income", period)
-        charge = parameters(period).tax.income_tax.rates.uk.rates[0] * amount
+        charge = parameters(period).tax.income_tax.rates.uk.rates[1] * amount
         return charge
 
 
@@ -110,7 +110,7 @@ class add_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("add_rate_earned_income", period)
-        charge = parameters(period).tax.income_tax.rates.uk.rates[0] * amount
+        charge = parameters(period).tax.income_tax.rates.uk.rates[2] * amount
         return charge
 
 class earned_income_tax(Variable):
@@ -333,3 +333,13 @@ class income_tax_pre_charges(Variable):
         ]
         total = add(person, period, COMPONENTS)
         return total
+
+class income_tax(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income Tax'
+    definition_period = YEAR
+    reference = "Income Tax Act 2007 s. 23"
+
+    def formula(person, period, parameters):
+        return person("income_tax_pre_charges", period)

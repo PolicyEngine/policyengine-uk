@@ -51,13 +51,13 @@ class pension_contributions(Variable):
 class pension_contributions_relief(Variable):
     value_type = float
     entity = Person
-    label = u'Tax relief from pension contributions'
+    label = u'Reduction in taxable income from pension contributions'
     definition_period = YEAR
     reference = "Finance Act 2004 s. 188-194"
 
     def formula_2004_07_22(person, period, parameters):
         contributions = person("pension_contributions", period)
-        pay = person("employment_income", period)
+        pay = person("employment_income", period) + person("trading_income", period)
         under_75 = person("age", period) < 75
         basic_amount = parameters(period).tax.income_tax.reliefs.pension_contribution.basic_amount
         tax_relief = min_(pay, max_(basic_amount, contributions)) * under_75
@@ -148,7 +148,7 @@ class taxable_trading_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 5"
 
     def formula(person, period, parameters):
-        DEDUCTIONS = ["loss_relief", "capital_allowances"]
+        DEDUCTIONS = ["loss_relief", "capital_allowances", "trading_allowance"]
         amount = max_(0, person("trading_income", period) - add(person, period, DEDUCTIONS))
         return amount
 
@@ -162,7 +162,7 @@ class taxable_property_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 268"
 
     def formula(person, period, parameters):
-        return person("property_income", period)
+        return max_(0, person("property_income", period) - person("property_allowance", period))
 
 # Dividend income
 

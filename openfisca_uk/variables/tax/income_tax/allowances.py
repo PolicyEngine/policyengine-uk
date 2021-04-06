@@ -74,7 +74,7 @@ class trading_allowance(Variable):
     def formula(person, period, parameters):
         return parameters(period).tax.income_tax.allowances.trading_allowance
 
-class trading_income_allowance_deduction(Variable):
+class trading_allowance_deduction(Variable):
     value_type = float
     entity = Person
     label = u'Deduction applied by the trading allowance'
@@ -95,7 +95,7 @@ class property_allowance(Variable):
     def formula(person, period, parameters):
         return parameters(period).tax.income_tax.allowances.property_allowance
 
-class property_income_allowance_deduction(Variable):
+class property_allowance_deduction(Variable):
     value_type = float
     entity = Person
     label = u'Deduction applied by the property allowance'
@@ -176,7 +176,6 @@ class allowances(Variable):
         ALLOWANCES = [
             "personal_allowance",
             "blind_persons_allowance",
-            "property_income_allowance_deduction",
             "gift_aid",
             "covenanted_payments",
             "charitable_investment_gifts",
