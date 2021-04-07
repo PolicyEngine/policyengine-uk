@@ -22,6 +22,7 @@ class personal_allowance(Variable):
         amount = max_(0, PA.amount - reduction)
         return amount
 
+
 class blind_persons_allowance(Variable):
     value_type = float
     entity = Person

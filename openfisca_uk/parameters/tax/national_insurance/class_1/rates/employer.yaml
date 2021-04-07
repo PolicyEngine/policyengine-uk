@@ -1,0 +1,7 @@
+description: Contribution rate by employers (on earnings above the ST)
+values:
+  2015-06-01:
+    value: 0.138
+metadata:
+  threshold_unit: marginal-rate
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
