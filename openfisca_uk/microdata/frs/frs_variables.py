@@ -202,6 +202,11 @@ class P_NINDINC(Variable):
     entity = Person
     definition_period = WEEK
 
+class P_CHINCDV(Variable):
+    value_type = float
+    entity = Person
+    definition_period = WEEK
+
 
 FRS_variables = [
     P_GROSS4, 
@@ -243,5 +248,6 @@ FRS_variables = [
     P_ACCINT_ACCOUNT_CODE_30,
     H_SUBLET,
     P_INDINC,
-    P_NINDINC
+    P_NINDINC,
+    P_CHINCDV
 ]

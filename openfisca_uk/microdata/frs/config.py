@@ -146,7 +146,7 @@ class base_net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("P_NINDINC", period, options=[ADD])
+        return person("P_NINDINC", period, options=[ADD]) + person("P_CHINCDV", period, options=[ADD])
 
 
 input_variables = [
