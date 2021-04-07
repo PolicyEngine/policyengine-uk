@@ -1,4 +1,0 @@
-frs==0.1.0
-OpenFisca_Core==35.0.0
-pandas==1.1.4
-numpy==1.17.5

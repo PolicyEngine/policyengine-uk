@@ -75,8 +75,17 @@ class taxable_savings_interest_income(Variable):
 
     def formula(person, period, parameters):
         total_interest = person("savings_interest_income", period)
-        exempt_interest = person("ISA_interest_income", period)
+        exempt_interest = person("tax_free_savings_income", period)
         return max_(0, total_interest - exempt_interest)
+
+class tax_free_savings_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income from savings in tax-free accounts'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("ISA_interest_income", period)
 
 class ISA_interest_income(Variable):
     value_type = float

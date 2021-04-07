@@ -2,6 +2,16 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class NI_exempt(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether is exempt from National Insurance'
+    definition_period = YEAR
+    reference = "Social Security Contributions and Benefits Act 1992 s. 6"
+
+    def formula(person, period, parameters):
+        return not_(person("over_16", period)) + person("is_SP_age", period)
+
 class weekly_employee_NI_class_1(Variable):
     value_type = float
     entity = Person

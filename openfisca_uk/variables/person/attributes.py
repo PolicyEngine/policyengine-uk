@@ -3,7 +3,7 @@ from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 from openfisca_uk.variables.household.attributes import Region
 
-
+"""
 class index(Variable):
     value_type = float
     entity = Person
@@ -195,3 +195,4 @@ class is_older_child(Variable):
         return (person("age", period.this_year) >= 14) * (
             person("age", period.this_year) < 18
         )
+"""

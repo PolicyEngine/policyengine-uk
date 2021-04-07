@@ -48,6 +48,9 @@ class property_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
 
+    def formula(person, period, parameters):
+        return person("sublet_income", period)
+
 class savings_interest_income(Variable):
     value_type = float
     entity = Person
