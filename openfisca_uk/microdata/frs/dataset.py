@@ -67,8 +67,14 @@ class FRSDataset:
 
         # link benefit income sources (amounts summed by benefit program)
 
+        bens = frs.benefits[get_new_columns(frs.benefits)]
+
+        # distinguish income-related JSA and ESA from contribution-based variants
+        
+        bonus_to_IB_benefits = 1000 * (bens.VAR2.isin((2, 4)) * bens.BENEFIT.isin((14, 16)))
+        bens["BENEFIT"] += bonus_to_IB_benefits
         benefits = (
-            frs.benefits[get_new_columns(frs.benefits)]
+            bens
             .groupby(["person_id", "BENEFIT"])
             .sum()
             .reset_index()

@@ -2,6 +2,12 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class person_weight(Variable):
+    value_type = float
+    entity = Person
+    label = u'Weight factor for the person'
+    definition_period = YEAR
+
 class age(Variable):
     value_type = float
     entity = Person

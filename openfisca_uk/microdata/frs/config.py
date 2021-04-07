@@ -12,7 +12,7 @@ class employment_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
 
     def formula(person, period, parameters):
-        return person("P_UGRSPAY", period, options=[ADD])
+        return person("P_UGRSPAY", period) * WEEKS_IN_YEAR
 
 class pension_contributions(Variable):
     value_type = float
@@ -21,7 +21,7 @@ class pension_contributions(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("P_UDEDUC1", period, options=[ADD])
+        return person("P_UDEDUC1", period) * WEEKS_IN_YEAR
 
 class pension_income(Variable):
     value_type = float
@@ -31,7 +31,7 @@ class pension_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
 
     def formula(person, period, parameters):
-        return person("P_INPENINC", period, options=[ADD])
+        return person("P_INPENINC", period) * WEEKS_IN_YEAR
 
 class trading_income(Variable):
     value_type = float
@@ -41,7 +41,7 @@ class trading_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
 
     def formula(person, period, parameters):
-        return person("P_PROFIT1", period, options=[ADD]) * (person("P_PROFIT2", period.first_week) == 1)
+        return person("P_PROFIT1", period) * (person("P_PROFIT2", period) == 1) * WEEKS_IN_YEAR
 
 class trading_loss(Variable):
     value_type = float
@@ -50,7 +50,7 @@ class trading_loss(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("P_PROFIT1", period, options=[ADD]) * (person("P_PROFIT2", period.first_week) == 2)
+        return person("P_PROFIT1", period) * (person("P_PROFIT2", period) == 2) * WEEKS_IN_YEAR
 
 class savings_interest_income(Variable):
     value_type = float
@@ -84,7 +84,7 @@ class savings_interest_income(Variable):
             30
         ]
         savings_accounts = [f"P_ACCINT_ACCOUNT_CODE_{i}" for i in SAVINGS_ACCOUNT_CODES]
-        return add(person, period, savings_accounts, options=[ADD])
+        return add(person, period, savings_accounts) * WEEKS_IN_YEAR
 
 class tax_free_savings_income(Variable):
     value_type = float
@@ -99,7 +99,7 @@ class tax_free_savings_income(Variable):
             21,
         ]
         accounts = [f"P_ACCINT_ACCOUNT_CODE_{i}" for i in TAX_FREE_SAVINGS_ACCOUNT_CODES]
-        return add(person, period, accounts, options=[ADD])
+        return add(person, period, accounts) * WEEKS_IN_YEAR
 
 class dividend_income(Variable):
     value_type = float
@@ -119,7 +119,7 @@ class dividend_income(Variable):
             24
         ]
         dividend_accounts = [f"P_ACCINT_ACCOUNT_CODE_{i}" for i in DIVIDEND_ACCOUNT_CODES]
-        return add(person, period, dividend_accounts, options=[ADD])
+        return add(person, period, dividend_accounts) * WEEKS_IN_YEAR
 
 class sublet_income(Variable):
     value_type = float
@@ -128,7 +128,7 @@ class sublet_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("H_SUBLET", period, options=[ADD])
+        return person("H_SUBLET", period) * WEEKS_IN_YEAR
 
 class tax_reported(Variable):
     value_type = float
@@ -137,7 +137,7 @@ class tax_reported(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("P_INDINC", period, options=[ADD]) - person("P_NINDINC", period, options=[ADD])
+        return (person("P_INDINC", period) - person("P_NINDINC", period)) * WEEKS_IN_YEAR
 
 class base_net_income(Variable):
     value_type = float
@@ -146,7 +146,234 @@ class base_net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("P_NINDINC", period, options=[ADD]) + person("P_CHINCDV", period, options=[ADD])
+        return (person("P_NINDINC", period) + person("P_CHINCDV", period)) * WEEKS_IN_YEAR
+
+class person_weight(Variable):
+    value_type = float
+    entity = Person
+    label = u'Weight factor for the person'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person.household("H_GROSS4", period)
+
+class benunit_weight(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Weight factor for the benefit unit'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("B_GROSS4", period)
+
+class household_weight(Variable):
+    value_type = float
+    entity = Household
+    label = u'Weight factor for the household'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("H_GROSS4", period)
+
+class AA_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Attendance Allowance (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_12", period.this_year)
+
+class BSP_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Bereavement Support Payment (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_6", period.this_year)
+
+class carers_allowance_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Carer's Allowance (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_13", period.this_year)
+
+class DLA_M_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Disability Living Allowance (mobility component) (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_2", period.this_year)
+
+class DLA_SC_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Disability Living Allowance (self-care) (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_1", period.this_year)
+
+class ESA_contrib_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Employment and Support Allowance (contribution-based) (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_16", period.this_year)
+
+class IIDB_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Industrial Injuries Disablement Benefit (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_15", period.this_year)
+
+class incapacity_benefit_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Incapacity Benefit (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_17", period.this_year)
+
+class JSA_contrib_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Job Seeker's Allowance (contribution-based) (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_14", period.this_year)
+
+class PIP_DL_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Personal Independence Payment (Daily Living) (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_96", period.this_year)
+
+class PIP_M_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Personal Independence Payment (Mobility) (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_97", period.this_year)
+
+
+class SDA_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Severe Disablement Allowance (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_10", period.this_year)
+
+class state_pension_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u'Reported income from the State Pension'
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_5", period.this_year)
+
+class child_benefit_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Child Benefit (reported amount)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_5", period.this_year)
+
+class ESA_income_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"ESA (income-based) (reported amount per week)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_5", period.this_year)
+
+class housing_benefit_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Housing Benefit (reported amount per week)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_94", period.this_year)
+
+class income_support_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income Support (reported amount per week)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_19", period.this_year)
+
+class JSA_income_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"JSA (income-based) (reported amount per week)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_1014", period.this_year)
+
+class pension_credit_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Reported amount of Pension Credit per week"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_4", period.this_year)
+
+class working_tax_credit_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Working Tax Credit (reported amount)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_90", period.this_year)
+
+
+class child_tax_credit_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Working Tax Credit (reported amount)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_91", period.this_year)
+
+class universal_credit_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Reported amount of Universal Credit per month"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_95", period.this_year)
 
 
 input_variables = [
@@ -159,7 +386,32 @@ input_variables = [
     tax_free_savings_income,
     sublet_income,
     tax_reported,
-    base_net_income
+    base_net_income,
+    person_weight,
+    benunit_weight,
+    household_weight,
+    AA_reported,
+    BSP_reported,
+    carers_allowance_reported,
+    DLA_M_reported,
+    DLA_SC_reported,
+    ESA_contrib_reported,
+    IIDB_reported,
+    incapacity_benefit_reported,
+    JSA_contrib_reported,
+    PIP_DL_reported,
+    PIP_M_reported,
+    SDA_reported,
+    state_pension_reported,
+    child_benefit_reported,
+    ESA_income_reported,
+    housing_benefit_reported,
+    income_support_reported,
+    JSA_income_reported,
+    pension_credit_reported,
+    working_tax_credit_reported,
+    child_tax_credit_reported,
+    universal_credit_reported
 ]
 
 

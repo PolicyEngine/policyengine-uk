@@ -87,9 +87,19 @@ class MCAS(Variable):
     entity = Person
     definition_period = YEAR
 
-class FACT(Variable):
+class P_FACT(Variable):
     value_type = float
     entity = Person
+    definition_period = YEAR
+
+class B_FACT(Variable):
+    value_type = float
+    entity = BenUnit
+    definition_period = YEAR
+
+class H_FACT(Variable):
+    value_type = float
+    entity = Household
     definition_period = YEAR
 
 class TAXINC(Variable):
@@ -165,7 +175,9 @@ SPI_variables = [
     MOTHINC,
     BPADUE,
     MCAS,
-    FACT,
+    P_FACT,
+    B_FACT,
+    H_FACT,
     SCOT_TXP,
     TAXINC,
     TOTTAX,

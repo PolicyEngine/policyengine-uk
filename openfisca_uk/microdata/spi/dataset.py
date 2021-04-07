@@ -36,6 +36,8 @@ class SPIDataset:
         person["P_person_id"] = ids
         person["P_benunit_id"] = ids
         person["P_household_id"] = ids
+        weight = spi.main.FACT
+        person["P_FACT"] = weight
 
         person["P_role"] = "adult"
 
@@ -48,6 +50,9 @@ class SPIDataset:
             H_household_id=ids
         ))
 
+        benunit["B_FACT"] = weight
+        household["H_FACT"] = weight
+        
         # store dataset for future use
 
         dataset_path = DATA_STORE / year

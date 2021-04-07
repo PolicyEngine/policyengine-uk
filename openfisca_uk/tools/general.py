@@ -84,3 +84,5 @@ def amount_over(amount, threshold):
 
 def amount_between(amount, threshold_1, threshold_2):
     return clip(amount, threshold_1, threshold_2) - threshold_1
+
+WEEKS_IN_YEAR = 52

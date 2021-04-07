@@ -1,4 +1,5 @@
 from typing import List, Tuple, Union, Dict
+from microdf.generic import MicroDataFrame, MicroSeries
 from openfisca_core.populations import Population
 import pandas as pd
 import openfisca_uk
@@ -24,19 +25,14 @@ class Microsimulation:
         if mode == "frs":
             self.reforms = from_FRS, *self.reforms
             self.simulation = self.load_dataset(FRSDataset(year).entity_dfs)
-            self.entity_weights = dict(
-                person=self.calc("P_GROSS4", weighted=False),
-                benunit=self.calc("B_GROSS4", weighted=False),
-                household=self.calc("H_GROSS4", weighted=False)
-            )
         elif mode == "spi":
             self.reforms = from_SPI, *self.reforms
             self.simulation = self.load_dataset(SPIDataset(year).entity_dfs)
-            self.entity_weights = dict(
-                person=self.calc("FACT", weighted=False),
-                benunit=self.calc("FACT", weighted=False),
-                household=self.calc("FACT", weighted=False)
-            )
+        self.entity_weights = dict(
+            person=self.calc("person_weight", weighted=False),
+            benunit=self.calc("benunit_weight", weighted=False),
+            household=self.calc("household_weight", weighted=False)
+        )
 
     def map_to(self, arr: np.array, entity: str, target_entity: str, how: str = None):
         entity_pop = self.simulation.populations[entity]
@@ -53,10 +49,19 @@ class Microsimulation:
         else:
             return self.map_to(self.map_to(arr, entity, "person", how="mean"), "person", target_entity, how="sum")
 
-    def calc(self, var: str, period: Union[str, int] = None, weighted: bool = True, map_to: str = None, how: str = None):
+    def calc(self, var: str, period: Union[str, int] = None, weighted: bool = True, map_to: str = None, how: str = None) -> MicroSeries:
         if period is None:
             period = self.input_year
-        arr = self.simulation.calculate(var, period)
+        try:
+            arr = self.simulation.calculate(var, period)
+        except Exception as e:
+            try:
+                arr = self.simulation.calculate_add(var, period)
+            except:
+                try:
+                    arr = self.simulation.calculate_divide(var, period)
+                except:
+                    raise e
         if not weighted:
             return arr
         else:
@@ -66,10 +71,12 @@ class Microsimulation:
                 entity = map_to
             return mdf.MicroSeries(arr, weights=self.entity_weights[entity])
     
-    def df(self, vars: List[str], period: Union[str, int] = None) -> pd.DataFrame:
+    def df(self, vars: List[str], period: Union[str, int] = None, map_to=None) -> MicroDataFrame:
         df = pd.DataFrame()
         for var in vars:
-            df[var] = self.calc(var, period=period)
+            df[var] = self.calc(var, period=period, map_to=map_to)
+        entity = map_to or self.simulation.tax_benefit_system.variables[vars[0]].entity.key
+        df = MicroDataFrame(df, weights=self.entity_weights[entity])
         return df
 
     def load_dataset(

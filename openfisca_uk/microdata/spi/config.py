@@ -198,6 +198,33 @@ class pension_contributions(Variable):
     def formula(person, period, parameters):
         return person("PENSRLF", period)
 
+class person_weight(Variable):
+    value_type = float
+    entity = Person
+    label = u'Weight factor for the person'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("P_FACT", period)
+
+class benunit_weight(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Weight factor for the benefit unit'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit("B_FACT", period)
+
+class household_weight(Variable):
+    value_type = float
+    entity = Household
+    label = u'Weight factor for the household'
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return household("H_FACT", period)
+
 input_variables = [
     employment_income,
     pension_income,
@@ -216,7 +243,10 @@ input_variables = [
     charitable_investment_gifts,
     other_deductions,
     pension_contributions,
-    capital_allowances
+    capital_allowances,
+    person_weight,
+    benunit_weight,
+    household_weight
 ]
 
 
