@@ -1,0 +1,15 @@
+description: Flat rate contribution for self-employed earners
+values:
+  2015-06-01:
+    value: 2.80
+  2017-06-01:
+    value: 2.85
+  2018-06-01:
+    value: 2.95
+  2019-06-01:
+    value: 3.00
+  2020-06-01:
+    value: 3.05
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

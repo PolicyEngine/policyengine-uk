@@ -80,7 +80,7 @@ clip = np.clip
 inf = np.inf
 
 def amount_over(amount, threshold):
-    return clip(amount, threshold, inf) - threshold
+    return max_(0, amount - threshold)
 
 def amount_between(amount, threshold_1, threshold_2):
     return clip(amount, threshold_1, threshold_2) - threshold_1

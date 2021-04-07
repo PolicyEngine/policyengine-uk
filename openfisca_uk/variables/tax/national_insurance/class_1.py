@@ -47,3 +47,22 @@ class employer_NI_class_1(Variable):
 
     def formula(person, period, parameters):
         return person("weekly_employer_NI_class_1", period, options=[ADD])
+
+class employer_NI(Variable):
+    value_type = float
+    entity = Person
+    label = u'Employer contributions to National Insurance'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("employer_NI_class_1", period)
+
+class total_NI(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total National Insurance contributions by employers and employees'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        COMPONENTS = ["employer_NI", "national_insurance"]
+        return add(person, period, COMPONENTS)
