@@ -300,7 +300,7 @@ class child_benefit_reported(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("P_BENAMT_BENEFIT_CODE_5", period.this_year)
+        return person("P_BENAMT_BENEFIT_CODE_3", period.this_year)
 
 class ESA_income_reported(Variable):
     value_type = float
@@ -309,7 +309,7 @@ class ESA_income_reported(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("P_BENAMT_BENEFIT_CODE_5", period.this_year)
+        return person("P_BENAMT_BENEFIT_CODE_16", period.this_year)
 
 class housing_benefit_reported(Variable):
     value_type = float
@@ -375,6 +375,52 @@ class universal_credit_reported(Variable):
     def formula(person, period, parameters):
         return person("P_BENAMT_BENEFIT_CODE_95", period.this_year)
 
+class AFCS_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Armed Forces Compensation Scheme (reported)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_8", period.this_year)
+
+class age(Variable):
+    value_type = float
+    entity = Person
+    label = u'The age of the person in years'
+    definition_period = YEAR
+    set_input = set_input_dispatch_by_period
+
+    def formula(person, period, parameters):
+        return person("P_AGE80", period) + person("P_AGE", period)
+
+class is_household_head(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether this person is the head-of-household'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("P_PERSON", period) == 1
+
+class is_benunit_head(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether this person is the head-of-family'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("P_UPERSON", period) == 1
+
+class in_FE(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether this person is in Further Education'
+    definition_period = YEAR
+    set_input = set_input_dispatch_by_period
+
+    def formula(person, period, parameters):
+        return person("P_TYPEED2", period) == 7
 
 input_variables = [
     employment_income,
@@ -411,7 +457,12 @@ input_variables = [
     pension_credit_reported,
     working_tax_credit_reported,
     child_tax_credit_reported,
-    universal_credit_reported
+    universal_credit_reported,
+    AFCS_reported,
+    age,
+    is_benunit_head,
+    is_household_head,
+    in_FE
 ]
 
 

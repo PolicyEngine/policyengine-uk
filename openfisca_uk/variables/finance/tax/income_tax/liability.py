@@ -334,6 +334,34 @@ class income_tax_pre_charges(Variable):
         total = add(person, period, COMPONENTS)
         return total
 
+class is_higher_earner(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether this person is the highest earner in a family'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        income = person("adjusted_net_income", period)
+        family_average = aggr(person.benunit, period, ["adjusted_net_income"]) / 2
+        higher_earner = income > family_average
+        equal_earner = income == family_average
+        return higher_earner + (equal_earner * person("is_benunit_head", period))
+
+class CB_HITC(Variable):
+    value_type = float
+    entity = Person
+    label = u'Child Benefit High-Income Tax Charge'
+    definition_period = YEAR
+    reference = "Finance Act 2012 s. 681B"
+
+    def formula(person, period, parameters):
+        CB_received = person.benunit("child_benefit", period, options=[ADD])
+        CB_HITC = parameters(period).tax.income_tax.charges.CB_HITC
+        phase_length = CB_HITC.phase_out_end - CB_HITC.phase_out_start
+        income = amount_between(person("adjusted_net_income", period), CB_HITC.phase_out_start, CB_HITC.phase_out_end)
+        percentage = income / phase_length
+        return (percentage * CB_received) * person("is_higher_earner", period)
+
 class income_tax(Variable):
     value_type = float
     entity = Person

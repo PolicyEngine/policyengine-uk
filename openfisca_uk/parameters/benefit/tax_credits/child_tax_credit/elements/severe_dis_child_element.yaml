@@ -1,0 +1,19 @@
+description: Severely disabled child element per year
+values:
+  2016-06-01:
+    value: 1275.00
+  2017-06-01:
+    value: 1290.00
+  2018-06-01:
+    value: 1325.00
+  2019-06-01:
+    value: 1360.00
+  2020-06-01:
+    value: 1385.00
+metadata:
+  period: year
+  unit: currency
+  reference: [
+    https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance,
+    https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
+  ]

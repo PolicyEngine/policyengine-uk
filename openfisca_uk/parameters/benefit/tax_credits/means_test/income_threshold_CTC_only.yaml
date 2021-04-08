@@ -1,0 +1,13 @@
+description: Income threshold for benefit units only entitled to CTC
+values:
+  2016-06-01:
+    value: 16105.00
+  2020-06-01:
+    value: 16385.00
+metadata:
+  period: year
+  unit: currency
+  reference: [
+    https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance,
+    https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
+  ]

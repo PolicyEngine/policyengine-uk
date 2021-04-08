@@ -1,0 +1,8 @@
+description: Severe disability element of WTC
+values:
+  2016-06-01:
+    value: 1390
+metadata:
+  period: year
+  unit: currency
+  reference: https://www.gov.uk/working-tax-credit/what-youll-get

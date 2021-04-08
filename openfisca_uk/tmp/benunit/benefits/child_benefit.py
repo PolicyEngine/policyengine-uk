@@ -9,7 +9,6 @@ class child_benefit_reported(Variable):
     label = u"Child Benefit (reported amount)"
     definition_period = YEAR
 
-
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit

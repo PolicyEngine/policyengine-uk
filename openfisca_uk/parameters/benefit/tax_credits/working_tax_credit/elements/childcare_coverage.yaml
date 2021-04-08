@@ -1,0 +1,8 @@
+description: Proportion of eligible childcare costs covered
+values:
+  2016-06-01:
+    value: 0.7
+metadata:
+  period: week
+  unit: /1
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

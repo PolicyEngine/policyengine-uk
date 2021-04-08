@@ -1,0 +1,16 @@
+description: Child benefit amount for additional children
+values:
+  2009-06-01:
+    value: 20.00
+  2010-06-01:
+    value: 20.30
+  2014-06-01:
+    value: 20.50
+  2015-06-01:
+    value: 20.70
+  2020-06-01:
+    value: 21.05
+metadata:
+  period: week
+  unit: currency
+  reference: https://revenuebenefits.org.uk/child-benefit/guidance/how-much-can-your-client-get/rates-and-tables/

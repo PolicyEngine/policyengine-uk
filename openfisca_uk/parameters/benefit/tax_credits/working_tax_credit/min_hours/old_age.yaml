@@ -1,0 +1,8 @@
+description: Age for lower hours requirement
+values:
+  2016-06-01:
+    value: 60
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.gov.uk/working-tax-credit

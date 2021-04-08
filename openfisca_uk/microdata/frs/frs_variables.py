@@ -584,6 +584,33 @@ class P_BENAMT_BENEFIT_CODE_111(Variable):
     entity = Person
     definition_period = YEAR
 
+class P_AGE80(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_AGE(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_PERSON(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_UPERSON(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_TYPEED2(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+
+
 
 FRS_variables = [
     P_GROSS4,
@@ -683,4 +710,9 @@ FRS_variables = [
     P_BENAMT_BENEFIT_CODE_109,
     P_BENAMT_BENEFIT_CODE_110,
     P_BENAMT_BENEFIT_CODE_111,
+    P_AGE80,
+    P_AGE,
+    P_PERSON,
+    P_UPERSON,
+    P_TYPEED2
 ]

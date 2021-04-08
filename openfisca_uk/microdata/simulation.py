@@ -57,6 +57,8 @@ class Microsimulation:
         except Exception as e:
             try:
                 arr = self.simulation.calculate_add(var, period)
+                if self.simulation.tax_benefit_system.variables[var].value_type == bool:
+                    arr /= 52
             except:
                 try:
                     arr = self.simulation.calculate_divide(var, period)
@@ -73,9 +75,9 @@ class Microsimulation:
     
     def df(self, vars: List[str], period: Union[str, int] = None, map_to=None) -> MicroDataFrame:
         df = pd.DataFrame()
-        for var in vars:
-            df[var] = self.calc(var, period=period, map_to=map_to)
         entity = map_to or self.simulation.tax_benefit_system.variables[vars[0]].entity.key
+        for var in vars:
+            df[var] = self.calc(var, period=period, map_to=entity)
         df = MicroDataFrame(df, weights=self.entity_weights[entity])
         return df
 
