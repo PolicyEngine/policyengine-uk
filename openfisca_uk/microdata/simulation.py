@@ -46,6 +46,8 @@ class Microsimulation:
                 return entity_pop.project(arr)
             if how == "mean":
                 return entity_pop.project(arr / entity_pop.nb_persons())
+        elif entity == target_entity:
+            return arr
         else:
             return self.map_to(self.map_to(arr, entity, "person", how="mean"), "person", target_entity, how="sum")
 

@@ -50,6 +50,13 @@ class P_PROFIT2(Variable):
     entity = Person
     definition_period = YEAR
 
+class P_SEINCAMT(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+
+
 
 class P_ACCINT_ACCOUNT_CODE_1(Variable):
     value_type = float
@@ -609,6 +616,11 @@ class P_TYPEED2(Variable):
     entity = Person
     definition_period = YEAR
 
+class P_TOTHOURS(Variable):
+    value_type = float
+    entity = Person
+    definition_period = WEEK
+
 
 
 
@@ -714,5 +726,7 @@ FRS_variables = [
     P_AGE,
     P_PERSON,
     P_UPERSON,
-    P_TYPEED2
+    P_TYPEED2,
+    P_TOTHOURS,
+    P_SEINCAMT
 ]

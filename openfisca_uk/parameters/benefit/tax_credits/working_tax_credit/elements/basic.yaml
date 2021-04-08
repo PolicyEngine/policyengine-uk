@@ -1,7 +1,7 @@
 description: Basic element of WTC
 values:
-  2016-06-01:
-    value: 3040
+  2015-06-01:
+    value: 2060
 metadata:
   period: year
   unit: currency

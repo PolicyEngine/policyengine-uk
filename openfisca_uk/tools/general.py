@@ -1,6 +1,7 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
+from datetime import datetime
 
 
 def add(entity, period, variable_names, options=None):
@@ -86,3 +87,6 @@ def amount_between(amount, threshold_1, threshold_2):
     return clip(amount, threshold_1, threshold_2) - threshold_1
 
 WEEKS_IN_YEAR = 52
+
+def random(entity):
+    return np.random.rand(entity.count)

@@ -41,16 +41,7 @@ class trading_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
 
     def formula(person, period, parameters):
-        return person("P_PROFIT1", period) * (person("P_PROFIT2", period) == 1) * WEEKS_IN_YEAR
-
-class trading_loss(Variable):
-    value_type = float
-    entity = Person
-    label = u'Loss from trading in the current year.'
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("P_PROFIT1", period) * (person("P_PROFIT2", period) == 2) * WEEKS_IN_YEAR
+        return person("P_SEINCAMT", period) * WEEKS_IN_YEAR
 
 class savings_interest_income(Variable):
     value_type = float
@@ -422,6 +413,15 @@ class in_FE(Variable):
     def formula(person, period, parameters):
         return person("P_TYPEED2", period) == 7
 
+class hours_worked(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total amount of hours worked by this person'
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_TOTHOURS", period)
+
 input_variables = [
     employment_income,
     pension_contributions,
@@ -462,7 +462,8 @@ input_variables = [
     age,
     is_benunit_head,
     is_household_head,
-    in_FE
+    in_FE,
+    hours_worked
 ]
 
 

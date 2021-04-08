@@ -7,6 +7,7 @@ class person_weight(Variable):
     entity = Person
     label = u'Weight factor for the person'
     definition_period = YEAR
+    default_value = 1
 
 class age(Variable):
     value_type = float
@@ -14,6 +15,16 @@ class age(Variable):
     label = u'The age of the person in years'
     definition_period = YEAR
     set_input = set_input_dispatch_by_period
+    default_value = 18
+
+class birth_year(Variable):
+    value_type = float
+    entity = Person
+    label = u'The birth year of the person'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return datetime.now().year - person("age", period)
 
 class over_16(Variable):
     value_type = float
@@ -23,6 +34,27 @@ class over_16(Variable):
     
     def formula(person, period, parameters):
         return person("age", period) >= 16
+
+class is_adult(Variable):
+    value_type = float
+    entity = Person
+    label = u'Whether this person is an adult'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period) >= 18
+
+
+class is_child(Variable):
+    value_type = float
+    entity = Person
+    label = u'Whether this person is a child'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period) < 18
+
+
 
 class in_FE(Variable):
     value_type = bool

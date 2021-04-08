@@ -24,3 +24,18 @@ class net_income(Variable):
         base = person("base_net_income", period)
         modelling = person("tax_modelling", period)
         return base + modelling
+
+class hours_worked(Variable):
+    value_type = float
+    entity = Person
+    label = u'Total amount of hours worked by this person'
+    definition_period = WEEK
+
+class weekly_hours(Variable):
+    value_type = float
+    entity = Person
+    label = u'Average weekly hours for the year'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("hours_worked", period, options=[ADD]) / WEEKS_IN_YEAR

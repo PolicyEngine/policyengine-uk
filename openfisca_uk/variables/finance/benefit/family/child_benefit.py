@@ -8,6 +8,16 @@ class child_benefit_reported(Variable):
     label = u"Child Benefit (reported amount)"
     definition_period = WEEK
 
+class claims_child_benefit(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u'Whether this family is imputed to claim Child Benefit, based on survey response and take-up rates'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return aggr(benunit, period, ["child_benefit_reported"], options=[ADD]) + (random(benunit) < parameters(period).benefit.child_benefit.takeup)
+
+
 
 class child_benefit(Variable):
     value_type = float
@@ -21,11 +31,11 @@ class child_benefit(Variable):
         CB = parameters(period).benefit.child_benefit
         eldest_amount = (
             amount_between(num_children, 0, 1)
-            * CB.amount_eldest
+            * CB.amount.eldest
         )
         additional_amount = (
             amount_over(num_children, 1)
-            * CB.amount_additional
+            * CB.amount.additional
         )
         return eldest_amount + additional_amount
 

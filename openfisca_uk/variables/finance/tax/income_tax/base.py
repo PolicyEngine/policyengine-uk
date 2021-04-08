@@ -34,6 +34,10 @@ class social_security_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
 
+    def formula(person, period, parameters):
+        COMPONENTS = ["state_pension", "incapacity_benefit"]
+        return add(person, period, COMPONENTS, options=[ADD])
+
 class trading_income(Variable):
     value_type = float
     entity = Person

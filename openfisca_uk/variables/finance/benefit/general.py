@@ -6,14 +6,6 @@ from openfisca_uk.tools.general import *
 This file contains variables that are commonly used in benefit eligibility calculations.
 """
 
-class is_child(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether this person is a child for benefits purposes'
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("age", period) < 16
 
 class is_QYP(Variable):
     value_type = bool
@@ -60,8 +52,51 @@ class is_severely_disabled_for_benefits(Variable):
     def formula(person, period, parameters):
         benefit = parameters(period).benefit
         threshold_safety_gap = 10
-        paragraph_3 = person("DLA_SC", period) >= benefit.DLA.self_care.highest - threshold_safety_gap
-        paragraph_4 = person("PIP_DL", period) >= benefit.PIP.daily_living.higher - threshold_safety_gap
-        paragraph_5 = person("AFCS", period) > 0
+        paragraph_3 = person("DLA_SC", period, options=[ADD]) / WEEKS_IN_YEAR >= benefit.DLA.self_care.highest - threshold_safety_gap
+        paragraph_4 = person("PIP_DL", period, options=[ADD]) / WEEKS_IN_YEAR >= benefit.PIP.daily_living.higher - threshold_safety_gap
+        paragraph_5 = person("AFCS", period, options=[ADD]) / WEEKS_IN_YEAR > 0
         return sum([paragraph_3, paragraph_4, paragraph_5]) > 0
 
+class num_disabled_children(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Number of disabled children'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        child = benunit.members("is_child_or_QYP", period)
+        disabled = benunit.members("is_disabled_for_benefits", period, options=[ADD]) > 0
+        return benunit.sum(child * disabled)
+
+class num_severely_disabled_children(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Number of severely disabled children'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        child = benunit.members("is_child_or_QYP", period)
+        disabled = benunit.members("is_severely_disabled_for_benefits", period, options=[ADD]) > 0
+        return benunit.sum(child * disabled)
+
+class num_disabled_adults(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Number of disabled adults'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        adult = benunit.members("is_adult", period)
+        disabled = benunit.members("is_disabled_for_benefits", period, options=[ADD]) > 0
+        return benunit.sum(adult * disabled)
+
+class num_severely_disabled_adults(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Number of severely disabled adults'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        adult = benunit.members("is_adult", period)
+        disabled = benunit.members("is_severely_disabled_for_benefits", period, options=[ADD]) > 0
+        return benunit.sum(adult * disabled)
