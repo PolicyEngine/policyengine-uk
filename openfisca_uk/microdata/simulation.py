@@ -55,21 +55,24 @@ class Microsimulation:
         if period is None:
             period = self.input_year
         try:
+            var_metadata = self.simulation.tax_benefit_system.variables[var]
             arr = self.simulation.calculate(var, period)
         except Exception as e:
             try:
                 arr = self.simulation.calculate_add(var, period)
-                if self.simulation.tax_benefit_system.variables[var].value_type == bool:
+                if var_metadata.value_type == bool:
                     arr /= 52
             except:
                 try:
                     arr = self.simulation.calculate_divide(var, period)
                 except:
                     raise e
+        if var_metadata.value_type == Enum:
+            arr = arr.decode_to_str()
         if not weighted:
             return arr
         else:
-            entity = self.simulation.tax_benefit_system.variables[var].entity.key
+            entity = var_metadata.entity.key
             if map_to:
                 arr = self.map_to(arr, entity, map_to, how=how)
                 entity = map_to

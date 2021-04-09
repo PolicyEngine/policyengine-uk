@@ -12,3 +12,10 @@
     age: 15
   output:
     over_16: false
+- name: Birth year
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 5
+  output:
+    birth_year: 2016

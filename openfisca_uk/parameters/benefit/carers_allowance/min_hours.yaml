@@ -1,0 +1,8 @@
+description: Minimum number of hours spent providing care
+values:
+  2010-06-01:
+    value: 35
+metadata:
+  period: week
+  threshold_unit: hour
+  reference: https://www.gov.uk/carers-allowance

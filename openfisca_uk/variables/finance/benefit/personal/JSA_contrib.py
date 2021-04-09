@@ -12,6 +12,7 @@ class JSA_contrib(Variable):
     def formula(person, period, parameters):
         return person("JSA_contrib_reported", period)
 
+
 class JSA_contrib_reported(Variable):
     value_type = float
     entity = Person

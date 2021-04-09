@@ -2,10 +2,11 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class weekly_NI_class_2(Variable):
     value_type = float
     entity = Person
-    label = u'Class 2 Contributions for National Insurance'
+    label = u"Class 2 Contributions for National Insurance"
     definition_period = WEEK
     reference = "Social Security and Benefits Act 1992 s. 11"
 
@@ -16,11 +17,12 @@ class weekly_NI_class_2(Variable):
         charge = over_threshold * class_2.flat_rate
         return charge
 
+
 class NI_class_2(Variable):
     value_type = float
     entity = Person
-    label = u'Class 2 Contributions for National Insurance for the year'
+    label = u"Class 2 Contributions for National Insurance for the year"
     definition_period = YEAR
-    
+
     def formula(person, period, parameters):
         return person("weekly_NI_class_2", period, options=[ADD])

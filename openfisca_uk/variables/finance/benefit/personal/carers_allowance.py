@@ -12,6 +12,7 @@ class carers_allowance(Variable):
     def formula(person, period, parameters):
         return person("carers_allowance_reported", period)
 
+
 class carers_allowance_reported(Variable):
     value_type = float
     entity = Person

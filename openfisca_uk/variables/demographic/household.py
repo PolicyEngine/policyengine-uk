@@ -2,11 +2,21 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
+class households(Variable):
+    value_type = float
+    entity = Household
+    label = u"Variable holding households"
+    definition_period = YEAR
+    default_value = 1
+
+
 class household_weight(Variable):
     value_type = float
     entity = Household
-    label = u'Weight factor for the household'
+    label = u"Weight factor for the household"
     definition_period = YEAR
+
 
 class Country(Enum):
     UNKNOWN = u"Unknown"
@@ -29,7 +39,16 @@ class country(Variable):
         wales = household("region") == Region.WALES
         ni = household("region") == Region.NORTHERN_IRELAND
         scot = household("region") == Region.SCOTLAND
-        country = select([unknown_region, scot, wales, ni, True], [Country.UNKNOWN, Country.SCOTLAND, Country.WALES, Country.NI, Country.ENGLAND])
+        country = select(
+            [unknown_region, scot, wales, ni, True],
+            [
+                Country.UNKNOWN,
+                Country.SCOTLAND,
+                Country.WALES,
+                Country.NI,
+                Country.ENGLAND,
+            ],
+        )
         return country
 
 

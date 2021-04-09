@@ -1,0 +1,10 @@
+description: Weekly contributory JSA for couples
+values:
+  2016-06-01:
+    value: 57.90
+  2020-06-01:
+    value: 116.80
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24

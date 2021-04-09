@@ -327,6 +327,11 @@ class P_BENAMT_BENEFIT_CODE_14(Variable):
     entity = Person
     definition_period = YEAR
 
+class P_BENAMT_BENEFIT_CODE_1014(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
 
 class P_BENAMT_BENEFIT_CODE_15(Variable):
     value_type = float
@@ -621,8 +626,25 @@ class P_TOTHOURS(Variable):
     entity = Person
     definition_period = WEEK
 
+class P_EMPSTATI(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
 
+class P_FUELAMT(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
 
+class P_MILEAMT(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_MOTAMT(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
 
 FRS_variables = [
     P_GROSS4,
@@ -678,6 +700,7 @@ FRS_variables = [
     P_BENAMT_BENEFIT_CODE_12,
     P_BENAMT_BENEFIT_CODE_13,
     P_BENAMT_BENEFIT_CODE_14,
+    P_BENAMT_BENEFIT_CODE_1014,
     P_BENAMT_BENEFIT_CODE_15,
     P_BENAMT_BENEFIT_CODE_16,
     P_BENAMT_BENEFIT_CODE_17,
@@ -728,5 +751,9 @@ FRS_variables = [
     P_UPERSON,
     P_TYPEED2,
     P_TOTHOURS,
-    P_SEINCAMT
+    P_SEINCAMT,
+    P_EMPSTATI,
+    P_FUELAMT,
+    P_MILEAMT,
+    P_MOTAMT
 ]

@@ -2,11 +2,21 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
+class families(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Variable holding families"
+    definition_period = YEAR
+    default_value = 1
+
+
 class benunit_weight(Variable):
     value_type = float
     entity = Household
-    label = u'Weight factor for the benefit unit'
+    label = u"Weight factor for the benefit unit"
     definition_period = YEAR
+
 
 class is_married(Variable):
     value_type = bool
@@ -14,11 +24,13 @@ class is_married(Variable):
     label = u"Whether the benefit unit adults are married"
     definition_period = YEAR
 
+
 class FamilyType(Enum):
     SINGLE = u"Single, with no children"
     COUPLE_NO_CHILDREN = u"Couple, with no children"
     LONE_PARENT = u"Lone parent, with children"
     COUPLE_WITH_CHILDREN = u"Couple, with children"
+
 
 class RelationType(Enum):
     SINGLE = u"Single"
@@ -31,27 +43,33 @@ class family_type(Variable):
     default_value = FamilyType.SINGLE
     possible_values = FamilyType
     label = u"Family composition"
-    definition_period = YEAR
+    definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        two_adults = benunit.sum(benunit.members("is_adult", period)) == 2
-        has_children = benunit.sum(benunit.members("is_child", period)) > 0
+        two_adults = benunit.nb_persons(BenUnit.ADULT) == 2
+        has_children = benunit.nb_persons(BenUnit.CHILD) > 0
         is_single = not_(two_adults) * not_(has_children)
         is_couple = two_adults * not_(has_children)
         is_lone = not_(two_adults) * has_children
         is_full = two_adults * has_children
         return select([is_single, is_couple, is_lone, is_full], FamilyType)
 
+
 class relation_type(Variable):
     value_type = Enum
     entity = BenUnit
     default_value = RelationType.SINGLE
     possible_values = RelationType
-    label = u'Whether single or a couple'
-    definition_period = YEAR
+    label = u"Whether single or a couple"
+    definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
-        return where(benunit.sum(benunit.members("is_adult", period)) == 1, RelationType.SINGLE, RelationType.COUPLE)
+        return where(
+            benunit.nb_persons(BenUnit.ADULT) == 1,
+            RelationType.SINGLE,
+            RelationType.COUPLE,
+        )
+
 
 class eldest_adult_age(Variable):
     value_type = float
@@ -64,6 +82,7 @@ class eldest_adult_age(Variable):
             benunit.members("age", period.this_year), role=BenUnit.ADULT
         )
 
+
 class youngest_adult_age(Variable):
     value_type = float
     entity = BenUnit
@@ -74,6 +93,7 @@ class youngest_adult_age(Variable):
         return benunit.min(
             benunit.members("age", period.this_year), role=BenUnit.ADULT
         )
+
 
 class eldest_child_age(Variable):
     value_type = float
@@ -86,6 +106,7 @@ class eldest_child_age(Variable):
             benunit.members("age", period.this_year), role=BenUnit.CHILD
         )
 
+
 class youngest_child_age(Variable):
     value_type = float
     entity = BenUnit
@@ -97,19 +118,21 @@ class youngest_child_age(Variable):
             benunit.members("age", period.this_year), role=BenUnit.CHILD
         )
 
+
 class num_children(Variable):
     value_type = float
     entity = BenUnit
-    label = u'The number of children in the family'
+    label = u"The number of children in the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("is_child", period))
 
+
 class num_adults(Variable):
     value_type = float
     entity = BenUnit
-    label = u'The number of children in the family'
+    label = u"The number of children in the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

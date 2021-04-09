@@ -13,7 +13,6 @@ class SDA(Variable):
         return person("SDA_reported", period)
 
 
-
 class SDA_reported(Variable):
     value_type = float
     entity = Person

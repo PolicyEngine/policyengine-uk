@@ -38,6 +38,8 @@
   input:
     age: 35
     weekly_hours: 40
+    claims_WTC: true
+    claims_CTC: true
   output:
     is_WTC_eligible: true
     is_CTC_eligible: false
@@ -47,6 +49,8 @@
   input:
     age: 35
     weekly_hours: 8
+    claims_WTC: true
+    claims_CTC: true
   output:
     is_WTC_eligible: false
     is_CTC_eligible: false
@@ -62,6 +66,8 @@
         age: 6
     benunits:
       benunit1:
+        claims_CTC: true
+        claims_WTC: true
         adults: ["adult1"]
         children: ["child1", "child2"]
   output:
@@ -74,6 +80,8 @@
     employment_income: 0
     weekly_hours: 40
     age: 26
+    claims_WTC: true
+    claims_CTC: true
   output:
     is_WTC_eligible: true
     WTC_basic_element: 2060

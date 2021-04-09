@@ -1,3 +1,4 @@
+from openfisca_uk.variables.finance.income import EmploymentStatus
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
@@ -13,6 +14,21 @@ class employment_income(Variable):
 
     def formula(person, period, parameters):
         return person("P_UGRSPAY", period) * WEEKS_IN_YEAR
+
+class employment_expenses(Variable):
+    value_type = float
+    entity = Person
+    label = u'Cost of expenses necessarily incurred and reimbursed by employment'
+    definition_period = YEAR
+    reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 333"
+
+    def formula(person, period, parameters):
+        EXPENSES = [
+            "P_FUELAMT",
+            "P_MILEAMT",
+            "P_MOTAMT"
+        ]
+        return add(person, period, EXPENSES)
 
 class pension_contributions(Variable):
     value_type = float
@@ -220,6 +236,15 @@ class ESA_contrib_reported(Variable):
     def formula(person, period, parameters):
         return person("P_BENAMT_BENEFIT_CODE_16", period.this_year)
 
+class ESA_income_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"ESA (income-based) (reported amount per week)"
+    definition_period = WEEK
+
+    def formula(person, period, parameters):
+        return person("P_BENAMT_BENEFIT_CODE_1016", period.this_year)
+
 class IIDB_reported(Variable):
     value_type = float
     entity = Person
@@ -422,6 +447,45 @@ class hours_worked(Variable):
     def formula(person, period, parameters):
         return person("P_TOTHOURS", period)
 
+class employment_status(Variable):
+    value_type = Enum
+    entity = Person
+    possible_values = EmploymentStatus
+    default_value = EmploymentStatus.UNEMPLOYED
+    label = u'Employment status of the person'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        value = person("P_EMPSTATI", period)
+        status = select([
+            value == 0, 
+            value == 1, 
+            value == 2, 
+            value == 3, 
+            value == 4, 
+            value == 5,
+            value == 6,
+            value == 7,
+            value == 8,
+            value == 9,
+            value == 10,
+            value == 11
+        ], [
+            EmploymentStatus.CHILD,
+            EmploymentStatus.FT_EMPLOYED,
+            EmploymentStatus.PT_EMPLOYED,
+            EmploymentStatus.FT_SELF_EMPLOYED,
+            EmploymentStatus.PT_SELF_EMPLOYED,
+            EmploymentStatus.UNEMPLOYED,
+            EmploymentStatus.RETIRED,
+            EmploymentStatus.STUDENT,
+            EmploymentStatus.CARER,
+            EmploymentStatus.LONG_TERM_DISABLED,
+            EmploymentStatus.SHORT_TERM_DISABLED,
+            EmploymentStatus.OTHER_INACTIVE
+        ])
+        return status
+
 input_variables = [
     employment_income,
     pension_contributions,
@@ -463,7 +527,9 @@ input_variables = [
     is_benunit_head,
     is_household_head,
     in_FE,
-    hours_worked
+    hours_worked,
+    employment_status,
+    employment_expenses
 ]
 
 

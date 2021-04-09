@@ -10,93 +10,94 @@ This file contains variables that are commonly used in benefit eligibility calcu
 class is_QYP(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether this person is a qualifying young person for benefits purposes'
+    label = u"Whether this person is a qualifying young person for benefits purposes"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         return (person("age", period) < 20) * person("in_FE", period)
 
+
 class is_child_or_QYP(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether this person is a child or qualifying young person for most benefits'
+    label = u"Whether this person is a child or qualifying young person for most benefits"
     definition_period = YEAR
-    
+
     def formula(person, period, parameters):
         return person("is_child", period) + person("is_QYP", period)
 
 
-class is_disabled_for_benefits(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether this person is disabled for benefits purposes'
+class benefits_premiums(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Value of premiums for disability and carer status"
     definition_period = WEEK
-    reference = "Child Tax Credit Regulations 2002 s. 8"
 
-    def formula(person, period, parameters):
-        QUALIFYING_BENEFITS = [
-            "DLA_M",
-            "DLA_SC",
-            "PIP_M",
-            "PIP_DL",
+    def formula(benunit, period, parameters):
+        PREMIUMS = [
+            "disability_premium",
+            "enhanced_disability_premium",
+            "severe_disability_premium",
+            "carer_premium",
         ]
-        return add(person, period, QUALIFYING_BENEFITS, options=[ADD]) > 0
+        return add(benunit, period, PREMIUMS)
 
-class is_severely_disabled_for_benefits(Variable):
-    value_type = bool
-    entity = Person
-    label = u'Whether this person is severely disabled for benefits purposes'
+
+class benunit_weekly_hours(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Average weekly hours worked by adults in the benefit unit"
     definition_period = YEAR
-    reference = "Child Tax Credit Regulations 2002 s. 8"
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("weekly_hours", period))
+
+
+class is_single(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = (
+        u"Whether this benefit unit contains a single claimant for benefits"
+    )
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        relation_type = benunit("relation_type", period)
+        relations = relation_type.possible_values
+        return relation_type == relations.SINGLE
+
+
+class is_couple(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether this benefit unit contains a joint couple claimant for benefits"
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        relation_type = benunit("relation_type", period)
+        relations = relation_type.possible_values
+        return relation_type == relations.COUPLE
+
+class personal_benefits(Variable):
+    value_type = float
+    entity = Person
+    label = u'Value of personal, non-means-tested benefits'
+    definition_period = WEEK
 
     def formula(person, period, parameters):
-        benefit = parameters(period).benefit
-        threshold_safety_gap = 10
-        paragraph_3 = person("DLA_SC", period, options=[ADD]) / WEEKS_IN_YEAR >= benefit.DLA.self_care.highest - threshold_safety_gap
-        paragraph_4 = person("PIP_DL", period, options=[ADD]) / WEEKS_IN_YEAR >= benefit.PIP.daily_living.higher - threshold_safety_gap
-        paragraph_5 = person("AFCS", period, options=[ADD]) / WEEKS_IN_YEAR > 0
-        return sum([paragraph_3, paragraph_4, paragraph_5]) > 0
+        BENEFITS = [
+            "AA",
+            "AFCS",
+            "BSP",
+            "carers_allowance",
+            "DLA",
+            "ESA_contrib",
+            "IIDB",
+            "incapacity_benefit",
+            "JSA_contrib",
+            "PIP",
+            "SDA",
+            "state_pension"
+        ]
+        return add(person, period, BENEFITS)
 
-class num_disabled_children(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u'Number of disabled children'
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        child = benunit.members("is_child_or_QYP", period)
-        disabled = benunit.members("is_disabled_for_benefits", period, options=[ADD]) > 0
-        return benunit.sum(child * disabled)
-
-class num_severely_disabled_children(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u'Number of severely disabled children'
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        child = benunit.members("is_child_or_QYP", period)
-        disabled = benunit.members("is_severely_disabled_for_benefits", period, options=[ADD]) > 0
-        return benunit.sum(child * disabled)
-
-class num_disabled_adults(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u'Number of disabled adults'
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        adult = benunit.members("is_adult", period)
-        disabled = benunit.members("is_disabled_for_benefits", period, options=[ADD]) > 0
-        return benunit.sum(adult * disabled)
-
-class num_severely_disabled_adults(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u'Number of severely disabled adults'
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        adult = benunit.members("is_adult", period)
-        disabled = benunit.members("is_severely_disabled_for_benefits", period, options=[ADD]) > 0
-        return benunit.sum(adult * disabled)
