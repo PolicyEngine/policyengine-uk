@@ -12,7 +12,7 @@ class benefit_cap(Variable):
     def formula(benunit, period, parameters):
         children = benunit("has_children", period)
         region = benunit.max(benunit.members("person_region", period))
-        in_london = region == Region.LONDON
+        in_london = region == region.possible_values.LONDON
         cap = parameters(period).benefits.benefit_cap
         rate = select(
             [

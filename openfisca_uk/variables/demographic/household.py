@@ -23,7 +23,6 @@ class is_shared_accommodation(Variable):
     definition_period = YEAR
 
 
-
 class household_weight(Variable):
     value_type = float
     entity = Household
