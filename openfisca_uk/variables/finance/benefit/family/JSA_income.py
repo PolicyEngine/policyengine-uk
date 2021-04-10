@@ -24,10 +24,8 @@ class JSA_income_eligible(Variable):
         ) + benunit("is_couple", period) * (hours < JSA.hours.couple)
         under_SP_age = benunit.min(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
-        already_claiming = benunit.any(
-            benunit.members("JSA_income_reported", period, options=[ADD])
-        )
-        return eligible * already_claiming
+        claims = benunit("claims_JSA", period)
+        return eligible * claims
 
 
 class JSA_income_applicable_amount(Variable):
@@ -60,7 +58,7 @@ class claims_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["JSA_income_reported"], options=[ADD]) > 0
+        return aggr(benunit, period, ["JSA_income_reported", "JSA_contrib_reported"], options=[ADD]) > 0
 
 class JSA_income_applicable_income(Variable):
     value_type = float
@@ -78,8 +76,9 @@ class JSA_income_applicable_income(Variable):
         ]
         income = aggr(benunit, period, INCOME_COMPONENTS, options=[DIVIDE])
         tax = aggr(benunit, period, ["income_tax", "national_insurance"], options=[DIVIDE])
-        income = aggr(benunit, period, ["personal_benefits"])
+        income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["child_benefit"])
+        income -= tax
         income -= aggr(benunit, period, ["pension_contributions"], options=[DIVIDE]) * 0.5
         family_type = benunit("family_type")
         families = family_type.possible_values

@@ -1,6 +1,0 @@
-description: Default State Pension age
-values:
-  1950-01-01:
-    65
-metadata:
-  threshold_unit: currency-GBP

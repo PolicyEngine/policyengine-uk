@@ -98,6 +98,23 @@ class gender(Variable):
     label = u"Gender of the person"
     definition_period = ETERNITY
 
+class is_male(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is male'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("gender") == Gender.MALE
+
+class is_female(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether the person is female'
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return person("gender") == Gender.FEMALE
 
 class is_household_head(Variable):
     value_type = bool

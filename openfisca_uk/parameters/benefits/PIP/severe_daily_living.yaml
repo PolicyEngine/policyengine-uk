@@ -1,8 +1,0 @@
-description: Severe daily living part of the personal independence payment.
-values:
-  2016-06-01:  # TODO: confirm start year.
-    value: 89.15
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/pip/what-youll-get

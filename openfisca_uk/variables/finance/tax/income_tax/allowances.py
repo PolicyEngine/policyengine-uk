@@ -136,7 +136,7 @@ class savings_allowance(Variable):
         tax_bands = tax_band.possible_values
         amounts = parameters(
             period
-        ).taxes.income_tax.allowances.personal_savings_allowance
+        ).tax.income_tax.allowances.personal_savings_allowance
         allowance = select(
             [
                 tax_band == tax_bands.ADDITIONAL,

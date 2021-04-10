@@ -78,6 +78,29 @@ class is_couple(Variable):
         relations = relation_type.possible_values
         return relation_type == relations.COUPLE
 
+class is_lone_parent(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Whether the family is a lone parent family'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        family_type = benunit("family_type", period)
+        families = family_type.possible_values
+        return family_type == families.LONE_PARENT
+
+class is_single_person(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Whether the family is a single person'
+    definition_period = ETERNITY
+
+    def formula(benunit, period, parameters):
+        family_type = benunit("family_type", period)
+        families = family_type.possible_values
+        return family_type == families.SINGLE
+    
+
 class personal_benefits(Variable):
     value_type = float
     entity = Person

@@ -160,7 +160,7 @@ class disability_premium(Variable):
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).benefits.disability_premia
+        dis = parameters(period).benefit.disability_premia
         amount = (benunit("num_disabled_adults", period.this_year) > 0) * (
             benunit("is_single", period.this_year) * dis.disability_single
             + benunit("is_couple", period.this_year) * dis.disability_couple
@@ -176,7 +176,7 @@ class severe_disability_premium(Variable):
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).benefits.disability_premia
+        dis = parameters(period).benefit.disability_premia
         amount = (
             benunit("num_severely_disabled_adults", period.this_year) > 0
         ) * (
@@ -194,7 +194,7 @@ class enhanced_disability_premium(Variable):
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).benefits.disability_premia
+        dis = parameters(period).benefit.disability_premia
         amount = (
             benunit("num_enhanced_disabled_adults", period.this_year) > 0
         ) * (
