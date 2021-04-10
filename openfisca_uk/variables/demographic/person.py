@@ -128,3 +128,15 @@ class is_benunit_head(Variable):
     entity = Person
     label = u"Whether this person is the head-of-family"
     definition_period = YEAR
+
+class in_social_housing(Variable):
+    value_type = bool
+    entity = Person
+    label = u'Whether this person lives in social housing'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        tenure = person.household("tenure_type", period.this_year)
+        tenures = tenure.possible_values
+        social = is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
+        return social

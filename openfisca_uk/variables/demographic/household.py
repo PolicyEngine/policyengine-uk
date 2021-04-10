@@ -10,6 +10,19 @@ class households(Variable):
     definition_period = YEAR
     default_value = 1
 
+class num_bedrooms(Variable):
+    value_type = float
+    entity = Household
+    label = u'The number of bedrooms in the house'
+    definition_period = YEAR
+
+class is_shared_accommodation(Variable):
+    value_type = bool
+    entity = Household
+    label = u'Whether the household is shared accommodation'
+    definition_period = YEAR
+
+
 
 class household_weight(Variable):
     value_type = float

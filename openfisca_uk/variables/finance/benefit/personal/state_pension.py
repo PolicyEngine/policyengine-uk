@@ -2,19 +2,27 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class state_pension_age(Variable):
+    value_type = float
+    entity = Person
+    label = u"State Pension age for this person"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        SP = parameters(period).benefit.state_pension
+        male = person("is_male")
+        threshold = male * SP.male_age + not_(male) * SP.female_age
+        return threshold
 
 class is_SP_age(Variable):
     value_type = bool
     entity = Person
     label = u"Whether the person is State Pension Age"
     definition_period = YEAR
-    reference = ""
 
     def formula(person, period, parameters):
         age = person("age", period)
-        SP = parameters(period).benefit.state_pension
-        male = person("is_male")
-        threshold = male * SP.male_age + not_(male) * SP.female_age
+        threshold = person("state_pension_age", period)
         over = (age >= threshold)
         return over
 

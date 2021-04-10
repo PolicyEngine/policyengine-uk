@@ -33,6 +33,14 @@ class tenure_type(Variable):
         )
         return result
 
+class rent(Variable):
+    value_type = float
+    entity = Household
+    label = u"Gross rent for the household"
+    definition_period = WEEK
+
+    def formula(household, period, parameters):
+        return household("H_HHRENT", period)
 
 class employment_income(Variable):
     value_type = float
@@ -516,6 +524,7 @@ class employment_status(Variable):
         return status
 
 input_variables = [
+    rent,
     tenure_type,
     employment_income,
     pension_contributions,

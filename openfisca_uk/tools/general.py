@@ -92,3 +92,6 @@ WEEKS_IN_YEAR = 52
 
 def random(entity):
     return np.random.rand(entity.count)
+
+def is_in(values, *targets):
+    return sum(map(lambda target: values == target, targets))

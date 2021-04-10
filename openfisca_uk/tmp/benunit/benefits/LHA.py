@@ -7,7 +7,7 @@ class LHA_eligible(Variable):
     value_type = float
     entity = BenUnit
     label = u"Whether eligible for Local Housing Allowance"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         return benunit.all(

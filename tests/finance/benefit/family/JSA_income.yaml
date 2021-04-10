@@ -3,10 +3,12 @@
   absolute_error_margin: 5
   input:
     employment_income: 4200
+    employment_status: "UNEMPLOYED"
     weekly_hours: 4
     age: 27
     claims_JSA: true
   output:
+    JSA_income_eligible: true
     JSA_income:
       week:2021-02-01:
         0
@@ -17,9 +19,11 @@
     age: 18
     weekly_hours: 5
     employment_income: 100
+    employment_status: "UNEMPLOYED"
     claims_JSA: true
   output:
-    JSA_income:
+    JSA_income_eligible: true
+    JSA_income_applicable_amount:
       week:2021-02-01:
         58
 - name: JSA income-based, higher age amount
@@ -29,8 +33,11 @@
     age: 26
     weekly_hours: 1
     employment_income: 20
+    employment_status: "UNEMPLOYED"
     claims_JSA: true
+    claims_legacy_benefits: true
   output:
-    JSA_income:
+    JSA_income_eligible: true
+    JSA_income_applicable_amount:
       week:2021-02-01:
         74

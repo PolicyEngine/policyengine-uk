@@ -2,6 +2,11 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class H_HHRENT(Variable):
+    value_type = float
+    entity = Household
+    definition_period = WEEK
+
 
 class P_GROSS4(Variable):
     value_type = float
@@ -652,6 +657,7 @@ class H_PTENTYP2(Variable):
     definition_period = YEAR
 
 FRS_variables = [
+    H_HHRENT,
     H_PTENTYP2,
     P_GROSS4,
     B_GROSS4,

@@ -69,6 +69,7 @@ class Microsimulation:
                     raise e
         if var_metadata.value_type == Enum:
             arr = arr.decode_to_str()
+            how = "value_from_first_person"
         if not weighted:
             return arr
         else:
