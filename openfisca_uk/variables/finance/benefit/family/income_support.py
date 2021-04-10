@@ -16,7 +16,9 @@ class claims_IS(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["income_support_reported"], options=[ADD]) > 0
+        already_claiming = aggr(benunit, period, ["income_support_reported"], options=[ADD]) > 0
+        would_claim = (random(benunit) <= parameters(period).benefit.income_support.takeup) * benunit("claims_legacy_benefits", period)
+        return already_claiming + would_claim > 0
 
 
 class income_support_applicable_income(Variable):
@@ -68,12 +70,9 @@ class income_support_eligible(Variable):
         ) > 0
         under_SP_age = benunit.any(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
-        already_claiming = benunit("claims_IS", period)
         return (
             not_(benunit("ESA_income", period, options=[ADD]) > 0)
-            * not_(benunit("JSA_income", period, options=[ADD]) > 0)
             * eligible
-            * already_claiming
         )
 
 class income_support_applicable_amount(Variable):
@@ -119,7 +118,7 @@ class income_support_applicable_amount(Variable):
         premiums = benunit("benefits_premiums", period)
         return (personal_allowance + premiums) * benunit(
             "income_support_eligible", period.this_year
-        )
+        ) * benunit("claims_IS", period.this_year)
 
 class income_support(Variable):
     value_type = float

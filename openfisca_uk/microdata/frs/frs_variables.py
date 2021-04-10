@@ -646,7 +646,13 @@ class P_MOTAMT(Variable):
     entity = Person
     definition_period = YEAR
 
+class H_PTENTYP2(Variable):
+    value_type = float
+    entity = Household
+    definition_period = YEAR
+
 FRS_variables = [
+    H_PTENTYP2,
     P_GROSS4,
     B_GROSS4,
     H_GROSS4,

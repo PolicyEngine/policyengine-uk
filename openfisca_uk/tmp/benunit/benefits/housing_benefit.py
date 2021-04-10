@@ -4,17 +4,25 @@ from openfisca_uk.tools.general import *
 
 
 class housing_benefit_eligible(Variable):
-    value_type = float
+    value_type = bool
     entity = BenUnit
     label = u"Whether eligible for Housing Benefit"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
-        return benunit.max(
-            benunit.members("living_in_social_housing", period)
-            * benunit.members("is_renting", period)
-        ) * (benunit("housing_benefit_reported", period.this_year) > 0)
+        renting = benunit("benunit_is_renting", period.this_year)
+        return renting
 
+class claims_HB(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Whether this family is imputed to claim Housing Benefit'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        already_claiming = aggr(benunit, period, ["housing_benefit_reported"]) > 0
+        HB = parameters(period).benefit.housing_benefit
+        return already_claiming + random(benunit) < HB.takeup
 
 class housing_benefit_applicable_amount(Variable):
     value_type = float

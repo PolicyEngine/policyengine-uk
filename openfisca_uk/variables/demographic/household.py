@@ -75,3 +75,18 @@ class region(Variable):
     entity = Household
     label = u"Region of the UK"
     definition_period = ETERNITY
+
+class TenureType(Enum):
+    RENT_FROM_COUNCIL = "Rented from Council"
+    RENT_FROM_HA = "Rented from a Housing Association"
+    RENT_PRIVATELY = "Rented privately"
+    OWNED_OUTRIGHT = "Owned outright"
+    OWNED_WITH_MORTGAGE = "Owned with a mortgage"
+
+class tenure_type(Variable):
+    value_type = Enum
+    possible_values = TenureType
+    default_value = TenureType.RENT_PRIVATELY
+    entity = Household
+    label = u'Tenure type of the household'
+    definition_period = YEAR

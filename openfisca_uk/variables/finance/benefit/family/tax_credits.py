@@ -93,12 +93,11 @@ class claims_CTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(
+        already_claiming = aggr(
             benunit, period, ["child_tax_credit_reported"], options=[ADD]
-        ) + (
-            random(benunit)
-            < parameters(period).benefit.tax_credits.child_tax_credit.takeup
-        )
+        ) > 0
+        would_claim = (random(benunit) <= parameters(period).benefit.tax_credits.child_tax_credit.takeup) * benunit("claims_legacy_benefits", period)
+        return already_claiming + would_claim > 0
 
 
 class CTC_maximum_rate(Variable):
@@ -264,7 +263,7 @@ class claims_WTC(Variable):
         ) + (
             random(benunit)
             < parameters(period).benefit.tax_credits.working_tax_credit.takeup
-        )
+        ) * benunit("claims_legacy_benefits", period)
 
 
 class WTC_maximum_rate(Variable):

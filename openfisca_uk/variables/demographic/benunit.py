@@ -1,3 +1,4 @@
+from openfisca_uk.variables.demographic.household import TenureType
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
@@ -137,3 +138,25 @@ class num_adults(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("is_adult", period))
+
+class benunit_tenure_type(Variable):
+    value_type = Enum
+    possible_values = TenureType
+    default_value = TenureType.RENT_PRIVATELY
+    entity = BenUnit
+    label = u'Tenure type of the family\'s household'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        tenure = benunit.value_from_first_person(benunit.members.household("tenure_type", period))
+        return tenure
+
+class benunit_is_renting(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u'Whether this family is renting'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        tenure = benunit("benunit_tenure_type", period)
+        return (tenure == TenureType.RENT_PRIVATELY) + (tenure == TenureType.RENT_FROM_COUNCIL) + (tenure == TenureType.RENT_FROM_HA)

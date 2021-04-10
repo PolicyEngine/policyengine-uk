@@ -124,3 +124,11 @@ class personal_benefits(Variable):
         ]
         return add(person, period, BENEFITS)
 
+class claims_legacy_benefits(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Whether this family is imputed to claim legacy benefits over Universal Credit'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return random(benunit) > parameters(period).benefit.universal_credit.rollout_rate

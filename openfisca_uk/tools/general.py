@@ -3,6 +3,8 @@ from openfisca_uk.entities import *
 import numpy as np
 from datetime import datetime
 
+np.random.seed(0)
+
 
 def add(entity, period, variable_names, options=None):
     """Sums a list of variables over entities.

@@ -30,10 +30,9 @@ class pension_credit_eligible(Variable):
         both_SP_age = benunit.min(benunit.members("is_SP_age", period))
         one_SP_age = benunit.max(benunit.members("is_SP_age", period))
         claiming_HB = benunit("housing_benefit", period, options=[ADD]) > 0
-        claims_PC = benunit("claims_PC", period)
         return (
             both_SP_age + (one_SP_age * claiming_HB)
-        ) * claims_PC
+        )
 
 class pension_credit_MG(Variable):
     value_type = float
@@ -51,7 +50,7 @@ class pension_credit_MG(Variable):
             "carer_premium", period
         )
         applicable_amount = personal_allowance + premiums
-        return applicable_amount * benunit("pension_credit_eligible", period.this_year)
+        return applicable_amount * benunit("pension_credit_eligible", period.this_year) * benunit("claims_PC", period.this_year)
 
 class pension_credit_applicable_income(Variable):
     value_type = float
@@ -84,7 +83,7 @@ class pension_credit_GC(Variable):
 
     def formula(benunit, period, parameters):
         income = benunit("pension_credit_applicable_income", period)
-        return benunit("pension_credit_eligible", period.this_year) * max_(
+        return benunit("pension_credit_eligible", period.this_year) * benunit("claims_PC", period.this_year) * max_(
             0, benunit("pension_credit_MG", period) - income
         )
 
@@ -112,7 +111,7 @@ class pension_credit_SC(Variable):
         )
         deduction = income_above_MG * PC.savings_credit.withdrawal_rate
         SC_final_amount = max_(0, SC_amount - deduction)
-        return max_(0, SC_final_amount) * benunit("pension_credit_eligible", period.this_year)
+        return max_(0, SC_final_amount) * benunit("pension_credit_eligible", period.this_year) * benunit("claims_PC", period.this_year)
 
 class pension_credit(Variable):
     value_type = float

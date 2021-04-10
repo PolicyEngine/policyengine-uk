@@ -26,13 +26,9 @@ class income_support_eligible(Variable):
         ) > 0
         under_SP_age = benunit.max(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
-        already_claiming = (
-            benunit("income_support_reported", period, options=[MATCH]) > 0
-        )
         return (
             not_(benunit("ESA_income_eligible", period))
             * eligible
-            * already_claiming
         )
 
 

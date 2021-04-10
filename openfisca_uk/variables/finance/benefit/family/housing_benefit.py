@@ -18,3 +18,15 @@ class housing_benefit(Variable):
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["housing_benefit_reported"])
 
+class housing_benefit_eligible(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether eligible for Housing Benefit"
+    definition_period = WEEK
+
+    def formula(benunit, period, parameters):
+        return benunit.max(
+            benunit.members("living_in_social_housing", period)
+            * benunit.members("is_renting", period)
+        ) * (benunit("housing_benefit_reported", period.this_year) > 0)
+

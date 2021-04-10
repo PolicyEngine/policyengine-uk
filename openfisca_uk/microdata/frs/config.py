@@ -1,8 +1,37 @@
+from openfisca_uk.variables.demographic.household import TenureType
 from openfisca_uk.variables.finance.income import EmploymentStatus
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 from openfisca_uk.microdata.frs.frs_variables import FRS_variables
+
+class tenure_type(Variable):
+    value_type = Enum
+    possible_values = TenureType
+    default_value = TenureType.RENT_PRIVATELY
+    entity = Household
+    label = u'Tenure type of the household'
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        value = household("H_PTENTYP2", period)
+        result = select(
+            [
+                value == 1,
+                value == 2,
+                (value == 3) + (value == 4),
+                value == 5,
+                value == 6
+            ],
+            [
+                TenureType.RENT_FROM_COUNCIL,
+                TenureType.RENT_FROM_HA,
+                TenureType.RENT_PRIVATELY,
+                TenureType.OWNED_OUTRIGHT,
+                TenureType.OWNED_WITH_MORTGAGE
+            ]
+        )
+        return result
 
 
 class employment_income(Variable):
@@ -487,6 +516,7 @@ class employment_status(Variable):
         return status
 
 input_variables = [
+    tenure_type,
     employment_income,
     pension_contributions,
     pension_income,

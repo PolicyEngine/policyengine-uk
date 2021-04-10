@@ -1,0 +1,21 @@
+description: Roll-out rate of Universal Credit
+values:
+  2010-06-04:
+    value: 0
+  2018-06-04:
+    value: 0.2
+  2019-06-04:
+    value: 0.41
+  2020-06-04:
+    value: 0.58
+  2021-06-04:
+    value: 0.66
+  2022-06-04:
+    value: 0.8
+  2023-06-04:
+    value: 0.99
+  2024-06-04:
+    value: 1
+metadata:
+  threshold_unit: /1
+  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=54

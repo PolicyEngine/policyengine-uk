@@ -1,0 +1,7 @@
+description: Take-up rate for Income Support
+values:
+  2010-06-01:
+    value: 0.9
+metadata:
+  threshold_unit: /1
+  reference: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019

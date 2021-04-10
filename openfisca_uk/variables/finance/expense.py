@@ -9,6 +9,16 @@ class rent(Variable):
     label = u"Gross rent for the household"
     definition_period = YEAR
 
+class family_rent(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Gross rent for the family'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        personal_rent = benunit.members("rent", period)
+        return benunit.sum(personal_rent)
+
 
 class childcare_cost(Variable):
     value_type = float

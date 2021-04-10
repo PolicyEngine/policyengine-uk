@@ -1,0 +1,7 @@
+description: Take-up rate of Housing Benefit
+values:
+  2010-06-01:
+    value: 0.8
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019
