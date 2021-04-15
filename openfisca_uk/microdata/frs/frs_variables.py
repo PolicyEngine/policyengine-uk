@@ -671,7 +671,32 @@ class H_CTANNUAL(Variable):
     entity = Household
     definition_period = YEAR
 
+class P_person_id(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class B_benunit_id(Variable):
+    value_type = float
+    entity = BenUnit
+    definition_period = YEAR
+
+class H_household_id(Variable):
+    value_type = float
+    entity = Household
+    definition_period = YEAR
+
+class H_GVTREGNO(Variable):
+    value_type = int
+    entity = Household
+    definition_period = ETERNITY
+
+
 FRS_variables = [
+    H_GVTREGNO,
+    P_person_id,
+    B_benunit_id,
+    H_household_id,
     H_CTANNUAL,
     H_GBHSCOST,
     H_NIHSCOST,

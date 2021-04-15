@@ -16,9 +16,11 @@ import copy
 
 warnings.filterwarnings("ignore")
 
+np.random.seed(0)
 
 class IndividualSim:
-    def __init__(self, *reforms):
+    def __init__(self, *reforms, year=2018):
+        self.year = year
         self.reforms = reforms
         self.tax_benefit_system = openfisca_uk.CountryTaxBenefitSystem()
         self.entities = {
@@ -43,10 +45,11 @@ class IndividualSim:
         self,
         entity="people",
         name=None,
-        input_period="2020",
+        input_period=None,
         auto_period=True,
         **kwargs,
     ):
+        input_period = input_period or self.year
         entity_plural = self.entities[entity].plural
         if name is None:
             name = (
@@ -77,10 +80,10 @@ class IndividualSim:
         self.add_data(entity="person", **kwargs)
 
     def add_benunit(self, **kwargs):
-        self.add_data(entity="benunit", **kwargs)
+        self.add_data(entity="benunit", name="benunit", **kwargs)
 
     def add_household(self, **kwargs):
-        self.add_data(entity="household", **kwargs)
+        self.add_data(entity="household", name="household", **kwargs)
 
     def get_entity(self, name):
         entity_type = [
@@ -99,7 +102,8 @@ class IndividualSim:
         ][0]
         return containing_entity
 
-    def calc(self, var, period="2020", target=None, index=None):
+    def calc(self, var, period=None, target=None, index=None):
+        period = period or self.year
         entity = self.sim_builder.get_variable_entity(var)
         if target is not None:
             target_entity = self.get_entity(target)
@@ -125,9 +129,18 @@ class IndividualSim:
             return result[index]
         return result
 
-    def calc_deriv(self, var, wrt="earnings", period="2020", target=None):
-        y = self.calc(var, period=period, target=target)
-        x = self.calc(wrt, period=period, target=target)
+    def calc_deriv(self, var, wrt="employment_income", period=None, var_target=None, wrt_target=None):
+        period = period or self.year
+        y = self.calc(var, period=period, target=var_target)
+        x = self.calc(wrt, period=period, target=wrt_target)
+        try:
+            y = y.squeeze()
+        except:
+            pass
+        try:
+            x = x.squeeze()
+        except:
+            pass
         assert (
             len(y) > 1 and len(x) > 1
         ), "Simulation must vary on an axis to calculate derivatives."
@@ -135,9 +148,9 @@ class IndividualSim:
         deriv = np.append(deriv, deriv[-1])
         return deriv
 
-    def calc_mtr(self, target=None):
+    def calc_mtr(self, target="household_net_income", wrt="employment_income", wrt_target=None, var_target=None):
         return 1 - self.calc_deriv(
-            "household_net_income", wrt="earnings", target=target
+            target, wrt=wrt, wrt_target=wrt_target, var_target=var_target
         )
 
     def reset_vary(self):
@@ -145,7 +158,8 @@ class IndividualSim:
         self.varying = False
         self.num_points = None
 
-    def vary(self, var, min=0, max=200000, step=100, index=0, period="2020"):
+    def vary(self, var, min=0, max=200000, step=100, index=0, period=None):
+        period = period or self.year
         if "axes" not in self.situation_data:
             self.situation_data["axes"] = [[]]
         count = int((max - min) / step)

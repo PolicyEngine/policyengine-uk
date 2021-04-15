@@ -2,6 +2,12 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class person_id(Variable):
+    value_type = float
+    entity = Person
+    label = u'ID for the person'
+    definition_period = YEAR
+
 
 class people(Variable):
     value_type = float

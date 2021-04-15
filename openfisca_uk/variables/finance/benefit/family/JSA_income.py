@@ -128,4 +128,4 @@ class yearly_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["JSA"], options=[ADD])
+        return add(benunit, period, ["JSA"], options=[ADD])

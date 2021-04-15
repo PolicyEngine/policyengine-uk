@@ -2,6 +2,12 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class household_id(Variable):
+    value_type = float
+    entity = Household
+    label = u'ID for the household'
+    definition_period = YEAR
+
 
 class households(Variable):
     value_type = float

@@ -536,4 +536,4 @@ class income_tax(Variable):
     reference = "Income Tax Act 2007 s. 23"
 
     def formula(person, period, parameters):
-        return person("income_tax_pre_charges", period)
+        return person("income_tax_pre_charges", period) + person("CB_HITC", period)

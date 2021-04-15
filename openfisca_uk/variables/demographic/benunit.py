@@ -3,6 +3,12 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class benunit_id(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'ID for the family'
+    definition_period = YEAR
+
 
 class families(Variable):
     value_type = float

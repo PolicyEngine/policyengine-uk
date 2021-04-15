@@ -18,6 +18,17 @@ class rent(Variable):
     def formula(household, period, parameters):
         return household("weekly_rent", period.this_year)
 
+class personal_rent(Variable):
+    value_type = float
+    entity = Person
+    label = u'Personal rent'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person.household("rent", period, options=[ADD]) * person("is_household_head", period)
+
+
+
 class family_rent(Variable):
     value_type = float
     entity = BenUnit
@@ -25,7 +36,7 @@ class family_rent(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        personal_rent = benunit.members("rent", period)
+        personal_rent = benunit.members("personal_rent", period)
         return benunit.sum(personal_rent)
 
 

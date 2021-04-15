@@ -16,6 +16,9 @@ class base_net_income(Variable):
     label = u"Existing net income for the person to use as a base in microsimulation"
     definition_period = YEAR
 
+    def formula(person, period, parameters):
+        return person("adjusted_net_income", period)
+
 
 class net_income(Variable):
     value_type = float
@@ -25,7 +28,7 @@ class net_income(Variable):
 
     def formula(person, period, parameters):
         base = person("base_net_income", period)
-        modelling = person("tax_modelling", period) + person("benefits_modelling", period)
+        modelling = - person("tax_modelling", period) + person("benefits_modelling", period)
         return base + modelling
 
 

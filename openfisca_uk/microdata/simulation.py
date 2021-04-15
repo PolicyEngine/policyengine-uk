@@ -13,6 +13,8 @@ from openfisca_core.model_api import *
 import numpy as np
 import microdf as mdf
 
+np.random.seed(0)
+
 
 class Microsimulation:
     def __init__(
@@ -20,7 +22,7 @@ class Microsimulation:
     ):
         self.mode = mode
         self.year = year
-        self.input_year = input_year or year
+        self.input_year = input_year or (year + 1) # the model takes yearly parameters from the start of the year; most surveys cover a financial year and therefore it's more accurate to start with the parameters from halfway through
         self.reforms = reforms
         if mode == "frs":
             self.reforms = from_FRS, *self.reforms
@@ -69,7 +71,6 @@ class Microsimulation:
                     raise e
         if var_metadata.value_type == Enum:
             arr = arr.decode_to_str()
-            how = "value_from_first_person"
         if not weighted:
             return arr
         else:

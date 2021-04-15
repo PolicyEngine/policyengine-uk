@@ -1,9 +1,48 @@
-from openfisca_uk.variables.demographic.household import TenureType
+from openfisca_uk.variables.demographic.household import Region, TenureType
 from openfisca_uk.variables.finance.income import EmploymentStatus
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 from openfisca_uk.microdata.frs.frs_variables import FRS_variables
+
+class region(Variable):
+    value_type = Enum
+    possible_values = Region
+    default_value = Region.UNKNOWN
+    entity = Household
+    label = u"Region of the UK"
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        region = household("H_GVTREGNO")
+        reg = select([
+            region == 1,
+            region == 2,
+            region == 4,
+            region == 5,
+            region == 6,
+            region == 7,
+            region == 8,
+            region == 9,
+            region == 10,
+            region == 11,
+            region == 12,
+            region == 13
+        ], [
+            Region.NORTH_EAST,
+            Region.NORTH_WEST,
+            Region.YORKSHIRE,
+            Region.EAST_MIDLANDS,
+            Region.WEST_MIDLANDS,
+            Region.EAST_OF_ENGLAND,
+            Region.LONDON,
+            Region.SOUTH_EAST,
+            Region.SOUTH_WEST,
+            Region.SCOTLAND,
+            Region.WALES,
+            Region.NORTHERN_IRELAND
+        ])
+        return reg
 
 class tenure_type(Variable):
     value_type = Enum
@@ -541,7 +580,41 @@ class council_tax(Variable):
     def formula(household, period, parameters):
         return household("H_CTANNUAL", period)
 
+
+class person_id(Variable):
+    value_type = float
+    entity = Person
+    label = u'ID for the person'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("P_person_id", period)
+
+
+class benunit_id(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'ID for the family'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit("B_benunit_id", period)
+
+
+class household_id(Variable):
+    value_type = float
+    entity = Household
+    label = u'ID for the household'
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return household("H_household_id", period)
+
 input_variables = [
+    region,
+    person_id,
+    benunit_id,
+    household_id,
     council_tax,
     housing_costs,
     rent,
