@@ -19,7 +19,9 @@ class claims_child_benefit(Variable):
     def formula(benunit, period, parameters):
         return aggr(
             benunit, period, ["child_benefit_reported"], options=[ADD]
-        ) + (random(benunit) <= parameters(period).benefit.child_benefit.takeup)
+        ) + (
+            random(benunit) <= parameters(period).benefit.child_benefit.takeup
+        )
 
 
 class child_benefit(Variable):
@@ -34,7 +36,9 @@ class child_benefit(Variable):
         CB = parameters(period).benefit.child_benefit
         eldest_amount = amount_between(num_children, 0, 1) * CB.amount.eldest
         additional_amount = amount_over(num_children, 1) * CB.amount.additional
-        return (eldest_amount + additional_amount) * benunit("claims_child_benefit", period.this_year)
+        return (eldest_amount + additional_amount) * benunit(
+            "claims_child_benefit", period.this_year
+        )
 
 
 class child_benefit_less_tax_charge(Variable):

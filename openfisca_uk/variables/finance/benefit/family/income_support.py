@@ -9,16 +9,22 @@ class income_support_reported(Variable):
     label = u"Income Support (reported amount per week)"
     definition_period = WEEK
 
+
 class claims_IS(Variable):
     value_type = bool
     entity = BenUnit
-    label = u'Whether this family is imputed to claim Income Support'
+    label = u"Whether this family is imputed to claim Income Support"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = aggr(benunit, period, ["income_support_reported"], options=[ADD]) > 0
-        would_claim = (random(benunit) <= parameters(period).benefit.income_support.takeup) * benunit("claims_legacy_benefits", period)
-        return already_claiming # + would_claim > 0
+        already_claiming = (
+            aggr(benunit, period, ["income_support_reported"], options=[ADD])
+            > 0
+        )
+        would_claim = (
+            random(benunit) <= parameters(period).benefit.income_support.takeup
+        ) * benunit("claims_legacy_benefits", period)
+        return already_claiming  # + would_claim > 0
 
 
 class income_support_applicable_income(Variable):
@@ -33,14 +39,22 @@ class income_support_applicable_income(Variable):
             "employment_income",
             "trading_income",
             "property_income",
-            "pension_income"
+            "pension_income",
         ]
         income = aggr(benunit, period, INCOME_COMPONENTS, options=[DIVIDE])
-        tax = aggr(benunit, period, ["income_tax", "national_insurance"], options=[DIVIDE])
+        tax = aggr(
+            benunit,
+            period,
+            ["income_tax", "national_insurance"],
+            options=[DIVIDE],
+        )
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["child_benefit"])
         income -= tax
-        income -= aggr(benunit, period, ["pension_contributions"], options=[DIVIDE]) * 0.5
+        income -= (
+            aggr(benunit, period, ["pension_contributions"], options=[DIVIDE])
+            * 0.5
+        )
         family_type = benunit("family_type")
         families = family_type.possible_values
         income = max_(
@@ -53,6 +67,7 @@ class income_support_applicable_income(Variable):
             * IS.means_test.income_disregard_lone_parent,
         )
         return income
+
 
 class income_support_eligible(Variable):
     value_type = bool
@@ -71,9 +86,9 @@ class income_support_eligible(Variable):
         under_SP_age = benunit.any(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
         return (
-            not_(benunit("ESA_income", period, options=[ADD]) > 0)
-            * eligible
+            not_(benunit("ESA_income", period, options=[ADD]) > 0) * eligible
         )
+
 
 class income_support_applicable_amount(Variable):
     value_type = float
@@ -116,9 +131,12 @@ class income_support_applicable_amount(Variable):
             ],
         )
         premiums = benunit("benefits_premiums", period)
-        return (personal_allowance + premiums) * benunit(
-            "income_support_eligible", period.this_year
-        ) * benunit("claims_IS", period.this_year)
+        return (
+            (personal_allowance + premiums)
+            * benunit("income_support_eligible", period.this_year)
+            * benunit("claims_IS", period.this_year)
+        )
+
 
 class income_support(Variable):
     value_type = float

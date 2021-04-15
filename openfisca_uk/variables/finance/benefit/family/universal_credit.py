@@ -9,15 +9,22 @@ class universal_credit_reported(Variable):
     label = u"Reported amount of Universal Credit per week"
     definition_period = WEEK
 
+
 class claims_UC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u'Whether this family is imputed to claim UC'
+    label = u"Whether this family is imputed to claim UC"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = aggr(benunit, period, ["universal_credit_reported"], options=[ADD]) > 0
-        would_claim = not_(benunit("claims_legacy_benefits", period)) * (random(benunit) < parameters(period).benefit.tax_credits.working_tax_credit.takeup)
+        already_claiming = (
+            aggr(benunit, period, ["universal_credit_reported"], options=[ADD])
+            > 0
+        )
+        would_claim = not_(benunit("claims_legacy_benefits", period)) * (
+            random(benunit)
+            < parameters(period).benefit.tax_credits.working_tax_credit.takeup
+        )
         return already_claiming + would_claim
 
 
@@ -49,7 +56,9 @@ class UC_premiums(Variable):
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        has_carer = aggr(benunit, period.this_year, ["is_carer_for_benefits"]) > 0
+        has_carer = (
+            aggr(benunit, period.this_year, ["is_carer_for_benefits"]) > 0
+        )
         num_eligible_children = min_(2, benunit.nb_persons(BenUnit.CHILD))
         childcare_limit = (
             num_eligible_children == 1
@@ -114,13 +123,19 @@ class universal_credit_income_reduction(Variable):
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        INCOME_COMPONENTS = [
-            "employment_income",
-            "trading_income"
-        ]
-        earned_income = aggr(benunit, period, INCOME_COMPONENTS, options=[DIVIDE])
-        unearned_income = aggr(benunit, period, ["carers_allowance", "JSA_contrib", "state_pension"], options=[ADD])
-        unearned_income += aggr(benunit, period, ["pension_income"], options=[DIVIDE])
+        INCOME_COMPONENTS = ["employment_income", "trading_income"]
+        earned_income = aggr(
+            benunit, period, INCOME_COMPONENTS, options=[DIVIDE]
+        )
+        unearned_income = aggr(
+            benunit,
+            period,
+            ["carers_allowance", "JSA_contrib", "state_pension"],
+            options=[ADD],
+        )
+        unearned_income += aggr(
+            benunit, period, ["pension_income"], options=[DIVIDE]
+        )
         housing_element = benunit("UC_eligible_rent", period)
         earnings_disregard = (
             housing_element > 0
@@ -167,7 +182,9 @@ class universal_credit(Variable):
     definition_period = MONTH
 
     def formula(benunit, period, parameters):
-        eligible = benunit("universal_credit_eligible", period) * benunit("claims_UC", period.this_year)
+        eligible = benunit("universal_credit_eligible", period) * benunit(
+            "claims_UC", period.this_year
+        )
         amount = benunit("universal_credit_applicable_amount", period)
         reduction = benunit("universal_credit_income_reduction", period)
         final_amount = eligible * max_(0, amount - reduction)

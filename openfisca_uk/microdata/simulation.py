@@ -18,11 +18,17 @@ np.random.seed(0)
 
 class Microsimulation:
     def __init__(
-        self, *reforms: Tuple[Reform], mode: str = "frs", year: int = 2018, input_year: int = None
+        self,
+        *reforms: Tuple[Reform],
+        mode: str = "frs",
+        year: int = 2018,
+        input_year: int = None,
     ):
         self.mode = mode
         self.year = year
-        self.input_year = input_year or (year + 1) # the model takes yearly parameters from the start of the year; most surveys cover a financial year and therefore it's more accurate to start with the parameters from halfway through
+        self.input_year = input_year or (
+            year + 1
+        )  # the model takes yearly parameters from the start of the year; most surveys cover a financial year and therefore it's more accurate to start with the parameters from halfway through
         self.reforms = reforms
         if mode == "frs":
             self.reforms = from_FRS, *self.reforms
@@ -33,14 +39,23 @@ class Microsimulation:
         self.entity_weights = dict(
             person=self.calc("person_weight", weighted=False),
             benunit=self.calc("benunit_weight", weighted=False),
-            household=self.calc("household_weight", weighted=False)
+            household=self.calc("household_weight", weighted=False),
         )
 
-    def map_to(self, arr: np.array, entity: str, target_entity: str, how: str = None):
+    def map_to(
+        self, arr: np.array, entity: str, target_entity: str, how: str = None
+    ):
         entity_pop = self.simulation.populations[entity]
         target_pop = self.simulation.populations[target_entity]
         if entity == "person" and target_entity in ("benunit", "household"):
-            if how and how not in ("sum", "any", "min", "max", "all", "value_from_first_person"):
+            if how and how not in (
+                "sum",
+                "any",
+                "min",
+                "max",
+                "all",
+                "value_from_first_person",
+            ):
                 raise ValueError("Not a valid function.")
             return target_pop.__getattribute__(how or "sum")(arr)
         elif entity in ("benunit", "household") and target_entity == "person":
@@ -51,9 +66,21 @@ class Microsimulation:
         elif entity == target_entity:
             return arr
         else:
-            return self.map_to(self.map_to(arr, entity, "person", how="mean"), "person", target_entity, how="sum")
+            return self.map_to(
+                self.map_to(arr, entity, "person", how="mean"),
+                "person",
+                target_entity,
+                how="sum",
+            )
 
-    def calc(self, var: str, period: Union[str, int] = None, weighted: bool = True, map_to: str = None, how: str = None) -> MicroSeries:
+    def calc(
+        self,
+        var: str,
+        period: Union[str, int] = None,
+        weighted: bool = True,
+        map_to: str = None,
+        how: str = None,
+    ) -> MicroSeries:
         if period is None:
             period = self.input_year
         try:
@@ -79,10 +106,15 @@ class Microsimulation:
                 arr = self.map_to(arr, entity, map_to, how=how)
                 entity = map_to
             return mdf.MicroSeries(arr, weights=self.entity_weights[entity])
-    
-    def df(self, vars: List[str], period: Union[str, int] = None, map_to=None) -> MicroDataFrame:
+
+    def df(
+        self, vars: List[str], period: Union[str, int] = None, map_to=None
+    ) -> MicroDataFrame:
         df = pd.DataFrame()
-        entity = map_to or self.simulation.tax_benefit_system.variables[vars[0]].entity.key
+        entity = (
+            map_to
+            or self.simulation.tax_benefit_system.variables[vars[0]].entity.key
+        )
         for var in vars:
             df[var] = self.calc(var, period=period, map_to=entity)
         df = MicroDataFrame(df, weights=self.entity_weights[entity])

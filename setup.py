@@ -31,7 +31,8 @@ setup(
         "pyyaml==5.3.1",
         "pytest==5.4.3",
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
-        "frs @ git+https://github.com/nikhilwoodruff/frs",
+        "family-resources-survey @ git+https://github.com/nikhilwoodruff/family-resources-survey",
+        "survey-personal-incomes @ git+https://github.com/nikhilwoodruff/survey-personal-incomes",
         "microdf @ git+https://github.com/pslmodels/microdf",
     ],
     extras_require={

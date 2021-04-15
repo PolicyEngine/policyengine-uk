@@ -29,7 +29,7 @@ class SPIDataset:
             Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: The person, benefit unit and household datasets.
         """
         spi = SPI(year)
-        
+
         person = spi.main
         person.columns = [col.upper() for col in person.columns]
         ids = np.arange(len(person))
@@ -41,18 +41,13 @@ class SPIDataset:
 
         person["P_role"] = "adult"
 
-        benunit = pd.DataFrame(dict(
-            B_person_id=ids,
-            B_benunit_id=ids
-        ))
+        benunit = pd.DataFrame(dict(B_person_id=ids, B_benunit_id=ids))
 
-        household = pd.DataFrame(dict(
-            H_household_id=ids
-        ))
+        household = pd.DataFrame(dict(H_household_id=ids))
 
         benunit["B_FACT"] = weight
         household["H_FACT"] = weight
-        
+
         # store dataset for future use
 
         dataset_path = DATA_STORE / year

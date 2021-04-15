@@ -2,14 +2,16 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class PIP(Variable):
     value_type = float
     entity = Person
-    label = u'Personal Independence Payment'
+    label = u"Personal Independence Payment"
     definition_period = WEEK
 
     def formula(person, period, parameters):
         return person("PIP_M", period) + person("PIP_DL", period)
+
 
 class PIP_DL(Variable):
     value_type = float

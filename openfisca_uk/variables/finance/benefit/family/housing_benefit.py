@@ -9,14 +9,16 @@ class housing_benefit_reported(Variable):
     label = u"Housing Benefit (reported amount per week)"
     definition_period = WEEK
 
+
 class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Housing Benefit for the family'
+    label = u"Housing Benefit for the family"
     definition_period = WEEK
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["housing_benefit_reported"])
+
 
 class housing_benefit_eligible(Variable):
     value_type = bool
@@ -28,16 +30,23 @@ class housing_benefit_eligible(Variable):
         social = benunit.any(benunit.members("in_social_housing", period))
         return social + benunit("LHA_eligible", period)
 
+
 class claims_HB(Variable):
     value_type = bool
     entity = BenUnit
-    label = u'Whether this family is imputed to claim Housing Benefit'
+    label = u"Whether this family is imputed to claim Housing Benefit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = aggr(benunit, period, ["housing_benefit_reported"], options=[ADD]) > 0
-        would_claim = benunit("claims_legacy_benefits", period) * (random(benunit) < parameters(period).benefit.housing_benefit.takeup)
+        already_claiming = (
+            aggr(benunit, period, ["housing_benefit_reported"], options=[ADD])
+            > 0
+        )
+        would_claim = benunit("claims_legacy_benefits", period) * (
+            random(benunit) < parameters(period).benefit.housing_benefit.takeup
+        )
         return already_claiming + would_claim
+
 
 class housing_benefit_applicable_amount(Variable):
     value_type = float
@@ -48,7 +57,9 @@ class housing_benefit_applicable_amount(Variable):
     def formula(benunit, period, parameters):
         HB = parameters(period).benefit.housing_benefit
         PA = HB.allowances
-        one_over_SP_age = benunit.any(benunit.members("is_SP_age", period.this_year))
+        one_over_SP_age = benunit.any(
+            benunit.members("is_SP_age", period.this_year)
+        )
         eldest_age = benunit("eldest_adult_age", period.this_year)
         u_18 = eldest_age < 18
         u_25 = eldest_age < 25
@@ -78,7 +89,10 @@ class housing_benefit_applicable_amount(Variable):
             )
         )
         premiums = benunit("benefits_premiums", period)
-        return (personal_allowance + premiums) * benunit("housing_benefit_eligible", period.this_year)
+        return (personal_allowance + premiums) * benunit(
+            "housing_benefit_eligible", period.this_year
+        )
+
 
 class housing_benefit_applicable_income(Variable):
     value_type = float
@@ -99,17 +113,23 @@ class housing_benefit_applicable_income(Variable):
             "employment_income",
             "trading_income",
             "property_income",
-            "pension_income"
+            "pension_income",
         ]
-        benefits = add(
-            benunit, period, BENUNIT_MEANS_TESTED_BENEFITS
-        )
+        benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = aggr(benunit, period, INCOME_COMPONENTS, options=[DIVIDE])
-        tax = aggr(benunit, period, ["income_tax", "national_insurance"], options=[DIVIDE])
+        tax = aggr(
+            benunit,
+            period,
+            ["income_tax", "national_insurance"],
+            options=[DIVIDE],
+        )
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["tax_credits"], options=[DIVIDE])
         income -= tax
-        income -= aggr(benunit, period, ["pension_contributions"], options=[DIVIDE]) * 0.5
+        income -= (
+            aggr(benunit, period, ["pension_contributions"], options=[DIVIDE])
+            * 0.5
+        )
         income += benefits
         num_children = benunit.nb_persons(BenUnit.CHILD)
         max_childcare_amount = (
@@ -119,7 +139,9 @@ class housing_benefit_applicable_income(Variable):
         ) * WTC.elements.childcare_2
         childcare_element = min_(
             max_childcare_amount,
-            benunit.sum(benunit.members("childcare_cost", period, options=[ADD])),
+            benunit.sum(
+                benunit.members("childcare_cost", period, options=[ADD])
+            ),
         )
         applicable_income = max_(
             0,

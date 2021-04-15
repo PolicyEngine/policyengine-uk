@@ -2,10 +2,11 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class household_id(Variable):
     value_type = float
     entity = Household
-    label = u'ID for the household'
+    label = u"ID for the household"
     definition_period = YEAR
 
 
@@ -16,16 +17,18 @@ class households(Variable):
     definition_period = YEAR
     default_value = 1
 
+
 class num_bedrooms(Variable):
     value_type = float
     entity = Household
-    label = u'The number of bedrooms in the house'
+    label = u"The number of bedrooms in the house"
     definition_period = YEAR
+
 
 class is_shared_accommodation(Variable):
     value_type = bool
     entity = Household
-    label = u'Whether the household is shared accommodation'
+    label = u"Whether the household is shared accommodation"
     definition_period = YEAR
 
 
@@ -94,6 +97,7 @@ class region(Variable):
     label = u"Region of the UK"
     definition_period = ETERNITY
 
+
 class TenureType(Enum):
     RENT_FROM_COUNCIL = "Rented from Council"
     RENT_FROM_HA = "Rented from a Housing Association"
@@ -101,13 +105,15 @@ class TenureType(Enum):
     OWNED_OUTRIGHT = "Owned outright"
     OWNED_WITH_MORTGAGE = "Owned with a mortgage"
 
+
 class tenure_type(Variable):
     value_type = Enum
     possible_values = TenureType
     default_value = TenureType.RENT_PRIVATELY
     entity = Household
-    label = u'Tenure type of the household'
+    label = u"Tenure type of the household"
     definition_period = YEAR
+
 
 class household_equivalisation_bhc(Variable):
     value_type = float

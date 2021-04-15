@@ -142,7 +142,7 @@ class earned_income_tax(Variable):
         rates = parameters(period).tax.income_tax.rates
         uk_amount = rates.uk.calc(person("earned_taxable_income", period))
         return uk_amount
-    
+
     def formula_2017_04_06(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
@@ -162,6 +162,7 @@ class earned_income_tax(Variable):
         )
         amount = where(scot, scot_amount, uk_amount)
         return amount
+
 
 class TaxBand(Enum):
     NONE = "None"
@@ -536,4 +537,6 @@ class income_tax(Variable):
     reference = "Income Tax Act 2007 s. 23"
 
     def formula(person, period, parameters):
-        return person("income_tax_pre_charges", period) + person("CB_HITC", period)
+        return person("income_tax_pre_charges", period) + person(
+            "CB_HITC", period
+        )

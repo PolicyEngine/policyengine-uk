@@ -70,15 +70,12 @@ class FRSDataset:
         bens = frs.benefits[get_new_columns(frs.benefits)]
 
         # distinguish income-related JSA and ESA from contribution-based variants
-        
-        bonus_to_IB_benefits = 1000 * (bens.VAR2.isin((2, 4)) * bens.BENEFIT.isin((14, 16)))
-        bens["BENEFIT"] += bonus_to_IB_benefits
-        benefits = (
-            bens
-            .groupby(["person_id", "BENEFIT"])
-            .sum()
-            .reset_index()
+
+        bonus_to_IB_benefits = 1000 * (
+            bens.VAR2.isin((2, 4)) * bens.BENEFIT.isin((14, 16))
         )
+        bens["BENEFIT"] += bonus_to_IB_benefits
+        benefits = bens.groupby(["person_id", "BENEFIT"]).sum().reset_index()
         benefits = benefits.pivot(index="person_id", columns="BENEFIT")[
             ["BENAMT"]
         ].reset_index()
@@ -103,25 +100,31 @@ class FRSDataset:
         person = pd.merge(person, job, how="outer", on="person_id").fillna(0)
 
         person["role"] = np.where(person.AGE80 >= 18, "adult", "child")
-        person["benunit_id"] = person["person_id"] // 1e+1
-        person["household_id"] = person["person_id"] // 1e+2
+        person["benunit_id"] = person["person_id"] // 1e1
+        person["household_id"] = person["person_id"] // 1e2
         person = person.add_prefix("P_")
         # generate benefit unit and household datasets
 
         benunit = frs.benunit.fillna(0).add_prefix("B_")
 
-        # Council Tax is severely under-reported in the micro-data - find 
+        # Council Tax is severely under-reported in the micro-data - find
         # mean & std for each (region, CT band) pair and sample from distribution.
         # rows with missing regions or CT bands are sampled from the same distributions, respectively
 
-        CT_mean = frs.househol.groupby(["GVTREGNO", "CTBAND"], dropna=False).CTANNUAL.mean()
-        CT_std = frs.househol.groupby(["GVTREGNO", "CTBAND"], dropna=False).CTANNUAL.std()
+        CT_mean = frs.househol.groupby(
+            ["GVTREGNO", "CTBAND"], dropna=False
+        ).CTANNUAL.mean()
+        CT_std = frs.househol.groupby(
+            ["GVTREGNO", "CTBAND"], dropna=False
+        ).CTANNUAL.std()
         pairs = frs.househol.set_index(["GVTREGNO", "CTBAND"])
         hh_CT_mean = CT_mean[pairs.index].values
         hh_CT_std = CT_std[pairs.index].values
         ct = np.random.randn(len(pairs)) * hh_CT_std + hh_CT_mean
         household = frs.househol.fillna(0).add_prefix("H_")
-        household.H_CTANNUAL = np.where(household.H_CTANNUAL == 0, ct, household.H_CTANNUAL)
+        household.H_CTANNUAL = np.where(
+            household.H_CTANNUAL == 0, ct, household.H_CTANNUAL
+        )
 
         # store dataset for future use
 

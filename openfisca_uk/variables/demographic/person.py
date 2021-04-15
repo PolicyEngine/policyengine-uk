@@ -2,10 +2,11 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class person_id(Variable):
     value_type = float
     entity = Person
-    label = u'ID for the person'
+    label = u"ID for the person"
     definition_period = YEAR
 
 
@@ -104,23 +105,26 @@ class gender(Variable):
     label = u"Gender of the person"
     definition_period = ETERNITY
 
+
 class is_male(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether the person is male'
+    label = u"Whether the person is male"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person("gender") == Gender.MALE
 
+
 class is_female(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether the person is female'
+    label = u"Whether the person is female"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
         return person("gender") == Gender.FEMALE
+
 
 class is_household_head(Variable):
     value_type = bool
@@ -135,10 +139,11 @@ class is_benunit_head(Variable):
     label = u"Whether this person is the head-of-family"
     definition_period = YEAR
 
+
 class in_social_housing(Variable):
     value_type = bool
     entity = Person
-    label = u'Whether this person lives in social housing'
+    label = u"Whether this person lives in social housing"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -146,6 +151,7 @@ class in_social_housing(Variable):
         tenures = tenure.possible_values
         social = is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
         return social
+
 
 class is_WA_adult(Variable):
     value_type = float
@@ -155,6 +161,7 @@ class is_WA_adult(Variable):
 
     def formula(person, period, parameters):
         return person("is_adult", period) * not_(person("is_SP_age", period))
+
 
 class is_young_child(Variable):
     value_type = bool
@@ -204,6 +211,4 @@ class is_older_child(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (person("age", period) >= 14) * (
-            person("age", period) < 18
-        )
+        return (person("age", period) >= 14) * (person("age", period) < 18)

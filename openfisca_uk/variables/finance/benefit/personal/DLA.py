@@ -2,10 +2,11 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class DLA(Variable):
     value_type = float
     entity = Person
-    label = u'Disability Living Allowance'
+    label = u"Disability Living Allowance"
     definition_period = WEEK
 
     def formula(person, period, parameters):

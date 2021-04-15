@@ -2,6 +2,7 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class benefit_cap(Variable):
     value_type = float
     entity = BenUnit
@@ -10,7 +11,9 @@ class benefit_cap(Variable):
 
     def formula(benunit, period, parameters):
         children = benunit("num_children", period.this_year) > 0
-        region = benunit.value_from_first_person(benunit.members.household("region"))
+        region = benunit.value_from_first_person(
+            benunit.members.household("region")
+        )
         regions = benunit.members.household("region").possible_values
         in_london = region == regions.LONDON
         cap = parameters(period).benefit.benefit_cap

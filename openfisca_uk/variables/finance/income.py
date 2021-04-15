@@ -28,7 +28,9 @@ class net_income(Variable):
 
     def formula(person, period, parameters):
         base = person("base_net_income", period)
-        modelling = - person("tax_modelling", period) + person("benefits_modelling", period)
+        modelling = -person("tax_modelling", period) + person(
+            "benefits_modelling", period
+        )
         return base + modelling
 
 
@@ -72,6 +74,7 @@ class employment_status(Variable):
     label = u"Employment status of the person"
     definition_period = YEAR
 
+
 class household_net_income(Variable):
     value_type = float
     entity = Household
@@ -79,9 +82,11 @@ class household_net_income(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return max_(0, aggr(household, period, ["net_income"]) - household(
-            "council_tax", period
-        ))
+        return max_(
+            0,
+            aggr(household, period, ["net_income"])
+            - household("council_tax", period),
+        )
 
 
 class household_net_income_ahc(Variable):
@@ -91,7 +96,9 @@ class household_net_income_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return household("household_net_income", period) - household("housing_costs", period, options=[ADD])
+        return household("household_net_income", period) - household(
+            "housing_costs", period, options=[ADD]
+        )
 
 
 class equiv_household_net_income(Variable):

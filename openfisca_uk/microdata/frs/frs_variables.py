@@ -2,6 +2,7 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class H_HHRENT(Variable):
     value_type = float
     entity = Household
@@ -55,12 +56,11 @@ class P_PROFIT2(Variable):
     entity = Person
     definition_period = YEAR
 
+
 class P_SEINCAMT(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
-
-
 
 
 class P_ACCINT_ACCOUNT_CODE_1(Variable):
@@ -332,6 +332,7 @@ class P_BENAMT_BENEFIT_CODE_14(Variable):
     entity = Person
     definition_period = YEAR
 
+
 class P_BENAMT_BENEFIT_CODE_1014(Variable):
     value_type = float
     entity = Person
@@ -601,90 +602,108 @@ class P_BENAMT_BENEFIT_CODE_111(Variable):
     entity = Person
     definition_period = YEAR
 
+
 class P_AGE80(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
+
 
 class P_AGE(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
 
+
 class P_PERSON(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
+
 
 class P_UPERSON(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
 
+
 class P_TYPEED2(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
+
 
 class P_TOTHOURS(Variable):
     value_type = float
     entity = Person
     definition_period = WEEK
 
+
 class P_EMPSTATI(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
+
 
 class P_FUELAMT(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
 
+
 class P_MILEAMT(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
+
 
 class P_MOTAMT(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
 
+
 class H_PTENTYP2(Variable):
     value_type = float
     entity = Household
     definition_period = YEAR
+
 
 class H_GBHSCOST(Variable):
     value_type = float
     entity = Household
     definition_period = WEEK
 
+
 class H_NIHSCOST(Variable):
     value_type = float
     entity = Household
     definition_period = WEEK
+
 
 class H_CTANNUAL(Variable):
     value_type = float
     entity = Household
     definition_period = YEAR
 
+
 class P_person_id(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
+
 
 class B_benunit_id(Variable):
     value_type = float
     entity = BenUnit
     definition_period = YEAR
 
+
 class H_household_id(Variable):
     value_type = float
     entity = Household
     definition_period = YEAR
+
 
 class H_GVTREGNO(Variable):
     value_type = int
@@ -810,5 +829,5 @@ FRS_variables = [
     P_EMPSTATI,
     P_FUELAMT,
     P_MILEAMT,
-    P_MOTAMT
+    P_MOTAMT,
 ]

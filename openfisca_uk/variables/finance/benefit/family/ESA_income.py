@@ -9,6 +9,7 @@ class ESA_income_reported(Variable):
     label = u"ESA (income-based) (reported amount per week)"
     definition_period = WEEK
 
+
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit

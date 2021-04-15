@@ -18,6 +18,7 @@ warnings.filterwarnings("ignore")
 
 np.random.seed(0)
 
+
 class IndividualSim:
     def __init__(self, *reforms, year=2018):
         self.year = year
@@ -129,7 +130,14 @@ class IndividualSim:
             return result[index]
         return result
 
-    def calc_deriv(self, var, wrt="employment_income", period=None, var_target=None, wrt_target=None):
+    def calc_deriv(
+        self,
+        var,
+        wrt="employment_income",
+        period=None,
+        var_target=None,
+        wrt_target=None,
+    ):
         period = period or self.year
         y = self.calc(var, period=period, target=var_target)
         x = self.calc(wrt, period=period, target=wrt_target)
@@ -148,7 +156,13 @@ class IndividualSim:
         deriv = np.append(deriv, deriv[-1])
         return deriv
 
-    def calc_mtr(self, target="household_net_income", wrt="employment_income", wrt_target=None, var_target=None):
+    def calc_mtr(
+        self,
+        target="household_net_income",
+        wrt="employment_income",
+        wrt_target=None,
+        var_target=None,
+    ):
         return 1 - self.calc_deriv(
             target, wrt=wrt, wrt_target=wrt_target, var_target=var_target
         )
@@ -182,7 +196,9 @@ class PopulationSim:
     def __init__(
         self, *reforms, frs_data=None, input_period="2020", use_microdf=False
     ):
-        warnings.warn("PopulationSim is deprecated and will be removed in a future release. Please use Microsimulation instead for improved microdata handling and transparency.")
+        warnings.warn(
+            "PopulationSim is deprecated and will be removed in a future release. Please use Microsimulation instead for improved microdata handling and transparency."
+        )
         self.reforms = reforms
         self.input_period = input_period
         self.model = self.load_frs(frs_data=frs_data)

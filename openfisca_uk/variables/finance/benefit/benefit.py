@@ -6,10 +6,11 @@ from openfisca_uk.tools.general import *
 This file contains variables that are commonly used in benefit eligibility calculations.
 """
 
+
 class family_benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Total simulated family benefits for this person'
+    label = u"Total simulated family benefits for this person"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -20,16 +21,21 @@ class family_benefits(Variable):
             "income_support",
             "JSA_income",
             "pension_credit",
-            "universal_credit"
+            "universal_credit",
         ]
-        benefits = add(person.benunit, period, FAMILY_BENEFITS, options=[ADD]) * person("is_benunit_head", period)
-        benefits += add(person.benunit, period, ["working_tax_credit", "child_tax_credit"]) * person("is_benunit_head", period)
+        benefits = add(
+            person.benunit, period, FAMILY_BENEFITS, options=[ADD]
+        ) * person("is_benunit_head", period)
+        benefits += add(
+            person.benunit, period, ["working_tax_credit", "child_tax_credit"]
+        ) * person("is_benunit_head", period)
         return benefits
+
 
 class family_benefits_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Total reported family benefits for this person'
+    label = u"Total reported family benefits for this person"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -40,38 +46,58 @@ class family_benefits_reported(Variable):
             "income_support",
             "JSA_income",
             "pension_credit",
-            "universal_credit"
+            "universal_credit",
         ]
-        benefits = add(person, period, map(lambda ben: ben + "_reported", FAMILY_BENEFITS), options=[ADD])
-        benefits += add(person, period, ["working_tax_credit_reported", "child_tax_credit_reported"], options=[ADD])
+        benefits = add(
+            person,
+            period,
+            map(lambda ben: ben + "_reported", FAMILY_BENEFITS),
+            options=[ADD],
+        )
+        benefits += add(
+            person,
+            period,
+            ["working_tax_credit_reported", "child_tax_credit_reported"],
+            options=[ADD],
+        )
         return benefits
+
 
 class benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Total simulated'
+    label = u"Total simulated"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("personal_benefits", period, options=[ADD]) + person("family_benefits", period)
+        return person("personal_benefits", period, options=[ADD]) + person(
+            "family_benefits", period
+        )
+
 
 class benefits_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Total simulated'
+    label = u"Total simulated"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("personal_benefits_reported", period, options=[ADD]) + person("family_benefits_reported", period)
+        return person(
+            "personal_benefits_reported", period, options=[ADD]
+        ) + person("family_benefits_reported", period)
+
 
 class benefits_modelling(Variable):
     value_type = float
     entity = Person
-    label = u'Difference between reported and simulated benefits for this person'
+    label = (
+        u"Difference between reported and simulated benefits for this person"
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("benefits", period) - person("benefits_reported", period)
+
 
 class is_QYP(Variable):
     value_type = bool
@@ -144,10 +170,11 @@ class is_couple(Variable):
         relations = relation_type.possible_values
         return relation_type == relations.COUPLE
 
+
 class is_lone_parent(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Whether the family is a lone parent family'
+    label = u"Whether the family is a lone parent family"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -155,22 +182,23 @@ class is_lone_parent(Variable):
         families = family_type.possible_values
         return family_type == families.LONE_PARENT
 
+
 class is_single_person(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Whether the family is a single person'
+    label = u"Whether the family is a single person"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
         family_type = benunit("family_type", period)
         families = family_type.possible_values
         return family_type == families.SINGLE
-    
+
 
 class personal_benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Value of personal, non-means-tested benefits'
+    label = u"Value of personal, non-means-tested benefits"
     definition_period = WEEK
 
     def formula(person, period, parameters):
@@ -188,14 +216,15 @@ class personal_benefits(Variable):
             "PIP_M",
             "PIP_DL",
             "SDA",
-            "state_pension"
+            "state_pension",
         ]
         return add(person, period, BENEFITS)
+
 
 class personal_benefits_reported(Variable):
     value_type = float
     entity = Person
-    label = u'Value of personal, non-means-tested benefits'
+    label = u"Value of personal, non-means-tested benefits"
     definition_period = WEEK
 
     def formula(person, period, parameters):
@@ -213,15 +242,21 @@ class personal_benefits_reported(Variable):
             "PIP_M",
             "PIP_DL",
             "SDA",
-            "state_pension"
+            "state_pension",
         ]
-        return add(person, period, map(lambda ben: ben + "_reported", BENEFITS))
+        return add(
+            person, period, map(lambda ben: ben + "_reported", BENEFITS)
+        )
+
 
 class claims_legacy_benefits(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Whether this family is imputed to claim legacy benefits over Universal Credit'
+    label = u"Whether this family is imputed to claim legacy benefits over Universal Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return random(benunit) > parameters(period).benefit.universal_credit.rollout_rate
+        return (
+            random(benunit)
+            > parameters(period).benefit.universal_credit.rollout_rate
+        )

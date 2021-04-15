@@ -41,12 +41,10 @@ class tax_credits_applicable_income(Variable):
             "taxable_miscellaneous_income",
         ]
         income += aggr(benunit, period, STEP_2_COMPONENTS)
-        EXEMPT_BENEFITS = [
-            "income_support",
-            "ESA_income",
-            "JSA_income"
-        ]
-        on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS, options=[ADD]) > 0
+        EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
+        on_exempt_benefits = (
+            add(benunit, period, EXEMPT_BENEFITS, options=[ADD]) > 0
+        )
         return income * not_(on_exempt_benefits)
 
 
@@ -93,11 +91,15 @@ class claims_CTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = aggr(
-            benunit, period, ["child_tax_credit_reported"], options=[ADD]
-        ) > 0
-        would_claim = (random(benunit) <= parameters(period).benefit.tax_credits.child_tax_credit.takeup) * benunit("claims_legacy_benefits", period)
-        return already_claiming # + would_claim > 0
+        already_claiming = (
+            aggr(benunit, period, ["child_tax_credit_reported"], options=[ADD])
+            > 0
+        )
+        would_claim = (
+            random(benunit)
+            <= parameters(period).benefit.tax_credits.child_tax_credit.takeup
+        ) * benunit("claims_legacy_benefits", period)
+        return already_claiming  # + would_claim > 0
 
 
 class CTC_maximum_rate(Variable):
@@ -494,11 +496,14 @@ class child_tax_credit(Variable):
         )
         return amount
 
+
 class tax_credits(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Value of the Tax Credits (benefits) for this family'
+    label = u"Value of the Tax Credits (benefits) for this family"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("working_tax_credit", period) + person("child_tax_credit", period)
+        return person("working_tax_credit", period) + person(
+            "child_tax_credit", period
+        )
