@@ -18,7 +18,7 @@ class claims_PC(Variable):
     def formula(benunit, period, parameters):
         already_claiming = aggr(benunit, period, ["pension_credit_reported"], options=[ADD]) > 0
         takeup_rate = parameters(period).benefit.pension_credit.takeup
-        return already_claiming + (random(benunit) <= takeup_rate)
+        return already_claiming + (random(benunit) < takeup_rate)
 
 class pension_credit_eligible(Variable):
     value_type = bool

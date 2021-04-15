@@ -656,7 +656,25 @@ class H_PTENTYP2(Variable):
     entity = Household
     definition_period = YEAR
 
+class H_GBHSCOST(Variable):
+    value_type = float
+    entity = Household
+    definition_period = WEEK
+
+class H_NIHSCOST(Variable):
+    value_type = float
+    entity = Household
+    definition_period = WEEK
+
+class H_CTANNUAL(Variable):
+    value_type = float
+    entity = Household
+    definition_period = YEAR
+
 FRS_variables = [
+    H_CTANNUAL,
+    H_GBHSCOST,
+    H_NIHSCOST,
     H_HHRENT,
     H_PTENTYP2,
     P_GROSS4,

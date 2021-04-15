@@ -4,9 +4,7 @@ from openfisca_uk.entities import *
 from openfisca_core.periods import period
 import pandas as pd
 from openfisca_core.simulation_builder import SimulationBuilder
-from openfisca_uk.tools.internals import VariableGraph
 import numpy as np
-import os
 import warnings
 import microdf as mdf
 
@@ -170,10 +168,10 @@ class PopulationSim:
     def __init__(
         self, *reforms, frs_data=None, input_period="2020", use_microdf=False
     ):
+        warnings.warn("PopulationSim is deprecated and will be removed in a future release. Please use Microsimulation instead for improved microdata handling and transparency.")
         self.reforms = reforms
         self.input_period = input_period
         self.model = self.load_frs(frs_data=frs_data)
-        self.variable_graph = VariableGraph(self.model.tax_benefit_system)
         self.use_microdf = use_microdf
         self.weight_vars = None
         self.weight_vars = dict(

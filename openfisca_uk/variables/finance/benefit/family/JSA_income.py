@@ -62,7 +62,7 @@ class claims_JSA(Variable):
     def formula(benunit, period, parameters):
         already_claiming = aggr(benunit, period, ["JSA_income_reported", "JSA_contrib_reported"], options=[ADD]) > 0
         would_claim = (random(benunit) <= parameters(period).benefit.JSA.income.takeup) * benunit("claims_legacy_benefits", period)
-        return already_claiming + would_claim > 0
+        return already_claiming # + would_claim > 0
 
 class JSA_income_applicable_income(Variable):
     value_type = float

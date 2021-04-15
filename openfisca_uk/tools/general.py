@@ -82,13 +82,13 @@ def select(conditions, choices):
 clip = np.clip
 inf = np.inf
 
+WEEKS_IN_YEAR = 52
+
 def amount_over(amount, threshold):
     return max_(0, amount - threshold)
 
 def amount_between(amount, threshold_1, threshold_2):
     return clip(amount, threshold_1, threshold_2) - threshold_1
-
-WEEKS_IN_YEAR = 52
 
 def random(entity):
     return np.random.rand(entity.count)

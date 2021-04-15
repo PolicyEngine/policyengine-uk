@@ -3,8 +3,9 @@
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 from openfisca_uk import entities
-from openfisca_uk.tools.simulation import IndividualSim, PopulationSim
 from openfisca_uk.microdata.simulation import Microsimulation
+from openfisca_uk.tools.simulation import IndividualSim, PopulationSim
+from openfisca_uk.reforms.modelling import reported_tax, reported_benefits, reported
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 

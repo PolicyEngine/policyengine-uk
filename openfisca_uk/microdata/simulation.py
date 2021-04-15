@@ -16,7 +16,7 @@ import microdf as mdf
 
 class Microsimulation:
     def __init__(
-        self, mode: str = "frs", year: int = 2018, input_year: int = None, *reforms: Tuple[Reform]
+        self, *reforms: Tuple[Reform], mode: str = "frs", year: int = 2018, input_year: int = None
     ):
         self.mode = mode
         self.year = year
@@ -61,7 +61,7 @@ class Microsimulation:
             try:
                 arr = self.simulation.calculate_add(var, period)
                 if var_metadata.value_type == bool:
-                    arr /= 52
+                    arr = arr >= 52
             except:
                 try:
                     arr = self.simulation.calculate_divide(var, period)
@@ -87,16 +87,26 @@ class Microsimulation:
         df = MicroDataFrame(df, weights=self.entity_weights[entity])
         return df
 
+    def apply_reforms(self, reforms: list) -> None:
+        """Applies a list of reforms to the tax-benefit system.
+
+        Args:
+            reforms (list): A list of reforms. Each reform can also be a list of reforms.
+        """
+        for reform in reforms:
+            if isinstance(reform, tuple) or isinstance(reform, list):
+                self.apply_reforms(reform)
+            else:
+                self.system = reform(self.system)
+
     def load_dataset(
         self, entity_dfs: Tuple[pd.DataFrame], verbose: bool = False
     ) -> None:
         person, benunit, household = entity_dfs
-        system = openfisca_uk.CountryTaxBenefitSystem()
-        for reform in self.reforms:
-            # apply each reform
-            system = reform(system)
+        self.system = openfisca_uk.CountryTaxBenefitSystem()
+        self.apply_reforms(self.reforms)
         builder = SimulationBuilder()
-        builder.create_entities(system)
+        builder.create_entities(self.system)
         person.sort_values("P_person_id", inplace=True)
         benunit.sort_values("B_benunit_id", inplace=True)
         household.sort_values("H_household_id", inplace=True)
@@ -129,13 +139,13 @@ class Microsimulation:
         builder.join_with_persons(
             households, np.array(person["P_household_id"]), person_roles
         )  # define person-household memberships
-        model = builder.build(system)
+        model = builder.build(self.system)
         skipped = []
         for input_file in [person, benunit, household]:
             for column in input_file.columns:
                 if column != "P_role":
                     try:
-                        def_period = system.get_variable(
+                        def_period = self.system.get_variable(
                             column
                         ).definition_period
                         if def_period in ["eternity", "year"]:

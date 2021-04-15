@@ -523,7 +523,27 @@ class employment_status(Variable):
         ])
         return status
 
+class housing_costs(Variable):
+    value_type = float
+    entity = Household
+    label = u"Total housing costs per week"
+    definition_period = WEEK
+
+    def formula(household, period, parameters):
+        return household("H_GBHSCOST", period) + household("H_NIHSCOST", period)
+
+class council_tax(Variable):
+    value_type = float
+    entity = Household
+    label = u"Council Tax"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return household("H_CTANNUAL", period)
+
 input_variables = [
+    council_tax,
+    housing_costs,
     rent,
     tenure_type,
     employment_income,

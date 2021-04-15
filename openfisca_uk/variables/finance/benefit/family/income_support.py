@@ -10,7 +10,7 @@ class income_support_reported(Variable):
     definition_period = WEEK
 
 class claims_IS(Variable):
-    value_type = float
+    value_type = bool
     entity = BenUnit
     label = u'Whether this family is imputed to claim Income Support'
     definition_period = YEAR
@@ -18,7 +18,7 @@ class claims_IS(Variable):
     def formula(benunit, period, parameters):
         already_claiming = aggr(benunit, period, ["income_support_reported"], options=[ADD]) > 0
         would_claim = (random(benunit) <= parameters(period).benefit.income_support.takeup) * benunit("claims_legacy_benefits", period)
-        return already_claiming + would_claim > 0
+        return already_claiming # + would_claim > 0
 
 
 class income_support_applicable_income(Variable):

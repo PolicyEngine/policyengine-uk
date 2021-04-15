@@ -39,7 +39,7 @@ class birth_year(Variable):
 
 
 class over_16(Variable):
-    value_type = float
+    value_type = bool
     entity = Person
     label = u"Whether the person is over 16"
     definition_period = YEAR
@@ -49,7 +49,7 @@ class over_16(Variable):
 
 
 class is_adult(Variable):
-    value_type = float
+    value_type = bool
     entity = Person
     label = u"Whether this person is an adult"
     definition_period = YEAR
@@ -59,7 +59,7 @@ class is_adult(Variable):
 
 
 class is_child(Variable):
-    value_type = float
+    value_type = bool
     entity = Person
     label = u"Whether this person is a child"
     definition_period = YEAR
@@ -140,3 +140,64 @@ class in_social_housing(Variable):
         tenures = tenure.possible_values
         social = is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
         return social
+
+class is_WA_adult(Variable):
+    value_type = float
+    entity = Person
+    label = u"Whether is a working-age adult"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("is_adult", period) * not_(person("is_SP_age", period))
+
+class is_young_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is under 14"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period.this_year) < 14
+
+
+class age_under_18(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is under age 18"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period) < 18
+
+
+class age_18_64(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is age 18 to 64"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        age = person("age", period)
+        return (age >= 18) & (age <= 64)
+
+
+class age_over_64(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is over age 64"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("age", period) > 64
+
+
+class is_older_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Whether the person is over 14 but under 18"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return (person("age", period) >= 14) * (
+            person("age", period) < 18
+        )

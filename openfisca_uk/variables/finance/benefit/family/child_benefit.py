@@ -49,18 +49,6 @@ class child_benefit_less_tax_charge(Variable):
         )
 
 
-class child_benefit_payment(Variable):
-    value_type = float
-    entity = Person
-    label = u"Child Benefit payment entitlement"
-    definition_period = WEEK
-
-    def formula(person, period, parameters):
-        return person("is_benunit_head", period) * person.benunit(
-            "child_benefit", period
-        )
-
-
 class yearly_child_benefit(Variable):
     value_type = float
     entity = BenUnit

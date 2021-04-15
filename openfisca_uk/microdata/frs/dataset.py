@@ -32,13 +32,13 @@ class FRSDataset:
 
         # generate the person-level dataset
 
-        person = frs.adult
+        person = frs.adult.drop(["AGE"], axis=1)
 
         get_new_columns = lambda df: list(
             df.columns.difference(person.columns)
         ) + ["person_id"]
         person = pd.merge(
-            frs.adult,
+            person,
             frs.child[get_new_columns(frs.child)],
             how="outer",
             on="person_id",
@@ -109,7 +109,19 @@ class FRSDataset:
         # generate benefit unit and household datasets
 
         benunit = frs.benunit.fillna(0).add_prefix("B_")
+
+        # Council Tax is severely under-reported in the micro-data - find 
+        # mean & std for each (region, CT band) pair and sample from distribution.
+        # rows with missing regions or CT bands are sampled from the same distributions, respectively
+
+        CT_mean = frs.househol.groupby(["GVTREGNO", "CTBAND"], dropna=False).CTANNUAL.mean()
+        CT_std = frs.househol.groupby(["GVTREGNO", "CTBAND"], dropna=False).CTANNUAL.std()
+        pairs = frs.househol.set_index(["GVTREGNO", "CTBAND"])
+        hh_CT_mean = CT_mean[pairs.index].values
+        hh_CT_std = CT_std[pairs.index].values
+        ct = np.random.randn(len(pairs)) * hh_CT_std + hh_CT_mean
         household = frs.househol.fillna(0).add_prefix("H_")
+        household.H_CTANNUAL = np.where(household.H_CTANNUAL == 0, ct, household.H_CTANNUAL)
 
         # store dataset for future use
 

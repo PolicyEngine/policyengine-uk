@@ -36,8 +36,8 @@ class claims_HB(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = aggr(benunit, period, ["housing_benefit_reported"], options=[ADD]) > 0
-        HB = parameters(period).benefit.housing_benefit
-        return already_claiming + benunit("claims_legacy_benefits", period)
+        would_claim = benunit("claims_legacy_benefits", period) * (random(benunit) < parameters(period).benefit.housing_benefit.takeup)
+        return already_claiming + would_claim
 
 class housing_benefit_applicable_amount(Variable):
     value_type = float

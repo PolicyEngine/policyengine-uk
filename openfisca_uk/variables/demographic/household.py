@@ -102,3 +102,48 @@ class tenure_type(Variable):
     entity = Household
     label = u'Tenure type of the household'
     definition_period = YEAR
+
+class household_equivalisation_bhc(Variable):
+    value_type = float
+    entity = Household
+    label = u"Equivalisation factor to account for household composition, before housing costs"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        second_adult = household.nb_persons(Household.ADULT) == 2
+        num_young_children = household.sum(
+            household.members("is_young_child", period)
+        )
+        num_older_children = household.sum(
+            household.members("is_older_child", period)
+        )
+        weighting = (
+            0.67
+            + 0.33 * second_adult
+            + 0.33 * num_older_children
+            + 0.2 * num_young_children
+        )
+        return weighting
+
+
+class household_equivalisation_ahc(Variable):
+    value_type = float
+    entity = Household
+    label = u"Equivalisation factor to account for household composition, after housing costs"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        second_adult = household.nb_persons(Household.ADULT) == 2
+        num_young_children = household.sum(
+            household.members("is_young_child", period)
+        )
+        num_older_children = household.sum(
+            household.members("is_older_child", period)
+        )
+        weighting = (
+            0.58
+            + 0.42 * second_adult
+            + 0.42 * num_older_children
+            + 0.2 * num_young_children
+        )
+        return weighting
