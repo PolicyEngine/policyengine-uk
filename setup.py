@@ -34,7 +34,7 @@ setup(
         "family-resources-survey @ git+https://github.com/nikhilwoodruff/family-resources-survey",
         "survey-personal-incomes @ git+https://github.com/nikhilwoodruff/survey-personal-incomes",
         "microdf @ git+https://github.com/pslmodels/microdf",
-        "tqdm"
+        "tqdm",
     ],
     extras_require={
         "dev": [
