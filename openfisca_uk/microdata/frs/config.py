@@ -1,4 +1,4 @@
-from openfisca_uk.variables.demographic.household import Region, TenureType
+from openfisca_uk.variables.demographic.household import AccommodationType, Region, TenureType
 from openfisca_uk.variables.finance.income import EmploymentStatus
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
@@ -666,8 +666,47 @@ class household_id(Variable):
     def formula(household, period, parameters):
         return household("H_household_id", period)
 
+class accommodation_type(Variable):
+    value_type = Enum
+    possible_values = AccommodationType
+    default_value = AccommodationType.UNKNOWN
+    entity = Household
+    label = u'Type of accommodation'
+    definition_period = ETERNITY
+
+    def formula(household, period, parameters):
+        a = household("H_TYPEACC")
+        return select([
+            a == 1,
+            a == 2,
+            a == 3,
+            a == 4,
+            a == 5,
+            a == 6,
+            a == 7,
+        ], [
+            AccommodationType.HOUSE_DETACHED,
+            AccommodationType.HOUSE_SEMI_DETACHED,
+            AccommodationType.HOUSE_TERRACED,
+            AccommodationType.FLAT,
+            AccommodationType.CONVERTED_HOUSE,
+            AccommodationType.MOBILE,
+            AccommodationType.OTHER
+        ])
+
+class num_bedrooms(Variable):
+    value_type = float
+    entity = Household
+    label = u"The number of bedrooms in the house"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return household("H_BEDROOM6", period)
+
 
 input_variables = [
+    num_bedrooms,
+    accommodation_type,
     region,
     person_id,
     benunit_id,

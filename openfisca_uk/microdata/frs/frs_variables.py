@@ -710,8 +710,20 @@ class H_GVTREGNO(Variable):
     entity = Household
     definition_period = ETERNITY
 
+class H_TYPEACC(Variable):
+    value_type = int
+    entity = Household
+    definition_period = ETERNITY
+
+class H_BEDROOM6(Variable):
+    value_type = int
+    entity = Household
+    definition_period = ETERNITY
+
 
 FRS_variables = [
+    H_BEDROOM6,
+    H_TYPEACC,
     H_GVTREGNO,
     P_person_id,
     B_benunit_id,
