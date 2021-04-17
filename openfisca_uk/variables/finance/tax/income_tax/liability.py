@@ -499,14 +499,7 @@ class is_higher_earner(Variable):
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
-        family_average = (
-            aggr(person.benunit, period, ["adjusted_net_income"]) / 2
-        )
-        higher_earner = income > family_average
-        equal_earner = income == family_average
-        return higher_earner + (
-            equal_earner * person("is_benunit_head", period)
-        )
+        return person.get_rank(person.benunit, -income) == 0
 
 
 class CB_HITC(Variable):

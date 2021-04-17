@@ -1,3 +1,4 @@
+import functools
 from typing import List, Tuple, Union, Dict
 from microdf.generic import MicroDataFrame, MicroSeries
 from openfisca_core.populations import Population
@@ -12,6 +13,7 @@ from openfisca_uk.microdata.spi.config import from_SPI
 from openfisca_core.model_api import *
 import numpy as np
 import microdf as mdf
+from tqdm import trange
 
 np.random.seed(0)
 
@@ -41,6 +43,7 @@ class Microsimulation:
             benunit=self.calc("benunit_weight", weighted=False),
             household=self.calc("household_weight", weighted=False),
         )
+        self.bonus_sims = {}
 
     def map_to(
         self, arr: np.array, entity: str, target_entity: str, how: str = None
@@ -80,6 +83,7 @@ class Microsimulation:
         weighted: bool = True,
         map_to: str = None,
         how: str = None,
+        dp: int = 2
     ) -> MicroSeries:
         if period is None:
             period = self.input_year
@@ -96,6 +100,8 @@ class Microsimulation:
                     arr = self.simulation.calculate_divide(var, period)
                 except:
                     raise e
+        if var_metadata.value_type == float:
+            arr = arr.round(2)
         if var_metadata.value_type == Enum:
             arr = arr.decode_to_str()
         if not weighted:
@@ -200,3 +206,80 @@ class Microsimulation:
             for var in skipped:
                 print(f"{var}")
         return model
+
+    def deriv(self, target="tax", wrt="employment_income", bonus=100, percent=False, group_limit=2) -> MicroSeries:
+        """Calculates effective marginal tax rates over a population.
+
+        Args:
+            targets (str, optional): The name of the variable to measure the derivative of. Defaults to "household_net_income".
+            wrt (str, optional): The name of the independent variable. Defaults to "employment_income".
+
+        Returns:
+            np.array: [description]
+        """
+        system = self.simulation.tax_benefit_system
+        target_entity = system.variables[target].entity.key
+        wrt_entity = system.variables[wrt].entity.key
+        if target_entity == wrt_entity:
+            # calculating a derivative with both source and target in the same entity
+            config = (wrt, bonus, percent, "same-entity")
+            if config not in self.bonus_sims:
+                existing_var_class = system.variables[wrt].__class__
+
+                altered_variable = type(wrt, (existing_var_class,), {})
+                if not percent:
+                    altered_variable.formula = lambda *args: existing_var_class.formula(*args) + bonus
+                else:
+                    altered_variable.formula = lambda *args: existing_var_class.formula(*args) * (1. + bonus / 100)
+
+                class bonus_ref(Reform):
+                    def apply(self):
+                        self.update_variable(altered_variable)
+                
+                self.bonus_sims[config] = Microsimulation(self.reforms[1:] + (bonus_ref,), mode=self.mode, year=self.year, input_year=self.input_year)
+            bonus_sim = self.bonus_sims[config]
+            bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(wrt).astype(float)
+            target_increase = bonus_sim.calc(target).astype(float) - self.calc(target).astype(float)
+            
+            gradient = target_increase / bonus_increase
+
+            return gradient
+        elif target_entity in ("benunit", "household") and wrt_entity == "person":
+            # calculate the derivative for a group variable wrt a source variable, independent of other members in the group
+            adult = self.calc("is_adult")
+            index_in_group = self.calc("person_id").groupby(self.calc(f"{target_entity}_id", map_to="person")).cumcount()
+            max_group_size = min(max(index_in_group[adult]) + 1, group_limit)
+
+            derivative = np.empty((len(adult))) * np.nan
+
+            for i in trange(max_group_size, desc="Calculating independent derivatives"):
+                config = (wrt, bonus, percent, "group-entity", i)
+                if config not in self.bonus_sims:
+                    existing_var_class = system.variables[wrt].__class__
+
+                    altered_variable = type(wrt, (existing_var_class,), {})
+                    if not percent:
+                        altered_variable.formula = lambda person, *args: existing_var_class.formula(person, *args) + bonus * (index_in_group == i) * adult
+                    else:
+                        altered_variable.formula = lambda *args: existing_var_class.formula(*args) * (1. + bonus * (index_in_group == i) * adult / 100)
+
+                    class bonus_ref(Reform):
+                        def apply(self):
+                            self.update_variable(altered_variable)
+
+                    self.bonus_sims[config] = Microsimulation(self.reforms[1:] + (bonus_ref,), mode=self.mode, year=self.year, input_year=self.input_year)
+                bonus_sim = self.bonus_sims[config]
+                bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(wrt).astype(float)
+                target_increase = (bonus_sim.calc(target).astype(float) - self.calc(target).astype(float))
+                result = target_increase / bonus_increase
+                derivative[bonus_increase > 0] = result[bonus_increase > 0]
+
+            return MicroSeries(derivative, weights=self.entity_weights["person"])
+        else:
+            raise ValueError("Unable to compute derivative - target variable must be from a group of or the same as the source variable")
+
+    def deriv_df(self, *targets, wrt="employment_income", bonus=100, percent=False) -> MicroDataFrame:
+        df = MicroDataFrame()
+        for target in targets:
+            df[target] = self.deriv(target, wrt=wrt, bonus=bonus, percent=percent)
+        return df
