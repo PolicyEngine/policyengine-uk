@@ -114,6 +114,7 @@ class tenure_type(Variable):
     label = u"Tenure type of the household"
     definition_period = YEAR
 
+
 class AccommodationType(Enum):
     HOUSE_DETACHED = "Detached house"
     HOUSE_SEMI_DETACHED = "Semi-detached house"
@@ -124,13 +125,15 @@ class AccommodationType(Enum):
     OTHER = "Other"
     UNKNOWN = "Unknown"
 
+
 class accommodation_type(Variable):
     value_type = Enum
     possible_values = AccommodationType
     default_value = AccommodationType.UNKNOWN
     entity = Household
-    label = u'Type of accommodation'
+    label = u"Type of accommodation"
     definition_period = ETERNITY
+
 
 class household_equivalisation_bhc(Variable):
     value_type = float

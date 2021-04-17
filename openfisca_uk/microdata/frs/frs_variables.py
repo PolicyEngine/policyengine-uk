@@ -710,10 +710,12 @@ class H_GVTREGNO(Variable):
     entity = Household
     definition_period = ETERNITY
 
+
 class H_TYPEACC(Variable):
     value_type = int
     entity = Household
     definition_period = ETERNITY
+
 
 class H_BEDROOM6(Variable):
     value_type = int
