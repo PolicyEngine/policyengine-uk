@@ -34,7 +34,7 @@ setup(
         "family-resources-survey==1.0.0",
         "survey-personal-incomes==1.0.0",
         "microdf @ git+https://github.com/pslmodels/microdf",
-        "tqdm==3.59.0",
+        "tqdm==4.59.0",
     ],
     extras_require={
         "dev": [
