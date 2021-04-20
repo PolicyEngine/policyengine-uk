@@ -17,7 +17,7 @@ setup(
     description="OpenFisca tax and benefit system for UK",
     keywords="benefit microsimulation social tax",
     license="http://www.fsf.org/licensing/licenses/agpl-3.0.html",
-    url="https://github.com/nikhilwoodruff/openfisca-uk",
+    url="https://github.com/pslmodels/openfisca-uk",
     include_package_data=True,  # Will read MANIFEST.in
     data_files=[
         (
