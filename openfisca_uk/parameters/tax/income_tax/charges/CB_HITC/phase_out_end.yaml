@@ -1,6 +1,6 @@
 description: Earnings after which the Child Benefit is fully phased out
 values:
-  2016-06-01:
+  2015-06-05:
     value: 60000
 metadata:
   period: year

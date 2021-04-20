@@ -1,22 +1,22 @@
 description: Dividend income tax scale (thresholds are from the main Income Tax scale)
 brackets:
   - rate:
-      2016-06-01:
+      2015-06-01:
         value: 0.075
     threshold:
-      2016-06-01:
+      2015-06-01:
         value: 0
   - rate:
-      2016-06-01:
+      2015-06-01:
         value: 0.325
     threshold:
-      2016-06-01:
+      2015-06-01:
         value: 37500
   - rate:
-      2016-06-01:
+      2015-06-01:
         value: 0.381
     threshold:
-      2016-06-01:
+      2015-06-01:
         value: 150000
 metadata:
   period: year

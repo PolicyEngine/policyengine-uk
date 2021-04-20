@@ -12,7 +12,7 @@ brackets:
     threshold:
       2015-06-01:
         value: 31785
-      2016-06-01:
+      2015-06-05:
         value: 32000
       2017-06-01:
         value: 31500
@@ -20,7 +20,7 @@ brackets:
       2010-06-01:
         value: 0.45
     threshold:
-      2016-06-01:
+      2015-06-05:
         value: 150000
 metadata:
   period: year
