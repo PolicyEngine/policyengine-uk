@@ -30,3 +30,12 @@
 * Added Jupyter-Book documentation
 * More detailed disability variables
 * Fixed IndividualSim reform handling
+
+### 0.3.0
+
+* New interfact for microsimulation
+* Microdata now generated and loaded in-model
+* Sources added to tax logic
+* Tests added
+* Variable time periods made more consistent
+* Derivative calculations made more efficient and have more options
