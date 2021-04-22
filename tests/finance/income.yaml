@@ -2,7 +2,7 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    base_net_income: 400
-    tax_modelling: 50
+    gross_income: 400
+    tax: 50
   output:
     net_income: 350
