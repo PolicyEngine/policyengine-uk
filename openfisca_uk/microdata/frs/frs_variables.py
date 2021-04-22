@@ -2,6 +2,21 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class P_ROYYR1(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_SEINCAM2(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_INRINC(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
 
 class H_HHRENT(Variable):
     value_type = float
@@ -844,4 +859,7 @@ FRS_variables = [
     P_FUELAMT,
     P_MILEAMT,
     P_MOTAMT,
+    P_SEINCAM2,
+    P_INRINC,
+    P_ROYYR1
 ]

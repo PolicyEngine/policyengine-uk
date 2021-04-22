@@ -243,9 +243,6 @@ class taxable_miscellaneous_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 574"
 
-    def formula(person, period, parameters):
-        return person("miscellaneous_income", period)
-
 
 class total_income(Variable):
     value_type = float

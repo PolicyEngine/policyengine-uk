@@ -9,6 +9,33 @@ from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 from openfisca_uk.microdata.frs.frs_variables import FRS_variables
 
+class self_employment_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'Income from self-employmen. Different to trading profits'
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("P_SEINCAM2", period) * WEEKS_IN_YEAR
+
+class property_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income from rental of property"
+    definition_period = YEAR
+    reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
+
+    def formula(person, period, parameters):
+        return person("sublet_income", period) + person("P_ROYYR1", period) * WEEKS_IN_YEAR
+
+class miscellaneous_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income from other sources"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("P_INRINC", period) * WEEKS_IN_YEAR - person("property_income", period)
 
 class region(Variable):
     value_type = Enum
@@ -767,6 +794,9 @@ input_variables = [
     hours_worked,
     employment_status,
     employment_expenses,
+    self_employment_income,
+    miscellaneous_income,
+    property_income
 ]
 
 

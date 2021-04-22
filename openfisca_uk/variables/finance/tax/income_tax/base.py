@@ -33,7 +33,7 @@ class pension_income(Variable):
 class social_security_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from social security"
+    label = u"Income from social security for tax purposes"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
 
@@ -51,7 +51,7 @@ class social_security_income(Variable):
 class trading_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from trading profits"
+    label = u"Income from trading profits for owned businesses"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
 
@@ -81,11 +81,3 @@ class dividend_income(Variable):
     label = u"Income from dividends"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
-
-
-class miscellaneous_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Income from other sources"
-    definition_period = YEAR
-    reference = "Income Tax (Trading and Other Income) Act 2005 s. 574(1)"

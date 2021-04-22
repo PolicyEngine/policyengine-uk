@@ -10,14 +10,37 @@ class sublet_income(Variable):
     definition_period = YEAR
 
 
-class base_net_income(Variable):
+class self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u"Existing net income for the person to use as a base in microsimulation"
+    label = u'Income from self-employmen. Different to trading profits'
+    definition_period = YEAR
+
+class miscellaneous_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income from other sources"
+    definition_period = YEAR
+
+
+class gross_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Gross income, including benefits"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("adjusted_net_income", period)
+        COMPONENTS = [
+            "employment_income",
+            "pension_income",
+            "self_employment_income",
+            "property_income",
+            "savings_interest_income",
+            "dividend_income",
+            "miscellaneous_income",
+            "benefits"
+        ]
+        return add(person, period, COMPONENTS)
 
 
 class net_income(Variable):
@@ -27,11 +50,11 @@ class net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        base = person("base_net_income", period)
-        modelling = -person("tax_modelling", period) + person(
-            "benefits_modelling", period
-        )
-        return base + modelling
+        EXPENSES = [
+            "tax",
+            "employment_expenses"
+        ]
+        return person("gross_income", period) - add(person, period, EXPENSES)
 
 
 class hours_worked(Variable):
