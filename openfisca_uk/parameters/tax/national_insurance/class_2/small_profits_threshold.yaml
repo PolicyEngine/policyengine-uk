@@ -1,0 +1,15 @@
+description: Small profits threshold for self-employed earners
+values:
+  2015-06-01:
+    value: 3965
+  2017-06-01:
+    value: 6025
+  2018-06-01:
+    value: 6205
+  2019-06-01:
+    value: 6365
+  2020-06-01:
+    value: 6475
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

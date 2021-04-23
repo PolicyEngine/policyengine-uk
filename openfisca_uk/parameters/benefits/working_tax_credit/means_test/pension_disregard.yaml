@@ -1,8 +1,0 @@
-description: Disregard for means tested pension income per year
-values:
-  2016-06-01:
-    value: 300.00
-metadata:
-  period: year
-  unit: currency
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=26

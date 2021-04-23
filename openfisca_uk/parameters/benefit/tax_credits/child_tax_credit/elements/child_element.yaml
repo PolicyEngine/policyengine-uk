@@ -1,0 +1,10 @@
+description: Child element per year
+values:
+  2015-06-01:
+    value: 2780.00
+  2020-06-01:
+    value: 2830.00
+metadata:
+  period: year
+  unit: currency
+  reference: https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

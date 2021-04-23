@@ -1,38 +1,20 @@
-from openfisca_uk.tools.simulation import Simulation
+from openfisca_uk.microdata.simulation import Microsimulation
 import numpy as np
+from tqdm import tqdm
 
-sim = Simulation(
-    data_dir="C:\\Users\\Nikhil\\Documents\\Projects\\new-frs\\frs\\frs"
-)
-person = sim.entity_df(entity="person")
-benunit = sim.entity_df(entity="benunit")
-household = sim.entity_df(entity="household")
-text = "# OpenFisca-UK Variable Statistics\n## Person\n"
-for variable in person:
-    name = variable
-    label = sim.model.tax_benefit_system.variables[variable].label
-    mean = round(np.mean(person[variable]), 2)
-    median = round(np.median(person[variable]), 2)
-    std = round(np.std(person[variable]), 2)
-    text += f"{name}\n  - description: {label}\n  - mean: {mean}\n  - stddev: {std}\n  - median: {median}\n\n"
+sim = Microsimulation(mode="frs", year=2018, input_year=2019)
 
-text += "## Benefit Unit\n"
-for variable in benunit:
-    name = variable
-    label = sim.model.tax_benefit_system.variables[variable].label
-    mean = round(np.mean(benunit[variable]), 2)
-    median = round(np.median(benunit[variable]), 2)
-    std = round(np.std(benunit[variable]), 2)
-    text += f"{name}\n  - description: {label}\n  - mean: {mean}\n  - stddev: {std}\n  - median: {median}\n\n"
+text = "# OpenFisca-UK Variable Statistics\n\nAll statistics generated from the 2018-19 Family Resources Survey, with simulation turned on.\n\n"
 
-text += "## Household\n"
-for variable in household:
-    name = variable
-    label = sim.model.tax_benefit_system.variables[variable].label
-    mean = round(np.mean(household[variable]), 2)
-    median = round(np.median(household[variable]), 2)
-    std = round(np.std(household[variable]), 2)
-    text += f"{name}\n  - description: {label}\n  - mean: {mean}\n  - stddev: {std}\n  - median: {median}\n\n"
+for name, var in tqdm(
+    sim.simulation.tax_benefit_system.variables.items(),
+    desc="Generating descriptions",
+):
+    values = sim.calc(name)
+    if var.value_type in (float, bool, int):
+        text += f"\n- {name}:\n  - Type: {var.value_type.__name__}\n  - Entity: {var.entity.key}\n  - Description: {var.label}\n  - Mean: {values.mean()}\n  - Median: {values.median()}\n  - Stddev: {values.std()}\n  - Non-zero count: {(values > 0).sum()}\n\n"
+    else:
+        text += f"\n- {name}:\n  - Type: Categorical\n  - Entity: {var.entity.key}\n  - Description: {var.label}\n\n"
 
 
 with open("variable_stats.md", "w+") as f:

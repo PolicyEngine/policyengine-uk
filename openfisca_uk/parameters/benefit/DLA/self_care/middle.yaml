@@ -1,0 +1,7 @@
+description: Middle rate of the care component of DLA
+values:
+  2015-06-04:
+    value: 59.70
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/dla-disability-living-allowance-benefit/DLA-rates

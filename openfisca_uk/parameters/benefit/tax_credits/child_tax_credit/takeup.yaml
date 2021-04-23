@@ -1,0 +1,7 @@
+description: Take-up rate of Child Tax Credit among eligible families
+values:
+  2015-06-01:
+    value: 0.83
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/851148/Child_Benefit__Child_Tax_Credit_and_Working_Tax_Credit_take-up_rates_2016_to_2017_restated.pdf

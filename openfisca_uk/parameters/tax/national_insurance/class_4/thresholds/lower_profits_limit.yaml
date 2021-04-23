@@ -1,0 +1,15 @@
+description: Lower profits limit for self-employed earners
+values:
+  2015-06-01:
+    value: 8060
+  2017-06-01:
+    value: 8164
+  2018-06-01:
+    value: 8424
+  2019-06-01:
+    value: 8632
+  2020-06-01:
+    value: 9500
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

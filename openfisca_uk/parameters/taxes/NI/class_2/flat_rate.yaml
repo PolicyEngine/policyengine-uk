@@ -1,8 +1,0 @@
-description: NI Class 2 charge
-values:
-  2019-06-01:
-    value: 3.05
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/self-employed-national-insurance-rates

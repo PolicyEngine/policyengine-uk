@@ -1,0 +1,94 @@
+- name: Applicable income from earnings
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 5000
+  output:
+    tax_credits_applicable_income: 5000
+- name: CTC two-child limit exemption
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 14
+  output:
+    is_CTC_child_limit_exempt: true
+- name: CTC two-child limit non-exemption
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 0
+  output:
+    is_CTC_child_limit_exempt: false
+- name: CTC children
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      child1:
+        age: 3
+      child2:
+        age: 3
+      child3:
+        age: 1
+  output:
+    is_child_for_CTC: [true, true, true]
+- name: WTC eligibility for worker
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 40
+    claims_WTC: true
+    claims_CTC: true
+  output:
+    is_WTC_eligible: true
+    is_CTC_eligible: false
+- name: WTC eligibility for worker under hours requirement
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 8
+    claims_WTC: true
+    claims_CTC: true
+  output:
+    is_WTC_eligible: false
+    is_CTC_eligible: false
+- name: CTC for two children - maximum rate
+  period: 2020
+  absolute_error_margin: 100
+  input:
+    people:
+      adult1: {}
+      child1:
+        age: 4
+      child2:
+        age: 6
+    benunits:
+      benunit1:
+        claims_CTC: true
+        claims_WTC: true
+        adults: ["adult1"]
+        children: ["child1", "child2"]
+  output:
+    age: [18, 4, 6]
+    CTC_maximum_rate: 6100
+- name: WTC for working earner with no taxable income
+  period: 2020
+  absolute_error_margin: 100
+  input:
+    employment_income: 0
+    weekly_hours: 40
+    age: 26
+    claims_WTC: true
+    claims_CTC: true
+  output:
+    is_WTC_eligible: true
+    WTC_basic_element: 2060
+    WTC_couple_element: 0
+    WTC_lone_parent_element: 0
+    WTC_disabled_element: 0
+    WTC_severely_disabled_element: 0
+    WTC_worker_element: 825
+    WTC_childcare_element: 0
+    WTC_maximum_rate: 2834

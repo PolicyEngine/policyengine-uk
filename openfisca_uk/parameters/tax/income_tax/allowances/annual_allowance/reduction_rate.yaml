@@ -1,0 +1,7 @@
+description: Reduction rate for the annual allowance
+values:
+  2015-06-01:
+    value: 0.5
+metadata:
+  threshold_unit: marginal-rate
+  reference: none

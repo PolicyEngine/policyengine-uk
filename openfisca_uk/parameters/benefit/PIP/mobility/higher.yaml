@@ -1,0 +1,7 @@
+description: Upper rate of the mobility component of PIP
+values:
+  2015-06-04:
+    value: 62.25
+metadata:
+  threshold_unit: currency-GBP
+  reference: https://www.gov.uk/pip/what-youll-get

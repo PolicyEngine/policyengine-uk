@@ -1,0 +1,8 @@
+description: Personal allowance for Housing Benefit for a single person under 25
+values:
+  2017-06-01:
+    value: 57.90
+metadata:
+  period: week
+  unit: currency
+  reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020

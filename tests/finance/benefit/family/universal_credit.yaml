@@ -1,0 +1,20 @@
+- name: UC basic amount
+  period: 2020
+  absolute_error_margin: 10
+  input:
+    age: 30
+    employment_income: 1
+    claims_UC: true
+  output:
+    universal_credit:
+      2020-01: 317
+- name: UC basic amount - not eligible
+  period: 2020
+  absolute_error_margin: 10
+  input:
+    age: 30
+    employment_income: 1
+    claims_UC: false
+  output:
+    universal_credit:
+      2020-01: 0

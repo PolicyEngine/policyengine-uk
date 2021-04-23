@@ -1,0 +1,69 @@
+{
+	// Place your snippets for python here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"OpenFisca Variable": {
+		 	"prefix": "var",
+		 	"body": [
+		 		"class ${1:name}(Variable):",
+				"	value_type = ${2:float}",
+				"	entity = ${3:Person}",
+				"	label = u'${4:label}'",
+				"	definition_period = ${5:YEAR}",
+				"	reference = \"${6:}\"",
+				"",
+				""
+		 	],
+		 	"description": "Insert a new OpenFisca Variable, without a formula."
+		 },
+	"OpenFisca SPI Variable": {
+			"prefix": "spivar",
+			"body": [
+				"class ${1:name}(Variable):",
+			   "	value_type = float",
+			   "	entity = Person",
+			   "	definition_period = YEAR",
+			   "",
+			   ""
+			],
+			"description": "Insert a new SPI input variable."
+		},
+	"OpenFisca FRS Variable": {
+				"prefix": "frs",
+				"body": [
+					"class ${1:name}(Variable):",
+				   "	value_type = float",
+				   "	entity = Person",
+				   "	definition_period = WEEK",
+				   "",
+				   ""
+				],
+				"description": "Insert a new FRS input variable."
+			},
+	"OpenFisca Formula": {
+			"prefix": "form",
+			"body": [
+				"def formula(${1:person}, period, parameters):",
+				"	${2:pass}"
+			],
+			"description": "Insert a new OpenFisca Formula."
+		},
+	"OpenFisca Variable File": {
+		"prefix": "file",
+		"body": [
+			"from openfisca_core.model_api import *",
+			"from openfisca_uk.entities import *",
+			"from openfisca_uk.tools.general import *"
+		]
+	}
+}

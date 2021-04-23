@@ -1,0 +1,30 @@
+description: Income tax scale for Scotland
+brackets:
+  - rate:
+      2010-06-01:
+        value: 0.2
+    threshold:
+      2010-06-01:
+        value: 0
+  - rate:
+      2015-06-01:
+        value: 0.4
+    threshold:
+      2015-06-01:
+        value: 31785
+      2015-06-05:
+        value: 32000
+      2017-06-01:
+        value: 31500
+  - rate:
+      2010-06-01:
+        value: 0.45
+    threshold:
+      2015-06-05:
+        value: 150000
+metadata:
+  period: year
+  type: marginal_rate
+  threshold_unit: currency
+  rate_unit: /1
+  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

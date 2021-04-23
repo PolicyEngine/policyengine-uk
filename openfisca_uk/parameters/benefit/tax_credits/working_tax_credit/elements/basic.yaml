@@ -1,0 +1,8 @@
+description: Basic element of WTC
+values:
+  2015-06-01:
+    value: 2060
+metadata:
+  period: year
+  unit: currency
+  reference: https://www.gov.uk/working-tax-credit/what-youll-get

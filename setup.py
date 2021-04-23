@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="OpenFisca-UK",
-    version="0.2.3",
+    version="0.3.0",
     author="UBI Center",
     author_email="nikhil.woodruff@ubicenter.org",
     classifiers=[
@@ -17,7 +17,7 @@ setup(
     description="OpenFisca tax and benefit system for UK",
     keywords="benefit microsimulation social tax",
     license="http://www.fsf.org/licensing/licenses/agpl-3.0.html",
-    url="https://github.com/nikhilwoodruff/openfisca-uk",
+    url="https://github.com/pslmodels/openfisca-uk",
     include_package_data=True,  # Will read MANIFEST.in
     data_files=[
         (
@@ -31,6 +31,10 @@ setup(
         "pyyaml==5.3.1",
         "pytest==5.4.3",
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
+        "family-resources-survey==1.0.0",
+        "survey-personal-incomes==1.0.0",
+        "microdf @ git+https://github.com/pslmodels/microdf",
+        "tqdm==4.59.0",
         "frs @ git+https://github.com/nikhilwoodruff/frs",
         "microdf @ git+https://github.com/PSLmodels/microdf",
     ],

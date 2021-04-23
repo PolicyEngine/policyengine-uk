@@ -1,8 +1,0 @@
-description: Rate of reduction for the Starter rate for savings
-values:
-  2016-06-01:
-    value: 0.5
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/apply-tax-free-interest-on-savings

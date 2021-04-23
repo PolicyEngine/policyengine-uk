@@ -1,0 +1,32 @@
+- name: Housing Benefit for a single person with small earnings
+  period: 2021
+  absolute_error_margin: 5
+  input:
+    age: 26
+    weekly_hours: 31
+    employment_income: 2000
+    tenure_type: RENT_FROM_COUNCIL
+    claims_HB: true
+    claims_WTC: true
+    weekly_rent: 88
+  output:
+    working_tax_credit: 2885
+    housing_benefit:
+      week:2021-01-06:
+        77
+- name: Check withdrawal rate is 65%
+  period: 2021
+  absolute_error_margin: 5
+  input:
+    age: 26
+    weekly_hours: 31
+    employment_income: 2520
+    tenure_type: RENT_FROM_COUNCIL
+    claims_HB: true
+    claims_WTC: true
+    weekly_rent: 88
+  output:
+    working_tax_credit: 2885
+    housing_benefit:
+      week:2021-01-06:
+        71

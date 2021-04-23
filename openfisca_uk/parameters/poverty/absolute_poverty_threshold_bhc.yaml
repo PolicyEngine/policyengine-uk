@@ -1,7 +1,7 @@
 description: Absolute poverty threshold for equivalised household net income, before housing costs.
 values:
-  2016-06-01:
-    value: 295
+  2015-06-05:
+    value: 316
 metadata:
   period: week
   unit: currency

@@ -1,6 +1,9 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
+from datetime import datetime
+
+np.random.seed(0)
 
 
 def add(entity, period, variable_names, options=None):
@@ -75,3 +78,28 @@ def select(conditions, choices):
         Array: Array of values
     """
     return np.select(conditions, choices)
+
+
+clip = np.clip
+inf = np.inf
+
+WEEKS_IN_YEAR = 52
+
+
+def amount_over(amount, threshold):
+    return max_(0, amount - threshold)
+
+
+def amount_between(amount, threshold_1, threshold_2):
+    return clip(amount, threshold_1, threshold_2) - threshold_1
+
+
+def random(entity, reset=True):
+    x = np.random.rand(entity.count)
+    if reset:
+        np.random.seed(0)
+    return x
+
+
+def is_in(values, *targets):
+    return sum(map(lambda target: values == target, targets))

@@ -1,0 +1,38 @@
+- name: Income Tax for earner
+  period: 2020
+  absolute_error_margin: 10
+  input:
+    employment_income: 34000
+  output:
+    income_tax: 4298
+- name: Income Tax for earner with pension contributions
+  period: 2020
+  absolute_error_margin: 10
+  input:
+    employment_income: 34000
+    pension_contributions: 1200
+  output:
+    income_tax: 4058
+- name: Income Tax for earner with pension contributions in 2018
+  period: 2018
+  absolute_error_margin: 10
+  input:
+    employment_income: 34000
+    pension_contributions: 1200
+  output:
+    income_tax: 4258
+- name: Income Tax for earner with pension contributions in 2019
+  period: 2019
+  absolute_error_margin: 10
+  input:
+    employment_income: 34000
+    pension_contributions: 1200
+  output:
+    income_tax: 4188
+- name: Income Tax for earner in 2019
+  period: 2019
+  absolute_error_margin: 10
+  input:
+    employment_income: 34000
+  output:
+    income_tax: 4428

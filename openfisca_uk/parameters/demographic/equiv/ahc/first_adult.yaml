@@ -1,0 +1,6 @@
+description: Equivalisation factor for the first adult
+values:
+  2010-06-01:
+    value: 0.58
+metadata:
+  threshold_unit: /1

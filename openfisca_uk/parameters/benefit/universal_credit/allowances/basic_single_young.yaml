@@ -1,0 +1,8 @@
+description: Personal allowance for a single person under 25, per month
+values:
+  2016-06-01:
+    value: 251.77
+metadata:
+  period: month
+  unit: currency
+  reference: https://www.gov.uk/universal-credit/what-youll-get

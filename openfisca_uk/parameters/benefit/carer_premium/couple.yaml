@@ -1,0 +1,8 @@
+description: Carer premium for two qualifying carers
+values:
+  2010-01-01:
+    value: 37.50
+metadata:
+  period: week
+  unit: currency
+  reference: https://www.mariecurie.org.uk/help/support/benefits-entitlements/carers/premium
