@@ -3,6 +3,10 @@ import pandas as pd
 from family_resources_survey import FRS
 from pathlib import Path
 import shutil
+import warnings
+from io import BytesIO
+from zipfile import ZipFile
+import requests
 
 DATA_STORE = Path(__file__).parent
 
@@ -28,7 +32,31 @@ class FRSDataset:
         Returns:
             Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: The person, benefit unit and household datasets.
         """
-        frs = FRS(year)
+        try:
+            frs = FRS(year)
+        except:
+            # FRS microdata inaccessible - use anonymised versions
+            warnings.warn("FRS microdata unavailable, using anonymised version (2018) instead.")
+            dataset_path = DATA_STORE / (str(year) + "_anon")
+            print(dataset_path)
+            try:
+                person = pd.read_csv(dataset_path / "person.csv")
+                benunit = pd.read_csv(dataset_path / "benunit.csv")
+                household = pd.read_csv(dataset_path / "household.csv")
+            except:
+                resp = requests.get("https://drive.google.com/u/0/uc?id=1_lq7gW6i-NnTVSSewmAKrhDZXarF-CYJ&export=download")
+                zipfile = ZipFile(BytesIO(resp.content))
+
+                if dataset_path.exists():
+                    shutil.rmtree(dataset_path)
+
+                dataset_path.mkdir()
+                zipfile.extractall(dataset_path)
+                person = pd.read_csv(dataset_path / "person.csv")
+                benunit = pd.read_csv(dataset_path / "benunit.csv")
+                household = pd.read_csv(dataset_path / "household.csv")
+            
+            return person, benunit, household
 
         # generate the person-level dataset
 
