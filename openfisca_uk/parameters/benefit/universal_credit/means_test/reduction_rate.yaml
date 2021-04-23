@@ -1,6 +1,6 @@
 description: Rate at which Universal Credit is reduced with earnings above the threshold
 values:
-  2016-06-01:
+  2015-06-01:
     value: 0.65
   2017-06-01:
     value: 0.63

@@ -1,6 +1,6 @@
 description: Additional disregard in income for meeting the 16/30 hours requirement for Housing Benefit
 values:
-  2016-06-01:
+  2015-06-01:
     value: 37.10
 metadata:
   period: week

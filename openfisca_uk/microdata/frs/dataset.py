@@ -39,8 +39,7 @@ class FRSDataset:
             warnings.warn(
                 "FRS microdata unavailable, using anonymised version (2018) instead."
             )
-            dataset_path = DATA_STORE / (str(year) + "_anon")
-            print(dataset_path)
+            dataset_path = DATA_STORE / "anon"
             try:
                 person = pd.read_csv(dataset_path / "person.csv")
                 benunit = pd.read_csv(dataset_path / "benunit.csv")
@@ -55,7 +54,12 @@ class FRSDataset:
                     shutil.rmtree(dataset_path)
 
                 dataset_path.mkdir()
-                zipfile.extractall(dataset_path)
+                with zipfile.open("2018_anon/person.csv") as source, open(dataset_path / "person.csv", "wb") as target:
+                    shutil.copyfileobj(source, target)
+                with zipfile.open("2018_anon/benunit.csv") as source, open(dataset_path / "benunit.csv", "wb") as target:
+                    shutil.copyfileobj(source, target)
+                with zipfile.open("2018_anon/household.csv") as source, open(dataset_path / "household.csv", "wb") as target:
+                    shutil.copyfileobj(source, target)
                 person = pd.read_csv(dataset_path / "person.csv")
                 benunit = pd.read_csv(dataset_path / "benunit.csv")
                 household = pd.read_csv(dataset_path / "household.csv")

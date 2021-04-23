@@ -1,6 +1,6 @@
 description: Lower attendance allowance amount.
 values:
-  2016-06-01:  # TODO: confirm start year.
+  2015-06-01:  # TODO: confirm start year.
     value: 59.70
 metadata:
   period: week

@@ -1,6 +1,6 @@
 description: Couple with children hours requirement
 values:
-  2016-06-01:
+  2015-06-01:
     value: 24
 metadata:
   period: week

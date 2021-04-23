@@ -1,6 +1,6 @@
 description: Savings Credit (Pension Credit) threshold for a couple
 values:
-  2016-06-01:
+  2015-06-01:
     value: 235.62
 metadata:
   period: week

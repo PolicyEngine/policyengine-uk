@@ -1,6 +1,6 @@
 description: Threshold in occupational and personal pensions, above which the contributory JSA amount is reduced
 values:
-  2016-06-01:
+  2015-06-01:
     value: 50.00
 metadata:
   period: week

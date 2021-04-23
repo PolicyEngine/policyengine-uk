@@ -1,6 +1,6 @@
 description: Withdrawal rate of Housing Benefit
 values:
-  2016-06-01:
+  2015-06-01:
     value: 0.65
 metadata:
   unit: /1
