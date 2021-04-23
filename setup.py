@@ -33,7 +33,7 @@ setup(
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
         "family-resources-survey==1.0.0",
         "survey-personal-incomes==1.0.0",
-        "microdf @ git+https://github.com/pslmodels/microdf",
+        "microdf @ git+https://github.com/PSLmodels/microdf",
         "tqdm==4.59.0",
     ],
     extras_require={
