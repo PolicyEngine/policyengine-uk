@@ -74,14 +74,19 @@ class benefits(Variable):
             "family_benefits", period
         )
 
+
 class other_benefits(Variable):
     value_type = float
     entity = Person
-    label = u'Income from benefits not modelled or detailed in the model'
+    label = u"Income from benefits not modelled or detailed in the model"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("benefits_reported", period) - person("personal_benefits", period) - person("family_benefits", period)
+        return (
+            person("benefits_reported", period)
+            - person("personal_benefits", period)
+            - person("family_benefits", period)
+        )
 
 
 class benefits_reported(Variable):

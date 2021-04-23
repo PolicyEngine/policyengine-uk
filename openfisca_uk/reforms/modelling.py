@@ -17,6 +17,7 @@ class reported_tax(Reform):
     def apply(self):
         self.update_variable(tax)
 
+
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
@@ -27,6 +28,7 @@ class child_benefit(Variable):
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["child_benefit_reported"])
 
+
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit
@@ -35,6 +37,7 @@ class ESA_income(Variable):
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["ESA_income_reported"])
+
 
 class housing_benefit(Variable):
     value_type = float
@@ -45,6 +48,7 @@ class housing_benefit(Variable):
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["housing_benefit_reported"])
 
+
 class income_support(Variable):
     value_type = float
     entity = BenUnit
@@ -53,6 +57,7 @@ class income_support(Variable):
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["income_support_reported"])
+
 
 class JSA_income(Variable):
     value_type = float
@@ -63,6 +68,7 @@ class JSA_income(Variable):
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["JSA_income_reported"])
 
+
 class pension_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -72,6 +78,7 @@ class pension_credit(Variable):
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["pension_credit_reported"])
 
+
 class working_tax_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -79,7 +86,10 @@ class working_tax_credit(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["working_tax_credit_reported"], options=[ADD])
+        return aggr(
+            benunit, period, ["working_tax_credit_reported"], options=[ADD]
+        )
+
 
 class child_tax_credit(Variable):
     value_type = float
@@ -88,7 +98,10 @@ class child_tax_credit(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["child_tax_credit_reported"], options=[ADD])
+        return aggr(
+            benunit, period, ["child_tax_credit_reported"], options=[ADD]
+        )
+
 
 class universal_credit(Variable):
     value_type = float
@@ -99,6 +112,7 @@ class universal_credit(Variable):
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["universal_credit_reported"])
 
+
 class benefits(Variable):
     value_type = float
     entity = Person
@@ -107,6 +121,7 @@ class benefits(Variable):
 
     def formula(person, period, parameters):
         return person("benefits_reported", period)
+
 
 class AA(Variable):
     value_type = float
@@ -117,6 +132,7 @@ class AA(Variable):
     def formula(person, period, parameters):
         return person("AA_reported", period)
 
+
 class AFCS(Variable):
     value_type = float
     entity = Person
@@ -125,6 +141,7 @@ class AFCS(Variable):
 
     def formula(person, period, parameters):
         return person("AA_reported", period)
+
 
 class BSP(Variable):
     value_type = float
@@ -135,6 +152,7 @@ class BSP(Variable):
     def formula(person, period, parameters):
         return person("BSP_reported", period)
 
+
 class carers_allowance(Variable):
     value_type = float
     entity = Person
@@ -143,6 +161,7 @@ class carers_allowance(Variable):
 
     def formula(person, period, parameters):
         return person("carers_allowance_reported", period)
+
 
 class DLA_M(Variable):
     value_type = float
@@ -173,6 +192,7 @@ class ESA_contrib(Variable):
     def formula(person, period, parameters):
         return person("ESA_contrib_reported", period)
 
+
 class IIDB(Variable):
     value_type = float
     entity = Person
@@ -181,6 +201,7 @@ class IIDB(Variable):
 
     def formula(person, period, parameters):
         return person("IIDB_reported", period)
+
 
 class incapacity_benefit(Variable):
     value_type = float
@@ -191,6 +212,7 @@ class incapacity_benefit(Variable):
     def formula(person, period, parameters):
         return person("incapacity_benefit_reported", period)
 
+
 class JSA_contrib(Variable):
     value_type = float
     entity = Person
@@ -199,6 +221,7 @@ class JSA_contrib(Variable):
 
     def formula(person, period, parameters):
         return person("JSA_contrib_reported", period)
+
 
 class PIP_DL(Variable):
     value_type = float
@@ -219,6 +242,7 @@ class PIP_M(Variable):
     def formula(person, period, parameters):
         return person("PIP_M_reported", period)
 
+
 class SDA(Variable):
     value_type = float
     entity = Person
@@ -227,6 +251,7 @@ class SDA(Variable):
 
     def formula(person, period, parameters):
         return person("SDA_reported", period)
+
 
 class state_pension(Variable):
     value_type = float
@@ -264,8 +289,9 @@ class reported_benefits(Reform):
             PIP_DL,
             SDA,
             state_pension,
-            benefits
+            benefits,
         ]:
             self.update_variable(var)
+
 
 reported = (reported_tax, reported_benefits)

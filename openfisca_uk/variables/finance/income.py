@@ -13,8 +13,9 @@ class sublet_income(Variable):
 class self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u'Income from self-employmen. Different to trading profits'
+    label = u"Income from self-employmen. Different to trading profits"
     definition_period = YEAR
+
 
 class miscellaneous_income(Variable):
     value_type = float
@@ -38,7 +39,7 @@ class gross_income(Variable):
             "savings_interest_income",
             "dividend_income",
             "miscellaneous_income",
-            "benefits"
+            "benefits",
         ]
         return add(person, period, COMPONENTS)
 
@@ -50,10 +51,7 @@ class net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        EXPENSES = [
-            "tax",
-            "employment_expenses"
-        ]
+        EXPENSES = ["tax", "employment_expenses"]
         return person("gross_income", period) - add(person, period, EXPENSES)
 
 

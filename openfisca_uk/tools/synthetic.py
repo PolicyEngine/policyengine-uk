@@ -16,11 +16,14 @@ ID_COLS = (
     "P_household_id",
     "B_benunit_id",
     "B_household_id",
-    "H_household_id"
+    "H_household_id",
 )
 
+
 def export_synthetic_frs(year: int) -> None:
-    dataset_path = Path(__file__).parent.parent / "microdata" / "frs" / str(year)
+    dataset_path = (
+        Path(__file__).parent.parent / "microdata" / "frs" / str(year)
+    )
     person = pd.read_csv(dataset_path / "person.csv")
     benunit = pd.read_csv(dataset_path / "benunit.csv")
     household = pd.read_csv(dataset_path / "household.csv")
@@ -31,6 +34,7 @@ def export_synthetic_frs(year: int) -> None:
     anonymise(person).to_csv(output_folder / "person.csv")
     anonymise(benunit).to_csv(output_folder / "benunit.csv")
     anonymise(household).to_csv(output_folder / "household.csv")
+
 
 def anonymise(df: pd.DataFrame) -> pd.DataFrame:
     result = df.copy()
@@ -43,12 +47,17 @@ def anonymise(df: pd.DataFrame) -> pd.DataFrame:
             else:
                 # shuffle + add noise to numeric columns
                 # noise = between -3% and +3% added to each row
-                noise = np.random.rand() * 3e-2 + 1.
+                noise = np.random.rand() * 3e-2 + 1.0
                 result[col] = result[col].sample(len(result)) * noise
     return result
 
+
 if __name__ == "__main__":
-    parser = ArgumentParser(description="A utility to generate functional anonymised datasets in the same format as the FRS.")
-    parser.add_argument("year", type=int, help="The year of the FRS to anonymise")
+    parser = ArgumentParser(
+        description="A utility to generate functional anonymised datasets in the same format as the FRS."
+    )
+    parser.add_argument(
+        "year", type=int, help="The year of the FRS to anonymise"
+    )
     args = parser.parse_args()
     export_synthetic_frs(args.year)

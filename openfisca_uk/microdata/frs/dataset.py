@@ -36,7 +36,9 @@ class FRSDataset:
             frs = FRS(year)
         except:
             # FRS microdata inaccessible - use anonymised versions
-            warnings.warn("FRS microdata unavailable, using anonymised version (2018) instead.")
+            warnings.warn(
+                "FRS microdata unavailable, using anonymised version (2018) instead."
+            )
             dataset_path = DATA_STORE / (str(year) + "_anon")
             print(dataset_path)
             try:
@@ -44,7 +46,9 @@ class FRSDataset:
                 benunit = pd.read_csv(dataset_path / "benunit.csv")
                 household = pd.read_csv(dataset_path / "household.csv")
             except:
-                resp = requests.get("https://drive.google.com/u/0/uc?id=1_lq7gW6i-NnTVSSewmAKrhDZXarF-CYJ&export=download")
+                resp = requests.get(
+                    "https://drive.google.com/u/0/uc?id=1_lq7gW6i-NnTVSSewmAKrhDZXarF-CYJ&export=download"
+                )
                 zipfile = ZipFile(BytesIO(resp.content))
 
                 if dataset_path.exists():
@@ -55,7 +59,7 @@ class FRSDataset:
                 person = pd.read_csv(dataset_path / "person.csv")
                 benunit = pd.read_csv(dataset_path / "benunit.csv")
                 household = pd.read_csv(dataset_path / "household.csv")
-            
+
             return person, benunit, household
 
         # generate the person-level dataset

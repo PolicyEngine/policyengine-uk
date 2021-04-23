@@ -9,33 +9,42 @@ from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 from openfisca_uk.microdata.frs.frs_variables import FRS_variables
 
+
 class self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u'Income from self-employmen. Different to trading profits'
+    label = "Income from self-employmen. Different to trading profits"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("P_SEINCAM2", period) * WEEKS_IN_YEAR
 
+
 class property_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from rental of property"
+    label = "Income from rental of property"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
 
     def formula(person, period, parameters):
-        return person("sublet_income", period) + person("P_ROYYR1", period) * WEEKS_IN_YEAR
+        return (
+            person("sublet_income", period)
+            + person("P_ROYYR1", period) * WEEKS_IN_YEAR
+        )
+
 
 class miscellaneous_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from other sources"
+    label = "Income from other sources"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("P_INRINC", period) * WEEKS_IN_YEAR - person("property_income", period)
+        return person("P_INRINC", period) * WEEKS_IN_YEAR - person(
+            "property_income", period
+        )
+
 
 class region(Variable):
     value_type = Enum
@@ -184,7 +193,9 @@ class savings_interest_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
 
     def formula(person, period, parameters):
-        return person("P_ININV", period) * WEEKS_IN_YEAR - person("dividend_income", period)
+        return person("P_ININV", period) * WEEKS_IN_YEAR - person(
+            "dividend_income", period
+        )
 
 
 class tax_free_savings_income(Variable):
@@ -514,10 +525,11 @@ class universal_credit_reported(Variable):
     def formula(person, period, parameters):
         return person("P_INDUC", period.this_year)
 
+
 class benefits_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Total simulated"
+    label = "Total simulated"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -788,7 +800,7 @@ input_variables = [
     self_employment_income,
     miscellaneous_income,
     property_income,
-    benefits_reported
+    benefits_reported,
 ]
 
 
