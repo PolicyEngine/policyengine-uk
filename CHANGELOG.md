@@ -31,6 +31,11 @@
 * More detailed disability variables
 * Fixed IndividualSim reform handling
 
+### 0.2.3
+
+* Bug fixes
+* MicroDataFrame and MicroSeries returned by default
+
 ### 0.3.0
 
 * New interfact for microsimulation
