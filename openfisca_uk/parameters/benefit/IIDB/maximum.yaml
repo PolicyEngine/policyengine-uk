@@ -1,6 +1,6 @@
 description: Maximum weekly Industrial Injuries Disablement Benefit. Amount varies in 10% increments.
 values:
-  2016-06-01:  # TODO: confirm start year.
+  2015-06-01:  # TODO: confirm start year.
     value: 182
 metadata:
   period: week

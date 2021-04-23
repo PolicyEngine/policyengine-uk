@@ -1,6 +1,6 @@
 description: Upper attendance allowance amount.
 values:
-  2016-06-01:  # TODO: confirm start year.
+  2015-06-01:  # TODO: confirm start year.
     value: 89.15
 metadata:
   period: week

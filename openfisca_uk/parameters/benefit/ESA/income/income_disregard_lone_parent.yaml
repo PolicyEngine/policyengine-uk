@@ -1,6 +1,6 @@
 description: Threshold for income for a lone parent, above which the income-based ESA amount is reduced
 values:
-  2016-06-01:
+  2015-06-01:
     value: 20.00
 metadata:
   period: week

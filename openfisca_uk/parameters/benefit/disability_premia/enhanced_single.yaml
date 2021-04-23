@@ -1,6 +1,6 @@
 description: Enhanced disability premium for a single person, invalid for ESA
 values:
-  2016-06-01:
+  2015-06-01:
     value: 17.10
 metadata:
   period: week

@@ -1,6 +1,6 @@
 description: Income threshold for benefit units only entitled to CTC
 values:
-  2016-06-01:
+  2015-06-01:
     value: 16105.00
   2020-06-01:
     value: 16385.00

@@ -1,6 +1,6 @@
 description: Exceptional rate for Constant Attendance Allowance.
 values:
-  2016-06-01:  # TODO: confirm start year.
+  2015-06-01:  # TODO: confirm start year.
     value: 145.60
 metadata:
   period: week

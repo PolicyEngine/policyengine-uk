@@ -1,6 +1,6 @@
 description: Default hours requirement for the WTC-hours-related element of Housing Benefit
 values:
-  2016-06-01:
+  2015-06-01:
     value: 30.00
 metadata:
   period: week

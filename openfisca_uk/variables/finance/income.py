@@ -3,6 +3,21 @@ from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
 
+class earned_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Total earned income"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        COMPONENTS = [
+            "employment_income",
+            "self_employment_income",
+            "pension_income",
+        ]
+        return add(person, period, COMPONENTS)
+
+
 class sublet_income(Variable):
     value_type = float
     entity = Person
@@ -13,7 +28,7 @@ class sublet_income(Variable):
 class self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from self-employmen. Different to trading profits"
+    label = u"Income from self-employment. Different to trading profits"
     definition_period = YEAR
 
 

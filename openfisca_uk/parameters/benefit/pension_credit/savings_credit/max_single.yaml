@@ -1,6 +1,6 @@
 description: Savings Credit (Pension Credit) maximum amount for a single person
 values:
-  2016-06-01:
+  2015-06-01:
     value: 13.97
 metadata:
   period: week

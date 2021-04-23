@@ -1,6 +1,6 @@
 description: Child element of Universal Credit per month
 values:
-  2016-06-01:
+  2015-06-01:
     value: 277.08
 metadata:
   period: month

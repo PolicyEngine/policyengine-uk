@@ -1,6 +1,6 @@
 description: Maximum childcare costs paid by Universal Credit per month for a family with 1 child per month
 values:
-  2016-06-01:
+  2015-06-01:
     value: 646.35
 metadata:
   period: month

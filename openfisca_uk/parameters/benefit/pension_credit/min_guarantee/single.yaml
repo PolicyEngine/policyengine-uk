@@ -1,6 +1,6 @@
 description: Minimum income guarantee (basic amount) for Pension Credit for a single person
 values:
-  2016-06-01:
+  2015-06-01:
     value: 173.75
 metadata:
   period: week
