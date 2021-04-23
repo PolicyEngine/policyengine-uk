@@ -178,7 +178,7 @@ class universal_credit_eligible(Variable):
 class universal_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit amount per week"
+    label = u"Universal Credit amount per month"
     definition_period = MONTH
 
     def formula(benunit, period, parameters):

@@ -184,33 +184,7 @@ class savings_interest_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
 
     def formula(person, period, parameters):
-        SAVINGS_ACCOUNT_CODES = [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            10,
-            11,
-            12,
-            14,
-            16,
-            17,
-            18,
-            19,
-            21,
-            25,
-            26,
-            27,
-            28,
-            29,
-            30,
-        ]
-        savings_accounts = [
-            f"P_ACCINT_ACCOUNT_CODE_{i}" for i in SAVINGS_ACCOUNT_CODES
-        ]
-        return add(person, period, savings_accounts) * WEEKS_IN_YEAR
+        return person("P_ININV", period) * WEEKS_IN_YEAR - person("dividend_income", period)
 
 
 class tax_free_savings_income(Variable):
@@ -538,7 +512,24 @@ class universal_credit_reported(Variable):
     definition_period = WEEK
 
     def formula(person, period, parameters):
-        return person("P_BENAMT_BENEFIT_CODE_95", period.this_year)
+        return person("P_INDUC", period.this_year)
+
+class benefits_reported(Variable):
+    value_type = float
+    entity = Person
+    label = u"Total simulated"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        FRS_BENEFITS = [
+            "P_INOTHBEN",
+            "P_INRPINC",
+            "P_INDISBEN",
+            "P_INTXCRED",
+            "P_INDUC",
+        ]
+        total_benefits = add(person, period, FRS_BENEFITS) * WEEKS_IN_YEAR
+        return total_benefits
 
 
 class AFCS_reported(Variable):
@@ -796,7 +787,8 @@ input_variables = [
     employment_expenses,
     self_employment_income,
     miscellaneous_income,
-    property_income
+    property_income,
+    benefits_reported
 ]
 
 

@@ -2,6 +2,34 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+class P_INOTHBEN(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_INDISBEN(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+
+class P_INRPINC(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+
+class P_INDUC(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+class P_INTXCRED(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+
 class P_ROYYR1(Variable):
     value_type = float
     entity = Person
@@ -17,6 +45,10 @@ class P_INRINC(Variable):
     entity = Person
     definition_period = YEAR
 
+class P_ININV(Variable):
+    value_type = float
+    entity = Person
+    definition_period = YEAR
 
 class H_HHRENT(Variable):
     value_type = float
@@ -861,5 +893,11 @@ FRS_variables = [
     P_MOTAMT,
     P_SEINCAM2,
     P_INRINC,
-    P_ROYYR1
+    P_ROYYR1,
+    P_ININV,
+    P_INTXCRED,
+    P_INDUC,
+    P_INOTHBEN,
+    P_INDISBEN,
+    P_INRPINC
 ]
