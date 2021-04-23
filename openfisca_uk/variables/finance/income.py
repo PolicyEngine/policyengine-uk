@@ -2,17 +2,18 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
+
 class earned_income(Variable):
     value_type = float
     entity = Person
-    label = u'Total earned income'
+    label = u"Total earned income"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         COMPONENTS = [
             "employment_income",
             "self_employment_income",
-            "pension_income"
+            "pension_income",
         ]
         return add(person, period, COMPONENTS)
 

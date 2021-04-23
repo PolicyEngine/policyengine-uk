@@ -54,11 +54,17 @@ class FRSDataset:
                     shutil.rmtree(dataset_path)
 
                 dataset_path.mkdir()
-                with zipfile.open("2018_anon/person.csv") as source, open(dataset_path / "person.csv", "wb") as target:
+                with zipfile.open("2018_anon/person.csv") as source, open(
+                    dataset_path / "person.csv", "wb"
+                ) as target:
                     shutil.copyfileobj(source, target)
-                with zipfile.open("2018_anon/benunit.csv") as source, open(dataset_path / "benunit.csv", "wb") as target:
+                with zipfile.open("2018_anon/benunit.csv") as source, open(
+                    dataset_path / "benunit.csv", "wb"
+                ) as target:
                     shutil.copyfileobj(source, target)
-                with zipfile.open("2018_anon/household.csv") as source, open(dataset_path / "household.csv", "wb") as target:
+                with zipfile.open("2018_anon/household.csv") as source, open(
+                    dataset_path / "household.csv", "wb"
+                ) as target:
                     shutil.copyfileobj(source, target)
                 person = pd.read_csv(dataset_path / "person.csv")
                 benunit = pd.read_csv(dataset_path / "benunit.csv")
