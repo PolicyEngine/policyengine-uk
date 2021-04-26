@@ -167,6 +167,8 @@ class FRSDataset:
         household.H_CTANNUAL = np.where(
             household.H_CTANNUAL == 0, ct, household.H_CTANNUAL
         )
+        average_CT = household.H_CTANNUAL.dropna().mean()
+        household.fillna(average_CT, inplace=True)
 
         # store dataset for future use
 
