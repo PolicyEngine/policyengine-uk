@@ -167,7 +167,7 @@ class FRSDataset:
         household.H_CTANNUAL = np.where(
             household.H_CTANNUAL == 0, ct, household.H_CTANNUAL
         )
-        household = household.fillna(0)
+        household.fillna(0, inplace=True)
 
         # store dataset for future use
 
