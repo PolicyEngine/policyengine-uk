@@ -25,6 +25,7 @@ class Microsimulation:
         mode: str = "frs",
         year: int = 2018,
         input_year: int = None,
+        entity_dataframes=None,
     ):
         self.mode = mode
         self.year = year
@@ -34,10 +35,18 @@ class Microsimulation:
         self.reforms = reforms
         if mode == "frs":
             self.reforms = from_FRS, *self.reforms
-            self.simulation = self.load_dataset(FRSDataset(year).entity_dfs)
+            if entity_dataframes is not None:
+                self.entity_dataframes = entity_dataframes
+            else:
+                self.entity_dataframes = FRSDataset(year).entity_dfs
+            self.simulation = self.load_dataset(self.entity_dataframes)
         elif mode == "spi":
             self.reforms = from_SPI, *self.reforms
-            self.simulation = self.load_dataset(SPIDataset(year).entity_dfs)
+            if entity_dataframes is not None:
+                self.entity_dataframes = entity_dataframes
+            else:
+                self.entity_dataframes = SPIDataset(year).entity_dfs
+            self.simulation = self.load_dataset(self.entity_dataframes)
         self.entity_weights = dict(
             person=self.calc("person_weight", weighted=False),
             benunit=self.calc("benunit_weight", weighted=False),
