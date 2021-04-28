@@ -34,6 +34,7 @@ class in_poverty_ahc(Variable):
             < parameters(period).poverty.absolute_poverty_threshold_ahc
         )
 
+
 class in_deep_poverty_bhc(Variable):
     value_type = bool
     entity = Household
@@ -64,7 +65,6 @@ class in_deep_poverty_ahc(Variable):
             )
             < (parameters(period).poverty.absolute_poverty_threshold_ahc / 2_
         )
-
 
 
 class poverty_line_bhc(Variable):
