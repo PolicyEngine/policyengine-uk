@@ -6,9 +6,7 @@ from openfisca_uk.tools.general import *
 class in_poverty_bhc(Variable):
     value_type = bool
     entity = Household
-    label = (
-        u"Whether the household is in absolute poverty, before housing costs"
-    )
+    label = u"Whether the household is in absolute poverty, before housing costs"
     definition_period = WEEK
 
     def formula(household, period, parameters):
@@ -21,16 +19,12 @@ class in_poverty_bhc(Variable):
 class in_poverty_ahc(Variable):
     value_type = bool
     entity = Household
-    label = (
-        u"Whether the household is in absolute poverty, after housing costs"
-    )
+    label = u"Whether the household is in absolute poverty, after housing costs"
     definition_period = WEEK
 
     def formula(household, period, parameters):
         return (
-            household(
-                "equiv_household_net_income_ahc", period, options=[DIVIDE]
-            )
+            household("equiv_household_net_income_ahc", period, options=[DIVIDE])
             < parameters(period).poverty.absolute_poverty_threshold_ahc
         )
 
@@ -38,32 +32,24 @@ class in_poverty_ahc(Variable):
 class in_deep_poverty_bhc(Variable):
     value_type = bool
     entity = Household
-    label = (
-        u"Whether the household is in deep absolute poverty (below half the poverty line), before housing costs"
-    )
+    label = u"Whether the household is in deep absolute poverty (below half the poverty line), before housing costs"
     definition_period = WEEK
 
     def formula(household, period, parameters):
-        return (
-            household("equiv_household_net_income", period, options=[DIVIDE])
-            < (parameters(period).poverty.absolute_poverty_threshold_bhc / 2)
+        return household("equiv_household_net_income", period, options=[DIVIDE]) < (
+            parameters(period).poverty.absolute_poverty_threshold_bhc / 2
         )
 
 
 class in_deep_poverty_ahc(Variable):
     value_type = bool
     entity = Household
-    label = (
-        u"Whether the household is in deep absolute poverty (below half the poverty line), after housing costs"
-    )
+    label = u"Whether the household is in deep absolute poverty (below half the poverty line), after housing costs"
     definition_period = WEEK
 
     def formula(household, period, parameters):
-        return (
-            household(
-                "equiv_household_net_income_ahc", period, options=[DIVIDE]
-            )
-            < (parameters(period).poverty.absolute_poverty_threshold_ahc / 2_
+        return household("equiv_household_net_income_ahc", period, options=[DIVIDE]) < (
+            parameters(period).poverty.absolute_poverty_threshold_ahc / 2
         )
 
 
@@ -74,9 +60,7 @@ class poverty_line_bhc(Variable):
     definition_period = WEEK
 
     def formula(household, period, parameters):
-        return parameters(
-            period
-        ).poverty.absolute_poverty_threshold_bhc * household(
+        return parameters(period).poverty.absolute_poverty_threshold_bhc * household(
             "household_equivalisation_bhc", period.this_year
         )
 
@@ -88,9 +72,7 @@ class poverty_line_ahc(Variable):
     definition_period = WEEK
 
     def formula(household, period, parameters):
-        return parameters(
-            period
-        ).poverty.absolute_poverty_threshold_ahc * household(
+        return parameters(period).poverty.absolute_poverty_threshold_ahc * household(
             "household_equivalisation_ahc", period.this_year
         )
 
@@ -102,9 +84,7 @@ class poverty_gap_bhc(Variable):
     definition_period = WEEK
 
     def formula(household, period, parameters):
-        net_income = household(
-            "household_net_income", period, options=[DIVIDE]
-        )
+        net_income = household("household_net_income", period, options=[DIVIDE])
         return max_(0, household("poverty_line_bhc", period) - net_income)
 
 
@@ -115,7 +95,5 @@ class poverty_gap_ahc(Variable):
     definition_period = WEEK
 
     def formula(household, period, parameters):
-        net_income = household(
-            "household_net_income_ahc", period, options=[DIVIDE]
-        )
+        net_income = household("household_net_income_ahc", period, options=[DIVIDE])
         return max_(0, household("poverty_line_ahc", period) - net_income)
