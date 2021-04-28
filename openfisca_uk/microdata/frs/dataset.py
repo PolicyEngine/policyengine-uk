@@ -11,11 +11,20 @@ import requests
 DATA_STORE = Path(__file__).parent
 
 
+def entity_dataframes_exist(dataset_path):
+    return all(
+        map(
+            lambda filename: (dataset_path / filename).exists(),
+            ("person.csv", "benunit.csv", "household.csv"),
+        )
+    )
+
+
 class FRSDataset:
     def __init__(self, year: int):
         year = str(year)
         dataset_path = DATA_STORE / year
-        if dataset_path.exists():
+        if entity_dataframes_exist(dataset_path):
             person = pd.read_csv(dataset_path / "person.csv")
             benunit = pd.read_csv(dataset_path / "benunit.csv")
             household = pd.read_csv(dataset_path / "household.csv")

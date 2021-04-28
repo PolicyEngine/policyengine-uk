@@ -3,5 +3,5 @@ tqdm==4.48.2
 pandas==1.1.4
 numpy==1.17.5
 openfisca_core[web-api] @ git+https://github.com/nikhilwoodruff/openfisca-core
-microdf @ git+https://github.com/pslmodels/microdf
-openfisca_uk @ openfiscgit+https://github.com/pslmodels/openfisca-uk
+microdf @ git+https://github.com/PSLmodels/microdf
+openfisca_uk @ git+https://github.com/PSLmodels/openfisca-uk
