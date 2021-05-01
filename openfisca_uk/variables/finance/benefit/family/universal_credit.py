@@ -136,6 +136,7 @@ class universal_credit_income_reduction(Variable):
         unearned_income += aggr(
             benunit, period, ["pension_income"], options=[DIVIDE]
         )
+        earned_income = max_(0, earned_income - aggr(benunit, period, ["income_tax", "national_insurance"], options=[DIVIDE]))
         housing_element = benunit("UC_eligible_rent", period)
         earnings_disregard = (
             housing_element > 0

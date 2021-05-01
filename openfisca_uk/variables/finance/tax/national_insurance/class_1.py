@@ -14,23 +14,23 @@ class NI_exempt(Variable):
         return not_(person("over_16", period)) + person("is_SP_age", period)
 
 
-class weekly_employee_NI_class_1(Variable):
+class employee_NI_class_1(Variable):
     value_type = float
     entity = Person
     label = u"Employee Class 1 Contributions for National Insurance"
-    definition_period = WEEK
+    definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 8"
 
     def formula(person, period, parameters):
         class_1 = parameters(period).tax.national_insurance.class_1
-        weekly_earnings = person("employment_income", period, options=[DIVIDE])
+        earnings = person("employment_income", period)
         main_earnings = amount_between(
-            weekly_earnings,
-            class_1.thresholds.primary_threshold,
-            class_1.thresholds.upper_earnings_limit,
+            earnings,
+            class_1.thresholds.primary_threshold * WEEKS_IN_YEAR,
+            class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR,
         )
         add_earnings = amount_over(
-            weekly_earnings, class_1.thresholds.upper_earnings_limit
+            earnings, class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR
         )
         charge = (
             class_1.rates.employee.main * main_earnings
@@ -39,43 +39,23 @@ class weekly_employee_NI_class_1(Variable):
         return charge
 
 
-class employee_NI_class_1(Variable):
-    value_type = float
-    entity = Person
-    label = u"Employee Class 1 Contributions for National Insurance"
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("weekly_employee_NI_class_1", period, options=[ADD])
-
-
-class weekly_employer_NI_class_1(Variable):
-    value_type = float
-    entity = Person
-    label = u"Employer Class 1 Contributions for National Insurance"
-    definition_period = WEEK
-    reference = "Social Security Contributions and Benefits Act 1992 s. 8"
-
-    def formula(person, period, parameters):
-        class_1 = parameters(period).tax.national_insurance.class_1
-        weekly_earnings = person("employment_income", period, options=[DIVIDE])
-        main_earnings = amount_between(
-            weekly_earnings,
-            class_1.thresholds.primary_threshold,
-            class_1.thresholds.upper_earnings_limit,
-        )
-        charge = class_1.rates.employer * main_earnings
-        return charge
-
-
 class employer_NI_class_1(Variable):
     value_type = float
     entity = Person
     label = u"Employer Class 1 Contributions for National Insurance"
     definition_period = YEAR
+    reference = "Social Security Contributions and Benefits Act 1992 s. 8"
 
     def formula(person, period, parameters):
-        return person("weekly_employer_NI_class_1", period, options=[ADD])
+        class_1 = parameters(period).tax.national_insurance.class_1
+        earnings = person("employment_income", period)
+        main_earnings = amount_between(
+            earnings,
+            class_1.thresholds.primary_threshold,
+            class_1.thresholds.upper_earnings_limit,
+        )
+        charge = class_1.rates.employer * main_earnings
+        return charge
 
 
 class employer_NI(Variable):
