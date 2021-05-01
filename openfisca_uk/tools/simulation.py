@@ -252,8 +252,7 @@ class PopulationSim:
     def calc(self, var, map_to=None, period="2020", verbose=False):
         try:
             result = self.model.calculate(var, period)
-        except Exception as e:
-            print(e)
+        except:
             if verbose:
                 print(
                     f"Initial period calculation failed for {var}; attempting to gross up periods"
