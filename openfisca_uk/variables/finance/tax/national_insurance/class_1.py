@@ -51,8 +51,8 @@ class employer_NI_class_1(Variable):
         earnings = person("employment_income", period)
         main_earnings = amount_between(
             earnings,
-            class_1.thresholds.primary_threshold,
-            class_1.thresholds.upper_earnings_limit,
+            class_1.thresholds.primary_threshold * WEEKS_IN_YEAR,
+            class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR,
         )
         charge = class_1.rates.employer * main_earnings
         return charge
