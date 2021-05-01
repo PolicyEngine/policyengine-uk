@@ -30,10 +30,12 @@ class weekly_employee_NI_class_1(Variable):
             class_1.thresholds.upper_earnings_limit,
         )
         add_earnings = amount_over(
-            weekly_earnings,
-            class_1.thresholds.upper_earnings_limit
+            weekly_earnings, class_1.thresholds.upper_earnings_limit
         )
-        charge = class_1.rates.employee.main * main_earnings + add_earnings * class_1.rates.employee.additional
+        charge = (
+            class_1.rates.employee.main * main_earnings
+            + add_earnings * class_1.rates.employee.additional
+        )
         return charge
 
 
