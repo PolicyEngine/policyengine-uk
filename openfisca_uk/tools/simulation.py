@@ -149,6 +149,8 @@ class IndividualSim:
             x = x.squeeze()
         except:
             pass
+        x = x.astype(np.float32)
+        y = y.astype(np.float32)
         assert (
             len(y) > 1 and len(x) > 1
         ), "Simulation must vary on an axis to calculate derivatives."

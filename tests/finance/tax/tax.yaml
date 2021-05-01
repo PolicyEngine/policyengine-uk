@@ -10,5 +10,5 @@
   input:
     employment_income: 41223
   output:
-    national_insurance: 3911
+    national_insurance: 3935
     income_tax: 5875
