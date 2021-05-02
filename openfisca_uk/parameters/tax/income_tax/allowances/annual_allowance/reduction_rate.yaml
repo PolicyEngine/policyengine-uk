@@ -4,4 +4,4 @@ values:
     value: 0.5
 metadata:
   threshold_unit: marginal-rate
-  reference: none
+  reference: https://www.gov.uk/tax-on-your-private-pension/annual-allowance
