@@ -4,4 +4,4 @@ values:
     value: 4000
 metadata:
   threshold_unit: currency-GBP
-  reference: :none
+  reference: https://www.gov.uk/guidance/pension-schemes-work-out-your-tapered-annual-allowance
