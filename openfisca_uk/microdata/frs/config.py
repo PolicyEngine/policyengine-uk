@@ -1,3 +1,4 @@
+from openfisca_uk.variables.demographic.person import Gender
 from openfisca_uk.variables.demographic.household import (
     AccommodationType,
     Region,
@@ -32,6 +33,17 @@ class property_income(Variable):
             person("sublet_income", period)
             + person("P_ROYYR1", period) * WEEKS_IN_YEAR
         )
+
+class gender(Variable):
+    value_type = Enum
+    possible_values = Gender
+    default_value = Gender.MALE
+    entity = Person
+    label = u"Gender of the person"
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return where(person("P_SEX", period) == 1, Gender.MALE, Gender.FEMALE)
 
 
 class miscellaneous_income(Variable):
@@ -801,6 +813,7 @@ input_variables = [
     miscellaneous_income,
     property_income,
     benefits_reported,
+    gender,
 ]
 
 
