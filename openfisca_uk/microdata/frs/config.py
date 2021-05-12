@@ -34,12 +34,13 @@ class property_income(Variable):
             + person("P_ROYYR1", period) * WEEKS_IN_YEAR
         )
 
+
 class gender(Variable):
     value_type = Enum
     possible_values = Gender
     default_value = Gender.MALE
     entity = Person
-    label = u"Gender of the person"
+    label = "Gender of the person"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
