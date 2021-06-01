@@ -725,7 +725,15 @@ class accommodation_type(Variable):
     def formula(household, period, parameters):
         a = household("H_TYPEACC")
         return select(
-            [a == 1, a == 2, a == 3, a == 4, a == 5, a == 6, a == 7,],
+            [
+                a == 1,
+                a == 2,
+                a == 3,
+                a == 4,
+                a == 5,
+                a == 6,
+                a == 7,
+            ],
             [
                 AccommodationType.HOUSE_DETACHED,
                 AccommodationType.HOUSE_SEMI_DETACHED,

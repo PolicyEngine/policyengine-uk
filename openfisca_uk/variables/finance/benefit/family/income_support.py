@@ -147,4 +147,7 @@ class income_support(Variable):
     def formula(benunit, period, parameters):
         amount = benunit("income_support_applicable_amount", period)
         income = benunit("income_support_applicable_income", period)
-        return max_(0, (amount - income),)
+        return max_(
+            0,
+            (amount - income),
+        )
