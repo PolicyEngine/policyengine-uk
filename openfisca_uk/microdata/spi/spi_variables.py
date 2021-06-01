@@ -188,8 +188,14 @@ class PENSRLF(Variable):
     entity = Person
     definition_period = YEAR
 
+class AGERANGE(Variable):
+    value_type = int
+    entity = Person
+    definition_period = YEAR
+
 
 SPI_variables = [
+    AGERANGE,
     PAY,
     TAXTERM,
     EXPS,
