@@ -420,10 +420,9 @@ class WTC_childcare_element(Variable):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
         num_children = benunit("num_children", period)
         max_childcare_amount = (
-            num_children == 1
-        ) * WTC.elements.childcare_1 + (
-            num_children > 1
-        ) * WTC.elements.childcare_2
+            (num_children == 1) * WTC.elements.childcare_1
+            + (num_children > 1) * WTC.elements.childcare_2
+        )
         childcare_element = min_(
             max_childcare_amount,
             WTC.elements.childcare_coverage
@@ -490,10 +489,7 @@ class child_tax_credit(Variable):
             benunit("tax_credits_reduction", period)
             - benunit("WTC_maximum_rate", period),
         )
-        amount = max_(
-            0,
-            benunit("CTC_maximum_rate", period) - reduction_left,
-        )
+        amount = max_(0, benunit("CTC_maximum_rate", period) - reduction_left,)
         return amount
 
 

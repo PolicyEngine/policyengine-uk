@@ -137,10 +137,7 @@ class JSA_income(Variable):
         income = benunit("JSA_income_applicable_income", period)
         claims_JSA = benunit("claims_JSA", period.this_year)
         return (
-            max_(
-                0,
-                (amount - income),
-            )
+            max_(0, (amount - income),)
             * claims_JSA
             * benunit("JSA_income_eligible", period.this_year)
         )
