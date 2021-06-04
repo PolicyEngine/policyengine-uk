@@ -24,9 +24,7 @@ class IndividualSim:
         self.year = year
         self.reforms = reforms
         self.system = openfisca_uk.CountryTaxBenefitSystem()
-        self.entities = {
-            var.key: var for var in self.system.entities
-        }
+        self.entities = {var.key: var for var in self.system.entities}
         self.apply_reforms(self.reforms)
         self.situation_data = {"people": {}, "benunits": {}, "households": {}}
         self.varying = False
