@@ -435,8 +435,7 @@ class PopulationSim:
                     * self.calc("is_adult")
                 )
                 bonus_sim = PopulationSim(
-                    *self.reforms,
-                    input_period=self.input_period,
+                    *self.reforms, input_period=self.input_period,
                 )
                 bonus_sim.model = bonus_sim.load_frs(
                     change={"earnings": bonus_amount}

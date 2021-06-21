@@ -61,10 +61,9 @@ class UC_premiums(Variable):
         )
         num_eligible_children = min_(2, benunit.nb_persons(BenUnit.CHILD))
         childcare_limit = (
-            num_eligible_children == 1
-        ) * UC.elements.max_childcare_1 + (
-            num_eligible_children > 1
-        ) * UC.elements.max_childcare_2
+            (num_eligible_children == 1) * UC.elements.max_childcare_1
+            + (num_eligible_children > 1) * UC.elements.max_childcare_2
+        )
         premiums = (
             has_carer * UC.elements.carer_element
             + num_eligible_children * UC.elements.child_element
@@ -148,10 +147,9 @@ class universal_credit_income_reduction(Variable):
         )
         housing_element = benunit("UC_eligible_rent", period)
         earnings_disregard = (
-            housing_element > 0
-        ) * UC.means_test.earn_disregard_with_housing + (
-            housing_element == 0
-        ) * UC.means_test.earn_disregard
+            (housing_element > 0) * UC.means_test.earn_disregard_with_housing
+            + (housing_element == 0) * UC.means_test.earn_disregard
+        )
         earnings_reduction = max_(0, earned_income - earnings_disregard)
         reduction = max_(
             0,
@@ -202,3 +200,15 @@ class universal_credit(Variable):
             final_amount, benunit("benefit_cap", period, options=[ADD])
         )
         return capped_amount
+
+
+class weekly_UC(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"UC per week"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return (
+            benunit("universal_credit", period.this_year, options=[ADD]) / 52
+        )
