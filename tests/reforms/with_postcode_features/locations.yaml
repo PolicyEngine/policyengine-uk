@@ -1,0 +1,7 @@
+- name: Postcode lookup
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    postcode: GU2 8BG
+  output:
+    local_authority: GUILDFORD
