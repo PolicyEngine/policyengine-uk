@@ -133,9 +133,10 @@ class housing_benefit_applicable_income(Variable):
         income += benefits
         num_children = benunit.nb_persons(BenUnit.CHILD)
         max_childcare_amount = (
-            (num_children == 1) * WTC.elements.childcare_1
-            + (num_children > 1) * WTC.elements.childcare_2
-        )
+            num_children == 1
+        ) * WTC.elements.childcare_1 + (
+            num_children > 1
+        ) * WTC.elements.childcare_2
         childcare_element = min_(
             max_childcare_amount,
             benunit.sum(
