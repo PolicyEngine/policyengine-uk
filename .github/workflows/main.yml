@@ -53,5 +53,8 @@ jobs:
         run: pip3 install .
 
       # Runs a set of commands using the runners shell
-      - name: Run the main tests
-        run: openfisca test tests
+      - name: Test baseline systems
+        run: openfisca test tests/baseline
+      
+      - name: Test location features
+        run: openfisca test tests/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
