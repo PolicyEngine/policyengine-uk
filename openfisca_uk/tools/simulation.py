@@ -23,24 +23,32 @@ class IndividualSim:
     def __init__(self, *reforms, year=2018):
         self.year = year
         self.reforms = reforms
-        self.tax_benefit_system = openfisca_uk.CountryTaxBenefitSystem()
-        self.entities = {
-            var.key: var for var in self.tax_benefit_system.entities
-        }
-        for reform in reforms:
-            self.tax_benefit_system = reform(self.tax_benefit_system)
+        self.system = openfisca_uk.CountryTaxBenefitSystem()
+        self.entities = {var.key: var for var in self.system.entities}
+        self.apply_reforms(self.reforms)
         self.situation_data = {"people": {}, "benunits": {}, "households": {}}
         self.varying = False
         self.num_points = None
 
     def build(self):
         self.sim_builder = SimulationBuilder()
-        system = openfisca_uk.CountryTaxBenefitSystem()
-        for reform in self.reforms:
-            system = reform(system)
+        self.system = openfisca_uk.CountryTaxBenefitSystem()
+        self.apply_reforms(self.reforms)
         self.sim = self.sim_builder.build_from_entities(
-            system, self.situation_data
+            self.system, self.situation_data
         )
+
+    def apply_reforms(self, reforms: list) -> None:
+        """Applies a list of reforms to the tax-benefit system.
+
+        Args:
+            reforms (list): A list of reforms. Each reform can also be a list of reforms.
+        """
+        for reform in reforms:
+            if isinstance(reform, tuple) or isinstance(reform, list):
+                self.apply_reforms(reform)
+            else:
+                self.system = reform(self.system)
 
     def add_data(
         self,
@@ -60,7 +68,7 @@ class IndividualSim:
             data = {}
             for var, value in kwargs.items():
                 try:
-                    def_period = self.tax_benefit_system.get_variable(
+                    def_period = self.system.get_variable(
                         var
                     ).definition_period
                     if def_period in ["eternity", "year"]:

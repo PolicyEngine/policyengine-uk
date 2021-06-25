@@ -6,6 +6,23 @@ from openfisca_uk.microdata.spi.spi_variables import SPI_variables
 # Input variables
 
 
+class age(Variable):
+    value_type = float
+    entity = Person
+    label = u"The age of the person in years"
+    definition_period = YEAR
+    set_input = set_input_dispatch_by_period
+
+    def formula(person, period, parameters):
+        LOWER = np.array([16, 25, 35, 45, 55, 65, 75])
+        UPPER = np.array([25, 35, 45, 55, 65, 75, 80])
+        age_range = person("AGERANGE", period) - 1
+        sampled_age = LOWER[age_range] + random(person) * (
+            UPPER[age_range] - LOWER[age_range]
+        )
+        return sampled_age
+
+
 class pays_scottish_income_tax(Variable):
     value_type = float
     entity = Person
@@ -267,6 +284,7 @@ input_variables = [
     person_weight,
     benunit_weight,
     household_weight,
+    age,
 ]
 
 

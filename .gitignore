@@ -24,3 +24,8 @@ dist
 person.csv
 benunit.csv
 household.csv
+
+# Jupyter book
+
+docs/book/_build/
+docs/book/.ipynb_checkpoints
