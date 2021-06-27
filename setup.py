@@ -31,7 +31,7 @@ setup(
         "pyyaml==5.3.1",
         "pytest==5.4.3",
         "OpenFisca-Core @ git+https://github.com/nikhilwoodruff/openfisca-core",
-        "family-resources-survey==1.0.0",
+        "family-resources-survey @ git+https://github.com/nikhilwoodruff/family-resources-survey",
         "survey-personal-incomes==1.0.0",
         "tqdm==4.59.0",
         "frs @ git+https://github.com/nikhilwoodruff/frs",
