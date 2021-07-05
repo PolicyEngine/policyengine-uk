@@ -8,12 +8,10 @@
     tenure_type: RENT_FROM_COUNCIL
     claims_HB: true
     claims_WTC: true
-    weekly_rent: 88
+    rent: 88 * 52
   output:
     working_tax_credit: 2885
-    housing_benefit:
-      week:2021-01-06:
-        77
+    housing_benefit: 77 * 52
 - name: Check withdrawal rate is 65%
   period: 2021
   absolute_error_margin: 5
@@ -24,9 +22,7 @@
     tenure_type: RENT_FROM_COUNCIL
     claims_HB: true
     claims_WTC: true
-    weekly_rent: 88
+    rent: 88 * 52
   output:
     working_tax_credit: 2885
-    housing_benefit:
-      week:2021-01-06:
-        71
+    housing_benefit: 71 * 52

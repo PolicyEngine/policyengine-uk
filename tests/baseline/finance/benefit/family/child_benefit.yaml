@@ -12,7 +12,7 @@
         adults: ["parent1", "parent2"]
         children: []
   output:
-    yearly_child_benefit: 0
+    child_benefit: 0
 - name: Child Benefit with one child
   period: 2021
   absolute_error_margin: 1
@@ -29,7 +29,7 @@
         adults: ["parent1", "parent2"]
         children: ["child1"]
   output:
-    yearly_child_benefit: 1095
+    child_benefit: 1095
 - name: Child Benefit with two children, one over 16
   period: 2021
   absolute_error_margin: 1
@@ -49,4 +49,4 @@
         adults: ["parent1", "parent2"]
         children: ["child1", "child2"]
   output:
-    yearly_child_benefit: 1820
+    child_benefit: 1820

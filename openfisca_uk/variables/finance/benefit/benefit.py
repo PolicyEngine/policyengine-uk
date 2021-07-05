@@ -24,7 +24,7 @@ class family_benefits(Variable):
             "universal_credit",
         ]
         benefits = add(
-            person.benunit, period, FAMILY_BENEFITS, options=[ADD]
+            person.benunit, period, FAMILY_BENEFITS
         ) * person("is_benunit_head", period)
         benefits += add(
             person.benunit, period, ["working_tax_credit", "child_tax_credit"]
@@ -52,13 +52,11 @@ class family_benefits_reported(Variable):
             person,
             period,
             map(lambda ben: ben + "_reported", FAMILY_BENEFITS),
-            options=[ADD],
         )
         benefits += add(
             person,
             period,
             ["working_tax_credit_reported", "child_tax_credit_reported"],
-            options=[ADD],
         )
         return benefits
 
@@ -70,7 +68,7 @@ class benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("personal_benefits", period, options=[ADD]) + person(
+        return person("personal_benefits", period) + person(
             "family_benefits", period
         )
 
@@ -97,7 +95,7 @@ class benefits_reported(Variable):
 
     def formula(person, period, parameters):
         return person(
-            "personal_benefits_reported", period, options=[ADD]
+            "personal_benefits_reported", period
         ) + person("family_benefits_reported", period)
 
 
@@ -137,7 +135,7 @@ class benefits_premiums(Variable):
     value_type = float
     entity = BenUnit
     label = u"Value of premiums for disability and carer status"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         PREMIUMS = [
@@ -213,7 +211,7 @@ class personal_benefits(Variable):
     value_type = float
     entity = Person
     label = u"Value of personal, non-means-tested benefits"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         BENEFITS = [
@@ -239,7 +237,7 @@ class personal_benefits_reported(Variable):
     value_type = float
     entity = Person
     label = u"Value of personal, non-means-tested benefits"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         BENEFITS = [

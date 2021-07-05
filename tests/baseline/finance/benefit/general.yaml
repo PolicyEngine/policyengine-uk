@@ -17,24 +17,18 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    disability_premium: 
-      week:2020-01-06: 1
-    enhanced_disability_premium: 
-      week:2020-01-06: 1
-    severe_disability_premium: 
-      week:2020-01-06: 1
-    carer_premium: 
-      week:2020-01-06: 1
+    disability_premium: 1
+    enhanced_disability_premium: 1
+    severe_disability_premium: 1
+    carer_premium: 1
   output:
-    benefits_premiums: 
-      week:2020-01-06: 4
+    benefits_premiums: 4
 - name: Weekly hours
   period: 2020
   absolute_error_margin: 0
   input:
-    hours_worked:
-      week:2020-01-06: 52
-  output:
+    hours_worked: 52
+  output: 
     benunit_weekly_hours: 1
 - name: Family structure
   period: 2020
@@ -53,8 +47,6 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    AA:
-      week:2020-01-06: 1
+    AA: 1
   output:
-    personal_benefits:
-      week:2020-01-06: 1
+    personal_benefits: 1

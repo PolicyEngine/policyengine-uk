@@ -7,7 +7,7 @@ class child_benefit_reported(Variable):
     value_type = float
     entity = Person
     label = u"Child Benefit (reported amount)"
-    definition_period = WEEK
+    definition_period = YEAR
 
 
 class claims_child_benefit(Variable):
@@ -18,7 +18,7 @@ class claims_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         return aggr(
-            benunit, period, ["child_benefit_reported"], options=[ADD]
+            benunit, period, ["child_benefit_reported"]
         ) + (
             random(benunit) <= parameters(period).benefit.child_benefit.takeup
         )
@@ -27,19 +27,18 @@ class claims_child_benefit(Variable):
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Benefit entitlement for the family"
-    definition_period = WEEK
+    label = u"Child Benefit for the family"
+    definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 141"
 
     def formula(benunit, period, parameters):
         num_children = aggr(benunit, period.this_year, ["is_child_or_QYP"])
         CB = parameters(period).benefit.child_benefit
-        eldest_amount = amount_between(num_children, 0, 1) * CB.amount.eldest
-        additional_amount = amount_over(num_children, 1) * CB.amount.additional
+        eldest_amount = amount_between(num_children, 0, 1) * CB.amount.eldest * WEEKS_IN_YEAR
+        additional_amount = amount_over(num_children, 1) * CB.amount.additional * WEEKS_IN_YEAR
         return (eldest_amount + additional_amount) * benunit(
-            "claims_child_benefit", period.this_year
+            "claims_child_benefit", period
         )
-
 
 class child_benefit_less_tax_charge(Variable):
     value_type = float
@@ -48,16 +47,6 @@ class child_benefit_less_tax_charge(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("child_benefit", period, options=[ADD]) - aggr(
+        return benunit("child_benefit", period) - aggr(
             benunit, period, ["CB_HITC"]
         )
-
-
-class yearly_child_benefit(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Child Benefit entitlement for the year"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return benunit("child_benefit", period, options=[ADD])

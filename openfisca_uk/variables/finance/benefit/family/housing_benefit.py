@@ -6,15 +6,15 @@ from openfisca_uk.tools.general import *
 class housing_benefit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Housing Benefit (reported amount per week)"
-    definition_period = WEEK
+    label = u"Housing Benefit (reported amount)"
+    definition_period = YEAR
 
 
 class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
     label = u"Housing Benefit for the family"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["housing_benefit_reported"])
@@ -39,7 +39,7 @@ class claims_HB(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["housing_benefit_reported"], options=[ADD])
+            aggr(benunit, period, ["housing_benefit_reported"],)
             > 0
         )
         would_claim = benunit("claims_legacy_benefits", period) * (
@@ -52,15 +52,15 @@ class housing_benefit_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
     label = u"Applicable amount for Housing Benefit"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         HB = parameters(period).benefit.housing_benefit
         PA = HB.allowances
         one_over_SP_age = benunit.any(
-            benunit.members("is_SP_age", period.this_year)
+            benunit.members("is_SP_age", period)
         )
-        eldest_age = benunit("eldest_adult_age", period.this_year)
+        eldest_age = benunit("eldest_adult_age", period)
         u_18 = eldest_age < 18
         u_25 = eldest_age < 25
         o_25 = (eldest_age >= 25) * not_(one_over_SP_age)
@@ -87,10 +87,10 @@ class housing_benefit_applicable_amount(Variable):
                 + o_18 * PA.lone_parent.over_18
                 + one_over_SP_age * PA.lone_parent.SP_age
             )
-        )
+        ) * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
         return (personal_allowance + premiums) * benunit(
-            "housing_benefit_eligible", period.this_year
+            "housing_benefit_eligible", period
         )
 
 
@@ -98,7 +98,7 @@ class housing_benefit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = u"Relevant income for Housing Benefit means test"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -116,53 +116,52 @@ class housing_benefit_applicable_income(Variable):
             "pension_income",
         ]
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
-        income = aggr(benunit, period, INCOME_COMPONENTS, options=[DIVIDE])
+        income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(
             benunit,
             period,
             ["income_tax", "national_insurance"],
-            options=[DIVIDE],
         )
         income += aggr(benunit, period, ["personal_benefits"])
-        income += add(benunit, period, ["tax_credits"], options=[DIVIDE])
+        income += add(benunit, period, ["tax_credits"])
         income -= tax
         income -= (
-            aggr(benunit, period, ["pension_contributions"], options=[DIVIDE])
+            aggr(benunit, period, ["pension_contributions"])
             * 0.5
         )
         income += benefits
         num_children = benunit.nb_persons(BenUnit.CHILD)
         max_childcare_amount = (
             num_children == 1
-        ) * WTC.elements.childcare_1 + (
+        ) * WTC.elements.childcare_1 * WEEKS_IN_YEAR + (
             num_children > 1
-        ) * WTC.elements.childcare_2
+        ) * WTC.elements.childcare_2 * WEEKS_IN_YEAR
         childcare_element = min_(
             max_childcare_amount,
             benunit.sum(
-                benunit.members("childcare_cost", period, options=[ADD])
+                benunit.members("childcare_cost", period)
             ),
         )
         applicable_income = max_(
             0,
             income
             - benunit("is_single_person", period)
-            * means_test.income_disregard_single
-            - benunit("is_couple", period) * means_test.income_disregard_couple
+            * means_test.income_disregard_single * WEEKS_IN_YEAR
+            - benunit("is_couple", period) * means_test.income_disregard_couple * WEEKS_IN_YEAR
             - benunit("is_lone_parent", period)
-            * means_test.income_disregard_lone_parent
+            * means_test.income_disregard_lone_parent * WEEKS_IN_YEAR
             - (
                 (
-                    benunit.sum(benunit.members("hours_worked", period))
+                    benunit.sum(benunit.members("weekly_hours", period))
                     > means_test.worker_hours
                 )
                 + (
                     benunit("is_lone_parent", period)
-                    * benunit.sum(benunit.members("hours_worked", period))
+                    * benunit.sum(benunit.members("weekly_hours", period))
                     > WTC.min_hours.lower
                 )
             )
-            * means_test.worker_income_disregard
+            * means_test.worker_income_disregard * WEEKS_IN_YEAR
             - childcare_element,
         )
         return applicable_income
@@ -172,7 +171,7 @@ class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
     label = u"Housing Benefit"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         rent = benunit.max(benunit.members.household("rent", period))
@@ -200,15 +199,13 @@ class housing_benefit(Variable):
                 "income_support",
                 "ESA_income",
             ],
-            options=[MATCH],
         ) + aggr(
             benunit,
             period,
             ["JSA_contrib", "incapacity_benefit", "ESA_contrib", "SDA"],
-            options=[MATCH],
         )
         final_amount = min_(
-            amount * benunit("claims_HB", period.this_year),
+            amount * benunit("claims_HB", period),
             benunit("benefit_cap", period) - other_capped_benefits,
         )
         return final_amount

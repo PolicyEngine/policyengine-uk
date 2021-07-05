@@ -1,12 +1,12 @@
 - name: BRMA default value
   period: 2020
-  absolute_error_margin: 1
+  absolute_error_margin: 20
   input:
     age: 18
     LHA_category: C
   output:
     BRMA: MAIDSTONE
-    weekly_BRMA_LHA_rate: 181
+    BRMA_LHA_rate: 162 * 52
 - name: BRMA inputs
   period: 2020
   absolute_error_margin: 0
@@ -16,11 +16,11 @@
     BRMA: GUILDFORD
 - name: BRMA and category
   period: 2020
-  absolute_error_margin: 1
+  absolute_error_margin: 20
   input:
     BRMA: GUILDFORD
     LHA_category: C
   output:
     BRMA: GUILDFORD
     LHA_category: C
-    weekly_BRMA_LHA_rate: 245
+    BRMA_LHA_rate: 223 * 52

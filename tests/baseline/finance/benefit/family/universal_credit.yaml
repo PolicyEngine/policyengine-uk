@@ -6,8 +6,7 @@
     employment_income: 1
     claims_UC: true
   output:
-    universal_credit:
-      2020-01: 317
+    universal_credit: 317 * 12
 - name: UC basic amount - not eligible
   period: 2020
   absolute_error_margin: 10
@@ -16,5 +15,4 @@
     employment_income: 1
     claims_UC: false
   output:
-    universal_credit:
-      2020-01: 0
+    universal_credit: 0

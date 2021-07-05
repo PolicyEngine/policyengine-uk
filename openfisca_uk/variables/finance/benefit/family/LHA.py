@@ -43,7 +43,7 @@ class LHA_cap(Variable):
     value_type = float
     entity = BenUnit
     label = u"Applicable amount for LHA"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         rent = benunit.max(benunit.members.household("rent", period))
@@ -106,28 +106,20 @@ class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
     label = u"LHA Rate"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         personal_BRMA = benunit.members.household(
-            "BRMA", period.this_year
+            "BRMA", period
         ).decode_to_str()
+        # Default OpenFisca aggregation features do not retain Enum decode functionality, sp
+        # here we use Pandas Series operations on the decode strings
         BRMA = (
             pd.Series(personal_BRMA)
             .groupby(benunit.members_entity_id)
             .first()
             .values
         )
-        category = benunit("LHA_category", period.this_year)
+        category = benunit("LHA_category", period)
         rate = parameters(period).benefit.LHA.rates[BRMA][category]
-        return rate
-
-
-class weekly_BRMA_LHA_rate(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"LHA Rate"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return benunit("BRMA_LHA_rate", period, options=[ADD]) / 52
+        return rate * WEEKS_IN_YEAR

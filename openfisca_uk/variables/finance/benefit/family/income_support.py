@@ -6,8 +6,8 @@ from openfisca_uk.tools.general import *
 class income_support_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Income Support (reported amount per week)"
-    definition_period = WEEK
+    label = u"Income Support (reported amount)"
+    definition_period = YEAR
 
 
 class claims_IS(Variable):
@@ -18,7 +18,7 @@ class claims_IS(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["income_support_reported"], options=[ADD])
+            aggr(benunit, period, ["income_support_reported"])
             > 0
         )
         would_claim = (
@@ -31,7 +31,7 @@ class income_support_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = u"Relevant income for Income Support means test"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefit.income_support
@@ -41,18 +41,17 @@ class income_support_applicable_income(Variable):
             "property_income",
             "pension_income",
         ]
-        income = aggr(benunit, period, INCOME_COMPONENTS, options=[DIVIDE])
+        income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(
             benunit,
             period,
             ["income_tax", "national_insurance"],
-            options=[DIVIDE],
         )
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["child_benefit"])
         income -= tax
         income -= (
-            aggr(benunit, period, ["pension_contributions"], options=[DIVIDE])
+            aggr(benunit, period, ["pension_contributions"])
             * 0.5
         )
         family_type = benunit("family_type")
@@ -61,10 +60,10 @@ class income_support_applicable_income(Variable):
             0,
             income
             - (family_type == families.SINGLE)
-            * IS.means_test.income_disregard_single
-            - benunit("is_couple") * IS.means_test.income_disregard_couple
+            * IS.means_test.income_disregard_single * WEEKS_IN_YEAR
+            - benunit("is_couple") * IS.means_test.income_disregard_couple * WEEKS_IN_YEAR
             - (family_type == families.LONE_PARENT)
-            * IS.means_test.income_disregard_lone_parent,
+            * IS.means_test.income_disregard_lone_parent * WEEKS_IN_YEAR,
         )
         return income
 
@@ -77,7 +76,7 @@ class income_support_eligible(Variable):
 
     def formula(benunit, period, parameters):
         lone_parent = benunit("is_lone_parent", period) * (
-            benunit("youngest_child_age", period.this_year) <= 5
+            benunit("youngest_child_age", period) <= 5
         )
         QUALIFYING_COMPONENTS = ["is_carer_for_benefits"]
         eligible = (
@@ -86,7 +85,7 @@ class income_support_eligible(Variable):
         under_SP_age = benunit.any(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
         return (
-            not_(benunit("ESA_income", period, options=[ADD]) > 0) * eligible
+            not_(benunit("ESA_income", period) > 0) * eligible
         )
 
 
@@ -94,13 +93,13 @@ class income_support_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
     label = u"Applicable amount of Income Support"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefit.income_support
         amounts = IS.amounts
-        younger_age = benunit("youngest_adult_age", period.this_year)
-        older_age = benunit("eldest_adult_age", period.this_year)
+        younger_age = benunit("youngest_adult_age", period)
+        older_age = benunit("eldest_adult_age", period)
         children = benunit.nb_persons(BenUnit.CHILD) > 0
         single = benunit("is_single", period)
         single_under_25 = single * not_(children) * (younger_age < 25)
@@ -129,12 +128,12 @@ class income_support_applicable_amount(Variable):
                 amounts.amount_couples_age_gap,
                 amounts.amount_couples_over_18,
             ],
-        )
+        ) * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
         return (
             (personal_allowance + premiums)
-            * benunit("income_support_eligible", period.this_year)
-            * benunit("claims_IS", period.this_year)
+            * benunit("income_support_eligible", period)
+            * benunit("claims_IS", period)
         )
 
 
@@ -142,7 +141,7 @@ class income_support(Variable):
     value_type = float
     entity = BenUnit
     label = u"Income Support"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         amount = benunit("income_support_applicable_amount", period)

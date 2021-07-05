@@ -87,6 +87,7 @@ clip = np.clip
 inf = np.inf
 
 WEEKS_IN_YEAR = 52
+MONTHS_IN_YEAR = 12
 
 
 def amount_over(amount, threshold):

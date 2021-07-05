@@ -1,6 +1,6 @@
 - name: Lone parent, two children
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 20
   input:
     people:
       p1:
@@ -18,13 +18,9 @@
         children: [c1, c2]
   output:
     child_tax_credit: 6205
-    child_benefit:
-      week:2021-02-01:
-        35
+    child_benefit: 35 * 52
     income_support_eligible: true
-    income_support:
-      week:2021-02-01:
-        59
+    income_support: 59 * 52
 - name: Lone parent, two children, earnings
   period: 2021
   absolute_error_margin: 5
@@ -48,13 +44,9 @@
         claims_CTC: true
   output:
     child_tax_credit: 0
-    child_benefit:
-      week:2021-02-01:
-        35
+    child_benefit: 35 * 52
     income_support_eligible: true
-    income_support:
-      week:2021-02-01:
-        0
+    income_support: 0
 - name: Check withdrawal rate is 100%
   period: 2021
   absolute_error_margin: 5
@@ -78,7 +70,5 @@
         claims_CTC: true
   output:
     child_tax_credit: 6205
-    child_benefit:
-      week:2021-02-01:
-        35
+    child_benefit: 35 * 52
     income_support_eligible: true

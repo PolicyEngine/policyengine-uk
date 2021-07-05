@@ -9,9 +9,7 @@
     claims_JSA: true
   output:
     JSA_income_eligible: true
-    JSA_income:
-      week:2021-02-01:
-        0
+    JSA_income: 0
 - name: JSA income-based, basic amount
   period: 2021
   absolute_error_margin: 5
@@ -23,9 +21,7 @@
     claims_JSA: true
   output:
     JSA_income_eligible: true
-    JSA_income_applicable_amount:
-      week:2021-02-01:
-        58
+    JSA_income_applicable_amount: 59 * 52
 - name: JSA income-based, higher age amount
   period: 2021
   absolute_error_margin: 5
@@ -38,6 +34,4 @@
     claims_legacy_benefits: true
   output:
     JSA_income_eligible: true
-    JSA_income_applicable_amount:
-      week:2021-02-01:
-        74
+    JSA_income_applicable_amount: 74.58 * 52

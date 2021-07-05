@@ -10,7 +10,7 @@ class is_carer_for_benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("carers_allowance", period, options=[ADD]) > 0
+        return person("carers_allowance", period) > 0
 
 
 class num_carers(Variable):
@@ -27,7 +27,7 @@ class carer_premium(Variable):
     value_type = float
     entity = BenUnit
     label = u"Carer premium"
-    definition_period = WEEK
+    definition_period = YEAR
     reference = (
         "The Social Security Amendment (Carer Premium) Regulations 2002"
     )
@@ -37,4 +37,4 @@ class carer_premium(Variable):
         CP = parameters(period).benefit.carer_premium
         return select(
             [carers == 0, carers == 1, carers == 2], [0, CP.single, CP.couple]
-        )
+        ) * WEEKS_IN_YEAR
