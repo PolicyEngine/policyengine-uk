@@ -66,7 +66,7 @@ class P_ININV(Variable):
 class H_HHRENT(Variable):
     value_type = float
     entity = Household
-    definition_period = WEEK
+    definition_period = YEAR
 
 
 class P_GROSS4(Variable):
@@ -696,7 +696,7 @@ class P_TYPEED2(Variable):
 class P_TOTHOURS(Variable):
     value_type = float
     entity = Person
-    definition_period = WEEK
+    definition_period = YEAR
 
 
 class P_EMPSTATI(Variable):
@@ -732,13 +732,13 @@ class H_PTENTYP2(Variable):
 class H_GBHSCOST(Variable):
     value_type = float
     entity = Household
-    definition_period = WEEK
+    definition_period = YEAR
 
 
 class H_NIHSCOST(Variable):
     value_type = float
     entity = Household
-    definition_period = WEEK
+    definition_period = YEAR
 
 
 class H_CTANNUAL(Variable):
