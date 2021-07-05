@@ -44,9 +44,6 @@ jobs:
 
       - name: Install libyaml
         run: pip3 uninstall pyyaml && pip3 install pyyaml --no-cache-dir
-      
-      - name: Install OpenFisca-Core
-        run: pip3 install git+git://github.com/nikhilwoodruff/openfisca-core
 
       # Runs a single command using the runners shell
       - name: Install OpenFisca-UK
@@ -58,3 +55,6 @@ jobs:
 
       - name: Test baseline systems
         run: openfisca test tests/baseline
+
+      - name: Test postcode lookup features
+        run: openfisca test tests/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
