@@ -19,7 +19,7 @@ class households(Variable):
 
 
 class num_bedrooms(Variable):
-    value_type = float
+    value_type = int
     entity = Household
     label = u"The number of bedrooms in the house"
     definition_period = YEAR

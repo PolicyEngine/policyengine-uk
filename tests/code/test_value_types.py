@@ -3,11 +3,22 @@ from openfisca_core.model_api import Enum
 
 
 def test_variable_names_match_return_types():
+    exceptions = []
     for var_name in BASELINE_VARIABLES:
         variable = BASELINE_VARIABLES[var_name]
-        if var_name[:4] == "num_":
-            assert variable.value_type == int
-        elif var_name[:3] == "is_":
-            assert variable.value_type == bool
-        else:
-            assert variable.value_type in (Enum, float, bool)
+        try:
+            if var_name[:4] == "num_":
+                assert variable.value_type == int
+            elif var_name[:3] == "is_":
+                assert variable.value_type == bool
+            else:
+                assert variable.value_type in (Enum, float, bool)
+        except Exception as e:
+            exceptions += [f"{var_name} returns {variable.value_type}"]
+    print(
+        f"Total variables: {len(BASELINE_VARIABLES)}, variable name violations: {len(exceptions)}."
+    )
+    for exception in exceptions:
+        print(f"\t{exception}")
+    if len(exceptions) > 0:
+        raise Exception("Some variable names do not match their output types.")

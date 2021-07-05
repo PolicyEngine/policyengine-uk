@@ -184,7 +184,7 @@ class is_couple(Variable):
 
 
 class is_lone_parent(Variable):
-    value_type = float
+    value_type = bool
     entity = BenUnit
     label = u"Whether the family is a lone parent family"
     definition_period = ETERNITY
@@ -196,7 +196,7 @@ class is_lone_parent(Variable):
 
 
 class is_single_person(Variable):
-    value_type = float
+    value_type = bool
     entity = BenUnit
     label = u"Whether the family is a single person"
     definition_period = ETERNITY

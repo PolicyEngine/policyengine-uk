@@ -204,7 +204,7 @@ class CTC_severely_disabled_child_element(Variable):
 
 
 class is_WTC_eligible(Variable):
-    value_type = float
+    value_type = bool
     entity = BenUnit
     label = u"Whether the family is eligible for WTC"
     definition_period = YEAR

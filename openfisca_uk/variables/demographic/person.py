@@ -154,7 +154,7 @@ class in_social_housing(Variable):
 
 
 class is_WA_adult(Variable):
-    value_type = float
+    value_type = bool
     entity = Person
     label = u"Whether is a working-age adult"
     definition_period = YEAR

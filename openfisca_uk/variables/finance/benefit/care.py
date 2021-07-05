@@ -14,7 +14,7 @@ class is_carer_for_benefits(Variable):
 
 
 class num_carers(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"The number of carers for benefits purposes in the family"
     definition_period = YEAR

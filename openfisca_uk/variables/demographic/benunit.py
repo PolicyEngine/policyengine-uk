@@ -128,7 +128,7 @@ class youngest_child_age(Variable):
 
 
 class num_children(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"The number of children in the family"
     definition_period = YEAR
@@ -138,7 +138,7 @@ class num_children(Variable):
 
 
 class num_adults(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"The number of children in the family"
     definition_period = YEAR

@@ -21,7 +21,7 @@ class is_disabled_for_benefits(Variable):
 
 
 class is_enhanced_disabled_for_benefits(Variable):
-    value_type = float
+    value_type = bool
     entity = Person
     label = u"Whether meets the middle disability benefit entitlement"
     definition_period = YEAR
@@ -59,7 +59,7 @@ class is_severely_disabled_for_benefits(Variable):
 
 
 class num_disabled_children(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"Number of disabled children"
     definition_period = YEAR
@@ -71,7 +71,7 @@ class num_disabled_children(Variable):
 
 
 class num_enhanced_disabled_children(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"Number of enhanced disabled children"
     definition_period = YEAR
@@ -85,7 +85,7 @@ class num_enhanced_disabled_children(Variable):
 
 
 class num_severely_disabled_children(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"Number of severely disabled children"
     definition_period = YEAR
@@ -99,7 +99,7 @@ class num_severely_disabled_children(Variable):
 
 
 class num_disabled_adults(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"Number of disabled adults"
     definition_period = YEAR
@@ -111,7 +111,7 @@ class num_disabled_adults(Variable):
 
 
 class num_enhanced_disabled_adults(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"Number of enhanced disabled adults"
     definition_period = YEAR
@@ -125,7 +125,7 @@ class num_enhanced_disabled_adults(Variable):
 
 
 class num_severely_disabled_adults(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"Number of severely disabled adults"
     definition_period = YEAR
