@@ -86,9 +86,7 @@ class working_tax_credit(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(
-            benunit, period, ["working_tax_credit_reported"]
-        )
+        return aggr(benunit, period, ["working_tax_credit_reported"])
 
 
 class child_tax_credit(Variable):
@@ -98,9 +96,7 @@ class child_tax_credit(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(
-            benunit, period, ["child_tax_credit_reported"]
-        )
+        return aggr(benunit, period, ["child_tax_credit_reported"])
 
 
 class universal_credit(Variable):
