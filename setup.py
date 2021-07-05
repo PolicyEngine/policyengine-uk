@@ -26,20 +26,20 @@ setup(
         ),
     ],
     install_requires=[
-        "requests==2.25.1",
-        "pandas==1.1.4",
-        "numpy==1.17.5",
-        "pyyaml==5.3.1",
-        "pytest==5.4.3",
-        "OpenFisca-Core==35.4.1",
+        "requests>=2.25.1",
+        "pandas>=1.1.4",
+        "numpy>=1.17.5",
+        "pyyaml>=5.3.1",
+        "pytest>=5.4.3",
+        "OpenFisca-Core>=35.4.1",
         "family-resources-survey @ git+https://github.com/nikhilwoodruff/family-resources-survey",
         "survey-personal-incomes @ git+https://github.com/nikhilwoodruff/survey-personal-incomes",
-        "tqdm==4.59.0",
+        "tqdm>=4.59.0",
         "microdf @ git+https://github.com/PSLmodels/microdf",
     ],
     extras_require={
         "dev": [
-            "autopep8 ==1.5",
+            "autopep8 >=1.5",
             "flake8 >=3.5.0,<3.8.0",
             "flake8-print",
             "pycodestyle >=2.3.0,<2.6.0",  # To avoid incompatibility with flake
