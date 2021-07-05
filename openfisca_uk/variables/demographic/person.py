@@ -113,7 +113,7 @@ class is_male(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("gender") == Gender.MALE
+        return person("gender", period) == Gender.MALE
 
 
 class is_female(Variable):
@@ -123,7 +123,7 @@ class is_female(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("gender") == Gender.FEMALE
+        return person("gender", period) == Gender.FEMALE
 
 
 class is_household_head(Variable):

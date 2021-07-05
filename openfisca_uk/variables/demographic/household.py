@@ -56,10 +56,10 @@ class country(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        unknown_region = household("region") == Region.UNKNOWN
-        wales = household("region") == Region.WALES
-        ni = household("region") == Region.NORTHERN_IRELAND
-        scot = household("region") == Region.SCOTLAND
+        unknown_region = household("region", period) == Region.UNKNOWN
+        wales = household("region", period) == Region.WALES
+        ni = household("region", period) == Region.NORTHERN_IRELAND
+        scot = household("region", period) == Region.SCOTLAND
         country = select(
             [unknown_region, scot, wales, ni, True],
             [

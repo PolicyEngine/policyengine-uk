@@ -50,7 +50,7 @@ class income_support_applicable_income(Variable):
         income += add(benunit, period, ["child_benefit"])
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
-        family_type = benunit("family_type")
+        family_type = benunit("family_type", period)
         families = family_type.possible_values
         income = max_(
             0,
@@ -58,7 +58,7 @@ class income_support_applicable_income(Variable):
             - (family_type == families.SINGLE)
             * IS.means_test.income_disregard_single
             * WEEKS_IN_YEAR
-            - benunit("is_couple")
+            - benunit("is_couple", period)
             * IS.means_test.income_disregard_couple
             * WEEKS_IN_YEAR
             - (family_type == families.LONE_PARENT)

@@ -68,7 +68,7 @@ class region(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        region = household("H_GVTREGNO")
+        region = household("H_GVTREGNO", period)
         reg = select(
             [
                 region == 1,
@@ -724,7 +724,7 @@ class accommodation_type(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        a = household("H_TYPEACC")
+        a = household("H_TYPEACC", period)
         return select(
             [
                 a == 1,

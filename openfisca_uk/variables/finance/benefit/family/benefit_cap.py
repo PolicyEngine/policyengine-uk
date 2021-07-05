@@ -12,9 +12,9 @@ class benefit_cap(Variable):
     def formula(benunit, period, parameters):
         children = benunit("num_children", period) > 0
         region = benunit.value_from_first_person(
-            benunit.members.household("region")
+            benunit.members.household("region", period)
         )
-        regions = benunit.members.household("region").possible_values
+        regions = benunit.members.household("region", period).possible_values
         in_london = region == regions.LONDON
         cap = parameters(period).benefit.benefit_cap
         rate = (

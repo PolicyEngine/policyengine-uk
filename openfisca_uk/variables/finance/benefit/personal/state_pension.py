@@ -11,7 +11,7 @@ class state_pension_age(Variable):
 
     def formula(person, period, parameters):
         SP = parameters(period).benefit.state_pension
-        male = person("is_male")
+        male = person("is_male", period)
         threshold = male * SP.male_age + not_(male) * SP.female_age
         return threshold
 
