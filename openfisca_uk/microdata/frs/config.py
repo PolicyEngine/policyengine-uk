@@ -669,9 +669,10 @@ class housing_costs(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return household("H_GBHSCOST", period) + household(
-            "H_NIHSCOST", period
-        ) * WEEKS_IN_YEAR
+        return (
+            household("H_GBHSCOST", period)
+            + household("H_NIHSCOST", period) * WEEKS_IN_YEAR
+        )
 
 
 class council_tax(Variable):

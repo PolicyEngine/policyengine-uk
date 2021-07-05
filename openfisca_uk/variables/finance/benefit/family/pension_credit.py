@@ -18,8 +18,7 @@ class claims_PC(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["pension_credit_reported"])
-            > 0
+            aggr(benunit, period, ["pension_credit_reported"]) > 0
         )
         takeup_rate = parameters(period).benefit.pension_credit.takeup
         return already_claiming + (random(benunit) < takeup_rate)
@@ -114,12 +113,22 @@ class pension_credit_SC(Variable):
         PC = parameters(period).benefit.pension_credit
         income = benunit("pension_credit_applicable_income", period)
         MG_amount = benunit("pension_credit_MG", period)
-        threshold = PC.savings_credit.single_threshold * benunit(
-            "is_single", period
-        ) * WEEKS_IN_YEAR + PC.savings_credit.couple_threshold * benunit("is_couple", period) * WEEKS_IN_YEAR
-        maximum_amount = PC.savings_credit.max_single * benunit(
-            "is_single", period
-        ) * WEEKS_IN_YEAR + PC.savings_credit.max_single * benunit("is_couple", period) * WEEKS_IN_YEAR
+        threshold = (
+            PC.savings_credit.single_threshold
+            * benunit("is_single", period)
+            * WEEKS_IN_YEAR
+            + PC.savings_credit.couple_threshold
+            * benunit("is_couple", period)
+            * WEEKS_IN_YEAR
+        )
+        maximum_amount = (
+            PC.savings_credit.max_single
+            * benunit("is_single", period)
+            * WEEKS_IN_YEAR
+            + PC.savings_credit.max_single
+            * benunit("is_couple", period)
+            * WEEKS_IN_YEAR
+        )
         income_above_threshold = max_(0, income - threshold)
         income_above_MG = max_(0, income - MG_amount)
         SC_amount = min_(

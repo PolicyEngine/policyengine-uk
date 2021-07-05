@@ -18,8 +18,7 @@ class claims_IS(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["income_support_reported"])
-            > 0
+            aggr(benunit, period, ["income_support_reported"]) > 0
         )
         would_claim = (
             random(benunit) <= parameters(period).benefit.income_support.takeup
@@ -50,20 +49,21 @@ class income_support_applicable_income(Variable):
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["child_benefit"])
         income -= tax
-        income -= (
-            aggr(benunit, period, ["pension_contributions"])
-            * 0.5
-        )
+        income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         family_type = benunit("family_type")
         families = family_type.possible_values
         income = max_(
             0,
             income
             - (family_type == families.SINGLE)
-            * IS.means_test.income_disregard_single * WEEKS_IN_YEAR
-            - benunit("is_couple") * IS.means_test.income_disregard_couple * WEEKS_IN_YEAR
+            * IS.means_test.income_disregard_single
+            * WEEKS_IN_YEAR
+            - benunit("is_couple")
+            * IS.means_test.income_disregard_couple
+            * WEEKS_IN_YEAR
             - (family_type == families.LONE_PARENT)
-            * IS.means_test.income_disregard_lone_parent * WEEKS_IN_YEAR,
+            * IS.means_test.income_disregard_lone_parent
+            * WEEKS_IN_YEAR,
         )
         return income
 
@@ -84,9 +84,7 @@ class income_support_eligible(Variable):
         ) > 0
         under_SP_age = benunit.any(benunit.members("is_SP_age", period)) == 0
         eligible *= under_SP_age
-        return (
-            not_(benunit("ESA_income", period) > 0) * eligible
-        )
+        return not_(benunit("ESA_income", period) > 0) * eligible
 
 
 class income_support_applicable_amount(Variable):
@@ -109,26 +107,29 @@ class income_support_applicable_amount(Variable):
         couple_young = not_(single) * (older_age < 18)
         couple_mixed = not_(single) * (older_age >= 18) * (younger_age < 18)
         couple_old = not_(single) * (younger_age >= 18)
-        personal_allowance = select(
-            [
-                single_under_25,
-                single_over_25,
-                lone_young,
-                lone_old,
-                couple_young,
-                couple_mixed,
-                couple_old,
-            ],
-            [
-                amounts.amount_16_24,
-                amounts.amount_over_25,
-                amounts.amount_lone_16_17,
-                amounts.amount_lone_over_18,
-                amounts.amount_couples_16_17,
-                amounts.amount_couples_age_gap,
-                amounts.amount_couples_over_18,
-            ],
-        ) * WEEKS_IN_YEAR
+        personal_allowance = (
+            select(
+                [
+                    single_under_25,
+                    single_over_25,
+                    lone_young,
+                    lone_old,
+                    couple_young,
+                    couple_mixed,
+                    couple_old,
+                ],
+                [
+                    amounts.amount_16_24,
+                    amounts.amount_over_25,
+                    amounts.amount_lone_16_17,
+                    amounts.amount_lone_over_18,
+                    amounts.amount_couples_16_17,
+                    amounts.amount_couples_age_gap,
+                    amounts.amount_couples_over_18,
+                ],
+            )
+            * WEEKS_IN_YEAR
+        )
         premiums = benunit("benefits_premiums", period)
         return (
             (personal_allowance + premiums)

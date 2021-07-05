@@ -23,9 +23,9 @@ class family_benefits(Variable):
             "pension_credit",
             "universal_credit",
         ]
-        benefits = add(
-            person.benunit, period, FAMILY_BENEFITS
-        ) * person("is_benunit_head", period)
+        benefits = add(person.benunit, period, FAMILY_BENEFITS) * person(
+            "is_benunit_head", period
+        )
         benefits += add(
             person.benunit, period, ["working_tax_credit", "child_tax_credit"]
         ) * person("is_benunit_head", period)
@@ -94,9 +94,9 @@ class benefits_reported(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person(
-            "personal_benefits_reported", period
-        ) + person("family_benefits_reported", period)
+        return person("personal_benefits_reported", period) + person(
+            "family_benefits_reported", period
+        )
 
 
 class benefits_modelling(Variable):

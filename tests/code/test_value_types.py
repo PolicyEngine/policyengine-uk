@@ -1,6 +1,7 @@
 from openfisca_uk import BASELINE_VARIABLES
 from openfisca_core.model_api import Enum
 
+
 def test_variable_names_match_return_types():
     for var_name in BASELINE_VARIABLES:
         variable = BASELINE_VARIABLES[var_name]

@@ -35,6 +35,10 @@ class carer_premium(Variable):
     def formula(benunit, period, parameters):
         carers = benunit("num_carers", period.this_year)
         CP = parameters(period).benefit.carer_premium
-        return select(
-            [carers == 0, carers == 1, carers == 2], [0, CP.single, CP.couple]
-        ) * WEEKS_IN_YEAR
+        return (
+            select(
+                [carers == 0, carers == 1, carers == 2],
+                [0, CP.single, CP.couple],
+            )
+            * WEEKS_IN_YEAR
+        )

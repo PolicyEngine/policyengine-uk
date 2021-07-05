@@ -39,7 +39,11 @@ class claims_HB(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["housing_benefit_reported"],)
+            aggr(
+                benunit,
+                period,
+                ["housing_benefit_reported"],
+            )
             > 0
         )
         would_claim = benunit("claims_legacy_benefits", period) * (
@@ -57,9 +61,7 @@ class housing_benefit_applicable_amount(Variable):
     def formula(benunit, period, parameters):
         HB = parameters(period).benefit.housing_benefit
         PA = HB.allowances
-        one_over_SP_age = benunit.any(
-            benunit.members("is_SP_age", period)
-        )
+        one_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
         eldest_age = benunit("eldest_adult_age", period)
         u_18 = eldest_age < 18
         u_25 = eldest_age < 25
@@ -125,10 +127,7 @@ class housing_benefit_applicable_income(Variable):
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["tax_credits"])
         income -= tax
-        income -= (
-            aggr(benunit, period, ["pension_contributions"])
-            * 0.5
-        )
+        income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         income += benefits
         num_children = benunit.nb_persons(BenUnit.CHILD)
         max_childcare_amount = (
@@ -138,18 +137,20 @@ class housing_benefit_applicable_income(Variable):
         ) * WTC.elements.childcare_2 * WEEKS_IN_YEAR
         childcare_element = min_(
             max_childcare_amount,
-            benunit.sum(
-                benunit.members("childcare_cost", period)
-            ),
+            benunit.sum(benunit.members("childcare_cost", period)),
         )
         applicable_income = max_(
             0,
             income
             - benunit("is_single_person", period)
-            * means_test.income_disregard_single * WEEKS_IN_YEAR
-            - benunit("is_couple", period) * means_test.income_disregard_couple * WEEKS_IN_YEAR
+            * means_test.income_disregard_single
+            * WEEKS_IN_YEAR
+            - benunit("is_couple", period)
+            * means_test.income_disregard_couple
+            * WEEKS_IN_YEAR
             - benunit("is_lone_parent", period)
-            * means_test.income_disregard_lone_parent * WEEKS_IN_YEAR
+            * means_test.income_disregard_lone_parent
+            * WEEKS_IN_YEAR
             - (
                 (
                     benunit.sum(benunit.members("weekly_hours", period))
@@ -161,7 +162,8 @@ class housing_benefit_applicable_income(Variable):
                     > WTC.min_hours.lower
                 )
             )
-            * means_test.worker_income_disregard * WEEKS_IN_YEAR
+            * means_test.worker_income_disregard
+            * WEEKS_IN_YEAR
             - childcare_element,
         )
         return applicable_income

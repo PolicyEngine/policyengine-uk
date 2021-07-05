@@ -30,8 +30,7 @@ class JSA_income_eligible(Variable):
             == employment_statuses.possible_values.UNEMPLOYED
         )
         eligible *= (
-            not_(benunit("income_support", period) > 0)
-            * one_unemployed
+            not_(benunit("income_support", period) > 0) * one_unemployed
         )
         return eligible
 
@@ -106,20 +105,21 @@ class JSA_income_applicable_income(Variable):
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["child_benefit"])
         income -= tax
-        income -= (
-            aggr(benunit, period, ["pension_contributions"])
-            * 0.5
-        )
+        income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         family_type = benunit("family_type")
         families = family_type.possible_values
         income = max_(
             0,
             income
             - (family_type == families.SINGLE)
-            * JSA.income.income_disregard_single * WEEKS_IN_YEAR
-            - benunit("is_couple") * JSA.income.income_disregard_couple * WEEKS_IN_YEAR
+            * JSA.income.income_disregard_single
+            * WEEKS_IN_YEAR
+            - benunit("is_couple")
+            * JSA.income.income_disregard_couple
+            * WEEKS_IN_YEAR
             - (family_type == families.LONE_PARENT)
-            * JSA.income.income_disregard_lone_parent * WEEKS_IN_YEAR,
+            * JSA.income.income_disregard_lone_parent
+            * WEEKS_IN_YEAR,
         )
         return income
 

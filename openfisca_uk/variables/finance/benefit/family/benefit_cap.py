@@ -17,20 +17,23 @@ class benefit_cap(Variable):
         regions = benunit.members.household("region").possible_values
         in_london = region == regions.LONDON
         cap = parameters(period).benefit.benefit_cap
-        rate = select(
-            [
-                children * in_london,
-                children * not_(in_london),
-                not_(children) * in_london,
-                not_(children) * not_(in_london),
-            ],
-            [
-                cap.london_children,
-                cap.has_children,
-                cap.london_no_children,
-                cap.no_children,
-            ],
-        ) * WEEKS_IN_YEAR
+        rate = (
+            select(
+                [
+                    children * in_london,
+                    children * not_(in_london),
+                    not_(children) * in_london,
+                    not_(children) * not_(in_london),
+                ],
+                [
+                    cap.london_children,
+                    cap.has_children,
+                    cap.london_no_children,
+                    cap.no_children,
+                ],
+            )
+            * WEEKS_IN_YEAR
+        )
         exempt = benunit("is_benefit_cap_exempt", period)
         cap = where(exempt, np.inf * np.ones_like(children), rate)
         return cap

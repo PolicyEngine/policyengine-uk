@@ -18,8 +18,7 @@ class claims_UC(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["universal_credit_reported"])
-            > 0
+            aggr(benunit, period, ["universal_credit_reported"]) > 0
         )
         would_claim = not_(benunit("claims_legacy_benefits", period)) * (
             random(benunit)
@@ -90,9 +89,7 @@ class UC_eligible_rent(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        rent = benunit.max(
-            benunit.members.household("rent", period)
-        )
+        rent = benunit.max(benunit.members.household("rent", period))
         LHA_cap = benunit("LHA_cap", period)
         LHA_eligible = benunit("LHA_eligible", period)
         eligible_rent = where(LHA_eligible, min_(LHA_cap, rent), rent)
@@ -124,18 +121,14 @@ class universal_credit_income_reduction(Variable):
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
         INCOME_COMPONENTS = ["employment_income", "trading_income"]
-        earned_income = aggr(
-            benunit, period, INCOME_COMPONENTS
-        )
+        earned_income = aggr(benunit, period, INCOME_COMPONENTS)
         unearned_income = aggr(
             benunit,
             period,
             ["carers_allowance", "JSA_contrib", "state_pension"],
             options=[ADD],
         )
-        unearned_income += aggr(
-            benunit, period, ["pension_income"]
-        )
+        unearned_income += aggr(benunit, period, ["pension_income"])
         earned_income = max_(
             0,
             earned_income
@@ -175,9 +168,9 @@ class universal_credit_eligible(Variable):
             "ESA_income",
             "JSA_income",
         ]
-        disqualifying = add(
-            benunit, period, DISQUALIFYING_BENEFITS
-        ) + aggr(benunit, period, ["SDA"])
+        disqualifying = add(benunit, period, DISQUALIFYING_BENEFITS) + aggr(
+            benunit, period, ["SDA"]
+        )
         eligible = (disqualifying == 0) * (
             not_(benunit.min(benunit.members("is_SP_age", period)))
         )
@@ -197,7 +190,5 @@ class universal_credit(Variable):
         amount = benunit("universal_credit_applicable_amount", period)
         reduction = benunit("universal_credit_income_reduction", period)
         final_amount = eligible * max_(0, amount - reduction)
-        capped_amount = min_(
-            final_amount, benunit("benefit_cap", period)
-        )
+        capped_amount = min_(final_amount, benunit("benefit_cap", period))
         return capped_amount

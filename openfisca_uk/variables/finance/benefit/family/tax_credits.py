@@ -42,9 +42,7 @@ class tax_credits_applicable_income(Variable):
         ]
         income += aggr(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
-        on_exempt_benefits = (
-            add(benunit, period, EXEMPT_BENEFITS) > 0
-        )
+        on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
         return income * not_(on_exempt_benefits)
 
 
@@ -92,8 +90,7 @@ class claims_CTC(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["child_tax_credit_reported"])
-            > 0
+            aggr(benunit, period, ["child_tax_credit_reported"]) > 0
         )
         would_claim = (
             random(benunit)
@@ -168,11 +165,7 @@ class CTC_disabled_child_element(Variable):
     def formula(benunit, period, parameters):
         disabled_children = benunit.sum(
             benunit.members("is_child_for_CTC", period)
-            * (
-                benunit.members(
-                    "is_disabled_for_benefits", period
-                )
-            )
+            * (benunit.members("is_disabled_for_benefits", period))
             > 0
         )
         CTC = parameters(period).benefit.tax_credits.child_tax_credit
@@ -195,9 +188,7 @@ class CTC_severely_disabled_child_element(Variable):
         severely_disabled_children = benunit.sum(
             benunit.members("is_child_for_CTC", period)
             * (
-                benunit.members(
-                    "is_severely_disabled_for_benefits", period
-                )
+                benunit.members("is_severely_disabled_for_benefits", period)
                 > 0
             )
         )
@@ -260,9 +251,7 @@ class claims_WTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(
-            benunit, period, ["working_tax_credit_reported"]
-        )
+        return aggr(benunit, period, ["working_tax_credit_reported"])
 
 
 class WTC_maximum_rate(Variable):
@@ -352,12 +341,7 @@ class WTC_disabled_element(Variable):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
         condition = (
             benunit.sum(
-                (
-                    benunit.members(
-                        "is_disabled_for_benefits", period
-                    )
-                    > 0
-                )
+                (benunit.members("is_disabled_for_benefits", period) > 0)
                 * benunit.members("is_adult", period)
                 * benunit.members("weekly_hours", period)
             )
