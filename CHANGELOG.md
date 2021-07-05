@@ -44,3 +44,10 @@
 * Tests added
 * Variable time periods made more consistent
 * Derivative calculations made more efficient and have more options
+
+### 0.4.0
+
+* OpenFisca-UK now runs from the official OpenFisca-Core
+* Tests for variable naming conventions
+* Postcode lookup optional features available
+* LHA rates for all BRMA areas added
