@@ -341,9 +341,6 @@ class Microsimulation:
                 "Unable to compute derivative - target variable must be from a group of or the same as the source variable"
             )
 
-    def mtr(self, *args, **kwargs):
-        return self.deriv(*args, **kwargs) * -1 + 1
-
     def deriv_df(
         self, *targets, wrt="employment_income", delta=100, percent=False
     ) -> MicroDataFrame:
@@ -353,19 +350,6 @@ class Microsimulation:
         df = MicroDataFrame(weights=self.entity_weights[wrt_entity])
         for target in targets:
             df[target] = self.deriv(
-                target, wrt=wrt, delta=delta, percent=percent
-            )
-        return df
-
-    def mtr_df(
-        self, *targets, wrt="employment_income", delta=100, percent=False
-    ) -> MicroDataFrame:
-        wrt_entity = self.simulation.tax_benefit_system.variables[
-            wrt
-        ].entity.key
-        df = MicroDataFrame(weights=self.entity_weights[wrt_entity])
-        for target in targets:
-            df[target] = self.mtr(
                 target, wrt=wrt, delta=delta, percent=percent
             )
         return df

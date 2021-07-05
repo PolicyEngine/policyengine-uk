@@ -202,15 +202,3 @@ class universal_credit(Variable):
             final_amount, benunit("benefit_cap", period, options=[ADD])
         )
         return capped_amount
-
-
-class weekly_UC(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"UC per week"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return (
-            benunit("universal_credit", period.this_year, options=[ADD]) / 52
-        )
