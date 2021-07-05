@@ -6,8 +6,8 @@ from openfisca_uk.tools.general import *
 class JSA_income_reported(Variable):
     value_type = float
     entity = Person
-    label = u"JSA (income-based) (reported amount per week)"
-    definition_period = WEEK
+    label = u"JSA (income-based) (reported amount)"
+    definition_period = YEAR
 
 
 class JSA_income_eligible(Variable):
@@ -30,8 +30,7 @@ class JSA_income_eligible(Variable):
             == employment_statuses.possible_values.UNEMPLOYED
         )
         eligible *= (
-            not_(benunit("income_support", period, options=[ADD]) > 0)
-            * one_unemployed
+            not_(benunit("income_support", period) > 0) * one_unemployed
         )
         return eligible
 
@@ -40,12 +39,12 @@ class JSA_income_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
     label = u"Maximum amount of JSA (income-based)"
-    definition_period = WEEK
+    definition_period = YEAR
     reference = "Jobseekers Act 1995 s. 4"
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).benefit.JSA
-        age = benunit("youngest_adult_age", period.this_year)
+        age = benunit("youngest_adult_age", period)
         personal_allowance = (
             benunit("is_single", period)
             * (
@@ -53,12 +52,12 @@ class JSA_income_applicable_amount(Variable):
                 + (age >= 25) * JSA.income.amount_over_25
             )
             + benunit("is_couple", period) * JSA.income.couple
-        )
+        ) * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
         return (
             (personal_allowance + premiums)
-            * benunit("JSA_income_eligible", period.this_year)
-            * benunit("claims_JSA", period.this_year)
+            * benunit("JSA_income_eligible", period)
+            * benunit("claims_JSA", period)
         )
 
 
@@ -74,7 +73,6 @@ class claims_JSA(Variable):
                 benunit,
                 period,
                 ["JSA_income_reported", "JSA_contrib_reported"],
-                options=[ADD],
             )
             > 0
         )
@@ -88,7 +86,7 @@ class JSA_income_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = u"Relevant income for JSA (income-based) means test"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).benefit.JSA
@@ -98,30 +96,30 @@ class JSA_income_applicable_income(Variable):
             "property_income",
             "pension_income",
         ]
-        income = aggr(benunit, period, INCOME_COMPONENTS, options=[DIVIDE])
+        income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(
             benunit,
             period,
             ["income_tax", "national_insurance"],
-            options=[DIVIDE],
         )
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["child_benefit"])
         income -= tax
-        income -= (
-            aggr(benunit, period, ["pension_contributions"], options=[DIVIDE])
-            * 0.5
-        )
-        family_type = benunit("family_type")
+        income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
+        family_type = benunit("family_type", period)
         families = family_type.possible_values
         income = max_(
             0,
             income
             - (family_type == families.SINGLE)
             * JSA.income.income_disregard_single
-            - benunit("is_couple") * JSA.income.income_disregard_couple
+            * WEEKS_IN_YEAR
+            - benunit("is_couple", period)
+            * JSA.income.income_disregard_couple
+            * WEEKS_IN_YEAR
             - (family_type == families.LONE_PARENT)
-            * JSA.income.income_disregard_lone_parent,
+            * JSA.income.income_disregard_lone_parent
+            * WEEKS_IN_YEAR,
         )
         return income
 
@@ -130,19 +128,19 @@ class JSA_income(Variable):
     value_type = float
     entity = BenUnit
     label = u"Job Seeker's Allowance (income-based)"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         amount = benunit("JSA_income_applicable_amount", period)
         income = benunit("JSA_income_applicable_income", period)
-        claims_JSA = benunit("claims_JSA", period.this_year)
+        claims_JSA = benunit("claims_JSA", period)
         return (
             max_(
                 0,
                 (amount - income),
             )
             * claims_JSA
-            * benunit("JSA_income_eligible", period.this_year)
+            * benunit("JSA_income_eligible", period)
         )
 
 
@@ -150,19 +148,9 @@ class JSA(Variable):
     value_type = float
     entity = BenUnit
     label = u"Amount of Jobseeker's Allowance for this family"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["JSA_contrib"]) + benunit(
             "JSA_income", period
         )
-
-
-class yearly_JSA(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Yearly amount of JSA for the family"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return add(benunit, period, ["JSA"], options=[ADD])

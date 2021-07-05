@@ -7,7 +7,7 @@ class incapacity_benefit(Variable):
     value_type = float
     entity = Person
     label = u"Incapacity Benefit"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("incapacity_benefit_reported", period)
@@ -17,4 +17,4 @@ class incapacity_benefit_reported(Variable):
     value_type = float
     entity = Person
     label = u"Incapacity Benefit (reported)"
-    definition_period = WEEK
+    definition_period = YEAR

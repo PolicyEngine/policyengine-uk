@@ -43,7 +43,7 @@ class FRSDataset:
         """
         try:
             frs = FRS(year)
-        except:
+        except Exception as e:
             # FRS microdata inaccessible - use anonymised versions
             warnings.warn(
                 "FRS microdata unavailable, using anonymised version (2018) instead."

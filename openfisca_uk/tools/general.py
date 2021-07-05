@@ -2,6 +2,9 @@ from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 import numpy as np
 from datetime import datetime
+from pathlib import Path
+
+DATA_FOLDER = Path(__file__).parent.parent / "data"
 
 np.random.seed(0)
 
@@ -84,6 +87,7 @@ clip = np.clip
 inf = np.inf
 
 WEEKS_IN_YEAR = 52
+MONTHS_IN_YEAR = 12
 
 
 def amount_over(amount, threshold):

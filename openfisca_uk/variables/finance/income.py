@@ -74,7 +74,7 @@ class hours_worked(Variable):
     value_type = float
     entity = Person
     label = u"Total amount of hours worked by this person"
-    definition_period = WEEK
+    definition_period = YEAR
 
 
 class weekly_hours(Variable):
@@ -84,7 +84,7 @@ class weekly_hours(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("hours_worked", period, options=[ADD]) / WEEKS_IN_YEAR
+        return person("hours_worked", period) / WEEKS_IN_YEAR
 
 
 class EmploymentStatus(Enum):
@@ -133,7 +133,7 @@ class household_net_income_ahc(Variable):
 
     def formula(household, period, parameters):
         return household("household_net_income", period) - household(
-            "housing_costs", period, options=[ADD]
+            "housing_costs", period
         )
 
 

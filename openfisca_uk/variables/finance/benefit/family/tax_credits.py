@@ -6,15 +6,15 @@ from openfisca_uk.tools.general import *
 class working_tax_credit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Working Tax Credit (reported amount)"
-    definition_period = WEEK
+    label = u"Working Tax Credit"
+    definition_period = YEAR
 
 
 class child_tax_credit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Working Tax Credit (reported amount)"
-    definition_period = WEEK
+    label = u"Working Tax Credit"
+    definition_period = YEAR
 
 
 class tax_credits_applicable_income(Variable):
@@ -42,9 +42,7 @@ class tax_credits_applicable_income(Variable):
         ]
         income += aggr(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
-        on_exempt_benefits = (
-            add(benunit, period, EXEMPT_BENEFITS, options=[ADD]) > 0
-        )
+        on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
         return income * not_(on_exempt_benefits)
 
 
@@ -92,8 +90,7 @@ class claims_CTC(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["child_tax_credit_reported"], options=[ADD])
-            > 0
+            aggr(benunit, period, ["child_tax_credit_reported"]) > 0
         )
         would_claim = (
             random(benunit)
@@ -168,11 +165,7 @@ class CTC_disabled_child_element(Variable):
     def formula(benunit, period, parameters):
         disabled_children = benunit.sum(
             benunit.members("is_child_for_CTC", period)
-            * (
-                benunit.members(
-                    "is_disabled_for_benefits", period, options=[ADD]
-                )
-            )
+            * (benunit.members("is_disabled_for_benefits", period))
             > 0
         )
         CTC = parameters(period).benefit.tax_credits.child_tax_credit
@@ -195,9 +188,7 @@ class CTC_severely_disabled_child_element(Variable):
         severely_disabled_children = benunit.sum(
             benunit.members("is_child_for_CTC", period)
             * (
-                benunit.members(
-                    "is_severely_disabled_for_benefits", period, options=[ADD]
-                )
+                benunit.members("is_severely_disabled_for_benefits", period)
                 > 0
             )
         )
@@ -213,7 +204,7 @@ class CTC_severely_disabled_child_element(Variable):
 
 
 class is_WTC_eligible(Variable):
-    value_type = float
+    value_type = bool
     entity = BenUnit
     label = u"Whether the family is eligible for WTC"
     definition_period = YEAR
@@ -260,9 +251,7 @@ class claims_WTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(
-            benunit, period, ["working_tax_credit_reported"], options=[ADD]
-        )
+        return aggr(benunit, period, ["working_tax_credit_reported"])
 
 
 class WTC_maximum_rate(Variable):
@@ -352,12 +341,7 @@ class WTC_disabled_element(Variable):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
         condition = (
             benunit.sum(
-                (
-                    benunit.members(
-                        "is_disabled_for_benefits", period, options=[ADD]
-                    )
-                    > 0
-                )
+                (benunit.members("is_disabled_for_benefits", period) > 0)
                 * benunit.members("is_adult", period)
                 * benunit.members("weekly_hours", period)
             )
@@ -421,13 +405,13 @@ class WTC_childcare_element(Variable):
         num_children = benunit("num_children", period)
         max_childcare_amount = (
             num_children == 1
-        ) * WTC.elements.childcare_1 + (
+        ) * WTC.elements.childcare_1 * WEEKS_IN_YEAR + (
             num_children > 1
-        ) * WTC.elements.childcare_2
+        ) * WTC.elements.childcare_2 * WEEKS_IN_YEAR
         childcare_element = min_(
             max_childcare_amount,
             WTC.elements.childcare_coverage
-            * benunit.sum(benunit.members("weekly_childcare_cost", period)),
+            * benunit.sum(benunit.members("childcare_cost", period)),
         )
         return (
             benunit("is_WTC_eligible", period)

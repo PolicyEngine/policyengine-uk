@@ -113,7 +113,7 @@ class is_male(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("gender") == Gender.MALE
+        return person("gender", period) == Gender.MALE
 
 
 class is_female(Variable):
@@ -123,7 +123,7 @@ class is_female(Variable):
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
-        return person("gender") == Gender.FEMALE
+        return person("gender", period) == Gender.FEMALE
 
 
 class is_household_head(Variable):
@@ -154,7 +154,7 @@ class in_social_housing(Variable):
 
 
 class is_WA_adult(Variable):
-    value_type = float
+    value_type = bool
     entity = Person
     label = u"Whether is a working-age adult"
     definition_period = YEAR

@@ -1,0 +1,8 @@
+- name: Net income with base income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    gross_income: 400
+    tax: 50
+  output:
+    net_income: 350

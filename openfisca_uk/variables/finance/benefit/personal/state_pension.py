@@ -11,7 +11,7 @@ class state_pension_age(Variable):
 
     def formula(person, period, parameters):
         SP = parameters(period).benefit.state_pension
-        male = person("is_male")
+        male = person("is_male", period)
         threshold = male * SP.male_age + not_(male) * SP.female_age
         return threshold
 
@@ -33,7 +33,7 @@ class state_pension(Variable):
     value_type = float
     entity = Person
     label = u"Income from the State Pension"
-    definition_period = WEEK
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("state_pension_reported", period)
@@ -43,4 +43,4 @@ class state_pension_reported(Variable):
     value_type = float
     entity = Person
     label = u"Reported income from the State Pension"
-    definition_period = WEEK
+    definition_period = YEAR
