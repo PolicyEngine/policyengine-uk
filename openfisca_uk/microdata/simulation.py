@@ -23,7 +23,7 @@ class Microsimulation:
         self,
         *reforms: Tuple[Reform],
         mode: str = "frs",
-        year: int = 2018,
+        year: int = 2020,
         input_year: int = None,
         entity_dataframes=None,
     ):

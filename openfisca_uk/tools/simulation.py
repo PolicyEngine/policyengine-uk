@@ -20,7 +20,7 @@ np.random.seed(0)
 
 
 class IndividualSim:
-    def __init__(self, *reforms, year=2018):
+    def __init__(self, *reforms, year=2020):
         self.year = year
         self.reforms = reforms
         self.system = openfisca_uk.CountryTaxBenefitSystem()
