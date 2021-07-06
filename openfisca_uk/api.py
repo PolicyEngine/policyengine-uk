@@ -9,3 +9,4 @@ from openfisca_uk import (
     Microsimulation,
     IndividualSim,
 )
+import openfisca_uk.graphs as graphs
