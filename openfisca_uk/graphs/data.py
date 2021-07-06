@@ -1,0 +1,69 @@
+from typing import Callable, List
+from openfisca_uk.api import *
+from openfisca_uk.situation_examples.examples import single_person_UC
+import pandas as pd
+from microdf import MicroDataFrame
+
+
+def get_wide_reform_population_data(
+    reforms: List[Reform],
+    names: List[str],
+    variables: List[str],
+    mapping: str = "person",
+    **kwargs,
+) -> pd.DataFrame:
+    """Generates wide-form data from given reforms and variable names (e.g. for creating animation frames for Plotly graphs).
+
+    Args:
+        reforms (List[Reform]): A list of Reform classes.
+        names (List[str]): A list of variable names to calculate for each reform
+        variables (List[str]): A list of variable names to calculate of each reform.
+        mapping (person): The mapping to apply to each calculation (person, benunit, household)
+
+    Returns:
+        pd.DataFrame: A DataFrame with each row containing: {reform: name, baseline_first_variable_name: [...], reform_first_variable_name: [...], ...}
+    """
+    dfs = []
+    baseline = Microsimulation(**kwargs)
+    for reform, name in zip(reforms, names):
+        reform_sim = Microsimulation(**kwargs)
+        df = pd.DataFrame()
+        for variable in variables:
+            df[f"reform_{variable}"] = reform_sim.calc(
+                variable, map_to=mapping
+            )
+            df[f"baseline_{variable}"] = baseline.calc(
+                variable, map_to=mapping
+            )
+            df[f"reform"] = name
+            df[f"weight"] = baseline.calc(f"{mapping}_weight")
+        dfs += [df]
+    df = pd.concat(dfs)
+    return df
+
+
+def get_wide_reform_individual_data(
+    reforms: List[Reform],
+    names: List[str],
+    variables: List[str] = ["net_income"],
+    situation_function: Callable = single_person_UC,
+    varying: str = "employment_income",
+    **kwargs,
+):
+    baseline = IndividualSim(**kwargs)
+    baseline = situation_function(baseline)
+    baseline.vary(varying)
+    dfs = []
+    for reform, name in zip(reforms, names):
+        df = pd.DataFrame()
+        reform_sim = IndividualSim(reform, **kwargs)
+        reform_sim = situation_function(reform_sim)
+        reform_sim.vary(varying)
+        df[varying] = baseline.calc(varying)[0]
+        for variable in variables:
+            df[f"baseline_{variable}"] = baseline.calc(variable).sum(axis=0)
+            df[f"reform_{variable}"] = reform_sim.calc(variable).sum(axis=0)
+            df[f"reform"] = name
+        dfs += [df]
+    df = pd.concat(dfs)
+    return df
