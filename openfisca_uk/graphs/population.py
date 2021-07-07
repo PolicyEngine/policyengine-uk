@@ -195,7 +195,7 @@ def waterfall_data(
                 # Each component has white below it, so double the records.
                 component=labels * 2,
                 amount=[0]
-                + list(-resulting_costs.cumsum()[:-2])
+                + list(np.where(resulting_costs[1:-1] < 0, -resulting_costs.cumsum()[:-2], -resulting_costs.cumsum()[1:-1]))
                 + [final_base]
                 + list(resulting_costs.abs()),
                 Type=["-"] * len(labels)
