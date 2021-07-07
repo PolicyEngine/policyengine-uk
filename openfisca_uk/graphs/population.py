@@ -104,22 +104,20 @@ def distributional_chart(
         dfs = []
         for reform, name in zip(reforms, reform_names):
             reform_sim = Microsimulation(reform, **microsimulation_kwargs)
-            result = reduction_func(reform_sim.calc(change_variable, map_to=level))
-            df = pd.DataFrame({
-                x_label: result.index,
-                y_label: result.values,
-                "Reform": name
-            })
+            result = reduction_func(
+                reform_sim.calc(change_variable, map_to=level)
+            )
+            df = pd.DataFrame(
+                {x_label: result.index, y_label: result.values, "Reform": name}
+            )
             dfs += [df]
         data = pd.concat(dfs)
     else:
         reform_sim = Microsimulation(reforms, **microsimulation_kwargs)
         result = reduction_func(reform_sim.calc(change_variable, map_to=level))
-        data = pd.DataFrame({
-            x_label: result.index,
-            y_label: result.values,
-            "Reform": "Reform"
-        })
+        data = pd.DataFrame(
+            {x_label: result.index, y_label: result.values, "Reform": "Reform"}
+        )
 
     fig = px.bar(data, x=x_label, y=y_label, animation_frame="Reform")
     if relative:
@@ -202,7 +200,13 @@ def waterfall_data(
                 # Each component has white below it, so double the records.
                 component=labels * 2,
                 amount=[0]
-                + list(np.where(resulting_costs[1:-1] < 0, -resulting_costs.cumsum()[:-2], -resulting_costs.cumsum()[1:-1]))
+                + list(
+                    np.where(
+                        resulting_costs[1:-1] < 0,
+                        -resulting_costs.cumsum()[:-2],
+                        -resulting_costs.cumsum()[1:-1],
+                    )
+                )
                 + [final_base]
                 + list(resulting_costs.abs()),
                 Type=["-"] * len(labels)
