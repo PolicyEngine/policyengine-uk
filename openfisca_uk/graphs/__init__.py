@@ -1,2 +1,2 @@
-import openfisca_uk.graphs.data as data
-import openfisca_uk.graphs.distributional as distr
+from openfisca_uk.graphs.population import *
+from openfisca_uk.graphs.hypothetical import *

@@ -48,8 +48,24 @@ def get_wide_reform_individual_data(
     variables: List[str] = ["net_income"],
     situation_function: Callable = single_person_UC,
     varying: str = "employment_income",
+    include_derivatives: bool = True,
+    primary_adult_name: str = "adult",
     **kwargs,
 ):
+    """Generates wide-format individual data from a set of reforms, varying a variable (a row for each reform-input value-other values set).
+
+    Args:
+        reforms (List[Reform]): A list of reforms.
+        names (List[str]): The corresponding reform names.
+        variables (List[str], optional): The variables to include. Defaults to ["net_income"].
+        situation_function (Callable, optional): A function adding situational data to the simulation. Defaults to single_person_UC.
+        varying (str, optional): The variable to vary (e.g. employment income). Defaults to "employment_income".
+        include_derivatives (bool, optional): Whether to include derivatives for each calculation. Defaults to True.
+        primary_adult_name (str, optional): The name of the adult to calculate derivatives for. Defaults to "adult".
+
+    Returns:
+        pd.DataFrame: The resulting dataframe.
+    """
     baseline = IndividualSim(**kwargs)
     baseline = situation_function(baseline)
     baseline.vary(varying)
@@ -61,8 +77,31 @@ def get_wide_reform_individual_data(
         reform_sim.vary(varying)
         df[varying] = baseline.calc(varying)[0]
         for variable in variables:
-            df[f"baseline_{variable}"] = baseline.calc(variable).sum(axis=0)
+            try:
+                df[f"baseline_{variable}"] = baseline.calc(variable).sum(
+                    axis=0
+                )
+                if include_derivatives:
+                    df[f"baseline_{variable}_deriv"] = baseline.calc_deriv(
+                        variable,
+                        wrt=varying,
+                        var_target=primary_adult_name,
+                        wrt_target=primary_adult_name,
+                    )
+            except:
+                df[f"baseline_{variable}"] = np.zeros_like(df[varying])
+                if include_derivatives:
+                    df[f"baseline_{variable}_deriv"] = np.zeros_like(
+                        df[varying]
+                    )
             df[f"reform_{variable}"] = reform_sim.calc(variable).sum(axis=0)
+            if include_derivatives:
+                df[f"reform_{variable}_deriv"] = reform_sim.calc_deriv(
+                    variable,
+                    wrt=varying,
+                    var_target=primary_adult_name,
+                    wrt_target=primary_adult_name,
+                )
             df[f"reform"] = name
         dfs += [df]
     df = pd.concat(dfs)
