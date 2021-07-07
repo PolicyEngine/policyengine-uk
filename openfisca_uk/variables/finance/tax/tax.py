@@ -6,7 +6,7 @@ from openfisca_uk.tools.general import *
 class tax(Variable):
     value_type = float
     entity = Person
-    label = u"Total tax liability"
+    label = u"Total tax"
     definition_period = YEAR
 
     def formula(person, period, parameters):

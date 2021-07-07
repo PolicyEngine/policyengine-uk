@@ -180,7 +180,7 @@ class universal_credit_eligible(Variable):
 class universal_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit amount"
+    label = u"Universal Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

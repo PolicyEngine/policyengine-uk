@@ -114,7 +114,7 @@ class employment_status(Variable):
 class household_net_income(Variable):
     value_type = float
     entity = Household
-    label = u"Household net income, before housing costs"
+    label = u"Household net income"
     definition_period = YEAR
 
     def formula(household, period, parameters):

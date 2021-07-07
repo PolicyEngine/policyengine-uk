@@ -64,7 +64,7 @@ class family_benefits_reported(Variable):
 class benefits(Variable):
     value_type = float
     entity = Person
-    label = u"Total simulated"
+    label = u"Total benefits"
     definition_period = YEAR
 
     def formula(person, period, parameters):
