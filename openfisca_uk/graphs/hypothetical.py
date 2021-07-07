@@ -3,16 +3,16 @@ from openfisca_uk.situation_examples.examples import single_person_UC
 from typing import List
 from openfisca_uk.api import *
 from openfisca_uk.graphs.data import get_wide_reform_individual_data
-from openfisca_uk.graphs.general import formalise_column_names
+from openfisca_uk.graphs.general import (
+    formalise_column_names,
+    COLORS,
+)
 import plotly.express as px
 
-GREY, DARK_BLUE = ("#BDBDBD", "#0F4AA1")
-COLORS = (GREY, DARK_BLUE)
 
-
-def plot_budget(
+def budget_chart(
     reforms: List[Reform],
-    names: List[str],
+    names: List[str] = None,
     variables: List[str] = ["household_net_income"],
     situation_function: Callable = single_person_UC,
     return_df: bool = False,
@@ -22,7 +22,7 @@ def plot_budget(
 
     Args:
         reforms (List[Reform]): A list of reform classes.
-        names (List[str]): The names of the reforms.
+        names (List[str], optional): The reform names, if multiple reforms are provided.
         variables (List[str], optional): The variables to include in the budget lines. Defaults to ["household_net_income"].
         situation_function (Callable, optional): A function adding situational data to an IndividualSim. Defaults to single_person_UC.
         return_df (bool, optional): Whether to return the data used for the plots. Defaults to False.
@@ -30,6 +30,11 @@ def plot_budget(
     Returns:
         Figure: The Plotly figure.
     """
+
+    if not isinstance(reforms, list):
+        reforms = [reforms]
+        names = ["Reform"]
+
     df = get_wide_reform_individual_data(
         reforms,
         names,
@@ -66,9 +71,9 @@ INVERTED_DERIV_VARIABLES = (
 )
 
 
-def plot_mtr(
+def mtr_chart(
     reforms: List[Reform],
-    names: List[str],
+    names: List[str] = None,
     variables: List[str] = ["household_net_income"],
     situation_function: Callable = single_person_UC,
     invert: List[str] = [],
@@ -79,8 +84,8 @@ def plot_mtr(
     """Generates a plot of the marginal tax rates for given reforms on a scenario.
 
     Args:
-        reforms (List[Reform]): The reforms (multiple reforms creates a slider).
-        names (List[str]): The reform names.
+        reforms (Union[Reform, List[Reform]]): The reforms (multiple reforms creates a slider).
+        names (List[str], optional): The reform names, if multiple reforms are provided.
         variables (List[str], optional): The variables to include MTRs or derivatives for, useful for explainable outputs. Defaults to ["household_net_income"].
         situation_function (Callable, optional): A function adding situational data to an IndividualSim. Defaults to single_person_UC.
         invert (List[str], optional): A list of variables that should be inverted to become a 'tax' from a derivative - e.g. NI should not be inverted, but benefits should. Defaults to [].
@@ -90,6 +95,11 @@ def plot_mtr(
     Returns:
         Figure: The Plotly figure.
     """
+
+    if not isinstance(reforms, list):
+        reforms = [reforms]
+        names = ["Reform"]
+    
     invert += INVERTED_DERIV_VARIABLES
     df = get_wide_reform_individual_data(
         reforms,

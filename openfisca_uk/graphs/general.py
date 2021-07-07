@@ -1,3 +1,4 @@
+from openfisca_uk.microdata.simulation import Microsimulation
 import pandas as pd
 from openfisca_uk import BASELINE_VARIABLES
 
@@ -35,3 +36,16 @@ def formalise_column_names(df: pd.DataFrame) -> pd.DataFrame:
             column_mapping[name] = BASELINE_VARIABLES[name].label
     df.columns = df.columns.map(column_mapping)
     return df, column_mapping
+
+
+def net_cost(
+    baseline_sim: Microsimulation, reform_sim: Microsimulation
+) -> float:
+    return (
+        reform_sim.calc("net_income").sum()
+        - baseline_sim.calc("net_income").sum()
+    )
+
+
+GREY, DARK_BLUE = ("#BDBDBD", "#0F4AA1")
+COLORS = (GREY, DARK_BLUE)
