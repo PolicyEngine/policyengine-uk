@@ -8,8 +8,9 @@ from microdf import MicroDataFrame
 def get_wide_reform_population_data(
     reforms: List[Reform],
     names: List[str],
-    variables: List[str],
+    variables: List[str] = [],
     mapping: str = "person",
+    function: Callable = None,
     **kwargs,
 ) -> pd.DataFrame:
     """Generates wide-form data from given reforms and variable names (e.g. for creating animation frames for Plotly graphs).
@@ -17,8 +18,9 @@ def get_wide_reform_population_data(
     Args:
         reforms (List[Reform]): A list of Reform classes.
         names (List[str]): A list of variable names to calculate for each reform
-        variables (List[str]): A list of variable names to calculate of each reform.
-        mapping (person): The mapping to apply to each calculation (person, benunit, household)
+        variables (List[str], optional): A list of variable names to calculate of each reform.
+        mapping (person): The mapping to apply to each calculation (person, benunit, household).
+        function (Callable[(baseline, reform_sim) -> pd.DataFrame]): A function to apply instead of calculating variables.
 
     Returns:
         pd.DataFrame: A DataFrame with each row containing: {reform: name, baseline_first_variable_name: [...], reform_first_variable_name: [...], ...}
@@ -26,17 +28,21 @@ def get_wide_reform_population_data(
     dfs = []
     baseline = Microsimulation(**kwargs)
     for reform, name in zip(reforms, names):
-        reform_sim = Microsimulation(**kwargs)
+        reform_sim = Microsimulation(reform, **kwargs)
         df = pd.DataFrame()
-        for variable in variables:
-            df[f"reform_{variable}"] = reform_sim.calc(
-                variable, map_to=mapping
-            )
-            df[f"baseline_{variable}"] = baseline.calc(
-                variable, map_to=mapping
-            )
-            df[f"reform"] = name
-            df[f"weight"] = baseline.calc(f"{mapping}_weight")
+        if function is None:
+            for variable in variables:
+                df[f"reform_{variable}"] = reform_sim.calc(
+                    variable, map_to=mapping
+                )
+                df[f"baseline_{variable}"] = baseline.calc(
+                    variable, map_to=mapping
+                )
+                df["Reform"] = name
+                df["weight"] = baseline.calc(f"{mapping}_weight")
+        else:
+            df = function(baseline, reform_sim)
+            df["Reform"] = name
         dfs += [df]
     df = pd.concat(dfs)
     return df
