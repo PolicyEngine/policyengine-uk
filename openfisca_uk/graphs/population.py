@@ -130,6 +130,7 @@ def distributional_plot(
     fig.update_layout(**kwargs)
     return fig
 
+# Bucket-specific shortcut functions
 
 quartile_plot = wraps(distributional_plot)(
     lambda *args, **kwargs: distributional_plot(
