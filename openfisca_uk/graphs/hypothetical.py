@@ -57,12 +57,14 @@ def plot_budget(
         return fig, df
     return fig
 
+
 INVERTED_DERIV_VARIABLES = (
     "household_net_income",
     "net_income",
     "benefits",
     "universal_credit",
 )
+
 
 def plot_mtr(
     reforms: List[Reform],
@@ -97,12 +99,27 @@ def plot_mtr(
         include_derivatives=True,
     )
     for var in df.columns:
-        if not derivatives and (var.replace("baseline_", "").replace("reform_", "").replace("_deriv", "") in invert):
+        if not derivatives and (
+            var.replace("baseline_", "")
+            .replace("reform_", "")
+            .replace("_deriv", "")
+            in invert
+        ):
             df[var] = -df[var]
             if df[var].min() < 0 and df[var].max() <= 0:
                 df[var] += 1
 
-    df = df.drop([col for col in df.columns if ((("baseline_" in col) or ("reform_" in col)) and ("deriv" not in col))], axis=1)
+    df = df.drop(
+        [
+            col
+            for col in df.columns
+            if (
+                (("baseline_" in col) or ("reform_" in col))
+                and ("deriv" not in col)
+            )
+        ],
+        axis=1,
+    )
 
     df, column_map = formalise_column_names(df)
     fig = px.line(
@@ -116,14 +133,8 @@ def plot_mtr(
         animation_frame="Reform",
         color_discrete_sequence=COLORS,
     )
-    fig.update_layout(
-        legend_title="Source",
-        yaxis_tickformat="%"
-    )
+    fig.update_layout(legend_title="Source", yaxis_tickformat="%")
     fig.update_layout(**kwargs)
     if return_df:
         return fig, df
     return fig
-
-
-

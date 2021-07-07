@@ -1,6 +1,7 @@
 import pandas as pd
 from openfisca_uk import BASELINE_VARIABLES
 
+
 def formalise_column_names(df: pd.DataFrame) -> pd.DataFrame:
     """Exchanges column names for their labels if possible
 
@@ -14,10 +15,18 @@ def formalise_column_names(df: pd.DataFrame) -> pd.DataFrame:
     for i in range(len(df.columns)):
         name = df.columns[i]
         if "baseline_" in name or "reform_" in name:
-            variable_name = name.replace("baseline_", "").replace("reform_", "").replace("_deriv", "")
-            tag = {True: " (Baseline)", False: " (Reform)"}["baseline_" in name]
+            variable_name = (
+                name.replace("baseline_", "")
+                .replace("reform_", "")
+                .replace("_deriv", "")
+            )
+            tag = {True: " (Baseline)", False: " (Reform)"}[
+                "baseline_" in name
+            ]
             if variable_name in BASELINE_VARIABLES:
-                column_mapping[name] = f"{BASELINE_VARIABLES[variable_name].label}{tag}"
+                column_mapping[
+                    name
+                ] = f"{BASELINE_VARIABLES[variable_name].label}{tag}"
             else:
                 column_mapping[name] = f"{variable_name}{tag}"
         elif name == "reform":
