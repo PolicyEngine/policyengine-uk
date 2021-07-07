@@ -99,7 +99,7 @@ def mtr_chart(
     if not isinstance(reforms, list):
         reforms = [reforms]
         names = ["Reform"]
-    
+
     invert += INVERTED_DERIV_VARIABLES
     df = get_wide_reform_individual_data(
         reforms,

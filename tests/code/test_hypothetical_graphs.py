@@ -22,13 +22,30 @@ def test_wide_form_individual_data_with_two_reforms():
         ["net_income", "tax"],
     )
 
+
 def test_single_reform_MTR_and_budget_plot():
-    reform = reforms.structural.abolish("personal_allowance"), reforms.parametric.set_parameter(BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate, 0.4)
+    reform = reforms.structural.abolish(
+        "personal_allowance"
+    ), reforms.parametric.set_parameter(
+        BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
+        0.4,
+    )
     budget = budget_chart(reform)
     mtr = mtr_chart(reform)
 
+
 def test_multiple_reform_MTR_and_budget_plot():
-    reform_1 = reforms.structural.abolish("personal_allowance"), reforms.parametric.set_parameter(BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate, 0.4)
-    reform_2 = reforms.structural.abolish("personal_allowance"), reforms.parametric.set_parameter(BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate, 0.1)
+    reform_1 = reforms.structural.abolish(
+        "personal_allowance"
+    ), reforms.parametric.set_parameter(
+        BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
+        0.4,
+    )
+    reform_2 = reforms.structural.abolish(
+        "personal_allowance"
+    ), reforms.parametric.set_parameter(
+        BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
+        0.1,
+    )
     budget = budget_chart([reform_1, reform_2], names=["CB=£50", "CB=£300"])
     mtr = mtr_chart([reform_1, reform_2], names=["CB=£50", "CB=£300"])
