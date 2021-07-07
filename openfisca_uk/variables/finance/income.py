@@ -140,7 +140,7 @@ class household_net_income_ahc(Variable):
 class equiv_household_net_income(Variable):
     value_type = float
     entity = Household
-    label = u"Equivalised household net income, before housing costs"
+    label = u"Equivalised household net income"
     definition_period = YEAR
 
     def formula(household, period, parameters):

@@ -36,32 +36,37 @@ def _get_group_reduction(
 
 
 def distributional_chart(
-    incomes: MicroSeries,
-    baseline_values: MicroSeries,
-    reform_values: Union[MicroSeries, List[MicroSeries]],
-    reform_names: list = None,
+    reforms: List[Reform],
+    bucket_variable: str,
+    change_variable: str,
+    level: str = "person",
+    reform_names: List[str] = None,
     bucket: str = "decile",
-    value_label: str = "net income",
     aggregation: str = "mean",
     compare_groups: bool = "true",
     relative: bool = False,
     currency: str = "£",
     include_all_ticks: bool = True,
+    baseline: Microsimulation = None,
+    microsimulation_kwargs: dict = {},
     **kwargs,
 ):
     """Generates a Plotly bar chart for changes to a variable based on quantiles.
 
     Args:
-        incomes (MicroSeries): Baseline incomes (or any variable to group by quantile on).
-        baseline_values (MicroSeries): Baseline y-values.
-        reform_values (Union[MicroSeries, List[MicroSeries]]): Reform y-values, or a list of arrays to create an animation frame.
-        reform_names (list, optional): Names of reforms.
+        reforms (List[Reform]): Reform or list of reforms to calculate effects for.
+        bucket_variable (str): The variable to group entities by.
+        change_variable (str): The variable to show changes in.
+        level (str, optional): The entity level to map to. Defaults to "person".
+        reform_names (List[str], optional): Names of reforms, if multiple passed.
         bucket (str, optional): The type of quantile grouping (quintile, decile, percentile). Defaults to "decile".
         value_label (str, optional): The name of the value variable. Defaults to "net income".
         aggregation (str, optional): The type of aggregation (mean, sum, median). Defaults to "mean".
         compare_groups (bool, optional): Whether to compare group aggregates (true) or aggregate individual comparisons (false).
         relative (bool, optional): Whether changes should be a percentage of their baseline value.
         currency (str, optional): The currency format to use if using absolute changes.
+        baseline (Microsimulation, optional): Baseline simulation, can improve speed.
+        microsimulation_kwargs (dict, optional). Keyword arguments to pass when constructing reform simulations. Defaults to {}.
         **kwargs (dict): Any additional arguments to pass to fig.update_layout (e.g. title=...).
 
     Returns:
@@ -78,16 +83,15 @@ def distributional_chart(
         "median",
     ), "Unrecognised aggregation type"
 
-    if isinstance(reform_values, list) and not reform_names:
-        reform_names = [
-            f"Reform {i}" for i in range(1, len(reform_values) + 1)
-        ]
+    x_label = f"{BASELINE_VARIABLES[bucket_variable].label} {bucket}"
+    y_label = f"Change to {BASELINE_VARIABLES[change_variable].label.lower()}"
 
-    x_label = f"Income {bucket}"
-    y_label = f"Change to {value_label}"
+    baseline = baseline or Microsimulation()
+    bucket_values = baseline.calc(bucket_variable, map_to=level)
+    baseline_values = baseline.calc(change_variable, map_to=level)
 
     reduction_func = lambda reform_values: _get_group_reduction(
-        incomes,
+        bucket_values,
         baseline_values,
         reform_values,
         bucket,
@@ -96,25 +100,28 @@ def distributional_chart(
         relative,
     )
 
-    if isinstance(reform_values, list):
-        change = list(map(reduction_func, reform_values))
-        names = np.repeat(reform_names, len(change[0]))
-        change = pd.concat(change)
+    if isinstance(reforms, list):
+        dfs = []
+        for reform, name in zip(reforms, reform_names):
+            reform_sim = Microsimulation(reform, **microsimulation_kwargs)
+            result = reduction_func(reform_sim.calc(change_variable, map_to=level))
+            df = pd.DataFrame({
+                x_label: result.index,
+                y_label: result.values,
+                "Reform": name
+            })
+            dfs += [df]
+        data = pd.concat(dfs)
     else:
-        change = reduction_func(reform_values)
-        names = None
+        reform_sim = Microsimulation(reforms, **microsimulation_kwargs)
+        result = reduction_func(reform_sim.calc(change_variable, map_to=level))
+        data = pd.DataFrame({
+            x_label: result.index,
+            y_label: result.values,
+            "Reform": "Reform"
+        })
 
-    data = pd.DataFrame(
-        {
-            x_label: change.index,
-            y_label: change.values,
-        }
-    )
-    if names is not None:
-        data["Reform"] = names
-        fig = px.bar(data, x=x_label, y=y_label, animation_frame="Reform")
-    else:
-        fig = px.bar(data, x=x_label, y=y_label)
+    fig = px.bar(data, x=x_label, y=y_label, animation_frame="Reform")
     if relative:
         fig.update_layout(yaxis_tickformat="%")
     else:
@@ -134,22 +141,22 @@ def distributional_chart(
 
 # Bucket-specific shortcut functions
 
-quartile_plot = wraps(distributional_chart)(
+quartile_chart = wraps(distributional_chart)(
     lambda *args, **kwargs: distributional_chart(
         *args, bucket="quartile", **kwargs
     )
 )
-quintile_plot = wraps(distributional_chart)(
+quintile_chart = wraps(distributional_chart)(
     lambda *args, **kwargs: distributional_chart(
         *args, bucket="quintile", **kwargs
     )
 )
-decile_plot = wraps(distributional_chart)(
+decile_chart = wraps(distributional_chart)(
     lambda *args, **kwargs: distributional_chart(
         *args, bucket="decile", **kwargs
     )
 )
-percentile_plot = wraps(distributional_chart)(
+percentile_chart = wraps(distributional_chart)(
     lambda *args, **kwargs: distributional_chart(
         *args, bucket="percentile", **kwargs
     )
