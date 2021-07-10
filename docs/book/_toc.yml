@@ -1,7 +1,7 @@
 format: jb-article
 root: index
 sections:
-- file: Reforms
-- file: Weighting
-- file: Individuals
-- file: Graphs
+- file: reforms
+- file: weighting
+- file: individuals
+- file: graphs
