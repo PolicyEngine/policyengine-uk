@@ -57,6 +57,9 @@ def get_wide_reform_individual_data(
     variables: List[str] = ["net_income"],
     situation_function: Callable = single_person_UC,
     varying: str = "employment_income",
+    vary_min: float = 0,
+    vary_max: float = 200000,
+    vary_step: float = 100,
     include_derivatives: bool = True,
     primary_adult_name: str = "adult",
     **kwargs,
@@ -72,6 +75,9 @@ def get_wide_reform_individual_data(
             Defaults to single_person_UC.
         varying (str, optional): The variable to vary (e.g. employment income). Defaults to
             "employment_income".
+        vary_min (float, optional): The starting value of the varying variable. Defaults to 0.
+        vary_max (float, optional): The ending value of the varying variable. Defaults to 200,000.
+        vary_step (float, optional): The interval of the varying variable. Defaults to 100.
         include_derivatives (bool, optional): Whether to include derivatives for each
             calculation. Defaults to True.
         primary_adult_name (str, optional): The name of the adult to calculate derivatives
@@ -89,7 +95,7 @@ def get_wide_reform_individual_data(
         df = pd.DataFrame()
         reform_sim = IndividualSim(reform, **kwargs)
         reform_sim = situation_function(reform_sim)
-        reform_sim.vary(varying)
+        reform_sim.vary(varying, min=vary_min, max=vary_max, step=vary_step)
         df[varying] = baseline.calc(varying)[0]
         for variable in variables:
             try:
