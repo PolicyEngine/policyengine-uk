@@ -13,7 +13,7 @@ def get_wide_reform_population_data(
     function: Callable = None,
     **kwargs,
 ) -> pd.DataFrame:
-    """Generates wide-form data from given reforms and variable names 
+    """Generates wide-form data from given reforms and variable names
     (e.g. for creating animation frames for Plotly graphs).
 
     Args:
@@ -24,8 +24,8 @@ def get_wide_reform_population_data(
         function (Callable[(baseline, reform_sim) -> pd.DataFrame]): A function to apply instead of calculating variables.
         kwargs: Keywork arguments passed to Microsimulations.
     Returns:
-        pd.DataFrame: A DataFrame with each row containing: 
-        {reform: name, baseline_first_variable_name: [...], 
+        pd.DataFrame: A DataFrame with each row containing:
+        {reform: name, baseline_first_variable_name: [...],
         reform_first_variable_name: [...], ...}
     """
     dfs = []
@@ -61,20 +61,20 @@ def get_wide_reform_individual_data(
     primary_adult_name: str = "adult",
     **kwargs,
 ):
-    """Generates wide-format individual data from a set of reforms, varying a 
+    """Generates wide-format individual data from a set of reforms, varying a
     variable (a row for each reform-input value-other values set).
 
     Args:
         reforms (List[Reform]): A list of reforms.
         names (List[str]): The corresponding reform names.
         variables (List[str], optional): The variables to include. Defaults to ["net_income"].
-        situation_function (Callable, optional): A function adding situational data to the simulation. 
+        situation_function (Callable, optional): A function adding situational data to the simulation.
             Defaults to single_person_UC.
-        varying (str, optional): The variable to vary (e.g. employment income). Defaults to 
+        varying (str, optional): The variable to vary (e.g. employment income). Defaults to
             "employment_income".
-        include_derivatives (bool, optional): Whether to include derivatives for each 
+        include_derivatives (bool, optional): Whether to include derivatives for each
             calculation. Defaults to True.
-        primary_adult_name (str, optional): The name of the adult to calculate derivatives 
+        primary_adult_name (str, optional): The name of the adult to calculate derivatives
             for. Defaults to "adult".
         kwargs: Keyword arguments passed to Microsimulations.
 

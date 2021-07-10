@@ -121,7 +121,7 @@ def mtr_chart(
             if df[var].min() < 0 and df[var].max() <= 0:
                 df[var] += 1
 
-    df = df.drop(
+    df.drop(
         [
             col
             for col in df.columns
@@ -131,6 +131,7 @@ def mtr_chart(
             )
         ],
         axis=1,
+        inplace=True,
     )
 
     df, column_map = formalise_column_names(df)
