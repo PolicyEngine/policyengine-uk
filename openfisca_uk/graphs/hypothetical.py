@@ -26,6 +26,7 @@ def budget_chart(
         variables (List[str], optional): The variables to include in the budget lines. Defaults to ["household_net_income"].
         situation_function (Callable, optional): A function adding situational data to an IndividualSim. Defaults to single_person_UC.
         return_df (bool, optional): Whether to return the data used for the plots. Defaults to False.
+        kwargs: Keyword arguments passed to fig.update_layout.
 
     Returns:
         Figure: The Plotly figure.
@@ -91,6 +92,7 @@ def mtr_chart(
         invert (List[str], optional): A list of variables that should be inverted to become a 'tax' from a derivative - e.g. NI should not be inverted, but benefits should. Defaults to [].
         derivatives (bool, optional): Whether to plot derivatives or MTRs. The difference is that in an MTR plot, higher values mean higher net incomes, but this isn't true for a derivative plot. Defaults to False.
         return_df (bool, optional): Whether the return the data used to generate the plot. Defaults to False.
+        kwargs: Keyword arguments passed to fig.update_layout.
 
     Returns:
         Figure: The Plotly figure.

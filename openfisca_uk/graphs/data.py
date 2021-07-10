@@ -22,7 +22,7 @@ def get_wide_reform_population_data(
         variables (List[str], optional): A list of variable names to calculate of each reform.
         mapping (person): The mapping to apply to each calculation (person, benunit, household).
         function (Callable[(baseline, reform_sim) -> pd.DataFrame]): A function to apply instead of calculating variables.
-
+        kwargs: Keywork arguments passed to Microsimulations.
     Returns:
         pd.DataFrame: A DataFrame with each row containing: 
         {reform: name, baseline_first_variable_name: [...], 
@@ -76,6 +76,7 @@ def get_wide_reform_individual_data(
             calculation. Defaults to True.
         primary_adult_name (str, optional): The name of the adult to calculate derivatives 
             for. Defaults to "adult".
+        kwargs: Keyword arguments passed to Microsimulations.
 
     Returns:
         pd.DataFrame: The resulting dataframe.
