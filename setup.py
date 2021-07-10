@@ -36,6 +36,7 @@ setup(
         "survey-personal-incomes @ git+https://github.com/nikhilwoodruff/survey-personal-incomes",
         "tqdm>=4.59.0",
         "microdf @ git+https://github.com/PSLmodels/microdf",
+        "plotly>=4.14.3",
     ],
     extras_require={
         "dev": [

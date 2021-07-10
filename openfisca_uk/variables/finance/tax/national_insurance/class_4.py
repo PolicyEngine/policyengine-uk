@@ -31,7 +31,7 @@ class NI_class_4(Variable):
 class national_insurance(Variable):
     value_type = float
     entity = Person
-    label = u"Total amount of National Insurance liability for this person"
+    label = u"National Insurance"
     definition_period = YEAR
     reference = "Social Security and Benefits Act 1992 s. 1(2)"
 

@@ -1,0 +1,51 @@
+from openfisca_uk.microdata.simulation import Microsimulation
+import pandas as pd
+from openfisca_uk import BASELINE_VARIABLES
+
+
+def formalise_column_names(df: pd.DataFrame) -> pd.DataFrame:
+    """Exchanges column names for their labels if possible
+
+    Args:
+        df (pd.DataFrame): The dataframe containing variable names in columns.
+
+    Returns:
+        pd.DataFrame: The dataframe with columns renamed.
+    """
+    column_mapping = {}
+    for i in range(len(df.columns)):
+        name = df.columns[i]
+        if "baseline_" in name or "reform_" in name:
+            variable_name = (
+                name.replace("baseline_", "")
+                .replace("reform_", "")
+                .replace("_deriv", "")
+            )
+            tag = {True: " (Baseline)", False: " (Reform)"}[
+                "baseline_" in name
+            ]
+            if variable_name in BASELINE_VARIABLES:
+                column_mapping[
+                    name
+                ] = f"{BASELINE_VARIABLES[variable_name].label}{tag}"
+            else:
+                column_mapping[name] = f"{variable_name}{tag}"
+        elif name == "reform":
+            column_mapping[name] = "Reform"
+        elif name in BASELINE_VARIABLES:
+            column_mapping[name] = BASELINE_VARIABLES[name].label
+    df.columns = df.columns.map(column_mapping)
+    return df, column_mapping
+
+
+def net_cost(
+    baseline_sim: Microsimulation, reform_sim: Microsimulation
+) -> float:
+    return (
+        reform_sim.calc("net_income").sum()
+        - baseline_sim.calc("net_income").sum()
+    )
+
+
+GREY, DARK_BLUE = ("#BDBDBD", "#0F4AA1")
+COLORS = (GREY, DARK_BLUE)

@@ -40,6 +40,7 @@ test:
 	openfisca test tests/baseline
 	openfisca test tests/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
 	pytest tests/code
+	pytest tests/with_microdata
 	black . -l 79 --check
 
 serve-local: build
