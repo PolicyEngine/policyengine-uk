@@ -6,14 +6,11 @@ import pandas as pd
 import openfisca_uk
 from openfisca_uk.entities import *
 from openfisca_core.simulation_builder import SimulationBuilder
-from openfisca_uk.microdata.frs.dataset import FRSDataset
-from openfisca_uk.microdata.spi.dataset import SPIDataset
-from openfisca_uk.microdata.frs.config import from_FRS
-from openfisca_uk.microdata.spi.config import from_SPI
 from openfisca_core.model_api import *
 import numpy as np
 import microdf as mdf
 from tqdm import trange
+import warnings
 
 np.random.seed(0)
 
@@ -22,31 +19,13 @@ class Microsimulation:
     def __init__(
         self,
         *reforms: Tuple[Reform],
-        mode: str = "frs",
         year: int = 2020,
-        input_year: int = None,
-        entity_dataframes=None,
+        dataset = None
     ):
-        self.mode = mode
+        self.dataset = dataset
         self.year = year
-        self.input_year = input_year or (
-            year + 1
-        )  # the model takes yearly parameters from the start of the year; most surveys cover a financial year and therefore it's more accurate to start with the parameters from halfway through
-        self.reforms = reforms
-        if mode == "frs":
-            self.reforms = from_FRS, *self.reforms
-            if entity_dataframes is not None:
-                self.entity_dataframes = entity_dataframes
-            else:
-                self.entity_dataframes = FRSDataset(year).entity_dfs
-            self.simulation = self.load_dataset(self.entity_dataframes)
-        elif mode == "spi":
-            self.reforms = from_SPI, *self.reforms
-            if entity_dataframes is not None:
-                self.entity_dataframes = entity_dataframes
-            else:
-                self.entity_dataframes = SPIDataset(year).entity_dfs
-            self.simulation = self.load_dataset(self.entity_dataframes)
+        self.reforms = (dataset.input_reform, *reforms)
+        self.load_dataset(dataset, year)
         self.entity_weights = dict(
             person=self.calc("person_weight", weighted=False),
             benunit=self.calc("benunit_weight", weighted=False),
@@ -95,7 +74,7 @@ class Microsimulation:
         dp: int = 2,
     ) -> MicroSeries:
         if period is None:
-            period = self.input_year
+            period = self.year
         try:
             var_metadata = self.simulation.tax_benefit_system.variables[var]
             arr = self.simulation.calculate(var, period)
@@ -148,9 +127,9 @@ class Microsimulation:
                 self.system = reform(self.system)
 
     def load_dataset(
-        self, entity_dfs: Tuple[pd.DataFrame], verbose: bool = False
+        self, dataset, year: int
     ) -> None:
-        person, benunit, household = entity_dfs
+        person, benunit, household = [dataset.load(entity, year) for entity in ("person", "benunit", "household")]
         self.system = openfisca_uk.CountryTaxBenefitSystem()
         self.apply_reforms(self.reforms)
         builder = SimulationBuilder()
@@ -197,10 +176,10 @@ class Microsimulation:
                             column
                         ).definition_period
                         if def_period in ["eternity", "year"]:
-                            input_periods = [self.input_year]
+                            input_periods = [self.year]
                         else:
                             input_periods = period(
-                                self.input_year
+                                self.year
                             ).get_subperiods(def_period)
                         for subperiod in input_periods:
                             model.set_input(
@@ -208,13 +187,11 @@ class Microsimulation:
                             )
                     except Exception:
                         skipped += [column]
-        if skipped and verbose:
-            print(
+        if skipped:
+            warnings.warn(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"
             )
-            for var in skipped:
-                print(f"{var}")
-        return model
+        self.simulation = model
 
     def deriv(
         self,

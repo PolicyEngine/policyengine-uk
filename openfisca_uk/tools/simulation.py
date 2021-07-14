@@ -7,12 +7,19 @@ from openfisca_core.simulation_builder import SimulationBuilder
 import numpy as np
 import warnings
 import microdf as mdf
-
-try:
-    import frs
-except:
-    pass
-import copy
+import functools
+from typing import List, Tuple, Union, Dict
+from microdf.generic import MicroDataFrame, MicroSeries
+from openfisca_core.populations import Population
+import pandas as pd
+import openfisca_uk
+from openfisca_uk.entities import *
+from openfisca_core.simulation_builder import SimulationBuilder
+from openfisca_core.model_api import *
+import numpy as np
+import microdf as mdf
+from tqdm import trange
+import warnings
 
 warnings.filterwarnings("ignore")
 
@@ -202,305 +209,318 @@ class IndividualSim:
         self.num_points = count
 
 
-class PopulationSim:
+class Microsimulation:
     def __init__(
-        self, *reforms, frs_data=None, input_period="2020", use_microdf=False
+        self,
+        *reforms: Tuple[Reform],
+        year: int = 2020,
+        dataset = None
     ):
-        warnings.warn(
-            "PopulationSim is deprecated and will be removed in a future release. Please use Microsimulation instead for improved microdata handling and transparency."
+        self.dataset = dataset
+        self.year = year
+        self.reforms = (dataset.input_reform, *reforms)
+        self.load_dataset(dataset, year)
+        self.entity_weights = dict(
+            person=self.calc("person_weight", weighted=False),
+            benunit=self.calc("benunit_weight", weighted=False),
+            household=self.calc("household_weight", weighted=False),
         )
-        self.reforms = reforms
-        self.input_period = input_period
-        self.model = self.load_frs(frs_data=frs_data)
-        self.use_microdf = use_microdf
-        self.weight_vars = None
-        self.weight_vars = dict(
-            person=self.calc("household_weight", map_to="person"),
-            benunit=self.calc("benunit_weight"),
-            household=self.calc("household_weight"),
-        )
+        self.bonus_sims = {}
 
-    def map_to(self, arr, entity="person", target_entity="benunit"):
-        LEVELS = {"person": 1, "benunit": 2, "household": 3}
-        if (
-            not target_entity or LEVELS[target_entity] == LEVELS[entity]
-        ):  # no change
+    def map_to(
+        self, arr: np.array, entity: str, target_entity: str, how: str = None
+    ):
+        entity_pop = self.simulation.populations[entity]
+        target_pop = self.simulation.populations[target_entity]
+        if entity == "person" and target_entity in ("benunit", "household"):
+            if how and how not in (
+                "sum",
+                "any",
+                "min",
+                "max",
+                "all",
+                "value_from_first_person",
+            ):
+                raise ValueError("Not a valid function.")
+            return target_pop.__getattribute__(how or "sum")(arr)
+        elif entity in ("benunit", "household") and target_entity == "person":
+            if not how:
+                return entity_pop.project(arr)
+            if how == "mean":
+                return entity_pop.project(arr / entity_pop.nb_persons())
+        elif entity == target_entity:
             return arr
-        elif target_entity == "person":  # group level -> person level
-            person_df = pd.DataFrame()
-            entity_df = pd.DataFrame()
-            entity_df["entity_id"] = self.relations[entity]
-            entity_df["values"] = arr
-            person_df["person_id"] = self.relations["person"]
-            person_df["entity_id"] = self.relations[f"person-{entity}"]
-            person_df.set_index("person_id")
-            entity_df.set_index("entity_id")
-            df = person_df.merge(entity_df, on="entity_id")
-            df.set_index("person_id")
-            return np.array(df["values"])
-        elif (
-            entity == "person"
-        ):  # person level -> (sum by group entity) -> group entity level
-            df = pd.DataFrame()
-            df["values"] = arr
-            df["person_id"] = self.relations["person"]
-            df["entity_id"] = self.relations[f"person-{target_entity}"]
-            df = df.groupby(by="entity_id", as_index=False).sum()
-            df.set_index("entity_id")
-            return np.array(df["values"])
-        else:  # benunit_level -> household_level and vice versa - assume equally distributed in source entity
-            person_level = self.map_to(
-                arr, entity=entity, target_entity="person"
-            ) / self.calc("people_in_household", map_to="person")
-            entity_level = self.map_to(
-                person_level, entity="person", target_entity=target_entity
-            )
-            return entity_level
-
-    def calc(self, var, map_to=None, period="2020", verbose=False):
-        try:
-            result = self.model.calculate(var, period)
-        except:
-            if verbose:
-                print(
-                    f"Initial period calculation failed for {var}; attempting to gross up periods"
-                )
-            try:
-                result = self.model.calculate_add(var, period)
-            except:
-                if verbose:
-                    print(
-                        f"Grossing up period calculation failed for {var}; attempting to divide period"
-                    )
-                result = self.model.calculate_divide(var, period)
-        entity = self.model.tax_benefit_system.variables[var].entity.key
-        result = self.map_to(result, entity=entity, target_entity=map_to)
-        if not self.use_microdf or self.weight_vars is None:
-            return result
-        return mdf.MicroSeries(
-            result, weights=self.weight_vars[map_to or entity]
-        )
-
-    def decache(self, var, period):
-        self.model.get_variable_population(var).get_holder(var).delete_arrays(
-            period
-        )
-
-    def df(self, cols, map_to="person"):
-        df = {}
-        for var in cols:
-            df[var] = self.calc(var, map_to=map_to)
-        return mdf.MicroDataFrame(df, weights=self.weight_vars[map_to])
-
-    def load_frs(self, frs_data=None, verbose=False, change={}):
-        """
-        Create and populate a tax-benefit simulation model from OpenFisca.
-
-        Arguments:
-            reforms: any reforms to apply, in order.
-            data: any data to use instead of the loaded Family Resources Survey.
-            input_period: the period in which to enter all data (at the moment, all data is entered under this period).
-
-        Returns:
-            A Simulation object.
-        """
-        system = openfisca_uk.CountryTaxBenefitSystem()
-        for reform in self.reforms:
-            system = reform(system)  # apply each reform in order
-        builder = SimulationBuilder()
-        builder.create_entities(
-            system
-        )  # create the entities (person, benunit, etc.)
-        if not frs_data:
-            person_file, benunit_file, household_file = frs.load()
         else:
-            person_file, benunit_file, household_file = frs_data
-        person_file.sort_values("person_id", inplace=True)
-        benunit_file.sort_values("benunit_id", inplace=True)
-        household_file.sort_values("household_id", inplace=True)
-        person_file["id"] = person_file["person_id"]
-        benunit_file["id"] = benunit_file["benunit_id"]
-        household_file["id"] = household_file["household_id"]
-        person_file.sort_values("id", inplace=True)
-        person_file.reset_index(inplace=True, drop=True)
-        benunit_file.sort_values("id", inplace=True)
-        benunit_file.reset_index(inplace=True, drop=True)
-        household_file.sort_values("id", inplace=True)
-        household_file.reset_index(inplace=True, drop=True)
+            return self.map_to(
+                self.map_to(arr, entity, "person", how="mean"),
+                "person",
+                target_entity,
+                how="sum",
+            )
+
+    def calc(
+        self,
+        var: str,
+        period: Union[str, int] = None,
+        weighted: bool = True,
+        map_to: str = None,
+        how: str = None,
+        dp: int = 2,
+    ) -> MicroSeries:
+        if period is None:
+            period = self.year
+        try:
+            var_metadata = self.simulation.tax_benefit_system.variables[var]
+            arr = self.simulation.calculate(var, period)
+        except Exception as e:
+            try:
+                arr = self.simulation.calculate_add(var, period)
+                if var_metadata.value_type == bool:
+                    arr = arr >= 52
+            except:
+                try:
+                    arr = self.simulation.calculate_divide(var, period)
+                except:
+                    raise e
+        if var_metadata.value_type == float:
+            arr = arr.round(2)
+        if var_metadata.value_type == Enum:
+            arr = arr.decode_to_str()
+        if not weighted:
+            return arr
+        else:
+            entity = var_metadata.entity.key
+            if map_to:
+                arr = self.map_to(arr, entity, map_to, how=how)
+                entity = map_to
+            return mdf.MicroSeries(arr, weights=self.entity_weights[entity])
+
+    def df(
+        self, vars: List[str], period: Union[str, int] = None, map_to=None
+    ) -> MicroDataFrame:
+        df = pd.DataFrame()
+        entity = (
+            map_to
+            or self.simulation.tax_benefit_system.variables[vars[0]].entity.key
+        )
+        for var in vars:
+            df[var] = self.calc(var, period=period, map_to=entity)
+        df = MicroDataFrame(df, weights=self.entity_weights[entity])
+        return df
+
+    def apply_reforms(self, reforms: list) -> None:
+        """Applies a list of reforms to the tax-benefit system.
+
+        Args:
+            reforms (list): A list of reforms. Each reform can also be a list of reforms.
+        """
+        for reform in reforms:
+            if isinstance(reform, tuple) or isinstance(reform, list):
+                self.apply_reforms(reform)
+            else:
+                self.system = reform(self.system)
+
+    def load_dataset(
+        self, dataset, year: int
+    ) -> None:
+        person, benunit, household = [dataset.load(entity, year) for entity in ("person", "benunit", "household")]
+        self.system = openfisca_uk.CountryTaxBenefitSystem()
+        self.apply_reforms(self.reforms)
+        builder = SimulationBuilder()
+        builder.create_entities(self.system)
+        person.sort_values("P_person_id", inplace=True)
+        benunit.sort_values("B_benunit_id", inplace=True)
+        household.sort_values("H_household_id", inplace=True)
+        person["id"] = person["P_person_id"]
+        benunit["id"] = benunit["B_benunit_id"]
+        household["id"] = household["H_household_id"]
+        person.sort_values("id", inplace=True)
+        person.reset_index(inplace=True, drop=True)
+        benunit.sort_values("id", inplace=True)
+        benunit.reset_index(inplace=True, drop=True)
+        household.sort_values("id", inplace=True)
+        household.reset_index(inplace=True, drop=True)
         self.relations = {
-            "person": np.array(person_file["person_id"]),
-            "benunit": np.array(benunit_file["benunit_id"]),
-            "household": np.array(household_file["household_id"]),
-            "person-benunit": np.array(person_file["benunit_id"]),
-            "person-household": np.array(person_file["household_id"]),
+            "person": np.array(person["P_person_id"]),
+            "benunit": np.array(benunit["B_benunit_id"]),
+            "household": np.array(household["H_household_id"]),
+            "person-benunit": np.array(person["P_benunit_id"]),
+            "person-household": np.array(person["P_household_id"]),
         }
-        person_ids = np.array(person_file["person_id"])
-        benunit_ids = np.array(benunit_file["benunit_id"])
-        household_ids = np.array(household_file["household_id"])
+        person_ids = np.array(person["P_person_id"])
+        benunit_ids = np.array(benunit["B_benunit_id"])
+        household_ids = np.array(household["H_household_id"])
         builder.declare_person_entity("person", person_ids)
         benunits = builder.declare_entity("benunit", benunit_ids)
         households = builder.declare_entity("household", household_ids)
-        person_roles = person_file["role"]
+        person_roles = np.array(person["P_role"])
         builder.join_with_persons(
-            benunits, np.array(person_file["benunit_id"]), person_roles
+            benunits, person["P_benunit_id"], person_roles
         )  # define person-benunit memberships
         builder.join_with_persons(
-            households, np.array(person_file["household_id"]), person_roles
-        )
-        model = builder.build(system)
+            households, np.array(person["P_household_id"]), person_roles
+        )  # define person-household memberships
+        model = builder.build(self.system)
         skipped = []
-        for input_file in [person_file, benunit_file, household_file]:
+        for input_file in [person, benunit, household]:
             for column in input_file.columns:
-                if column in change:
-                    input_file[column] += change[column]
-                if column != "role":
+                if column != "P_role":
                     try:
-                        def_period = system.get_variable(
+                        def_period = self.system.get_variable(
                             column
                         ).definition_period
                         if def_period in ["eternity", "year"]:
-                            input_periods = [self.input_period]
+                            input_periods = [self.year]
                         else:
                             input_periods = period(
-                                self.input_period
+                                self.year
                             ).get_subperiods(def_period)
                         for subperiod in input_periods:
                             model.set_input(
                                 column, subperiod, np.array(input_file[column])
                             )
-                    except Exception as e:
+                    except Exception:
                         skipped += [column]
-        if skipped and verbose:
-            print(
+        if skipped:
+            warnings.warn(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"
             )
-            for var in skipped:
-                print(f"{var}")
-        return model
+        self.simulation = model
 
-    def entity_df(self, entity="benunit"):
-        """
-        Create and populate a DataFrame with all variables in the simulation
+    def deriv(
+        self,
+        target="tax",
+        wrt="employment_income",
+        delta=100,
+        percent=False,
+        group_limit=2,
+    ) -> MicroSeries:
+        """Calculates effective marginal tax rates over a population.
 
-        Arguments:
-            model: the model to use.
-            entity: the entity to calculate variables for.
-            period: the period for which to calculate all data.
+        Args:
+            targets (str, optional): The name of the variable to measure the derivative of. Defaults to "household_net_income".
+            wrt (str, optional): The name of the independent variable. Defaults to "employment_income".
 
         Returns:
-            A DataFrame
+            np.array: [description]
         """
-        if entity not in ["benunit", "person", "household"]:
-            raise Exception("Unsupported entity.")
-        df = pd.DataFrame()
-        variables = self.model.tax_benefit_system.variables.keys()
-        entity_variables = list(
-            filter(
-                lambda x: self.model.tax_benefit_system.variables[x].entity.key
-                == entity,
-                variables,
-            )
-        )
-        for var in entity_variables:
-            def_period = self.model.tax_benefit_system.get_variable(
-                var
-            ).definition_period
-            if def_period in ["eternity", "year"]:
-                inp_period = self.input_period
-            else:
-                inp_period = period(self.input_period).get_subperiods(
-                    def_period
-                )[-1]
-            df[var] = self.model.calculate(var, inp_period)
-        return df
+        system = self.simulation.tax_benefit_system
+        target_entity = system.variables[target].entity.key
+        wrt_entity = system.variables[wrt].entity.key
+        if target_entity == wrt_entity:
+            # calculating a derivative with both source and target in the same entity
+            config = (wrt, delta, percent, "same-entity")
+            if config not in self.bonus_sims:
+                existing_var_class = system.variables[wrt].__class__
 
-    def calc_mtr(self, return_change_df=False):
-        EARNINGS_BONUS_PER_YEAR = 100
-        people = pd.DataFrame()
-        people["person_id"] = self.calc("person_id")
-        people["benunit_id"] = self.calc("benunit_id", map_to="person")
-        index_in_benunit = people.groupby("benunit_id").cumcount()
-        net_income = self.map_to(
-            self.calc("net_income", map_to="benunit"),
-            entity="benunit",
-            target_entity="person",
-        )
-        mtrs = np.zeros_like(people["person_id"], dtype=float)
-        bonuses = np.zeros_like(people["person_id"], dtype=float)
-        for i in range(2):
-            with np.errstate(divide="ignore"):
-                bonus_amount = (
-                    (index_in_benunit == i)
-                    * EARNINGS_BONUS_PER_YEAR
-                    * self.calc("is_adult")
+                altered_variable = type(wrt, (existing_var_class,), {})
+                if not percent:
+                    altered_variable.formula = (
+                        lambda *args: existing_var_class.formula(*args) + delta
+                    )
+                else:
+                    altered_variable.formula = (
+                        lambda *args: existing_var_class.formula(*args)
+                        * (1.0 + delta / 100)
+                    )
+
+                class bonus_ref(Reform):
+                    def apply(self):
+                        self.update_variable(altered_variable)
+
+                self.bonus_sims[config] = Microsimulation(
+                    self.reforms[1:] + (bonus_ref,),
+                    mode=self.mode,
+                    year=self.year,
+                    input_year=self.input_year,
                 )
-                bonus_sim = PopulationSim(
-                    *self.reforms,
-                    input_period=self.input_period,
-                )
-                bonus_sim.model = bonus_sim.load_frs(
-                    change={"earnings": bonus_amount}
-                )
-                bonus_given_to_benunit = self.map_to(
-                    bonus_sim.calc("earnings", map_to="benunit"),
-                    entity="benunit",
-                    target_entity="person",
-                ) - self.map_to(
-                    self.calc("earnings", map_to="benunit"),
-                    entity="benunit",
-                    target_entity="person",
-                )
-                new_net_income = self.map_to(
-                    bonus_sim.calc("net_income", map_to="benunit"),
-                    entity="benunit",
-                    target_entity="person",
-                )
-                if return_change_df:
-                    CHANGE_VARS = [
-                        "earnings",
-                        "taxable_income",
-                        "gross_income",
-                        "net_income",
-                        "income_tax",
-                        "NI",
-                        "tax_credits",
-                        "child_benefit",
-                        "housing_benefit",
-                        "income_support",
-                        "JSA_income",
-                        "pension_credit",
-                        "ESA_income",
-                        "universal_credit",
-                    ]
-                    changes = {}
-                    for var in CHANGE_VARS:
-                        original_amount = self.map_to(
-                            self.calc(var, map_to="benunit"),
-                            entity="benunit",
-                            target_entity="person",
+            bonus_sim = self.bonus_sims[config]
+            bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(
+                wrt
+            ).astype(float)
+            target_increase = bonus_sim.calc(target).astype(float) - self.calc(
+                target
+            ).astype(float)
+
+            gradient = target_increase / bonus_increase
+
+            return gradient
+        elif (
+            target_entity in ("benunit", "household")
+            and wrt_entity == "person"
+        ):
+            # calculate the derivative for a group variable wrt a source variable, independent of other members in the group
+            adult = self.calc("is_adult")
+            index_in_group = (
+                self.calc("person_id")
+                .groupby(self.calc(f"{target_entity}_id", map_to="person"))
+                .cumcount()
+            )
+            max_group_size = min(max(index_in_group[adult]) + 1, group_limit)
+
+            derivative = np.empty((len(adult))) * np.nan
+
+            for i in trange(
+                max_group_size, desc="Calculating independent derivatives"
+            ):
+                config = (wrt, delta, percent, "group-entity", i)
+                if config not in self.bonus_sims:
+                    existing_var_class = system.variables[wrt].__class__
+
+                    altered_variable = type(wrt, (existing_var_class,), {})
+                    if not percent:
+                        altered_variable.formula = (
+                            lambda person, *args: existing_var_class.formula(
+                                person, *args
+                            )
+                            + delta * (index_in_group == i) * adult
                         )
-                        new_amount = self.map_to(
-                            bonus_sim.calc(var, map_to="benunit"),
-                            entity="benunit",
-                            target_entity="person",
+                    else:
+                        delta /= 100
+                        altered_variable.formula = (
+                            lambda *args: existing_var_class.formula(*args)
+                            * (1.0 + delta * (index_in_group == i) * adult)
                         )
-                        changes[var] = new_amount - original_amount
-                        changes[var + "_original"] = original_amount
-                        changes[var + "_new"] = new_amount
-                change = new_net_income - net_income
-                mtr_calculated = (bonus_amount > 0) * (
-                    bonus_given_to_benunit == 100
+
+                    class bonus_ref(Reform):
+                        def apply(self):
+                            self.update_variable(altered_variable)
+
+                    self.bonus_sims[config] = Microsimulation(
+                        self.reforms[1:] + (bonus_ref,),
+                        mode=self.mode,
+                        year=self.year,
+                        input_year=self.input_year,
+                    )
+                bonus_sim = self.bonus_sims[config]
+                bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(
+                    wrt
+                ).astype(float)
+                target_increase = bonus_sim.calc(
+                    target, map_to="person"
+                ).astype(float) - self.calc(target, map_to="person").astype(
+                    float
                 )
-                mtr = np.where(mtr_calculated, 1 - (change / bonus_amount), 0)
-                mtrs += np.round(mtr, 2)
-                bonuses += bonus_amount
-        mtrs = np.where(self.calc("is_adult"), mtrs, np.nan)
-        if not return_change_df:
-            return mtrs
+                result = target_increase / bonus_increase
+                derivative[bonus_increase > 0] = result[bonus_increase > 0]
+
+            return MicroSeries(
+                derivative, weights=self.entity_weights["person"]
+            )
         else:
-            df = pd.DataFrame()
-            df["MTR"] = mtrs
-            for var in changes:
-                df[var] = changes[var]
-            df["earnings"] = self.calc("taxable_income")
-            return df
+            raise ValueError(
+                "Unable to compute derivative - target variable must be from a group of or the same as the source variable"
+            )
+
+    def deriv_df(
+        self, *targets, wrt="employment_income", delta=100, percent=False
+    ) -> MicroDataFrame:
+        wrt_entity = self.simulation.tax_benefit_system.variables[
+            wrt
+        ].entity.key
+        df = MicroDataFrame(weights=self.entity_weights[wrt_entity])
+        for target in targets:
+            df[target] = self.deriv(
+                target, wrt=wrt, delta=delta, percent=percent
+            )
+        return df
