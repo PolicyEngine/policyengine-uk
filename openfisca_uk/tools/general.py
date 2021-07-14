@@ -109,7 +109,7 @@ def random(entity, reset=True):
 def is_in(values, *targets):
     return sum(map(lambda target: values == target, targets))
 
-def parameter_string_to_value(parameter_string, parameters, period):
+def parameter_string_to_value(parameter_string, period, parameters):
     node = parameters(period)
     for name in parameter_string.split("."):
         node = getattr(node, name)
@@ -118,22 +118,23 @@ def parameter_string_to_value(parameter_string, parameters, period):
 def rolls_over(uprating_parameter: str = None):
     def get_uprating_variable(cls):
         new_variable = type(cls.__name__, (cls,), {})
-        if cls.__name__ == "pension_income":
-            print()
+        for attr in ("value_type", "entity", "definition_period", "label", "reference"):
+            if hasattr(cls, attr):
+                setattr(new_variable, attr, getattr(cls, attr))
         def formula(entity, period, parameters):
             original_output = cls.formula(entity, period, parameters)
             if np.all(original_output == 0):
                 # no inputs, so uprate from previous year
-                last_year_output = formula(entity, period.last_year, parameters)
+                last_year_output = entity(cls.__name__, period.last_year)
                 if uprating_parameter is not None:
-                    last_year_value = parameter_string_to_value(uprating_parameter, parameters, period.last_year)
-                    current_year_value = parameter_string_to_value(uprating_parameter, parameters, period)
+                    last_year_value = parameter_string_to_value(uprating_parameter, period.last_year, parameters)
+                    current_year_value = parameter_string_to_value(uprating_parameter, period, parameters)
                     multiplier = current_year_value / last_year_value
                 else:
                     multiplier = 1
                 return last_year_output * multiplier
             else:
                 return original_output
-        new_variable.formula = formula
+        new_variable.formula_2010 = formula
         return new_variable
     return get_uprating_variable

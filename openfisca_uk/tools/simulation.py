@@ -226,6 +226,7 @@ class Microsimulation:
             household=self.calc("household_weight", weighted=False),
         )
         self.bonus_sims = {}
+        self.simulation.max_spiral_loops = 20
 
     def map_to(
         self, arr: np.array, entity: str, target_entity: str, how: str = None
