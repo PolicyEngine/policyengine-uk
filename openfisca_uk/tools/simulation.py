@@ -20,6 +20,7 @@ import numpy as np
 import microdf as mdf
 from tqdm import trange
 import warnings
+from openfisca_uk_data import FRS, BaseFRS
 
 warnings.filterwarnings("ignore")
 
@@ -210,16 +211,14 @@ class IndividualSim:
 
 
 class Microsimulation:
-    def __init__(
-        self,
-        *reforms: Tuple[Reform],
-        year: int = 2020,
-        dataset = None
-    ):
+    def __init__(self, *reforms: Tuple[Reform], year: int = None, dataset=FRS):
         self.dataset = dataset
-        self.year = year
-        self.reforms = (dataset.input_reform, *reforms)
-        self.load_dataset(dataset, year)
+        if year is None:
+            self.year = max(dataset().years)
+        else:
+            self.year = year
+        self.reforms = (dataset.input_reform_from_year(self.year), *reforms)
+        self.load_dataset(dataset, self.year)
         self.entity_weights = dict(
             person=self.calc("person_weight", weighted=False),
             benunit=self.calc("benunit_weight", weighted=False),
@@ -321,72 +320,52 @@ class Microsimulation:
             else:
                 self.system = reform(self.system)
 
-    def load_dataset(
-        self, dataset, year: int
-    ) -> None:
-        person, benunit, household = [dataset.load(entity, year) for entity in ("person", "benunit", "household")]
+    def load_dataset(self, dataset, year: int) -> None:
+        data = dataset.load(year)
+        year = str(year)
         self.system = openfisca_uk.CountryTaxBenefitSystem()
         self.apply_reforms(self.reforms)
         builder = SimulationBuilder()
         builder.create_entities(self.system)
-        person.sort_values("P_person_id", inplace=True)
-        benunit.sort_values("B_benunit_id", inplace=True)
-        household.sort_values("H_household_id", inplace=True)
-        person["id"] = person["P_person_id"]
-        benunit["id"] = benunit["B_benunit_id"]
-        household["id"] = household["H_household_id"]
-        person.sort_values("id", inplace=True)
-        person.reset_index(inplace=True, drop=True)
-        benunit.sort_values("id", inplace=True)
-        benunit.reset_index(inplace=True, drop=True)
-        household.sort_values("id", inplace=True)
-        household.reset_index(inplace=True, drop=True)
         self.relations = {
-            "person": np.array(person["P_person_id"]),
-            "benunit": np.array(benunit["B_benunit_id"]),
-            "household": np.array(household["H_household_id"]),
-            "person-benunit": np.array(person["P_benunit_id"]),
-            "person-household": np.array(person["P_household_id"]),
+            "person": np.array(data["P_person_id"][year]),
+            "benunit": np.array(data["B_benunit_id"][year]),
+            "household": np.array(data["H_household_id"][year]),
+            "person-benunit": np.array(data["P_benunit_id"][year]),
+            "person-household": np.array(data["P_household_id"][year]),
         }
-        person_ids = np.array(person["P_person_id"])
-        benunit_ids = np.array(benunit["B_benunit_id"])
-        household_ids = np.array(household["H_household_id"])
-        builder.declare_person_entity("person", person_ids)
-        benunits = builder.declare_entity("benunit", benunit_ids)
-        households = builder.declare_entity("household", household_ids)
-        person_roles = np.array(person["P_role"])
+        builder.declare_person_entity(
+            "person", np.array(data["P_person_id"][year])
+        )
+        benunits = builder.declare_entity(
+            "benunit", np.array(data["B_benunit_id"][year])
+        )
+        households = builder.declare_entity(
+            "household", np.array(data["H_household_id"][year])
+        )
+        person_roles = np.array(np.array(data["P_role"][year]))
         builder.join_with_persons(
-            benunits, person["P_benunit_id"], person_roles
+            benunits, np.array(data["P_benunit_id"][year]), person_roles
         )  # define person-benunit memberships
         builder.join_with_persons(
-            households, np.array(person["P_household_id"]), person_roles
+            households, np.array(data["P_household_id"][year]), person_roles
         )  # define person-household memberships
         model = builder.build(self.system)
         skipped = []
-        for input_file in [person, benunit, household]:
-            for column in input_file.columns:
-                if column != "P_role":
-                    try:
-                        def_period = self.system.get_variable(
-                            column
-                        ).definition_period
-                        if def_period in ["eternity", "year"]:
-                            input_periods = [self.year]
-                        else:
-                            input_periods = period(
-                                self.year
-                            ).get_subperiods(def_period)
-                        for subperiod in input_periods:
-                            model.set_input(
-                                column, subperiod, np.array(input_file[column])
-                            )
-                    except Exception:
-                        skipped += [column]
+        for variable in data.keys():
+            for period in data[variable].keys():
+                try:
+                    model.set_input(
+                        variable, period, np.array(data[variable][period])
+                    )
+                except:
+                    skipped += [variable]
         if skipped:
             warnings.warn(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"
             )
         self.simulation = model
+        data.close()
 
     def deriv(
         self,
