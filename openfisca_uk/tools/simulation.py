@@ -261,14 +261,12 @@ class Microsimulation:
     def calc(
         self,
         var: str,
-        period: Union[str, int] = None,
+        period: Union[str, int] = 2020,
         weighted: bool = True,
         map_to: str = None,
         how: str = None,
         dp: int = 2,
     ) -> MicroSeries:
-        if period is None:
-            period = self.year
         try:
             var_metadata = self.simulation.tax_benefit_system.variables[var]
             arr = self.simulation.calculate(var, period)
