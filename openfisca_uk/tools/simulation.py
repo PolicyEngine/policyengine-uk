@@ -220,9 +220,9 @@ class Microsimulation:
         self.reforms = (dataset.input_reform_from_year(self.year), *reforms)
         self.load_dataset(dataset, self.year)
         self.entity_weights = dict(
-            person=self.calc("person_weight", weighted=False),
-            benunit=self.calc("benunit_weight", weighted=False),
-            household=self.calc("household_weight", weighted=False),
+            person=self.calc("person_weight", self.year, weighted=False),
+            benunit=self.calc("benunit_weight", self.year, weighted=False),
+            household=self.calc("household_weight", self.year, weighted=False),
         )
         self.bonus_sims = {}
         self.simulation.max_spiral_loops = 20
@@ -356,7 +356,7 @@ class Microsimulation:
                     model.set_input(
                         variable, period, np.array(data[variable][period])
                     )
-                except:
+                except Exception as e:
                     skipped += [variable]
         if skipped:
             warnings.warn(
