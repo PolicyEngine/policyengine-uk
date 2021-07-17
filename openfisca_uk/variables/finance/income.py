@@ -160,9 +160,9 @@ class equiv_household_net_income_ahc(Variable):
             "household_equivalisation_ahc", period
         )
 
+
 class base_net_income(Variable):
     value_type = float
     entity = Person
     label = "Existing net income for the person to use as a base in microsimulation"
     definition_period = YEAR
-    
