@@ -47,7 +47,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Install OpenFisca-UK
-        run: pip3 install .
+        run: pip3 install . && openfisca-uk-data synth_frs save
 
       # Runs a set of commands using the runners shell
       - name: Test code convention compliance and other Python tests
@@ -58,3 +58,6 @@ jobs:
 
       - name: Test postcode lookup features
         run: openfisca test tests/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
+
+      - name: Test microsimulation results using synthetic data
+        run: pytest tests/with_synth
