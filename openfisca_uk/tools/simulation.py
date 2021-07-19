@@ -21,6 +21,7 @@ import microdf as mdf
 from tqdm import trange
 import warnings
 from openfisca_uk_data import FRS, BaseFRS
+from openfisca_uk.tools.parameters import backdate_parameters
 
 warnings.filterwarnings("ignore")
 
@@ -217,7 +218,7 @@ class Microsimulation:
             self.year = max(dataset().years)
         else:
             self.year = year
-        self.reforms = (dataset.input_reform_from_year(self.year), *reforms)
+        self.reforms = (dataset.input_reform_from_year(self.year), *reforms, backdate_parameters())
         self.load_dataset(dataset, self.year)
         self.entity_weights = dict(
             person=self.calc("person_weight", self.year, weighted=False),
@@ -353,21 +354,20 @@ class Microsimulation:
         model = builder.build(self.system)
         skipped = []
         for variable in data.keys():
-            for period in data[variable].keys():
-                if variable == "benunit_weight":
-                    print()
-                try:
-                    model.set_input(
-                        variable, period, np.array(data[variable][period])
-                    )
-                except Exception as e:
-                    if variable in (
-                        "P_AGE",
-                        "P_AGE80",
-                        "age",
-                    ):
-                        print()
-                    skipped += [variable]
+            if variable in self.system.variables:
+                for period in data[variable].keys():
+                    values = np.array(data[variable][period])
+                    target_dtype = self.system.variables[variable].value_type
+                    if target_dtype in (Enum, str):
+                        values = values.astype(str)
+                    else:
+                        values = values.astype(target_dtype)
+                    try:
+                        model.set_input(
+                            variable, period, values
+                        )
+                    except:
+                        skipped += [variable]
         if skipped:
             warnings.warn(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"
