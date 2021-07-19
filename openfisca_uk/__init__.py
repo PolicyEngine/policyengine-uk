@@ -3,8 +3,7 @@
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 from openfisca_uk import entities
-from openfisca_uk.microdata.simulation import Microsimulation
-from openfisca_uk.tools.simulation import IndividualSim, PopulationSim
+from openfisca_uk.tools.simulation import IndividualSim, Microsimulation
 from openfisca_uk.reforms.presets.modelling import (
     reported_tax,
     reported_benefits,

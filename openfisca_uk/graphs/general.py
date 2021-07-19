@@ -1,4 +1,4 @@
-from openfisca_uk.microdata.simulation import Microsimulation
+from openfisca_uk.tools.simulation import Microsimulation
 import pandas as pd
 from openfisca_uk import BASELINE_VARIABLES
 

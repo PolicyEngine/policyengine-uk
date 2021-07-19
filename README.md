@@ -12,6 +12,19 @@ The elements are described in different folders. All the modelling happens withi
 
 The files that are outside from the `openfisca_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the ```docs``` folder.
 
+## Fast setup instructions
+
+1. `pip install git+https://github.com/PSLmodels/openfisca-uk`
+
+For microdata instructions, follow (from [openfisca-uk-data](https://github.com/nikhilwoodruff/openfisca-uk-data)):
+2. Download the [synthetic FRS file](https://github.com/nikhilwoodruff/openfisca-uk-data/releases/download/synth-frs/synth_frs_2018.h5)
+3. Run `openfisca-uk-data synth_frs save synth_frs_2018`
+
+Or with the actual microdata:
+2. Have the `8633~~~.zip` file ready
+3. Run `openfisca-uk-data raw_frs generate 2018 8633~~~.zip`
+4. Run `openfisca-uk-data frs generate 2018`
+
 ## Contact
 
 The maintainer for OpenFisca-UK is Nikhil Woodruff - feel free to contact via [email](mailto:nikhil.woodruff@ubicenter.org).

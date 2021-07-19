@@ -1,4 +1,4 @@
-all: test
+all: test stats
 
 uninstall:
 	pip freeze | grep -v "^-e" | xargs pip uninstall -y
@@ -45,3 +45,6 @@ test:
 
 serve-local: build
 	openfisca serve --country-package openfisca_uk
+
+stats:
+	python docs/summary/generate_descriptions.py
