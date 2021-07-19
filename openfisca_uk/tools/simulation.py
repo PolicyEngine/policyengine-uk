@@ -361,7 +361,11 @@ class Microsimulation:
                         variable, period, np.array(data[variable][period])
                     )
                 except Exception as e:
-                    if variable in ("P_AGE", "P_AGE80", "age",):
+                    if variable in (
+                        "P_AGE",
+                        "P_AGE80",
+                        "age",
+                    ):
                         print()
                     skipped += [variable]
         if skipped:
