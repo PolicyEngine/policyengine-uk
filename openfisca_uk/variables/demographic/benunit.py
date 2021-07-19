@@ -21,7 +21,7 @@ class families(Variable):
 
 class benunit_weight(Variable):
     value_type = float
-    entity = Household
+    entity = BenUnit
     label = u"Weight factor for the benefit unit"
     definition_period = YEAR
 

@@ -283,7 +283,7 @@ class Microsimulation:
                 except:
                     raise e
         if var_metadata.value_type == float:
-            arr = arr.round(2)
+            arr = arr.round(dp)
         if var_metadata.value_type == Enum:
             arr = arr.decode_to_str()
         if not weighted:
@@ -343,7 +343,7 @@ class Microsimulation:
         households = builder.declare_entity(
             "household", np.array(data["H_household_id"][year])
         )
-        person_roles = np.array(np.array(data["P_role"][year]))
+        person_roles = np.array(np.array(data["P_role"][year])).astype(str)
         builder.join_with_persons(
             benunits, np.array(data["P_benunit_id"][year]), person_roles
         )  # define person-benunit memberships
@@ -354,11 +354,15 @@ class Microsimulation:
         skipped = []
         for variable in data.keys():
             for period in data[variable].keys():
+                if variable == "benunit_weight":
+                    print()
                 try:
                     model.set_input(
                         variable, period, np.array(data[variable][period])
                     )
                 except Exception as e:
+                    if variable in ("P_AGE", "P_AGE80", "age",):
+                        print()
                     skipped += [variable]
         if skipped:
             warnings.warn(
