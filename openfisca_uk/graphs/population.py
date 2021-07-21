@@ -166,6 +166,8 @@ def waterfall_data(
     reform_labels: List[str],
     subreform_labels: List[str],
     baseline: Microsimulation = None,
+    aggregate: str = "net_income",
+    invert_y: bool = False,
     **kwargs,
 ):
     """Generates data for a waterfall funding breakdown chart.
@@ -175,6 +177,8 @@ def waterfall_data(
         reform_labels (List[str]): The names of the reforms.
         subreform_labels (List[str]): The names of the components of the reforms.
         baseline (Microsimulation, optional): A baseline simulation - can improve speed if already initialised. Defaults to None.
+        aggregate (str): The variable to use as the aggregate cost variable. Defaults to "net_income".
+        invert_y (bool): Whether the invert the y axis (y == revenue or y == spending). Defaults to False.
 
     Returns:
         pd.DataFrame: The waterfall plot dataframe.
@@ -185,7 +189,7 @@ def waterfall_data(
         net_costs = []
         for i in range(len(reform) + 1):
             net_costs += [
-                net_cost(baseline, Microsimulation(reform[:i], **kwargs))
+                net_cost(baseline, Microsimulation(reform[:i], **kwargs), invert=invert_y, variable=aggregate)
             ]
         net_costs = np.array(net_costs)
         labels = subreform_labels + ["Remaining"]
@@ -229,6 +233,8 @@ def waterfall_chart(
     subreform_labels: List[str],
     reform_labels: List[str] = None,
     baseline: Microsimulation = None,
+    aggregate: str = "net_income",
+    invert_y: bool = False
 ):
     """Generates a waterfull funding breakdown plot.
 
@@ -237,6 +243,8 @@ def waterfall_chart(
         subreform_labels (List[str]): The names of the top-level reform components.
         reform_labels (List[str], optional): The names of the reforms, if multiple are provided.
         baseline (Microsimulation, optional): A baseline simulation - can improve speed if pre-initialised. Defaults to None.
+        aggregate (str): The variable to use as the aggregate cost variable. Defaults to "net_income".
+        invert_y (bool): Whether the invert the y axis (y == revenue or y == spending). Defaults to False.
 
     Returns:
         Figure: The Plotly figure.
@@ -247,7 +255,7 @@ def waterfall_chart(
 
     return px.bar(
         waterfall_data(
-            reforms, reform_labels, subreform_labels, baseline=baseline
+            reforms, reform_labels, subreform_labels, baseline=baseline, aggregate=aggregate, invert_y=invert_y, 
         ),
         x="component",
         y="amount",
