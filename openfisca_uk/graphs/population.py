@@ -196,7 +196,12 @@ def waterfall_data(
         net_costs = []
         for i in range(len(reform) + 1):
             net_costs += [
-                net_cost(baseline, Microsimulation(reform[:i], **kwargs), invert=invert_y, variable=aggregate)
+                net_cost(
+                    baseline,
+                    Microsimulation(reform[:i], **kwargs),
+                    invert=invert_y,
+                    variable=aggregate,
+                )
             ]
         net_costs = np.array(net_costs)
         labels = subreform_labels + ["Remaining"]
@@ -241,7 +246,7 @@ def waterfall_chart(
     reform_labels: List[str] = None,
     baseline: Microsimulation = None,
     aggregate: str = "net_income",
-    invert_y: bool = False
+    invert_y: bool = False,
 ):
     """Generates a waterfull funding breakdown plot.
 
@@ -262,7 +267,12 @@ def waterfall_chart(
 
     return px.bar(
         waterfall_data(
-            reforms, reform_labels, subreform_labels, baseline=baseline, aggregate=aggregate, invert_y=invert_y, 
+            reforms,
+            reform_labels,
+            subreform_labels,
+            baseline=baseline,
+            aggregate=aggregate,
+            invert_y=invert_y,
         ),
         x="component",
         y="amount",

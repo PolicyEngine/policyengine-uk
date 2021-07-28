@@ -407,12 +407,18 @@ class Microsimulation:
                     dataset=self.dataset,
                     year=self.year,
                 )
-                original_values = self.bonus_sims[config].calc(wrt, self.year).values
+                original_values = (
+                    self.bonus_sims[config].calc(wrt, self.year).values
+                )
                 if not percent:
-                    self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values + delta)
+                    self.bonus_sims[config].simulation.set_input(
+                        wrt, self.year, original_values + delta
+                    )
                 else:
-                    self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values * (1 + delta))
-                
+                    self.bonus_sims[config].simulation.set_input(
+                        wrt, self.year, original_values * (1 + delta)
+                    )
+
             bonus_sim = self.bonus_sims[config]
             bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(
                 wrt
@@ -439,9 +445,7 @@ class Microsimulation:
 
             derivative = np.empty((len(adult))) * np.nan
 
-            for i in range(
-                max_group_size
-            ):
+            for i in range(max_group_size):
                 config = (wrt, delta, percent, "group-entity", i)
                 if config not in self.bonus_sims:
                     self.bonus_sims[config] = Microsimulation(
@@ -449,15 +453,27 @@ class Microsimulation:
                         dataset=self.dataset,
                         year=self.year,
                     )
-                    original_values = self.bonus_sims[config].calc(wrt, self.year).values
+                    original_values = (
+                        self.bonus_sims[config].calc(wrt, self.year).values
+                    )
                     existing_var_class = system.variables[wrt].__class__
 
                     altered_variable = type(wrt, (existing_var_class,), {})
                     if not percent:
-                        self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values + delta * (index_in_group == i) * adult)
+                        self.bonus_sims[config].simulation.set_input(
+                            wrt,
+                            self.year,
+                            original_values
+                            + delta * (index_in_group == i) * adult,
+                        )
                     else:
-                        self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values * (1 + delta * (index_in_group == i) * adult))
-                    
+                        self.bonus_sims[config].simulation.set_input(
+                            wrt,
+                            self.year,
+                            original_values
+                            * (1 + delta * (index_in_group == i) * adult),
+                        )
+
                 bonus_sim = self.bonus_sims[config]
                 bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(
                     wrt

@@ -39,15 +39,17 @@ def formalise_column_names(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def net_cost(
-    baseline_sim: Microsimulation, reform_sim: Microsimulation, invert: bool = False, variable: str = "net_income"
+    baseline_sim: Microsimulation,
+    reform_sim: Microsimulation,
+    invert: bool = False,
+    variable: str = "net_income",
 ) -> float:
     if invert:
         multiplier = -1
     else:
         multiplier = 1
     return multiplier * (
-        reform_sim.calc(variable).sum()
-        - baseline_sim.calc(variable).sum()
+        reform_sim.calc(variable).sum() - baseline_sim.calc(variable).sum()
     )
 
 
