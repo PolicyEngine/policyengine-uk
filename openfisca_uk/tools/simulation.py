@@ -214,6 +214,7 @@ class IndividualSim:
 class Microsimulation:
     def __init__(self, *reforms: Tuple[Reform], year: int = None, dataset=FRS):
         self.dataset = dataset
+        self.passed_reforms = reforms
         if year is None:
             self.year = max(dataset().years)
         else:
@@ -383,7 +384,7 @@ class Microsimulation:
         wrt="employment_income",
         delta=100,
         percent=False,
-        group_limit=2,
+        group_limit=5,
     ) -> MicroSeries:
         """Calculates effective marginal tax rates over a population.
 
@@ -401,29 +402,17 @@ class Microsimulation:
             # calculating a derivative with both source and target in the same entity
             config = (wrt, delta, percent, "same-entity")
             if config not in self.bonus_sims:
-                existing_var_class = system.variables[wrt].__class__
-
-                altered_variable = type(wrt, (existing_var_class,), {})
-                if not percent:
-                    altered_variable.formula = (
-                        lambda *args: existing_var_class.formula(*args) + delta
-                    )
-                else:
-                    altered_variable.formula = (
-                        lambda *args: existing_var_class.formula(*args)
-                        * (1.0 + delta / 100)
-                    )
-
-                class bonus_ref(Reform):
-                    def apply(self):
-                        self.update_variable(altered_variable)
-
                 self.bonus_sims[config] = Microsimulation(
-                    self.reforms[1:] + (bonus_ref,),
-                    mode=self.mode,
+                    self.passed_reforms,
+                    dataset=self.dataset,
                     year=self.year,
-                    input_year=self.input_year,
                 )
+                original_values = self.bonus_sims[config].calc(wrt, self.year).values
+                if not percent:
+                    self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values + delta)
+                else:
+                    self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values * (1 + delta))
+                
             bonus_sim = self.bonus_sims[config]
             bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(
                 wrt
@@ -450,38 +439,25 @@ class Microsimulation:
 
             derivative = np.empty((len(adult))) * np.nan
 
-            for i in trange(
-                max_group_size, desc="Calculating independent derivatives"
+            for i in range(
+                max_group_size
             ):
                 config = (wrt, delta, percent, "group-entity", i)
                 if config not in self.bonus_sims:
+                    self.bonus_sims[config] = Microsimulation(
+                        self.passed_reforms,
+                        dataset=self.dataset,
+                        year=self.year,
+                    )
+                    original_values = self.bonus_sims[config].calc(wrt, self.year).values
                     existing_var_class = system.variables[wrt].__class__
 
                     altered_variable = type(wrt, (existing_var_class,), {})
                     if not percent:
-                        altered_variable.formula = (
-                            lambda person, *args: existing_var_class.formula(
-                                person, *args
-                            )
-                            + delta * (index_in_group == i) * adult
-                        )
+                        self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values + delta * (index_in_group == i) * adult)
                     else:
-                        delta /= 100
-                        altered_variable.formula = (
-                            lambda *args: existing_var_class.formula(*args)
-                            * (1.0 + delta * (index_in_group == i) * adult)
-                        )
-
-                    class bonus_ref(Reform):
-                        def apply(self):
-                            self.update_variable(altered_variable)
-
-                    self.bonus_sims[config] = Microsimulation(
-                        self.reforms[1:] + (bonus_ref,),
-                        mode=self.mode,
-                        year=self.year,
-                        input_year=self.input_year,
-                    )
+                        self.bonus_sims[config].simulation.set_input(wrt, self.year, original_values * (1 + delta * (index_in_group == i) * adult))
+                    
                 bonus_sim = self.bonus_sims[config]
                 bonus_increase = bonus_sim.calc(wrt).astype(float) - self.calc(
                     wrt

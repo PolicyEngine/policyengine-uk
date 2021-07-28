@@ -49,6 +49,7 @@ def distributional_chart(
     include_all_ticks: bool = True,
     baseline: Microsimulation = None,
     microsimulation_kwargs: dict = {},
+    chart_type: str = "bar",
     **kwargs,
 ):
     """Generates a Plotly bar chart for changes to a variable based on quantiles.
@@ -82,7 +83,10 @@ def distributional_chart(
         "sum",
         "median",
     ), "Unrecognised aggregation type"
-
+    assert chart_type in (
+        "bar",
+        "line",
+    ), "Unrecognised chart type"
     x_label = f"{BASELINE_VARIABLES[bucket_variable].label} {bucket}"
     y_label = f"Change to {BASELINE_VARIABLES[change_variable].label.lower()}"
 
@@ -119,7 +123,10 @@ def distributional_chart(
             {x_label: result.index, y_label: result.values, "Reform": "Reform"}
         )
 
-    fig = px.bar(data, x=x_label, y=y_label, animation_frame="Reform")
+    if chart_type == "bar":
+        fig = px.bar(data, x=x_label, y=y_label, animation_frame="Reform")
+    elif chart_type == "line":
+        fig = px.line(data, x=x_label, y=y_label, animation_frame="Reform")
     if relative:
         fig.update_layout(yaxis_tickformat="%")
     else:
