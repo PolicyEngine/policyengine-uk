@@ -102,12 +102,20 @@ def mtr_chart(
         reforms = [reforms]
         names = ["Reform"]
 
+    test_sim = IndividualSim()
+    situation_function(test_sim)
+    situation_data = test_sim.situation_data
+    households = situation_data["households"]
+    adults = households[list(households.keys())[0]]["adults"]
+    primary_adult = adults[0]
+
     invert += INVERTED_DERIV_VARIABLES
     df = get_wide_reform_individual_data(
         reforms,
         names,
         variables,
         situation_function,
+        primary_adult_name=primary_adult,
         include_derivatives=True,
     )
     for var in df.columns:
