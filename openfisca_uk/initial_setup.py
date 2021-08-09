@@ -53,9 +53,12 @@ def main():
         )[0]
         set_default(dataset)
         dataset_years = ", ".join(map(str, dataset.years))
-        print(
-            f"The {default_dataset} dataset has the following years stored: {dataset_years}."
-        )
+        if len(dataset.years) == 0:
+            print(f"No dataset years stored for the {dataset.name} dataset.")
+        else:
+            print(
+                f"The {default_dataset} dataset has the following years stored: {dataset_years}."
+            )
         other_years = [
             inquirer.List(
                 "dataset_year_check",
@@ -74,7 +77,7 @@ def main():
                     ),
                     inquirer.Path(
                         "file_path",
-                        message="Please enter the filepath to the H5 file:",
+                        message="Please enter the filepath to the H5 file",
                         path_type=inquirer.Path.FILE,
                         normalize_to_absolute_path=True,
                     ),
