@@ -29,3 +29,7 @@ household.csv
 
 docs/book/_build/
 docs/book/.ipynb_checkpoints
+
+# Config files
+
+openfisca_uk/tools/datasets.yml
