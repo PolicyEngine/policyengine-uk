@@ -36,6 +36,8 @@ setup(
         "tqdm>=4.59.0",
         "microdf @ git+https://github.com/PSLmodels/microdf",
         "plotly>=4.14.3",
+        "argparse>=1.4.0",
+        "inquirer>=2.7.0",
     ],
     extras_require={
         "dev": [
