@@ -283,7 +283,7 @@ class Microsimulation:
     def calc(
         self,
         var: str,
-        period: Union[str, int] = 2020,
+        period: Union[str, int] = 2021,
         weighted: bool = True,
         map_to: str = None,
         how: str = None,

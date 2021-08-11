@@ -17,7 +17,7 @@ https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-st
 class employment_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from employment"
+    label = u"Employment income"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
 
