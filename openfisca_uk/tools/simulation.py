@@ -20,8 +20,17 @@ import numpy as np
 import microdf as mdf
 from tqdm import trange
 import warnings
-from openfisca_uk_data import FRS, BaseFRS
 from openfisca_uk.tools.parameters import backdate_parameters
+from openfisca_data import UK_DATASETS, SynthFRS
+import yaml
+from pathlib import Path
+
+with open(Path(__file__).parent / "datasets.yml") as f:
+    datasets = yaml.safe_load(f)
+    DEFAULT_DATASET = list(
+        filter(lambda ds: ds.name == datasets["default"], UK_DATASETS)
+    )[0]
+
 
 warnings.filterwarnings("ignore")
 
@@ -212,11 +221,18 @@ class IndividualSim:
 
 
 class Microsimulation:
-    def __init__(self, *reforms: Tuple[Reform], year: int = None, dataset=FRS):
+    def __init__(
+        self,
+        *reforms: Tuple[Reform],
+        year: int = None,
+        dataset=DEFAULT_DATASET,
+    ):
         self.dataset = dataset
         self.passed_reforms = reforms
+        if dataset == SynthFRS and len(SynthFRS.years) == 0:
+            SynthFRS.save()
         if year is None:
-            self.year = max(dataset().years)
+            self.year = max(dataset.years)
         else:
             self.year = year
         self.reforms = (

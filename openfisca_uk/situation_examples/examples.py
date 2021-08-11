@@ -47,7 +47,10 @@ def single_person_UC_two_children(sim):
     sim.add_person(name="child", age=4)
     sim.add_person(name="child_2", age=6)
     sim.add_benunit(
-        adults=["adult"], children=["child", "child_2"], claims_UC=True
+        adults=["adult"],
+        children=["child", "child_2"],
+        claims_UC=True,
+        claims_CB=True,
     )
     sim.add_household(adults=["adult"], children=["child", "child_2"])
     return sim
