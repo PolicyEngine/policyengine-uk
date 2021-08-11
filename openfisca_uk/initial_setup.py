@@ -10,6 +10,7 @@ DATASET_CONFIG_FILE = Path(__file__).parent / "tools" / "datasets.yml"
 
 key_to_ds = {ds.name: ds for ds in UK_DATASETS}
 
+
 def set_default(dataset):
     with open(DATASET_CONFIG_FILE, "w+") as f:
         data = yaml.safe_load(f)
@@ -18,8 +19,11 @@ def set_default(dataset):
         data["default"] = dataset.name
         yaml.dump(data, f)
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Utility to set up OpenFisca-UK")
+    parser = argparse.ArgumentParser(
+        description="Utility to set up OpenFisca-UK"
+    )
     parser.add_argument("--set-default", help="The default dataset to use")
     args = parser.parse_args()
 
@@ -71,7 +75,9 @@ def main():
             set_default(dataset)
             dataset_years = ", ".join(map(str, dataset.years))
             if len(dataset.years) == 0:
-                print(f"No dataset years stored for the {dataset.name} dataset.")
+                print(
+                    f"No dataset years stored for the {dataset.name} dataset."
+                )
             else:
                 print(
                     f"The {default_dataset} dataset has the following years stored: {dataset_years}."
@@ -104,7 +110,6 @@ def main():
                 filepath = str(Path(answers["file_path"]).expanduser())
                 dataset.save(filepath, year)
         print("Setup complete.")
-
 
 
 if __name__ == "__main__":
