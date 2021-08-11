@@ -28,7 +28,7 @@ class sublet_income(Variable):
 class self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from self-employment. Different to trading profits"
+    label = u"Self-employment income"
     definition_period = YEAR
 
 
@@ -62,7 +62,7 @@ class gross_income(Variable):
 class net_income(Variable):
     value_type = float
     entity = Person
-    label = u"Net income for the person"
+    label = u"Net income"
     definition_period = YEAR
 
     def formula(person, period, parameters):
