@@ -9,6 +9,9 @@ from openfisca_uk.reforms.presets.modelling import (
     reported_benefits,
     reported,
 )
+from pathlib import Path
+
+REPO = Path(__file__).parent
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 

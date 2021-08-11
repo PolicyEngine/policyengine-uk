@@ -50,6 +50,9 @@ jobs:
         run: pip3 install . && openfisca-uk-data synth_frs save
 
       # Runs a set of commands using the runners shell
+      - name: Test setup procedures
+        run: pytest tests/setup
+        
       - name: Test code convention compliance and other Python tests
         run: pytest tests/code
 
