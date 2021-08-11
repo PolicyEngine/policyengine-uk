@@ -7,6 +7,7 @@ sim = Microsimulation(dataset=SynthFRS)
 # (variable, population average, absolute error window)
 AVERAGE_TESTS = (("in_poverty_bhc", 0.15, 0.1),)
 
+
 @pytest.mark.parametrize("variable,central_estimate,max_dist", AVERAGE_TESTS)
 def test_person_level_averages(variable, central_estimate, max_dist):
     assert (
