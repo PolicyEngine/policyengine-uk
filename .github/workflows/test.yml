@@ -61,3 +61,6 @@ jobs:
 
       - name: Test postcode lookup features
         run: openfisca test tests/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
+
+      - name: Test microsimulation results using synthetic data
+        run: pytest tests/with_synth

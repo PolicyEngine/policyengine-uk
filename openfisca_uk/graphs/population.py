@@ -49,6 +49,7 @@ def distributional_chart(
     include_all_ticks: bool = True,
     baseline: Microsimulation = None,
     microsimulation_kwargs: dict = {},
+    chart_type: str = "bar",
     **kwargs,
 ):
     """Generates a Plotly bar chart for changes to a variable based on quantiles.
@@ -82,7 +83,10 @@ def distributional_chart(
         "sum",
         "median",
     ), "Unrecognised aggregation type"
-
+    assert chart_type in (
+        "bar",
+        "line",
+    ), "Unrecognised chart type"
     x_label = f"{BASELINE_VARIABLES[bucket_variable].label} {bucket}"
     y_label = f"Change to {BASELINE_VARIABLES[change_variable].label.lower()}"
 
@@ -119,7 +123,10 @@ def distributional_chart(
             {x_label: result.index, y_label: result.values, "Reform": "Reform"}
         )
 
-    fig = px.bar(data, x=x_label, y=y_label, animation_frame="Reform")
+    if chart_type == "bar":
+        fig = px.bar(data, x=x_label, y=y_label, animation_frame="Reform")
+    elif chart_type == "line":
+        fig = px.line(data, x=x_label, y=y_label, animation_frame="Reform")
     if relative:
         fig.update_layout(yaxis_tickformat="%")
     else:
@@ -166,6 +173,8 @@ def waterfall_data(
     reform_labels: List[str],
     subreform_labels: List[str],
     baseline: Microsimulation = None,
+    aggregate: str = "net_income",
+    invert_y: bool = False,
     **kwargs,
 ):
     """Generates data for a waterfall funding breakdown chart.
@@ -175,6 +184,8 @@ def waterfall_data(
         reform_labels (List[str]): The names of the reforms.
         subreform_labels (List[str]): The names of the components of the reforms.
         baseline (Microsimulation, optional): A baseline simulation - can improve speed if already initialised. Defaults to None.
+        aggregate (str): The variable to use as the aggregate cost variable. Defaults to "net_income".
+        invert_y (bool): Whether the invert the y axis (y == revenue or y == spending). Defaults to False.
 
     Returns:
         pd.DataFrame: The waterfall plot dataframe.
@@ -185,7 +196,12 @@ def waterfall_data(
         net_costs = []
         for i in range(len(reform) + 1):
             net_costs += [
-                net_cost(baseline, Microsimulation(reform[:i], **kwargs))
+                net_cost(
+                    baseline,
+                    Microsimulation(reform[:i], **kwargs),
+                    invert=invert_y,
+                    variable=aggregate,
+                )
             ]
         net_costs = np.array(net_costs)
         labels = subreform_labels + ["Remaining"]
@@ -229,6 +245,8 @@ def waterfall_chart(
     subreform_labels: List[str],
     reform_labels: List[str] = None,
     baseline: Microsimulation = None,
+    aggregate: str = "net_income",
+    invert_y: bool = False,
 ):
     """Generates a waterfull funding breakdown plot.
 
@@ -237,6 +255,8 @@ def waterfall_chart(
         subreform_labels (List[str]): The names of the top-level reform components.
         reform_labels (List[str], optional): The names of the reforms, if multiple are provided.
         baseline (Microsimulation, optional): A baseline simulation - can improve speed if pre-initialised. Defaults to None.
+        aggregate (str): The variable to use as the aggregate cost variable. Defaults to "net_income".
+        invert_y (bool): Whether the invert the y axis (y == revenue or y == spending). Defaults to False.
 
     Returns:
         Figure: The Plotly figure.
@@ -247,7 +267,12 @@ def waterfall_chart(
 
     return px.bar(
         waterfall_data(
-            reforms, reform_labels, subreform_labels, baseline=baseline
+            reforms,
+            reform_labels,
+            subreform_labels,
+            baseline=baseline,
+            aggregate=aggregate,
+            invert_y=invert_y,
         ),
         x="component",
         y="amount",
