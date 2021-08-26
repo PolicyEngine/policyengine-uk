@@ -1,10 +1,9 @@
 description: Personal allowance for a couple, at least one aged over 25 and one under State Pension Age, per month
 values:
-  2015-06-01:
-    value: 498.89
-  2020-06-01:
-    value: 594
+  2015-06-01: 498.89
+  2020-04-06: 594.04
+  2021-10-06: 509.91
 metadata:
   period: month
   unit: currency
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=45
+  reference: The Universal Credit Regulations 2013 reg. 36
