@@ -3,5 +3,5 @@ values:
   2015-04-04:
     value: 2017
 metadata:
-  threshold_unit: year
+  unit: year
   reference: https://www.gov.uk/guidance/child-tax-credit-exceptions-to-the-2-child-limit

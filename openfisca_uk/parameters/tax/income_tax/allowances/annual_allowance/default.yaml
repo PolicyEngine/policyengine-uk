@@ -3,5 +3,5 @@ values:
   2015-06-01:
     value: 40000
 metadata:
-  threshold_unit: currency-GBP
+  unit: currency-GBP
   reference: https://www.gov.uk/tax-on-your-private-pension/annual-allowance
