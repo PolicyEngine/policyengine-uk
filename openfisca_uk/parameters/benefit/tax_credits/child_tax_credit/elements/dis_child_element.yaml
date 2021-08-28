@@ -1,19 +1,20 @@
-description: Disabled child element per year
+description: Child Tax Credit disabled child element
 values:
-  2015-06-01:
-    value: 3140.00
-  2017-06-01:
-    value: 3175.00
-  2018-06-01:
-    value: 3275.00
-  2019-06-01:
-    value: 3355.00
-  2020-06-01:
-    value: 3415.00
+  2015-04-06:
+    value: 3140
+  2017-04-06:
+    value: 3175
+  2018-04-06:
+    value: 3275
+  2019-04-06:
+    value: 3355
+  2020-04-06:
+    value: 3415
+  2021-04-06:
+    value: 3435
 metadata:
   period: year
   unit: currency
-  reference: [
-    https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance,
-    https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
-  ]
+  reference:
+    - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance,
+    - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28

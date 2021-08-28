@@ -1,9 +1,11 @@
-description: Child element per year
+description: Child Tax Credit child element
 values:
-  2015-06-01:
-    value: 2780.00
-  2020-06-01:
-    value: 2830.00
+  2019-04-06:
+    value: 2780
+  2020-04-06:
+    value: 2830
+  2021-04-06:
+    value: 2845
 metadata:
   period: year
   unit: currency
