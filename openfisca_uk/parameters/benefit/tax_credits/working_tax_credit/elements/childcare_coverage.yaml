@@ -1,8 +1,10 @@
 description: Proportion of eligible childcare costs covered
 values:
-  2015-06-01:
+  2019-04-06:
     value: 0.7
 metadata:
   period: week
   unit: /1
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27
+  reference:
+  - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27
+  - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

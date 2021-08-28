@@ -1,7 +1,7 @@
-description: One-child element of WTC
+description: Two-or-more-child element of WTC
 values:
-  2015-06-01:
-    value: 210
+  2019-04-06:
+    value: 210  # 300 * 70%
 metadata:
   period: week
   unit: currency
