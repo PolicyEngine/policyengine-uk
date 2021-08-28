@@ -1,8 +1,14 @@
 description: Couple element of WTC
 values:
-  2015-06-01:
+  2019-04-06:
+    value: 2010
+  2020-04-06:
     value: 2045
+  2021-04-06:
+    value: 2060
 metadata:
   period: year
   unit: currency
-  reference: https://www.gov.uk/working-tax-credit/what-youll-get
+  reference:
+  - https://www.gov.uk/working-tax-credit/what-youll-get
+  - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
