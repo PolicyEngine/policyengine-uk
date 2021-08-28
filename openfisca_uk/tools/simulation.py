@@ -21,14 +21,14 @@ import microdf as mdf
 from tqdm import trange
 import warnings
 from openfisca_uk.tools.parameters import backdate_parameters
-from openfisca_data import UK_DATASETS, SynthFRS
+from openfisca_uk_data import SynthFRS, DATASETS
 import yaml
 from pathlib import Path
 
 with open(Path(__file__).parent / "datasets.yml") as f:
     datasets = yaml.safe_load(f)
     DEFAULT_DATASET = list(
-        filter(lambda ds: ds.name == datasets["default"], UK_DATASETS)
+        filter(lambda ds: ds.name == datasets["default"], DATASETS)
     )[0]
 
 
