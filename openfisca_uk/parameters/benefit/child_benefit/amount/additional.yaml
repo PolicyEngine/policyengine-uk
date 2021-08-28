@@ -1,14 +1,24 @@
 description: Child benefit amount for additional children
 values:
-  2009-06-01:
+  2004-04-06:
+    value: 11.05
+  2005-04-06:
+    value: 11.40
+  2006-04-06:
+    value: 11.70
+  2007-04-06:
+    value: 12.10
+  2008-04-06:
+    value: 12.55
+  2009-01-05:
     value: 13.20
-  2010-06-01:
+  2010-04-06:
     value: 13.40
-  2014-06-01:
+  2014-04-06:
     value: 13.55
-  2015-06-01:
+  2015-04-06:
     value: 13.70
-  2020-06-01:
+  2020-04-06:
     value: 13.95
 metadata:
   period: week
