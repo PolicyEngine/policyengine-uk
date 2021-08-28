@@ -32,7 +32,7 @@ setup(
         "pyyaml>=5.3.1",
         "pytest>=5.4.3",
         "OpenFisca-Core>=35.4.1",
-        "openfisca-data @ git+https://github.com/ubicenter/openfisca-uk-data",
+        "openfisca-uk-data @ git+https://github.com/ubicenter/openfisca-uk-data",
         "tqdm>=4.59.0",
         "microdf @ git+https://github.com/PSLmodels/microdf",
         "plotly>=4.14.3",

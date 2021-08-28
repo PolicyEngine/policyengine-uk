@@ -1,4 +1,4 @@
-from openfisca_data import SynthFRS
+from openfisca_uk_data import SynthFRS
 from openfisca_uk import Microsimulation
 import pytest
 

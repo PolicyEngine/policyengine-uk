@@ -1,4 +1,4 @@
-from openfisca_data import UK_DATASETS, FRS, SynthFRS
+from openfisca_uk_data import FRS, SynthFRS, DATASETS
 from pathlib import Path
 import inquirer
 import yaml
@@ -8,7 +8,7 @@ NEWLINE = "\n"
 
 DATASET_CONFIG_FILE = Path(__file__).parent / "tools" / "datasets.yml"
 
-key_to_ds = {ds.name: ds for ds in UK_DATASETS}
+key_to_ds = {ds.name: ds for ds in DATASETS}
 
 
 def set_default(dataset):
@@ -64,13 +64,13 @@ def main():
             dataset_question = inquirer.List(
                 "default_dataset",
                 message="Which dataset would you like OpenFisca-UK to use by default?",
-                choices=list(map(lambda x: x.name, UK_DATASETS)),
+                choices=list(map(lambda x: x.name, DATASETS)),
             )
             default_dataset = inquirer.prompt([dataset_question])[
                 "default_dataset"
             ]
             dataset = list(
-                filter(lambda ds: ds.name == default_dataset, UK_DATASETS)
+                filter(lambda ds: ds.name == default_dataset, DATASETS)
             )[0]
             set_default(dataset)
             dataset_years = ", ".join(map(str, dataset.years))
