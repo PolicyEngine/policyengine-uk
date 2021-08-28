@@ -1,8 +1,10 @@
-description: One-child element of WTC
+description: Working Tax Credit childcare element for one child
 values:
-  2019-04-06:
+  2016-04-06:
     value: 122.50  # 175 * 70%
 metadata:
   period: week
   unit: currency
-  reference: https://www.gov.uk/working-tax-credit/what-youll-get
+  reference:
+  - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
+  - https://www.gov.uk/working-tax-credit/what-youll-get

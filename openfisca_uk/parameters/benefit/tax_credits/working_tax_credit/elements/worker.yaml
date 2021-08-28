@@ -1,8 +1,9 @@
-description: 30-hours element of WTC
+description: Working Tax Credit 30 hours element
 values:
-  2019-04-06:
+  2016-04-06:
     value: 810
   2020-04-06:
+    # NB: EUROMOD reports 830. This is the gov.uk value.
     value: 825
   2021-04-06:
     value: 830
@@ -12,3 +13,4 @@ metadata:
   reference:
   - https://www.gov.uk/working-tax-credit/what-youll-get
   - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
+  - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28

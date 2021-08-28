@@ -3,6 +3,7 @@ values:
   2016-04-06:
     value: 6420
   2020-04-06:
+    # NB: EUROMOD reports 6555. This is the gov.uk value.
     value: 6530
   2021-04-06:
     value: 6565

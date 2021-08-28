@@ -1,4 +1,4 @@
-description: Severely disabled child element per year
+description: Child Tax Credit severely disabled child element
 values:
   2016-04-06:
     value: 1275
@@ -9,6 +9,7 @@ values:
   2019-04-06:
     value: 1360
   2020-04-06:
+    # NB: EUROMOD reports 1390. This is the gov.uk value.
     value: 1385
   2021-04-06:
     value: 1390
