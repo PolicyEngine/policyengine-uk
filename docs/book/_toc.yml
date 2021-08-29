@@ -5,3 +5,4 @@ sections:
 - file: weighting
 - file: individuals
 - file: graphs
+- file: validation
