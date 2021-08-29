@@ -1,8 +1,22 @@
-description: Disability element of WTC
+description: Working Tax Credit disability element
 values:
-  2015-06-01:
+  2016-04-06:
+    value: 2970
+  2017-04-06:
+    value: 3000
+  2018-04-06:
+    value: 3090
+  2019-04-06:
+    value: 3165
+  2020-04-06:
+    # NB: EUROMOD reports 3230. This is the gov.uk value.
     value: 3220
+  2021-04-06:
+    value: 3240
 metadata:
   period: year
   unit: currency
-  reference: https://www.gov.uk/working-tax-credit/what-youll-get
+  reference:
+  - https://www.gov.uk/working-tax-credit/what-youll-get
+  - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
+  - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
