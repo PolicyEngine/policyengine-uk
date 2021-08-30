@@ -224,20 +224,17 @@
                 
   <div class="section" id="validation">
 <h1>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h1>
-<p>OpenFisca-UK runs unit and integration tests on each new version (see <a class="reference external" href="https://github.com/PSLmodels/openfisca-uk/tree/master/tests">here</a>). In addition, the table below shows the aggregates produced by the model for the major taxes and benefits, and comparisons with UKMOD (latest <a class="reference external" href="https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf">country report</a>) and official sources<a class="footnote-reference brackets" href="#id2" id="id1">1</a>.</p>
+<p>OpenFisca-UK runs unit and integration tests on each new version (see <a class="reference external" href="https://github.com/PSLmodels/openfisca-uk/tree/master/tests">here</a>). In addition, the table below shows the aggregates produced by the model for the major taxes and benefits, and comparisons with UKMOD (latest <a class="reference external" href="https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf">country report</a>) and official sources<a class="footnote-reference brackets" href="#id2" id="id1">1</a>. UKMOD and administrative sources refer to 2018, and OpenFisca-UK is simulated on policy at the end of 2018.</p>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk</span> <span class="kn">import</span> <span class="n">Microsimulation</span>
-<span class="kn">from</span> <span class="nn">openfisca_data</span> <span class="kn">import</span> <span class="n">FRS_SPI_Adjusted</span>
+<span class="kn">from</span> <span class="nn">openfisca_uk_data</span> <span class="kn">import</span> <span class="n">FRS_SPI_Adjusted</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">FRS_SPI_Adjusted</span><span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
 
 <span class="n">VARIABLES</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;basic_rate_earned_income_tax&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;higher_rate_earned_income_tax&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;add_rate_earned_income_tax&quot;</span><span class="p">,</span>
     <span class="s2">&quot;national_insurance&quot;</span><span class="p">,</span>
     <span class="s2">&quot;employee_NI_class_1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;employer_NI_class_1&quot;</span><span class="p">,</span>
@@ -251,9 +248,6 @@
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;OpenFisca-UK&quot;</span><span class="p">:</span> <span class="n">sim</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="n">VARIABLES</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">2019</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">1e+9</span><span class="p">,</span> <span class="mi">1</span><span class="p">))})</span>
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Variable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">&quot;Income Tax&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Labour income, basic rate&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Labour income, higher rate&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Labour income, additional rate&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Non-employer National Insurance&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Employee Class 1 NI&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Employer Class 1 NI&quot;</span><span class="p">,</span>
@@ -268,9 +262,6 @@
 
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;UKMOD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
     <span class="mf">163.7</span><span class="p">,</span>
-    <span class="n">_</span><span class="p">,</span>
-    <span class="n">_</span><span class="p">,</span>
-    <span class="n">_</span><span class="p">,</span>
     <span class="mf">64.0</span><span class="p">,</span>
     <span class="mf">55.7</span><span class="p">,</span>
     <span class="mf">77.8</span><span class="p">,</span>
@@ -283,9 +274,6 @@
 
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;External&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
     <span class="mf">190.0</span><span class="p">,</span>
-    <span class="n">_</span><span class="p">,</span>
-    <span class="n">_</span><span class="p">,</span>
-    <span class="n">_</span><span class="p">,</span>
     <span class="mf">55.7</span><span class="p">,</span>
     <span class="mf">52.0</span><span class="p">,</span>
     <span class="mf">79.2</span><span class="p">,</span>
@@ -310,140 +298,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>OpenFisca-UK</th>
-      <th>UKMOD</th>
-      <th>External</th>
-      <th>OpenFisca-UK / UKMOD</th>
-      <th>OpenFisca-UK / External</th>
-    </tr>
-    <tr>
-      <th>Variable</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Income Tax</th>
-      <td>171.3</td>
-      <td>163.7</td>
-      <td>190</td>
-      <td>1.05</td>
-      <td>0.9</td>
-    </tr>
-    <tr>
-      <th>Labour income, basic rate</th>
-      <td>95.9</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>Labour income, higher rate</th>
-      <td>53.0</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>Labour income, additional rate</th>
-      <td>9.0</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>Non-employer National Insurance</th>
-      <td>61.0</td>
-      <td>64</td>
-      <td>55.7</td>
-      <td>0.95</td>
-      <td>1.1</td>
-    </tr>
-    <tr>
-      <th>Employee Class 1 NI</th>
-      <td>56.5</td>
-      <td>55.7</td>
-      <td>52</td>
-      <td>1.01</td>
-      <td>1.09</td>
-    </tr>
-    <tr>
-      <th>Employer Class 1 NI</th>
-      <td>62.3</td>
-      <td>77.8</td>
-      <td>79.2</td>
-      <td>0.8</td>
-      <td>0.79</td>
-    </tr>
-    <tr>
-      <th>Class 2 &amp; 4 NI</th>
-      <td>4.0</td>
-      <td>5</td>
-      <td>3.7</td>
-      <td>0.8</td>
-      <td>1.08</td>
-    </tr>
-    <tr>
-      <th>Universal Credit</th>
-      <td>10.4</td>
-      <td>11.7</td>
-      <td>8.1</td>
-      <td>0.89</td>
-      <td>1.28</td>
-    </tr>
-    <tr>
-      <th>Tax Credits</th>
-      <td>14.1</td>
-      <td>13.9</td>
-      <td>22.8</td>
-      <td>1.01</td>
-      <td>0.62</td>
-    </tr>
-    <tr>
-      <th>Housing Benefit</th>
-      <td>25.0</td>
-      <td>15.1</td>
-      <td>20.7</td>
-      <td>1.66</td>
-      <td>1.21</td>
-    </tr>
-    <tr>
-      <th>State Pension</th>
-      <td>86.4</td>
-      <td>86.4</td>
-      <td>85.5</td>
-      <td>1</td>
-      <td>1.01</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
 </div>
 <hr class="footnotes docutils" />
 <dl class="footnote brackets">
