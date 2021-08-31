@@ -273,7 +273,7 @@ Numbers are in billions of pounds.</p>
     <span class="n">of_ukmod</span><span class="o">=</span><span class="s2">&quot;OpenFisca-UK / UKMOD&quot;</span><span class="p">,</span>
     <span class="n">of_external</span><span class="o">=</span><span class="s2">&quot;OpenFisca-UK / External&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">v</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">VARIABLES</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">COLUMN_RENAMES</span><span class="p">)</span>
+<span class="n">v</span><span class="p">[</span><span class="n">COLUMN_RENAMES</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">VARIABLES</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">COLUMN_RENAMES</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -296,9 +296,9 @@ Numbers are in billions of pounds.</p>
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>OpenFisca-UK</th>
       <th>UKMOD</th>
       <th>External</th>
-      <th>OpenFisca-UK</th>
       <th>OpenFisca-UK / UKMOD</th>
       <th>OpenFisca-UK / External</th>
     </tr>
@@ -306,73 +306,73 @@ Numbers are in billions of pounds.</p>
   <tbody>
     <tr>
       <th>Income Tax</th>
+      <td>170.1</td>
       <td>163.7</td>
       <td>190.0</td>
-      <td>170.1</td>
       <td>1.04</td>
       <td>0.90</td>
     </tr>
     <tr>
       <th>Non-employer National Insurance</th>
+      <td>55.6</td>
       <td>64.0</td>
       <td>55.7</td>
-      <td>55.6</td>
       <td>0.87</td>
       <td>1.00</td>
     </tr>
     <tr>
       <th>Employee Class 1 NI</th>
+      <td>51.7</td>
       <td>55.7</td>
       <td>52.0</td>
-      <td>51.7</td>
       <td>0.93</td>
       <td>0.99</td>
     </tr>
     <tr>
       <th>Employer Class 1 NI</th>
+      <td>56.8</td>
       <td>77.8</td>
       <td>79.2</td>
-      <td>56.8</td>
       <td>0.73</td>
       <td>0.72</td>
     </tr>
     <tr>
       <th>Class 2 &amp; 4 NI</th>
+      <td>3.5</td>
       <td>5.0</td>
       <td>3.7</td>
-      <td>3.5</td>
       <td>0.70</td>
-      <td>0.95</td>
+      <td>0.94</td>
     </tr>
     <tr>
       <th>Universal Credit</th>
+      <td>13.5</td>
       <td>11.7</td>
       <td>8.1</td>
-      <td>13.5</td>
       <td>1.15</td>
-      <td>1.67</td>
+      <td>1.66</td>
     </tr>
     <tr>
       <th>Tax Credits</th>
+      <td>3.8</td>
       <td>13.9</td>
       <td>22.8</td>
-      <td>3.8</td>
       <td>0.27</td>
       <td>0.17</td>
     </tr>
     <tr>
       <th>Housing Benefit</th>
+      <td>15.9</td>
       <td>15.1</td>
       <td>20.7</td>
-      <td>15.9</td>
       <td>1.05</td>
       <td>0.77</td>
     </tr>
     <tr>
       <th>State Pension</th>
+      <td>103.0</td>
       <td>86.4</td>
       <td>85.5</td>
-      <td>103.0</td>
       <td>1.19</td>
       <td>1.20</td>
     </tr>
