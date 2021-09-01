@@ -3,4 +3,4 @@ values:
   2015-06-01:
     value: 24
 metadata:
-  threshold_unit: hour
+  unit: hour

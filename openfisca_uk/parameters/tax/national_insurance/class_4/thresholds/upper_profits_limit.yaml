@@ -13,5 +13,5 @@ values:
   2020-06-01:
     value: 50000
 metadata:
-  threshold_unit: currency-GBP
+  unit: currency-GBP
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

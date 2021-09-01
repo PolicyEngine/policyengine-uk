@@ -3,5 +3,5 @@ values:
   2015-06-04:
     value: 89.15
 metadata:
-  threshold_unit: currency-GBP
+  unit: currency-GBP
   reference: https://www.gov.uk/pip/what-youll-get
