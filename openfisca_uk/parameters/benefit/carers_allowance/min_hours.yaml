@@ -4,5 +4,5 @@ values:
     value: 35
 metadata:
   period: week
-  threshold_unit: hour
+  unit: hour
   reference: https://www.gov.uk/carers-allowance

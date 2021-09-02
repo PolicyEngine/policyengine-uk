@@ -3,4 +3,4 @@ values:
   2010-06-01:
     value: 0.33
 metadata:
-  threshold_unit: /1
+  unit: /1

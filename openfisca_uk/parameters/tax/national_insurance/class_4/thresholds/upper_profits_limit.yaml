@@ -15,7 +15,7 @@ values:
   2021-04-06:
     value: 50270
 metadata:
-  threshold_unit: currency-GBP
+  unit: currency-GBP
   reference:
   - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

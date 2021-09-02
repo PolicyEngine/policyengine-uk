@@ -3,5 +3,5 @@ values:
   2002-06-01:
     value: 300
 metadata:
-  threshold_unit: currency-GBP
+  unit: currency-GBP
   reference: The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3
