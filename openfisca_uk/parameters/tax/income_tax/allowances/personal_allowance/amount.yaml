@@ -1,16 +1,19 @@
 description: Personal Allowance for yearly income
 values:
-  2015-06-01:
+  2015-04-06:
     value: 10600
-  2015-06-05:
-    value: 11000
-  2017-06-01:
+  # TODO: Confirm date.
+  # 2015-04-06:
+  #   value: 11000
+  2017-04-06:
     value: 11500
-  2018-06-01:
+  2018-04-06:
     value: 11850
-  2019-06-01:
+  2019-04-06:
     value: 12500
+  2021-04-06:
+    value: 12570
 metadata:
   period: week
   unit: currency
-  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+  reference: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances
