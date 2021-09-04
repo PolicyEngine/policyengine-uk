@@ -2,7 +2,7 @@ description: Standard allowance, by claimant type
 SINGLE_YOUNG:
   values:
     2015-06-01: 251.77
-    2020-04-06: 344.00 # from gov.uk and entitledto
+    2020-04-06: 344.00  # from gov.uk and entitledto
     2021-10-06: 257.33
 SINGLE_OLD:
   values:
