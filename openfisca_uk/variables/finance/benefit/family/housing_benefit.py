@@ -49,7 +49,7 @@ class claims_HB(Variable):
         would_claim = benunit("claims_legacy_benefits", period) * (
             random(benunit) < parameters(period).benefit.housing_benefit.takeup
         )
-        return already_claiming + would_claim
+        return would_claim
 
 
 class housing_benefit_applicable_amount(Variable):
