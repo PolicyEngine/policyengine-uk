@@ -32,9 +32,9 @@ class LHA_allowed_bedrooms(Variable):
             not_(male) * (benunit.members("age", period) < 16)
         )
         return (
-            (children_under_10 > 0)
-            + (under_16_male > 0)
-            + (under_16_female > 0)
+            (children_under_10 > 0).astype(int)
+            + (under_16_male > 0).astype(int)
+            + (under_16_female > 0).astype(int)
             + 1
         )
 
@@ -46,7 +46,7 @@ class LHA_cap(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        rent = benunit.max(benunit.members.household("rent", period))
+        rent = benunit("benunit_rent", period)
         cap = benunit("BRMA_LHA_rate", period)
         amount = min_(rent, cap)
         return amount
@@ -83,9 +83,12 @@ class LHA_category(Variable):
             )
             > 0
         )
+        can_only_claim_shared = (benunit("num_adults", period) == 1) & (
+            benunit("eldest_adult_age", period) < 35
+        )
         category = select(
             [
-                is_shared,
+                is_shared | can_only_claim_shared,
                 num_rooms == 1,
                 num_rooms == 2,
                 num_rooms == 3,
@@ -109,16 +112,8 @@ class BRMA_LHA_rate(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        personal_BRMA = benunit.members.household(
-            "BRMA", period
-        ).decode_to_str()
-        # Default OpenFisca aggregation features do not retain Enum decode functionality, sp
-        # here we use Pandas Series operations on the decode strings
-        BRMA = (
-            pd.Series(personal_BRMA)
-            .groupby(benunit.members_entity_id)
-            .first()
-            .values
+        BRMA = benunit.value_from_first_person(
+            benunit.members.household("BRMA", period).decode_to_str()
         )
         category = benunit("LHA_category", period)
         rate = parameters(period).benefit.LHA.rates[BRMA][category]
