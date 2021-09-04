@@ -325,8 +325,12 @@ class Microsimulation:
             map_to
             or self.simulation.tax_benefit_system.variables[vars[0]].entity.key
         )
+        if period is None:
+            period_kwarg = {}
+        else:
+            period_kwarg = {"period": period}
         for var in vars:
-            df[var] = self.calc(var, period=period, map_to=entity)
+            df[var] = self.calc(var, **period_kwarg, map_to=entity)
         df = MicroDataFrame(df, weights=self.entity_weights[entity])
         return df
 
