@@ -17,5 +17,5 @@ values:
   2024-01-01:
     value: 1
 metadata:
-  threshold_unit: /1
+  unit: /1
   reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=54

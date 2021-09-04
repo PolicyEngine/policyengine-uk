@@ -20,7 +20,7 @@
 			"  2019-06-01:",
 			"    value: ${2:0.00}",
 			"metadata:",
-			"  threshold_unit: currency-GBP",
+			"  unit: currency-GBP",
 			"  reference: $3:none"
 		],
 		"description": "Insert a basic OpenFisca parameter."

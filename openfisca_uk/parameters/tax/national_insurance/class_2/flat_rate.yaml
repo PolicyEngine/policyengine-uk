@@ -11,5 +11,8 @@ values:
   2020-06-01:
     value: 3.05
 metadata:
-  threshold_unit: currency-GBP
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+  unit: currency-GBP
+  reference:
+  - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+  - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+  
