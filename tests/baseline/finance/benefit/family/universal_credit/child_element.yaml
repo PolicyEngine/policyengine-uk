@@ -1,0 +1,103 @@
+- name: No children
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      adult:
+        age: 26
+    benunits:
+      benunit:
+        adults: [adult]
+    households:
+      household:
+        adults: [adult]
+  output:
+    num_UC_eligible_children: 0
+- name: One young child, after limit
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      adult:
+        age: 26
+      child:
+        age: 2
+    benunits:
+      benunit:
+        adults: [adult]
+        children: [child]
+    households:
+      household:
+        adults: [adult]
+        children: [child]
+  output:
+    num_UC_eligible_children: 1
+    is_child_born_before_child_limit: [0, 0]
+- name: One older child, after limit
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      adult:
+        age: 26
+      child:
+        age: 7
+    benunits:
+      benunit:
+        adults: [adult]
+        children: [child]
+    households:
+      household:
+        adults: [adult]
+        children: [child]
+  output:
+    num_UC_eligible_children: 1
+    is_child_born_before_child_limit: [0, 1]
+- name: Over two children, but born before limit
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      adult:
+        age: 26
+      child_1:
+        age: 7
+      child_2:
+        age: 7
+      child_3:
+        age: 7
+    benunits:
+      benunit:
+        adults: [adult]
+        children: [child_1, child_2, child_3]
+    households:
+      household:
+        adults: [adult]
+        children: [child_1, child_2, child_3]
+  output:
+    num_UC_eligible_children: 3
+    is_child_born_before_child_limit: [0, 1, 1, 1]
+- name: Over two children, all born after limit
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      adult:
+        age: 26
+      child_1:
+        age: 2
+      child_2:
+        age: 2
+      child_3:
+        age: 2
+    benunits:
+      benunit:
+        adults: [adult]
+        children: [child_1, child_2, child_3]
+    households:
+      household:
+        adults: [adult]
+        children: [child_1, child_2, child_3]
+  output:
+    num_UC_eligible_children: 2
+    is_child_born_before_child_limit: [0, 0, 0, 0]

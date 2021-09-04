@@ -1,0 +1,15 @@
+- name: Not receiving carer's allowance
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 26
+  output:
+    UC_carer_element: 0
+- name: Receiving carer's allowance
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 26
+    carers_allowance: 70 * 52
+  output:
+    UC_carer_element: 163.73 * 12
