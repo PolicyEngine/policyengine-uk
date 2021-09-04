@@ -1,0 +1,7 @@
+- name: Single person with some housing costs
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    benunit_rent: 100
+  output:
+    UC_housing_costs_element: 100

@@ -77,6 +77,23 @@ class hours_worked(Variable):
     definition_period = YEAR
 
 
+class in_work(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Worked some hours"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        has_hours_worked = person("hours_worked", period) > 0
+        has_earnings = (
+            add(
+                person, period, ["employment_income", "self_employment_income"]
+            )
+            > 0
+        )
+        return has_hours_worked | has_earnings
+
+
 class weekly_hours(Variable):
     value_type = float
     entity = Person

@@ -1,6 +1,7 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+import pandas as pd
 
 
 class person_id(Variable):
@@ -68,11 +69,56 @@ class is_adult(Variable):
 class is_child(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is a child"
+    label = u"Is a child"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("age", period) < 18
+
+
+class child_index(Variable):
+    value_type = int
+    entity = Person
+    label = u"Child reference number"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        # The child index, by age, descending (e.g. "first child" = 1)
+        age = person("age", period)
+        child = person("is_child", period)
+        # Group children by their benefit unit, put all adults
+        # in a single group to prevent ranking
+        child_benunit = where(child, person.benunit.members_entity_id, -1)
+        # Within benefit units, rank children by age descending
+        child_ranking = (
+            pd.Series(age)
+            .groupby(child_benunit)
+            .rank(ascending=False, method="dense")
+            .astype(int)
+        )
+        # Fill in adult values
+        adjusted_for_adults = where(
+            person("is_child", period), child_ranking, 100
+        )
+        return adjusted_for_adults
+
+
+class is_benunit_eldest_child(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Eldest child in the benefit unit"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        age = person("age", period)
+        is_child = person("is_child", period)
+        eldest_age = person.benunit("eldest_child_age", period)
+        age_tie = person.benunit.sum((age == eldest_age) & is_child) > 1
+        is_eldest_age = person("age", period) == eldest_age
+        child_id = person("person_id", period) * is_child
+        max_child_id = person.benunit.max(child_id)
+        has_max_child_id = child_id == max_child_id
+        return where(is_eldest_age & age_tie, has_max_child_id, is_eldest_age)
 
 
 class in_FE(Variable):

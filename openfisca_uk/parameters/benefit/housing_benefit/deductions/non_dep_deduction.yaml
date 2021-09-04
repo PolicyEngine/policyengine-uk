@@ -1,0 +1,32 @@
+description: Non-dependent deduction for an individual
+brackets:
+  - amount:
+      2018-06-18: 15.25
+    threshold:
+      2018-06-18: 0.00
+  - amount:
+      2018-06-18: 35.00
+    threshold:
+      2018-06-18: 139.00
+  - amount:
+      2018-06-18: 48.05
+    threshold:
+      2018-06-18: 204.00
+  - amount:
+      2018-06-18: 78.65
+    threshold:
+      2018-06-18: 265.00
+  - amount:
+      2018-06-18: 89.55
+    threshold:
+      2018-06-18: 354.00
+  - amount:
+      2018-06-18: 98.30
+    threshold:
+      2018-06-18: 439.00
+metadata:
+  type: single_amount
+  period: week
+  threshold_unit: currency-GBP
+  amount_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=37

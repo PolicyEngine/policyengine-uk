@@ -1,18 +1,93 @@
-- name: UC basic amount
-  period: 2020
-  absolute_error_margin: 10
+- name: Single, no income, no housing costs
+  period: 2021
+  absolute_error_margin: 0
   input:
-    age: 30
-    employment_income: 1
-    claims_UC: true
+    age: 26
+    tenure_type: OWNED_OUTRIGHT
+    council_tax: 0
   output:
-    universal_credit: 317 * 12
-- name: UC basic amount - not eligible
-  period: 2020
-  absolute_error_margin: 10
+    UC_claimant_type: SINGLE_OLD
+    universal_credit: 411.51 * 12
+- name: Couple, no income, no housing costs
+  period: 2021
+  absolute_error_margin: 0
   input:
-    age: 30
-    employment_income: 1
-    claims_UC: false
+    people:
+      primary:
+        age: 26
+      spouse:
+        age: 24
+    households:
+      household:
+        adults: [primary, spouse]
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 0
+    benunits:
+      benunit:
+        adults: [primary, spouse]
   output:
-    universal_credit: 0
+    UC_claimant_type: COUPLE_OLD
+    universal_credit: 596.58 * 12
+- name: Couple, no income, no housing costs, 3 children
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      primary:
+        age: 26
+      spouse:
+        age: 24
+      child_1:
+        age: 8
+      child_2:
+        age: 6
+      child_3:
+        age: 5
+    households:
+      household:
+        adults: [primary, spouse]
+        children: [child_1, child_2, child_3]
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 0
+    benunits:
+      benunit:
+        adults: [primary, spouse]
+        children: [child_1, child_2, child_3]
+  output:
+    UC_claimant_type: COUPLE_OLD
+    UC_standard_allowance: 596.58 * 12
+    UC_child_element: 756.66 * 12
+    universal_credit: 1353.24 * 12
+- name: Couple, no income, no housing costs, 1 young child
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      primary:
+        age: 26
+      spouse:
+        age: 24
+      child_1:
+        age: 2
+    households:
+      household:
+        adults: [primary, spouse]
+        children: [child_1]
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 0
+    benunits:
+      benunit:
+        adults: [primary, spouse]
+        children: [child_1]
+  output:
+    universal_credit: 833.66 * 12
+- name: Single, no income, no housing costs
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 26
+    tenure_type: OWNED_OUTRIGHT
+    council_tax: 0
+  output:
+    UC_claimant_type: SINGLE_OLD
+    universal_credit: 411.51 * 12

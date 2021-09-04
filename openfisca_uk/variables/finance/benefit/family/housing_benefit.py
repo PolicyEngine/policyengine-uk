@@ -49,7 +49,7 @@ class claims_HB(Variable):
         would_claim = benunit("claims_legacy_benefits", period) * (
             random(benunit) < parameters(period).benefit.housing_benefit.takeup
         )
-        return already_claiming + would_claim
+        return would_claim
 
 
 class housing_benefit_applicable_amount(Variable):
@@ -169,6 +169,41 @@ class housing_benefit_applicable_income(Variable):
         return applicable_income
 
 
+class HB_individual_non_dep_deduction(Variable):
+    value_type = float
+    entity = Person
+    label = u"Non-dependent deduction (individual)"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        not_rent_liable = person.benunit("benunit_rent", period) == 0
+        over_21 = person("age", period) >= 21
+        deduction_scale = parameters(
+            period
+        ).benefit.housing_benefit.deductions.non_dep_deduction
+        weekly_income = person("total_income", period)
+        deduction = deduction_scale.calc(weekly_income)
+        return deduction * over_21 * not_rent_liable * MONTHS_IN_YEAR
+
+
+class HB_non_dep_deductions(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Non-dependent deductions"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        non_dep_deductions_in_hh = benunit.max(
+            benunit.members.household.sum(
+                benunit.members("HB_individual_non_dep_deduction", period)
+            )
+        )
+        non_dep_deductions_in_bu = benunit.sum(
+            benunit.members("HB_individual_non_dep_deduction", period)
+        )
+        return non_dep_deductions_in_hh - non_dep_deductions_in_bu
+
+
 class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
@@ -176,7 +211,7 @@ class housing_benefit(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        rent = benunit.max(benunit.members.household("rent", period))
+        rent = benunit("benunit_rent", period)
         LHA = benunit("LHA_eligible", period.this_year)
         applicable_amount = benunit(
             "housing_benefit_applicable_amount", period
@@ -206,6 +241,7 @@ class housing_benefit(Variable):
             period,
             ["JSA_contrib", "incapacity_benefit", "ESA_contrib", "SDA"],
         )
+        amount = max_(0, amount - benunit("HB_non_dep_deductions", period))
         final_amount = min_(
             amount * benunit("claims_HB", period),
             benunit("benefit_cap", period) - other_capped_benefits,

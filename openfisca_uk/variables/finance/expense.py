@@ -17,6 +17,16 @@ class rent(Variable):
     definition_period = YEAR
 
 
+class benunit_rent(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Benefit unit rent"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("personal_rent", period))
+
+
 class personal_rent(Variable):
     value_type = float
     entity = Person

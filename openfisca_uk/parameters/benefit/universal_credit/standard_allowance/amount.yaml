@@ -1,0 +1,30 @@
+description: Standard allowance
+SINGLE_YOUNG:
+  values:
+    2015-06-01: 251.77
+    2020-04-06: 344.00  # From gov.uk and entitledto
+    2021-10-06: 257.33
+SINGLE_OLD:
+  values:
+    2015-06-01: 317.82
+    2020-04-06: 411.51  # From gov.uk and entitledto
+    2021-10-06: 324.84
+COUPLE_YOUNG:
+  values:
+    2015-06-01: 395.20
+    2020-04-06: 490.60  # From gov.uk and entitledto
+    2021-10-06: 403.93
+COUPLE_OLD:
+  values:
+    2013-04-29: 489.06
+    2015-06-01: 498.89
+    2020-04-06: 596.58  # From gov.uk/entitledto
+    2021-10-06: 509.91
+metadata:
+  unit: currency-GBP
+  reference: 
+    # Values.
+    - https://www.legislation.gov.uk/uksi/2013/376/regulation/36
+    # As-of date.
+    - https://www.legislation.gov.uk/uksi/2013/376/regulation/1
+    - https://www.gov.uk/universal-credit/what-youll-get
