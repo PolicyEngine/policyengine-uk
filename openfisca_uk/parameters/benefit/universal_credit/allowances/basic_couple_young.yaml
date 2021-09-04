@@ -1,9 +1,0 @@
-description: Personal allowance for a couple, both under 25, per month
-values:
-  2015-06-01: 395.20
-  2020-04-06: 488.59
-  2021-10-06: 403.93
-metadata:
-  period: month
-  unit: currency
-  reference: The Universal Credit Regulations 2013 reg. 36

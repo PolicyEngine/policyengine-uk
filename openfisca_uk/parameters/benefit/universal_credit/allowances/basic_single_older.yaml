@@ -1,9 +1,0 @@
-description: Personal allowance for a single person over 25 but under State Pension Age, per month
-values:
-  2015-06-01: 317.82
-  2020-04-06: 409.89
-  2021-10-06: 324.84
-metadata:
-  period: month
-  unit: currency
-  reference: The Universal Credit Regulations 2013 reg. 36

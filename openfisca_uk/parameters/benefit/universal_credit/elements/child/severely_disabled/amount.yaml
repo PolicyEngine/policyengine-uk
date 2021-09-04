@@ -1,15 +1,10 @@
 description: Disabled child element (per child in receipt of SDA) for Universal Credit, per month
 values:
-  2015-06-01:
-    value: 241.81
-  2017-06-01:
-    value: 246.19
-  2018-06-01:
-    value: 257.75
-  2019-06-01:
-    value: 265.97
-  2020-06-01:
-    value: 271.36
+  2015-06-01: 241.81
+  2017-06-01: 246.19
+  2018-06-01: 257.75
+  2019-06-01: 265.97
+  2020-06-01: 271.36
 metadata:
   period: month
   unit: currency
