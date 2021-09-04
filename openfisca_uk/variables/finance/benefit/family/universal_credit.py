@@ -156,9 +156,12 @@ class num_UC_eligible_children(Variable):
         child_limit = parameters(
             period
         ).benefit.universal_credit.elements.child.limit.num_children
-        spaces_left = clip(child_limit - children_born_before_limit, 0, child_limit)
+        spaces_left = clip(
+            child_limit - children_born_before_limit, 0, child_limit
+        )
         spaces_filled = min_(
-            spaces_left, benunit("num_children", period) - children_born_before_limit
+            spaces_left,
+            benunit("num_children", period) - children_born_before_limit,
         )
         return children_born_before_limit + spaces_filled
 
@@ -210,9 +213,7 @@ class UC_housing_costs_element(Variable):
             ],
             [
                 rent,
-                min_(
-                    benunit("LHA_cap", period), rent
-                ),
+                min_(benunit("LHA_cap", period), rent),
                 0,
             ],
         )
@@ -243,10 +244,10 @@ class UC_non_dep_deductions(Variable):
     def formula(benunit, period, parameters):
         # Deductions are made for non-dependents outside the benefit unit,
         # but within the household, who meet certain conditions. To do this,
-        # we first calculate the non-dependent deduction for each person (from 
-        # the perspective of a different benefit unit). Then, to calculate 
+        # we first calculate the non-dependent deduction for each person (from
+        # the perspective of a different benefit unit). Then, to calculate
         # the deduction for non-dependents outside the benefit unit, we subtract
-        # the total non-dependent deductions for the benefit unit members from 
+        # the total non-dependent deductions for the benefit unit members from
         # the deductions for household members.
         non_dep_deductions_in_hh = benunit.max(
             benunit.members.household.sum(
@@ -373,7 +374,14 @@ class UC_earned_income(Variable):
             ),
         )
         housing = benunit("UC_housing_costs_element", period)
-        earnings_disregard = where(housing == 0, UC.means_test.earn_disregard, UC.means_test.earn_disregard_with_housing) * MONTHS_IN_YEAR
+        earnings_disregard = (
+            where(
+                housing == 0,
+                UC.means_test.earn_disregard,
+                UC.means_test.earn_disregard_with_housing,
+            )
+            * MONTHS_IN_YEAR
+        )
         return max_(0, earned_income - earnings_disregard)
 
 
