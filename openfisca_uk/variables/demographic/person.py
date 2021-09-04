@@ -83,17 +83,22 @@ class child_index(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
+        # The child index, by age, descending (e.g. "first child" = 1)
         age = person("age", period)
         child = person("is_child", period)
+        # Group children by their benefit unit, put all adults
+        # in a single group to prevent ranking
         child_benunit = where(child, person.benunit.members_entity_id, -1)
+        # Within benefit units, rank children by age descending
         child_ranking = (
             pd.Series(age)
             .groupby(child_benunit)
             .rank(ascending=False, method="dense")
             .astype(int)
         )
+        # Fill in adult values
         adjusted_for_adults = where(
-            not_(person("is_child", period)), 100, child_ranking
+            person("is_child", period), child_ranking, 100
         )
         return adjusted_for_adults
 

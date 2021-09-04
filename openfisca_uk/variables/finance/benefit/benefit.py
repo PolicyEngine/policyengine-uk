@@ -268,6 +268,7 @@ class claims_legacy_benefits(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
+        # assign legacy/UC claimant status, consistently for each household
         return (
             benunit.value_from_first_person(
                 benunit.members.household.project(

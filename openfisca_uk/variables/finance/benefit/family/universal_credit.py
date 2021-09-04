@@ -150,17 +150,17 @@ class num_UC_eligible_children(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        born_before_limit = benunit.sum(
+        children_born_before_limit = benunit.sum(
             benunit.members("is_child_born_before_child_limit", period)
         )
         child_limit = parameters(
             period
         ).benefit.universal_credit.elements.child.limit.num_children
-        spaces_left = clip(child_limit - born_before_limit, 0, child_limit)
+        spaces_left = clip(child_limit - children_born_before_limit, 0, child_limit)
         spaces_filled = min_(
-            spaces_left, benunit("num_children", period) - born_before_limit
+            spaces_left, benunit("num_children", period) - children_born_before_limit
         )
-        return born_before_limit + spaces_filled
+        return children_born_before_limit + spaces_filled
 
 
 class UC_child_element(Variable):
@@ -200,6 +200,7 @@ class UC_housing_costs_element(Variable):
         tenure_type = benunit.value_from_first_person(
             benunit.members.household("tenure_type", period).decode_to_str()
         )
+        rent = benunit("benunit_rent", period)
         max_housing_costs = select(
             [
                 (tenure_type == TenureType.RENT_FROM_COUNCIL.name)
@@ -208,9 +209,9 @@ class UC_housing_costs_element(Variable):
                 True,
             ],
             [
-                benunit("benunit_rent", period),
+                rent,
                 min_(
-                    benunit("LHA_cap", period), benunit("benunit_rent", period)
+                    benunit("LHA_cap", period), rent
                 ),
                 0,
             ],
@@ -240,6 +241,13 @@ class UC_non_dep_deductions(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
+        # Deductions are made for non-dependents outside the benefit unit,
+        # but within the household, who meet certain conditions. To do this,
+        # we first calculate the non-dependent deduction for each person (from 
+        # the perspective of a different benefit unit). Then, to calculate 
+        # the deduction for non-dependents outside the benefit unit, we subtract
+        # the total non-dependent deductions for the benefit unit members from 
+        # the deductions for household members.
         non_dep_deductions_in_hh = benunit.max(
             benunit.members.household.sum(
                 benunit.members("UC_individual_non_dep_deduction", period)
@@ -269,13 +277,14 @@ class UC_individual_disabled_element(Variable):
 class UC_individual_severely_disabled_element(Variable):
     value_type = float
     entity = Person
-    label = u"Disabled element of UC"
+    label = u"Severely disabled element of UC"
+    documentation = u"Stacks with the disabled element"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         UC = parameters(period).benefit.universal_credit
         return (
-            person("is_disabled_for_benefits", period)
+            person("is_severely_disabled_for_benefits", period)
             * person("is_child", period)
             * UC.elements.child.severely_disabled.amount
         )
@@ -364,11 +373,7 @@ class UC_earned_income(Variable):
             ),
         )
         housing = benunit("UC_housing_costs_element", period)
-        earnings_disregard = (
-            housing > 0
-        ) * UC.means_test.earn_disregard_with_housing * MONTHS_IN_YEAR + (
-            housing == 0
-        ) * UC.means_test.earn_disregard * MONTHS_IN_YEAR
+        earnings_disregard = where(housing == 0, UC.means_test.earn_disregard, UC.means_test.earn_disregard_with_housing) * MONTHS_IN_YEAR
         return max_(0, earned_income - earnings_disregard)
 
 
@@ -399,13 +404,12 @@ class UC_income_reduction(Variable):
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        reduction = max_(
+        return max_(
             0,
             benunit("UC_unearned_income", period)
             + UC.means_test.reduction_rate
             * benunit("UC_earned_income", period),
         )
-        return reduction
 
 
 class universal_credit(Variable):

@@ -29,3 +29,4 @@ metadata:
   period: week
   threshold_unit: currency-GBP
   amount_unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=37

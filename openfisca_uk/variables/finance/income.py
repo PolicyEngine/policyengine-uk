@@ -84,12 +84,9 @@ class in_work(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (person("hours_worked", period) > 0) | (
-            add(
-                person, period, ["employment_income", "self_employment_income"]
-            )
-            > 0
-        )
+        has_hours_worked = person("hours_worked", period) > 0
+        has_earnings = add(person, period, ["employment_income", "self_employment_income"]) > 0
+        return has_hours_worked | has_earnings
 
 
 class weekly_hours(Variable):
