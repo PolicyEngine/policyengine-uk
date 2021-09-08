@@ -260,7 +260,7 @@ Numbers are in billions of pounds.</p>
 <span class="n">v</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;state_pension&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">86.4</span><span class="p">,</span> <span class="mf">85.5</span>
 
 <span class="n">v</span><span class="p">[</span><span class="s2">&quot;of&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">sim</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">VARIABLES</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">2019</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+    <span class="n">sim</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">VARIABLES</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">2018</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
 <span class="p">)</span>
 
 <span class="n">v</span><span class="p">[</span><span class="s2">&quot;of_ukmod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">of</span> <span class="o">/</span> <span class="n">v</span><span class="o">.</span><span class="n">ukmod</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -306,75 +306,75 @@ Numbers are in billions of pounds.</p>
   <tbody>
     <tr>
       <th>Income Tax</th>
-      <td>170.1</td>
+      <td>165.2</td>
       <td>163.7</td>
       <td>190.0</td>
-      <td>1.04</td>
-      <td>0.90</td>
+      <td>1.01</td>
+      <td>0.87</td>
     </tr>
     <tr>
       <th>Non-employer National Insurance</th>
-      <td>55.6</td>
+      <td>61.2</td>
       <td>64.0</td>
       <td>55.7</td>
-      <td>0.87</td>
-      <td>1.00</td>
+      <td>0.96</td>
+      <td>1.10</td>
     </tr>
     <tr>
       <th>Employee Class 1 NI</th>
-      <td>51.7</td>
+      <td>56.8</td>
       <td>55.7</td>
       <td>52.0</td>
-      <td>0.93</td>
-      <td>0.99</td>
+      <td>1.02</td>
+      <td>1.09</td>
     </tr>
     <tr>
       <th>Employer Class 1 NI</th>
-      <td>56.8</td>
+      <td>62.5</td>
       <td>77.8</td>
       <td>79.2</td>
-      <td>0.73</td>
-      <td>0.72</td>
+      <td>0.80</td>
+      <td>0.79</td>
     </tr>
     <tr>
       <th>Class 2 &amp; 4 NI</th>
-      <td>3.5</td>
+      <td>4.0</td>
       <td>5.0</td>
       <td>3.7</td>
-      <td>0.70</td>
-      <td>0.94</td>
+      <td>0.80</td>
+      <td>1.08</td>
     </tr>
     <tr>
       <th>Universal Credit</th>
-      <td>13.5</td>
+      <td>7.4</td>
       <td>11.7</td>
       <td>8.1</td>
-      <td>1.15</td>
-      <td>1.66</td>
+      <td>0.63</td>
+      <td>0.91</td>
     </tr>
     <tr>
       <th>Tax Credits</th>
-      <td>3.8</td>
+      <td>16.8</td>
       <td>13.9</td>
       <td>22.8</td>
-      <td>0.27</td>
-      <td>0.17</td>
+      <td>1.21</td>
+      <td>0.74</td>
     </tr>
     <tr>
       <th>Housing Benefit</th>
-      <td>15.9</td>
+      <td>12.7</td>
       <td>15.1</td>
       <td>20.7</td>
-      <td>1.05</td>
-      <td>0.77</td>
+      <td>0.84</td>
+      <td>0.61</td>
     </tr>
     <tr>
       <th>State Pension</th>
-      <td>103.0</td>
+      <td>86.4</td>
       <td>86.4</td>
       <td>85.5</td>
-      <td>1.19</td>
-      <td>1.20</td>
+      <td>1.00</td>
+      <td>1.01</td>
     </tr>
   </tbody>
 </table>
