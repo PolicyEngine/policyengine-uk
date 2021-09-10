@@ -29,6 +29,10 @@ Or with the actual microdata:
 
 The maintainer for OpenFisca-UK is Nikhil Woodruff - feel free to contact via [email](mailto:nikhil.woodruff@ubicenter.org).
 
+## How is this model validated?
+
+PolicyEngine uses the OpenFisca-UK microsimulation model, which we constructed by programming rules and parameters specified primarily in the [country report](https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf) created by [UKMOD](https://www.iser.essex.ac.uk/research/projects/ukmod), a microsimulation model developed by the University of Essex. We also validated against legislation, various gov.uk sites, reports from other microsimulation models, and external benefits calculators. See the [OpenFisca-UK validation page](https://pslmodels.github.io/openfisca-uk/validation.html) for more information.
+
 ## Disclaimer
 
 The model is currently under development. Users should be forewarned that the
