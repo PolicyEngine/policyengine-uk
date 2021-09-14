@@ -4,7 +4,7 @@ from openfisca_uk.tools.general import *
 
 
 class household_id(Variable):
-    value_type = float
+    value_type = int
     entity = Household
     label = u"ID for the household"
     definition_period = YEAR

@@ -5,7 +5,7 @@ from openfisca_uk.api import reforms, graphs, BASELINE_PARAMETERS
 
 def test_wide_form_individual_data_with_one_reform():
     abolish_PA = reforms.structural.abolish("personal_allowance")
-    df = graphs.data.get_wide_reform_individual_data(
+    graphs.data.get_wide_reform_individual_data(
         [abolish_PA], ["Abolish PA"], ["net_income", "tax"]
     )
 
@@ -16,7 +16,7 @@ def test_wide_form_individual_data_with_two_reforms():
         BASELINE_PARAMETERS.tax.income_tax.allowances.personal_allowance.amount,
         6250,
     )
-    df = graphs.data.get_wide_reform_individual_data(
+    graphs.data.get_wide_reform_individual_data(
         [halve_PA, abolish_PA],
         ["Halve PA", "Abolish PA"],
         ["net_income", "tax"],
@@ -30,8 +30,8 @@ def test_single_reform_MTR_and_budget_plot():
         BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
         0.4,
     )
-    budget = budget_chart(reform)
-    mtr = mtr_chart(reform)
+    budget_chart(reform)
+    mtr_chart(reform)
 
 
 def test_multiple_reform_MTR_and_budget_plot():
@@ -47,5 +47,5 @@ def test_multiple_reform_MTR_and_budget_plot():
         BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
         0.1,
     )
-    budget = budget_chart([reform_1, reform_2], names=["CB=£50", "CB=£300"])
-    mtr = mtr_chart([reform_1, reform_2], names=["CB=£50", "CB=£300"])
+    budget_chart([reform_1, reform_2], names=["CB=£50", "CB=£300"])
+    mtr_chart([reform_1, reform_2], names=["CB=£50", "CB=£300"])

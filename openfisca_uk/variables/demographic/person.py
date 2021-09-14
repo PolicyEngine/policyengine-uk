@@ -5,7 +5,7 @@ import pandas as pd
 
 
 class person_id(Variable):
-    value_type = float
+    value_type = int
     entity = Person
     label = u"ID for the person"
     definition_period = YEAR
@@ -120,6 +120,46 @@ class is_benunit_eldest_child(Variable):
         has_max_child_id = child_id == max_child_id
         return where(is_eldest_age & age_tie, has_max_child_id, is_eldest_age)
 
+class MaritalStatus(Enum):
+    SINGLE = "Single"
+    MARRIED = "Married"
+    SEPARATED = "Separated"
+    DIVORCED = "Divorced"
+    WIDOWED = "Widowed"
+
+class marital_status(Variable):
+    value_type = Enum
+    possible_values = MaritalStatus
+    default_value = MaritalStatus.SINGLE
+    entity = Person
+    label = u'Marital status'
+    definition_period = ETERNITY
+
+class EducationType(Enum):
+    NOT_IN_EDUCATION = "Not in education"
+    PRE_PRIMARY = "Pre-primary"
+    NOT_COMPLETED_PRIMARY = "Not completed primary"
+    PRIMARY = "Primary"
+    LOWER_SECONDARY = "Lower Secondary"
+    UPPER_SECONDARY = "Upper Secondary"
+    POST_SECONDARY = "Post Secondary"
+    TERTIARY = "Tertiary"
+
+class current_education(Variable):
+    value_type = Enum
+    possible_values = EducationType
+    default_value = EducationType.NOT_IN_EDUCATION
+    entity = Person
+    label = u'Current education'
+    definition_period = YEAR
+
+class highest_education(Variable):
+    value_type = Enum
+    possible_values = EducationType
+    default_value = EducationType.UPPER_SECONDARY
+    entity = Person
+    label = u'Highest status education completed'
+    definition_period = YEAR
 
 class in_FE(Variable):
     value_type = bool

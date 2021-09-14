@@ -19,14 +19,11 @@ class claims_UC(Variable):
         )
 
 
-class universal_credit(Variable):
+class universal_credit_reported(Variable):
     value_type = float
-    entity = BenUnit
+    entity = Person
     label = u"Universal Credit"
     definition_period = YEAR
-
-    def formula(benunit, period):
-        return benunit("UC_maximum_amount", period)
 
 
 class UC_maximum_amount(Variable):

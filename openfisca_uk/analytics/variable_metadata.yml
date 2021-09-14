@@ -1,0 +1,24 @@
+income_tax:
+  ukmod: tin_s
+  max_rel_err: 0.05
+employee_NI_class_1:
+  ukmod: tscee_s
+  max_rel_err: 0.05
+child_benefit:
+  ukmod: bch_s
+  max_rel_err: 0.15
+working_tax_credit:
+  ukmod: bwkmt_s
+  max_rel_err: 0.15
+child_tax_credit:
+  ukmod: bfamt_s
+  max_rel_err: 0.15
+universal_credit:
+  ukmod: bsauc_s
+  max_rel_err: 0.15
+housing_benefit:
+  ukmod: bho_s
+  max_rel_err: 0.15
+pension_credit:
+  ukmod: boamt_s
+  max_rel_err: 0.15

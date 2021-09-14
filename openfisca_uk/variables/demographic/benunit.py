@@ -5,7 +5,7 @@ from openfisca_uk.tools.general import *
 
 
 class benunit_id(Variable):
-    value_type = float
+    value_type = int
     entity = BenUnit
     label = u"ID for the family"
     definition_period = YEAR

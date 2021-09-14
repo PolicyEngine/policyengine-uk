@@ -17,7 +17,7 @@ test:
 	pytest tests/with_microdata
 	black . -l 79 --check
 
-serve: build
+serve:
 	openfisca serve --country-package openfisca_uk
 
 stats:
