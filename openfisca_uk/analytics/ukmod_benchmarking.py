@@ -29,7 +29,10 @@ def benchmark_against_UKMOD(
         "sum",
         "nonzero",
     ]
-    calc_functions = [lambda values: values.sum(), lambda values: (values > 0).sum()]
+    calc_functions = [
+        lambda values: values.sum(),
+        lambda values: (values > 0).sum(),
+    ]
     metric_to_func = {m: f for m, f in zip(metrics, calc_functions)}
 
     # For each variable pair and metric, compute relative and absolute error
@@ -38,12 +41,8 @@ def benchmark_against_UKMOD(
 
     for variable, metric in product(METADATA.keys(), metrics):
         metadata = METADATA[variable]
-        result = (
-            metric_to_func[metric](baseline.calc(variable, period=year))
-        )
-        target = (
-            metric_to_func[metric](ukmod[metadata["ukmod"]])
-        )
+        result = metric_to_func[metric](baseline.calc(variable, period=year))
+        target = metric_to_func[metric](ukmod[metadata["ukmod"]])
         rel_err = abs(result / target - 1)
         abs_err = abs(result - target)
         passed = (abs_err < 10) or (rel_err < metadata["max_rel_err"])
@@ -60,7 +59,7 @@ def benchmark_against_UKMOD(
                 rel_err,
                 abs_err,
                 metadata["max_rel_err"],
-                passed
+                passed,
             ]
         ]
 
@@ -78,6 +77,6 @@ def benchmark_against_UKMOD(
             "rel_err",
             "abs_err",
             "max_rel_err",
-            "passed"
+            "passed",
         ),
     )

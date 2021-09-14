@@ -56,36 +56,37 @@ class childcare_expenses(Variable):
     label = u"Cost of childcare"
     definition_period = YEAR
 
+
 class private_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = YEAR
     reference = ""
+
 
 class housing_service_charges(Variable):
     value_type = float
     entity = Household
-    label = u'label'
+    label = u"label"
     definition_period = YEAR
     reference = ""
+
 
 class water_and_sewerage_charges(Variable):
     value_type = float
     entity = Household
-    label = u'label'
+    label = u"label"
     definition_period = YEAR
     reference = ""
+
 
 class employer_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = YEAR
     reference = ""
-
-
-
 
 
 class weekly_childcare_cost(Variable):
@@ -107,12 +108,14 @@ class housing_costs(Variable):
     def formula(household, period, parameters):
         return household("rent", period) + household("mortgage", period)
 
+
 class maintenance_expenses(Variable):
     value_type = float
     entity = Person
-    label = u'label'
+    label = u"label"
     definition_period = YEAR
     reference = ""
+
 
 class mortgage_interest_repayment(Variable):
     value_type = float
@@ -120,11 +123,13 @@ class mortgage_interest_repayment(Variable):
     label = u"Total mortgage payments"
     definition_period = YEAR
 
+
 class mortgage_capital_repayment(Variable):
     value_type = float
     entity = Household
     label = u"Mortgage payments"
     definition_period = YEAR
+
 
 class mortgage(Variable):
     value_type = float
@@ -139,6 +144,7 @@ class council_tax(Variable):
     label = u"Council Tax"
     definition_period = YEAR
 
+
 class CouncilTaxBand(Enum):
     A = "A"
     B = "B"
@@ -149,6 +155,7 @@ class CouncilTaxBand(Enum):
     G = "G"
     H = "H"
     I = "I"
+
 
 class council_tax_band(Variable):
     value_type = Enum

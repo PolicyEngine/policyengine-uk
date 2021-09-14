@@ -360,9 +360,7 @@ class Microsimulation:
             "person-benunit": np.array(data["person_benunit_id"]),
             "person-household": np.array(data["person_household_id"]),
         }
-        builder.declare_person_entity(
-            "person", np.array(data["person_id"])
-        )
+        builder.declare_person_entity("person", np.array(data["person_id"]))
         benunits = builder.declare_entity(
             "benunit", np.array(data["benunit_id"])
         )

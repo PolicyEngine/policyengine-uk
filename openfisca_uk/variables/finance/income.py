@@ -38,16 +38,18 @@ class miscellaneous_income(Variable):
     label = u"Income from other sources"
     definition_period = YEAR
 
+
 class private_transfer_income(Variable):
     value_type = float
     entity = Person
-    label = u'Private transfers'
+    label = u"Private transfers"
     definition_period = YEAR
+
 
 class lump_sum_income(Variable):
     value_type = float
     entity = Person
-    label = u'Lump sum income'
+    label = u"Lump sum income"
     definition_period = YEAR
 
 
@@ -139,20 +141,25 @@ class employment_status(Variable):
     label = u"Employment status of the person"
     definition_period = YEAR
 
+
 class capital_income(Variable):
     value_type = float
     entity = Person
-    label = u'Income from savings or dividends'
+    label = u"Income from savings or dividends"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return add(person, period, ["savings_interest_income", "dividend_income"])
+        return add(
+            person, period, ["savings_interest_income", "dividend_income"]
+        )
+
 
 class maintenance_income(Variable):
     value_type = float
     entity = Person
-    label = u'Maintenance payments'
+    label = u"Maintenance payments"
     definition_period = YEAR
+
 
 class household_net_income(Variable):
     value_type = float
