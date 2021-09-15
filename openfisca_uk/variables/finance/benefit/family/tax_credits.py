@@ -412,7 +412,7 @@ class WTC_childcare_element(Variable):
         childcare_element = min_(
             max_childcare_amount,
             WTC.elements.childcare_coverage
-            * benunit.sum(benunit.members("childcare_cost", period)),
+            * benunit.sum(benunit.members("childcare_expenses", period)),
         )
         return (
             benunit("is_WTC_eligible", period)

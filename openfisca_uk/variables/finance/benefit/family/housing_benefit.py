@@ -137,7 +137,7 @@ class housing_benefit_applicable_income(Variable):
         ) * WTC.elements.childcare_2 * WEEKS_IN_YEAR
         childcare_element = min_(
             max_childcare_amount,
-            benunit.sum(benunit.members("childcare_cost", period)),
+            benunit.sum(benunit.members("childcare_expenses", period)),
         )
         applicable_income = max_(
             0,

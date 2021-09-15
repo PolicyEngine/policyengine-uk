@@ -31,12 +31,44 @@ class blind_persons_allowance(Variable):
     reference = "Income Tax Act 2007 s. 38"
 
 
+class unused_personal_allowance(Variable):
+    value_type = float
+    entity = Person
+    label = u"label"
+    definition_period = YEAR
+    reference = ""
+
+    def formula(person, period, parameters):
+        return max_(
+            person("personal_allowance", period)
+            - person("adjusted_net_income", period),
+            0,
+        )
+
+
 class marriage_allowance(Variable):
     value_type = float
     entity = Person
     label = u"Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 55"
+
+    def formula(person, period, parameters):
+        tax_band = person("tax_band", period)
+        bands = tax_band.possible_values
+        under_PA = person("tax_band", period) == bands.NONE
+        in_BR = person("tax_band", period) == bands.BASIC
+        marital = person("marital_status", period)
+        married = marital == marital.possible_values.MARRIED
+        transferable_allowance = person.benunit.sum(
+            married
+            * under_PA
+            * min_(
+                person("unused_personal_allowance", period),
+                0.1 * person("personal_allowance", period),
+            )
+        )
+        return married * in_BR * transferable_allowance
 
 
 class married_couples_allowance(Variable):

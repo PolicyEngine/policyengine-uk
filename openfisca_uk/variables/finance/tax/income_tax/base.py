@@ -55,6 +55,9 @@ class trading_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
 
+    def formula(person, period, parameters):
+        return person("self_employment_income", period)
+
 
 class property_income(Variable):
     value_type = float
@@ -62,9 +65,6 @@ class property_income(Variable):
     label = u"Income from rental of property"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
-
-    def formula(person, period, parameters):
-        return person("sublet_income", period)
 
 
 class savings_interest_income(Variable):

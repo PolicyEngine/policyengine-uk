@@ -329,8 +329,8 @@ class UC_childcare_element(Variable):
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        eligible_childcare_costs = benunit.sum(
-            benunit.members("childcare_cost", period)
+        eligible_childcare_expensess = benunit.sum(
+            benunit.members("childcare_expenses", period)
         )
         children = benunit("num_UC_eligible_children", period)
         childcare_limit = (
@@ -339,7 +339,7 @@ class UC_childcare_element(Variable):
         )
         childcare_element = min_(
             childcare_limit,
-            eligible_childcare_costs * UC.elements.childcare.coverage_rate,
+            eligible_childcare_expensess * UC.elements.childcare.coverage_rate,
         )
         return (
             benunit("UC_childcare_work_condition", period) * childcare_element

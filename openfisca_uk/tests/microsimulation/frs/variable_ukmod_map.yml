@@ -1,0 +1,10 @@
+adjusted_net_income: 
+  ukmod: il_tinty
+  max_quantile_rel_error: 0.08
+income_tax: tin_s
+employee_NI: tscee_s
+self_employed_NI:
+  ukmod: tscse_s
+  max_rel_error: 0.1
+employer_NI: tscer_s
+child_benefit: bch_s

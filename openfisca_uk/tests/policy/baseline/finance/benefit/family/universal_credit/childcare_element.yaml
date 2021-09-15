@@ -15,7 +15,7 @@
         employment_income: 0
         hours_worked: 1
       child:
-        childcare_cost: 1000
+        childcare_expenses: 1000
         age: 2
     benunits:
       benunit:
@@ -37,7 +37,7 @@
         employment_income: 0
         hours_worked: 1
       child:
-        childcare_cost: 10000
+        childcare_expenses: 10000
         age: 2
     benunits:
       benunit:

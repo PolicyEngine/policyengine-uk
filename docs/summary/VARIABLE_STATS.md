@@ -3,7 +3,7 @@
 All statistics generated from the uprated (to 2020) 2018-19 Family Resources Survey, with simulation turned on.
 
 
-- childcare_cost:
+- childcare_expenses:
   - Type: float
   - Entity: person
   - Description: Cost of childcare
@@ -73,7 +73,7 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 9990064.0
 
 
-- weekly_childcare_cost:
+- weekly_childcare_expenses:
   - Type: float
   - Entity: person
   - Description: Average cost of childcare

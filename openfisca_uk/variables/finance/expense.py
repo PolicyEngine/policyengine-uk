@@ -65,6 +65,14 @@ class private_pension_contributions(Variable):
     reference = ""
 
 
+class occupational_pension_contributions(Variable):
+    value_type = float
+    entity = Person
+    label = u"label"
+    definition_period = YEAR
+    reference = ""
+
+
 class housing_service_charges(Variable):
     value_type = float
     entity = Household
@@ -89,14 +97,14 @@ class employer_pension_contributions(Variable):
     reference = ""
 
 
-class weekly_childcare_cost(Variable):
+class weekly_childcare_expenses(Variable):
     value_type = float
     entity = Person
     label = u"Average cost of childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("childcare_cost", period) / WEEKS_IN_YEAR
+        return person("childcare_expenses", period) / WEEKS_IN_YEAR
 
 
 class housing_costs(Variable):

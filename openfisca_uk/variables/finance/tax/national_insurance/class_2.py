@@ -12,7 +12,7 @@ class weekly_NI_class_2(Variable):
 
     def formula(person, period, parameters):
         class_2 = parameters(period).tax.national_insurance.class_2
-        profits = person("trading_income", period)
+        profits = person("self_employment_income", period)
         over_threshold = profits >= class_2.small_profits_threshold
         charge = over_threshold * class_2.flat_rate * WEEKS_IN_YEAR
         return charge

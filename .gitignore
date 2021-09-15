@@ -29,6 +29,8 @@ household.csv
 
 docs/book/_build/
 docs/book/.ipynb_checkpoints
+**/.ipynb_checkpoints
+Untitled.ipynb
 
 # Config files
 

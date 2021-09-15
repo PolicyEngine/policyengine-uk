@@ -22,8 +22,38 @@ class taxable_employment_income(Variable):
     def formula(person, period, parameters):
         taxable_earnings = person("employment_income", period)
         deductions = person("employment_deductions", period)
-        net_taxable_earnings = max_(0, taxable_earnings - deductions)
+        benefits = person("employment_benefits", period)
+        net_taxable_earnings = max_(
+            0, taxable_earnings + benefits - deductions
+        )
         return net_taxable_earnings
+
+
+class employment_benefits(Variable):
+    value_type = float
+    entity = Person
+    label = u"Employment benefits"
+    definition_period = YEAR
+    reference = ""
+
+    def formula(person, period, parameters):
+        return add(person, period, ["SSP", "SMP"])
+
+
+class SMP(Variable):
+    value_type = float
+    entity = Person
+    label = u"SMP"
+    definition_period = YEAR
+    reference = ""
+
+
+class SSP(Variable):
+    value_type = float
+    entity = Person
+    label = u"label"
+    definition_period = YEAR
+    reference = ""
 
 
 class employment_deductions(Variable):
@@ -34,7 +64,7 @@ class employment_deductions(Variable):
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 327"
 
     def formula(person, period, parameters):
-        deductions = ["pension_contributions", "employment_expenses"]
+        deductions = ["employment_expenses"]
         return add(person, period, deductions)
 
 
@@ -54,6 +84,16 @@ class pension_contributions(Variable):
     label = u"Amount contributed to registered pension schemes paid by the individual (not the employer)"
     definition_period = YEAR
 
+    def formula(person, period, parameters):
+        return add(
+            person,
+            period,
+            (
+                "private_pension_contributions",
+                "occupational_pension_contributions",
+            ),
+        )
+
 
 class pension_contributions_relief(Variable):
     value_type = float
@@ -65,7 +105,7 @@ class pension_contributions_relief(Variable):
     def formula_2004_07_22(person, period, parameters):
         contributions = person("pension_contributions", period)
         pay = person("employment_income", period) + person(
-            "trading_income", period
+            "self_employment_income", period
         )
         under_75 = person("age", period) < 75
         basic_amount = parameters(
@@ -233,6 +273,17 @@ class taxable_dividend_income(Variable):
         )
 
 
+class taxable_self_employment_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Taxable self-employment income"
+    definition_period = YEAR
+    reference = ""
+
+    def formula(person, period, parameters):
+        return person("self_employment_income", period)
+
+
 # Miscellaneous income
 
 
@@ -242,6 +293,9 @@ class taxable_miscellaneous_income(Variable):
     label = u"Amount of miscellaneous income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 574"
+
+    def formula(person, period, parameters):
+        return person("miscellaneous_income", period)
 
 
 class total_income(Variable):
@@ -256,7 +310,7 @@ class total_income(Variable):
             "employment_income",
             "pension_income",
             "social_security_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "savings_interest_income",
             "dividend_income",
@@ -277,10 +331,14 @@ class adjusted_net_income(Variable):
             "taxable_employment_income",
             "taxable_pension_income",
             "taxable_social_security_income",
-            "taxable_trading_income",
+            "taxable_self_employment_income",
             "taxable_property_income",
             "taxable_savings_interest_income",
             "taxable_dividend_income",
             "taxable_miscellaneous_income",
         ]
-        return add(person, period, COMPONENTS)
+        return max_(
+            0,
+            add(person, period, COMPONENTS)
+            - person("pension_contributions", period),
+        )

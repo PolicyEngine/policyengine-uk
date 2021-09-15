@@ -15,23 +15,14 @@ class earned_taxable_income(Variable):
     reference = "Income Tax Act 2007 s. 10"
 
     def formula(person, period, parameters):
-        COMPONENTS = [
-            "taxable_employment_income",
-            "taxable_pension_income",
-            "taxable_social_security_income",
-            "taxable_trading_income",
-            "taxable_property_income",
-            "taxable_miscellaneous_income",
-        ]
-        pension_contributions_over_limit = max_(
-            0,
-            person("pension_contributions", period)
-            - person("pension_contributions_relief", period),
+        amount = person("adjusted_net_income", period) - add(
+            person,
+            period,
+            ["taxable_savings_interest_income", "taxable_dividend_income"],
         )
-        amount = (
-            add(person, period, COMPONENTS) + pension_contributions_over_limit
+        reductions = person("allowances", period) + person(
+            "marriage_allowance", period
         )
-        reductions = person("allowances", period)
         final_amount = max_(0, amount - reductions)
         return final_amount
 
@@ -530,6 +521,9 @@ class income_tax(Variable):
     reference = "Income Tax Act 2007 s. 23"
 
     def formula(person, period, parameters):
-        return person("income_tax_pre_charges", period) + person(
-            "CB_HITC", period
+        return max_(
+            0,
+            person("income_tax_pre_charges", period)
+            + person("CB_HITC", period)
+            - person("married_couples_allowance_deduction", period),
         )

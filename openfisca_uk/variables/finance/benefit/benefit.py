@@ -118,7 +118,10 @@ class is_QYP(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (person("age", period) < 20) * person("in_FE", period)
+        education = person("current_education", period)
+        return (person("age", period) < 20) & ~(
+            education == education.possible_values.NOT_IN_EDUCATION
+        )
 
 
 class is_child_or_QYP(Variable):
@@ -128,7 +131,7 @@ class is_child_or_QYP(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("is_child", period) + person("is_QYP", period)
+        return (person("age", period) < 16) | person("is_QYP", period)
 
 
 class benefits_premiums(Variable):
