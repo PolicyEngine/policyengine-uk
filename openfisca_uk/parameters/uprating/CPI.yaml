@@ -1,0 +1,13 @@
+description: Harmonised CPI index
+values:
+  2015-01-01: 100.00
+  2018-01-01: 106.40
+  2019-01-01: 108.20
+  2020-01-01: 109.05
+  2021-01-01: 110.46
+  2022-01-01: 112.56
+  2023-01-01: 114.81
+  2024-01-01: 117.11
+metadata:
+  unit: currency-GBP
+  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109

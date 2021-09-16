@@ -9,6 +9,7 @@ from openfisca_uk import Microsimulation, REPO
 import pytest
 from microdf import MicroDataFrame, MicroSeries
 from openfisca_uk.reforms.presets.current_date import use_current_parameters
+from openfisca_uk.tools.parameters import backdate_parameters
 from itertools import product
 from functools import partial
 import yaml
@@ -31,7 +32,9 @@ if TEST_YEAR not in UKMODOutput.years:
 if TEST_YEAR not in FRS.years:
     raise FileNotFoundError("FRS needed to run tests.")
 
-baseline = Microsimulation(use_current_parameters("2018-12-29"), dataset=FRS)
+baseline = Microsimulation(
+    (backdate_parameters(), use_current_parameters("2018-12-29")), dataset=FRS
+)
 ukmod = UKMODOutput.load(TEST_YEAR, "person")
 ukmod_hh = ukmod.groupby("household_id").sum()
 ukmod = MicroDataFrame(ukmod, weights=ukmod.person_weight)

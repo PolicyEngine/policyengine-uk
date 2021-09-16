@@ -108,3 +108,28 @@ def random(entity, reset=True):
 
 def is_in(values, *targets):
     return sum(map(lambda target: values == target, targets))
+
+
+def uprated(by: str = None) -> Callable:
+    def uprater(variable: type) -> type:
+        if hasattr(variable, "formula_2018"):
+            return variable
+
+        def formula_2018(entity, period, parameters):
+            if by is None:
+                return entity(variable.__name__, period.last_year)
+            else:
+                uprating = (
+                    parameters(period).uprating[by]
+                    / parameters(period.last_year).uprating[by]
+                )
+                return uprating * entity(variable.__name__, period.last_year)
+
+        variable.formula_2018 = formula_2018
+        return variable
+
+    return uprater
+
+
+def carried_over(variable: type) -> type:
+    return uprated()(variable)

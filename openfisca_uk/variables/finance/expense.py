@@ -146,6 +146,7 @@ class mortgage(Variable):
     definition_period = YEAR
 
 
+@uprated(by="council_tax")
 class council_tax(Variable):
     value_type = float
     entity = Household

@@ -36,7 +36,7 @@ class tax_credits_applicable_income(Variable):
         income = amount_over(income, TC.means_test.non_earned_disregard)
         STEP_2_COMPONENTS = [
             "taxable_employment_income",
-            "taxable_trading_income",
+            "taxable_self_employment_income",
             "taxable_social_security_income",
             "taxable_miscellaneous_income",
         ]

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 from openfisca_uk import entities
 from openfisca_uk.tools.simulation import IndividualSim, Microsimulation
 from openfisca_uk.reforms.presets.modelling import (
@@ -10,13 +9,12 @@ from openfisca_uk.reforms.presets.modelling import (
     reported,
 )
 from pathlib import Path
-
-REPO = Path(__file__).parent
+import os
+from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Our country tax and benefit class inherits from the general TaxBenefitSystem class.
-# The name CountryTaxBenefitSystem must not be changed, as all tools of the OpenFisca ecosystem expect a CountryTaxBenefitSystem class to be exposed in the __init__ module of a country package.
+
 class CountryTaxBenefitSystem(TaxBenefitSystem):
     CURRENCY = "£"
 
@@ -56,3 +54,7 @@ BASELINE_VARIABLES = AttributeDict(
         for name, value in CountryTaxBenefitSystem().variables.items()
     }
 )
+REPO = Path(__file__).parent
+
+# Our country tax and benefit class inherits from the general TaxBenefitSystem class.
+# The name CountryTaxBenefitSystem must not be changed, as all tools of the OpenFisca ecosystem expect a CountryTaxBenefitSystem class to be exposed in the __init__ module of a country package.

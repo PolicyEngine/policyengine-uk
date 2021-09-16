@@ -8,3 +8,4 @@ self_employed_NI:
   max_rel_error: 0.1
 employer_NI: tscer_s
 child_benefit: bch_s
+working_tax_credit: bwkmt_s
