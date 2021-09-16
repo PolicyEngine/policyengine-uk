@@ -51,7 +51,7 @@ class social_security_income(Variable):
 
 
 @uprated(by="earnings")
-class trading_income(Variable):
+class self_employment_income(Variable):
     value_type = float
     entity = Person
     label = u"Income from trading profits for owned businesses"

@@ -358,7 +358,7 @@ class UC_earned_income(Variable):
             "employment_income",
             "self_employment_income",
             "miscellaneous_income",
-            "trading_income",
+            "self_employment_income",
         ]
         earned_income = aggr(benunit, period, INCOME_COMPONENTS)
         earned_income = max_(

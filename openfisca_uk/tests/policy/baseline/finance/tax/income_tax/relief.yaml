@@ -43,28 +43,28 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    trading_income: 1000
+    self_employment_income: 1000
     loss_relief: 2000
   output:
-    taxable_trading_income: 0
+    taxable_self_employment_income: 0
 - name: Trading loss relief of previous year
   period: 2020
   absolute_error_margin: 0
   input:
-    trading_income: 1000
+    self_employment_income: 1000
     loss_relief: 
       2019: 2000
   output:
-    taxable_trading_income: 0
+    taxable_self_employment_income: 0
 - name: Trading loss relief doesn't offset other income
   period: 2020
   absolute_error_margin: 0
   input:
-    trading_income: 1000
+    self_employment_income: 1000
     employment_income: 1000
     loss_relief: 2000
   output:
-    taxable_trading_income: 0
+    taxable_self_employment_income: 0
     taxable_employment_income: 1000
 - name: Property income within allowance
   period: 2020

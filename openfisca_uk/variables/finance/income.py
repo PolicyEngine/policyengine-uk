@@ -25,13 +25,6 @@ class sublet_income(Variable):
     definition_period = YEAR
 
 
-class self_employment_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Self-employment income"
-    definition_period = YEAR
-
-
 class miscellaneous_income(Variable):
     value_type = float
     entity = Person

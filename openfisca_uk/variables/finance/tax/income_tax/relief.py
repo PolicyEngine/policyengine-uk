@@ -21,7 +21,9 @@ class taxable_employment_income(Variable):
 
     def formula(person, period, parameters):
         taxable_earnings = person("employment_income", period)
-        deductions = person("employment_deductions", period)
+        deductions = person("employment_deductions", period) + person(
+            "pension_contributions", period
+        )
         benefits = person("employment_benefits", period)
         net_taxable_earnings = max_(
             0, taxable_earnings + benefits - deductions
@@ -214,7 +216,7 @@ class taxable_social_security_income(Variable):
 # Trading income
 
 
-class taxable_trading_income(Variable):
+class taxable_self_employment_income(Variable):
     value_type = float
     entity = Person
     label = u"Amount of trading income that is taxable"
@@ -225,7 +227,8 @@ class taxable_trading_income(Variable):
         DEDUCTIONS = ["loss_relief", "capital_allowances", "trading_allowance"]
         amount = max_(
             0,
-            person("trading_income", period) - add(person, period, DEDUCTIONS),
+            person("self_employment_income", period)
+            - add(person, period, DEDUCTIONS),
         )
         return amount
 
@@ -271,17 +274,6 @@ class taxable_dividend_income(Variable):
             person("dividend_income", period)
             - person("deficiency_relief", period),
         )
-
-
-class taxable_self_employment_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Taxable self-employment income"
-    definition_period = YEAR
-    reference = ""
-
-    def formula(person, period, parameters):
-        return person("self_employment_income", period)
 
 
 # Miscellaneous income
@@ -339,6 +331,5 @@ class adjusted_net_income(Variable):
         ]
         return max_(
             0,
-            add(person, period, COMPONENTS)
-            - person("pension_contributions", period),
+            add(person, period, COMPONENTS),
         )

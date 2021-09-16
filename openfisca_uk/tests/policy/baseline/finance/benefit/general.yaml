@@ -10,7 +10,7 @@
   absolute_error_margin: 0
   input:
     age: 17
-    in_FE: true
+    current_education: POST_SECONDARY
   output:
     is_child_or_QYP: true
 - name: Benefits premiums summed

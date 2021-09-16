@@ -69,7 +69,7 @@ class pension_credit_applicable_income(Variable):
     def formula(benunit, period, parameters):
         INCOME_COMPONENTS = [
             "employment_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "pension_income",
             "savings_interest_income",

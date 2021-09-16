@@ -3,8 +3,10 @@
   absolute_error_margin: 0
   input:
     people:
-      adult: {}
-      child: {}
+      adult: 
+        age: 30
+      child:
+        age: 14
     benunits:
       benunit:
         adults: ["adult"]

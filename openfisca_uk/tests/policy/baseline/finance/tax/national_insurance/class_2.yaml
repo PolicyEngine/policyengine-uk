@@ -2,20 +2,20 @@
   period: 2020
   absolute_error_margin: 10
   input:
-    trading_income: 30000
+    self_employment_income: 30000
   output:
     NI_class_2: 159
 - name: NI Class 2 for no income
   period: 2020
   absolute_error_margin: 0
   input:
-    trading_income: 0
+    self_employment_income: 0
   output:
     NI_class_2: 0
 - name: NI Class 2 for income under limit
   period: 2020
   absolute_error_margin: 0
   input:
-    trading_income: 5000
+    self_employment_income: 5000
   output:
     NI_class_2: 0

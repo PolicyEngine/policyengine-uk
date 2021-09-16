@@ -92,7 +92,7 @@ class JSA_income_applicable_income(Variable):
         JSA = parameters(period).benefit.JSA
         INCOME_COMPONENTS = [
             "employment_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "pension_income",
         ]

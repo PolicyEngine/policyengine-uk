@@ -125,7 +125,7 @@ class trading_allowance_deduction(Variable):
     def formula(person, period, parameters):
         amount = min_(
             person("trading_allowance", period),
-            person("trading_income", period),
+            person("self_employment_income", period),
         )
         return amount
 

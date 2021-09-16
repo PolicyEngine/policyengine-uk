@@ -113,7 +113,7 @@ class housing_benefit_applicable_income(Variable):
         ]
         INCOME_COMPONENTS = [
             "employment_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "pension_income",
         ]

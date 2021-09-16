@@ -44,18 +44,18 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    trading_income: 500
+    self_employment_income: 500
   output:
     trading_allowance_deduction: 500
-    taxable_trading_income: 0
+    taxable_self_employment_income: 0
 - name: Trading allowance partial deduction
   period: 2020
   absolute_error_margin: 0
   input:
-    trading_income: 5000
+    self_employment_income: 5000
   output:
     trading_allowance_deduction: 1000
-    taxable_trading_income: 4000
+    taxable_self_employment_income: 4000
 - name: Property allowance full deduction
   period: 2020
   absolute_error_margin: 0

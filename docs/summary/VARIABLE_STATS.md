@@ -1795,7 +1795,7 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 12962546.0
 
 
-- trading_income:
+- self_employment_income:
   - Type: float
   - Entity: person
   - Description: Income from trading profits for owned businesses
@@ -1975,7 +1975,7 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 12962546.0
 
 
-- taxable_trading_income:
+- taxable_self_employment_income:
   - Type: float
   - Entity: person
   - Description: Amount of trading income that is taxable

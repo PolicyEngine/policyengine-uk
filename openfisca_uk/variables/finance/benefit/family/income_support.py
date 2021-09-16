@@ -36,7 +36,7 @@ class income_support_applicable_income(Variable):
         IS = parameters(period).benefit.income_support
         INCOME_COMPONENTS = [
             "employment_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "pension_income",
         ]

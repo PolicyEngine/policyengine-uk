@@ -43,7 +43,7 @@
         age: 14
       child2: 
         age: 17
-        in_FE: true
+        current_education: POST_SECONDARY
     benunits:
       benunit:
         adults: ["parent1", "parent2"]
