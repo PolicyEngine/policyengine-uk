@@ -53,6 +53,34 @@ class lump_sum_income(Variable):
     definition_period = YEAR
 
 
+class market_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"label"
+    definition_period = YEAR
+    reference = ""
+
+    def formula(person, period, parameters):
+        return (
+            add(
+                person,
+                period,
+                [
+                    "employment_income",
+                    "self_employment_income",
+                    "savings_interest_income",
+                    "dividend_income",
+                    "miscellaneous_income",
+                    "property_income",
+                    "pension_income",
+                    "private_transfer_income",
+                    "maintenance_income",
+                ],
+            )
+            - person("maintenance_expenses", period)
+        )
+
+
 class gross_income(Variable):
     value_type = float
     entity = Person

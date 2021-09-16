@@ -3,25 +3,19 @@ from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 
 
-class P_person_id(Variable):
+class person_benunit_id(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
 
 
-class P_benunit_id(Variable):
+class person_household_id(Variable):
     value_type = float
     entity = Person
     definition_period = YEAR
 
 
-class P_household_id(Variable):
-    value_type = float
-    entity = Person
-    definition_period = YEAR
-
-
-class P_role(Variable):
+class role(Variable):
     value_type = str
     entity = Person
     definition_period = YEAR

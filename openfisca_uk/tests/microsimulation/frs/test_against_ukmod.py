@@ -22,8 +22,6 @@ with open(
     metadata = yaml.load(f)
 
 MAX_REL_ERROR = 0.05
-MAX_QUANTILE_REL_ERROR = 0.05
-MIN_QUANTILE_ABS_ERROR = 50
 MAX_MEAN_REL_ERROR = 0.05
 MIN_NONZERO_AGREEMENT = 0.99
 
@@ -43,42 +41,16 @@ ukmod = MicroDataFrame(ukmod, weights=ukmod.person_weight)
 def get_test_params(variable):
     test_params = dict(
         ukmod=metadata[variable],
-        min_quantile_abs_error=MIN_QUANTILE_ABS_ERROR,
-        max_quantile_rel_error=MAX_QUANTILE_REL_ERROR,
         max_rel_error=MAX_MEAN_REL_ERROR,
         max_mean_rel_error=MAX_MEAN_REL_ERROR,
         min_nonzero_agreement=MIN_NONZERO_AGREEMENT,
+        skip_household_matching=False,
     )
     if isinstance(metadata[variable], dict):
         test_params.update(**metadata[variable])
     else:
         test_params["ukmod"] = metadata[variable]
     return test_params
-
-
-# For each variable pair and metric, check that the error is within absolute and relative thresholds
-
-
-@pytest.mark.parametrize(
-    "variable,quantile",
-    product(metadata.keys(), np.linspace(0.1, 0.9, 9).round(1)),
-)
-def test_quantile(variable, quantile):
-    test_params = get_test_params(variable)
-    result = baseline.calc(variable, period=TEST_YEAR)
-    target = ukmod[test_params["ukmod"]]
-    result_quantile = result[result > 0].quantile(quantile)
-    target_quantile = target[target > 0].quantile(quantile)
-
-    abs_error = abs(result_quantile - target_quantile)
-    rel_error = abs(result_quantile / target_quantile - 1)
-
-    assert (
-        abs_error < test_params["min_quantile_abs_error"]
-        or rel_error < test_params["max_quantile_rel_error"]
-    )
-
-    return result_quantile, target_quantile
 
 
 @pytest.mark.parametrize("variable", metadata.keys())
@@ -106,6 +78,8 @@ def test_nonzero_count(variable):
 @pytest.mark.parametrize("variable", metadata.keys())
 def test_average_error_among_nonzero(variable):
     test_params = get_test_params(variable)
+    if test_params["skip_household_matching"]:
+        return
     result = pd.Series(
         baseline.calc(variable, period=TEST_YEAR, map_to="household").values,
         index=baseline.calc("household_id", period=TEST_YEAR).values,

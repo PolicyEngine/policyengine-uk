@@ -51,11 +51,11 @@ class family_type(Variable):
     default_value = FamilyType.SINGLE
     possible_values = FamilyType
     label = u"Family composition"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        two_adults = benunit.nb_persons(BenUnit.ADULT) == 2
-        has_children = benunit.nb_persons(BenUnit.CHILD) > 0
+        two_adults = benunit.sum(benunit.members("is_adult", period)) == 2
+        has_children = benunit.sum(benunit.members("is_child", period)) > 0
         is_single = not_(two_adults) * not_(has_children)
         is_couple = two_adults * not_(has_children)
         is_lone = not_(two_adults) * has_children
@@ -69,11 +69,11 @@ class relation_type(Variable):
     default_value = RelationType.SINGLE
     possible_values = RelationType
     label = u"Whether single or a couple"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         return where(
-            benunit.nb_persons(BenUnit.ADULT) == 1,
+            benunit.sum(benunit.members("is_adult", period)) == 1,
             RelationType.SINGLE,
             RelationType.COUPLE,
         )
