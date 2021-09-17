@@ -20,7 +20,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
       - name: Install Wheel and Pytest
         run: pip3 install wheel setuptools pytest==5.4.3
       - name: Install libyaml
