@@ -1,0 +1,74 @@
+- name: Lone parent, two children
+  period: 2021
+  absolute_error_margin: 20
+  input:
+    people:
+      p1:
+        age: 26
+      c1:
+        age: 4
+      c2:
+        age: 4
+    benunits:
+      b1:
+        adults: p1
+        claims_IS: true
+        claims_WTC: true
+        claims_CTC: true
+        children: [c1, c2]
+  output:
+    child_tax_credit: 6205
+    child_benefit: 35 * 52
+    income_support_eligible: true
+    income_support: 74 * 52
+- name: Lone parent, two children, earnings
+  period: 2021
+  absolute_error_margin: 5
+  input:
+    people:
+      p1:
+        age: 26
+        employment_income: 60000
+        weekly_hours: 6
+        pension_contributions: 1000
+      c1:
+        age: 4
+      c2:
+        age: 4
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2]
+        claims_IS: true
+        claims_WTC: true
+        claims_CTC: true
+  output:
+    child_tax_credit: 0
+    child_benefit: 35 * 52
+    income_support_eligible: true
+    income_support: 0
+- name: Check withdrawal rate is 100%
+  period: 2021
+  absolute_error_margin: 5
+  input:
+    people:
+      p1:
+        age: 26
+        employment_income: 2520
+        weekly_hours: 6
+        pension_contributions: 400
+      c1:
+        age: 4
+      c2:
+        age: 4
+    benunits:
+      b1:
+        adults: p1
+        children: [c1, c2]
+        claims_IS: true
+        claims_WTC: true
+        claims_CTC: true
+  output:
+    child_tax_credit: 6205
+    child_benefit: 35 * 52
+    income_support_eligible: true

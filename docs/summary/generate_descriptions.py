@@ -17,5 +17,5 @@ for name, var in tqdm(
         text += f"\n- {name}:\n  - Type: Categorical\n  - Entity: {var.entity.key}\n  - Description: {var.label}\n\n"
 
 
-with open("variable_stats.md", "w+") as f:
+with open("docs/summary/VARIABLE_STATS.md", "w+") as f:
     f.write(text)

@@ -10,6 +10,18 @@ class income_support_reported(Variable):
     definition_period = YEAR
 
 
+class would_claim_IS(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Would claim IS"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return (
+            random(benunit) <= parameters(period).benefit.income_support.takeup
+        )
+
+
 class claims_IS(Variable):
     value_type = bool
     entity = BenUnit
@@ -17,13 +29,9 @@ class claims_IS(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = (
-            aggr(benunit, period, ["income_support_reported"]) > 0
+        return benunit("would_claim_IS", period) & benunit(
+            "claims_legacy_benefits", period
         )
-        would_claim = (
-            random(benunit) <= parameters(period).benefit.income_support.takeup
-        ) * benunit("claims_legacy_benefits", period)
-        return already_claiming  # + would_claim > 0
 
 
 class income_support_applicable_income(Variable):
@@ -36,7 +44,7 @@ class income_support_applicable_income(Variable):
         IS = parameters(period).benefit.income_support
         INCOME_COMPONENTS = [
             "employment_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "pension_income",
         ]
@@ -46,8 +54,7 @@ class income_support_applicable_income(Variable):
             period,
             ["income_tax", "national_insurance"],
         )
-        income += aggr(benunit, period, ["personal_benefits"])
-        income += add(benunit, period, ["child_benefit"])
+        income += aggr(benunit, period, ["social_security_income"])
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         family_type = benunit("family_type", period)
@@ -98,7 +105,7 @@ class income_support_applicable_amount(Variable):
         amounts = IS.amounts
         younger_age = benunit("youngest_adult_age", period)
         older_age = benunit("eldest_adult_age", period)
-        children = benunit.nb_persons(BenUnit.CHILD) > 0
+        children = benunit.sum(benunit.members("is_child", period)) > 0
         single = benunit("is_single", period)
         single_under_25 = single * not_(children) * (younger_age < 25)
         single_over_25 = single * not_(children) * (younger_age >= 25)

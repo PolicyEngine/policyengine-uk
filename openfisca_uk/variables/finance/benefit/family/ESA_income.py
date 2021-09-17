@@ -10,6 +10,38 @@ class ESA_income_reported(Variable):
     definition_period = YEAR
 
 
+class would_claim_ESA_income(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Would claim ESA (income)"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return aggr(benunit, period, ["ESA_income_reported"]) > 0
+
+
+class ESA_income_eligible(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"ESA (income) eligible"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return aggr(benunit, period, ["ESA_income_reported"]) > 0
+
+
+class claims_ESA_income(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Claims ESA (income)"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit("would_claim_ESA_income", period) & benunit(
+            "claims_legacy_benefits", period
+        )
+
+
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit
@@ -17,4 +49,6 @@ class ESA_income(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["ESA_income_reported"])
+        return aggr(benunit, period, ["ESA_income_reported"]) * benunit(
+            "claims_ESA_income", period
+        )

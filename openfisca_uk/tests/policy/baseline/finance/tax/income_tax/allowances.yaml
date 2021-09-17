@@ -1,0 +1,105 @@
+- name: Personal Allowance default
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    adjusted_net_income: 0
+  output:
+    personal_allowance: 12500
+- name: Personal Allowance eliminated
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    adjusted_net_income: 150000
+  output:
+    personal_allowance: 0
+- name: MCA deduction for no MCA
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    married_couples_allowance: 0
+  output:
+    married_couples_allowance_deduction: 0
+- name: MCA deduction for MCA
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    married_couples_allowance: 1000
+  output:
+    married_couples_allowance_deduction: 100
+- name: Annual Allowance default
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    adjusted_net_income: 10000
+  output:
+    pension_annual_allowance: 40000
+- name: Annual Allowance reduced
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    adjusted_net_income: 320000
+  output:
+    pension_annual_allowance: 4000
+- name: Trading allowance full deduction
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 500
+  output:
+    trading_allowance_deduction: 500
+    taxable_self_employment_income: 0
+- name: Trading allowance partial deduction
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 5000
+  output:
+    trading_allowance_deduction: 1000
+    taxable_self_employment_income: 4000
+- name: Property allowance full deduction
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    property_income: 100
+  output:
+    property_allowance_deduction: 100
+    taxable_property_income: 0
+- name: Property allowance partial deduction
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    property_income: 1001
+  output:
+    property_allowance_deduction: 1000
+    taxable_property_income: 1
+- name: Savings allowance at basic rate
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    tax_band: "BASIC"
+  output:
+    savings_allowance: 1000
+- name: Savings allowance at higher rate
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    tax_band: "HIGHER"
+  output:
+    savings_allowance: 500
+- name: No savings allowance at additional rate
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    tax_band: "ADDITIONAL"
+  output:
+    savings_allowance: 0
+- name: Allowances by default
+  period: 2020
+  absolute_error_margin: 0
+  output:
+    personal_allowance: 12500
+    blind_persons_allowance: 0
+    gift_aid: 0
+    covenanted_payments: 0
+    charitable_investment_gifts: 0
+    other_deductions: 0

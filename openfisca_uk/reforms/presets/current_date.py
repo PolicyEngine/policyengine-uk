@@ -14,7 +14,7 @@ def use_current_parameters(date: str = CURRENT_INSTANT) -> Reform:
         for child in parameters.get_descendants():
             if isinstance(child, Parameter):
                 current_value = child(date)
-                child.update(period=f"year:{YEAR}:1", value=current_value)
+                child.update(period=f"year:{YEAR-10}:20", value=current_value)
         return parameters
 
     class reform(Reform):

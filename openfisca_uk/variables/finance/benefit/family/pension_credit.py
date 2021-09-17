@@ -69,7 +69,7 @@ class pension_credit_applicable_income(Variable):
     def formula(benunit, period, parameters):
         INCOME_COMPONENTS = [
             "employment_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "pension_income",
             "savings_interest_income",
@@ -147,7 +147,7 @@ class pension_credit_SC(Variable):
 class pension_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Pension credit amount"
+    label = u"Pension Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

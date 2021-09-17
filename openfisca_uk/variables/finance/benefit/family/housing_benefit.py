@@ -31,6 +31,18 @@ class housing_benefit_eligible(Variable):
         return social + benunit("LHA_eligible", period)
 
 
+class would_claim_HB(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Would claim HB"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return (
+            random(benunit) < parameters(period).benefit.housing_benefit.takeup
+        )
+
+
 class claims_HB(Variable):
     value_type = bool
     entity = BenUnit
@@ -38,18 +50,9 @@ class claims_HB(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = (
-            aggr(
-                benunit,
-                period,
-                ["housing_benefit_reported"],
-            )
-            > 0
+        return benunit("would_claim_HB", period) & benunit(
+            "claims_legacy_benefits", period
         )
-        would_claim = benunit("claims_legacy_benefits", period) * (
-            random(benunit) < parameters(period).benefit.housing_benefit.takeup
-        )
-        return would_claim
 
 
 class housing_benefit_applicable_amount(Variable):
@@ -113,7 +116,7 @@ class housing_benefit_applicable_income(Variable):
         ]
         INCOME_COMPONENTS = [
             "employment_income",
-            "trading_income",
+            "self_employment_income",
             "property_income",
             "pension_income",
         ]
@@ -137,7 +140,7 @@ class housing_benefit_applicable_income(Variable):
         ) * WTC.elements.childcare_2 * WEEKS_IN_YEAR
         childcare_element = min_(
             max_childcare_amount,
-            benunit.sum(benunit.members("childcare_cost", period)),
+            benunit.sum(benunit.members("childcare_expenses", period)),
         )
         applicable_income = max_(
             0,

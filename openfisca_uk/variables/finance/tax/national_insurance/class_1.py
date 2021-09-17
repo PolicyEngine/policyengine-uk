@@ -49,10 +49,9 @@ class employer_NI_class_1(Variable):
     def formula(person, period, parameters):
         class_1 = parameters(period).tax.national_insurance.class_1
         earnings = person("employment_income", period)
-        main_earnings = amount_between(
+        main_earnings = amount_over(
             earnings,
-            class_1.thresholds.primary_threshold * WEEKS_IN_YEAR,
-            class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR,
+            class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR,
         )
         charge = class_1.rates.employer * main_earnings
         return charge
@@ -71,9 +70,7 @@ class employer_NI(Variable):
 class total_NI(Variable):
     value_type = float
     entity = Person
-    label = (
-        u"Total National Insurance contributions by employers and employees"
-    )
+    label = u"NI (total)"
     definition_period = YEAR
 
     def formula(person, period, parameters):

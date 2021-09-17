@@ -12,7 +12,9 @@ class NI_class_4(Variable):
 
     def formula(person, period, parameters):
         class_4 = parameters(period).tax.national_insurance.class_4
-        profits = person("trading_income", period)
+        profits = person("self_employment_income", period) - person(
+            "employee_NI", period
+        )
         main_amount = amount_between(
             profits,
             class_4.thresholds.lower_profits_limit,
@@ -28,6 +30,26 @@ class NI_class_4(Variable):
         return charge
 
 
+class employee_NI(Variable):
+    value_type = float
+    entity = Person
+    label = u"Employee-side NI"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("employee_NI_class_1", period)
+
+
+class self_employed_NI(Variable):
+    value_type = float
+    entity = Person
+    label = u"Self-employed NI"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return add(person, period, ("NI_class_2", "NI_class_4"))
+
+
 class national_insurance(Variable):
     value_type = float
     entity = Person
@@ -36,6 +58,6 @@ class national_insurance(Variable):
     reference = "Social Security and Benefits Act 1992 s. 1(2)"
 
     def formula(person, period, parameters):
-        CLASSES = ["employee_NI_class_1", "NI_class_2", "NI_class_4"]
+        CLASSES = ["employee_NI", "self_employed_NI"]
         total = add(person, period, CLASSES)
         return total

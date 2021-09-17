@@ -1,6 +1,7 @@
 all: microdata
 
 install:
+	pip install git+https://github.com/PSLmodels/synthimpute
 	pip install -e .
 
 microdata:
@@ -10,15 +11,16 @@ format:
 	black . -l 79
 
 test: 
-	pytest tests/setup
-	openfisca test -c openfisca_uk tests/baseline
-	openfisca test -c openfisca_uk tests/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
-	pytest tests/code
-	pytest tests/with_microdata
+	openfisca test -c openfisca_uk openfisca_uk/tests/policy/baseline
+	openfisca test -c openfisca_uk openfisca_uk/tests/policy/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
+	pytest openfisca_uk/tests/code_health -vv
+	pytest openfisca_uk/tests/microsimulation/ -vv
 	black . -l 79 --check
 
-serve: build
+serve:
 	openfisca serve --country-package openfisca_uk
 
-stats:
+documentation:
 	python docs/summary/generate_descriptions.py
+	jb clean docs/book
+	jb build docs/book

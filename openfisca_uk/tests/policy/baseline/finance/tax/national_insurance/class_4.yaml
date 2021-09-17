@@ -1,0 +1,21 @@
+- name: NI Class 4 for no income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 0
+  output:
+    NI_class_4: 0
+- name: NI Class 4 for income under upper limit
+  period: 2020
+  absolute_error_margin: 10
+  input:
+    self_employment_income: 50000
+  output:
+    NI_class_4: 3723
+- name: NI Class 4 for income over upper limit
+  period: 2020
+  absolute_error_margin: 10
+  input:
+    self_employment_income: 60000
+  output:
+    NI_class_4: 3923

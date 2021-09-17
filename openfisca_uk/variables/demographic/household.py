@@ -4,7 +4,7 @@ from openfisca_uk.tools.general import *
 
 
 class household_id(Variable):
-    value_type = float
+    value_type = int
     entity = Household
     label = u"ID for the household"
     definition_period = YEAR
@@ -113,6 +113,22 @@ class tenure_type(Variable):
     entity = Household
     label = u"Tenure type of the household"
     definition_period = YEAR
+
+
+class is_renting(Variable):
+    value_type = bool
+    entity = Household
+    label = u"Is renting"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        tenure = household("tenure_type", period)
+        rent_types = (
+            TenureType.RENT_PRIVATELY,
+            TenureType.RENT_FROM_COUNCIL,
+            TenureType.RENT_PRIVATELY,
+        )
+        return sum([tenure == rent_type for rent_type in rent_types])
 
 
 class AccommodationType(Enum):

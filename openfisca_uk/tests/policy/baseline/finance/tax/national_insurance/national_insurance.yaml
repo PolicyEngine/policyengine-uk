@@ -1,0 +1,7 @@
+- name: Trader with some income
+  period: 2020
+  absolute_error_margin: 10
+  input:
+    self_employment_income: 34003
+  output:
+    national_insurance: 2439

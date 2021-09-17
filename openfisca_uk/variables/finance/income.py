@@ -25,18 +25,52 @@ class sublet_income(Variable):
     definition_period = YEAR
 
 
-class self_employment_income(Variable):
-    value_type = float
-    entity = Person
-    label = u"Self-employment income"
-    definition_period = YEAR
-
-
 class miscellaneous_income(Variable):
     value_type = float
     entity = Person
     label = u"Income from other sources"
     definition_period = YEAR
+
+
+class private_transfer_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Private transfers"
+    definition_period = YEAR
+
+
+class lump_sum_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Lump sum income"
+    definition_period = YEAR
+
+
+class market_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Market income"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return (
+            add(
+                person,
+                period,
+                [
+                    "employment_income",
+                    "self_employment_income",
+                    "savings_interest_income",
+                    "dividend_income",
+                    "miscellaneous_income",
+                    "property_income",
+                    "pension_income",
+                    "private_transfer_income",
+                    "maintenance_income",
+                ],
+            )
+            - person("maintenance_expenses", period)
+        )
 
 
 class gross_income(Variable):
@@ -66,8 +100,7 @@ class net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        EXPENSES = ["tax", "employment_expenses"]
-        return person("gross_income", period) - add(person, period, EXPENSES)
+        return person("gross_income", period) - person("tax", period)
 
 
 class hours_worked(Variable):
@@ -125,6 +158,25 @@ class employment_status(Variable):
     possible_values = EmploymentStatus
     default_value = EmploymentStatus.UNEMPLOYED
     label = u"Employment status of the person"
+    definition_period = YEAR
+
+
+class capital_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Income from savings or dividends"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return add(
+            person, period, ["savings_interest_income", "dividend_income"]
+        )
+
+
+class maintenance_income(Variable):
+    value_type = float
+    entity = Person
+    label = u"Maintenance payments"
     definition_period = YEAR
 
 

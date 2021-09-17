@@ -1,0 +1,51 @@
+- name: Not receiving childcare help
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 26
+  output:
+    UC_childcare_element: 0
+- name: Receiving some childcare help
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      adult:
+        age: 26
+        employment_income: 0
+        hours_worked: 1
+      child:
+        childcare_expenses: 1000
+        age: 2
+    benunits:
+      benunit:
+        adults: [adult]
+        children: [child]
+    households:
+      household:
+        adults: [adult]
+        children: [child]
+  output:
+    UC_childcare_element: 70.83 * 12
+- name: Receiving large childcare help
+  period: 2021
+  absolute_error_margin: 25
+  input:
+    people:
+      adult:
+        age: 26
+        employment_income: 0
+        hours_worked: 1
+      child:
+        childcare_expenses: 10000
+        age: 2
+    benunits:
+      benunit:
+        adults: [adult]
+        children: [child]
+    households:
+      household:
+        adults: [adult]
+        children: [child]
+  output:
+    UC_childcare_element: 644.58 * 12 # entitledto potentially incorrect

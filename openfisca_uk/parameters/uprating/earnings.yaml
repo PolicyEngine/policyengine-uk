@@ -1,0 +1,14 @@
+description: Earnings index
+values:
+  2016-01-01: 158.79
+  2017-01-01: 162.33
+  2018-01-01: 167.15
+  2019-01-01: 172.50
+  2020-01-01: 172.85
+  2021-01-01: 179.24
+  2022-01-01: 184.08
+  2023-01-01: 189.61
+  2024-01-01: 195.48
+metadata:
+  unit: currency-GBP
+  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109

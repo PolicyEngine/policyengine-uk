@@ -1,0 +1,37 @@
+name: Pull request
+on:
+  pull_request:
+    branches: [ master ]
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check formatting
+        uses: "lgeiger/black-action@master"
+        with:
+          args: ". -l 79 --check"
+  Test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: uk-policy-engine
+          service_account_key: ${{ secrets.POLICYENGINE_UK_DATA_READ }}
+          export_default_credentials: true
+      - name: Install package
+        run: make install
+      - name: Download prerequisites
+        run: openfisca-uk-data frs download 2018 & openfisca-uk-data ukmod_output download 2018
+      - name: Run tests
+        run: make test
+      - name: Generate documentation
+        run: make documentation

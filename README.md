@@ -12,6 +12,8 @@ The elements are described in different folders. All the modelling happens withi
 
 The files that are outside from the `openfisca_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the ```docs``` folder.
 
+We're grateful to the [UKMOD](https://www.iser.essex.ac.uk/research/projects/ukmod) team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK's development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.
+
 ## Fast setup instructions
 
 1. `pip install git+https://github.com/PSLmodels/openfisca-uk`

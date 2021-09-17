@@ -50,21 +50,56 @@ class family_rent(Variable):
         return benunit.sum(personal_rent)
 
 
-class childcare_cost(Variable):
+class childcare_expenses(Variable):
     value_type = float
     entity = Person
     label = u"Cost of childcare"
     definition_period = YEAR
 
 
-class weekly_childcare_cost(Variable):
+class private_pension_contributions(Variable):
+    value_type = float
+    entity = Person
+    label = u"Private pension contributions"
+    definition_period = YEAR
+
+
+class occupational_pension_contributions(Variable):
+    value_type = float
+    entity = Person
+    label = u"Occupational pension contributions"
+    definition_period = YEAR
+
+
+class housing_service_charges(Variable):
+    value_type = float
+    entity = Household
+    label = u"Housing service charges"
+    definition_period = YEAR
+
+
+class water_and_sewerage_charges(Variable):
+    value_type = float
+    entity = Household
+    label = u"Water and sewerage charges"
+    definition_period = YEAR
+
+
+class employer_pension_contributions(Variable):
+    value_type = float
+    entity = Person
+    label = u"Employer pension contributions"
+    definition_period = YEAR
+
+
+class weekly_childcare_expenses(Variable):
     value_type = float
     entity = Person
     label = u"Average cost of childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("childcare_cost", period) / WEEKS_IN_YEAR
+        return person("childcare_expenses", period) / WEEKS_IN_YEAR
 
 
 class housing_costs(Variable):
@@ -77,6 +112,27 @@ class housing_costs(Variable):
         return household("rent", period) + household("mortgage", period)
 
 
+class maintenance_expenses(Variable):
+    value_type = float
+    entity = Person
+    label = u"Maintenance expenses"
+    definition_period = YEAR
+
+
+class mortgage_interest_repayment(Variable):
+    value_type = float
+    entity = Household
+    label = u"Total mortgage payments"
+    definition_period = YEAR
+
+
+class mortgage_capital_repayment(Variable):
+    value_type = float
+    entity = Household
+    label = u"Mortgage payments"
+    definition_period = YEAR
+
+
 class mortgage(Variable):
     value_type = float
     entity = Household
@@ -84,8 +140,30 @@ class mortgage(Variable):
     definition_period = YEAR
 
 
+@uprated(by="council_tax")
 class council_tax(Variable):
     value_type = float
     entity = Household
     label = u"Council Tax"
+    definition_period = YEAR
+
+
+class CouncilTaxBand(Enum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    F = "F"
+    G = "G"
+    H = "H"
+    I = "I"
+
+
+class council_tax_band(Variable):
+    value_type = Enum
+    possible_values = CouncilTaxBand
+    default_value = CouncilTaxBand.D
+    entity = Household
+    label = u"Council Tax Band"
     definition_period = YEAR

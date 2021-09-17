@@ -108,3 +108,37 @@ def random(entity, reset=True):
 
 def is_in(values, *targets):
     return sum(map(lambda target: values == target, targets))
+
+
+def uprated(by: str = None) -> Callable:
+    """Attaches a formula applying an uprating factor to input variables (going back as far as 2015).
+
+    Args:
+        by (str, optional): The name of the parameter (under parameters.uprating). Defaults to None (no uprating applied).
+
+    Returns:
+        Callable: A class decorator.
+    """
+
+    def uprater(variable: type) -> type:
+        if hasattr(variable, "formula_2015"):
+            return variable
+
+        def formula_2015(entity, period, parameters):
+            if by is None:
+                return entity(variable.__name__, period.last_year)
+            else:
+                uprating = (
+                    parameters(period).uprating[by]
+                    / parameters(period.last_year).uprating[by]
+                )
+                return uprating * entity(variable.__name__, period.last_year)
+
+        variable.formula_2015 = formula_2015
+        return variable
+
+    return uprater
+
+
+def carried_over(variable: type) -> type:
+    return uprated()(variable)

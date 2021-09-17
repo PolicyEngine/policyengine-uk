@@ -14,6 +14,7 @@ https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-st
 """
 
 
+@uprated(by="earnings")
 class employment_income(Variable):
     value_type = float
     entity = Person
@@ -22,6 +23,7 @@ class employment_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
 
 
+@uprated(by="earnings")
 class pension_income(Variable):
     value_type = float
     entity = Person
@@ -48,7 +50,8 @@ class social_security_income(Variable):
         return add(person, period, COMPONENTS, options=[ADD])
 
 
-class trading_income(Variable):
+@uprated(by="earnings")
+class self_employment_income(Variable):
     value_type = float
     entity = Person
     label = u"Income from trading profits for owned businesses"
@@ -56,6 +59,7 @@ class trading_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
 
 
+@uprated(by="earnings")
 class property_income(Variable):
     value_type = float
     entity = Person
@@ -63,10 +67,8 @@ class property_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
 
-    def formula(person, period, parameters):
-        return person("sublet_income", period)
 
-
+@uprated(by="earnings")
 class savings_interest_income(Variable):
     value_type = float
     entity = Person
@@ -75,6 +77,7 @@ class savings_interest_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
 
 
+@uprated(by="earnings")
 class dividend_income(Variable):
     value_type = float
     entity = Person

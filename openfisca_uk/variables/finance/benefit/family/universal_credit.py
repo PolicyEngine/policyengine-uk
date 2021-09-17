@@ -11,22 +11,34 @@ class claims_UC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takeup_rate = parameters(
-            period
-        ).benefit.tax_credits.working_tax_credit.takeup
+        WTC = benunit("would_claim_WTC", period) & benunit(
+            "is_WTC_eligible", period
+        )
+        CTC = benunit("would_claim_CTC", period) & benunit(
+            "is_CTC_eligible", period
+        )
+        HB = benunit("would_claim_HB", period) & benunit(
+            "housing_benefit_eligible", period
+        )
+        IS = benunit("would_claim_IS", period) & benunit(
+            "income_support_eligible", period
+        )
+        ESA_income = benunit("would_claim_ESA_income", period) & benunit(
+            "ESA_income_eligible", period
+        )
+        JSA_income = benunit("would_claim_JSA", period) & benunit(
+            "JSA_income_eligible", period
+        )
         return not_(benunit("claims_legacy_benefits", period)) & (
-            random(benunit) < takeup_rate
+            sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
         )
 
 
-class universal_credit(Variable):
+class universal_credit_reported(Variable):
     value_type = float
-    entity = BenUnit
+    entity = Person
     label = u"Universal Credit"
     definition_period = YEAR
-
-    def formula(benunit, period):
-        return benunit("UC_maximum_amount", period)
 
 
 class UC_maximum_amount(Variable):
@@ -332,8 +344,8 @@ class UC_childcare_element(Variable):
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        eligible_childcare_costs = benunit.sum(
-            benunit.members("childcare_cost", period)
+        eligible_childcare_expenses = benunit.sum(
+            benunit.members("childcare_expenses", period)
         )
         children = benunit("num_UC_eligible_children", period)
         childcare_limit = (
@@ -342,7 +354,7 @@ class UC_childcare_element(Variable):
         )
         childcare_element = min_(
             childcare_limit,
-            eligible_childcare_costs * UC.elements.childcare.coverage_rate,
+            eligible_childcare_expenses * UC.elements.childcare.coverage_rate,
         )
         return (
             benunit("UC_childcare_work_condition", period) * childcare_element
@@ -361,7 +373,7 @@ class UC_earned_income(Variable):
             "employment_income",
             "self_employment_income",
             "miscellaneous_income",
-            "trading_income",
+            "self_employment_income",
         ]
         earned_income = aggr(benunit, period, INCOME_COMPONENTS)
         earned_income = max_(

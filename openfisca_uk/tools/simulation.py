@@ -21,9 +21,11 @@ import microdf as mdf
 from tqdm import trange
 import warnings
 from openfisca_uk.tools.parameters import backdate_parameters
+from openfisca_uk.tools.general import carried_over
 from openfisca_uk_data import SynthFRS, DATASETS
 import yaml
 from pathlib import Path
+
 
 with open(Path(__file__).parent / "datasets.yml") as f:
     datasets = yaml.safe_load(f)
@@ -236,7 +238,6 @@ class Microsimulation:
         else:
             self.year = year
         self.reforms = (
-            dataset.input_reform_from_year(self.year),
             *reforms,
             backdate_parameters(),
         )
@@ -350,47 +351,52 @@ class Microsimulation:
         data = dataset.load(year)
         year = str(year)
         self.system = openfisca_uk.CountryTaxBenefitSystem()
-        self.apply_reforms(self.reforms)
+
+        class carry_over_by_default(Reform):
+            def apply(s):
+                for var in data.keys():
+                    if var in self.system.variables:
+                        var_cls = type(self.system.variables[var])
+                        s.update_variable(carried_over(var_cls))
+
+        self.apply_reforms((*self.reforms, carry_over_by_default))
         builder = SimulationBuilder()
         builder.create_entities(self.system)
         self.relations = {
-            "person": np.array(data["P_person_id"][year]),
-            "benunit": np.array(data["B_benunit_id"][year]),
-            "household": np.array(data["H_household_id"][year]),
-            "person-benunit": np.array(data["P_benunit_id"][year]),
-            "person-household": np.array(data["P_household_id"][year]),
+            "person": np.array(data["person_id"]),
+            "benunit": np.array(data["benunit_id"]),
+            "household": np.array(data["household_id"]),
+            "person-benunit": np.array(data["person_benunit_id"]),
+            "person-household": np.array(data["person_household_id"]),
         }
-        builder.declare_person_entity(
-            "person", np.array(data["P_person_id"][year])
-        )
+        builder.declare_person_entity("person", np.array(data["person_id"]))
         benunits = builder.declare_entity(
-            "benunit", np.array(data["B_benunit_id"][year])
+            "benunit", np.array(data["benunit_id"])
         )
         households = builder.declare_entity(
-            "household", np.array(data["H_household_id"][year])
+            "household", np.array(data["household_id"])
         )
-        person_roles = np.array(np.array(data["P_role"][year])).astype(str)
+        person_roles = np.array(np.array(data["role"])).astype(str)
         builder.join_with_persons(
-            benunits, np.array(data["P_benunit_id"][year]), person_roles
+            benunits, np.array(data["person_benunit_id"]), person_roles
         )  # define person-benunit memberships
         builder.join_with_persons(
-            households, np.array(data["P_household_id"][year]), person_roles
+            households, np.array(data["person_household_id"]), person_roles
         )  # define person-household memberships
         model = builder.build(self.system)
         skipped = []
         for variable in data.keys():
             if variable in self.system.variables:
-                for period in data[variable].keys():
-                    values = np.array(data[variable][period])
-                    target_dtype = self.system.variables[variable].value_type
-                    if target_dtype in (Enum, str):
-                        values = values.astype(str)
-                    else:
-                        values = values.astype(target_dtype)
-                    try:
-                        model.set_input(variable, period, values)
-                    except:
-                        skipped += [variable]
+                values = np.array(data[variable])
+                target_dtype = self.system.variables[variable].value_type
+                if target_dtype in (Enum, str):
+                    values = values.astype(str)
+                else:
+                    values = values.astype(target_dtype)
+                try:
+                    model.set_input(variable, year, values)
+                except:
+                    skipped += [variable]
         if skipped:
             warnings.warn(
                 f"Incomplete initialisation: skipped {len(skipped)} variables:"

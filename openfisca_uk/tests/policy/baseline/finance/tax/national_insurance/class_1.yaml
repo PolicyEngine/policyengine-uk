@@ -1,0 +1,22 @@
+- name: NI Class 1 for earner
+  period: 2021
+  absolute_error_margin: 10
+  input:
+    employment_income: 30000
+  output:
+    employee_NI_class_1: 2460
+- name: NI Class 1 for earner in 2019
+  period: 2019
+  absolute_error_margin: 10
+  input:
+    employment_income: 30000
+  output:
+    employee_NI_class_1: 2589
+- name: NI Class 1 for no earnings
+  period: 2019
+  absolute_error_margin: 0
+  input:
+    employment_income: 0
+  output:
+    employee_NI_class_1: 0
+    employer_NI_class_1: 0
