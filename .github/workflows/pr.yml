@@ -33,31 +33,5 @@ jobs:
         run: openfisca-uk-data frs download 2018 & openfisca-uk-data ukmod_frs download 2018
       - name: Run tests
         run: make test
-  TestJB:
-    name: Test documentation builds
-    runs-on: ubuntu-latest
-    steps:
-       name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: openfisca_uk
-          environment-file: docs/book/environment.yml
-          python-version: 3.8
-          auto-activate-base: false
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: uk-policy-engine
-          service_account_key: ${{ secrets.POLICYENGINE_UK_DATA_READ }}
-          export_default_credentials: true
-      - name: Download prerequisites
-        run: openfisca-uk-data frs download 2018 & openfisca-uk-data ukmod_frs download 2018
-      - name: Run tests
-        run: make test
-      - name: Build
-        shell: bash -l {0}
-        run: |
-          pip install -e .
-          jb build docs/book/.
+      - name: Generate documentation
+        run: make documentation
