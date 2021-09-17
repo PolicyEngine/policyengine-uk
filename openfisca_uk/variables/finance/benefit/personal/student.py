@@ -6,7 +6,7 @@ from openfisca_uk.tools.general import *
 class student_loans(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Student loans"
     definition_period = YEAR
     reference = ""
 
@@ -14,6 +14,6 @@ class student_loans(Variable):
 class student_payments(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Student payments"
     definition_period = YEAR
     reference = ""

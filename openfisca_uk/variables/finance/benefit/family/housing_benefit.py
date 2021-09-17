@@ -34,7 +34,7 @@ class housing_benefit_eligible(Variable):
 class would_claim_HB(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"Would claim HB"
     definition_period = YEAR
     reference = ""
 

@@ -13,7 +13,7 @@ class income_support_reported(Variable):
 class would_claim_IS(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"Would claim IS"
     definition_period = YEAR
     reference = ""
 

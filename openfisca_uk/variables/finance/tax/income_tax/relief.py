@@ -53,7 +53,7 @@ class SMP(Variable):
 class SSP(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Statutory Sick Pay"
     definition_period = YEAR
     reference = ""
 

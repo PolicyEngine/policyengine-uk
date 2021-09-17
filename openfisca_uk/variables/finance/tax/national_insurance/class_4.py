@@ -33,7 +33,7 @@ class NI_class_4(Variable):
 class employee_NI(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Employee-side NI"
     definition_period = YEAR
     reference = ""
 
@@ -44,7 +44,7 @@ class employee_NI(Variable):
 class self_employed_NI(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Self-employed NI"
     definition_period = YEAR
     reference = ""
 

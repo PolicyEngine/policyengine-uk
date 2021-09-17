@@ -64,7 +64,7 @@ class JSA_income_applicable_amount(Variable):
 class would_claim_JSA(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"Would claim JSA"
     definition_period = YEAR
     reference = ""
 

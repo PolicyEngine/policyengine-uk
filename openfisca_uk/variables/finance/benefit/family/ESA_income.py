@@ -13,7 +13,7 @@ class ESA_income_reported(Variable):
 class would_claim_ESA_income(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"Would claim ESA (income)"
     definition_period = YEAR
     reference = ""
 
@@ -24,7 +24,7 @@ class would_claim_ESA_income(Variable):
 class ESA_income_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"ESA (income) eligible"
     definition_period = YEAR
     reference = ""
 
@@ -35,7 +35,7 @@ class ESA_income_eligible(Variable):
 class claims_ESA_income(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"Claims ESA (income)"
     definition_period = YEAR
     reference = ""
 

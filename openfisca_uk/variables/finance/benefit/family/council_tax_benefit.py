@@ -6,7 +6,7 @@ from openfisca_uk.tools.general import *
 class council_tax_benefit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"CTB (reported)"
     definition_period = YEAR
     reference = ""
 
@@ -14,7 +14,7 @@ class council_tax_benefit_reported(Variable):
 class council_tax_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"label"
+    label = u"CTB"
     definition_period = YEAR
     reference = ""
 

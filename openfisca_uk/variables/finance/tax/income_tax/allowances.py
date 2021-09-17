@@ -34,7 +34,7 @@ class blind_persons_allowance(Variable):
 class unused_personal_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Unused personal allowance"
     definition_period = YEAR
     reference = ""
 

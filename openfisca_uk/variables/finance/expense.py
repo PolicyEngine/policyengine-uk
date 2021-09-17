@@ -60,7 +60,7 @@ class childcare_expenses(Variable):
 class private_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Private pension contributions"
     definition_period = YEAR
     reference = ""
 
@@ -68,7 +68,7 @@ class private_pension_contributions(Variable):
 class occupational_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Occupational pension contributions"
     definition_period = YEAR
     reference = ""
 
@@ -76,7 +76,7 @@ class occupational_pension_contributions(Variable):
 class housing_service_charges(Variable):
     value_type = float
     entity = Household
-    label = u"label"
+    label = u"Housing service charges"
     definition_period = YEAR
     reference = ""
 
@@ -84,7 +84,7 @@ class housing_service_charges(Variable):
 class water_and_sewerage_charges(Variable):
     value_type = float
     entity = Household
-    label = u"label"
+    label = u"Water and sewerage charges"
     definition_period = YEAR
     reference = ""
 
@@ -92,7 +92,7 @@ class water_and_sewerage_charges(Variable):
 class employer_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Employer pension contributions"
     definition_period = YEAR
     reference = ""
 
@@ -120,7 +120,7 @@ class housing_costs(Variable):
 class maintenance_expenses(Variable):
     value_type = float
     entity = Person
-    label = u"label"
+    label = u"Maintenance expenses"
     definition_period = YEAR
     reference = ""
 

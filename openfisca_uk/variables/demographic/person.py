@@ -178,7 +178,7 @@ class in_FE(Variable):
 class in_HE(Variable):
     value_type = bool
     entity = Person
-    label = u"label"
+    label = u"In higher education"
     definition_period = YEAR
     reference = "Whether this person is in Higher Education"
     set_input = set_input_dispatch_by_period

@@ -85,7 +85,7 @@ class is_CTC_eligible(Variable):
 class would_claim_CTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"Would claim CTC"
     definition_period = YEAR
     reference = ""
 
@@ -256,7 +256,7 @@ class is_WTC_eligible(Variable):
 class would_claim_WTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"label"
+    label = u"Would claim WTC"
     definition_period = YEAR
     reference = ""
 
