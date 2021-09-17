@@ -229,26 +229,27 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk</span> <span class="kn">import</span> <span class="n">Microsimulation</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2020</span><span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
 
-<span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;person_id&quot;</span><span class="p">)))</span> <span class="o">*</span> <span class="mi">1000</span> <span class="c1"># de-noising the preview here</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>              value  weight
-0      14753.679688  1329.0
-1          0.000000  1137.0
-2          0.000000  1137.0
-3          0.000000  1137.0
-4          0.000000  1183.0
+0      16672.573270  1329.0
+1        715.189366  1137.0
+2        602.763376  1137.0
+3        544.883183  1137.0
+4        423.654799  1183.0
 ...             ...     ...
-43082      0.000000   524.0
-43083      0.000000   524.0
-43084   5677.770020  1379.0
-43085      0.000000   567.0
-43086      0.000000   567.0
+43082    592.587094   524.0
+43083    268.821972   524.0
+43084   6275.155354  1379.0
+43085    339.940183   567.0
+43086    185.492110   567.0
 
 [43087 rows x 2 columns]
 </pre></div>
@@ -296,7 +297,7 @@
     </tr>
     <tr>
       <th>Weighted</th>
-      <td>162.6</td>
+      <td>179.9</td>
     </tr>
   </tbody>
 </table>

@@ -214,6 +214,31 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#aggregate-tables">
+   Aggregate tables
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#aggregates-in-full">
+     Aggregates in full
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#differences">
+     Differences
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+            </nav>
         </div>
     </div>
 </div>
@@ -233,7 +258,7 @@ Numbers are in billions of pounds.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk</span> <span class="kn">import</span> <span class="n">Microsimulation</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2018</span><span class="p">)</span>
 
 <span class="n">VARIABLES</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
     <span class="n">income_tax</span><span class="o">=</span><span class="s2">&quot;Income Tax&quot;</span><span class="p">,</span>
@@ -306,23 +331,23 @@ Numbers are in billions of pounds.</p>
   <tbody>
     <tr>
       <th>Income Tax</th>
-      <td>165.2</td>
+      <td>169.0</td>
       <td>163.7</td>
       <td>190.0</td>
-      <td>1.01</td>
-      <td>0.87</td>
+      <td>1.03</td>
+      <td>0.89</td>
     </tr>
     <tr>
       <th>Non-employer National Insurance</th>
-      <td>61.2</td>
+      <td>62.3</td>
       <td>64.0</td>
       <td>55.7</td>
-      <td>0.96</td>
-      <td>1.10</td>
+      <td>0.97</td>
+      <td>1.12</td>
     </tr>
     <tr>
       <th>Employee Class 1 NI</th>
-      <td>56.8</td>
+      <td>56.7</td>
       <td>55.7</td>
       <td>52.0</td>
       <td>1.02</td>
@@ -330,43 +355,43 @@ Numbers are in billions of pounds.</p>
     </tr>
     <tr>
       <th>Employer Class 1 NI</th>
-      <td>62.5</td>
+      <td>79.3</td>
       <td>77.8</td>
       <td>79.2</td>
-      <td>0.80</td>
-      <td>0.79</td>
+      <td>1.02</td>
+      <td>1.00</td>
     </tr>
     <tr>
       <th>Class 2 &amp; 4 NI</th>
-      <td>4.0</td>
+      <td>5.1</td>
       <td>5.0</td>
       <td>3.7</td>
-      <td>0.80</td>
-      <td>1.08</td>
+      <td>1.01</td>
+      <td>1.37</td>
     </tr>
     <tr>
       <th>Universal Credit</th>
-      <td>7.4</td>
+      <td>8.3</td>
       <td>11.7</td>
       <td>8.1</td>
-      <td>0.63</td>
-      <td>0.91</td>
+      <td>0.71</td>
+      <td>1.02</td>
     </tr>
     <tr>
       <th>Tax Credits</th>
-      <td>16.8</td>
+      <td>14.1</td>
       <td>13.9</td>
       <td>22.8</td>
-      <td>1.21</td>
-      <td>0.74</td>
+      <td>1.02</td>
+      <td>0.62</td>
     </tr>
     <tr>
       <th>Housing Benefit</th>
-      <td>12.7</td>
+      <td>12.2</td>
       <td>15.1</td>
       <td>20.7</td>
-      <td>0.84</td>
-      <td>0.61</td>
+      <td>0.81</td>
+      <td>0.59</td>
     </tr>
     <tr>
       <th>State Pension</th>
@@ -380,6 +405,461 @@ Numbers are in billions of pounds.</p>
 </table>
 </div></div></div>
 </div>
+<div class="section" id="aggregate-tables">
+<h2>Aggregate tables<a class="headerlink" href="#aggregate-tables" title="Permalink to this headline">¶</a></h2>
+<p>OpenFisca-UK uprates input FRS data: below are comparisons between the aggregates calculated by OpenFisca-UK, UKMOD and external sources.</p>
+<div class="section" id="aggregates-in-full">
+<h3>Aggregates in full<a class="headerlink" href="#aggregates-in-full" title="Permalink to this headline">¶</a></h3>
+<div class="cell tag_hide-input docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">VARIABLES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;total_NI&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;working_tax_credit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;child_tax_credit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;child_benefit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;housing_benefit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pension_credit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;income_support&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JSA_income&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([(</span><span class="n">sim</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="n">VARIABLES</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">year</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e+9</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">2022</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">2022</span><span class="p">))</span>
+<span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">sim</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">tax_benefit_system</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+<span class="n">df</span>
+<span class="n">ukmod_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">&quot;Income Tax&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">163.7</span><span class="p">,</span> <span class="mf">165.9</span><span class="p">,</span> <span class="mf">165.0</span><span class="p">,</span> <span class="mf">173.9</span><span class="p">],</span>
+    <span class="s2">&quot;NI (total)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">138.6</span><span class="p">,</span> <span class="mf">144.2</span><span class="p">,</span> <span class="mf">141.6</span><span class="p">,</span> <span class="mf">148.0</span><span class="p">],</span>
+    <span class="s2">&quot;Universal Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">11.7</span><span class="p">,</span> <span class="mf">24.8</span><span class="p">,</span> <span class="mf">41.3</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">],</span>
+    <span class="s2">&quot;Working Tax Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span>
+    <span class="s2">&quot;Child Tax Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">11.4</span><span class="p">,</span> <span class="mf">7.1</span><span class="p">,</span> <span class="mf">4.4</span><span class="p">,</span> <span class="mf">2.8</span><span class="p">],</span>
+    <span class="s2">&quot;Housing Benefit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">15.1</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">,</span> <span class="mf">8.6</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">],</span>
+    <span class="s2">&quot;Child Benefit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">11.5</span><span class="p">,</span> <span class="mf">11.4</span><span class="p">,</span> <span class="mf">11.6</span><span class="p">,</span> <span class="mf">11.6</span><span class="p">],</span>
+    <span class="s2">&quot;Pension Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">4.1</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">,</span> <span class="mf">2.9</span><span class="p">],</span>
+    <span class="s2">&quot;Income Support&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">],</span>
+    <span class="s2">&quot;JSA (income-based)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">],</span>
+<span class="p">})</span><span class="o">.</span><span class="n">T</span>
+<span class="n">ukmod_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">2022</span><span class="p">))</span>
+<span class="c1"># source: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=130</span>
+<span class="c1"># where missing, UKMOD does not separate benefits and therefore figures cannot be obtained</span>
+<span class="n">external_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">&quot;Income Tax&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">192.5</span><span class="p">,</span> <span class="mf">193.6</span><span class="p">,</span> <span class="mf">188.2</span><span class="p">,</span> <span class="mf">203.6</span><span class="p">],</span> <span class="c1"># source: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/</span>
+    <span class="s2">&quot;NI (total)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">137.4</span><span class="p">,</span> <span class="mf">145.0</span><span class="p">,</span> <span class="mf">140.8</span><span class="p">,</span> <span class="mf">145.9</span><span class="p">],</span> <span class="c1"># source: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/national-insurance-contributions-nics/</span>
+    <span class="s2">&quot;Universal Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">8.1</span><span class="p">,</span> <span class="mf">18.4</span><span class="p">,</span> <span class="mf">38.2</span><span class="p">,</span> <span class="mf">41.3</span><span class="p">],</span> <span class="c1"># source: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021</span>
+    <span class="s2">&quot;Working Tax Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">],</span>
+    <span class="s2">&quot;Child Tax Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">17.7</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">],</span>
+    <span class="s2">&quot;Housing Benefit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">20.7</span><span class="p">,</span> <span class="mf">18.4</span><span class="p">,</span> <span class="mf">17.3</span><span class="p">,</span> <span class="mf">16.9</span><span class="p">],</span>
+    <span class="s2">&quot;Child Benefit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">11.6</span><span class="p">,</span> <span class="mf">11.6</span><span class="p">,</span> <span class="mf">11.9</span><span class="p">,</span> <span class="mf">12.1</span><span class="p">],</span> <span class="c1"># source: https://obr.uk/docs/dlm_uploads/Welfare_trends_report_December_2019.pdf#page=16</span>
+    <span class="s2">&quot;Pension Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">5.1</span><span class="p">,</span> <span class="mf">5.1</span><span class="p">,</span> <span class="mf">5.3</span><span class="p">,</span> <span class="mf">5.3</span><span class="p">],</span>
+    <span class="s2">&quot;Income Support&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.8</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span>
+    <span class="s2">&quot;JSA (income-based)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">]</span>
+<span class="p">})</span><span class="o">.</span><span class="n">T</span>
+<span class="n">external_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">2022</span><span class="p">))</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">ukmod_df</span><span class="p">,</span> <span class="n">external_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;OpenFisca-UK&quot;</span><span class="p">,</span> <span class="s2">&quot;UKMOD&quot;</span><span class="p">,</span> <span class="s2">&quot;External&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="4" halign="left">OpenFisca-UK</th>
+      <th colspan="4" halign="left">UKMOD</th>
+      <th colspan="4" halign="left">External</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>2018</th>
+      <th>2019</th>
+      <th>2020</th>
+      <th>2021</th>
+      <th>2018</th>
+      <th>2019</th>
+      <th>2020</th>
+      <th>2021</th>
+      <th>2018</th>
+      <th>2019</th>
+      <th>2020</th>
+      <th>2021</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Income Tax</th>
+      <td>169.0</td>
+      <td>175.1</td>
+      <td>168.8</td>
+      <td>179.9</td>
+      <td>163.7</td>
+      <td>165.9</td>
+      <td>165.0</td>
+      <td>173.9</td>
+      <td>192.5</td>
+      <td>193.6</td>
+      <td>188.2</td>
+      <td>203.6</td>
+    </tr>
+    <tr>
+      <th>NI (total)</th>
+      <td>141.6</td>
+      <td>146.1</td>
+      <td>146.6</td>
+      <td>150.1</td>
+      <td>138.6</td>
+      <td>144.2</td>
+      <td>141.6</td>
+      <td>148.0</td>
+      <td>137.4</td>
+      <td>145.0</td>
+      <td>140.8</td>
+      <td>145.9</td>
+    </tr>
+    <tr>
+      <th>Universal Credit</th>
+      <td>8.3</td>
+      <td>16.2</td>
+      <td>23.5</td>
+      <td>32.0</td>
+      <td>11.7</td>
+      <td>24.8</td>
+      <td>41.3</td>
+      <td>40.4</td>
+      <td>8.1</td>
+      <td>18.4</td>
+      <td>38.2</td>
+      <td>41.3</td>
+    </tr>
+    <tr>
+      <th>Working Tax Credit</th>
+      <td>2.2</td>
+      <td>1.5</td>
+      <td>1.1</td>
+      <td>1.2</td>
+      <td>2.5</td>
+      <td>1.6</td>
+      <td>1.3</td>
+      <td>0.6</td>
+      <td>5.0</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>Child Tax Credit</th>
+      <td>11.9</td>
+      <td>8.6</td>
+      <td>6.0</td>
+      <td>5.1</td>
+      <td>11.4</td>
+      <td>7.1</td>
+      <td>4.4</td>
+      <td>2.8</td>
+      <td>17.7</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>Child Benefit</th>
+      <td>11.9</td>
+      <td>11.9</td>
+      <td>11.9</td>
+      <td>12.2</td>
+      <td>11.5</td>
+      <td>11.4</td>
+      <td>11.6</td>
+      <td>11.6</td>
+      <td>11.6</td>
+      <td>11.6</td>
+      <td>11.9</td>
+      <td>12.1</td>
+    </tr>
+    <tr>
+      <th>Housing Benefit</th>
+      <td>12.2</td>
+      <td>8.7</td>
+      <td>5.9</td>
+      <td>5.0</td>
+      <td>15.1</td>
+      <td>11.0</td>
+      <td>8.6</td>
+      <td>7.5</td>
+      <td>20.7</td>
+      <td>18.4</td>
+      <td>17.3</td>
+      <td>16.9</td>
+    </tr>
+    <tr>
+      <th>Pension Credit</th>
+      <td>3.7</td>
+      <td>3.6</td>
+      <td>3.4</td>
+      <td>3.3</td>
+      <td>4.1</td>
+      <td>3.6</td>
+      <td>3.6</td>
+      <td>2.9</td>
+      <td>5.1</td>
+      <td>5.1</td>
+      <td>5.3</td>
+      <td>5.3</td>
+    </tr>
+    <tr>
+      <th>Income Support</th>
+      <td>1.3</td>
+      <td>1.0</td>
+      <td>0.7</td>
+      <td>0.6</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>1.8</td>
+      <td>1.4</td>
+      <td>1.1</td>
+      <td>0.8</td>
+    </tr>
+    <tr>
+      <th>JSA (income-based)</th>
+      <td>1.1</td>
+      <td>0.9</td>
+      <td>0.5</td>
+      <td>0.6</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>1.1</td>
+      <td>0.6</td>
+      <td>0.4</td>
+      <td>0.3</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</div>
+<div class="section" id="differences">
+<h3>Differences<a class="headerlink" href="#differences" title="Permalink to this headline">¶</a></h3>
+<div class="cell tag_hide-input docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="p">(</span><span class="n">df</span> <span class="o">-</span> <span class="n">ukmod_df</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">df</span> <span class="o">-</span> <span class="n">external_df</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;OpenFisca-UK&quot;</span><span class="p">,</span> <span class="s2">&quot;UKMOD Difference&quot;</span><span class="p">,</span> <span class="s2">&quot;External Difference&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="4" halign="left">OpenFisca-UK</th>
+      <th colspan="4" halign="left">UKMOD Difference</th>
+      <th colspan="4" halign="left">External Difference</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>2018</th>
+      <th>2019</th>
+      <th>2020</th>
+      <th>2021</th>
+      <th>2018</th>
+      <th>2019</th>
+      <th>2020</th>
+      <th>2021</th>
+      <th>2018</th>
+      <th>2019</th>
+      <th>2020</th>
+      <th>2021</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Income Tax</th>
+      <td>169.0</td>
+      <td>175.1</td>
+      <td>168.8</td>
+      <td>179.9</td>
+      <td>5.3</td>
+      <td>9.2</td>
+      <td>3.8</td>
+      <td>6.0</td>
+      <td>-23.5</td>
+      <td>-18.5</td>
+      <td>-19.4</td>
+      <td>-23.7</td>
+    </tr>
+    <tr>
+      <th>NI (total)</th>
+      <td>141.6</td>
+      <td>146.1</td>
+      <td>146.6</td>
+      <td>150.1</td>
+      <td>3.0</td>
+      <td>1.9</td>
+      <td>5.0</td>
+      <td>2.1</td>
+      <td>4.2</td>
+      <td>1.1</td>
+      <td>5.8</td>
+      <td>4.2</td>
+    </tr>
+    <tr>
+      <th>Universal Credit</th>
+      <td>8.3</td>
+      <td>16.2</td>
+      <td>23.5</td>
+      <td>32.0</td>
+      <td>-3.4</td>
+      <td>-8.6</td>
+      <td>-17.8</td>
+      <td>-8.4</td>
+      <td>0.2</td>
+      <td>-2.2</td>
+      <td>-14.7</td>
+      <td>-9.3</td>
+    </tr>
+    <tr>
+      <th>Working Tax Credit</th>
+      <td>2.2</td>
+      <td>1.5</td>
+      <td>1.1</td>
+      <td>1.2</td>
+      <td>-0.3</td>
+      <td>-0.1</td>
+      <td>-0.2</td>
+      <td>0.6</td>
+      <td>-2.8</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>Child Tax Credit</th>
+      <td>11.9</td>
+      <td>8.6</td>
+      <td>6.0</td>
+      <td>5.1</td>
+      <td>0.5</td>
+      <td>1.5</td>
+      <td>1.6</td>
+      <td>2.3</td>
+      <td>-5.8</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>Child Benefit</th>
+      <td>11.9</td>
+      <td>11.9</td>
+      <td>11.9</td>
+      <td>12.2</td>
+      <td>0.4</td>
+      <td>0.5</td>
+      <td>0.3</td>
+      <td>0.6</td>
+      <td>0.3</td>
+      <td>0.3</td>
+      <td>0.0</td>
+      <td>0.1</td>
+    </tr>
+    <tr>
+      <th>Housing Benefit</th>
+      <td>12.2</td>
+      <td>8.7</td>
+      <td>5.9</td>
+      <td>5.0</td>
+      <td>-2.9</td>
+      <td>-2.3</td>
+      <td>-2.7</td>
+      <td>-2.5</td>
+      <td>-8.5</td>
+      <td>-9.7</td>
+      <td>-11.4</td>
+      <td>-11.9</td>
+    </tr>
+    <tr>
+      <th>Pension Credit</th>
+      <td>3.7</td>
+      <td>3.6</td>
+      <td>3.4</td>
+      <td>3.3</td>
+      <td>-0.4</td>
+      <td>0.0</td>
+      <td>-0.2</td>
+      <td>0.4</td>
+      <td>-1.4</td>
+      <td>-1.5</td>
+      <td>-1.9</td>
+      <td>-2.0</td>
+    </tr>
+    <tr>
+      <th>Income Support</th>
+      <td>1.3</td>
+      <td>1.0</td>
+      <td>0.7</td>
+      <td>0.6</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>-0.5</td>
+      <td>-0.4</td>
+      <td>-0.4</td>
+      <td>-0.2</td>
+    </tr>
+    <tr>
+      <th>JSA (income-based)</th>
+      <td>1.1</td>
+      <td>0.9</td>
+      <td>0.5</td>
+      <td>0.6</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>0.1</td>
+      <td>0.3</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
 <hr class="footnotes docutils" />
 <dl class="footnote brackets">
 <dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
@@ -388,6 +868,8 @@ Numbers are in billions of pounds.</p>
 <a class="reference external" href="https://www.fiscalcommission.scot/forecast/supplementary-costing-child-winter-heating-assistance">https://www.fiscalcommission.scot/forecast/supplementary-costing-child-winter-heating-assistance</a> Income tax: HMRC statistics <a class="reference external" href="https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2014-to-2015-to-tax-year-2017-to-2018">https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2014-to-2015-to-tax-year-2017-to-2018</a> National Insurance Contributions: ONS Blue Book Table 5.2.4s</p>
 </dd>
 </dl>
+</div>
+</div>
 </div>
 
     <script type="text/x-thebe-config">

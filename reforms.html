@@ -281,7 +281,7 @@
 
 <span class="k">def</span> <span class="nf">modify_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
     <span class="n">parameters</span><span class="o">.</span><span class="n">tax</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">personal_allowance</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-        <span class="n">period</span><span class="o">=</span><span class="n">periods</span><span class="o">.</span><span class="n">period</span><span class="p">(</span><span class="s2">&quot;year:2019:1&quot;</span><span class="p">),</span> <span class="c1"># for a one-year period from 2019-01-01...</span>
+        <span class="n">period</span><span class="o">=</span><span class="n">periods</span><span class="o">.</span><span class="n">period</span><span class="p">(</span><span class="s2">&quot;year:2019:10&quot;</span><span class="p">),</span> <span class="c1"># for a ten-year period from 2019-01-01...</span>
         <span class="n">value</span><span class="o">=</span><span class="mi">10000</span> <span class="c1"># set the personal allowance base amount to £10k/year</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">parameters</span>
@@ -340,43 +340,43 @@
   <tbody>
     <tr>
       <th>1</th>
-      <td>-0.1</td>
+      <td>-0.0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>-0.4</td>
+      <td>-0.5</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>-0.6</td>
+      <td>-0.8</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>-0.7</td>
-    </tr>
-    <tr>
-      <th>5</th>
       <td>-1.0</td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>5</th>
       <td>-1.3</td>
     </tr>
     <tr>
+      <th>6</th>
+      <td>-1.8</td>
+    </tr>
+    <tr>
       <th>7</th>
-      <td>-1.6</td>
+      <td>-2.2</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>-1.9</td>
+      <td>-2.7</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>-2.4</td>
+      <td>-3.3</td>
     </tr>
     <tr>
       <th>10</th>
-      <td>-2.8</td>
+      <td>-3.9</td>
     </tr>
   </tbody>
 </table>
@@ -473,43 +473,43 @@
   <tbody>
     <tr>
       <th>1</th>
-      <td>9.9</td>
+      <td>10.1</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>11.3</td>
+      <td>11.4</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>12.6</td>
+      <td>13.1</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>14.9</td>
+      <td>15.1</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>16.6</td>
+      <td>16.8</td>
     </tr>
     <tr>
       <th>6</th>
-      <td>17.6</td>
+      <td>18.0</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>19.5</td>
+      <td>19.2</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>20.1</td>
+      <td>20.2</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>22.0</td>
+      <td>21.5</td>
     </tr>
     <tr>
       <th>10</th>
-      <td>24.0</td>
+      <td>23.3</td>
     </tr>
   </tbody>
 </table>
@@ -558,7 +558,7 @@
   <tbody>
     <tr>
       <th>Tax only</th>
-      <td>-12.7</td>
+      <td>-17.4</td>
     </tr>
     <tr>
       <th>UBI only</th>
@@ -566,7 +566,7 @@
     </tr>
     <tr>
       <th>Tax and UBI</th>
-      <td>156.3</td>
+      <td>151.6</td>
     </tr>
   </tbody>
 </table>
