@@ -3439,6 +3439,16 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 28023811.0
 
 
+- is_renting:
+  - Type: bool
+  - Entity: household
+  - Description: Is renting
+  - Mean: 0.27033642926010315
+  - Median: 0.0
+  - Stddev: 0.441824443144987
+  - Non-zero count: 7575857.0
+
+
 - is_shared_accommodation:
   - Type: bool
   - Entity: household
