@@ -20,7 +20,7 @@ class earned_taxable_income(Variable):
             period,
             ["taxable_savings_interest_income", "taxable_dividend_income"],
         )
-        reductions = person("allowances", period) + person(
+        reductions = add(person, period, ["allowances", "marriage_allowance"])
             "marriage_allowance", period
         )
         final_amount = max_(0, amount - reductions)
@@ -523,7 +523,7 @@ class income_tax(Variable):
     def formula(person, period, parameters):
         return max_(
             0,
-            person("income_tax_pre_charges", period)
+            add(person, period, ["income_tax_pre_charges", "CB_HITC"])
             + person("CB_HITC", period)
             - person("married_couples_allowance_deduction", period),
         )

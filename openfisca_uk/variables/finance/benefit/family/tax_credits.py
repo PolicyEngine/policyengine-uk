@@ -256,7 +256,7 @@ class is_WTC_eligible(Variable):
 class would_claim_WTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim WTC"
+    label = u"Would claim Working Tax Credit"
     definition_period = YEAR
     reference = ""
 

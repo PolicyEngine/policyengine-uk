@@ -12,7 +12,7 @@ The elements are described in different folders. All the modelling happens withi
 
 The files that are outside from the `openfisca_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the ```docs``` folder.
 
-Policy implementations in OpenFisca-UK were accelerated by the descriptions provided by the UKMOD team. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex. The process of extending and updating UKMOD is financially supported by the Nuffield Foundation (2018-2021). The results and their interpretation are the author’s(’) sole responsibility. See the [UKMOD website](https://www.iser.essex.ac.uk/research/projects/ukmod) for more details.
+We're grateful to the [UKMOD](https://www.iser.essex.ac.uk/research/projects/ukmod) team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK's development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.
 
 ## Fast setup instructions
 

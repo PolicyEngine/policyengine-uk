@@ -21,11 +21,11 @@ class taxable_employment_income(Variable):
 
     def formula(person, period, parameters):
         taxable_earnings = person("employment_income", period)
-        deductions = person("employment_deductions", period) + person(
+        deductions = add(person, period, ["employment_deductions", "pension_contributions"])
             "pension_contributions", period
         )
         benefits = person("employment_benefits", period)
-        net_taxable_earnings = max_(
+        return max_(
             0, taxable_earnings + benefits - deductions
         )
         return net_taxable_earnings
@@ -66,7 +66,7 @@ class employment_deductions(Variable):
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 327"
 
     def formula(person, period, parameters):
-        deductions = ["employment_expenses"]
+        DEDUCTIONS = ["employment_expenses"]
         return add(person, period, deductions)
 
 
@@ -106,7 +106,7 @@ class pension_contributions_relief(Variable):
 
     def formula_2004_07_22(person, period, parameters):
         contributions = person("pension_contributions", period)
-        pay = person("employment_income", period) + person(
+        pay = add(person, period, ["employment_income", "self_employment_income"])
             "self_employment_income", period
         )
         under_75 = person("age", period) < 75
@@ -225,7 +225,7 @@ class taxable_self_employment_income(Variable):
 
     def formula(person, period, parameters):
         DEDUCTIONS = ["loss_relief", "capital_allowances", "trading_allowance"]
-        amount = max_(
+        return max_(
             0,
             person("self_employment_income", period)
             - add(person, period, DEDUCTIONS),
