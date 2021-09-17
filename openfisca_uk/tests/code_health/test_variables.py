@@ -23,12 +23,13 @@ def test_variable_names_match_return_types():
     if len(exceptions) > 0:
         raise Exception("Some variable names do not match their output types.")
 
+
 def test_labels_exist():
     messages = []
     for var_name in BASELINE_VARIABLES:
         if not hasattr(BASELINE_VARIABLES[var_name], "label"):
             messages += [f"{var_name} has no label set"]
-        elif BASELINE_VARIABLES[var_name].label == u"label":
+        elif BASELINE_VARIABLES[var_name].label == "label":
             messages += [f"{var_name} has the default label"]
     if len(messages) > 0:
         print("\n".join(messages))
