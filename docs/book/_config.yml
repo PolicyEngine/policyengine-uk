@@ -20,4 +20,5 @@ sphinx:
     - https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js
 
 execute:
-  jupyter_execute_notebooks: force
+  execute_notebooks: 'force'
+  jupyter_execute_notebooks: 'force'
