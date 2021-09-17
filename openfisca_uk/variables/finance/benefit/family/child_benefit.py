@@ -25,7 +25,7 @@ class claims_child_benefit(Variable):
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Benefit for the family"
+    label = u"Child Benefit"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 141"
 

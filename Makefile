@@ -19,5 +19,6 @@ test:
 serve:
 	openfisca serve --country-package openfisca_uk
 
-stats:
+documentation:
 	python docs/summary/generate_descriptions.py
+	jb build docs/book

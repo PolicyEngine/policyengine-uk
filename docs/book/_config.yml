@@ -20,4 +20,4 @@ sphinx:
     - https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js
 
 execute:
-  execute_notebooks: 'off'
+  execute_notebooks: 'force'

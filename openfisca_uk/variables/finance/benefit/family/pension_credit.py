@@ -147,7 +147,7 @@ class pension_credit_SC(Variable):
 class pension_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Pension credit amount"
+    label = u"Pension Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

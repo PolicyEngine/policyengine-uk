@@ -82,7 +82,7 @@ class pension_credit(Variable):
 class working_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Amount of Working Tax Credit entitled to"
+    label = u"Working Tax Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

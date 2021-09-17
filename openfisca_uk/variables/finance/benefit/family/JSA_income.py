@@ -61,6 +61,17 @@ class JSA_income_applicable_amount(Variable):
         )
 
 
+class would_claim_JSA(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"label"
+    definition_period = YEAR
+    reference = ""
+
+    def formula(benunit, period, parameters):
+        return random(benunit) <= parameters(period).benefit.JSA.income.takeup
+
+
 class claims_JSA(Variable):
     value_type = bool
     entity = BenUnit
@@ -68,18 +79,9 @@ class claims_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = (
-            aggr(
-                benunit,
-                period,
-                ["JSA_income_reported", "JSA_contrib_reported"],
-            )
-            > 0
+        return benunit("would_claim_JSA", period) & benunit(
+            "claims_legacy_benefits", period
         )
-        would_claim = (
-            random(benunit) <= parameters(period).benefit.JSA.income.takeup
-        ) * benunit("claims_legacy_benefits", period)
-        return already_claiming  # + would_claim > 0
 
 
 class JSA_income_applicable_income(Variable):
@@ -102,8 +104,7 @@ class JSA_income_applicable_income(Variable):
             period,
             ["income_tax", "national_insurance"],
         )
-        income += aggr(benunit, period, ["personal_benefits"])
-        income += add(benunit, period, ["child_benefit"])
+        income += aggr(benunit, period, ["social_security_income"])
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         family_type = benunit("family_type", period)
@@ -127,7 +128,7 @@ class JSA_income_applicable_income(Variable):
 class JSA_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Job Seeker's Allowance (income-based)"
+    label = u"JSA (income-based)"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

@@ -9,3 +9,14 @@ class council_tax_benefit_reported(Variable):
     label = u"label"
     definition_period = YEAR
     reference = ""
+
+
+class council_tax_benefit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"label"
+    definition_period = YEAR
+    reference = ""
+
+    def formula(benunit, period, parameters):
+        return aggr(benunit, period, ["council_tax_benefit_reported"])

@@ -11,11 +11,26 @@ class claims_UC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takeup_rate = parameters(
-            period
-        ).benefit.tax_credits.working_tax_credit.takeup
+        WTC = benunit("would_claim_WTC", period) & benunit(
+            "is_WTC_eligible", period
+        )
+        CTC = benunit("would_claim_CTC", period) & benunit(
+            "is_CTC_eligible", period
+        )
+        HB = benunit("would_claim_HB", period) & benunit(
+            "housing_benefit_eligible", period
+        )
+        IS = benunit("would_claim_IS", period) & benunit(
+            "income_support_eligible", period
+        )
+        ESA_income = benunit("would_claim_ESA_income", period) & benunit(
+            "ESA_income_eligible", period
+        )
+        JSA_income = benunit("would_claim_JSA", period) & benunit(
+            "JSA_income_eligible", period
+        )
         return not_(benunit("claims_legacy_benefits", period)) & (
-            random(benunit) < takeup_rate
+            sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
         )
 
 

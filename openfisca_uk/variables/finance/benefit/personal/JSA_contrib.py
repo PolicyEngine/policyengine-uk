@@ -6,7 +6,7 @@ from openfisca_uk.tools.general import *
 class JSA_contrib(Variable):
     value_type = float
     entity = Person
-    label = u"Job Seeker's Allowance (contribution-based)"
+    label = u"JSA (contribution-based)"
     definition_period = YEAR
 
     def formula(person, period, parameters):

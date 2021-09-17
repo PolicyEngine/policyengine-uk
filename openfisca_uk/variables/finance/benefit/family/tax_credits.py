@@ -82,6 +82,20 @@ class is_CTC_eligible(Variable):
         return benunit.sum(benunit.members("is_child_for_CTC", period)) >= 1
 
 
+class would_claim_CTC(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"label"
+    definition_period = YEAR
+    reference = ""
+
+    def formula(benunit, period, parameters):
+        return (
+            random(benunit)
+            <= parameters(period).benefit.tax_credits.child_tax_credit.takeup
+        )
+
+
 class claims_CTC(Variable):
     value_type = bool
     entity = BenUnit
@@ -89,10 +103,9 @@ class claims_CTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
-            random(benunit)
-            <= parameters(period).benefit.tax_credits.child_tax_credit.takeup
-        ) & benunit("claims_legacy_benefits", period)
+        return benunit("would_claim_CTC", period) & benunit(
+            "claims_legacy_benefits", period
+        )
 
 
 class CTC_maximum_rate(Variable):
@@ -240,11 +253,12 @@ class is_WTC_eligible(Variable):
         return eligible
 
 
-class claims_WTC(Variable):
+class would_claim_WTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim Working Tax Credit, based on survey response and take-up rates"
+    label = u"label"
     definition_period = YEAR
+    reference = ""
 
     def formula(benunit, period, parameters):
         takeup_rate = parameters(
@@ -252,6 +266,18 @@ class claims_WTC(Variable):
         ).benefit.tax_credits.working_tax_credit.takeup
         return benunit("claims_legacy_benefits", period) & (
             random(benunit) < takeup_rate
+        )
+
+
+class claims_WTC(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Whether this family is imputed to claim Working Tax Credit, based on survey response and take-up rates"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit("would_claim_WTC", period) & benunit(
+            "claims_legacy_benefits", period
         )
 
 
@@ -451,7 +477,7 @@ class tax_credits_reduction(Variable):
 class working_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Amount of Working Tax Credit entitled to"
+    label = u"Working Tax Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -466,7 +492,7 @@ class working_tax_credit(Variable):
 class child_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Amount of Child Tax Credit entitled to"
+    label = u"Child Tax Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

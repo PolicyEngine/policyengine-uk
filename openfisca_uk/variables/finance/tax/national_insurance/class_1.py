@@ -70,9 +70,7 @@ class employer_NI(Variable):
 class total_NI(Variable):
     value_type = float
     entity = Person
-    label = (
-        u"Total National Insurance contributions by employers and employees"
-    )
+    label = u"NI (total)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
