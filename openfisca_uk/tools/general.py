@@ -112,10 +112,10 @@ def is_in(values, *targets):
 
 def uprated(by: str = None) -> Callable:
     def uprater(variable: type) -> type:
-        if hasattr(variable, "formula_2018"):
+        if hasattr(variable, "formula_2015"):
             return variable
 
-        def formula_2018(entity, period, parameters):
+        def formula_2015(entity, period, parameters):
             if by is None:
                 return entity(variable.__name__, period.last_year)
             else:
@@ -125,7 +125,7 @@ def uprated(by: str = None) -> Callable:
                 )
                 return uprating * entity(variable.__name__, period.last_year)
 
-        variable.formula_2018 = formula_2018
+        variable.formula_2015 = formula_2015
         return variable
 
     return uprater
