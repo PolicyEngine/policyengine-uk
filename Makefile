@@ -1,6 +1,7 @@
 all: microdata
 
 install:
+	pip install git+https://github.com/PSLmodels/synthimpute
 	pip install -e .
 
 microdata:
