@@ -111,6 +111,15 @@ def is_in(values, *targets):
 
 
 def uprated(by: str = None) -> Callable:
+    """Attaches a formula applying an uprating factor to input variables (going back as far as 2015).
+
+    Args:
+        by (str, optional): The name of the parameter (under parameters.uprating). Defaults to None (no uprating applied).
+
+    Returns:
+        Callable: A class decorator.
+    """
+
     def uprater(variable: type) -> type:
         if hasattr(variable, "formula_2015"):
             return variable

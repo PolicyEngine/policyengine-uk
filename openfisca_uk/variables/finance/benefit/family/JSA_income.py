@@ -66,7 +66,6 @@ class would_claim_JSA(Variable):
     entity = BenUnit
     label = u"Would claim JSA"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         return random(benunit) <= parameters(period).benefit.JSA.income.takeup

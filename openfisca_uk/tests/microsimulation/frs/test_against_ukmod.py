@@ -87,6 +87,7 @@ def test_average_error_among_nonzero(variable):
         index=baseline.calc("household_id", period=TEST_YEAR).values,
     )
     target = ukmod_hh[test_params["ukmod"]]
+    # Exclude the smallest 10% to avoid overweighting small errors
     mean_error_ukmod_nonzero = (
         (result / target - 1)[target > target[target > 0].quantile(0.1)]
         .abs()

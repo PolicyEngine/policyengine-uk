@@ -8,7 +8,6 @@ class student_loans(Variable):
     entity = Person
     label = u"Student loans"
     definition_period = YEAR
-    reference = ""
 
 
 class student_payments(Variable):
@@ -16,4 +15,3 @@ class student_payments(Variable):
     entity = Person
     label = u"Student payments"
     definition_period = YEAR
-    reference = ""

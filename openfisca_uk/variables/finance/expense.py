@@ -62,7 +62,6 @@ class private_pension_contributions(Variable):
     entity = Person
     label = u"Private pension contributions"
     definition_period = YEAR
-    reference = ""
 
 
 class occupational_pension_contributions(Variable):
@@ -70,7 +69,6 @@ class occupational_pension_contributions(Variable):
     entity = Person
     label = u"Occupational pension contributions"
     definition_period = YEAR
-    reference = ""
 
 
 class housing_service_charges(Variable):
@@ -78,7 +76,6 @@ class housing_service_charges(Variable):
     entity = Household
     label = u"Housing service charges"
     definition_period = YEAR
-    reference = ""
 
 
 class water_and_sewerage_charges(Variable):
@@ -86,7 +83,6 @@ class water_and_sewerage_charges(Variable):
     entity = Household
     label = u"Water and sewerage charges"
     definition_period = YEAR
-    reference = ""
 
 
 class employer_pension_contributions(Variable):
@@ -94,7 +90,6 @@ class employer_pension_contributions(Variable):
     entity = Person
     label = u"Employer pension contributions"
     definition_period = YEAR
-    reference = ""
 
 
 class weekly_childcare_expenses(Variable):
@@ -122,7 +117,6 @@ class maintenance_expenses(Variable):
     entity = Person
     label = u"Maintenance expenses"
     definition_period = YEAR
-    reference = ""
 
 
 class mortgage_interest_repayment(Variable):

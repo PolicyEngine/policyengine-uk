@@ -87,7 +87,6 @@ class would_claim_CTC(Variable):
     entity = BenUnit
     label = u"Would claim CTC"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         return (
@@ -258,7 +257,6 @@ class would_claim_WTC(Variable):
     entity = BenUnit
     label = u"Would claim Working Tax Credit"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         takeup_rate = parameters(

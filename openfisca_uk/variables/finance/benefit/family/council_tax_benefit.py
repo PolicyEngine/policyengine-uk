@@ -8,7 +8,6 @@ class council_tax_benefit_reported(Variable):
     entity = Person
     label = u"CTB (reported)"
     definition_period = YEAR
-    reference = ""
 
 
 class council_tax_benefit(Variable):
@@ -16,7 +15,6 @@ class council_tax_benefit(Variable):
     entity = BenUnit
     label = u"CTB"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["council_tax_benefit_reported"])

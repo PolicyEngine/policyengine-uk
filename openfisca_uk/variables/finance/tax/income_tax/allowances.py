@@ -36,7 +36,6 @@ class unused_personal_allowance(Variable):
     entity = Person
     label = u"Unused personal allowance"
     definition_period = YEAR
-    reference = ""
 
     def formula(person, period, parameters):
         return max_(
@@ -85,7 +84,10 @@ class married_couples_allowance_deduction(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("married_couples_allowance", period) * 0.1
+        rate = parameters(
+            period
+        ).tax.income_tax.allowances.married_couples_allowance.deduction_rate
+        return person("married_couples_allowance", period) * rate
 
 
 class pension_annual_allowance(Variable):

@@ -120,7 +120,6 @@ class is_renting(Variable):
     entity = Household
     label = u"Is renting"
     definition_period = YEAR
-    reference = ""
 
     def formula(household, period, parameters):
         tenure = household("tenure_type", period)

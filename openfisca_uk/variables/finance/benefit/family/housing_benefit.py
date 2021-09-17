@@ -36,7 +36,6 @@ class would_claim_HB(Variable):
     entity = BenUnit
     label = u"Would claim HB"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         return (

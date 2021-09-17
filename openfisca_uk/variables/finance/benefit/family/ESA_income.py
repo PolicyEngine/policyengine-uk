@@ -15,7 +15,6 @@ class would_claim_ESA_income(Variable):
     entity = BenUnit
     label = u"Would claim ESA (income)"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["ESA_income_reported"]) > 0
@@ -26,7 +25,6 @@ class ESA_income_eligible(Variable):
     entity = BenUnit
     label = u"ESA (income) eligible"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["ESA_income_reported"]) > 0
@@ -37,7 +35,6 @@ class claims_ESA_income(Variable):
     entity = BenUnit
     label = u"Claims ESA (income)"
     definition_period = YEAR
-    reference = ""
 
     def formula(benunit, period, parameters):
         return benunit("would_claim_ESA_income", period) & benunit(

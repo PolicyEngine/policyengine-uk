@@ -21,8 +21,6 @@ class earned_taxable_income(Variable):
             ["taxable_savings_interest_income", "taxable_dividend_income"],
         )
         reductions = add(person, period, ["allowances", "marriage_allowance"])
-            "marriage_allowance", period
-        )
         final_amount = max_(0, amount - reductions)
         return final_amount
 

@@ -51,7 +51,6 @@ class market_income(Variable):
     entity = Person
     label = u"Market income"
     definition_period = YEAR
-    reference = ""
 
     def formula(person, period, parameters):
         return (

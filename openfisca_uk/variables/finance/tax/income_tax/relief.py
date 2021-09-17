@@ -21,14 +21,11 @@ class taxable_employment_income(Variable):
 
     def formula(person, period, parameters):
         taxable_earnings = person("employment_income", period)
-        deductions = add(person, period, ["employment_deductions", "pension_contributions"])
-            "pension_contributions", period
+        deductions = add(
+            person, period, ["employment_deductions", "pension_contributions"]
         )
         benefits = person("employment_benefits", period)
-        return max_(
-            0, taxable_earnings + benefits - deductions
-        )
-        return net_taxable_earnings
+        return max_(0, taxable_earnings + benefits - deductions)
 
 
 class employment_benefits(Variable):
@@ -36,7 +33,6 @@ class employment_benefits(Variable):
     entity = Person
     label = u"Employment benefits"
     definition_period = YEAR
-    reference = ""
 
     def formula(person, period, parameters):
         return add(person, period, ["SSP", "SMP"])
@@ -47,7 +43,6 @@ class SMP(Variable):
     entity = Person
     label = u"SMP"
     definition_period = YEAR
-    reference = ""
 
 
 class SSP(Variable):
@@ -55,7 +50,6 @@ class SSP(Variable):
     entity = Person
     label = u"Statutory Sick Pay"
     definition_period = YEAR
-    reference = ""
 
 
 class employment_deductions(Variable):
@@ -67,7 +61,7 @@ class employment_deductions(Variable):
 
     def formula(person, period, parameters):
         DEDUCTIONS = ["employment_expenses"]
-        return add(person, period, deductions)
+        return add(person, period, DEDUCTIONS)
 
 
 class employment_expenses(Variable):
@@ -106,8 +100,8 @@ class pension_contributions_relief(Variable):
 
     def formula_2004_07_22(person, period, parameters):
         contributions = person("pension_contributions", period)
-        pay = add(person, period, ["employment_income", "self_employment_income"])
-            "self_employment_income", period
+        pay = add(
+            person, period, ["employment_income", "self_employment_income"]
         )
         under_75 = person("age", period) < 75
         basic_amount = parameters(

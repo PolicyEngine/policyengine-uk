@@ -35,7 +35,6 @@ class employee_NI(Variable):
     entity = Person
     label = u"Employee-side NI"
     definition_period = YEAR
-    reference = ""
 
     def formula(person, period, parameters):
         return person("employee_NI_class_1", period)
@@ -46,7 +45,6 @@ class self_employed_NI(Variable):
     entity = Person
     label = u"Self-employed NI"
     definition_period = YEAR
-    reference = ""
 
     def formula(person, period, parameters):
         return add(person, period, ("NI_class_2", "NI_class_4"))

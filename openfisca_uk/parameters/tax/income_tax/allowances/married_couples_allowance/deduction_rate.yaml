@@ -1,0 +1,5 @@
+description: Percentage of the Married Couple's Allowance which is deductible from Income Tax Liability.
+values:
+  2010-01-01: 0.1
+metadata:
+  unit: /1
