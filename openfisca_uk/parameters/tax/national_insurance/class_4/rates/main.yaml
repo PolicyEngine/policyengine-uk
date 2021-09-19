@@ -1,7 +1,6 @@
 description: Main contribution rate by self-employed earners
 values:
-  2015-06-01:
-    value: 0.09
+  2015-06-01: 0.09
 metadata:
   unit: marginal-rate
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

@@ -1,19 +1,12 @@
 description: Upper earnings limit for National Insurance
 values:
-  2015-04-06:
-    value: 815
-  2016-04-06:
-    value: 827
-  2017-04-06:
-    value: 866
-  2018-04-06:
-    value: 892
-  2019-04-06:
-    value: 962
-  2020-04-06:
-    value: 962
-  2021-04-06:
-    value: 967
+  2015-04-06: 815
+  2016-04-06: 827
+  2017-04-06: 866
+  2018-04-06: 892
+  2019-04-06: 962
+  2020-04-06: 962
+  2021-04-06: 966.73
 metadata:
   unit: currency-GBP
   period: week

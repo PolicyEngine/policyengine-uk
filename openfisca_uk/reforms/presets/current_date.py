@@ -1,4 +1,8 @@
 from openfisca_core.model_api import *
+from openfisca_core.parameters.parameter_scale import ParameterScale
+from openfisca_core.parameters.parameter_scale_bracket import (
+    ParameterScaleBracket,
+)
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 from datetime import datetime
@@ -15,6 +19,19 @@ def use_current_parameters(date: str = CURRENT_INSTANT) -> Reform:
             if isinstance(child, Parameter):
                 current_value = child(date)
                 child.update(period=f"year:{YEAR-10}:20", value=current_value)
+            elif isinstance(child, ParameterScale):
+                for bracket in child.brackets:
+                    if "rate" in bracket.children:
+                        current_rate = bracket.rate(date)
+                        bracket.rate.update(
+                            period=f"year:{YEAR-10}:20", value=current_rate
+                        )
+                    if "threshold" in bracket.children:
+                        current_threshold = bracket.threshold(date)
+                        bracket.threshold.update(
+                            period=f"year:{YEAR-10}:20",
+                            value=current_threshold,
+                        )
         return parameters
 
     class reform(Reform):
