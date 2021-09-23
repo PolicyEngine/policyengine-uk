@@ -44,6 +44,7 @@ class IndividualSim:
         self.year = year
         self.reforms = reforms
         self.system = openfisca_uk.CountryTaxBenefitSystem()
+        self.sim_builder = SimulationBuilder()
         self.entities = {var.key: var for var in self.system.entities}
         self.apply_reforms(self.reforms)
         self.situation_data = {"people": {}, "benunits": {}, "households": {}}
@@ -51,9 +52,6 @@ class IndividualSim:
         self.num_points = None
 
     def build(self):
-        self.sim_builder = SimulationBuilder()
-        self.system = openfisca_uk.CountryTaxBenefitSystem()
-        self.apply_reforms(self.reforms)
         self.sim = self.sim_builder.build_from_entities(
             self.system, self.situation_data
         )
@@ -103,7 +101,6 @@ class IndividualSim:
                 except:
                     data[var] = value
         self.situation_data[entity_plural][name] = data
-        self.build()
 
     def add_person(self, **kwargs):
         self.add_data(entity="person", **kwargs)
@@ -132,8 +129,10 @@ class IndividualSim:
         return containing_entity
 
     def calc(self, var, period=None, target=None, index=None):
+        if not hasattr(self, "sim"):
+            self.build()
         period = period or self.year
-        entity = self.sim_builder.get_variable_entity(var)
+        entity = self.system.variables[var].entity
         if target is not None:
             target_entity = self.get_entity(target)
             if target_entity.key != entity.key:
