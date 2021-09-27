@@ -280,18 +280,24 @@
 
 <span class="c1"># First, define a function to change the parameter tree</span>
 
+
 <span class="k">def</span> <span class="nf">modify_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
     <span class="n">parameters</span><span class="o">.</span><span class="n">tax</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">personal_allowance</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-        <span class="n">period</span><span class="o">=</span><span class="n">periods</span><span class="o">.</span><span class="n">period</span><span class="p">(</span><span class="s2">&quot;year:2019:10&quot;</span><span class="p">),</span> <span class="c1"># for a ten-year period from 2019-01-01...</span>
-        <span class="n">value</span><span class="o">=</span><span class="mi">10000</span> <span class="c1"># set the personal allowance base amount to £10k/year</span>
+        <span class="n">period</span><span class="o">=</span><span class="n">periods</span><span class="o">.</span><span class="n">period</span><span class="p">(</span>
+            <span class="s2">&quot;year:2019:10&quot;</span>
+        <span class="p">),</span>  <span class="c1"># for a ten-year period from 2019-01-01...</span>
+        <span class="n">value</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>  <span class="c1"># set the personal allowance base amount to £10k/year</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">parameters</span>
 
+
 <span class="c1"># Then, define a reform class inheriting from Reform</span>
+
 
 <span class="k">class</span> <span class="nc">raise_tax</span><span class="p">(</span><span class="n">Reform</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">modify_parameters</span><span class="p">(</span><span class="n">modify_parameters</span><span class="p">)</span>
+
 
 <span class="c1"># Reform specified, now we can estimate the effects</span>
 
@@ -305,9 +311,13 @@
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="n">summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">&quot;Disposable income change (£bn/year)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">gain</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">income</span><span class="o">.</span><span class="n">decile_rank</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e+9</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="p">})</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;Disposable income change (£bn/year)&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">gain</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">income</span><span class="o">.</span><span class="n">decile_rank</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
 <span class="n">summary</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
 
@@ -391,15 +401,18 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># First, define the basic income variable</span>
 
+
 <span class="k">class</span> <span class="nc">basic_income</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
     <span class="n">value_type</span> <span class="o">=</span> <span class="nb">float</span>
     <span class="n">entity</span> <span class="o">=</span> <span class="n">Person</span>
     <span class="n">definition_period</span> <span class="o">=</span> <span class="n">YEAR</span>
-    
+
     <span class="k">def</span> <span class="nf">formula</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">where</span><span class="p">(</span><span class="n">person</span><span class="p">(</span><span class="s2">&quot;is_adult&quot;</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="mi">3000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-    
+
+
 <span class="c1"># Then, include it in gross income</span>
+
 
 <span class="k">class</span> <span class="nc">gross_income</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
     <span class="n">value_type</span> <span class="o">=</span> <span class="nb">float</span>
@@ -417,16 +430,19 @@
             <span class="s2">&quot;dividend_income&quot;</span><span class="p">,</span>
             <span class="s2">&quot;miscellaneous_income&quot;</span><span class="p">,</span>
             <span class="s2">&quot;benefits&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;basic_income&quot;</span> <span class="c1"># add basic income to the component list</span>
+            <span class="s2">&quot;basic_income&quot;</span><span class="p">,</span>  <span class="c1"># add basic income to the component list</span>
         <span class="p">]</span>
         <span class="k">return</span> <span class="n">add</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">COMPONENTS</span><span class="p">)</span>
 
+
 <span class="c1"># Finally, specify the reform class</span>
+
 
 <span class="k">class</span> <span class="nc">add_ubi</span><span class="p">(</span><span class="n">Reform</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="n">basic_income</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_variable</span><span class="p">(</span><span class="n">gross_income</span><span class="p">)</span>
+
 
 <span class="c1"># Estimate the effects</span>
 
@@ -438,9 +454,13 @@
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="n">summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">&quot;Disposable income change (£bn/year)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">gain</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">income</span><span class="o">.</span><span class="n">decile_rank</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e+9</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="p">})</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;Disposable income change (£bn/year)&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">gain</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">income</span><span class="o">.</span><span class="n">decile_rank</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
 <span class="n">summary</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
 
@@ -524,12 +544,19 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tax_and_BI</span> <span class="o">=</span> <span class="p">(</span><span class="n">raise_tax</span><span class="p">,</span> <span class="n">add_ubi</span><span class="p">)</span>
 
+
 <span class="k">def</span> <span class="nf">get_net_cost</span><span class="p">(</span><span class="n">reform</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">reform</span><span class="p">)</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;net_income&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;net_income&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">Microsimulation</span><span class="p">(</span><span class="n">reform</span><span class="p">)</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;net_income&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;net_income&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="p">)</span>
+
 
 <span class="n">net_costs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">get_net_cost</span><span class="p">,</span> <span class="p">(</span><span class="n">raise_tax</span><span class="p">,</span> <span class="n">add_ubi</span><span class="p">,</span> <span class="n">tax_and_BI</span><span class="p">)))</span>
 
-<span class="n">costs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">net_costs</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Tax only&quot;</span><span class="p">,</span> <span class="s2">&quot;UBI only&quot;</span><span class="p">,</span> <span class="s2">&quot;Tax and UBI&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">1e+9</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">costs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
+    <span class="n">net_costs</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Tax only&quot;</span><span class="p">,</span> <span class="s2">&quot;UBI only&quot;</span><span class="p">,</span> <span class="s2">&quot;Tax and UBI&quot;</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Net cost&quot;</span><span class="p">:</span> <span class="n">costs</span><span class="p">})</span>
 </pre></div>
 </div>
