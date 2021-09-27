@@ -50,7 +50,7 @@ jobs:
           BRANCH: gh-pages  # The branch the action should deploy to.
           FOLDER: docs/book/_build/html  # The folder the action should deploy.
   Publish:
-    if: github.repository == 'PSLmodels/openfisca-uk'
+    if: github.repository == 'PolicyEngine/openfisca-uk'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
