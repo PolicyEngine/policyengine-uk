@@ -32,6 +32,7 @@ setup(
         "pyyaml>=5.3.1",
         "pytest>=5.4.3",
         "OpenFisca-Core>=35.4.1",
+        "microdf_python>=0.3.0",
         "OpenFisca-UK-Data>=0.1.9",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
