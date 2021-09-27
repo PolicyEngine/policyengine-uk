@@ -3,6 +3,7 @@ from pathlib import Path
 import inquirer
 import yaml
 import argparse
+from openfisca_uk import REPO
 
 NEWLINE = "\n"
 
@@ -48,6 +49,9 @@ def main():
                 print(
                     f"You currently have the synthetic FRS dataset for: {', '.join(map(str, SynthFRS.years))}."
                 )
+            with open(REPO / "tools" / "datasets.yml") as f:
+                data = yaml.load(f)
+                data["default"] = "synth_frs"
         elif setup_mode == USE_FRS_2018:
             file_input = inquirer.Path(
                 "file_path",
