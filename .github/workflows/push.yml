@@ -58,7 +58,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
       - name: Build package
-        run: make install
+        run: make
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
