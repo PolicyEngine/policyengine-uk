@@ -1,8 +1,8 @@
-all: microdata
+all: 
+	pip install wheel
+	python setup.py sdist bdist_wheel
 
 install:
-	pip install git+https://github.com/PSLmodels/microdf
-	pip install git+https://github.com/PSLmodels/synthimpute
 	pip install -e .
 
 microdata:
