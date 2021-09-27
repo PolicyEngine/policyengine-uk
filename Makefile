@@ -1,8 +1,6 @@
-all: microdata
+all: install microdata
 
 install:
-	pip install git+https://github.com/PSLmodels/microdf
-	pip install git+https://github.com/PSLmodels/synthimpute
 	pip install -e .
 
 microdata:
