@@ -488,6 +488,7 @@ class is_higher_earner(Variable):
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
+        # Add noise to incomes in order to avoid ties
         return (
             person.get_rank(person.benunit, -income + random(person) * 1e-2)
             == 0
