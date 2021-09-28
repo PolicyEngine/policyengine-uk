@@ -4,5 +4,5 @@ values:
     value: 182
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.gov.uk/industrial-injuries-disablement-benefit/what-youll-get

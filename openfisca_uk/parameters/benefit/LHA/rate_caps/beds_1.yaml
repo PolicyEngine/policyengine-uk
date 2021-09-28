@@ -4,5 +4,5 @@ values:
     value: 123.57
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: http://www.oecd.org/els/soc/TaxBEN-United-Kingdom-2018.pdf

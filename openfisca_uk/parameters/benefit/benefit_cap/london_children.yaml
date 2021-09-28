@@ -4,5 +4,5 @@ values:
     value: 442.31
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.gov.uk/benefit-cap/benefit-cap-amounts

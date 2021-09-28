@@ -45,7 +45,7 @@ def distributional_chart(
     aggregation: str = "mean",
     compare_groups: bool = "true",
     relative: bool = False,
-    currency: str = "£",
+    currency-GBP: str = "£",
     include_all_ticks: bool = True,
     baseline: Microsimulation = None,
     microsimulation_kwargs: dict = {},
@@ -65,7 +65,7 @@ def distributional_chart(
         aggregation (str, optional): The type of aggregation (mean, sum, median). Defaults to "mean".
         compare_groups (bool, optional): Whether to compare group aggregates (true) or aggregate individual comparisons (false).
         relative (bool, optional): Whether changes should be a percentage of their baseline value.
-        currency (str, optional): The currency format to use if using absolute changes.
+        currency-GBP (str, optional): The currency-GBP format to use if using absolute changes.
         baseline (Microsimulation, optional): Baseline simulation, can improve speed.
         microsimulation_kwargs (dict, optional). Keyword arguments to pass when constructing reform simulations. Defaults to {}.
         **kwargs (dict): Any additional arguments to pass to fig.update_layout (e.g. title=...).
@@ -130,7 +130,7 @@ def distributional_chart(
     if relative:
         fig.update_layout(yaxis_tickformat="%")
     else:
-        fig.update_layout(yaxis_tickprefix=currency)
+        fig.update_layout(yaxis_tickprefix=currency-GBP)
     if include_all_ticks:
         numbers = dict(quartile=4, quintile=5, decile=10, percentile=100)[
             bucket

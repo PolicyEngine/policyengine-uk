@@ -25,7 +25,7 @@ values:
     value: 21.15
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference:
   - https://revenuebenefits.org.uk/child-benefit/guidance/how-much-can-your-client-get/rates-and-tables/
   - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

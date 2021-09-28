@@ -29,6 +29,6 @@ brackets:
 metadata:
   period: year
   type: marginal_rate
-  threshold_unit: currency
+  threshold_unit: currency-GBP
   rate_unit: /1
   reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

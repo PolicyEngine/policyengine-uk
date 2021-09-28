@@ -4,5 +4,5 @@ values:
     value: 316
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.ifs.org.uk/comms/comm118.pdf#page=7

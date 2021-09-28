@@ -4,5 +4,5 @@ values:
     value: 290
 metadata:
   period: month
-  unit: currency
+  unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47

@@ -4,7 +4,7 @@ values:
     value: 122.50  # 175 * 70%
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference:
   - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
   - https://www.gov.uk/working-tax-credit/what-youll-get

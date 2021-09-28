@@ -4,5 +4,5 @@ values:
     value: 37.50
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.mariecurie.org.uk/help/support/benefits-entitlements/carers/premium

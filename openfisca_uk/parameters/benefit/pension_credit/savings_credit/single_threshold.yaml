@@ -12,5 +12,5 @@ values:
     value: 148.17
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=37

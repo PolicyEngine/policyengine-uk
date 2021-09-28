@@ -4,5 +4,5 @@ values:
     value: 30
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/251256/hb-claims-processing-guidance.pdf

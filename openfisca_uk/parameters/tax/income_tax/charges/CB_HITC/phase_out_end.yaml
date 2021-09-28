@@ -4,5 +4,5 @@ values:
     value: 60000
 metadata:
   period: year
-  unit: currency
+  unit: currency-GBP
   reference: https://www.moneyadviceservice.org.uk/en/articles/changes-to-child-benefit-from-2013
