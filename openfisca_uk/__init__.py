@@ -16,7 +16,7 @@ COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
-    currency-GBP = "£"
+    CURRENCY = "£"
 
     def __init__(self):
         # We initialize our tax and benefit system with the general constructor
