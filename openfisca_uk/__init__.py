@@ -8,7 +8,6 @@ from openfisca_uk.reforms.presets.modelling import (
     reported_benefits,
     reported,
 )
-from openfisca_uk.reforms.presets import current_date
 from pathlib import Path
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
