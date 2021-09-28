@@ -1,12 +1,8 @@
 from openfisca_core.model_api import *
 from openfisca_core.parameters.parameter_scale import ParameterScale
-from openfisca_core.parameters.parameter_scale_bracket import (
-    ParameterScaleBracket,
-)
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
 from datetime import datetime
-from openfisca_uk import CountryTaxBenefitSystem
 
 DATE = datetime.now()
 YEAR, MONTH, DAY = DATE.year, DATE.month, DATE.day

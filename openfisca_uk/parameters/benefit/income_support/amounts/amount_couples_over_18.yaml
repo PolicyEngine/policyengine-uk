@@ -4,5 +4,5 @@ values:
     value: 116.80
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.gov.uk/income-support/what-youll-get

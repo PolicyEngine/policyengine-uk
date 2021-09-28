@@ -15,7 +15,7 @@ values:
     value: 3240
 metadata:
   period: year
-  unit: currency
+  unit: currency-GBP
   reference:
   - https://www.gov.uk/working-tax-credit/what-youll-get
   - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

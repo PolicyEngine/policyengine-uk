@@ -4,5 +4,5 @@ values:
     value: 109.20
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get

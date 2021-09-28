@@ -7,5 +7,5 @@ values:
   2020-06-01: 163.73  # gov.uk/entitledto
 metadata:
   period: month
-  unit: currency
+  unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=46

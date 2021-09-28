@@ -2,7 +2,6 @@ from typing import Callable, List
 from openfisca_uk.api import *
 from openfisca_uk.situation_examples.examples import single_person_UC
 import pandas as pd
-from microdf import MicroDataFrame
 
 
 def get_wide_reform_population_data(

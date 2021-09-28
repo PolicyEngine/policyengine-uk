@@ -1,5 +1,4 @@
-from openfisca_uk import CountryTaxBenefitSystem, Microsimulation
-from itertools import product
+from openfisca_uk import Microsimulation
 import pytest
 from openfisca_uk_data import FRS
 

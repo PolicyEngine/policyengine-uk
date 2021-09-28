@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 import plotly.express as px
 from openfisca_uk.api import *
 import pandas as pd

@@ -4,5 +4,5 @@ values:
     value: 34.95
 metadata:
   period: week
-  unit: currency
+  unit: currency-GBP
   reference: https://www.gov.uk/disability-premiums/what-youll-get

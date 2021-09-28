@@ -4,7 +4,7 @@ values:
     value: 545
 metadata:
   period: year
-  unit: currency
+  unit: currency-GBP
   reference:
   - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
   - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

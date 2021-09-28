@@ -1,4 +1,4 @@
-from openfisca_uk.graphs import waterfall_chart, mtr_chart, budget_chart
+from openfisca_uk.graphs import mtr_chart, budget_chart
 from openfisca_uk import BASELINE_PARAMETERS
 from openfisca_uk.api import reforms, graphs, BASELINE_PARAMETERS
 
