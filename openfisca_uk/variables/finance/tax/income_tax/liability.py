@@ -488,7 +488,10 @@ class is_higher_earner(Variable):
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
-        return person.get_rank(person.benunit, -income) == 0
+        return (
+            person.get_rank(person.benunit, -income + random(person) * 1e-2)
+            == 0
+        )
 
 
 class CB_HITC(Variable):
@@ -522,6 +525,5 @@ class income_tax(Variable):
         return max_(
             0,
             add(person, period, ["income_tax_pre_charges", "CB_HITC"])
-            + person("CB_HITC", period)
             - person("married_couples_allowance_deduction", period),
         )
