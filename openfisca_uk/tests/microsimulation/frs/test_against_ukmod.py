@@ -2,16 +2,13 @@
 This module tests the FRS dataset produced by openfisca-uk-data against UKMOD - checking that the distributions are similar.
 """
 
-import numpy as np
 import pandas as pd
 from openfisca_uk_data import FRS, UKMODOutput
 from openfisca_uk import Microsimulation, REPO
 import pytest
-from microdf import MicroDataFrame, MicroSeries
+from microdf import MicroDataFrame
 from openfisca_uk.reforms.presets.current_date import use_current_parameters
 from openfisca_uk.tools.parameters import backdate_parameters
-from itertools import product
-from functools import partial
 import yaml
 
 TEST_YEAR = 2018

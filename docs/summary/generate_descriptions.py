@@ -1,5 +1,4 @@
 from openfisca_uk import Microsimulation
-import numpy as np
 from tqdm import tqdm
 
 sim = Microsimulation()
