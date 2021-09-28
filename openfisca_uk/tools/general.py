@@ -121,7 +121,7 @@ def uprated(by: str = None) -> Callable:
     """
 
     def uprater(variable: type) -> type:
-        if hasattr(variable, "formula_2015"):
+        if hasattr(variable, "formula"):
             return variable
 
         def formula_2015(entity, period, parameters):

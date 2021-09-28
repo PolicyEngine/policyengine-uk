@@ -249,4 +249,4 @@ class housing_benefit(Variable):
             amount * benunit("claims_HB", period),
             benunit("benefit_cap", period) - other_capped_benefits,
         )
-        return final_amount
+        return max_(0, final_amount)

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="OpenFisca-UK",
-    version="0.4.4",
+    version="0.4.5",
     author="UBI Center",
     author_email="nikhil.woodruff@ubicenter.org",
     classifiers=[
