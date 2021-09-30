@@ -358,7 +358,7 @@ class Microsimulation:
                         var_cls = type(self.system.variables[var])
                         s.update_variable(carried_over(var_cls))
 
-        self.apply_reforms((carry_over_by_default, *self.reforms))
+        self.apply_reforms((*self.reforms, carry_over_by_default))
         builder = SimulationBuilder()
         builder.create_entities(self.system)
         self.relations = {
