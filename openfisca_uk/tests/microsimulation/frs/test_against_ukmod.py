@@ -28,7 +28,6 @@ if TEST_YEAR not in FRS.years:
     raise FileNotFoundError("FRS needed to run tests.")
 
 baseline = Microsimulation(
-    (backdate_parameters(), use_current_parameters("2018-12-29")),
     dataset=FRS,
     year=TEST_YEAR,
 )
