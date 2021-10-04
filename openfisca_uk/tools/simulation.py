@@ -205,7 +205,7 @@ class IndividualSim:
         period = period or self.year
         if "axes" not in self.situation_data:
             self.situation_data["axes"] = [[]]
-        count = int((max - min) / step)
+        count = int((max - min) / step) + 1
         self.situation_data["axes"][0] += [
             {
                 "count": count,
