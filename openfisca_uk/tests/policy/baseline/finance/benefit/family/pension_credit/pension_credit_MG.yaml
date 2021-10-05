@@ -1,0 +1,21 @@
+- name: Minimum Guarantee, single
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 70
+  output:
+    pension_credit_GC: 177.10 * 52
+- name: Minimum Guarantee, couple over SP age
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      p1:
+        age: 70
+      p2:
+        age: 71
+    benunits:
+      benunit:
+        adults: [p1, p2]
+  output:
+    pension_credit_GC: 270.30 * 52

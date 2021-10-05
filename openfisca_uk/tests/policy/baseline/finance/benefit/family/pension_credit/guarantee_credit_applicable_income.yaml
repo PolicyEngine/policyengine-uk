@@ -1,0 +1,38 @@
+- name: Single person, all sources
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    JSA_contrib: 1
+    ESA_contrib: 1
+    state_pension: 1
+    pension_income: 1
+    maintenance_income: 1
+    employment_income: 1
+    self_employment_income: 1
+    property_income: 1
+    working_tax_credit: 1
+    child_tax_credit: 1
+    savings_interest_income: 1
+    dividend_income: 1
+    child_benefit: 1
+  output:
+    guarantee_credit_applicable_income: 13
+- name: Couple, all sources
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    JSA_contrib: 1
+    ESA_contrib: 1
+    state_pension: 1
+    pension_income: 1
+    maintenance_income: 1
+    employment_income: 1
+    self_employment_income: 1
+    property_income: 1
+    working_tax_credit: 1
+    child_tax_credit: 1
+    savings_interest_income: 1
+    dividend_income: 1
+    child_benefit: 1
+  output:
+    guarantee_credit_applicable_income: 13

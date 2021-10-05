@@ -1,8 +1,0 @@
-description: Savings Credit (Pension Credit) threshold for a couple
-values:
-  2015-06-01:
-    value: 235.62
-metadata:
-  period: week
-  unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=37

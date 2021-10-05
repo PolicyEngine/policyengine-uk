@@ -1,0 +1,29 @@
+- name: Too young
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 21
+  output:
+    pension_credit_eligible: false
+- name: Under the boundary
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 65
+  output:
+    pension_credit_eligible: false
+- name: State pension age
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 66
+  output:
+    pension_credit_eligible: true
+- name: Well over SP age
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 100
+  output:
+    pension_credit_eligible: true
+
