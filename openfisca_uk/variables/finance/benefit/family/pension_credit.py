@@ -10,6 +10,17 @@ class pension_credit_reported(Variable):
     definition_period = YEAR
 
 
+class would_claim_PC(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Would claim Pension Credit if eligible"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        takeup_rate = parameters(period).benefit.pension_credit.takeup
+        return random(benunit) < takeup_rate
+
+
 class claims_PC(Variable):
     value_type = bool
     entity = BenUnit
@@ -17,24 +28,20 @@ class claims_PC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        already_claiming = (
-            aggr(benunit, period, ["pension_credit_reported"]) > 0
-        )
-        takeup_rate = parameters(period).benefit.pension_credit.takeup
-        return already_claiming + (random(benunit) < takeup_rate)
+        return benunit("would_claim_PC", period)
 
 
 class pension_credit_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether eligible for Pension Credit"
+    label = u"Eligible for Pension Credit"
     definition_period = YEAR
 
-    def formula(benunit, period, parameters):
-        both_SP_age = benunit.min(benunit.members("is_SP_age", period))
+    def formula(benunit, period):
+        all_SP_age = benunit.min(benunit.members("is_SP_age", period))
         one_SP_age = benunit.max(benunit.members("is_SP_age", period))
         claiming_HB = benunit("housing_benefit", period) > 0
-        return both_SP_age + (one_SP_age * claiming_HB)
+        return all_SP_age + (one_SP_age * claiming_HB)
 
 
 class pension_credit_MG(Variable):
@@ -46,9 +53,9 @@ class pension_credit_MG(Variable):
     def formula(benunit, period, parameters):
         PC = parameters(period).benefit.pension_credit
         personal_allowance = (
-            benunit("is_single", period) * PC.min_guarantee.single
-            + benunit("is_couple", period) * PC.min_guarantee.couple
-        ) * WEEKS_IN_YEAR
+            PC.minimum_guarantee[benunit("relation_type", period)]
+            * WEEKS_IN_YEAR
+        )
         premiums = benunit("severe_disability_premium", period) + benunit(
             "carer_premium", period
         )
@@ -60,7 +67,7 @@ class pension_credit_MG(Variable):
         )
 
 
-class pension_credit_applicable_income(Variable):
+class guarantee_credit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = u"Applicable income for Pension Credit"
@@ -68,10 +75,12 @@ class pension_credit_applicable_income(Variable):
 
     def formula(benunit, period, parameters):
         INCOME_COMPONENTS = [
+            "personal_benefits",
+            "pension_income",
+            "maintenance_income",
             "employment_income",
             "self_employment_income",
             "property_income",
-            "pension_income",
             "savings_interest_income",
             "dividend_income",
         ]
@@ -79,13 +88,18 @@ class pension_credit_applicable_income(Variable):
         tax = aggr(
             benunit,
             period,
-            ["income_tax", "national_insurance"],
+            ["tax"],
         )
-        income += aggr(benunit, period, ["personal_benefits"])
-        income += add(benunit, period, ["child_benefit"])
-        income -= tax
-        income = amount_over(income, 0)
-        return income
+        benefits = add(
+            benunit,
+            period,
+            [
+                "child_benefit",
+                "child_tax_credit",
+                "working_tax_credit",
+            ],
+        )
+        return amount_over(income + benefits - tax, 0)
 
 
 class pension_credit_GC(Variable):
@@ -95,11 +109,44 @@ class pension_credit_GC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        income = benunit("pension_credit_applicable_income", period)
+        income = benunit("guarantee_credit_applicable_income", period)
         return (
             benunit("pension_credit_eligible", period)
             * benunit("claims_PC", period)
             * max_(0, benunit("pension_credit_MG", period) - income)
+        )
+
+
+class savings_credit_applicable_income(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Applicable income for Savings Credit"
+    definition_period = YEAR
+    reference = "https://www.gov.uk/government/publications/pension-credit-technical-guidance/a-detailed-guide-to-pension-credit-for-advisers-and-others#working-out-income-for-savings-credit"
+
+    def formula(benunit, period, parameters):
+        GC_income = benunit("guarantee_credit_applicable_income", period)
+        exempted_personal_benefits = aggr(
+            benunit,
+            period,
+            [
+                "incapacity_benefit",
+                "JSA_contrib",
+                "ESA_contrib",
+                "SDA",
+                "maintenance_income",
+            ],
+        )
+        exempted_family_benefits = add(
+            benunit,
+            period,
+            [
+                "working_tax_credit",
+            ],
+        )
+        return amount_over(
+            GC_income - exempted_personal_benefits - exempted_family_benefits,
+            0,
         )
 
 
@@ -108,37 +155,32 @@ class pension_credit_SC(Variable):
     entity = BenUnit
     label = u"Pension Credit (Savings Credit) amount per week"
     definition_period = YEAR
+    reference = "https://www.gov.uk/government/publications/pension-credit-technical-guidance/a-detailed-guide-to-pension-credit-for-advisers-and-others#legislation-60-return"
 
     def formula(benunit, period, parameters):
         PC = parameters(period).benefit.pension_credit
-        income = benunit("pension_credit_applicable_income", period)
-        MG_amount = benunit("pension_credit_MG", period)
+        SC = PC.savings_credit
+        income = benunit("savings_credit_applicable_income", period)
+        appropriate_amount = benunit("pension_credit_MG", period)
         threshold = (
-            PC.savings_credit.single_threshold
-            * benunit("is_single", period)
-            * WEEKS_IN_YEAR
-            + PC.savings_credit.couple_threshold
-            * benunit("is_couple", period)
+            SC.income_threshold[benunit("relation_type", period)]
             * WEEKS_IN_YEAR
         )
-        maximum_amount = (
-            PC.savings_credit.max_single
-            * benunit("is_single", period)
-            * WEEKS_IN_YEAR
-            + PC.savings_credit.max_single
-            * benunit("is_couple", period)
-            * WEEKS_IN_YEAR
+        maximum_amount = (1 - SC.withdrawal_rate) * max_(
+            appropriate_amount - threshold, 0
         )
-        income_above_threshold = max_(0, income - threshold)
-        income_above_MG = max_(0, income - MG_amount)
-        SC_amount = min_(
-            income_above_threshold * (1 - PC.savings_credit.withdrawal_rate),
+
+        amount_A = min_(
+            (1 - SC.withdrawal_rate) * max_(income - threshold, 0),
             maximum_amount,
         )
-        deduction = income_above_MG * PC.savings_credit.withdrawal_rate
-        SC_final_amount = max_(0, SC_amount - deduction)
+        amount_B = (
+            amount_over(income - appropriate_amount, 0) * SC.withdrawal_rate
+        )
+        amount = max_(amount_A - amount_B, 0)
+
         return (
-            max_(0, SC_final_amount)
+            amount
             * benunit("pension_credit_eligible", period)
             * benunit("claims_PC", period)
         )

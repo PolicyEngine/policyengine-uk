@@ -34,6 +34,16 @@ class claims_UC(Variable):
         )
 
 
+class is_UC_eligible(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Universal Credit eligible"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.max(benunit.members("is_WA_adult", period)) > 0
+
+
 class universal_credit_reported(Variable):
     value_type = float
     entity = Person
@@ -446,4 +456,5 @@ class universal_credit(Variable):
                 - benunit("UC_income_reduction", period),
             )
             * benunit("claims_UC", period)
+            * benunit("is_UC_eligible", period)
         )

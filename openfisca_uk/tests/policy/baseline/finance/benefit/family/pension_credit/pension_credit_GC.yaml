@@ -1,0 +1,49 @@
+
+- name: Minimum Guarantee, single, some income (100% taper)
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 70
+    state_pension: 100
+    guarantee_credit_applicable_income: 100
+  output:
+    pension_credit_GC: 177.10 * 52 - 100
+- name: Minimum Guarantee, single, enough income to neutralise
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 70
+    guarantee_credit_applicable_income: 177.10 * 52
+  output:
+    pension_credit_GC: 0
+- name: Minimum Guarantee, couple over SP age, some income (100% taper)
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      p1:
+        age: 70
+        state_pension: 50
+      p2:
+        age: 71
+        state_pension: 50
+    benunits:
+      benunit:
+        adults: [p1, p2]
+  output:
+    pension_credit_GC: 270.30 * 52 - 100
+- name: Minimum Guarantee, couple over SP age, enough income to neutralise
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      p1:
+        age: 70
+      p2:
+        age: 71
+    benunits:
+      benunit:
+        adults: [p1, p2]
+        guarantee_credit_applicable_income: 270.30 * 52
+  output:
+    pension_credit_GC: 0

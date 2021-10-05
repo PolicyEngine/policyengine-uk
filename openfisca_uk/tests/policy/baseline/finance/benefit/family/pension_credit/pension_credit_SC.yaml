@@ -1,0 +1,24 @@
+- name: Too little income for savings credit
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    savings_credit_applicable_income: 0
+    age: 68
+  output:
+    pension_credit_SC: 0
+- name: Start of savings credit
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    savings_credit_applicable_income: 154 * 52
+    age: 68
+  output:
+    pension_credit_SC: 9.36
+- name: Start of savings credit (-60% taper)
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    savings_credit_applicable_income: 154 * 52 + 100
+    age: 68
+  output:
+    pension_credit_SC: 9.36 + 0.6 * 100
