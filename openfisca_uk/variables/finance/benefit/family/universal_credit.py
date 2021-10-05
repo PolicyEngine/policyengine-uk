@@ -33,10 +33,11 @@ class claims_UC(Variable):
             sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
         )
 
+
 class is_UC_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u'Universal Credit eligible'
+    label = u"Universal Credit eligible"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -454,5 +455,6 @@ class universal_credit(Variable):
                 benunit("UC_maximum_amount", period)
                 - benunit("UC_income_reduction", period),
             )
-            * benunit("claims_UC", period) * benunit("is_UC_eligible", period)
+            * benunit("claims_UC", period)
+            * benunit("is_UC_eligible", period)
         )
