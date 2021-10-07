@@ -13,14 +13,14 @@ values:
   2021-04-06:
     value: 9568
 metadata:
-    policyengine:
-      short_name: NI_LPL
-      title: NI Lower Profits Limit
-      description: The Lower Profits Limit is the threshold at which self-employed earners pay the main Class 4 rate.
-      min: 0
-      max: 20000
-      type: yearly
-      summary: Change the Lower Profits Limit to @
+  policyengine:
+    short_name: NI_LPL
+    title: NI Lower Profits Limit
+    description: The Lower Profits Limit is the threshold at which self-employed earners pay the main Class 4 rate.
+    min: 0
+    max: 20000
+    type: yearly
+    summary: Change the Lower Profits Limit to @
   unit: currency-GBP
   reference:
   - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
