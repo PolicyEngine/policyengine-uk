@@ -1,22 +1,71 @@
 description: Income tax scale
 brackets:
   - rate:
-      2015-06-01: 0.2
+      values:
+        2015-06-01: 0.2
+      metadata:
+        policyengine:
+          short_name: basic_rate
+          title: Basic rate
+          description: The basic rate is the first of three tax brackets on all income, after allowances are deducted.
+          min: 0
+          max: 1
+          type: rate
+          summary: Change the basic rate to @
     threshold:
       2015-06-05: 0
   - rate:
-      2015-06-05: 0.4
+      values:
+        2015-06-05: 0.4
+      metadata:
+        policyengine:
+          short_name: higher_rate
+          title: Higher rate
+          description: The higher rate is the middle tax bracket.
+          min: 0
+          max: 1
+          type: rate
+          summary: Change the higher rate to @
     threshold:
-      2015-06-05: 32000
-      2017-06-01: 33500
-      2018-06-01: 34500
-      2019-06-01: 37500
-      2020-06-01: 37500
-      2021-06-01: 37700
+      values:
+        2015-06-05: 32000
+        2017-06-01: 33500
+        2018-06-01: 34500
+        2019-06-01: 37500
+        2020-06-01: 37500
+        2021-06-01: 37700
+      metadata:
+        policyengine:
+          short_name: higher_rate
+          title: Higher rate
+          description: The lower threshold for the higher rate of income tax (and therefore the upper threshold of the basic rate).
+          min: 0
+          max: 200000
+          type: yearly
+          summary: Change the higher threshold to @
   - rate:
-      2015-06-05: 0.45
+      values:
+        2015-06-05: 0.45
+      metadata:
+        short_name: add_rate
+        title: Additional rate
+        description: The additional rate is the highest tax bracket, with no upper bound.
+        min: 0
+        max: 1
+        type: rate
+        summary: Change the additional rate to @
     threshold:
-      2015-06-05: 150000
+      values:
+        2015-06-05: 150000
+      metadata:
+        policyengine:
+          short_name: add_threshold
+          title: Additional rate
+          description: The lower threshold for the additional rate.
+          min: 0
+          max: 1000000
+          type: yearly
+          summary: Change the additional threshold to @
 metadata:
   period: year
   type: marginal_rate
