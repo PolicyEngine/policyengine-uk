@@ -25,6 +25,7 @@ from openfisca_uk.tools.general import carried_over
 from openfisca_uk_data import SynthFRS, DATASETS
 import yaml
 from pathlib import Path
+from openfisca_uk.reforms.tools.parametric import set_parameter
 
 
 with open(Path(__file__).parent / "datasets.yml") as f:

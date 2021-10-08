@@ -55,6 +55,11 @@ brackets:
           max: 1
           type: rate
           summary: Change the additional rate to @
+        tests:
+          - period: 2021
+            value: 0
+            revenue:
+              negative: true
     threshold:
       values:
         2015-06-05: 150000
