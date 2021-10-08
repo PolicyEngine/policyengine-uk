@@ -33,3 +33,4 @@ metadata:
         max: 105.e+9
       poverty_effect:
         positive: true
+    - increases_net_income: true

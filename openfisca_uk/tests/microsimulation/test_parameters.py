@@ -102,7 +102,9 @@ def generate_tests(sim: Microsimulation) -> Callable:
             )
             reformed = type(sim)(reform, dataset=sim.dataset)
             assert (
-                reformed.calc("net_income") - sim.calc("net_income") >= 0
+                reformed.calc("net_income", map_to="household")
+                - sim.calc("net_income", map_to="household")
+                >= 0
             ).all()
         if "decreases_net_income" in test:
             reform = set_parameter(
@@ -110,7 +112,9 @@ def generate_tests(sim: Microsimulation) -> Callable:
             )
             reformed = type(sim)(reform, dataset=sim.dataset)
             assert (
-                reformed.calc("net_income") - sim.calc("net_income") <= 0
+                reformed.calc("net_income", map_to="household")
+                - sim.calc("net_income", map_to="household")
+                <= 0
             ).all()
 
     return test_parameter
