@@ -61,10 +61,13 @@ def generate_tests(sim: Microsimulation) -> Callable:
             reform = set_parameter(parameter.name, test["value"])
             reformed = type(sim)(reform, dataset=sim.dataset)
         if "revenue" in test:
-            revenue = (
-                -reformed.calc("net_income", period=test["period"]).sum()
-                + sim.calc("net_income", period=test["period"]).sum()
-            )
+            baseline_net_income = sim.calc(
+                "net_income", period=test["period"]
+            ).sum()
+            reformed_net_income = reformed.calc(
+                "net_income", period=test["period"]
+            ).sum()
+            revenue = baseline_net_income - reformed_net_income
             if "min" in test["revenue"]:
                 assert revenue >= test["revenue"]["min"]
             if "max" in test["revenue"]:
@@ -75,19 +78,17 @@ def generate_tests(sim: Microsimulation) -> Callable:
                 assert revenue < 0
         if "poverty_effect" in test:
             # type(sim) ensures we instantiate the same class
-            poverty_effect = (
-                reformed.calc(
-                    "in_poverty_bhc",
-                    period=test["period"],
-                    map_to="person",
-                ).mean()
-                / sim.calc(
-                    "in_poverty_bhc",
-                    period=test["period"],
-                    map_to="person",
-                ).mean()
-                - 1
-            )
+            baseline_poverty = sim.calc(
+                "in_poverty_bhc",
+                period=test["period"],
+                map_to="person",
+            ).mean()
+            reformed_poverty = reformed.calc(
+                "in_poverty_bhc",
+                period=test["period"],
+                map_to="person",
+            ).mean()
+            poverty_effect = reformed_poverty / baseline_poverty - 1
             if "min" in test["poverty_effect"]:
                 assert poverty_effect >= test["poverty_effect"]["min"]
             if "max" in test["poverty_effect"]:
