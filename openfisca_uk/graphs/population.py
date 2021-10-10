@@ -16,9 +16,11 @@ def _get_group_reduction(
     compare_groups: bool,
     relative: bool,
 ):
-    reduction_function = lambda values: values.groupby(
-        incomes.__getattribute__(f"{bucket}_rank")()
-    ).__getattribute__(aggregation)()
+    def reduction_function(values):
+        return values.groupby(
+            incomes.__getattribute__(f"{bucket}_rank")()
+        ).__getattribute__(aggregation)()
+
     if compare_groups:
         change = reduction_function(reform_values) - reduction_function(
             baseline_values
@@ -94,15 +96,16 @@ def distributional_chart(
     bucket_values = baseline.calc(bucket_variable, map_to=level)
     baseline_values = baseline.calc(change_variable, map_to=level)
 
-    reduction_func = lambda reform_values: _get_group_reduction(
-        bucket_values,
-        baseline_values,
-        reform_values,
-        bucket,
-        aggregation,
-        compare_groups,
-        relative,
-    )
+    def reduction_func(reform_values):
+        return _get_group_reduction(
+            bucket_values,
+            baseline_values,
+            reform_values,
+            bucket,
+            aggregation,
+            compare_groups,
+            relative,
+        )
 
     if isinstance(reforms, list):
         dfs = []

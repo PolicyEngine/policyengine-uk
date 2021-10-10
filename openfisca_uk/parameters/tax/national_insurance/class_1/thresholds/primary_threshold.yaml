@@ -15,6 +15,14 @@ values:
   2021-04-06:
     value: 184
 metadata:
+  policyengine:
+    short_name: NI_PT
+    title: NI Primary Threshold
+    description: The Primary Threshold is the lower bound for the main rate of NI.
+    min: 0
+    max: 1000
+    type: weekly
+    summary: Change the Primary Threshold to @
   unit: currency-GBP
   period: week
   reference:

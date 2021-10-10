@@ -9,6 +9,7 @@ microdata:
 	python openfisca_uk/initial_setup.py
 
 format:
+	autopep8 -r .
 	black . -l 79
 
 test: 

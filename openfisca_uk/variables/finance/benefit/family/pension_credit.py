@@ -97,6 +97,7 @@ class guarantee_credit_applicable_income(Variable):
                 "child_benefit",
                 "child_tax_credit",
                 "working_tax_credit",
+                "housing_benefit",
             ],
         )
         return amount_over(income + benefits - tax, 0)
