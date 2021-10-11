@@ -140,7 +140,7 @@ class num_children(Variable):
 class num_adults(Variable):
     value_type = int
     entity = BenUnit
-    label = u"The number of children in the family"
+    label = u"The number of adults in the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -169,7 +169,9 @@ class benunit_is_renting(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        tenure = benunit("benunit_tenure_type", period)
+        tenure = benunit(
+            "benunit_tenure_type", period
+        )  # ["RENT_PRIVATELY", "RENT_FROM_HA", ...]
         return (
             (tenure == TenureType.RENT_PRIVATELY)
             + (tenure == TenureType.RENT_FROM_COUNCIL)
