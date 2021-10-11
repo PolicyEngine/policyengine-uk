@@ -213,8 +213,7 @@ class tax_band(Variable):
             + [True],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
         )
-        band = where(scot, scottish_band, uk_band)
-        return band
+        return where(scot, scottish_band, uk_band)
 
     def formula_2018_06_01(person, period, parameters):
         allowances = person("allowances", period)
@@ -241,8 +240,7 @@ class tax_band(Variable):
                 TaxBand.ADDITIONAL,
             ],
         )
-        band = where(scot, scottish_band, uk_band)
-        return band
+        return where(scot, scottish_band, uk_band)
 
 
 class basic_rate_savings_income_pre_starter(Variable):
