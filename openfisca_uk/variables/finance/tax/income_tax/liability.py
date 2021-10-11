@@ -155,7 +155,9 @@ class earned_income_tax(Variable):
 
 class TaxBand(Enum):
     NONE = "None"
+    STARTER = "Starter (Scottish rates)"
     BASIC = "Basic"
+    INTERMEDIATE = "Intermediate (Scottish rates)"
     HIGHER = "Higher"
     ADDITIONAL = "Additional"
 
@@ -198,51 +200,48 @@ class tax_band(Variable):
         ANI = person("adjusted_net_income", period)
         rates = parameters(period).tax.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
-        basic = allowances + where(
-            scot,
-            rates.scotland.pre_starter_rate.thresholds[0],
-            rates.uk.thresholds[0],
+        income = ANI - allowances
+        uk_band = select(
+            [income < threshold for threshold in rates.uk.thresholds] + [True],
+            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
         )
-        higher = allowances + where(
-            scot,
-            rates.scotland.pre_starter_rate.thresholds[-2],
-            rates.uk.thresholds[-2],
+        scottish_band = select(
+            [
+                income < threshold
+                for threshold in rates.scotland.pre_starter_rate.thresholds
+            ]
+            + [True],
+            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
         )
-        add = allowances + where(
-            scot,
-            rates.scotland.pre_starter_rate.thresholds[-1],
-            rates.uk.thresholds[-1],
-        )
-        band = select(
-            [ANI >= add, ANI >= higher, ANI > basic, ANI <= basic],
-            [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC, TaxBand.NONE],
-        )
+        band = where(scot, scottish_band, uk_band)
         return band
 
-    def formula_2018_04_06(person, period, parameters):
+    def formula_2018_06_01(person, period, parameters):
         allowances = person("allowances", period)
         ANI = person("adjusted_net_income", period)
         rates = parameters(period).tax.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
-        basic = allowances + where(
-            scot,
-            rates.scotland.post_starter_rate.thresholds[-3],
-            rates.uk.thresholds[-3],
+        income = ANI - allowances
+        uk_band = select(
+            [income < threshold for threshold in rates.uk.thresholds] + [True],
+            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
         )
-        higher = allowances + where(
-            scot,
-            rates.scotland.post_starter_rate.thresholds[-2],
-            rates.uk.thresholds[-2],
+        scottish_band = select(
+            [
+                income < threshold
+                for threshold in rates.scotland.post_starter_rate.thresholds
+            ]
+            + [True],
+            [
+                TaxBand.NONE,
+                TaxBand.STARTER,
+                TaxBand.BASIC,
+                TaxBand.INTERMEDIATE,
+                TaxBand.HIGHER,
+                TaxBand.ADDITIONAL,
+            ],
         )
-        add = allowances + where(
-            scot,
-            rates.scotland.post_starter_rate.thresholds[-1],
-            rates.uk.thresholds[-1],
-        )
-        band = select(
-            [ANI >= add, ANI >= higher, ANI > basic, ANI <= basic],
-            [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC, TaxBand.NONE],
-        )
+        band = where(scot, scottish_band, uk_band)
         return band
 
 

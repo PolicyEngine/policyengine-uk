@@ -1,0 +1,8 @@
+- name: Scottish intermediate rate recognised
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    adjusted_net_income: 14650
+    region: SCOTLAND
+  output:
+    tax_band: STARTER

@@ -1,6 +1,7 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+from openfisca_uk.variables.finance.tax.income_tax.liability import TaxBand
 
 """
 This file calculates the allowances to which taxpayers are entitled. This follows step 3 of the Income Tax Act 2007 s. 23.
@@ -56,7 +57,12 @@ class marriage_allowance(Variable):
         tax_band = person("tax_band", period)
         bands = tax_band.possible_values
         under_PA = person("tax_band", period) == bands.NONE
-        in_BR = person("tax_band", period) == bands.BASIC
+        band = person("tax_band", period)
+        meets_band_eligibility = (
+            (band == bands.STARTER)
+            | (band == bands.BASIC)
+            | (band == bands.INTERMEDIATE)
+        )
         marital = person("marital_status", period)
         married = marital == marital.possible_values.MARRIED
         transferable_allowance = person.benunit.sum(
@@ -67,7 +73,7 @@ class marriage_allowance(Variable):
                 0.1 * person("personal_allowance", period),
             )
         )
-        return married * in_BR * transferable_allowance
+        return married * meets_band_eligibility * transferable_allowance
 
 
 class married_couples_allowance(Variable):
