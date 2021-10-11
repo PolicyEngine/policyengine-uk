@@ -1,7 +1,6 @@
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
-from openfisca_uk.variables.finance.tax.income_tax.liability import TaxBand
 
 """
 This file calculates the allowances to which taxpayers are entitled. This follows step 3 of the Income Tax Act 2007 s. 23.
@@ -61,10 +60,8 @@ class marriage_allowance(Variable):
         # Marriage Allowance is eligible for couples with one in the basic rate bracket and
         # one not in a tax bracket. For those paying Scottish rates, the taxpayer can be in
         # the starter or intermediate rate brackets.
-        meets_band_eligibility = (
-            (band == bands.STARTER)
-            | (band == bands.BASIC)
-            | (band == bands.INTERMEDIATE)
+        meets_band_eligibility = np.isin(
+            band, (bands.STARTER, bands.BASIC, bands.INTERMEDIATE)
         )
         marital = person("marital_status", period)
         married = marital == marital.possible_values.MARRIED
