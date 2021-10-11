@@ -100,9 +100,12 @@ def generate_tests(sim: Microsimulation) -> Callable:
             if "negative" in test["poverty_effect"]:
                 assert poverty_effect < 0
         if "increases_net_income" in test:
-            reform = set_parameter(
-                parameter.name, parameter(test["period"]) * 1.01 + 1e-2
-            )
+            if isinstance(parameter(test["period"]), bool):
+                reform = set_parameter(parameter.name, True)
+            else:
+                reform = set_parameter(
+                    parameter.name, parameter(test["period"]) * 1.01 + 1e-2
+                )
             reformed = type(sim)(
                 (sim.reforms, reform), dataset=sim.dataset, year=sim.year
             )
@@ -112,9 +115,12 @@ def generate_tests(sim: Microsimulation) -> Callable:
                 >= -1
             ).all()
         if "decreases_net_income" in test:
-            reform = set_parameter(
-                parameter.name, parameter(test["period"]) * 1.01 + 1e-2
-            )
+            if isinstance(parameter(test["period"]), bool):
+                reform = set_parameter(parameter.name, True)
+            else:
+                reform = set_parameter(
+                    parameter.name, parameter(test["period"]) * 1.01 + 1e-2
+                )
             reformed = type(sim)(
                 (sim.reforms, reform), dataset=sim.dataset, year=sim.year
             )
