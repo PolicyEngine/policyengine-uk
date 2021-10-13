@@ -169,11 +169,12 @@ class benunit_is_renting(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        tenure = benunit(
-            "benunit_tenure_type", period
-        )  # ["RENT_PRIVATELY", "RENT_FROM_HA", ...]
-        return (
-            (tenure == TenureType.RENT_PRIVATELY)
-            + (tenure == TenureType.RENT_FROM_COUNCIL)
-            + (tenure == TenureType.RENT_FROM_HA)
+        tenure = benunit("benunit_tenure_type", period)
+        return np.isin(
+            tenure,
+            (
+                TenureType.RENT_PRIVATELY,
+                TenureType.RENT_FROM_COUNCIL,
+                TenureType.RENT_FROM_HA,
+            ),
         )

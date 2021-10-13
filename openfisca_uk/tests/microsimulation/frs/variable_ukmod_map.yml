@@ -2,7 +2,7 @@ adjusted_net_income:
   ukmod: il_tinty
 income_tax: 
   ukmod: tin_s
-  max_mean_rel_error: 0.07
+  max_mean_rel_error: 0.9
 employee_NI: tscee_s
 self_employed_NI:
   ukmod: tscse_s
@@ -19,7 +19,7 @@ child_tax_credit:
   skip_household_matching: true
 housing_benefit: 
   ukmod: bho_s
-  max_rel_error: 0.2
+  max_rel_error: 0.25
   skip_household_matching: true
 universal_credit:
   ukmod: bsauc_s

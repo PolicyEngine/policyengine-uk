@@ -61,10 +61,8 @@ class marriage_allowance(Variable):
         # Marriage Allowance is eligible for couples with one in the basic rate bracket and
         # one not in a tax bracket. For those paying Scottish rates, the taxpayer can be in
         # the starter or intermediate rate brackets.
-        meets_band_eligibility = (
-            (band == bands.STARTER)
-            | (band == bands.BASIC)
-            | (band == bands.INTERMEDIATE)
+        meets_band_eligibility = np.isin(
+            band, (bands.STARTER, bands.BASIC, bands.INTERMEDIATE)
         )
         marital = person("marital_status", period)
         married = marital == marital.possible_values.MARRIED

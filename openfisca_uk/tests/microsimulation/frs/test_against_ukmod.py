@@ -16,7 +16,7 @@ TEST_YEAR = 2018
 with open(
     REPO / "tests" / "microsimulation" / "frs" / "variable_ukmod_map.yml"
 ) as f:
-    metadata = yaml.load(f)
+    metadata = yaml.safe_load(f)
 
 MAX_REL_ERROR = 0.05
 MAX_MEAN_REL_ERROR = 0.05
