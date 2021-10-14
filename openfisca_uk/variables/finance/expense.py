@@ -17,6 +17,7 @@ class rent(Variable):
     definition_period = YEAR
 
 
+@uprated(by="CPI")
 class benunit_rent(Variable):
     value_type = float
     entity = BenUnit
@@ -102,6 +103,7 @@ class weekly_childcare_expenses(Variable):
         return person("childcare_expenses", period) / WEEKS_IN_YEAR
 
 
+@uprated(by="CPI")
 class housing_costs(Variable):
     value_type = float
     entity = Household

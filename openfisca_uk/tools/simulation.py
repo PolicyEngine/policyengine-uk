@@ -1,3 +1,4 @@
+from openfisca_core.tracers.full_tracer import FullTracer
 import openfisca_uk
 from openfisca_core.model_api import *
 from openfisca_uk.entities import *
@@ -41,7 +42,7 @@ np.random.seed(0)
 
 
 class IndividualSim:
-    def __init__(self, *reforms, year=2020):
+    def __init__(self, *reforms, year=2021):
         self.year = year
         self.reforms = reforms
         self.system = openfisca_uk.CountryTaxBenefitSystem()
@@ -56,6 +57,8 @@ class IndividualSim:
         self.sim = self.sim_builder.build_from_entities(
             self.system, self.situation_data
         )
+        self.sim.trace = True
+        self.sim.tracer = FullTracer()
 
     def apply_reforms(self, reforms: list) -> None:
         """Applies a list of reforms to the tax-benefit system.
