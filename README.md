@@ -14,6 +14,10 @@ The files that are outside from the `openfisca_uk` folder are used to set up the
 
 We're grateful to the [UKMOD](https://www.iser.essex.ac.uk/research/projects/ukmod) team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK's development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.
 
+The model supports multiple different input datasets provided by the user, one of which is the Family Resources Survey[^1], containing microdata on household incomes across the UK.
+
+[^1]: Department for Work and Pensions, Office for National Statistics, NatCen Social Research. (2021). Family Resources Survey, 2019-2020. [data collection]. UK Data Service. SN: 8802, http://doi.org/10.5255/UKDA-SN-8802-1
+
 ## Fast setup instructions
 
 1. `pip install git+https://github.com/PSLmodels/openfisca-uk`
