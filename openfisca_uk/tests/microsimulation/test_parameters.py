@@ -60,7 +60,7 @@ def generate_tests(sim: Microsimulation) -> Callable:
         if "value" in test:
             reform = set_parameter(parameter.name, test["value"])
             reformed = type(sim)(
-                (sim.reforms, reform), dataset=sim.dataset, year=sim.year
+                (sim.reform, reform), dataset=sim.dataset, year=sim.year
             )
         if "revenue" in test:
             baseline_net_income = sim.calc(
@@ -107,7 +107,7 @@ def generate_tests(sim: Microsimulation) -> Callable:
                     parameter.name, parameter(test["period"]) * 1.01 + 1e-2
                 )
             reformed = type(sim)(
-                (sim.reforms, reform), dataset=sim.dataset, year=sim.year
+                (sim.reform, reform), dataset=sim.dataset, year=sim.year
             )
             assert (
                 reformed.calc("net_income", map_to="household")
@@ -122,7 +122,7 @@ def generate_tests(sim: Microsimulation) -> Callable:
                     parameter.name, parameter(test["period"]) * 1.01 + 1e-2
                 )
             reformed = type(sim)(
-                (sim.reforms, reform), dataset=sim.dataset, year=sim.year
+                (sim.reform, reform), dataset=sim.dataset, year=sim.year
             )
             assert (
                 reformed.calc("net_income", map_to="household")

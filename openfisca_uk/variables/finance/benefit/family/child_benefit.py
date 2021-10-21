@@ -1,6 +1,5 @@
-from openfisca_core.model_api import *
-from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+from openfisca_uk.entities import *
 
 
 class child_benefit_reported(Variable):
@@ -13,8 +12,14 @@ class child_benefit_reported(Variable):
 class claims_child_benefit(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim Child Benefit, based on survey response and take-up rates"
+    label = u"Claims Child Benefit"
+    documentation = "Whether this benefit unit would claim Child Benefit"
     definition_period = YEAR
+    metadata = dict(
+        policyengine=dict(
+            type="bool",
+        )
+    )
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["child_benefit_reported"]) + (
