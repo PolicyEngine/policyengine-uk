@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="OpenFisca-UK",
-    version="0.4.6",
+    version="0.5.0",
     author="UBI Center",
     author_email="nikhil.woodruff@ubicenter.org",
     classifiers=[
@@ -33,7 +33,7 @@ setup(
         "pytest>=5.4.3",
         "OpenFisca-Core>=35.4.1",
         "microdf_python>=0.3.0",
-        "OpenFisca-UK-Data>=0.1.9",
+        "OpenFisca-UK-Data>=0.1.9,<0.3.0",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
         "argparse>=1.4.0",
