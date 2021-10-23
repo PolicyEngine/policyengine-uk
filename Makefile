@@ -3,7 +3,6 @@ all: install
 	python setup.py sdist bdist_wheel
 
 install:
-	pip install git+https://github.com/PolicyEngine/PolicyEngine-Core@server
 	pip install -e .
 
 microdata:
