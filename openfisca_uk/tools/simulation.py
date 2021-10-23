@@ -1,4 +1,3 @@
-from openfisca_core.taxbenefitsystems import tax_benefit_system
 from openfisca_uk import CountryTaxBenefitSystem
 from openfisca_uk.entities import entities
 import numpy as np
@@ -7,10 +6,11 @@ from openfisca_uk.entities import *
 import numpy as np
 import warnings
 from openfisca_uk.tools.parameters import backdate_parameters
-from openfisca_uk.tools.general import carried_over
-from openfisca_uk_data import SynthFRS, DATASETS
-from policyengine import Microsimulation as GeneralMicrosimulation
-from policyengine import IndividualSim as GeneralIndividualSim
+from openfisca_uk_data import DATASETS
+from openfisca_tools.microsimulation import (
+    Microsimulation as GeneralMicrosimulation,
+)
+from openfisca_tools.hypothetical import IndividualSim as GeneralIndividualSim
 import yaml
 from pathlib import Path
 

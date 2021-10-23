@@ -1,4 +1,5 @@
 from typing import List
+from openfisca_uk_data.datasets.frs.frs import FRS
 import plotly.express as px
 from openfisca_uk.api import *
 import pandas as pd
@@ -92,7 +93,7 @@ def distributional_chart(
     x_label = f"{BASELINE_VARIABLES[bucket_variable].label} {bucket}"
     y_label = f"Change to {BASELINE_VARIABLES[change_variable].label.lower()}"
 
-    baseline = baseline or Microsimulation()
+    baseline = baseline or Microsimulation(dataset=FRS)
     bucket_values = baseline.calc(bucket_variable, map_to=level)
     baseline_values = baseline.calc(change_variable, map_to=level)
 

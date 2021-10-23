@@ -1,7 +1,8 @@
 from openfisca_uk import Microsimulation
+from openfisca_uk_data import FRS
 from tqdm import tqdm
 
-sim = Microsimulation()
+sim = Microsimulation(dataset=FRS)
 
 text = "# OpenFisca-UK Variable Statistics\n\nAll statistics generated from the uprated (to 2020) 2018-19 Family Resources Survey, with simulation turned on.\n\n"
 
