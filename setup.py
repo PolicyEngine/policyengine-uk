@@ -35,7 +35,7 @@ setup(
         "microdf_python>=0.3.0",
         "OpenFisca-UK-Data>=0.2.0,<0.3.0",
         # "PolicyEngine>=0.2.0,<0.3.0",
-        "PolicyEngine @ https://github.com/PolicyEngine/PolicyEngine-Core@server",
+        "PolicyEngine @ git+https://github.com/PolicyEngine/PolicyEngine-Core@server",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
         "argparse>=1.4.0",
