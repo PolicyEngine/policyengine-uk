@@ -59,7 +59,7 @@ fig.show()
 
 [0;31m---------------------------------------------------------------------------[0m
 [0;31mAttributeError[0m                            Traceback (most recent call last)
-[0;32m/tmp/ipykernel_2265/1571061931.py[0m in [0;36m<module>[0;34m[0m
+[0;32m/tmp/ipykernel_2201/1571061931.py[0m in [0;36m<module>[0;34m[0m
 [1;32m     25[0m [0;34m[0m[0m
 [1;32m     26[0m [0mearnings[0m [0;34m=[0m [0msim[0m[0;34m.[0m[0mcalc[0m[0;34m([0m[0;34m"employment_income"[0m[0;34m,[0m [0mtarget[0m[0;34m=[0m[0;34m"parent"[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
 [0;32m---> 27[0;31m [0mmtr[0m [0;34m=[0m [0msim[0m[0;34m.[0m[0mcalc_mtr[0m[0;34m([0m[0mwrt_target[0m[0;34m=[0m[0;34m"parent"[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
