@@ -1,0 +1,71 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/site-packages/jupyter_cache/executors/utils.py", line 56, in single_nb_execution
+    record_timing=False,
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/site-packages/nbclient/client.py", line 1117, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/site-packages/nbclient/util.py", line 78, in wrapped
+    return just_run(coro(*args, **kwargs))
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/site-packages/nbclient/util.py", line 57, in just_run
+    return loop.run_until_complete(coro)
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/asyncio/base_events.py", line 587, in run_until_complete
+    return future.result()
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/site-packages/nbclient/client.py", line 559, in async_execute
+    cell, index, execution_count=self.code_cells_executed + 1
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/site-packages/nbclient/client.py", line 862, in async_execute_cell
+    self._check_raise_for_error(cell, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.7.12/x64/lib/python3.7/site-packages/nbclient/client.py", line 765, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+from openfisca_uk import IndividualSim
+import plotly.express as px
+
+# define the simulation and populate it
+
+sim = IndividualSim()
+sim.add_person(
+    name="parent", age=24, is_benunit_head=True, is_household_head=True
+)
+sim.add_person(name="child", age=2)
+sim.add_benunit(
+    adults=["parent"],
+    children=["child"],
+    claims_child_benefit=True,
+    claims_UC=True,
+    claims_legacy_benefits=False,
+)
+sim.add_household(adults=["parent"], children=["child"])
+
+# replicate the simulation along the earnings dimension
+
+sim.vary("employment_income", min=0, max=200000, step=100)
+
+# retrive the arrays of earnings and marginal tax rates
+
+earnings = sim.calc("employment_income", target="parent")
+mtr = sim.calc_mtr(wrt_target="parent")
+
+# plot the results
+
+fig = px.line(x=earnings, y=mtr, title="Effective marginal tax schedule")
+fig.update_layout(
+    yaxis_tickformat="%",
+    xaxis_tickprefix="£",
+    xaxis_title="Earnings",
+    yaxis_title="Marginal tax rate",
+)
+fig.show()
+------------------
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mAttributeError[0m                            Traceback (most recent call last)
+[0;32m/tmp/ipykernel_2265/1571061931.py[0m in [0;36m<module>[0;34m[0m
+[1;32m     25[0m [0;34m[0m[0m
+[1;32m     26[0m [0mearnings[0m [0;34m=[0m [0msim[0m[0;34m.[0m[0mcalc[0m[0;34m([0m[0;34m"employment_income"[0m[0;34m,[0m [0mtarget[0m[0;34m=[0m[0;34m"parent"[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m---> 27[0;31m [0mmtr[0m [0;34m=[0m [0msim[0m[0;34m.[0m[0mcalc_mtr[0m[0;34m([0m[0mwrt_target[0m[0;34m=[0m[0;34m"parent"[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m     28[0m [0;34m[0m[0m
+[1;32m     29[0m [0;31m# plot the results[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+
+[0;31mAttributeError[0m: 'IndividualSim' object has no attribute 'calc_mtr'
+AttributeError: 'IndividualSim' object has no attribute 'calc_mtr'
+
