@@ -1,7 +1,6 @@
 from openfisca_uk.variables.demographic.household import TenureType
-from openfisca_core.model_api import *
-from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+from openfisca_uk.entities import *
 
 
 class benunit_id(Variable):
@@ -29,8 +28,10 @@ class benunit_weight(Variable):
 class is_married(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether the benefit unit adults are married"
+    label = "Married"
+    documentation = "Whether the benefit unit adults are married to each other"
     definition_period = YEAR
+    metadata = dict(policyengine=dict())
 
 
 class FamilyType(Enum):

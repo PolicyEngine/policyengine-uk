@@ -1,6 +1,5 @@
-from openfisca_core.model_api import *
-from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+from openfisca_uk.entities import *
 
 
 class housing_benefit_reported(Variable):
@@ -8,16 +7,6 @@ class housing_benefit_reported(Variable):
     entity = Person
     label = u"Housing Benefit (reported amount)"
     definition_period = YEAR
-
-
-class housing_benefit(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Housing Benefit for the family"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["housing_benefit_reported"])
 
 
 class housing_benefit_eligible(Variable):

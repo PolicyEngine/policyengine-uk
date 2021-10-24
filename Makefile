@@ -8,6 +8,9 @@ install:
 microdata:
 	python openfisca_uk/initial_setup.py
 
+test-setup:
+	python openfisca_uk/tools/testing_setup.py
+
 format:
 	autopep8 -r .
 	black . -l 79

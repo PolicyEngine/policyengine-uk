@@ -1,6 +1,5 @@
-from openfisca_core.model_api import *
-from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+from openfisca_uk.entities import *
 
 """
 The calculation of income tax is specified by the Income Tax Act 2007 s. 23
@@ -19,8 +18,21 @@ class employment_income(Variable):
     value_type = float
     entity = Person
     label = u"Employment income"
+    documentation = "Total income from employment"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
+    metadata = dict(
+        policyengine=dict(
+            roles=dict(
+                adult=dict(
+                    max=80000,
+                ),
+                child=dict(
+                    max=20000,
+                ),
+            )
+        )
+    )
 
 
 @uprated(by="earnings")
@@ -30,6 +42,18 @@ class pension_income(Variable):
     label = u"Income from pensions"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
+    metadata = dict(
+        policyengine=dict(
+            roles=dict(
+                adult=dict(
+                    max=80000,
+                ),
+                child=dict(
+                    hidden=True,
+                ),
+            )
+        )
+    )
 
 
 class social_security_income(Variable):
@@ -57,6 +81,18 @@ class self_employment_income(Variable):
     label = u"Income from trading profits for owned businesses"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
+    metadata = dict(
+        policyengine=dict(
+            roles=dict(
+                adult=dict(
+                    max=80000,
+                ),
+                child=dict(
+                    hidden=True,
+                ),
+            )
+        )
+    )
 
 
 @uprated(by="earnings")
@@ -66,6 +102,18 @@ class property_income(Variable):
     label = u"Income from rental of property"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
+    metadata = dict(
+        policyengine=dict(
+            roles=dict(
+                adult=dict(
+                    max=80000,
+                ),
+                child=dict(
+                    hidden=True,
+                ),
+            )
+        )
+    )
 
 
 @uprated(by="earnings")
@@ -75,6 +123,18 @@ class savings_interest_income(Variable):
     label = u"Income from interest on savings"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
+    metadata = dict(
+        policyengine=dict(
+            roles=dict(
+                adult=dict(
+                    max=80000,
+                ),
+                child=dict(
+                    hidden=True,
+                ),
+            )
+        )
+    )
 
 
 @uprated(by="earnings")
@@ -84,3 +144,16 @@ class dividend_income(Variable):
     label = u"Income from dividends"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
+    metadata = dict(
+        policyengine=dict(
+            type="yearly",
+            roles=dict(
+                adult=dict(
+                    max=80000,
+                ),
+                child=dict(
+                    hidden=True,
+                ),
+            ),
+        )
+    )

@@ -20,4 +20,7 @@ sim = Microsimulation(dataset=FRS, year=2018)
     "variable,year", product(UPRATED_VARIABLES, range(2019, 2022))
 )
 def test_uprating(variable: str, year: int):
-    assert sim.calc(variable, year).sum() != sim.calc(variable, 2018).sum()
+    assert (
+        sim.calc(variable, period=year).sum()
+        != sim.calc(variable, period=2018).sum()
+    )

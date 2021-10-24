@@ -1,6 +1,5 @@
-from openfisca_core.model_api import *
-from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+from openfisca_uk.entities import *
 import pandas as pd
 
 
@@ -136,6 +135,13 @@ class marital_status(Variable):
     entity = Person
     label = u"Marital status"
     definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return where(
+            person.benunit("is_married", period),
+            MaritalStatus.MARRIED,
+            MaritalStatus.SINGLE,
+        )
 
 
 class EducationType(Enum):

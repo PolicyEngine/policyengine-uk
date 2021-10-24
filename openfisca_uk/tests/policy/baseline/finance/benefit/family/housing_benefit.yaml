@@ -8,7 +8,7 @@
     tenure_type: RENT_FROM_COUNCIL
     claims_HB: true
     claims_WTC: true
-    rent: 88 * 52
+    benunit_rent: 88 * 52
     is_household_head: true
   output:
     WTC_basic_element: 3040
@@ -25,7 +25,7 @@
     tenure_type: RENT_FROM_COUNCIL
     claims_HB: true
     claims_WTC: true
-    rent: 88 * 52
+    benunit_rent: 88 * 52
     is_household_head: true
   output:
     WTC_basic_element: 3040
@@ -43,7 +43,7 @@
     tenure_type: RENT_FROM_COUNCIL
     claims_HB: true
     claims_WTC: true
-    rent: 88 * 52
+    benunit_rent: 88 * 52
     is_household_head: true
   output:
     WTC_basic_element: 3040

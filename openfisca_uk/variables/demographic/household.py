@@ -1,6 +1,5 @@
-from openfisca_core.model_api import *
-from openfisca_uk.entities import *
 from openfisca_uk.tools.general import *
+from openfisca_uk.entities import *
 
 
 class household_id(Variable):
@@ -94,8 +93,14 @@ class region(Variable):
     possible_values = Region
     default_value = Region.UNKNOWN
     entity = Household
-    label = u"Region of the UK"
+    label = u"Region"
+    documentation = "Area of the UK"
     definition_period = ETERNITY
+    metadata = dict(
+        policyengine=dict(
+            type="category",
+        )
+    )
 
 
 class TenureType(Enum):
