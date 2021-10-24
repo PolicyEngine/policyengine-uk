@@ -102,7 +102,7 @@ def get_wide_reform_individual_data(
                     axis=0
                 )
                 if include_derivatives:
-                    df[f"baseline_{variable}_deriv"] = baseline.calc_deriv(
+                    df[f"baseline_{variable}_deriv"] = baseline.deriv(
                         variable,
                         wrt=varying,
                         var_target=primary_adult_name,
@@ -116,7 +116,7 @@ def get_wide_reform_individual_data(
                     )
             df[f"reform_{variable}"] = reform_sim.calc(variable).sum(axis=0)
             if include_derivatives:
-                df[f"reform_{variable}_deriv"] = reform_sim.calc_deriv(
+                df[f"reform_{variable}_deriv"] = reform_sim.deriv(
                     variable,
                     wrt=varying,
                     var_target=primary_adult_name,
