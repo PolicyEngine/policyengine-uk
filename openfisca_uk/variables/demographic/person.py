@@ -230,12 +230,18 @@ class is_household_head(Variable):
     label = u"Whether this person is the head-of-household"
     definition_period = YEAR
 
+    def formula(person, period, parameters):
+        return person.get_rank(person.household, person("age", period)) == 0
+
 
 class is_benunit_head(Variable):
     value_type = bool
     entity = Person
     label = u"Whether this person is the head-of-family"
     definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person.get_rank(person.benunit, person("age", period)) == 0
 
 
 class in_social_housing(Variable):

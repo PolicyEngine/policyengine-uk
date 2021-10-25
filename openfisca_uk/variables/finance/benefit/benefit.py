@@ -267,8 +267,14 @@ class personal_benefits_reported(Variable):
 class claims_legacy_benefits(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim legacy benefits over Universal Credit"
+    label = u"Claims legacy benefits"
+    documentation = "Whether this family is currently receiving legacy benefits (overrides UC claimant status)"
     definition_period = YEAR
+    metadata = dict(
+        policyengine=dict(
+            default=False,
+        )
+    )
 
     def formula(benunit, period, parameters):
         # assign legacy/UC claimant status, consistently for each household

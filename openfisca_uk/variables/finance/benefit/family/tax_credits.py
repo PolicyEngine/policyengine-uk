@@ -84,8 +84,12 @@ class is_CTC_eligible(Variable):
 class would_claim_CTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim CTC"
+    label = u"Claims Child Tax Credit"
+    documentation = (
+        "Whether this family would claim Child Tax Credit if eligible"
+    )
     definition_period = YEAR
+    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         return (
@@ -254,8 +258,12 @@ class is_WTC_eligible(Variable):
 class would_claim_WTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Working Tax Credit"
+    label = u"Claims Working Tax Credit"
+    documentation = (
+        "Whether this family would claim Working Tax Credit if eligible"
+    )
     definition_period = YEAR
+    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         takeup_rate = parameters(

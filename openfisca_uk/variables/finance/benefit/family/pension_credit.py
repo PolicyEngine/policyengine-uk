@@ -12,8 +12,12 @@ class pension_credit_reported(Variable):
 class would_claim_PC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Pension Credit if eligible"
+    label = u"Claims Pension Credit"
+    documentation = (
+        "Whether this family would claim Pension Credit if eligible"
+    )
     definition_period = YEAR
+    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         takeup_rate = parameters(period).benefit.pension_credit.takeup

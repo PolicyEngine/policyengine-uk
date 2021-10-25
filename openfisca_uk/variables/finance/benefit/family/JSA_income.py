@@ -63,8 +63,12 @@ class JSA_income_applicable_amount(Variable):
 class would_claim_JSA(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim JSA"
+    label = u"Claims income-based Jobseeker's Allowance"
+    documentation = (
+        "Whether this family would claim income-based JSA if eligible"
+    )
     definition_period = YEAR
+    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         return random(benunit) <= parameters(period).benefit.JSA.income.takeup
