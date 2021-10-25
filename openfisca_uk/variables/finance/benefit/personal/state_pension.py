@@ -28,6 +28,25 @@ class is_SP_age(Variable):
         return over
 
 
+class triple_lock_uprating(Variable):
+    value_type = float
+    entity = Person
+    label = u"Triple lock relative increase"
+    documentation = (
+        "A government commitment, rather than a legislative requirement"
+    )
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return max(
+            parameters(period).benefit.state_pension.triple_lock_minimum,
+            parameters(period).uprating.CPI
+            / parameters(period.last_year).uprating.CPI,
+            parameters(period).uprating.earnings
+            / parameters(period.last_year).uprating.earnings,
+        )
+
+
 class state_pension(Variable):
     value_type = float
     entity = Person
@@ -43,3 +62,8 @@ class state_pension_reported(Variable):
     entity = Person
     label = u"Reported income from the State Pension"
     definition_period = YEAR
+
+    def formula_2015(person, period, parameters):
+        return person("state_pension_reported", period.last_year) * person(
+            "triple_lock_uprating", period
+        )
