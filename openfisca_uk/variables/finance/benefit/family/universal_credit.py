@@ -6,8 +6,17 @@ from openfisca_uk.variables.demographic.household import TenureType
 class claims_UC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Family claims UC"
+    label = "Claims UC"
+    documentation = (
+        "Whether this family would claim Universal Credit if eligible"
+    )
     definition_period = YEAR
+    metadata = dict(
+        policyengine=dict(
+            type="bool",
+            default=True,
+        )
+    )
 
     def formula(benunit, period, parameters):
         WTC = benunit("would_claim_WTC", period) & benunit(

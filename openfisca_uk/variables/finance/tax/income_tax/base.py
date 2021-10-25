@@ -39,7 +39,8 @@ class employment_income(Variable):
 class pension_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from pensions"
+    label = u"Pension income"
+    documentation = "Income from private or occupational pensions (not including State Pension)"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     metadata = dict(
@@ -78,7 +79,8 @@ class social_security_income(Variable):
 class self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from trading profits for owned businesses"
+    label = u"Self-employment income"
+    documentation = "Income from self-employment profits"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
     metadata = dict(
@@ -99,7 +101,8 @@ class self_employment_income(Variable):
 class property_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from rental of property"
+    label = u"Rental income"
+    documentation = "Income from rental of property"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
     metadata = dict(
@@ -120,7 +123,8 @@ class property_income(Variable):
 class savings_interest_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from interest on savings"
+    label = u"Savings interest income"
+    documentation = "Income from interest on savings, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
     metadata = dict(
@@ -142,6 +146,7 @@ class dividend_income(Variable):
     value_type = float
     entity = Person
     label = u"Income from dividends"
+    documentation = "Total income from dividends, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
     metadata = dict(

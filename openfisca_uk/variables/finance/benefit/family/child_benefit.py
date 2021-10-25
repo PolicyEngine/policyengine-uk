@@ -18,6 +18,7 @@ class claims_child_benefit(Variable):
     metadata = dict(
         policyengine=dict(
             type="bool",
+            default=True,
         )
     )
 

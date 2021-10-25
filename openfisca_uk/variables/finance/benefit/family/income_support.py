@@ -12,8 +12,12 @@ class income_support_reported(Variable):
 class would_claim_IS(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim IS"
+    label = u"Claims Income Support"
+    documentation = (
+        "Whether this family would claim Income Support if eligible"
+    )
     definition_period = YEAR
+    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         return (
