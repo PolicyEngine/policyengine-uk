@@ -38,12 +38,18 @@ class triple_lock_uprating(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
+        cpi_growth = (
+            parameters(period).uprating.CPI
+            / parameters(period.last_year).uprating.CPI
+        )
+        earnings_growth = (
+            parameters(period).uprating.earnings
+            / parameters(period.last_year).uprating.earnings
+        )
         return max(
             parameters(period).benefit.state_pension.triple_lock_minimum,
-            parameters(period).uprating.CPI
-            / parameters(period.last_year).uprating.CPI,
-            parameters(period).uprating.earnings
-            / parameters(period.last_year).uprating.earnings,
+            cpi_growth,
+            earnings_growth,
         )
 
 
