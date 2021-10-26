@@ -31,6 +31,7 @@ class age(Variable):
     entity = Person
     label = u"The age of the person in years"
     definition_period = YEAR
+    default_value = 18
     metadata = dict(
         policyengine=dict(
             type="amount",
