@@ -1,0 +1,9 @@
+description: Minimum increase in the State Pension
+values:
+  2015-06-01:
+    value: 0.025
+metadata:
+  unit: /1
+  reference:
+    - title: House of Commons Library
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-7812/
