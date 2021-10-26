@@ -31,8 +31,22 @@ class age(Variable):
     entity = Person
     label = u"The age of the person in years"
     definition_period = YEAR
-    set_input = set_input_dispatch_by_period
     default_value = 18
+    metadata = dict(
+        policyengine=dict(
+            type="amount",
+            roles=dict(
+                adult=dict(
+                    default=18,
+                    max=100,
+                ),
+                child=dict(
+                    default=10,
+                    max=18,
+                ),
+            ),
+        )
+    )
 
 
 class birth_year(Variable):
