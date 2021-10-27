@@ -6,3 +6,11 @@ metadata:
   period: month
   unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47
+  policyengine:
+    short_name: UC_work_allowance_housing
+    title: UC Work Allowance (with housing)
+    description: Earnings up to this when receiving the UC housing element will not reduce UC
+    min: 0
+    max: 500
+    type: monthly
+    summary: Change the UC Work Allowance (housing) to @
