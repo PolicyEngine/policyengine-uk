@@ -20,8 +20,15 @@ class rent(Variable):
 class benunit_rent(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Benefit unit rent"
+    label = u"Rent"
+    documentation = "Gross rent that members of this family are liable for"
     definition_period = YEAR
+    metadata = dict(
+        policyengine=dict(
+            default=0,
+            max=20000,
+        )
+    )
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("personal_rent", period))
@@ -30,7 +37,8 @@ class benunit_rent(Variable):
 class personal_rent(Variable):
     value_type = float
     entity = Person
-    label = u"Personal rent"
+    label = u"Rent liable"
+    documentation = "The gross rent this person is liable for"
     definition_period = YEAR
 
     def formula(person, period, parameters):

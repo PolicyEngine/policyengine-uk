@@ -129,8 +129,15 @@ class in_work(Variable):
 class weekly_hours(Variable):
     value_type = float
     entity = Person
-    label = u"Average weekly hours for the year"
+    label = u"Weekly hours"
+    documentation = "Average weekly hours worked"
     definition_period = YEAR
+    metadata = dict(
+        policyengine=dict(
+            max=60,
+            type="amount",
+        )
+    )
 
     def formula(person, period, parameters):
         return person("hours_worked", period) / WEEKS_IN_YEAR

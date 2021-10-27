@@ -1,0 +1,28 @@
+- name: Single person, young
+  period: 2020
+  input:
+    is_single: true
+    eldest_adult_age: 21
+  output:
+    UC_claimant_type: SINGLE_YOUNG
+- name: Single person, old
+  period: 2020
+  input:
+    is_single: true
+    eldest_adult_age: 26
+  output:
+    UC_claimant_type: SINGLE_OLD
+- name: Couple, young
+  period: 2020
+  input:
+    is_single: false
+    eldest_adult_age: 21
+  output:
+    UC_claimant_type: COUPLE_YOUNG
+- name: Couple, old
+  period: 2020
+  input:
+    is_single: false
+    eldest_adult_age: 30
+  output:
+    UC_claimant_type: COUPLE_OLD

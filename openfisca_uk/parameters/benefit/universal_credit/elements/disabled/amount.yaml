@@ -1,8 +1,12 @@
 description: Limited capability for work element for Universal Credit, per month
 values:
-  2015-06-01: 126.11
-  2020-06-01: 128.67
+  2018-04-09: 328.32
+  2020-03-30: 336.20
+  2021-04-06: 341.92
+  2021-04-12: 343.63
 metadata:
   period: month
   unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=46
+  reference:
+    - title: The Universal Credit Regulations 2013, reg. 36
+      href: https://www.legislation.gov.uk/ukdsi/2013/9780111531938/regulation/36

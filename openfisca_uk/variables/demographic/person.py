@@ -27,9 +27,10 @@ class person_weight(Variable):
 
 
 class age(Variable):
-    value_type = float
+    value_type = int
     entity = Person
-    label = u"The age of the person in years"
+    label = u"Age"
+    documentation = "The age of the person in years"
     definition_period = YEAR
     default_value = 18
     metadata = dict(
@@ -50,13 +51,13 @@ class age(Variable):
 
 
 class birth_year(Variable):
-    value_type = float
+    value_type = int
     entity = Person
     label = u"The birth year of the person"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return datetime.now().year - person("age", period)
+        return period.start.year - person("age", period)
 
 
 class over_16(Variable):
@@ -97,17 +98,13 @@ class child_index(Variable):
 
     def formula(person, period, parameters):
         # The child index, by age, descending (e.g. "first child" = 1)
-        age = person("age", period)
-        child = person("is_child", period)
-        # Group children by their benefit unit, put all adults
-        # in a single group to prevent ranking
-        child_benunit = where(child, person.benunit.members_entity_id, -1)
-        # Within benefit units, rank children by age descending
         child_ranking = (
-            pd.Series(age)
-            .groupby(child_benunit)
-            .rank(ascending=False, method="dense")
-            .astype(int)
+            person.get_rank(
+                person.benunit,
+                -person("age", period),
+                condition=person("is_child", period),
+            )
+            + 1
         )
         # Fill in adult values
         adjusted_for_adults = where(
