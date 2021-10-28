@@ -50,7 +50,6 @@ class LHA_allowed_bedrooms(Variable):
         boys_over_10 = benunit.sum(child_over_10 & male)
         girls_under_10 = benunit.sum(under_10 & ~male)
         girls_over_10 = benunit.sum(child_over_10 & ~male)
-        boys_under_10 = benunit.sum()
 
         # First, have over-10s share where possible
 
