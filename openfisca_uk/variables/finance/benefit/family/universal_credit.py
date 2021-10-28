@@ -498,6 +498,7 @@ class UC_earned_income(Variable):
             earned_income
             - benunit("UC_work_allowance", period)
             - benunit("benunit_tax", period),
+            - aggr(benunit, period, ["pension_contributions"])
         )
 
 
