@@ -1,11 +1,11 @@
-description: Disabled child element (per child in receipt of SDA) for Universal Credit, per month
+description: Severely disabled child element of Universal Credit
 values:
-  2015-06-01: 241.81
-  2017-06-01: 246.19
-  2018-06-01: 257.75
-  2019-06-01: 265.97
-  2020-06-01: 271.36
+  2017-04-10: 372.11
+  2018-04-09: 383.86
+  2019-04-08: 392.08
+  2020-04-06: 400.29
+  2021-04-12: 402.41
 metadata:
-  period: month
-  unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=46
+  reference:
+    - name: The Universal Credit Regulations 2013 reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

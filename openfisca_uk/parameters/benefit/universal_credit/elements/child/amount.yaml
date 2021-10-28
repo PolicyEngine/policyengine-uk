@@ -1,8 +1,11 @@
-description: Child element of Universal Credit per month
+description: Child element of Universal Credit
 values:
-  2015-06-18: 235.83
-  2020-06-21: 237.08
+  2018-04-09: 231.67
+  2020-04-06: 235.85
+  2021-04-12: 237.08
 metadata:
   period: month
   unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=45
+  reference:
+    - name: The Universal Credit Regulations 2013 reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
