@@ -3,6 +3,7 @@
   absolute_error_margin: 0
   input:
     UC_housing_costs_element: 0
+    limited_capability_for_WRA: true
   output:
     UC_work_allowance: 565 * 12
 - name: Work allowance with housing
@@ -10,5 +11,6 @@
   absolute_error_margin: 0
   input:
     UC_housing_costs_element: 1
+    limited_capability_for_WRA: true
   output:
     UC_work_allowance: 343 * 12
