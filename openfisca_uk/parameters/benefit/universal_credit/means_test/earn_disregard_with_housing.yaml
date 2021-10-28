@@ -10,7 +10,7 @@ values:
   2021-12-01: 343
 metadata:
   policyengine:
-    short_name: UC_earn_disregard_with_housing
+    short_name: UC_work_allowance_with_housing
     title: UC Work Allowance with housing support
     description: Universal Credit Work Allowance if household receives housing support
     min: 0
