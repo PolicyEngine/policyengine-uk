@@ -3,6 +3,14 @@ values:
   2015-06-01:
     value: 290
 metadata:
+  policyengine:
+    short_name: UC_earn_disregard_with_housing
+    title: UC Work Allowance with housing
+    description: Universal Credit Work Allowance with housing
+    min: 0
+    max: 1000
+    type: monthly
+    summary: Change the allowance to @
   period: month
   unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47
