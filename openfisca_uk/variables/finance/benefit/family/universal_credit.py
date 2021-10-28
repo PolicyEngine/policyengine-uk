@@ -424,6 +424,22 @@ class num_UC_eligible_children(Variable):
             benunit.members("UC_individual_child_element", period) > 0
         )
 
+class UC_maximum_childcare(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u'Maximum UC childcare element'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        UC = parameters(period).benefit.universal_credit
+        children = benunit("num_UC_eligible_children", period)
+        childcare_limit = (
+            UC.elements.childcare.maximum[clip(children, 1, 2)]
+            * MONTHS_IN_YEAR
+        )
+        return childcare_limit
+
+
 
 class UC_childcare_element(Variable):
     value_type = float
@@ -436,13 +452,8 @@ class UC_childcare_element(Variable):
         eligible_childcare_expenses = benunit.sum(
             benunit.members("childcare_expenses", period)
         )
-        children = benunit("num_UC_eligible_children", period)
-        childcare_limit = (
-            UC.elements.childcare.maximum[clip(children, 1, 2)]
-            * MONTHS_IN_YEAR
-        )
         childcare_element = min_(
-            childcare_limit,
+            benunit("UC_maximum_childcare", period),
             eligible_childcare_expenses * UC.elements.childcare.coverage_rate,
         )
         return (
@@ -469,16 +480,6 @@ class UC_work_allowance(Variable):
         )
 
 
-class benunit_tax(Variable):
-    value_type = float
-    entity = BenUnit
-    label = u"Benefit unit tax paid"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("tax", period))
-
-
 class UC_earned_income(Variable):
     value_type = float
     entity = BenUnit
@@ -490,7 +491,6 @@ class UC_earned_income(Variable):
             "employment_income",
             "self_employment_income",
             "miscellaneous_income",
-            "self_employment_income",
         ]
         earned_income = aggr(benunit, period, INCOME_COMPONENTS)
         return max_(

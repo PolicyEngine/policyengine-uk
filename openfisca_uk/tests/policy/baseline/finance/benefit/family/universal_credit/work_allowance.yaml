@@ -1,0 +1,14 @@
+- name: Work allowance without housing
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_housing_costs_element: 0
+  output:
+    UC_work_allowance: 565 * 12
+- name: Work allowance with housing
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_housing_costs_element: 1
+  output:
+    UC_work_allowance: 343 * 12

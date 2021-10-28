@@ -1,0 +1,18 @@
+- name: Single adult not in work
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        in_work: false
+  output:
+    UC_childcare_work_condition: false
+- name: Single adult in work
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        in_work: true
+  output:
+    UC_childcare_work_condition: true
