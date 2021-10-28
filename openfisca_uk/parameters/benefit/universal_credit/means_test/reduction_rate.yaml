@@ -1,4 +1,4 @@
-description: Rate at which Universal Credit is reduced with earnings above the threshold
+description: Rate at which Universal Credit is reduced with earnings above the work allowance
 values:
   # Universal Credit Regulations.
   2013-04-29: 0.65
