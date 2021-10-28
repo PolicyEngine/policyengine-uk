@@ -7,6 +7,14 @@ values:
   2019-06-01:
     value: 503.00
 metadata:
+  policyengine:
+    short_name: UC_earn_disregard
+    title: UC Work Allowance
+    description: Universal Credit Work Allowance.
+    min: 0
+    max: 1000
+    type: monthly
+    summary: Change the allowance to @
   period: month
   unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47
