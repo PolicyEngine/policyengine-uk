@@ -1,0 +1,48 @@
+- name: Renting, single, 30, employed
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 30000
+        pension_contributions: 1000
+        weekly_hours: 20
+    benunits:
+      benunit:
+        adults: person
+        claims_UC: true
+    households:
+      household:
+        adults: person
+        tenure_type: RENT_PRIVATELY
+        rent: 10000
+  output:
+    universal_credit: 0
+    income_tax: 3286
+    national_insurance: 2451.83
+- name: Renting, single, 30, employed with little earnings
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 3000
+        pension_contributions: 1000
+        weekly_hours: 20
+    benunits:
+      benunit:
+        adults: person
+        claims_UC: true
+        benunit_rent: 10000
+    households:
+      household:
+        adults: person
+        tenure_type: RENT_PRIVATELY
+        BRMA: GUILDFORD
+  output:
+    UC_standard_allowance: 324.84 * 12
+    UC_housing_costs_element: 488.67 * 12
+    UC_income_reduction: 91.67 * 12
+    LHA_cap: 488.67 * 12

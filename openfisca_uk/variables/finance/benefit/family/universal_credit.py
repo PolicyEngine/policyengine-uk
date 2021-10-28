@@ -460,6 +460,16 @@ class UC_childcare_element(Variable):
             benunit("UC_childcare_work_condition", period) * childcare_element
         )
 
+class is_UC_work_allowance_eligible(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u'Family receives a Work Allowance'
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        has_LCWRA = benunit.any(benunit.members("limited_capability_for_WRA", period))
+        has_children = benunit.any(benunit.members("is_child", period))
+        return has_LCWRA | has_children
 
 class UC_work_allowance(Variable):
     value_type = float
@@ -477,7 +487,7 @@ class UC_work_allowance(Variable):
                 UC.means_test.work_allowance_without_housing,
             )
             * MONTHS_IN_YEAR
-        )
+        ) * benunit("is_UC_work_allowance_eligible", period)
 
 
 class UC_earned_income(Variable):
@@ -497,7 +507,7 @@ class UC_earned_income(Variable):
             0,
             earned_income
             - benunit("UC_work_allowance", period)
-            - benunit("benunit_tax", period),
+            - benunit("benunit_tax", period)
             - aggr(benunit, period, ["pension_contributions"])
         )
 
