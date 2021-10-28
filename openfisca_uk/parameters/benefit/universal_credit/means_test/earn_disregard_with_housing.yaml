@@ -1,7 +1,10 @@
 description: Earnings disregard for means testing Universal Credit per month
 values:
-  2015-06-01:
-    value: 290
+  2016-04-11: 192
+  2018-04-09: 198
+  2019-04-08: 287
+  2020-04-06: 292
+  2021-04-12: 293
 metadata:
   policyengine:
     short_name: UC_earn_disregard_with_housing
@@ -13,4 +16,4 @@ metadata:
     summary: Change the allowance to @
   period: month
   unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47
+  reference: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
