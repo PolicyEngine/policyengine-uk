@@ -407,8 +407,8 @@ class UC_earned_income(Variable):
         earnings_disregard = (
             where(
                 housing == 0,
-                UC.means_test.earn_disregard,
-                UC.means_test.earn_disregard_with_housing,
+                UC.means_test.work_allowance,
+                UC.means_test.work_allowance_with_housing,
             )
             * MONTHS_IN_YEAR
         )
