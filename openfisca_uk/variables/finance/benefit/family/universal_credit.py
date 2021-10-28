@@ -424,10 +424,11 @@ class num_UC_eligible_children(Variable):
             benunit.members("UC_individual_child_element", period) > 0
         )
 
+
 class UC_maximum_childcare(Variable):
     value_type = float
     entity = BenUnit
-    label = u'Maximum UC childcare element'
+    label = u"Maximum UC childcare element"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -438,7 +439,6 @@ class UC_maximum_childcare(Variable):
             * MONTHS_IN_YEAR
         )
         return childcare_limit
-
 
 
 class UC_childcare_element(Variable):
@@ -460,16 +460,20 @@ class UC_childcare_element(Variable):
             benunit("UC_childcare_work_condition", period) * childcare_element
         )
 
+
 class is_UC_work_allowance_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u'Family receives a Work Allowance'
+    label = u"Family receives a Work Allowance"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        has_LCWRA = benunit.any(benunit.members("limited_capability_for_WRA", period))
+        has_LCWRA = benunit.any(
+            benunit.members("limited_capability_for_WRA", period)
+        )
         has_children = benunit.any(benunit.members("is_child", period))
         return has_LCWRA | has_children
+
 
 class UC_work_allowance(Variable):
     value_type = float
@@ -508,7 +512,7 @@ class UC_earned_income(Variable):
             earned_income
             - benunit("UC_work_allowance", period)
             - benunit("benunit_tax", period)
-            - aggr(benunit, period, ["pension_contributions"])
+            - aggr(benunit, period, ["pension_contributions"]),
         )
 
 
