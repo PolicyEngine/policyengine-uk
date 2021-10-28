@@ -7,7 +7,7 @@ values:
   2020-04-06: 512
   2021-04-12: 515
   # Autumn Budget and Spending Review 2021 increases work allowance by £50.
-  2021-12-01: 565
+  2021-12-01: 557
 metadata:
   policyengine:
     short_name: UC_work_allowance_without_housing
