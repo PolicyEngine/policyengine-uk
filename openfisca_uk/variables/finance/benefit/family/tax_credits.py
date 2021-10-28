@@ -207,6 +207,11 @@ class CTC_severely_disabled_child_element(Variable):
         amount = (
             CTC.elements.severe_dis_child_element * severely_disabled_children
         )
+        is_exempt = benunit.sum(
+            benunit.members("is_child_for_CTC", period) * benunit.members(
+                "is_CTC_child_limit_exempt", period
+            ) > 0
+        )
         return (
             benunit("is_CTC_eligible", period)
             * benunit("claims_CTC", period)
