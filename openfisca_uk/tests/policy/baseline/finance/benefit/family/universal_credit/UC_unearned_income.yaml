@@ -1,0 +1,11 @@
+- name: All sources summed
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    carers_allowance: 10000
+    JSA_contrib: 1000
+    pension_income: 100
+    savings_interest_income: 10
+    dividend_income: 1
+  output:
+    UC_unearned_income: 11111
