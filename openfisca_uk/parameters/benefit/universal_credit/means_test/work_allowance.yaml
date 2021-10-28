@@ -11,7 +11,7 @@ values:
 metadata:
   policyengine:
     short_name: UC_work_allowance
-    title: UC Work Allowance, no housing support
+    title: UC Work Allowance without housing support
     description: Universal Credit Work Allowance if household does not receive housing support
     min: 0
     max: 1000
