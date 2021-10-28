@@ -5,9 +5,21 @@ from openfisca_uk.entities import *
 class is_disabled_for_benefits(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is disabled for benefits purposes"
+    label = u"Has a disability"
+    documentation = "Whether this person is disabled for benefits purposes"
     definition_period = YEAR
     reference = "Child Tax Credit Regulations 2002 s. 8"
+    metadata = dict(
+        policyengine=dict(
+            hidden=True,
+            roles=dict(
+                child=dict(
+                    hidden=False,
+                    default=False,
+                )
+            ),
+        )
+    )
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
@@ -36,9 +48,23 @@ class is_enhanced_disabled_for_benefits(Variable):
 class is_severely_disabled_for_benefits(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is severely disabled for benefits purposes"
+    label = u"Has a severe disability"
+    documentation = (
+        "Whether this person is severely disabled for benefits purposes"
+    )
     definition_period = YEAR
     reference = "Child Tax Credit Regulations 2002 s. 8"
+    metadata = dict(
+        policyengine=dict(
+            hidden=True,
+            roles=dict(
+                child=dict(
+                    hidden=False,
+                    default=False,
+                )
+            ),
+        )
+    )
 
     def formula(person, period, parameters):
         benefit = parameters(period).benefit

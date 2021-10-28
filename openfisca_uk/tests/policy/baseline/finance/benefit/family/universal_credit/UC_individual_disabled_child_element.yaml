@@ -1,0 +1,8 @@
+- name: Child disability element received
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 6
+    is_disabled_for_benefits: true
+  output:
+    UC_individual_disabled_child_element: 128.89 * 12

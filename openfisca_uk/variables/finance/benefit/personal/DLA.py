@@ -32,6 +32,17 @@ class DLA_SC(Variable):
         return person("DLA_SC_reported", period)
 
 
+class DLA_SC_middle_plus(Variable):
+    value_type = bool
+    entity = Person
+    label = u"Receives at least DLA (self-care) middle rate"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        DLA_SC = parameters(period).benefit.DLA.self_care
+        return person("DLA_SC", period) >= DLA_SC.middle
+
+
 class DLA_M_reported(Variable):
     value_type = float
     entity = Person

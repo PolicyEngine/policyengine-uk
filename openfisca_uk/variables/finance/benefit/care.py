@@ -9,13 +9,23 @@ class is_carer_for_benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("carers_allowance", period) > 0
+        return person("receives_carers_allowance", period)
+
+
+class benunit_has_carer(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = u"Benefit unit has a carer"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit("num_carers", period) > 0
 
 
 class num_carers(Variable):
     value_type = int
     entity = BenUnit
-    label = u"The number of carers for benefits purposes in the family"
+    label = u"Number of carers in the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

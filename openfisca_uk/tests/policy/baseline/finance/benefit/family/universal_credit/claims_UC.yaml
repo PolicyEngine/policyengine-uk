@@ -1,0 +1,38 @@
+- name: Would claim a legacy benefit, but not eligible for any, so doesn't claim UC
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    would_claim_WTC: true
+    is_WTC_eligible: false
+    would_claim_CTC: true
+    is_CTC_eligible: false
+    would_claim_IS: true
+    income_support_eligible: false
+    would_claim_HB: true
+    housing_benefit_eligible: false
+    would_claim_ESA_income: true
+    ESA_income_eligible: false
+    would_claim_JSA: true
+    JSA_income_eligible: false
+    claims_legacy_benefits: false
+  output:
+    claims_UC: false
+- name: Would claim a legacy benefit, is eligible for one, so claims UC
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    would_claim_WTC: true
+    is_WTC_eligible: false
+    would_claim_CTC: true
+    is_CTC_eligible: true
+    would_claim_IS: true
+    income_support_eligible: false
+    would_claim_HB: true
+    housing_benefit_eligible: false
+    would_claim_ESA_income: true
+    ESA_income_eligible: false
+    would_claim_JSA: true
+    JSA_income_eligible: false
+    claims_legacy_benefits: false
+  output:
+    claims_UC: true

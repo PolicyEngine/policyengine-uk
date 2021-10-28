@@ -1,0 +1,28 @@
+- name: Standard allowance for a single, young claimant (after uplift ended)
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_claimant_type: SINGLE_YOUNG
+  output:
+    UC_standard_allowance: 257.33 * 12
+- name: Standard allowance for a single, older claimant (after uplift ended)
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_claimant_type: SINGLE_OLD
+  output:
+    UC_standard_allowance: 324.84 * 12
+- name: Standard allowance for a couple, younger claimant (after uplift ended)
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_claimant_type: COUPLE_YOUNG
+  output:
+    UC_standard_allowance: 403.93 * 12
+- name: Standard allowance for a couple, older claimant (after uplift ended)
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_claimant_type: COUPLE_OLD
+  output:
+    UC_standard_allowance: 509.91 * 12

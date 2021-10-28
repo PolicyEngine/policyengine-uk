@@ -14,6 +14,16 @@ class tax(Variable):
         )
 
 
+class benunit_tax(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Benefit unit tax paid"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("tax", period))
+
+
 class tax_reported(Variable):
     value_type = float
     entity = Person

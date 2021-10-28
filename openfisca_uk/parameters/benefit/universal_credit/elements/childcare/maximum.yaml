@@ -1,11 +1,13 @@
 description: Maximum childcare costs paid by Universal Credit by the number of eligible children
 1:
   values:
-    2015-06-01: 646.35
+    2017-04-10: 646.35
 2:
   values:
-    2015-06-01: 1108.04
+    2017-04-10: 1108.04
 metadata:
   period: month
   unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=46
+  reference:
+    - name: The Universal Credit Regulations 2013 reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
