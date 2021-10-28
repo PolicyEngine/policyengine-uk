@@ -1,9 +1,10 @@
 description: Rate at which Universal Credit is reduced with earnings above the threshold
 values:
-  2015-06-01:
-    value: 0.65
-  2017-06-01:
-    value: 0.63
+  # Universal Credit Regulations.
+  2013-04-29: 0.65
+  2017-04-10: 0.63
+  # Autumn Budget and Spending Review 2021.
+  2021-12-01: 0.55
 metadata:
   policyengine:
     short_name: UC_reduction_rate
@@ -14,4 +15,8 @@ metadata:
     type: rate
     summary: Change the rate to @
   unit: /1
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47
+  reference:
+    - name: The Universal Credit Regulations 2013
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
+    - name: Autumn Budget and Spending Review 2021
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1028813/Budget_AB2021_Print.pdf#page=138 
