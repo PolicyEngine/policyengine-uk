@@ -29,9 +29,9 @@ class LHA_allowed_bedrooms(Variable):
         b) Each person over 16 outside the benefit unit
             but within the household
         Children must share rooms in pairs unless they are
-        opposite-sex and over 10. The number of bedrooms allowed
-        under LHA rules is the minimum number of bedrooms required
-        to allocate people satisfying these rules.
+        opposite-sex and one is over 10. The number of bedrooms 
+        allowed under LHA rules is the minimum number of bedrooms 
+        required to allocate people satisfying these rules.
         """
         person = benunit.members
         age = person("age", period)

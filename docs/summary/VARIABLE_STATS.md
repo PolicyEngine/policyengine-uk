@@ -3505,4 +3505,3 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: Categorical
   - Entity: person
   - Description: Role (adult/child)
-
