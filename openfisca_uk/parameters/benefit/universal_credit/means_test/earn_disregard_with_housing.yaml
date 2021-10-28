@@ -1,8 +1,26 @@
-description: Earnings disregard for means testing Universal Credit per month
+description: Universal Credit Work Allowance if household receives housing support
 values:
-  2015-06-01:
-    value: 290
+  # Skip 2013-2016, when the parameterization was different.
+  2016-04-11: 192
+  2018-04-09: 198
+  2019-04-08: 287
+  2020-04-06: 292
+  2021-04-12: 293
+  # Autumn Budget and Spending Review 2021 increases work allowance by £50.
+  2021-12-01: 343
 metadata:
+  policyengine:
+    short_name: UC_earn_disregard_with_housing
+    title: UC Work Allowance with housing support
+    description: Universal Credit Work Allowance if household receives housing support
+    min: 0
+    max: 1000
+    type: monthly
+    summary: Change the allowance to @
   period: month
   unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=47
+  reference:
+    - name: The Universal Credit Regulations 2013
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
+    - name: Autumn Budget and Spending Review 2021
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1028813/Budget_AB2021_Print.pdf#page=138 
