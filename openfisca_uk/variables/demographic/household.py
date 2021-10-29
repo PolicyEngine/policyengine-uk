@@ -163,7 +163,9 @@ class household_equivalisation_bhc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        second_adult = household.nb_persons(Household.ADULT) == 2
+        other_adults = max_(
+            household.sum(household.members("is_adult", period)) - 1, 0
+        )
         num_young_children = household.sum(
             household.members("is_young_child", period)
         )
@@ -172,7 +174,7 @@ class household_equivalisation_bhc(Variable):
         )
         weighting = (
             0.67
-            + 0.33 * second_adult
+            + 0.33 * other_adults
             + 0.33 * num_older_children
             + 0.2 * num_young_children
         )
@@ -186,7 +188,9 @@ class household_equivalisation_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        second_adult = household.nb_persons(Household.ADULT) == 2
+        other_adults = max_(
+            household.sum(household.members("is_adult", period)) - 1, 0
+        )
         num_young_children = household.sum(
             household.members("is_young_child", period)
         )
@@ -195,7 +199,7 @@ class household_equivalisation_ahc(Variable):
         )
         weighting = (
             0.58
-            + 0.42 * second_adult
+            + 0.42 * other_adults
             + 0.42 * num_older_children
             + 0.2 * num_young_children
         )
