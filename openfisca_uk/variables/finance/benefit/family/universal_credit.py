@@ -255,7 +255,9 @@ class UC_housing_costs_element(Variable):
                 0,
             ],
         )
-        return max_housing_costs - benunit("UC_non_dep_deductions", period)
+        return max_(
+            0, max_housing_costs - benunit("UC_non_dep_deductions", period)
+        )
 
 
 class UC_non_dep_deduction_exempt(Variable):

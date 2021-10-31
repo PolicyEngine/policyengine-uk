@@ -1,5 +1,5 @@
 - name: Housing Benefit for a single person with small earnings
-  period: 2021
+  period: 2022
   absolute_error_margin: 5
   input:
     age: 26
@@ -11,42 +11,42 @@
     benunit_rent: 88 * 52
     is_household_head: true
   output:
-    WTC_basic_element: 3040
+    WTC_basic_element: 2005
     WTC_worker_element: 825
-    working_tax_credit: 3040 + 825
+    working_tax_credit: 2830
     housing_benefit: 88 * 52
 - name: Check no change up until the phase-out point
-  period: 2021
+  period: 2022
   absolute_error_margin: 5
   input:
     age: 26
     weekly_hours: 31
-    employment_income: 3801 - (3865 - 52 * (5 + 37.1))
+    employment_income: 3801 - (2830 - 52 * (5 + 37.1))
     tenure_type: RENT_FROM_COUNCIL
     claims_HB: true
     claims_WTC: true
     benunit_rent: 88 * 52
     is_household_head: true
   output:
-    WTC_basic_element: 3040
+    WTC_basic_element: 2005
     WTC_worker_element: 825
-    working_tax_credit: 3865
+    working_tax_credit: 2830
     housing_benefit_applicable_income: 3801
     housing_benefit: 88 * 52
 - name: Check phase-out rate is 65%
-  period: 2021
+  period: 2022
   absolute_error_margin: 5
   input:
     age: 26
     weekly_hours: 31
-    employment_income: 3801 - (3865 - 52 * (5 + 37.1)) + 100
+    employment_income: 3801 - (2830 - 52 * (5 + 37.1)) + 100
     tenure_type: RENT_FROM_COUNCIL
     claims_HB: true
     claims_WTC: true
     benunit_rent: 88 * 52
     is_household_head: true
   output:
-    WTC_basic_element: 3040
+    WTC_basic_element: 2005
     WTC_worker_element: 825
-    working_tax_credit: 3865
+    working_tax_credit: 2830
     housing_benefit: 88 * 52 - 65

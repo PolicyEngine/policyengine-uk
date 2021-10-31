@@ -1,29 +1,41 @@
 from openfisca_uk.tools.general import *
 from openfisca_uk.entities import *
-from openfisca_uk.variables.demographic.locations import LocalAuthority
+from openfisca_uk.variables.demographic.household import Region
+from openfisca_uk.variables.demographic.locations import (
+    BRMAName,
+    LocalAuthority,
+)
 import pandas as pd
 
-PC = pd.read_csv(DATA_FOLDER / "geography" / "postcodes.csv")
-LA = pd.read_csv(DATA_FOLDER / "geography" / "local_authorities.csv")
-LA_safe_name = (
-    lambda x: x.upper()
-    .replace(" ", "_")
-    .replace("&", "")
-    .replace("-", "_")
-    .replace("__", "_")
-    .replace("'", "")
-    .replace(",", "")
-    .replace(".", "")
+DATA_FOLDER = Path(__file__).parent.parent / "data"
+
+postcode_to_la_name = (
+    pd.read_csv(
+        DATA_FOLDER / "geography" / "postcode_to_la_name.csv.gz",
+        compression="gzip",
+    )
+    .set_index("postcode")
+    .local_authority
 )
-LAC_LA = LA.set_index("LAD20CD").LAD20NM.apply(LA_safe_name).sort_values()
-LAC_LA = LAC_LA[(PC.laua[PC.laua.isin(LAC_LA.index)]).unique()]
-PC_LAC = PC.set_index("pcd").laua
-LA_index = (
-    LAC_LA.sort_values()
-    .reset_index()
-    .reset_index()
-    .set_index("LAD20NM")["index"]
-)
+postcode_sector_to_brma_name = pd.read_csv(
+    DATA_FOLDER / "geography" / "postcode_sector_to_brma_name.csv.gz",
+    compression="gzip",
+).set_index("postcode_sector")
+la_name_to_region = pd.read_csv(
+    DATA_FOLDER / "geography" / "la_name_to_region.csv.gz", compression="gzip"
+).set_index("local_authority")
+
+# Some postcode sectors have multiple BRMA names. We use the first one in the dataset.
+postcode_sector_to_brma_name = postcode_sector_to_brma_name.groupby(
+    postcode_sector_to_brma_name.index
+).first()
+postcode_sector_to_brma_name.loc["UNKNOWN"] = "UNKNOWN"
+
+
+def postcode_to_postcode_sector(array):
+    return pd.Series(array).apply(
+        lambda postcode: postcode.replace(" ", "")[:-2]
+    )
 
 
 class postcode(Variable):
@@ -31,6 +43,11 @@ class postcode(Variable):
     entity = Household
     label = u"Postcode for the household"
     definition_period = YEAR
+    default_value = "UNKNOWN"
+    metadata = dict(policyengine=dict(type="str", default=""))
+
+    def formula(person, period, parameters):
+        pass
 
 
 class local_authority(Variable):
@@ -42,10 +59,72 @@ class local_authority(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return LA_index[LAC_LA[PC_LAC[household("postcode", period)]]]
+        return postcode_to_la_name[
+            pd.Series(household("postcode", period)).str.replace(" ", "")
+        ].values.astype(str)
+
+
+class postcode_sector(Variable):
+    value_type = str
+    entity = Household
+    label = u"Postcode sector"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        hh_postcode = household("postcode", period)
+        return where(
+            hh_postcode == "UNKNOWN",
+            "UNKNOWN",
+            postcode_to_postcode_sector(household("postcode", period)),
+        )
+
+
+class BRMA(Variable):
+    value_type = Enum
+    possible_values = BRMAName
+    default_value = BRMAName.MAIDSTONE
+    entity = Household
+    label = u"Broad Rental Market Area"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return (
+            postcode_sector_to_brma_name.loc[
+                household("postcode_sector", period)
+            ]
+            .values.astype(str)
+            .flatten()
+        )
+
+
+class region(Variable):
+    value_type = Enum
+    possible_values = Region
+    default_value = Region.UNKNOWN
+    entity = Household
+    label = u"Region"
+    documentation = "Area of the UK"
+    definition_period = ETERNITY
+    metadata = dict(
+        policyengine=dict(
+            type="category",
+        )
+    )
+
+    def formula(household, period, parameters):
+        return (
+            la_name_to_region.loc[
+                household("local_authority", period).decode_to_str()
+            ]
+            .values.astype(str)
+            .flatten()
+        )
 
 
 class with_postcode_features(Reform):
     def apply(self):
         self.add_variable(postcode)
+        self.add_variable(postcode_sector)
+        self.update_variable(BRMA)
         self.update_variable(local_authority)
+        self.update_variable(region)

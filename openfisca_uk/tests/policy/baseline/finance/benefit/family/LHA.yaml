@@ -1,21 +1,21 @@
 - name: BRMA default value
-  period: 2020
+  period: 2022
   absolute_error_margin: 20
   input:
     age: 18
     LHA_category: C
   output:
     BRMA: MAIDSTONE
-    BRMA_LHA_rate: 162 * 52
+    BRMA_LHA_rate: 187.56 * 52
 - name: BRMA inputs
-  period: 2020
+  period: 2022
   absolute_error_margin: 0
   input:
     BRMA: GUILDFORD
   output:
     BRMA: GUILDFORD
 - name: BRMA and category
-  period: 2020
+  period: 2022
   absolute_error_margin: 20
   input:
     BRMA: GUILDFORD
@@ -23,4 +23,4 @@
   output:
     BRMA: GUILDFORD
     LHA_category: C
-    BRMA_LHA_rate: 223 * 52
+    BRMA_LHA_rate: 253.15 * 52
