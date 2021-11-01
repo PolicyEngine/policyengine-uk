@@ -1,8 +1,0 @@
-description: Minimum wage for 21-24s
-values:
-  2015-06-01:
-    value: 8.20
-metadata:
-  period: hour
-  unit: currency-GBP
-  reference: https://www.gov.uk/national-minimum-wage-rates
