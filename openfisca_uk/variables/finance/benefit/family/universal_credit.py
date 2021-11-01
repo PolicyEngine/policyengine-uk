@@ -506,7 +506,16 @@ class UC_earned_income(Variable):
             "self_employment_income",
             "miscellaneous_income",
         ]
-        earned_income = aggr(benunit, period, INCOME_COMPONENTS)
+        personal_earned_income = add(benunit.members, period, INCOME_COMPONENTS)
+        personal_mif_capped_income = where(
+            benunit.members("UC_MIF_applies", period),
+            max_(
+                benunit.members("UC_minimum_income_floor", period),
+                personal_earned_income
+            ),
+            personal_earned_income
+        )
+        earned_income = benunit.sim(personal_mif_capped_income)
         return max_(
             0,
             earned_income
