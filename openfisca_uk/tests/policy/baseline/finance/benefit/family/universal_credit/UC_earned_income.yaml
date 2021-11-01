@@ -1,11 +1,10 @@
-- name: All sources summed and deductions used
+- name: All sources summed and deductions used, except self-employment
   period: 2022
   absolute_error_margin: 0
   input:
-    employment_income: 10_000
-    self_employment_income: 1_000
+    employment_income: 1_000
     miscellaneous_income: 100
     UC_work_allowance: 10
     benunit_tax: 1
   output:
-    UC_earned_income: 11100 - 11
+    UC_earned_income: 1100 - 11
