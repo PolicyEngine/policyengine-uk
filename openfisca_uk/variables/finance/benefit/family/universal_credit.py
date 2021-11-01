@@ -568,3 +568,26 @@ class universal_credit(Variable):
             * benunit("claims_UC", period)
             * benunit("is_UC_eligible", period)
         )
+
+class UC_MIF_applies(Variable):
+    value_type = bool
+    entity = Person
+    label = "Minimum Income Floor applies"
+    documentation = "Whether the Minimum Income Floor should be used to determine UC entitlement"
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/62/2021-04-06"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("self_employment_income", period) > 0
+
+class UC_expected_hours_per_week(Variable):
+    value_type = int
+    entity = Person
+    label = "Hours expected to work"
+    documentation = "Number of hours per week expected to work for UC"
+    definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/88/2021-04-06"
+
+    def formula(person, period, parameters):
+        return parameters(period).benefit.universal_credit.work_requirements.default_expected_hours
+

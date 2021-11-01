@@ -1,0 +1,8 @@
+- name: Default is 35
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1: {}
+  output:
+    UC_expected_hours_per_week: 35
