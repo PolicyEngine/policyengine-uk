@@ -592,7 +592,20 @@ class UC_MIF_applies(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("self_employment_income", period) > 0
+        has_profits = person("self_employment_income", period) > 0
+        in_startup_period = person("is_in_startup_period", period)
+        return has_profits | in_startup_period
+
+
+class is_in_startup_period(Variable):
+    value_type = bool
+    entity = Person
+    label = u"In a start-up period"
+    documentation = (
+        "Whether this person is in a 'start-up' period for Universal Credit"
+    )
+    definition_period = YEAR
+    default_value = False
 
 
 class UC_expected_hours_per_week(Variable):
