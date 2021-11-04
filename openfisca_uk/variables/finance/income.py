@@ -254,7 +254,8 @@ class MinimumWageCategory(Enum):
     APPRENTICE = "Apprentice"
     UNDER_18 = "Under 18"
     BETWEEN_18_20 = "18 to 20"
-    BETWEEN_21_24 = "21 to 24"
+    BETWEEN_21_22 = "21 to 22"
+    BETWEEN_23_24 = "23 to 24"
     OVER_24 = "25 or over"
 
 
@@ -273,14 +274,16 @@ class minimum_wage_category(Variable):
                 person("is_apprentice", period),
                 age < 18,
                 (age >= 18) & (age <= 20),
-                (age >= 21) & (age <= 24),
+                (age >= 21) & (age <= 22),
+                (age >= 23) & (age <= 24),
                 age >= 25,
             ],
             [
                 MinimumWageCategory.APPRENTICE,
                 MinimumWageCategory.UNDER_18,
                 MinimumWageCategory.BETWEEN_18_20,
-                MinimumWageCategory.BETWEEN_21_24,
+                MinimumWageCategory.BETWEEN_21_22,
+                MinimumWageCategory.BETWEEN_23_24,
                 MinimumWageCategory.OVER_24,
             ],
         )
