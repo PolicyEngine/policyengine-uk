@@ -3,6 +3,5 @@
   absolute_error_margin: 0
   input:
     minimum_wage: 10
-    UC_expected_hours_per_week: 35
   output:
     UC_minimum_income_floor: 350 * 52

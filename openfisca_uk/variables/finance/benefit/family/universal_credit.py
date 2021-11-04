@@ -501,7 +501,9 @@ class UC_earned_income(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        personal_gross_earned_income = benunit.sum(benunit.members("UC_MIF_capped_earned_income", period))
+        personal_gross_earned_income = benunit.sum(
+            benunit.members("UC_MIF_capped_earned_income", period)
+        )
         return max_(
             0,
             personal_gross_earned_income
@@ -609,17 +611,16 @@ class UC_minimum_income_floor(Variable):
         expected_hours = parameters(
             period
         ).benefit.universal_credit.work_requirements.default_expected_hours
-        return (
-            person("minimum_wage", period)
-            * expected_hours
-            * WEEKS_IN_YEAR
-        )
+        return person("minimum_wage", period) * expected_hours * WEEKS_IN_YEAR
+
 
 class UC_MIF_capped_earned_income(Variable):
     value_type = float
     entity = Person
-    label = u'UC gross earned income (incl. MIF)'
-    documentation = "Gross earned income for UC, with MIF applied where applicable"
+    label = u"UC gross earned income (incl. MIF)"
+    documentation = (
+        "Gross earned income for UC, with MIF applied where applicable"
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -637,4 +638,3 @@ class UC_MIF_capped_earned_income(Variable):
             ),
             personal_gross_earned_income,
         )
-
