@@ -501,26 +501,10 @@ class UC_earned_income(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        INCOME_COMPONENTS = [
-            "employment_income",
-            "self_employment_income",
-            "miscellaneous_income",
-        ]
-        personal_earned_income = add(
-            benunit.members, period, INCOME_COMPONENTS
-        )
-        personal_mif_capped_income = where(
-            benunit.members("UC_MIF_applies", period),
-            max_(
-                benunit.members("UC_minimum_income_floor", period),
-                personal_earned_income,
-            ),
-            personal_earned_income,
-        )
-        earned_income = benunit.sum(personal_mif_capped_income)
+        personal_gross_earned_income = benunit.sum(benunit.members("UC_MIF_capped_earned_income", period))
         return max_(
             0,
-            earned_income
+            personal_gross_earned_income
             - benunit("UC_work_allowance", period)
             - benunit("benunit_tax", period)
             - aggr(benunit, period, ["pension_contributions"]),
@@ -594,7 +578,7 @@ class UC_MIF_applies(Variable):
     def formula(person, period, parameters):
         has_profits = person("self_employment_income", period) > 0
         in_startup_period = person("is_in_startup_period", period)
-        return has_profits | in_startup_period
+        return has_profits & ~in_startup_period
 
 
 class is_in_startup_period(Variable):
@@ -606,23 +590,11 @@ class is_in_startup_period(Variable):
     )
     definition_period = YEAR
     default_value = False
-
-
-class UC_expected_hours_per_week(Variable):
-    value_type = int
-    entity = Person
-    label = "Hours expected to work"
-    documentation = "Number of hours per week expected to work for UC"
-    definition_period = YEAR
-    unit = "hour"
-    reference = (
-        "https://www.legislation.gov.uk/uksi/2013/376/regulation/88/2021-04-06"
+    metadata = dict(
+        policyengine=dict(
+            default=False,
+        )
     )
-
-    def formula(person, period, parameters):
-        return parameters(
-            period
-        ).benefit.universal_credit.work_requirements.default_expected_hours
 
 
 class UC_minimum_income_floor(Variable):
@@ -634,8 +606,35 @@ class UC_minimum_income_floor(Variable):
     reference = ""
 
     def formula(person, period, parameters):
+        expected_hours = parameters(
+            period
+        ).benefit.universal_credit.work_requirements.default_expected_hours
         return (
             person("minimum_wage", period)
-            * person("UC_expected_hours_per_week", period)
+            * expected_hours
             * WEEKS_IN_YEAR
         )
+
+class UC_MIF_capped_earned_income(Variable):
+    value_type = float
+    entity = Person
+    label = u'UC gross earned income (incl. MIF)'
+    documentation = "Gross earned income for UC, with MIF applied where applicable"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        INCOME_COMPONENTS = [
+            "employment_income",
+            "self_employment_income",
+            "miscellaneous_income",
+        ]
+        personal_gross_earned_income = add(person, period, INCOME_COMPONENTS)
+        return where(
+            person("UC_MIF_applies", period),
+            max_(
+                person("UC_minimum_income_floor", period),
+                personal_gross_earned_income,
+            ),
+            personal_gross_earned_income,
+        )
+
