@@ -248,6 +248,7 @@ class is_apprentice(Variable):
     entity = Person
     label = u"In an apprenticeship programme"
     definition_period = YEAR
+    default_value = False
 
 
 class MinimumWageCategory(Enum):
