@@ -1,0 +1,7 @@
+- name: Minimum wage for a person over 25
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 30
+  output:
+    minimum_wage: 8.91

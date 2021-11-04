@@ -1,0 +1,23 @@
+- name: No self-employment income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+  output:
+    UC_MIF_applies: false
+- name: Some self-employment income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1
+  output:
+    UC_MIF_applies: true
+- name: Both employment and self-employment income (MIF applies)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 1
+    self_employment_income: 1
+  output:
+    UC_MIF_applies: true

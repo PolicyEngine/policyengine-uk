@@ -1,0 +1,7 @@
+- name: Minimum income floor
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    minimum_wage: 10
+  output:
+    UC_minimum_income_floor: 350 * 52

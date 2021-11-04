@@ -1,0 +1,42 @@
+- name: Apprentice
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    is_apprentice: true
+  output:
+    minimum_wage_category: APPRENTICE
+- name: Under 18
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 17
+  output:
+    minimum_wage_category: UNDER_18
+- name: Aged 19
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 19
+  output:
+    minimum_wage_category: BETWEEN_18_20
+- name: Aged 21
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 21
+  output:
+    minimum_wage_category: BETWEEN_21_22
+- name: Aged 23
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 23
+  output:
+    minimum_wage_category: BETWEEN_23_24
+- name: Aged over 25
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 30
+  output:
+    minimum_wage_category: OVER_24
