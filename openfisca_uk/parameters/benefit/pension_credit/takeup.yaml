@@ -1,7 +1,15 @@
 description: Take-up rate of Pension Credit
 values:
-  2010-06-01:
-    value: 0.6
+  2009-04-06: 0.61
+  2012-04-06: 0.62
+  2013-04-06: 0.63
+  2014-04-06: 0.62
+  2015-04-06: 0.61
+  2016-04-06: 0.61
+  2017-04-06: 0.61
+  2018-04-06: 0.63
 metadata:
   unit: /1
-  reference: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019
+  reference:
+    name: "Pension Credit: tables 2018 to 2019, table PC1"
+    href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/929669/pension-credit-tables-2018-2019.ods
