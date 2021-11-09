@@ -1,0 +1,8 @@
+- name: Weight generation
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    person_weight: [1, 1, 1]
+    region: [LONDON, SOUTH_EAST, NORTH_EAST]
+  output:
+    person_weight_region_adjusted: [8_961_989, 9_180_135, 2_669_941]

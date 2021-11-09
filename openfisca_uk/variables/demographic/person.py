@@ -21,9 +21,23 @@ class people(Variable):
 class person_weight(Variable):
     value_type = float
     entity = Person
-    label = u"Weight factor for the person"
+    label = "Weight factor"
+    documentation = "Used to translate from survey respondents to UK residents"
     definition_period = YEAR
     default_value = 1
+
+class person_weight_region_adjusted(Variable):
+    value_type = float
+    entity = Person
+    label = "Weight (region-adjusted)"
+    documentation = "Adjusted to match regional population estimates"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        region = person.household("region", period)
+        regional_population = parameters(period).demographic.population_estimate[region]
+        regional_weight_sum = pd.Series(person("person_weight", period)).groupby(region).sum()[region]
+        return regional_population / regional_weight_sum
 
 
 class age(Variable):
