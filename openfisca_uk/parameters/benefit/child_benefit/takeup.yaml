@@ -1,7 +1,28 @@
 description: Take-up rate of Child Benefit for eligible families
 values:
-  2015-06-04:
-    value: 0.95
+  2006-04-06: 0.97
+  2007-04-06: 0.97
+  2008-04-06: 0.96
+  2009-04-06: 0.96
+  2010-04-06: 0.96
+  2011-04-06: 0.96
+  2012-04-06: 0.96
+  2013-04-06: 0.95
+  2014-04-06: 0.96
+  2015-04-06: 0.94
+  2016-04-06: 0.93
+  2017-04-06: 0.93
+  2018-04-06: 0.92
 metadata:
-  unit: currency-GBP
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/851148/Child_Benefit__Child_Tax_Credit_and_Working_Tax_Credit_take-up_rates_2016_to_2017_restated.pdf
+  policyengine:
+    short_name: CB_takeup
+    title: Child Benefit take-up rate
+    description: Share of eligible Child Benefit recipients that participate
+    min: 0
+    max: 1
+    type: rate
+    summary: Change the rate to @
+  unit: /1
+  reference:
+    name: "Child Benefit Statistics: Annual Release, August 2020 Main Commentary | Table 3.1"
+    href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020/child-benefit-statistics-annual-release-august-2020-main-commentary
