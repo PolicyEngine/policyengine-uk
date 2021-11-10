@@ -1,7 +1,21 @@
 description: Take-up rate of Child Tax Credit among eligible families
 values:
-  2015-06-01:
-    value: 0.83
+  2003-04-06: 0.79
+  2004-04-06: 0.82
+  2005-04-06: 0.82
+  2006-04-06: 0.81
+  2007-04-06: 0.81
+  2008-04-06: 0.80
+  2009-04-06: 0.81
+  2010-04-06: 0.83
+  2011-04-06: 0.85
+  2012-04-06: 0.88
+  2013-04-06: 0.87
+  2014-04-06: 0.86
+  2015-04-06: 0.83
+  2016-04-06: 0.83
 metadata:
-  unit: currency-GBP
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/851148/Child_Benefit__Child_Tax_Credit_and_Working_Tax_Credit_take-up_rates_2016_to_2017_restated.pdf
+  unit: /1
+  reference:
+    name: "Child Benefit, Child Tax Credit and Working Tax Credit Take-up rates 2016 to 2017 | Table B.1B"
+    href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/851148/Child_Benefit__Child_Tax_Credit_and_Working_Tax_Credit_take-up_rates_2016_to_2017_restated.pdf#page=15
