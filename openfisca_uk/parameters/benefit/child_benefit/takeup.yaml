@@ -1,7 +1,18 @@
 description: Take-up rate of Child Benefit for eligible families
 values:
-  2015-06-04:
-    value: 0.95
+  2006-04-06: 0.97
+  2007-04-06: 0.97
+  2008-04-06: 0.96
+  2009-04-06: 0.96
+  2010-04-06: 0.96
+  2011-04-06: 0.96
+  2012-04-06: 0.96
+  2013-04-06: 0.95
+  2014-04-06: 0.96
+  2015-04-06: 0.94
+  2016-04-06: 0.93
+  2017-04-06: 0.93
+  2018-04-06: 0.92
 metadata:
-  unit: currency-GBP
+  unit: /1
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/851148/Child_Benefit__Child_Tax_Credit_and_Working_Tax_Credit_take-up_rates_2016_to_2017_restated.pdf
