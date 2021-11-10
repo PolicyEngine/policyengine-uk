@@ -3,5 +3,13 @@ values:
   2010-06-01:
     value: 0.8
 metadata:
+  policyengine:
+    short_name: HB_takeup
+    title: Housing Benefit take-up rate
+    description: Share of eligible Housing Benefit recipients that participate
+    min: 0
+    max: 1
+    type: rate
+    summary: Change the rate to @
   unit: currency-GBP
   reference: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019
