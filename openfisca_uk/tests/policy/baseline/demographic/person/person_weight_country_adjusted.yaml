@@ -1,0 +1,8 @@
+- name: Weight generation
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    person_weight: [1, 1, 1, 1]
+    country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
+  output:
+    person_weight_country_adjusted: [56_000_000, 3_100_000, 5_400_000, 1_900_000]
