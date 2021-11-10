@@ -36,19 +36,15 @@ class person_weight(Variable):
 
     def formula(person, period, parameters):
         nation = person.household("country", period)
+        frs_person_weight = person("FRS_person_weight", period)
         national_population = parameters(
             period
         ).demographic.population_estimate[nation]
         national_weight_sum = (
-            pd.Series(person("FRS_person_weight", period))
-            .groupby(nation)
-            .sum()[nation]
+            pd.Series(frs_person_weight).groupby(nation).sum()[nation]
         )
-        return (
-            national_population
-            / national_weight_sum
-            * person("FRS_person_weight", period)
-        )
+        scale_factor = national_population / national_weight_sum
+        return scale_factor * frs_person_weight
 
 
 class age(Variable):
