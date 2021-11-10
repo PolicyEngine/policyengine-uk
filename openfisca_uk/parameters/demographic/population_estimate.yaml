@@ -1,4 +1,5 @@
 description: Population estimates for UK nations
+# Metadata required for each country parameter
 ENGLAND:
   metadata:
     interpolation:
