@@ -26,6 +26,7 @@ class FRS_person_weight(Variable):
     definition_period = YEAR
     default_value = 1
 
+
 class person_weight(Variable):
     value_type = float
     entity = Person
@@ -35,9 +36,19 @@ class person_weight(Variable):
 
     def formula(person, period, parameters):
         nation = person.household("country", period)
-        national_population = parameters(period).demographic.population_estimate[nation]
-        national_weight_sum = pd.Series(person("FRS_person_weight", period)).groupby(nation).sum()[nation]
-        return national_population / national_weight_sum * person("FRS_person_weight", period)
+        national_population = parameters(
+            period
+        ).demographic.population_estimate[nation]
+        national_weight_sum = (
+            pd.Series(person("FRS_person_weight", period))
+            .groupby(nation)
+            .sum()[nation]
+        )
+        return (
+            national_population
+            / national_weight_sum
+            * person("FRS_person_weight", period)
+        )
 
 
 class age(Variable):
