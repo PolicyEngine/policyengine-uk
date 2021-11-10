@@ -14,5 +14,15 @@ values:
   2017-04-06: 0.93
   2018-04-06: 0.92
 metadata:
+  policyengine:
+    short_name: CB_takeup
+    title: Child Benefit take-up rate
+    description: Share of eligible Child Benefit recipients that participate
+    min: 0
+    max: 1
+    type: rate
+    summary: Change the rate to @
   unit: /1
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/851148/Child_Benefit__Child_Tax_Credit_and_Working_Tax_Credit_take-up_rates_2016_to_2017_restated.pdf
+  reference:
+    name: "Child Benefit Statistics: Annual Release, August 2020 Main Commentary | Table 3.1"
+    href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020/child-benefit-statistics-annual-release-august-2020-main-commentary
