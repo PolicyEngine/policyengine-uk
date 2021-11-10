@@ -30,7 +30,7 @@ metadata:
       value: 0
       revenue:
         min: 95.e+9
-        max: 105.e+9
+        max: 115.e+9
       poverty_effect:
         positive: true
     - period: 2022

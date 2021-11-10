@@ -18,7 +18,7 @@ class people(Variable):
     default_value = 1
 
 
-class person_weight(Variable):
+class FRS_person_weight(Variable):
     value_type = float
     entity = Person
     label = "Weight factor"
@@ -26,7 +26,7 @@ class person_weight(Variable):
     definition_period = YEAR
     default_value = 1
 
-class person_weight_country_adjusted(Variable):
+class person_weight(Variable):
     value_type = float
     entity = Person
     label = "Weight (region-adjusted)"
@@ -36,8 +36,8 @@ class person_weight_country_adjusted(Variable):
     def formula(person, period, parameters):
         nation = person.household("country", period)
         national_population = parameters(period).demographic.population_estimate[nation]
-        national_weight_sum = pd.Series(person("person_weight", period)).groupby(nation).sum()[nation]
-        return national_population / national_weight_sum
+        national_weight_sum = pd.Series(person("FRS_person_weight", period)).groupby(nation).sum()[nation]
+        return national_population / national_weight_sum * person("FRS_person_weight", period)
 
 
 class age(Variable):
