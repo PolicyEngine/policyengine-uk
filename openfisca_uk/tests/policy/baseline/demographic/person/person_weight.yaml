@@ -5,4 +5,4 @@
     FRS_person_weight: [1, 1, 1, 1]
     country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
   output:
-    person_weight: [56_000_000, 3_100_000, 5_400_000, 1_900_000]
+    person_weight: [56_640_000, 3_140_000, 5_440_000, 1_900_000]
