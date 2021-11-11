@@ -1,7 +1,20 @@
 description: Take-up rate of income-based JSA
 values:
-  2015-06-01:
-    value: 0.6
+  2009-04-06: 0.69
+  2012-04-06: 0.67
+  2013-04-06: 0.67
+  2014-04-06: 0.59
+  2015-04-06: 0.56
 metadata:
+  policyengine:
+    short_name: JSA_IB_takeup
+    title: Income-based Jobseeker's Allowance take-up rate
+    description: Share of eligible Income-based Jobseeker's Allowance recipients that participate
+    min: 0
+    max: 1
+    type: rate
+    summary: Change the rate to @
   unit: /1
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/645577/income-related-benefits-estimates-of-take-up-2015-16.pdf
+  reference: 
+    name: "Income-related benefits: estimates of take-up: financial year 2015/16 | Jobseeker's Allowance: tables | JSA1"
+    href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/645577/income-related-benefits-estimates-of-take-up-2015-16.pdf
