@@ -5,7 +5,9 @@ ENGLAND:
     interpolation:
       interval: month
   values:
-    2018-01-01: 56_000_000
+    2018-07-01: 55_977_178
+    2019-07-01: 56_286_961
+    2020-07-01: 56_550_138
     2023-01-01: 57_600_000
     2028-01-01: 58_800_000
     2033-01-01: 59_800_000
@@ -14,7 +16,9 @@ NORTHERN_IRELAND:
     interpolation:
       interval: month
   values:
-    2018-01-01: 1_900_000
+    2018-07-01: 1_881_641
+    2019-07-01: 1_893_667
+    2020-07-01: 1_895_510
     2023-01-01: 1_900_000
     2028-01-01: 2_000_000
     2033-01-01: 2_000_000
@@ -23,7 +27,9 @@ SCOTLAND:
     interpolation:
       interval: month
   values:
-    2018-01-01: 5_400_000
+    2018-07-01: 5_438_100
+    2019-07-01: 5_463_300
+    2020-07-01: 5_466_000
     2023-01-01: 5_500_000
     2028-01-01: 5_500_000
     2033-01-01: 5_600_000
@@ -32,7 +38,15 @@ WALES:
     interpolation:
       interval: month
   values:
-    2018-01-01: 3_100_000
+    2018-07-01: 3_138_631
+    2019-07-01: 3_152_879
+    2020-07-01: 3_169_586
     2023-01-01: 3_200_000
     2028-01-01: 3_200_000
     2033-01-01: 3_200_000
+metadata:
+  reference:
+    - title: StatsWales Population Estimates
+      href: https://statswales.gov.wales/catalogue/population-and-migration/population/estimates/nationallevelpopulationestimates-by-year-age-ukcountry
+    - title: ONS National Population Projections (2018-based)
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2018based

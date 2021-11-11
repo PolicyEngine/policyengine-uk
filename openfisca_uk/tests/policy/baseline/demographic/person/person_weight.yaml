@@ -1,6 +1,6 @@
 - name: Weight generation
   period: 2020
-  absolute_error_margin: 0
+  absolute_error_margin: 1.e+6
   input:
     raw_person_weight: [1, 1, 1, 1]
     country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
