@@ -61,6 +61,7 @@ class in_deep_poverty_ahc(Variable):
             / 2
         )
 
+
 @uprated(by="CPI")
 class poverty_line_bhc(Variable):
     value_type = float
