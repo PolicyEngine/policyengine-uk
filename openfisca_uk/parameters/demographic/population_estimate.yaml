@@ -1,0 +1,38 @@
+description: Population estimates for UK nations
+# Metadata required for each country parameter
+ENGLAND:
+  metadata:
+    interpolation:
+      interval: month
+  values:
+    2018-01-01: 56_000_000
+    2023-01-01: 57_600_000
+    2028-01-01: 58_800_000
+    2033-01-01: 59_800_000
+NORTHERN_IRELAND:
+  metadata:
+    interpolation:
+      interval: month
+  values:
+    2018-01-01: 1_900_000
+    2023-01-01: 1_900_000
+    2028-01-01: 2_000_000
+    2033-01-01: 2_000_000
+SCOTLAND:
+  metadata:
+    interpolation:
+      interval: month
+  values:
+    2018-01-01: 5_400_000
+    2023-01-01: 5_500_000
+    2028-01-01: 5_500_000
+    2033-01-01: 5_600_000
+WALES:
+  metadata:
+    interpolation:
+      interval: month
+  values:
+    2018-01-01: 3_100_000
+    2023-01-01: 3_200_000
+    2028-01-01: 3_200_000
+    2033-01-01: 3_200_000

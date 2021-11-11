@@ -43,7 +43,7 @@ class Country(Enum):
     SCOTLAND = u"Scotland"
     ENGLAND = u"England"
     WALES = u"Wales"
-    NI = u"Northern Ireland"
+    NORTHERN_IRELAND = u"Northern Ireland"
 
 
 class country(Variable):
@@ -65,7 +65,7 @@ class country(Variable):
                 Country.UNKNOWN,
                 Country.SCOTLAND,
                 Country.WALES,
-                Country.NI,
+                Country.NORTHERN_IRELAND,
                 Country.ENGLAND,
             ],
         )

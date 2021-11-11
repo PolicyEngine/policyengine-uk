@@ -6,9 +6,11 @@ income_tax:
 employee_NI: tscee_s
 self_employed_NI:
   ukmod: tscse_s
-  max_rel_error: 0.1
+  max_rel_error: 0.15
   max_mean_rel_error: 0.07
-employer_NI: tscer_s
+employer_NI:
+  ukmod: tscer_s
+  max_rel_error: 0.15
 child_benefit: bch_s
 working_tax_credit: 
   ukmod: bwkmt_s
