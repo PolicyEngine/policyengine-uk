@@ -18,7 +18,7 @@ class people(Variable):
     default_value = 1
 
 
-class FRS_person_weight(Variable):
+class raw_person_weight(Variable):
     value_type = float
     entity = Person
     label = "Weight factor"
@@ -36,7 +36,7 @@ class person_weight(Variable):
 
     def formula(person, period, parameters):
         nation = person.household("country", period)
-        frs_person_weight = person("FRS_person_weight", period)
+        frs_person_weight = person("raw_person_weight", period)
         national_population = parameters(
             period
         ).demographic.population_estimate[nation]
