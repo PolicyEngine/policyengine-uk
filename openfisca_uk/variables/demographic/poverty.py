@@ -62,7 +62,6 @@ class in_deep_poverty_ahc(Variable):
         )
 
 
-@uprated(by="CPI")
 class poverty_line_bhc(Variable):
     value_type = float
     entity = Household
@@ -77,7 +76,6 @@ class poverty_line_bhc(Variable):
         )
 
 
-@uprated(by="CPI")
 class poverty_line_ahc(Variable):
     value_type = float
     entity = Household
