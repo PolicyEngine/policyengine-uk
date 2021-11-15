@@ -4,7 +4,10 @@ import os
 from openfisca_uk import entities
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
-from openfisca_tools.parameters import interpolate_parameters, uprate_parameters
+from openfisca_tools.parameters import (
+    interpolate_parameters,
+    uprate_parameters,
+)
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
