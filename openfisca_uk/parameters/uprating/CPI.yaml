@@ -1,5 +1,10 @@
 description: Harmonised CPI index
 values:
+  2010-01-01: 90.1
+  2011-01-01: 93.6
+  2012-01-01: 96.0
+  2013-01-01: 98.4
+  2014-01-01: 99.6
   2015-01-01: 100.00
   2018-01-01: 106.40
   2019-01-01: 108.20
@@ -13,4 +18,8 @@ values:
   2024-01-01: 117.11
 metadata:
   unit: currency-GBP
-  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109
+  reference: 
+    - title: ONS
+      href: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23
+    - title: UKMOD Country Report
+      href: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109
