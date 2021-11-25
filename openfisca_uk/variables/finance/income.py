@@ -99,7 +99,11 @@ class net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("gross_income", period) - person("tax", period)
+        income = person("gross_income", period) - person("tax", period)
+        ct_payment = person("is_household_head", period) * person.household(
+            "council_tax", period
+        )
+        return income - ct_payment
 
 
 class hours_worked(Variable):
@@ -193,11 +197,7 @@ class household_net_income(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return max_(
-            0,
-            aggr(household, period, ["net_income"])
-            - household("council_tax", period),
-        )
+        return max_(0, aggr(household, period, ["net_income"]))
 
 
 class household_net_income_ahc(Variable):
