@@ -58,6 +58,8 @@ class state_pension(Variable):
     entity = Person
     label = u"Income from the State Pension"
     definition_period = YEAR
+    unit = "currency-GBP"
+    documentation = "Gross State Pension payments"
 
     def formula(person, period, parameters):
         return person("state_pension_reported", period)

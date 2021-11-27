@@ -23,12 +23,7 @@ class benunit_rent(Variable):
     label = u"Rent"
     documentation = "Gross rent that members of this family are liable for"
     definition_period = YEAR
-    metadata = dict(
-        policyengine=dict(
-            default=0,
-            max=20000,
-        )
-    )
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         return benunit.sum(benunit.members("personal_rent", period))

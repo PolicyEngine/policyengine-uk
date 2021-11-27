@@ -22,7 +22,7 @@ class would_claim_IS(Variable):
     def formula(benunit, period, parameters):
         return (
             random(benunit) <= parameters(period).benefit.income_support.takeup
-        )
+        ) + benunit("claims_all_entitled_benefits", period)
 
 
 class claims_IS(Variable):

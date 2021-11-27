@@ -54,21 +54,6 @@ class age(Variable):
     unit = "year"
     documentation = "The age of the person in years"
     definition_period = YEAR
-    metadata = dict(
-        policyengine=dict(
-            type="amount",
-            roles=dict(
-                adult=dict(
-                    default=18,
-                    max=100,
-                ),
-                child=dict(
-                    default=10,
-                    max=18,
-                ),
-            ),
-        )
-    )
 
     def formula(person, period, parameters):
         return where(person.benunit.members_role == BenUnit.ADULT, 18, 10)

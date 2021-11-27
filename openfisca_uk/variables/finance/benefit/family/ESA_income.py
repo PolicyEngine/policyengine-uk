@@ -12,11 +12,16 @@ class ESA_income_reported(Variable):
 class would_claim_ESA_income(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim ESA (income)"
+    label = u"Would claim income-based ESA"
+    documentation = "Whether this family would claim income-based Employment Support Allowance if eligible"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["ESA_income_reported"]) > 0
+        return (
+            aggr(benunit, period, ["ESA_income_reported"])
+            + benunit("claims_all_entitled_benefits", period)
+            > 0
+        )
 
 
 class ESA_income_eligible(Variable):

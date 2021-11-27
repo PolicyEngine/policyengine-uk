@@ -6,17 +6,11 @@ from openfisca_uk.variables.demographic.household import TenureType
 class claims_UC(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Claims UC"
+    label = "Would claim UC"
     documentation = (
         "Whether this family would claim Universal Credit if eligible"
     )
     definition_period = YEAR
-    metadata = dict(
-        policyengine=dict(
-            type="bool",
-            default=True,
-        )
-    )
 
     def formula(benunit, period, parameters):
         WTC = benunit("would_claim_WTC", period) & benunit(
@@ -318,16 +312,6 @@ class limited_capability_for_WRA(Variable):
     label = "Assessed to have limited capability for work-related activity"
     documentation = """Whether this person has been assessed by the DWP as having limited capability for work or work-related activity"""
     definition_period = YEAR
-    metadata = dict(
-        policyengine=dict(
-            default=False,
-            roles=dict(
-                child=dict(
-                    hidden=True,
-                )
-            ),
-        )
-    )
 
     def formula(person, period, parameters):
         return person("is_disabled_for_benefits", period)
@@ -592,11 +576,6 @@ class is_in_startup_period(Variable):
     )
     definition_period = YEAR
     default_value = False
-    metadata = dict(
-        policyengine=dict(
-            default=False,
-        )
-    )
 
 
 class UC_minimum_income_floor(Variable):
