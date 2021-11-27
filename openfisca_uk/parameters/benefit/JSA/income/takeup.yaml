@@ -1,4 +1,4 @@
-description: Take-up rate of income-based JSA
+description: Share of eligible Income-based Jobseeker's Allowance recipients that participate
 values:
   2009-04-06: 0.69
   2012-04-06: 0.67
@@ -6,14 +6,8 @@ values:
   2014-04-06: 0.59
   2015-04-06: 0.56
 metadata:
-  policyengine:
-    short_name: JSA_IB_takeup
-    title: Income-based Jobseeker's Allowance take-up rate
-    description: Share of eligible Income-based Jobseeker's Allowance recipients that participate
-    min: 0
-    max: 1
-    type: rate
-    summary: Change the rate to @
+  label: Income-based JSA take-up rate
+  name: JSA_income_takeup
   unit: /1
   reference: 
     name: "Income-related benefits: estimates of take-up: financial year 2015/16 | Jobseeker's Allowance: tables | JSA1"

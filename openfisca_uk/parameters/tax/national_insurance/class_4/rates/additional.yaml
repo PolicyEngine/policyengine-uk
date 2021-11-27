@@ -1,14 +1,8 @@
-description: Additional contribution rate by self-employed earners
+description: The additional rate paid above the Upper Profits Limit for self-employed profits
 values:
   2015-06-01: 0.02
 metadata:
-  policyengine:
-    short_name: NI_class_4_add_rate
-    title: NI Class 4 additional rate
-    description: The additional rate paid above the Upper Profits Limit.
-    min: 0
-    max: 1
-    type: rate
-    summary: Change the rate to @
-  unit: marginal-rate
+  label: NI Class 4 additional rate
+  name: NI_class_4_add_rate
+  unit: /1
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

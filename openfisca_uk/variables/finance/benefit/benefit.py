@@ -65,6 +65,8 @@ class benefits(Variable):
     value_type = float
     entity = Person
     label = u"Total benefits"
+    documentation = "Total state benefits"
+    unit = "currency-GBP"
     definition_period = YEAR
 
     def formula(person, period, parameters):

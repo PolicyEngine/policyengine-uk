@@ -1,61 +1,49 @@
 description: Standard allowance
 SINGLE_YOUNG:
+  description: Standard allowance for single claimants under 25
   values:
     2015-06-01: 251.77
     2020-04-06: 344.00  # From gov.uk and entitledto
     2021-10-06: 257.33
   metadata:
-    policyengine:
-      short_name: UC_single_young
-      title: UC single amount (under 25)
-      description: Standard allowance for single claimants under 25.
-      min: 0
-      max: 1000
-      type: monthly
-      summary: Change the standard allowance (single, under 25) to @
+    label: UC single amount (under 25)
+    name: UC_single_young
+    unit: currency-GBP
+    period: month
 SINGLE_OLD:
+  description: Standard allowance for single claimants over 25
   values:
     2015-06-01: 317.82
     2020-04-06: 411.51  # From gov.uk and entitledto
     2021-10-06: 324.84
   metadata:
-    policyengine:
-      short_name: UC_single_old
-      title: UC single amount (over 25)
-      description: Standard allowance for single claimants over 25.
-      min: 0
-      max: 1000
-      type: monthly
-      summary: Change the standard allowance (single, over 25) to @
+    label: UC single amount (over 25)
+    name: UC_single_old
+    unit: currency-GBP
+    period: month
 COUPLE_YOUNG:
+  description: Standard allowance for couples where both are under 25
   values:
     2015-06-01: 395.20
     2020-04-06: 490.60  # From gov.uk and entitledto
     2021-10-06: 403.93
   metadata:
-    policyengine:
-      short_name: UC_couple_young
-      title: UC couple amount (both under 25)
-      description: Standard allowance for couples where both are under 25.
-      min: 0
-      max: 1000
-      type: monthly
-      summary: Change the standard allowance (couple, both under 25) to @
+    label: UC couple amount (both under 25)
+    name: UC_couple_young
+    unit: currency-GBP
+    period: month
 COUPLE_OLD:
+  description: Standard allowance for couples where one is over 25
   values:
     2013-04-29: 489.06
     2015-06-01: 498.89
     2020-04-06: 596.58  # From gov.uk/entitledto
     2021-10-06: 509.91
   metadata:
-    policyengine:
-      short_name: UC_couple_old
-      title: UC couple amount (one over 25)
-      description: Standard allowance for couples where one is over 25.
-      min: 0
-      max: 1000
-      type: monthly
-      summary: Change the standard allowance (couple, one over 25) to @
+    label: UC couple amount (one over 25)
+    name: UC_couple_old
+    unit: currency-GBP
+    period: month
 metadata:
   unit: currency-GBP
   reference: 

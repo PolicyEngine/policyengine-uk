@@ -1,77 +1,63 @@
 description: Income tax scale
 brackets:
   - rate:
+      description: The basic rate is the first of three tax brackets on all income, after allowances are deducted.
       values:
         2015-06-01: 0.2
       metadata:
-        policyengine:
-          short_name: basic_rate
-          title: Basic rate
-          description: The basic rate is the first of three tax brackets on all income, after allowances are deducted.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the basic rate to @
+        label: Basic rate
+        name: basic_rate
+        unit: /1
     threshold:
-      2015-06-05: 0
+      description: The starting threshold for the basic rate, after allowances.
+      values:
+        2015-06-05: 0
   - rate:
+      description: The higher rate is the middle tax bracket on earned income.
       values:
         2015-06-05: 0.4
       metadata:
-        policyengine:
-          short_name: higher_rate
-          title: Higher rate
-          description: The higher rate is the middle tax bracket.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the higher rate to @
+        label: Higher rate
+        name: higher_rate
+        unit: /1
     threshold:
+      description: The lower threshold for the higher rate of income tax (and therefore the upper threshold of the basic rate).
       values:
-        2015-06-05: 32000
-        2017-06-01: 33500
-        2018-06-01: 34500
-        2019-06-01: 37500
-        2020-06-01: 37500
-        2021-06-01: 37700
+        2015-06-05: 32_000.00
+        2017-06-01: 33_500.00
+        2018-06-01: 34_500.00
+        2019-06-01: 37_500.00
+        2020-06-01: 37_500.00
+        2021-06-01: 37_700.00
       metadata:
-        policyengine:
-          short_name: higher_threshold
-          title: Higher rate threshold
-          description: The lower threshold for the higher rate of income tax (and therefore the upper threshold of the basic rate).
-          min: 0
-          max: 200000
-          type: yearly
-          summary: Change the higher threshold to @
+        label: Higher rate threshold
+        name: higher_threshold
+        unit: currency-GBP
+        period: year
   - rate:
+      description: The additional rate is the highest tax bracket, with no upper bound.
       values:
         2015-06-05: 0.45
       metadata:
-        policyengine:
-          short_name: add_rate
-          title: Additional rate
-          description: The additional rate is the highest tax bracket, with no upper bound.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the additional rate to @
+        label: Additional rate
+        name: add_rate
+        unit: /1
         tests:
           - decreases_net_income: true
     threshold:
+      description: The lower threshold for the additional rate.
       values:
-        2015-06-05: 150000
+        2015-06-05: 150000.00
       metadata:
-        policyengine:
-          short_name: add_threshold
-          title: Additional rate threshold
-          description: The lower threshold for the additional rate.
-          min: 0
-          max: 1000000
-          type: yearly
-          summary: Change the additional threshold to @
+        label: Additional rate threshold
+        name: add_threshold
+        unit: currency-GBP
+        period: year
 metadata:
   period: year
   type: marginal_rate
   threshold_unit: currency-GBP
   rate_unit: /1
-  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+  reference: 
+    - title: GOV.UK - Historical Income Tax rates and thresholds
+      href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

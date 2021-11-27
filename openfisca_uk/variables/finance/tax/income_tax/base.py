@@ -20,6 +20,7 @@ class employment_income(Variable):
     label = u"Employment income"
     documentation = "Total income from employment"
     definition_period = YEAR
+    unit = "currency-GBP"
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
     metadata = dict(
         policyengine=dict(

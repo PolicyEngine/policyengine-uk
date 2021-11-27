@@ -204,3 +204,24 @@ class household_equivalisation_ahc(Variable):
             + 0.2 * num_young_children
         )
         return weighting
+
+class household_num_people(Variable):
+    value_type = int
+    entity = Household
+    label = u'Number of people'
+    definition_period = YEAR
+    unit = "person"
+
+    def formula(household, period, parameters):
+        return household.nb_persons()
+
+class household_num_benunits(Variable):
+    value_type = int
+    entity = Household
+    label = u'Number of benefit units'
+    definition_period = YEAR
+    unit = "benefit unit"
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("is_benunit_head", period))
+

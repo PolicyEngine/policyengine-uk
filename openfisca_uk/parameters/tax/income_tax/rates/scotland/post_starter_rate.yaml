@@ -1,124 +1,94 @@
 description: Income tax scale for Scotland
 brackets:
   - rate:
+      description: The starter rate applies in Scotland and is the first Income Tax rate.
       values:
         2018-06-01: 0.19
       metadata:
-        policyengine:
-          short_name: scottish_starter_rate
-          title: Scottish starter rate
-          description: The starter rate applies in Scotland and is the first Income Tax rate.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the Scottish starter rate to @
+        label: Scottish starter rate
+        name: scottish_starter_rate
+        unit: /1
     threshold:
       2018-06-01: 0
   - rate:
+      description: The Scottish basic rate is similar to the UK basic rate, but operates over a smaller region of income.
       values:
         2018-06-01: 0.2
       metadata:
-        policyengine:
-          short_name: scottish_basic_rate
-          title: Scottish basic rate
-          description: The Scottish basic rate is similar to the UK basic rate, but operates over a smaller region of income.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the Scottish basic rate to @
+        label: Scottish basic rate
+        name: scottish_basic_rate
+        unit: /1
     threshold:
+      description: The threshold at which an individual pays the basic rate.
       values:
         2018-06-01: 2000
         2019-06-01: 2049
         2020-06-01: 2085
       metadata:
-        policyengine:
-          short_name: scottish_basic_threshold
-          title: Scottish basic rate threshold
-          description: The threshold at which an individual pays the basic rate.
-          min: 0
-          max: 200000
-          type: yearly
-          summary: Change the Scottish basic rate threshold to @
+        label: Scottish basic rate threshold
+        name: scottish_basic_threshold
+        unit: currency-GBP
+        period: year
   - rate:
+      description: The third rate in Scottish Income Tax.
       values:
         2018-06-01: 0.21
       metadata:
-        policyengine:
-          short_name: scottish_intermediate_rate
-          title: Scottish intermediate rate
-          description: The third rate in Scottish Income Tax.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the Scottish intermediate rate to @
+        label: Scottish intermediate rate
+        name: scottish_intermediate_rate
+        unit: /1
     threshold:
+      description: The threshold at which an individual pays the Scottish intermediate rate.
       values:
         2018-06-01: 12150
         2020-06-01: 12444
         2021-06-01: 12658
       metadata:
-        policyengine:
-          short_name: scottish_intermediate_threshold
-          title: Scottish intermediate rate threshold
-          description: The threshold at which an individual pays the Scottish intermediate rate.
-          min: 0
-          max: 200000
-          type: yearly
-          summary: Change the Scottish intermediate rate threshold to @
+        label: Scottish intermediate rate threshold
+        name: scottish_intermediate_threshold
+        unit: currency-GBP
+        period: year
   - rate:
+      description: The fourth rate in Scottish Income Tax.
       values:
         2018-06-01: 0.4
       metadata:
-        policyengine:
-          short_name: scottish_higher_rate
-          title: Scottish higher rate
-          description: The fourth rate in Scottish Income Tax.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the Scottish higher rate to @
+        label: Scottish higher rate
+        name: scottish_higher_rate
+        unit: /1
     threshold:
+      description: The threshold at which an individual pays the Scottish higher rate.
       values:
         2018-06-01: 31580
         2019-06-01: 30930
         2020-06-01: 30930
       metadata:
-        policyengine:
-          short_name: scottish_higher_threshold
-          title: Scottish higher rate threshold
-          description: The threshold at which an individual pays the Scottish higher rate rate.
-          min: 0
-          max: 200000
-          type: yearly
-          summary: Change the Scottish higher rate threshold to @
+        label: Scottish higher rate threshold
+        name: scottish_higher_threshold
+        unit: currency-GBP
+        period: year
   - rate:
+      description: The fifth and final rate in Scottish Income Tax.
       values:
         2018-06-01: 0.46
       metadata:
-        policyengine:
-          short_name: scottish_add_rate
-          title: Scottish additional rate
-          description: The fifth and final rate in Scottish Income Tax.
-          min: 0
-          max: 1
-          type: rate
-          summary: Change the Scottish additional rate to @
+        label: Scottish additional rate
+        name: scottish_additional_rate
+        unit: /1
     threshold:
+      description: The threshold at which an individual pays the Scottish additional rate.
       values:
         2018-06-01: 150000
       metadata:
-        policyengine:
-          short_name: scottish_add_threshold
-          title: Scottish additional rate threshold
-          description: The threshold at which an individual pays the Scottish additional rate rate.
-          min: 0
-          max: 200000
-          type: yearly
-          summary: Change the Scottish additional rate threshold to @
+        label: Scottish additional rate threshold
+        name: scottish_add_threshold
+        unit: currency-GBP
+        period: year
 metadata:
   period: year
   type: marginal_rate
   threshold_unit: currency-GBP
   rate_unit: /1
-  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+  reference: 
+    - title: GOV.UK - Historical Income Tax rates and thresholds
+      href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

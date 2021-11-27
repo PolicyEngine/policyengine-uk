@@ -96,6 +96,8 @@ class net_income(Variable):
     value_type = float
     entity = Person
     label = u"Net income"
+    documentation = "Market income, minus taxes, plus benefits"
+    unit = "currency-GBP"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -194,6 +196,8 @@ class household_net_income(Variable):
     value_type = float
     entity = Household
     label = u"Household net income"
+    documentation = "Disposable income for the household"
+    unit = "currency-GBP"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -300,3 +304,14 @@ class minimum_wage(Variable):
     def formula(person, period, parameters):
         MW = parameters(period).law.minimum_wage
         return MW[person("minimum_wage_category", period)]
+
+class household_market_income(Variable):
+    value_type = float
+    entity = Household
+    label = u'Household market income'
+    documentation = "Market income for the household"
+    definition_period = YEAR
+    unit = 'currency-GBP'
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("market_income", period))

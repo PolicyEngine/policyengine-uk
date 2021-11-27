@@ -1,14 +1,8 @@
-description: Main contribution rate by self-employed earners
+description: The main rate paid between the Lower and Upper Profits Limits for self-employed profits
 values:
   2015-06-01: 0.09
 metadata:
-  policyengine:
-    short_name: NI_class_4_main_rate
-    title: NI Class 4 main rate
-    description: The main rate paid between the Lower and Upper Profits Limits.
-    min: 0
-    max: 1
-    type: rate
-    summary: Change the rate to @
-  unit: marginal-rate
+  label: NI Class 4 main rate
+  name: NI_class_4_main_rate
+  unit: /1
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
