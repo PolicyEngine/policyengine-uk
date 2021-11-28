@@ -25,7 +25,7 @@ class household_tax(Variable):
 
     def formula(household, period, parameters):
         personal_taxes = aggr(household, period, ["tax"])
-        return max_(0, personal_taxes + household("council_tax", period))
+        return personal_taxes + household("council_tax", period)
 
 
 class benunit_tax(Variable):

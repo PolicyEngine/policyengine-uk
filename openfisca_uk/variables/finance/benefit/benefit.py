@@ -83,7 +83,7 @@ class household_benefits(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return max_(0, household.sum(household.members("benefits", period)))
+        return household.sum(household.members("benefits", period))
 
 
 class other_benefits(Variable):
