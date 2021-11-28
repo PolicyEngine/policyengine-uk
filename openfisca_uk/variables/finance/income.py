@@ -206,8 +206,6 @@ class household_net_income(Variable):
         gross_income = household("household_gross_income", period)
         tax = household("household_tax", period)
         return gross_income - tax
-            "household_tax", period
-        )
 
 
 class household_net_income_ahc(Variable):
