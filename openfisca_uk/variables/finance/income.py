@@ -92,6 +92,17 @@ class gross_income(Variable):
         return add(person, period, COMPONENTS)
 
 
+class household_gross_income(Variable):
+    value_type = float
+    entity = Household
+    unit = "currency-GBP"
+    label = u"Household gross income"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("gross_income", period))
+
+
 class net_income(Variable):
     value_type = float
     entity = Person
@@ -192,7 +203,9 @@ class household_net_income(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return max_(0, aggr(household, period, ["net_income"]))
+        gross_income = household("household_gross_income", period)
+        tax = household("household_tax", period)
+        return gross_income - tax
 
 
 class household_net_income_ahc(Variable):

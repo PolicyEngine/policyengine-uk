@@ -3,7 +3,7 @@
   absolute_error_margin: 40
   input:
     age: 35
-    net_income: 0
+    household_net_income: 0
     is_household_head: true
   output:
     poverty_gap_bhc: 202 * 52
