@@ -9,8 +9,16 @@ class tax(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("income_tax", period) + person(
-            "national_insurance", period
+        ct_payment = person("is_household_head", period) * person.household(
+            "council_tax", period
+        )
+        return (
+            add(
+                person,
+                period,
+                ["income_tax", "national_insurance"],
+            )
+            + ct_payment
         )
 
 
