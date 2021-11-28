@@ -101,8 +101,7 @@ class net_income(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        income = person("gross_income", period) - person("tax", period)
-        return income
+        return person("gross_income", period) - person("tax", period)
 
 
 class hours_worked(Variable):
