@@ -17,7 +17,6 @@ class would_claim_IS(Variable):
         "Whether this family would claim Income Support if eligible"
     )
     definition_period = YEAR
-    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         return (

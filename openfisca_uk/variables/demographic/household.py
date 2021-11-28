@@ -96,11 +96,6 @@ class region(Variable):
     label = u"Region"
     documentation = "Area of the UK"
     definition_period = ETERNITY
-    metadata = dict(
-        policyengine=dict(
-            type="category",
-        )
-    )
 
 
 class TenureType(Enum):
