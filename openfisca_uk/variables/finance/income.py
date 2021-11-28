@@ -192,7 +192,7 @@ class household_net_income(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return max_(0, aggr(household, period, ["net_income"]))
+        return aggr(household, period, ["net_income"])
 
 
 class household_net_income_ahc(Variable):
