@@ -23,23 +23,25 @@ class housing_benefit_eligible(Variable):
 class would_claim_HB(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Claims Housing Benefit"
+    label = u"Would claim Housing Benefit"
     documentation = (
         "Whether this family would claim Housing Benefit if eligible"
     )
     definition_period = YEAR
-    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         return (
             random(benunit) < parameters(period).benefit.housing_benefit.takeup
-        )
+        ) | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_HB(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim Housing Benefit"
+    label = u"Would claim Housing Benefit"
+    documentation = (
+        "Whether this family would claim Housing Benefit if eligible"
+    )
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

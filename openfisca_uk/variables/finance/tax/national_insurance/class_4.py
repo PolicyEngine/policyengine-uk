@@ -53,10 +53,12 @@ class national_insurance(Variable):
     value_type = float
     entity = Person
     label = u"National Insurance"
+    documentation = "Total National Insurance contributions"
     definition_period = YEAR
+    unit = "currency-GBP"
     reference = "Social Security and Benefits Act 1992 s. 1(2)"
 
     def formula(person, period, parameters):
         CLASSES = ["employee_NI", "self_employed_NI"]
         total = add(person, period, CLASSES)
-        return total
+        return total * ~person("NI_exempt", period)

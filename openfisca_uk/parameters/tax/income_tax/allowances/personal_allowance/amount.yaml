@@ -1,4 +1,4 @@
-description: Personal Allowance for yearly income
+description: The Personal Allowance is deducted from general income
 values:
   2015-04-06:
     value: 10600
@@ -14,15 +14,9 @@ values:
   2021-04-06:
     value: 12570
 metadata:
-  policyengine:
-    short_name: personal_allowance
-    title: Personal Allowance
-    description: The personal allowance is deducted from general income.
-    min: 0
-    max: 25000
-    type: yearly
-    summary: Change the Personal Allowance to @
-  period: week
+  period: year
+  name: personal_allowance
+  label: Personal allowance
   unit: currency-GBP
   reference: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances
   tests:

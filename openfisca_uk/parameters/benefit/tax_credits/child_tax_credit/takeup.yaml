@@ -1,4 +1,4 @@
-description: Take-up rate of Child Tax Credit among eligible families
+description: Share of eligible Child Tax Credit recipients that participate
 values:
   2003-04-06: 0.79
   2004-04-06: 0.82
@@ -15,14 +15,7 @@ values:
   2015-04-06: 0.83
   2016-04-06: 0.83
 metadata:
-  policyengine:
-    short_name: CTC_takeup
-    title: Child Tax Credit take-up rate
-    description: Share of eligible Child Tax Credit recipients that participate
-    min: 0
-    max: 1
-    type: rate
-    summary: Change the rate to @
+  label: Child Tax Credit take-up rate
   unit: /1
   reference:
     name: "Child Benefit, Child Tax Credit and Working Tax Credit Take-up rates 2016 to 2017 | Table B.1B"

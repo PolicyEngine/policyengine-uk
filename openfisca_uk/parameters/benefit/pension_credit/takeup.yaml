@@ -1,4 +1,4 @@
-description: Take-up rate of Pension Credit
+description: Share of eligible Pension Credit recipients that participate
 values:
   2009-04-06: 0.61
   2012-04-06: 0.62
@@ -9,14 +9,8 @@ values:
   2017-04-06: 0.61
   2018-04-06: 0.63
 metadata:
-  policyengine:
-    short_name: PC_takeup
-    title: Pension Credit take-up rate
-    description: Share of eligible Pension Credit recipients that participate
-    min: 0
-    max: 1
-    type: rate
-    summary: Change the rate to @
+  label: Pension Credit take-up rate
+  name: PC_takeup
   unit: /1
   reference:
     name: "Pension Credit: tables 2018 to 2019, table PC1"

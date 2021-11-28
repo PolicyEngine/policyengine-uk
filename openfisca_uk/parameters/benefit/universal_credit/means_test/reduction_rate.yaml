@@ -6,14 +6,8 @@ values:
   # Autumn Budget and Spending Review 2021.
   2021-12-01: 0.55
 metadata:
-  policyengine:
-    short_name: UC_reduction_rate
-    title: UC reduction rate
-    description: Rate at which Universal Credit is reduced with earnings above the Work Allowance.
-    min: 0
-    max: 1
-    type: rate
-    summary: Change the rate to @
+  label: UC reduction rate
+  name: UC_reduction_rate
   unit: /1
   reference:
     - name: The Universal Credit Regulations 2013

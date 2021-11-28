@@ -11,6 +11,7 @@ class personal_allowance(Variable):
     value_type = float
     entity = Person
     label = u"Personal Allowance for the year"
+    unit = "currency-GBP"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 35"
 

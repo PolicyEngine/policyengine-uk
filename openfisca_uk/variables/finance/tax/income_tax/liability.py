@@ -517,8 +517,10 @@ class CB_HITC(Variable):
 class income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income Tax"
+    label = "Income Tax"
+    documentation = "Total Income Tax liability"
     definition_period = YEAR
+    unit = "currency-GBP"
     reference = "Income Tax Act 2007 s. 23"
 
     def formula(person, period, parameters):

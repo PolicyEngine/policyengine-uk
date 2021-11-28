@@ -1,4 +1,4 @@
-description: Take-up rate of Child Benefit for eligible families
+description: Share of eligible Child Benefit recipients that participate
 values:
   2006-04-06: 0.97
   2007-04-06: 0.97
@@ -14,14 +14,8 @@ values:
   2017-04-06: 0.93
   2018-04-06: 0.92
 metadata:
-  policyengine:
-    short_name: CB_takeup
-    title: Child Benefit take-up rate
-    description: Share of eligible Child Benefit recipients that participate
-    min: 0
-    max: 1
-    type: rate
-    summary: Change the rate to @
+  label: Child Benefit take-up rate
+  name: CB_takeup
   unit: /1
   reference:
     name: "Child Benefit Statistics: Annual Release, August 2020 Main Commentary | Table 3.1"

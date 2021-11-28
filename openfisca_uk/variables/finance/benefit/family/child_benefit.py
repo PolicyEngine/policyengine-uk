@@ -12,19 +12,20 @@ class child_benefit_reported(Variable):
 class claims_child_benefit(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Claims Child Benefit"
-    documentation = "Whether this benefit unit would claim Child Benefit"
-    definition_period = YEAR
-    metadata = dict(
-        policyengine=dict(
-            type="bool",
-            default=True,
-        )
+    label = u"Would claim Child Benefit"
+    documentation = (
+        "Whether this benefit unit would claim Child Benefit if eligible"
     )
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["child_benefit_reported"]) + (
-            random(benunit) <= parameters(period).benefit.child_benefit.takeup
+        return (
+            aggr(benunit, period, ["child_benefit_reported"])
+            + (
+                random(benunit)
+                <= parameters(period).benefit.child_benefit.takeup
+            )
+            + benunit("claims_all_entitled_benefits", period)
         )
 
 
