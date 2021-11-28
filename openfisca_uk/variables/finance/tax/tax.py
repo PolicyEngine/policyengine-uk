@@ -9,17 +9,23 @@ class tax(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        ct_payment = person("is_household_head", period) * person.household(
-            "council_tax", period
+        return add(
+            person,
+            period,
+            ["income_tax", "national_insurance"],
         )
-        return (
-            add(
-                person,
-                period,
-                ["income_tax", "national_insurance"],
-            )
-            + ct_payment
-        )
+
+
+class household_tax(Variable):
+    value_type = float
+    entity = Household
+    label = u"Total tax"
+    definition_period = YEAR
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        personal_taxes = aggr(household, period, ["tax"])
+        return max_(0, personal_taxes + household("council_tax", period))
 
 
 class benunit_tax(Variable):
