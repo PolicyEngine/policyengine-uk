@@ -32,7 +32,7 @@ class would_claim_HB(Variable):
     def formula(benunit, period, parameters):
         return (
             random(benunit) < parameters(period).benefit.housing_benefit.takeup
-        ) + benunit("claims_all_entitled_benefits", period)
+        ) | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_HB(Variable):
