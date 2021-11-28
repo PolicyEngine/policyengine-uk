@@ -12,7 +12,7 @@ class income_support_reported(Variable):
 class would_claim_IS(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Claims Income Support"
+    label = u"Would claim Income Support"
     documentation = (
         "Whether this family would claim Income Support if eligible"
     )
