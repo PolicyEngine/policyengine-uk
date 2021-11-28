@@ -75,6 +75,17 @@ class benefits(Variable):
         )
 
 
+class household_benefits(Variable):
+    value_type = float
+    entity = Household
+    label = u"Benefits"
+    definition_period = YEAR
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("benefits", period))
+
+
 class other_benefits(Variable):
     value_type = float
     entity = Person
