@@ -31,7 +31,6 @@ class is_married(Variable):
     label = "Married"
     documentation = "Whether the benefit unit adults are married to each other"
     definition_period = YEAR
-    metadata = dict(policyengine=dict(default=False))
 
 
 class FamilyType(Enum):

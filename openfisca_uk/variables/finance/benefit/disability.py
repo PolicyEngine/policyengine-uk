@@ -9,17 +9,6 @@ class is_disabled_for_benefits(Variable):
     documentation = "Whether this person is disabled for benefits purposes"
     definition_period = YEAR
     reference = "Child Tax Credit Regulations 2002 s. 8"
-    metadata = dict(
-        policyengine=dict(
-            hidden=True,
-            roles=dict(
-                child=dict(
-                    hidden=False,
-                    default=False,
-                )
-            ),
-        )
-    )
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
@@ -54,17 +43,6 @@ class is_severely_disabled_for_benefits(Variable):
     )
     definition_period = YEAR
     reference = "Child Tax Credit Regulations 2002 s. 8"
-    metadata = dict(
-        policyengine=dict(
-            hidden=True,
-            roles=dict(
-                child=dict(
-                    hidden=False,
-                    default=False,
-                )
-            ),
-        )
-    )
 
     def formula(person, period, parameters):
         benefit = parameters(period).benefit
