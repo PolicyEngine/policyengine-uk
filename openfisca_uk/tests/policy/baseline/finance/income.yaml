@@ -6,3 +6,11 @@
     tax: 50
   output:
     net_income: 350
+- name: Household net income can be negative
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    household_gross_income: 1
+    household_tax: 2
+  output:
+    household_net_income: -1
