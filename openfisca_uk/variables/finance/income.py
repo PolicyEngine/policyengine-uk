@@ -203,7 +203,9 @@ class household_net_income(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return household("household_gross_income", period) - household(
+        gross_income = household("household_gross_income", period)
+        tax = household("household_tax", period)
+        return gross_income - tax
             "household_tax", period
         )
 
