@@ -1,7 +1,6 @@
-description: Lower hours requirement
+description: Lower hours requirement for Working Tax Credit
 values:
-  2015-06-01:
-    value: 16
+  2015-06-01: 16
 metadata:
   period: week
   unit: currency-GBP

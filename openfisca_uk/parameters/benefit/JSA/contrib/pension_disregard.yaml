@@ -1,7 +1,6 @@
-description: Threshold in occupational and personal pensions, above which the contributory JSA amount is reduced
+description: Threshold in occupational and personal pensions, above which the contributory Jobseeker's Allowance amount is reduced
 values:
-  2015-06-01:
-    value: 50.00
+  2015-06-01: 50.00
 metadata:
   period: week
   unit: currency-GBP

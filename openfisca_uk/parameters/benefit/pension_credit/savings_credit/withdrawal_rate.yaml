@@ -1,7 +1,6 @@
 description: Reduction rate for Savings Credit over the threshold
 values:
-  2015-06-01:
-    value: 0.4
+  2015-06-01: 0.4
 metadata:
   period: week
   unit: /1

@@ -1,7 +1,6 @@
-description: Couple with children hours requirement
+description: Couple with children hours requirement for Working Tax Credit
 values:
-  2015-06-01:
-    value: 24
+  2015-06-01: 24
 metadata:
   period: week
   unit: currency-GBP

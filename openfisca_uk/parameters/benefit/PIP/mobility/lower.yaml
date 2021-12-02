@@ -1,7 +1,6 @@
-description: Lower rate of the mobility component of PIP
+description: Lower rate of the mobility component of Personal Independent Payment
 values:
-  2015-06-04:
-    value: 23.60
+  2015-06-04: 23.60
 metadata:
   unit: currency-GBP
   reference: https://www.gov.uk/pip/what-youll-get

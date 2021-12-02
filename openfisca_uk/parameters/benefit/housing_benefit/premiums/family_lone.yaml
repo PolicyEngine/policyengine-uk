@@ -1,7 +1,6 @@
 description: Family premium for Housing Benefit
 values:
-  2019-06-01:
-    value: 22.20
+  2019-06-01: 22.20
 metadata:
   period: week
   unit: currency-GBP

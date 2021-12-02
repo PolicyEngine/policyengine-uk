@@ -6,7 +6,7 @@ values:
   2014-04-06: 0.59
   2015-04-06: 0.56
 metadata:
-  label: Income-based JSA take-up rate
+  label: Income-based Jobseeker's Allowance take-up rate
   name: JSA_income_takeup
   unit: /1
   reference: 

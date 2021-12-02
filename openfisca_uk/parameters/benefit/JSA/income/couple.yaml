@@ -1,9 +1,7 @@
-description: Weekly contributory JSA for couples
+description: Weekly contributory Jobseeker's Allowance for couples
 values:
-  2015-06-01:
-    value: 57.90
-  2020-06-01:
-    value: 116.80
+  2015-06-01: 57.90
+  2020-06-01: 116.80
 metadata:
   period: week
   unit: currency-GBP

@@ -1,9 +1,7 @@
-description: Income-based JSA for persons aged 18-24
+description: Income-based Jobseeker's Allowance for persons aged 18-24
 values:
-  2015-06-01:
-    value: 57.90
-  2020-06-01:
-    value: 59.07
+  2015-06-01: 57.90
+  2020-06-01: 59.07
 metadata:
   period: week
   unit: currency-GBP

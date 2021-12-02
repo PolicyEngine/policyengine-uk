@@ -1,7 +1,6 @@
-description: Threshold for income for a couple, above which the income-based ESA amount is reduced
+description: Threshold for income for a couple, above which the income-based Employment and Support Allowance amount is reduced
 values:
-  2015-06-01:
-    value: 10.00
+  2015-06-01: 10.00
 metadata:
   period: week
   unit: currency-GBP

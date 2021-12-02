@@ -1,6 +1,5 @@
-description: Hours requirement for joint claimants
+description: Hours requirement for joint claimants of Jobseeker's Allowance
 values:
-  2015-06-01:
-    value: 24
+  2015-06-01: 24
 metadata:
   unit: hour

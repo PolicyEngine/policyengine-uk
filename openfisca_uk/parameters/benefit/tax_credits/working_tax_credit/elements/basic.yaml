@@ -1,12 +1,9 @@
 description: Working Tax Credit basic element
 values:
-  2019-04-06:
-    value: 1960
-  2020-04-06:
-    # NB: EUROMOD reports 2000. This is the gov.uk value.
-    value: 3040
-  2021-04-06:
-    value: 2005
+  2019-04-06: 1_960
+  # NB: EUROMOD reports 2_000 for 2020. This is the gov.uk value.
+  2020-04-06: 3_040
+  2021-04-06: 2_005
 metadata:
   period: year
   unit: currency-GBP

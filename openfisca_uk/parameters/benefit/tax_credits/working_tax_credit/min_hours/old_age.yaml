@@ -1,7 +1,6 @@
-description: Age for lower hours requirement
+description: Age for lower hours requirement for Working Tax Credit
 values:
-  2015-06-01:
-    value: 60
+  2015-06-01: 60
 metadata:
   period: week
   unit: currency-GBP

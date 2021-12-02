@@ -1,7 +1,6 @@
 description: Carer premium for one qualifying carer
 values:
-  2010-01-01:
-    value: 37.50
+  2010-01-01: 37.50
 metadata:
   period: week
   unit: currency-GBP

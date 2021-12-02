@@ -1,7 +1,6 @@
-description: Part day rate for Constant Attendance Allowance.
+description: Part day rate for Constant Attendance Allowance
 values:
-  2015-06-01:  # TODO: confirm start year.
-    value: 36.40
+  2015-06-01: 36.40
 metadata:
   period: week
   unit: currency-GBP

@@ -1,7 +1,6 @@
-description: Absolute poverty threshold for equivalised household net income, after housing costs.
+description: Absolute poverty threshold for equivalised household net income, after housing costs
 values:
-  2010-01-01:
-    value: 215.4
+  2010-01-01: 215.4
 metadata:
   period: week
   unit: currency-GBP
