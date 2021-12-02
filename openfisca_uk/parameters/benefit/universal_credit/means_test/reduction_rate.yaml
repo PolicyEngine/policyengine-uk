@@ -6,7 +6,7 @@ values:
   # Autumn Budget and Spending Review 2021.
   2021-12-01: 0.55
 metadata:
-  label: UC reduction rate
+  label: Universal Credit reduction rate
   name: UC_reduction_rate
   unit: /1
   reference:

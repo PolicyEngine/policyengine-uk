@@ -6,7 +6,7 @@ SINGLE_YOUNG:
     2020-04-06: 344.00  # From gov.uk and entitledto
     2021-10-06: 257.33
   metadata:
-    label: UC single amount (under 25)
+    label: Universal Credit single amount (under 25)
     name: UC_single_young
     unit: currency-GBP
     period: month
@@ -17,7 +17,7 @@ SINGLE_OLD:
     2020-04-06: 411.51  # From gov.uk and entitledto
     2021-10-06: 324.84
   metadata:
-    label: UC single amount (over 25)
+    label: Universal Credit single amount (over 25)
     name: UC_single_old
     unit: currency-GBP
     period: month
@@ -28,7 +28,7 @@ COUPLE_YOUNG:
     2020-04-06: 490.60  # From gov.uk and entitledto
     2021-10-06: 403.93
   metadata:
-    label: UC couple amount (both under 25)
+    label: Universal Credit couple amount (both under 25)
     name: UC_couple_young
     unit: currency-GBP
     period: month
@@ -40,7 +40,7 @@ COUPLE_OLD:
     2020-04-06: 596.58  # From gov.uk/entitledto
     2021-10-06: 509.91
   metadata:
-    label: UC couple amount (one over 25)
+    label: Universal Credit couple amount (one over 25)
     name: UC_couple_old
     unit: currency-GBP
     period: month
