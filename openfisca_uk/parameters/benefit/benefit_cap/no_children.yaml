@@ -1,7 +1,6 @@
 description: Benefit cap for benefit units without children outside of London
 values:
-  2013-08-12:
-    value: 257.69
+  2013-08-12: 257.69
 metadata:
   period: week
   unit: currency-GBP

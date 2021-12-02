@@ -1,7 +1,6 @@
 description: Working Tax Credit childcare element for two or more children
 values:
-  2016-04-06:
-    value: 210  # 300 * 70%
+  2016-04-06: 210  # 300 * 70%
 metadata:
   period: week
   unit: currency-GBP

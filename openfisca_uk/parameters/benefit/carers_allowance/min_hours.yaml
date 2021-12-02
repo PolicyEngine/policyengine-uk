@@ -1,7 +1,6 @@
-description: Minimum number of hours spent providing care
+description: Minimum number of hours spent providing care to qualify for Carer's Allowance
 values:
-  2010-06-01:
-    value: 35
+  2010-06-01: 35
 metadata:
   period: week
   unit: hour

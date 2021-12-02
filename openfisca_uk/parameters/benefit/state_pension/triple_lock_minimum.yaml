@@ -1,7 +1,6 @@
 description: Minimum increase in the State Pension
 values:
-  2015-06-01:
-    value: 0.025
+  2015-06-01: 0.025
 metadata:
   unit: /1
   reference:

@@ -1,12 +1,9 @@
 description: Working Tax Credit couple element
 values:
-  2016-04-06:
-    value: 2010
-  2020-04-06:
-    # NB: EUROMOD reports 2055. This is the uk.gov value.
-    value: 2045
-  2021-04-06:
-    value: 2060
+  2016-04-06: 2_010
+  # NB: EUROMOD reports 2_055 for 2020. This is the gov.uk value.
+  2020-04-06: 2_045
+  2021-04-06: 2_060
 metadata:
   period: year
   unit: currency-GBP

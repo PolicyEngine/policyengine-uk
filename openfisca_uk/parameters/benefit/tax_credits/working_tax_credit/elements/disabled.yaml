@@ -1,18 +1,12 @@
 description: Working Tax Credit disability element
 values:
-  2016-04-06:
-    value: 2970
-  2017-04-06:
-    value: 3000
-  2018-04-06:
-    value: 3090
-  2019-04-06:
-    value: 3165
-  2020-04-06:
-    # NB: EUROMOD reports 3230. This is the gov.uk value.
-    value: 3220
-  2021-04-06:
-    value: 3240
+  2016-04-06: 2_970
+  2017-04-06: 3_000
+  2018-04-06: 3_090
+  2019-04-06: 3_165
+  # NB: EUROMOD reports 3_230 for 2020. This is the gov.uk value.
+  2020-04-06: 3_220
+  2021-04-06: 3_240
 metadata:
   period: year
   unit: currency-GBP

@@ -1,12 +1,9 @@
 description: Income threshold for benefit units only entitled to Child Tax Credit
 values:
-  2016-04-06:
-    value: 16105
-  2020-04-06:
-    # NB: EUROMOD reports 16435. This is the gov.uk value.
-    value: 16385
-  2021-04-06:
-    value: 16480
+  2016-04-06: 16_105
+  # NB: EUROMOD reports 16_435 for 2020. This is the gov.uk value.
+  2020-04-06: 16_385
+  2021-04-06: 16_480
 metadata:
   period: year
   unit: currency-GBP

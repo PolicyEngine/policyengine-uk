@@ -1,7 +1,6 @@
 description: Personal allowance for Housing Benefit for a lone parent under 18
 values:
-  2015-06-01:
-    value: 57.90
+  2015-06-01: 57.90
 metadata:
   period: week
   unit: currency-GBP

@@ -1,7 +1,6 @@
 description: Proportion of eligible childcare costs covered by Working Tax Credit
 values:
-  2016-04-06:
-    value: 0.7
+  2016-04-06: 0.7
 metadata:
   period: week
   unit: /1

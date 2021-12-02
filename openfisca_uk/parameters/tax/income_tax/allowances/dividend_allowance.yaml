@@ -1,7 +1,6 @@
 description: Amount of self-employment income untaxed per year
 values:
-  2015-06-05:
-    value: 2000
+  2015-06-05: 2_000
 metadata:
   period: week
   unit: currency-GBP

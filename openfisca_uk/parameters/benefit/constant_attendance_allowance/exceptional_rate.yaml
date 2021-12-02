@@ -1,7 +1,6 @@
-description: Exceptional rate for Constant Attendance Allowance.
+description: Exceptional rate for Constant Attendance Allowance
 values:
-  2015-06-01:  # TODO: confirm start year.
-    value: 145.60
+  2015-06-01: 145.60
 metadata:
   period: week
   unit: currency-GBP

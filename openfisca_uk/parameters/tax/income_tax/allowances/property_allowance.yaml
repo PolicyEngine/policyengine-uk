@@ -1,7 +1,6 @@
 description: Amount of rental income untaxed per year
 values:
-  2005-06-01:
-    value: 1000
+  2005-06-01: 1_000
 metadata:
   period: week
   unit: currency-GBP

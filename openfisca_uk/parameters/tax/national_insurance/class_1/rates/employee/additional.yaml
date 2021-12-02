@@ -1,8 +1,8 @@
-description: The Class 1 NI additional rate is paid on employment earnings above the Upper Earnings Limit
+description: The Class 1 National Insurance additional rate is paid on employment earnings above the Upper Earnings Limit
 values:
   2015-06-01: 0.02
 metadata:
-  label: NI additional rate
+  label: National Insurance additional rate
   name: NI_add_rate
   unit: /1
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

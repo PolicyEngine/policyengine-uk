@@ -1,8 +1,8 @@
-description: The Class 1 NI main rate is paid on employment earnings between the Primary Threshold and the Upper Earnings Limit
+description: The Class 1 National Insurance main rate is paid on employment earnings between the Primary Threshold and the Upper Earnings Limit
 values:
   2015-06-01: 0.12
 metadata:
-  label: NI main rate
+  label: National Insurance main rate
   name: NI_main_rate
   unit: /1
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

@@ -1,7 +1,6 @@
 description: Disabled child premium for Housing Benefit
 values:
-  2019-06-01:
-    value: 64.19
+  2019-06-01: 64.19
 metadata:
   period: week
   unit: currency-GBP

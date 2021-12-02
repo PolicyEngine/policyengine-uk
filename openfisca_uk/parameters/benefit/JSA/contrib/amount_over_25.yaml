@@ -1,9 +1,7 @@
-description: Contributory JSA for persons aged over 25
+description: Contributory Jobseeker's Allowance for persons aged over 25
 values:
-  2015-06-01:
-    value: 73.10
-  2020-06-01:
-    value: 74.58
+  2015-06-01: 73.10
+  2020-06-01: 74.58
 metadata:
   period: week
   unit: currency-GBP

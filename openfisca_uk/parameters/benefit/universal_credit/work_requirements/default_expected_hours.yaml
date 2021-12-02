@@ -1,7 +1,6 @@
-description: Default expected hours worked per week
+description: Default expected hours worked per week for Universal Credit
 values:
-  2013-04-29:
-    value: 35
+  2013-04-29: 35
 metadata:
   unit: hour
   reference:

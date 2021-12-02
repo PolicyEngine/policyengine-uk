@@ -1,7 +1,6 @@
-description: Intermediate rate for Constant Attendance Allowance.
+description: Intermediate rate for Constant Attendance Allowance
 values:
-  2015-06-01:  # TODO: confirm start year.
-    value: 109.20
+  2015-06-01: 109.20
 metadata:
   period: week
   unit: currency-GBP
