@@ -1,7 +1,7 @@
-description: Income tax scale
+description: Income Tax scale
 brackets:
   - rate:
-      description: The basic rate is the first of three tax brackets on all income, after allowances are deducted.
+      description: The basic rate is the first of three tax brackets on all income, after allowances are deducted
       values:
         2015-06-01: 0.2
       metadata:
@@ -21,21 +21,21 @@ brackets:
         name: higher_rate
         unit: /1
     threshold:
-      description: The lower threshold for the higher rate of income tax (and therefore the upper threshold of the basic rate).
+      description: The lower threshold for the higher rate of income tax (and therefore the upper threshold of the basic rate)
       values:
-        2015-06-05: 32_000.00
-        2017-06-01: 33_500.00
-        2018-06-01: 34_500.00
-        2019-06-01: 37_500.00
-        2020-06-01: 37_500.00
-        2021-06-01: 37_700.00
+        2015-06-05: 32_000
+        2017-06-01: 33_500
+        2018-06-01: 34_500
+        2019-06-01: 37_500
+        2020-06-01: 37_500
+        2021-06-01: 37_700
       metadata:
         label: Higher rate threshold
         name: higher_threshold
         unit: currency-GBP
         period: year
   - rate:
-      description: The additional rate is the highest tax bracket, with no upper bound.
+      description: The additional rate is the highest tax bracket, with no upper bound
       values:
         2015-06-05: 0.45
       metadata:
@@ -45,9 +45,9 @@ brackets:
         tests:
           - decreases_net_income: true
     threshold:
-      description: The lower threshold for the additional rate.
+      description: The lower threshold for the additional rate
       values:
-        2015-06-05: 150000.00
+        2015-06-05: 150_000
       metadata:
         label: Additional rate threshold
         name: add_threshold

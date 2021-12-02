@@ -1,8 +1,7 @@
-description: Maximum adjusted net income before the PA is reduced.
+description: Maximum adjusted net income before the Personal Allowance is reduced
 values:
-  2009-07-21:  # Date legislation passed. Is this when it was enacted?
-    value: 100000
+  # Date legislation passed. Is this when it was enacted?
+  2009-07-21: 100_000
 metadata:
   unit: currency-GBP
-  reference: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances
-  
+  reference: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances  

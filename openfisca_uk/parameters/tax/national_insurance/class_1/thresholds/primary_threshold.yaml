@@ -1,4 +1,4 @@
-description: The Primary Threshold is the lower bound for the main rate of Class 1 NI
+description: The Primary Threshold is the lower bound for the main rate of Class 1 National Insurance
 values:
   2015-04-06: 155
   2016-04-06: 155
@@ -8,7 +8,7 @@ values:
   2020-04-06: 183
   2021-04-06: 184
 metadata:
-  label: NI Primary Threshold
+  label: National Insurance Primary Threshold
   name: NI_PT
   unit: currency-GBP
   period: week

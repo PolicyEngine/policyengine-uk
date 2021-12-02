@@ -7,7 +7,7 @@ values:
   2020-04-06: 9_500
   2021-04-06: 9_568
 metadata:
-  label: NI Lower Profits Limit
+  label: National Insurance Lower Profits Limit
   name: NI_LPL
   unit: currency-GBP
   period: year

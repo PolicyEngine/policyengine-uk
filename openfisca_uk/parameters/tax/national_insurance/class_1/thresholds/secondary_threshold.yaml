@@ -1,19 +1,12 @@
-description: Primary threshold for National Insurance
+description: Secondary threshold for National Insurance
 values:
-  2015-04-06:
-    value: 155
-  2016-04-06:
-    value: 155
-  2017-04-06:
-    value: 157
-  2018-04-06:
-    value: 162
-  2019-04-06:
-    value: 166
-  2020-04-06:
-    value: 169
-  2021-04-06:
-    value: 170
+  2015-04-06: 155
+  2016-04-06: 155
+  2017-04-06: 157
+  2018-04-06: 162
+  2019-04-06: 166
+  2020-04-06: 169
+  2021-04-06: 170
 metadata:
   unit: currency-GBP
   period: week

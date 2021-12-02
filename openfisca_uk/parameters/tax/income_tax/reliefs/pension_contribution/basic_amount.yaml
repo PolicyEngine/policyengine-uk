@@ -1,6 +1,6 @@
 description: The 'basic amount' - the maximum amount of tax relief from pension contributions
 values:
-  2004-07-22: 3600.00
+  2004-07-22: 3_600
 metadata:
   unit: currency-GBP
   reference: Finance Act 2004 s. 190(4)
