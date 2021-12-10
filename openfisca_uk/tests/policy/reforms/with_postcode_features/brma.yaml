@@ -1,6 +1,0 @@
-- name: BRMA from postcode sector
-  period: 2021
-  input:
-    postcode_sector: RH98
-  output:
-    BRMA: ASHFORD
