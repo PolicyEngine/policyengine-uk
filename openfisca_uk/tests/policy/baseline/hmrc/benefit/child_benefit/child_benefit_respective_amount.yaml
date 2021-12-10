@@ -1,0 +1,41 @@
+- name: Only child receives higher amount
+  period: 2022
+  input:
+    people:
+      child:
+        age: 12
+    benunits:
+      benunit:
+        children: [child]
+  output:
+    child_benefit_respective_amount: 1099.80
+
+- name: Eldest child receives higher amount, younger child receives lower amount
+  period: 2022
+  input:
+    people:
+      eldest:
+        age: 12
+      younger:
+        age: 11
+    benunits:
+      benunit:
+        children: [eldest, younger]
+  output:
+    child_benefit_respective_amount: [1099.80, 728.00]
+
+- name: Eldest child receives higher amount, all younger children receive lower amount
+  period: 2022
+  input:
+    people:
+      eldest:
+        age: 12
+      younger:
+        age: 11
+      youngest:
+        age: 10
+    benunits:
+      benunit:
+        children: [eldest, younger, youngest]
+  output:
+    child_benefit_respective_amount: [1099.80, 728.00, 728.00]

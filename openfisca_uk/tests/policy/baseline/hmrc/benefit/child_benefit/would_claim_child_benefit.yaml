@@ -1,0 +1,21 @@
+- name: Claims all entitled benefits overrides takeup
+  period: 2021
+  input:
+    claims_all_entitled_benefits: true
+    benunit_random_number: 1
+  output:
+    would_claim_child_benefit: true
+- name: Non-take-up imputed
+  period: 2021
+  input:
+    claims_all_entitled_benefits: false
+    benunit_random_number: 1
+  output:
+    would_claim_child_benefit: false
+- name: Take-up imputed
+  period: 2021
+  input:
+    claims_all_entitled_benefits: false
+    benunit_random_number: 0
+  output:
+    would_claim_child_benefit: true
