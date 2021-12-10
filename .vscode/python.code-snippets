@@ -16,40 +16,17 @@
 		 	"prefix": "var",
 		 	"body": [
 		 		"class ${1:name}(Variable):",
-				"	value_type = ${2:float}",
-				"	entity = ${3:Person}",
-				"	label = u'${4:label}'",
+				"	label = \"${2:Label}\"",
+				"	documentation = \"${3:Description}\"",
+				"	entity = ${4:Person}",
 				"	definition_period = ${5:YEAR}",
-				"	reference = \"${6:}\"",
+				"	value_type = ${6:float}",
+				"	unit = \"${7:currency-GBP}\"",
 				"",
 				""
 		 	],
 		 	"description": "Insert a new OpenFisca Variable, without a formula."
 		 },
-	"OpenFisca SPI Variable": {
-			"prefix": "spivar",
-			"body": [
-				"class ${1:name}(Variable):",
-			   "	value_type = float",
-			   "	entity = Person",
-			   "	definition_period = YEAR",
-			   "",
-			   ""
-			],
-			"description": "Insert a new SPI input variable."
-		},
-	"OpenFisca FRS Variable": {
-				"prefix": "frs",
-				"body": [
-					"class ${1:name}(Variable):",
-				   "	value_type = float",
-				   "	entity = Person",
-				   "	definition_period = WEEK",
-				   "",
-				   ""
-				],
-				"description": "Insert a new FRS input variable."
-			},
 	"OpenFisca Formula": {
 			"prefix": "form",
 			"body": [
@@ -61,9 +38,7 @@
 	"OpenFisca Variable File": {
 		"prefix": "file",
 		"body": [
-			"from openfisca_core.model_api import *",
-			"from openfisca_uk.entities import *",
-			"from openfisca_uk.tools.general import *"
+			"from openfisca_uk.model_api import *",
 		]
 	}
 }
