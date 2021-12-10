@@ -1,7 +1,6 @@
-description: Highest rate of the care component of DLA
+description: Highest rate of the care component of Disability Living Allowance
 values:
-  2015-06-04:
-    value: 89.15
+  2015-06-04: 89.15
 metadata:
   unit: currency-GBP
   reference: https://www.gov.uk/dla-disability-living-allowance-benefit/DLA-rates

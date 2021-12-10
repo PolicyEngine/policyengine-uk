@@ -1,0 +1,10 @@
+description: Unearned income sources for Universal Credit
+values:
+  2010-01-01:
+    - carers_allowance
+    - JSA_contrib
+    - pension_income
+    - savings_interest_income
+    - dividend_income
+metadata:
+  unit: list

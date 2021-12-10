@@ -1,7 +1,6 @@
 description: LHA maximum rate for accommodation in Maidstone, Kent
 values:
-  2015-06-01:
-    value: 123.57
+  2015-06-01: 123.57
 metadata:
   period: week
   unit: currency-GBP

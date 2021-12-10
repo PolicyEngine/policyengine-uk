@@ -1,4 +1,4 @@
-description: Child benefit amount for the eldest or only child
+description: Child Benefit amount for the eldest or only child
 values:
   2004-04-06: 16.50
   2005-04-06: 17.00
@@ -14,16 +14,10 @@ values:
     value: 21.05
   2021-04-06: 21.15
 metadata:
-  policyengine:
-    short_name: CB_eldest
-    title: Child Benefit (eldest)
-    description: Child Benefit amount for the eldest or only child.
-    min: 0
-    max: 50
-    type: weekly
-    summary: Change the Child Benefit for eldest/only children to @
-  period: week
+  label: Child Benefit (eldest)
+  name: CB_eldest
   unit: currency-GBP
+  period: week
   reference:
   - https://revenuebenefits.org.uk/child-benefit/guidance/how-much-can-your-client-get/rates-and-tables/
   - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

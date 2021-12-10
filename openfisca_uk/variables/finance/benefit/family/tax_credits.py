@@ -84,18 +84,17 @@ class is_CTC_eligible(Variable):
 class would_claim_CTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Claims Child Tax Credit"
+    label = u"Would claim Child Tax Credit"
     documentation = (
         "Whether this family would claim Child Tax Credit if eligible"
     )
     definition_period = YEAR
-    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         return (
             random(benunit)
             <= parameters(period).benefit.tax_credits.child_tax_credit.takeup
-        )
+        ) + benunit("claims_all_entitled_benefits", period)
 
 
 class claims_CTC(Variable):
@@ -258,12 +257,11 @@ class is_WTC_eligible(Variable):
 class would_claim_WTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Claims Working Tax Credit"
+    label = u"Would claim Working Tax Credit"
     documentation = (
         "Whether this family would claim Working Tax Credit if eligible"
     )
     definition_period = YEAR
-    metadata = dict(policyengine=dict(default=True))
 
     def formula(benunit, period, parameters):
         takeup_rate = parameters(
@@ -271,7 +269,7 @@ class would_claim_WTC(Variable):
         ).benefit.tax_credits.working_tax_credit.takeup
         return benunit("claims_legacy_benefits", period) & (
             random(benunit) < takeup_rate
-        )
+        ) | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_WTC(Variable):

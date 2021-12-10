@@ -4,6 +4,10 @@ import os
 from openfisca_uk import entities
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
+from openfisca_tools.parameters import (
+    interpolate_parameters,
+    uprate_parameters,
+)
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -23,6 +27,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         # We add to our tax and benefit system all the legislation parameters defined in the  parameters files
         param_path = os.path.join(COUNTRY_DIR, "parameters")
         self.load_parameters(param_path)
+
+        self.parameters = interpolate_parameters(self.parameters)
+        self.parameters = uprate_parameters(self.parameters)
 
         # We define which variable, parameter and simulation example will be used in the OpenAPI specification
         self.open_api_config = {

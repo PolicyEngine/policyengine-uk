@@ -1,7 +1,6 @@
 description: Personal allowance increase for a child for Housing Benefit
 values:
-  2015-06-01:
-    value: 66.90
+  2015-06-01: 66.90
 metadata:
   period: week
   unit: currency-GBP

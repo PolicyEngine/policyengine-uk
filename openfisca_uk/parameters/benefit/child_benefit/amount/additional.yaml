@@ -1,4 +1,4 @@
-description: Child benefit amount for additional children
+description: Child Benefit amount for each additional child
 values:
   2004-04-06: 11.05
   2005-04-06: 11.40
@@ -14,14 +14,8 @@ values:
     value: 13.95
   2021-04-06: 14.00
 metadata:
-  policyengine:
-    short_name: CB_additional
-    title: Child Benefit (additional)
-    description: Child Benefit amount for each additional child.
-    min: 0
-    max: 50
-    type: weekly
-    summary: Change the Child Benefit for additional children to @
+  label: Child Benefit (additional)
+  name: CB_additional
   period: week
   unit: currency-GBP
   reference:

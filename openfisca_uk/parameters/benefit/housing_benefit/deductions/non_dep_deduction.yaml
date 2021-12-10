@@ -1,4 +1,4 @@
-description: Non-dependent deduction for an individual
+description: Housing Benefit non-dependent deduction for an individual
 brackets:
   - amount:
       2018-06-18: 15.25

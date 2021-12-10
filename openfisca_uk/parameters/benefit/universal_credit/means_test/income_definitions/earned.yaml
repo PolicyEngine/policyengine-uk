@@ -1,0 +1,8 @@
+description: Earned income sources for Universal Credit
+values:
+  2010-01-01:
+    - employment_income
+    - self_employment_income
+    - miscellaneous_income
+metadata:
+  unit: list

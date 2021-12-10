@@ -221,13 +221,16 @@ class tax_band(Variable):
         scot = person("pays_scottish_income_tax", period)
         income = ANI - allowances
         uk_band = select(
-            [income < threshold for threshold in rates.uk.thresholds] + [True],
+            [income < threshold for threshold in rates.uk.thresholds[:3]]
+            + [True],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
         )
         scottish_band = select(
             [
                 income < threshold
-                for threshold in rates.scotland.post_starter_rate.thresholds
+                for threshold in rates.scotland.post_starter_rate.thresholds[
+                    :5
+                ]
             ]
             + [True],
             [
@@ -514,8 +517,10 @@ class CB_HITC(Variable):
 class income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income Tax"
+    label = "Income Tax"
+    documentation = "Total Income Tax liability"
     definition_period = YEAR
+    unit = "currency-GBP"
     reference = "Income Tax Act 2007 s. 23"
 
     def formula(person, period, parameters):

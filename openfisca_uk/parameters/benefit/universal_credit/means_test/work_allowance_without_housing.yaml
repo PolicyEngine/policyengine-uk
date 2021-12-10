@@ -6,21 +6,12 @@ values:
   2019-04-08: 503
   2020-04-06: 512
   2021-04-12: 515
-  # Autumn Budget and Spending Review 2021 increases work allowance by £50.
-  2021-12-01: 557
+  2021-11-24: 557
 metadata:
-  policyengine:
-    short_name: UC_work_allowance_without_housing
-    title: UC Work Allowance without housing support
-    description: Universal Credit Work Allowance if household does not receive housing support
-    min: 0
-    max: 1000
-    type: monthly
-    summary: Change the allowance to @
+  label: Universal Credit Work Allowance without housing support
+  name: UC_work_allowance_without_housing
   period: month
   unit: currency-GBP
   reference:
-  - name: The Universal Credit Regulations 2013
-    href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
-  - name: Autumn Budget and Spending Review 2021
-    href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1028813/Budget_AB2021_Print.pdf#page=138 
+    name: The Universal Credit Regulations 2013
+    href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22

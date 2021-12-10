@@ -1,7 +1,6 @@
 description: Additional disregard in income for meeting the 16/30 hours requirement
 values:
-  2015-06-01:
-    value: 30
+  2015-06-01: 30
 metadata:
   period: week
   unit: currency-GBP

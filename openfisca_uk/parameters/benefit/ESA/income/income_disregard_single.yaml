@@ -1,7 +1,6 @@
-description: Threshold for income for a single person, above which the income-based ESA amount is reduced
+description: Threshold for income for a single person, above which the income-based Employment and Support Allowance amount is reduced
 values:
-  2015-06-01:
-    value: 5.00
+  2015-06-01: 5.00
 metadata:
   period: week
   unit: currency-GBP

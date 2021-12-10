@@ -1,7 +1,6 @@
-description: Full day rate for Constant Attendance Allowance.
+description: Full day rate for Constant Attendance Allowance
 values:
-  2015-06-01:  # TODO: confirm start year.
-    value: 72.80
+  2015-06-01: 72.80
 metadata:
   period: week
   unit: currency-GBP

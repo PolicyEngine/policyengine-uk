@@ -43,7 +43,7 @@ class Country(Enum):
     SCOTLAND = u"Scotland"
     ENGLAND = u"England"
     WALES = u"Wales"
-    NI = u"Northern Ireland"
+    NORTHERN_IRELAND = u"Northern Ireland"
 
 
 class country(Variable):
@@ -65,7 +65,7 @@ class country(Variable):
                 Country.UNKNOWN,
                 Country.SCOTLAND,
                 Country.WALES,
-                Country.NI,
+                Country.NORTHERN_IRELAND,
                 Country.ENGLAND,
             ],
         )
@@ -96,11 +96,6 @@ class region(Variable):
     label = u"Region"
     documentation = "Area of the UK"
     definition_period = ETERNITY
-    metadata = dict(
-        policyengine=dict(
-            type="category",
-        )
-    )
 
 
 class TenureType(Enum):
@@ -204,3 +199,25 @@ class household_equivalisation_ahc(Variable):
             + 0.2 * num_young_children
         )
         return weighting
+
+
+class household_num_people(Variable):
+    value_type = int
+    entity = Household
+    label = u"Number of people"
+    definition_period = YEAR
+    unit = "person"
+
+    def formula(household, period, parameters):
+        return household.nb_persons()
+
+
+class household_num_benunits(Variable):
+    value_type = int
+    entity = Household
+    label = u"Number of benefit units"
+    definition_period = YEAR
+    unit = "benefit unit"
+
+    def formula(household, period, parameters):
+        return household.sum(household.members("is_benunit_head", period))

@@ -1,7 +1,6 @@
 description: Personal allowance for Housing Benefit for a single person over State Pension age
 values:
-  2015-06-01:
-    value: 181.00
+  2015-06-01: 181.00
 metadata:
   period: week
   unit: currency-GBP

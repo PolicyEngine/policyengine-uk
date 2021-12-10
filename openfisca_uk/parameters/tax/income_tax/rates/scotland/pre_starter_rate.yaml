@@ -1,4 +1,4 @@
-description: Income tax scale for Scotland
+description: Income Tax scale for Scotland
 brackets:
   - rate:
       2010-06-01: 0.2
@@ -7,13 +7,13 @@ brackets:
   - rate:
       2015-06-01: 0.4
     threshold:
-      2015-06-01: 31785
-      2015-06-05: 32000
-      2017-06-01: 31500
+      2015-06-01: 31_785
+      2015-06-05: 32_000
+      2017-06-01: 31_500
   - rate:
       2010-06-01: 0.45
     threshold:
-      2015-06-05: 150000
+      2015-06-05: 150_000
 metadata:
   period: year
   type: marginal_rate

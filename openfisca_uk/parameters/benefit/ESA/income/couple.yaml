@@ -1,9 +1,7 @@
-description: Income-based ESA personal allowance for couples
+description: Income-based Employment and Support Allowance personal allowance for couples
 values:
-  2015-06-01:
-    value: 57.90
-  2020-06-01:
-    value: 116.80
+  2015-06-01: 57.90
+  2020-06-01: 116.80
 metadata:
   period: week
   unit: currency-GBP

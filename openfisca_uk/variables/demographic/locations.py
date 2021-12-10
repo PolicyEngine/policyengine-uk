@@ -165,11 +165,6 @@ class BRMA(Variable):
     entity = Household
     label = u"Broad Rental Market Area"
     definition_period = YEAR
-    metadata = dict(
-        policyengine=dict(
-            type="category",
-        )
-    )
 
 
 class LocalAuthority(Enum):

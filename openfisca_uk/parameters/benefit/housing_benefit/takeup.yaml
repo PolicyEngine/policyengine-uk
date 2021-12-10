@@ -1,7 +1,17 @@
-description: Take-up rate of Housing Benefit
+description: Share of eligible Housing Benefit recipients that participate
 values:
-  2010-06-01:
-    value: 0.8
+  2009-04-06: 0.79
+  2012-04-06: 0.83
+  2013-04-06: 0.82
+  2014-04-06: 0.81
+  2015-04-06: 0.78
+  2016-04-06: 0.81
+  2017-04-06: 0.83
+  2018-04-06: 0.81
 metadata:
-  unit: currency-GBP
-  reference: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019
+  label: Housing Benefit take-up rate
+  name: HB_takeup
+  unit: /1
+  reference:
+    name: "Income-related benefits: estimates of take-up: financial year 2018 to 2019 | Housing Benefit: tables 2018 to 2019 | Table HB1"
+    href: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019

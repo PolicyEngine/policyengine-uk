@@ -20,19 +20,8 @@ class employment_income(Variable):
     label = u"Employment income"
     documentation = "Total income from employment"
     definition_period = YEAR
+    unit = "currency-GBP"
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
-    metadata = dict(
-        policyengine=dict(
-            roles=dict(
-                adult=dict(
-                    max=80000,
-                ),
-                child=dict(
-                    max=20000,
-                ),
-            )
-        )
-    )
 
 
 @uprated(by="earnings")
@@ -42,19 +31,8 @@ class pension_income(Variable):
     label = u"Pension income"
     documentation = "Income from private or occupational pensions (not including State Pension)"
     definition_period = YEAR
+    unit = "currency-GBP"
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
-    metadata = dict(
-        policyengine=dict(
-            roles=dict(
-                adult=dict(
-                    max=80000,
-                ),
-                child=dict(
-                    hidden=True,
-                ),
-            )
-        )
-    )
 
 
 class social_security_income(Variable):
@@ -82,19 +60,8 @@ class self_employment_income(Variable):
     label = u"Self-employment income"
     documentation = "Income from self-employment profits"
     definition_period = YEAR
+    unit = "currency-GBP"
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
-    metadata = dict(
-        policyengine=dict(
-            roles=dict(
-                adult=dict(
-                    max=80000,
-                ),
-                child=dict(
-                    hidden=True,
-                ),
-            )
-        )
-    )
 
 
 @uprated(by="earnings")
@@ -105,18 +72,7 @@ class property_income(Variable):
     documentation = "Income from rental of property"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
-    metadata = dict(
-        policyengine=dict(
-            roles=dict(
-                adult=dict(
-                    max=80000,
-                ),
-                child=dict(
-                    hidden=True,
-                ),
-            )
-        )
-    )
+    unit = "currency-GBP"
 
 
 @uprated(by="earnings")
@@ -127,18 +83,7 @@ class savings_interest_income(Variable):
     documentation = "Income from interest on savings, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
-    metadata = dict(
-        policyengine=dict(
-            roles=dict(
-                adult=dict(
-                    max=80000,
-                ),
-                child=dict(
-                    hidden=True,
-                ),
-            )
-        )
-    )
+    unit = "currency-GBP"
 
 
 @uprated(by="earnings")
@@ -149,16 +94,4 @@ class dividend_income(Variable):
     documentation = "Total income from dividends, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
-    metadata = dict(
-        policyengine=dict(
-            type="yearly",
-            roles=dict(
-                adult=dict(
-                    max=80000,
-                ),
-                child=dict(
-                    hidden=True,
-                ),
-            ),
-        )
-    )
+    unit = "currency-GBP"
