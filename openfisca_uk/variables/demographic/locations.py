@@ -3,6 +3,7 @@ from openfisca_uk.entities import *
 
 
 class BRMAName(Enum):
+    UNKNOWN = "Unknown"
     ASHFORD = "Ashford"
     AYLESBURY = "Aylesbury"
     BARNSLEY = "Barnsley"
@@ -172,6 +173,7 @@ class BRMA(Variable):
 
 
 class LocalAuthority(Enum):
+    UNKNOWN = "Unknown"
     ABERDEEN_CITY = "Aberdeen City"
     ABERDEENSHIRE = "Aberdeenshire"
     ADUR = "Adur"

@@ -17,6 +17,7 @@ postcode_to_la_name = (
     .set_index("postcode")
     .local_authority
 )
+postcode_to_la_name["UNKNOWN"] = "UNKNOWN"
 postcode_sector_to_brma_name = pd.read_csv(
     DATA_FOLDER / "geography" / "postcode_sector_to_brma_name.csv.gz",
     compression="gzip",
@@ -44,10 +45,6 @@ class postcode(Variable):
     label = u"Postcode for the household"
     definition_period = YEAR
     default_value = "UNKNOWN"
-    metadata = dict(policyengine=dict(type="str", default=""))
-
-    def formula(person, period, parameters):
-        pass
 
 
 class local_authority(Variable):
@@ -59,9 +56,8 @@ class local_authority(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return postcode_to_la_name[
-            pd.Series(household("postcode", period)).str.replace(" ", "")
-        ].values.astype(str)
+        postcodes = pd.Series(household("postcode", period)).str.replace(" ", "").values
+        return postcode_to_la_name[postcodes].values.astype(str)
 
 
 class postcode_sector(Variable):
@@ -82,7 +78,7 @@ class postcode_sector(Variable):
 class BRMA(Variable):
     value_type = Enum
     possible_values = BRMAName
-    default_value = BRMAName.MAIDSTONE
+    default_value = BRMAName.UNKNOWN
     entity = Household
     label = u"Broad Rental Market Area"
     definition_period = YEAR
