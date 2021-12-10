@@ -57,7 +57,11 @@ class local_authority(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        postcodes = pd.Series(household("postcode", period)).str.replace(" ", "").values
+        postcodes = (
+            pd.Series(household("postcode", period))
+            .str.replace(" ", "")
+            .values
+        )
         return postcode_to_la_name[postcodes].values.astype(str)
 
 
