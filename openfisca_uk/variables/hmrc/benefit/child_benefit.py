@@ -73,5 +73,5 @@ class child_benefit_less_tax_charge(Variable):
 
     def formula(benunit, period):
         benefit = benunit("child_benefit", period)
-        charge = benunit("CB_HITC", period)
+        charge = benunit.sum(benunit.members("CB_HITC", period))
         return benefit - charge
