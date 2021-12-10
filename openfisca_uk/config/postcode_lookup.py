@@ -52,7 +52,8 @@ class local_authority(Variable):
     possible_values = LocalAuthority
     default_value = LocalAuthority.MAIDSTONE
     entity = Household
-    label = u"The Local Authority for the household"
+    label = u"Local Authority"
+    documentation = "The Local Authority for the household"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -78,7 +79,7 @@ class postcode_sector(Variable):
 class BRMA(Variable):
     value_type = Enum
     possible_values = BRMAName
-    default_value = BRMAName.UNKNOWN
+    default_value = BRMAName.MAIDSTONE
     entity = Household
     label = u"Broad Rental Market Area"
     definition_period = YEAR
