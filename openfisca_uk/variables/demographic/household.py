@@ -49,7 +49,7 @@ class Country(Enum):
 class country(Variable):
     value_type = Enum
     possible_values = Country
-    default_value = Country.UNKNOWN
+    default_value = Country.ENGLAND
     entity = Household
     label = u"Country of the UK"
     definition_period = ETERNITY
@@ -91,7 +91,7 @@ class Region(Enum):
 class region(Variable):
     value_type = Enum
     possible_values = Region
-    default_value = Region.UNKNOWN
+    default_value = Region.LONDON
     entity = Household
     label = u"Region"
     documentation = "Area of the UK"
