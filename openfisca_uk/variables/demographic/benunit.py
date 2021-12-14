@@ -178,3 +178,16 @@ class benunit_is_renting(Variable):
                 TenureType.RENT_FROM_HA,
             ),
         )
+
+
+class benunit_random_number(Variable):
+    label = "Randomness"
+    documentation = (
+        "A random number between zero and one generated for this benefit unit"
+    )
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+
+    def formula(benunit, period):
+        return random(benunit)

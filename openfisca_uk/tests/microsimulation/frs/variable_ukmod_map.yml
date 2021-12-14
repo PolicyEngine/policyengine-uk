@@ -11,7 +11,6 @@ self_employed_NI:
 employer_NI:
   ukmod: tscer_s
   max_rel_error: 0.15
-child_benefit: bch_s
 working_tax_credit: 
   ukmod: bwkmt_s
   max_rel_error: 0.3

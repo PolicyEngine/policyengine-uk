@@ -122,6 +122,19 @@ class child_index(Variable):
         return adjusted_for_adults
 
 
+class is_eldest_child(Variable):
+    label = "Is the eldest child"
+    documentation = (
+        "Whether this person is the eldest child in the benefit unit"
+    )
+    entity = Person
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(person, period, parameters):
+        return person("child_index", period) == 1
+
+
 class is_benunit_eldest_child(Variable):
     value_type = bool
     entity = Person
