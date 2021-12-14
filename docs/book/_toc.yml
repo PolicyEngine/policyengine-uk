@@ -1,8 +1,9 @@
 format: jb-article
 root: index
 sections:
-- file: reforms
-- file: weighting
-- file: individuals
-- file: graphs
-- file: validation
+  - file: reforms
+  - file: weighting
+  - file: individuals
+  - file: graphs
+  - file: validation
+  - file: child_benefit
