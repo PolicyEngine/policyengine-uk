@@ -28,12 +28,12 @@ values:
   2020-04-06:
     value: 21.05
     reference:
-      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(b)
+      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(a)
         href: https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made
   2021-04-12: 
     value: 21.15
     reference:
-      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)
+      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(a)
         href: https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made
 metadata:
   label: Child Benefit (eldest)
