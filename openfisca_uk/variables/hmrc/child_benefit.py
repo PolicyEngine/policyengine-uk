@@ -21,7 +21,7 @@ class would_claim_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         claims_benefits = benunit("claims_all_entitled_benefits", period)
-        takeup_rate = parameters(period).hmrc.benefit.child_benefit.takeup_rate
+        takeup_rate = parameters(period).hmrc.child_benefit.takeup_rate
         imputed_takeup = (
             benunit("benunit_random_number", period) <= takeup_rate
         )
@@ -39,7 +39,7 @@ class child_benefit_respective_amount(Variable):
     def formula(person, period, parameters):
         eligible = person("is_child_or_QYP", period)
         is_eldest = person("is_eldest_child", period)
-        child_benefit = parameters(period).hmrc.benefit.child_benefit.amount
+        child_benefit = parameters(period).hmrc.child_benefit.amount
         amount = where(
             is_eldest, child_benefit.eldest, child_benefit.additional
         )
