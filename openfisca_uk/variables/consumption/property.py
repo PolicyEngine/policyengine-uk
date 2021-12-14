@@ -24,14 +24,14 @@ class main_residential_property_purchased_is_first_home(Variable):
     documentation = "Whether the residential property bought this year as a main residence was as a first-time buyer."
     entity = Household
     definition_period = YEAR
-    value_type = float
+    value_type = bool
     unit = "currency-GBP"
 
 
 class cumulative_residential_rent(Variable):
     label = "Cumulative residential rent"
     documentation = "Total rent paid over the lifetime of the residential property a tenancy is held for."
-    entity = Person
+    entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"

@@ -26,11 +26,11 @@ brackets:
       2016-09-15: 0.15
     threshold:
       2016-09-15: 1_500_000
-  metadata:
-    threshold_unit: currency-GBP
-    rate_unit: /1
-    reference: 
-      - title: Finance Act 2003 schedule 4ZA(1)(2)
-        href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA
-      - title: Stamp Duty Land Tax (Temporary Relief) Act 2020
-        href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference: 
+    - title: Finance Act 2003 schedule 4ZA(1)(2)
+      href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA
+    - title: Stamp Duty Land Tax (Temporary Relief) Act 2020
+      href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted

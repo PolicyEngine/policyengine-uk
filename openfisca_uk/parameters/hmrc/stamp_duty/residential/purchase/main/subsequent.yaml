@@ -21,6 +21,7 @@ brackets:
     threshold:
       2003-07-10: 250_000
       2020-07-08: 500_000
+      2021-03-31: 250_000
   - rate:
       2003-07-10: 0.04
       2015-02-12: 0.10
@@ -39,11 +40,11 @@ brackets:
     threshold:
       2012-07-17: 2_000_000
       2015-02-12: null
-  metadata:
-    threshold_unit: currency-GBP
-    rate_unit: /1
-    reference: 
-      - title: Finance Act 2003 s. 55
-        href: https://www.legislation.gov.uk/ukpga/2003/14/section/55
-      - title: Stamp Duty Land Tax (Temporary Relief) Act 2020
-        href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference: 
+    - title: Finance Act 2003 s. 55
+      href: https://www.legislation.gov.uk/ukpga/2003/14/section/55
+    - title: Stamp Duty Land Tax (Temporary Relief) Act 2020
+      href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted
