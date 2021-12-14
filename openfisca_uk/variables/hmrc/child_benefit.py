@@ -35,6 +35,10 @@ class child_benefit_respective_amount(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/1992/4/part/IX",
+        "https://www.legislation.gov.uk/uksi/2006/965/regulation/2",
+    )
 
     def formula(person, period, parameters):
         eligible = person("is_child_or_QYP", period)
