@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class property_sale_rate(Variable):
     label = "Residential property sale rate"
     documentation = "The percentage of residential property value owned by households sold in the year"
@@ -22,14 +23,15 @@ class property_sale_rate(Variable):
         )
         return total_sale_value / total_value
 
-class property_purhcased(Variable):
+
+class property_purchased(Variable):
     label = "All property bought this year"
     documentation = "Whether all property wealth was bought this year"
     entity = Household
     definition_period = YEAR
     value_type = bool
     unit = "currency-GBP"
-
+    default_value = True
 
 
 class main_residential_property_purchased(Variable):
@@ -41,8 +43,9 @@ class main_residential_property_purchased(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        purchase_is_imputed = household("household_random_number", period) < household("property_sale_rate", period)
-        return purchase_is_imputed * household("main_residence_value", period)
+        return household("property_purchased", period) * household(
+            "main_residence_value", period
+        )
 
 
 class additional_residential_property_purchased(Variable):
@@ -54,8 +57,9 @@ class additional_residential_property_purchased(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        purchase_is_imputed = household("household_random_number", period) < household("property_sale_rate", period)
-        return purchase_is_imputed * household("other_residential_property_value", period)
+        return household("property_purchased", period) * household(
+            "other_residential_property_value", period
+        )
 
 
 class main_residential_property_purchased_is_first_home(Variable):
@@ -65,6 +69,20 @@ class main_residential_property_purchased_is_first_home(Variable):
     definition_period = YEAR
     value_type = bool
     unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        residential_sd = parameters(
+            period
+        ).hmrc.stamp_duty.statistics.residential.household
+        age = household.sum(
+            household.members("is_household_head", period)
+            * household.members("age", period)
+        )
+        percentage_claiming_ftbr = (
+            residential_sd.first_time_buyers_relief.calc(age)
+            / residential_sd.transactions_by_age.calc(age)
+        )
+        return random(household) < percentage_claiming_ftbr
 
 
 class cumulative_residential_rent(Variable):
@@ -85,8 +103,9 @@ class non_residential_property_purchased(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        purchase_is_imputed = household("household_random_number", period) < household("property_sale_rate", period)
-        return purchase_is_imputed * household("non_residential_property_value", period)
+        return household("property_purchased", period) * household(
+            "non_residential_property_value", period
+        )
 
 
 class cumulative_non_residential_rent(Variable):

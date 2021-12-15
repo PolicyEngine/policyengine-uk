@@ -222,6 +222,7 @@ class household_num_benunits(Variable):
     def formula(household, period, parameters):
         return household.sum(household.members("is_benunit_head", period))
 
+
 class household_random_number(Variable):
     label = "Randomness"
     documentation = (

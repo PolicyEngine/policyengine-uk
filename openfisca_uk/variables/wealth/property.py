@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class main_residence_value(Variable):
     label = "Main residence value"
     documentation = "Total value of the main residence"
@@ -8,13 +9,17 @@ class main_residence_value(Variable):
     value_type = float
     unit = "currency-GBP"
 
+
 class other_residential_property_value(Variable):
     label = "Other residence value"
-    documentation = "Total value of all residential property owned by the household"
+    documentation = (
+        "Total value of all residential property owned by the household"
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 class residential_property_value(Variable):
     label = "Residential property value"
@@ -29,11 +34,13 @@ class residential_property_value(Variable):
             "other_residential_property_value", period
         )
 
+
 class non_residential_property_value(Variable):
     label = "Non-residential property value"
-    documentation = "Total value of all non-residential property owned by the household"
+    documentation = (
+        "Total value of all non-residential property owned by the household"
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
-
