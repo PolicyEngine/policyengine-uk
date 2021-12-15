@@ -208,6 +208,24 @@ class household_net_income(Variable):
         return gross_income - tax
 
 
+class expanded_household_net_income(Variable):
+    label = "Household net income"
+    documentation = (
+        "Disposable income for the household (including changes to wealth)"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        return (
+            household("household_net_income", period)
+            - household("expected_stamp_duty", period)
+            - household("corporate_tax_incidence", period)
+        )
+
+
 class household_net_income_ahc(Variable):
     value_type = float
     entity = Household

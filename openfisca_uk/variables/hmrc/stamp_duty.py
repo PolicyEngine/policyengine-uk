@@ -93,6 +93,41 @@ class stamp_duty_liable(Variable):
         )
 
 
+class corporate_stamp_duty(Variable):
+    label = "Stamp Duty (corporations)"
+    documentation = "Stamp Duty paid by corporations"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        sd = parameters(period).hmrc.stamp_duty.statistics
+        return (
+            sd.residential.corporate.revenue
+            + sd.non_residential.corporate.revenue
+        )
+
+
+class corporate_stamp_duty_change(Variable):
+    label = "Change in corporate Stamp Duty liabilities"
+    documentation = (
+        "Tota increase in tax revenues from corporations for Stamp Duty"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        sd = parameters(period).hmrc.stamp_duty.statistics
+        baseline_sd = (
+            sd.residential.corporate.revenue
+            + sd.non_residential.corporate.revenue
+        )
+        return household("corporate_stamp_duty", period) - baseline_sd
+
+
 class stamp_duty(Variable):
     label = "Stamp Duty Land Tax"
     documentation = "Total tax liability for Stamp Duty Land Tax"
@@ -118,4 +153,18 @@ class expected_stamp_duty(Variable):
     def formula(household, period):
         return household("property_sale_rate", period) * household(
             "stamp_duty", period
+        )
+
+
+class total_stamp_duty_impact(Variable):
+    label = "Stamp Duty"
+    documentation = "Total impact of Stamp Duty"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period):
+        return household("expected_stamp_duty", period) + household(
+            "corporate_stamp_duty_change", period
         )

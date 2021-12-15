@@ -1,4 +1,4 @@
-description: Maximum value for a first-property purchase to receive the Stamp Duty relief for first-time buyers
+description: Maximum value for a first-property purchase to receive the Stamp Duty relief for first-time buyers. Increasing this value will underestimate the number of claims for FTBR, as the model will not add new claims.
 values:
   2018-03-15: 500_000
 metadata:
