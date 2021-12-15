@@ -221,3 +221,15 @@ class household_num_benunits(Variable):
 
     def formula(household, period, parameters):
         return household.sum(household.members("is_benunit_head", period))
+
+class household_random_number(Variable):
+    label = "Randomness"
+    documentation = (
+        "A random number between zero and one generated for this household"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+
+    def formula(household, period):
+        return random(household)

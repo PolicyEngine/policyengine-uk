@@ -102,10 +102,23 @@ class stamp_duty(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-
-        total_stamp_duty = household(
-            "stamp_duty_on_residential_property", period
-        ) + household("stamp_duty_on_non_residential_property", period)
         return household(
             "stamp_duty_on_residential_property", period
         ) + household("stamp_duty_on_non_residential_property", period)
+
+class imputed_stamp_duty(Variable):
+    label = "Stamp Duty (imputed)"
+    documentation = "Average Stamp Duty liability over the next five years"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period):
+        NUM_FUTURE_YEARS = 5
+        current_period = period
+        total_stamp_duty = household("stamp_duty", current_period)
+        for i in range(NUM_FUTURE_YEARS - 1):
+            current_period = current_period.offset(1, YEAR)
+            total_stamp_duty += household("stamp_duty", current_period)
+        return total_stamp_duty / NUM_FUTURE_YEARS

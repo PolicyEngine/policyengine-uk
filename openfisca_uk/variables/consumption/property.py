@@ -1,5 +1,36 @@
 from openfisca_uk.model_api import *
 
+class property_sale_rate(Variable):
+    label = "Residential property sale rate"
+    documentation = "The percentage of residential property value owned by households sold in the year"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "/1"
+
+    def formula(household, period, parameters):
+        stamp_duty = parameters(period).hmrc.stamp_duty.statistics
+        nbs = parameters(period).wealth.national_balance_sheet
+        total_sale_value = (
+            stamp_duty.residential.household.transaction_values
+            + stamp_duty.non_residential.household.transaction_values
+        )
+        total_value = (
+            nbs.household.dwellings
+            + nbs.household.other_structures
+            + nbs.household.land
+        )
+        return total_sale_value / total_value
+
+class property_purhcased(Variable):
+    label = "All property bought this year"
+    documentation = "Whether all property wealth was bought this year"
+    entity = Household
+    definition_period = YEAR
+    value_type = bool
+    unit = "currency-GBP"
+
+
 
 class main_residential_property_purchased(Variable):
     label = "Residential property bought (main)"
@@ -9,6 +40,10 @@ class main_residential_property_purchased(Variable):
     value_type = float
     unit = "currency-GBP"
 
+    def formula(household, period):
+        purchase_is_imputed = household("household_random_number", period) < household("property_sale_rate", period)
+        return purchase_is_imputed * household("main_residence_value", period)
+
 
 class additional_residential_property_purchased(Variable):
     label = "Residential property bought (additional)"
@@ -17,6 +52,10 @@ class additional_residential_property_purchased(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
+    def formula(household, period):
+        purchase_is_imputed = household("household_random_number", period) < household("property_sale_rate", period)
+        return purchase_is_imputed * household("other_residential_property_value", period)
 
 
 class main_residential_property_purchased_is_first_home(Variable):
@@ -44,6 +83,10 @@ class non_residential_property_purchased(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
+    def formula(household, period):
+        purchase_is_imputed = household("household_random_number", period) < household("property_sale_rate", period)
+        return purchase_is_imputed * household("non_residential_property_value", period)
 
 
 class cumulative_non_residential_rent(Variable):
