@@ -22,3 +22,4 @@ sphinx:
 execute:
   execute_notebooks: 'force'
   jupyter_execute_notebooks: 'force'
+  timeout: -1
