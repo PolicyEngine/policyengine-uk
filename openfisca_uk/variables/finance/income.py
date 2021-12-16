@@ -205,18 +205,15 @@ class hbai_household_net_income(Variable):
     def formula(household, period, parameters):
         gross_income = household("household_gross_income", period)
         tax = household("household_tax", period)
-        ignored_taxes = (
-            household("expected_stamp_duty", period)
-            + household("corporate_tax_incidence", period)
+        ignored_taxes = household("expected_stamp_duty", period) + household(
+            "corporate_tax_incidence", period
         )
         return gross_income - tax + ignored_taxes
 
 
 class household_net_income(Variable):
     label = "Household net income"
-    documentation = (
-        "Disposable income for the household"
-    )
+    documentation = "Disposable income for the household"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -250,6 +247,7 @@ class equiv_household_net_income(Variable):
         return household("household_net_income", period) / household(
             "household_equivalisation_bhc", period
         )
+
 
 class equiv_hbai_household_net_income(Variable):
     value_type = float

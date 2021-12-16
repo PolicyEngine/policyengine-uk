@@ -1,14 +1,14 @@
 from openfisca_uk.model_api import *
 
+
 class food_and_non_alcoholic_beverages_consumption(Variable):
     entity = Household
     label = "Food and alcoholic beverages"
-    documentation = (
-        "Total yearly expenditure on food and alcoholic beverages"
-    )
+    documentation = "Total yearly expenditure on food and alcoholic beverages"
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+
 
 class alcohol_and_tobacco_consumption(Variable):
     entity = Household
@@ -18,6 +18,7 @@ class alcohol_and_tobacco_consumption(Variable):
     definition_period = YEAR
     value_type = float
 
+
 class clothing_and_footwear_consumption(Variable):
     entity = Household
     label = "Clothing and footwear"
@@ -25,6 +26,7 @@ class clothing_and_footwear_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+
 
 class housing_water_and_electricity_consumption(Variable):
     entity = Household
@@ -36,6 +38,7 @@ class housing_water_and_electricity_consumption(Variable):
     definition_period = YEAR
     value_type = float
 
+
 class household_furnishings_consumption(Variable):
     entity = Household
     label = "Household furnishings"
@@ -43,6 +46,7 @@ class household_furnishings_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+
 
 class health_consumption(Variable):
     entity = Household
@@ -52,6 +56,7 @@ class health_consumption(Variable):
     definition_period = YEAR
     value_type = float
 
+
 class transport_consumption(Variable):
     entity = Household
     label = "Transport"
@@ -59,6 +64,7 @@ class transport_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+
 
 class communication_consumption(Variable):
     entity = Household
@@ -68,6 +74,7 @@ class communication_consumption(Variable):
     definition_period = YEAR
     value_type = float
 
+
 class recreation_consumption(Variable):
     entity = Household
     label = "Recreation"
@@ -75,6 +82,7 @@ class recreation_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+
 
 class education_consumption(Variable):
     entity = Household
@@ -84,6 +92,7 @@ class education_consumption(Variable):
     definition_period = YEAR
     value_type = float
 
+
 class restaurants_and_hotels_consumption(Variable):
     entity = Household
     label = "Restaurants and hotels"
@@ -91,6 +100,7 @@ class restaurants_and_hotels_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+
 
 class miscellaneous_consumption(Variable):
     entity = Household

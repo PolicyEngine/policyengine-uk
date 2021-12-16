@@ -153,7 +153,8 @@ class expected_stamp_duty(Variable):
 
     def formula(household, period, parameters):
         in_force = not parameters(period).hmrc.stamp_duty.abolition
-        return in_force * household("property_sale_rate", period) * household(
-            "stamp_duty", period
+        return (
+            in_force
+            * household("property_sale_rate", period)
+            * household("stamp_duty", period)
         )
-

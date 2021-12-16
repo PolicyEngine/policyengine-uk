@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class carbon_consumption(Variable):
     entity = Household
     label = "Carbon consumption"
@@ -10,19 +11,19 @@ class carbon_consumption(Variable):
 
     def formula(household, period, parameters):
         CONSUMPTION_VARIABLES = [
-                "food_and_non_alcoholic_beverages_consumption",
-                "alcohol_and_tobacco_consumption",
-                "clothing_and_footwear_consumption",
-                "housing_water_and_electricity_consumption",
-                "household_furnishings_consumption",
-                "health_consumption",
-                "transport_consumption",
-                "communication_consumption",
-                "recreation_consumption",
-                "education_consumption",
-                "restaurants_and_hotels_consumption",
-                "miscellaneous_consumption",
-            ]
+            "food_and_non_alcoholic_beverages_consumption",
+            "alcohol_and_tobacco_consumption",
+            "clothing_and_footwear_consumption",
+            "housing_water_and_electricity_consumption",
+            "household_furnishings_consumption",
+            "health_consumption",
+            "transport_consumption",
+            "communication_consumption",
+            "recreation_consumption",
+            "education_consumption",
+            "restaurants_and_hotels_consumption",
+            "miscellaneous_consumption",
+        ]
         spending_by_sector = list(
             map(lambda var: household(var, period), CONSUMPTION_VARIABLES)
         )
@@ -33,9 +34,7 @@ class carbon_consumption(Variable):
                 spending_by_sector,
             )
         )
-        carbon_emissions = parameters(
-            period
-        ).consumption.carbon_emissions
+        carbon_emissions = parameters(period).consumption.carbon_emissions
         aggregate_emissions_by_sector = [
             carbon_emissions[category.replace("_consumption", "")]
             for category in CONSUMPTION_VARIABLES
