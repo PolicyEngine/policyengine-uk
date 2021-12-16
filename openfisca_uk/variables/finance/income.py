@@ -194,46 +194,48 @@ class maintenance_income(Variable):
     definition_period = YEAR
 
 
-class household_net_income(Variable):
+class hbai_household_net_income(Variable):
     value_type = float
     entity = Household
-    label = u"Household net income"
-    documentation = "Disposable income for the household"
+    label = u"Household net income (HBAI definition)"
+    documentation = "Disposable income for the household, following the definition used for official poverty statistics"
     unit = "currency-GBP"
     definition_period = YEAR
 
     def formula(household, period, parameters):
         gross_income = household("household_gross_income", period)
         tax = household("household_tax", period)
-        return gross_income - tax
+        ignored_taxes = (
+            household("expected_stamp_duty", period)
+            + household("corporate_tax_incidence", period)
+        )
+        return gross_income - tax + ignored_taxes
 
 
-class expanded_household_net_income(Variable):
+class household_net_income(Variable):
     label = "Household net income"
     documentation = (
-        "Disposable income for the household (including changes to wealth)"
+        "Disposable income for the household"
     )
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
 
-    def formula(household, period, parameters):
-        return (
-            household("household_net_income", period)
-            - household("expected_stamp_duty", period)
-            - household("corporate_tax_incidence", period)
-        )
+    def formula(household, period):
+        gross_income = household("household_gross_income", period)
+        tax = household("household_tax", period)
+        return gross_income - tax
 
 
-class household_net_income_ahc(Variable):
+class hbai_household_net_income_ahc(Variable):
     value_type = float
     entity = Household
     label = u"Household net income, after housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return household("household_net_income", period) - household(
+        return household("hbai_household_net_income", period) - household(
             "housing_costs", period
         )
 
@@ -249,15 +251,26 @@ class equiv_household_net_income(Variable):
             "household_equivalisation_bhc", period
         )
 
-
-class equiv_household_net_income_ahc(Variable):
+class equiv_hbai_household_net_income(Variable):
     value_type = float
     entity = Household
-    label = u"Equivalised household net income, after housing costs"
+    label = u"Equivalised household net income (HBAI)"
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return household("household_net_income_ahc", period) / household(
+        return household("hbai_household_net_income", period) / household(
+            "household_equivalisation_bhc", period
+        )
+
+
+class equiv_hbai_household_net_income_ahc(Variable):
+    value_type = float
+    entity = Household
+    label = u"Equivalised household net income, after housing costs (HBAI)"
+    definition_period = YEAR
+
+    def formula(household, period, parameters):
+        return household("hbai_household_net_income_ahc", period) / household(
             "household_equivalisation_ahc", period
         )
 

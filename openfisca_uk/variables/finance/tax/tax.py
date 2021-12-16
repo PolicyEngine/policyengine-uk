@@ -23,9 +23,15 @@ class household_tax(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
 
-    def formula(household, period, parameters):
-        personal_taxes = aggr(household, period, ["tax"])
-        return personal_taxes + household("council_tax", period)
+    def formula(household, period):
+        personal_taxes = household.sum(household.members("tax", period))
+        household_taxes = (
+            household("expected_stamp_duty", period)
+            + household("corporate_tax_incidence", period)
+            + household("council_tax", period)
+        )
+        print(household_taxes)
+        return personal_taxes + household_taxes
 
 
 class benunit_tax(Variable):

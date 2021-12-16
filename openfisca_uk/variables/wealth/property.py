@@ -44,3 +44,17 @@ class non_residential_property_value(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
+class property_wealth(Variable):
+    label = "Property wealth"
+    documentation = "Total property wealth across all owned properties"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period):
+        return (
+            household("residential_property_value", period)
+            + household("non_residential_property_value", period)
+        )
