@@ -1,0 +1,64 @@
+description: Total CO2 emissions by sector
+reference:
+  - title: UK's carbon footprint - Official Statistics
+    href: https://www.gov.uk/government/statistics/uks-carbon-footprint
+food_and_non_alcoholic_beverages:
+  values:
+    2018-01-01: 66_312_000
+  metadata:
+    unit: tonne CO2
+alcohol_and_tobacco:
+  values:
+    2018-01-01: 1_581_000
+  metadata:
+    unit: tonne CO2
+clothing_and_footwear:
+  values:
+    2018-01-01: 10_958_000
+  metadata:
+    unit: tonne CO2
+housing_water_and_electricity:
+  values:
+    2018-01-01: 163_862_000
+  metadata:
+    unit: tonne CO2
+household_furnishings:
+  values:
+    2018-01-01: 15_179_000
+  metadata:
+    unit: tonne CO2
+health:
+  values:
+    2018-01-01: 9_918_000
+  metadata:
+    unit: tonne CO2
+transport:
+  values:
+    2018-01-01: 184_591_000
+  metadata:
+    unit: tonne CO2
+communication:
+  values:
+    2018-01-01: 8_583_000
+  metadata:
+    unit: tonne CO2
+recreation:
+  values:
+    2018-01-01: 27_408_000
+  metadata:
+    unit: tonne CO2
+education:
+  values:
+    2018-01-01: 3_808_000
+  metadata:
+    unit: tonne CO2
+restaurants_and_hotels:
+  values:
+    2018-01-01: 31_444_000
+  metadata:
+    unit: tonne CO2
+miscellaneous:
+  values:
+    2018-01-01: 20_208_000
+  metadata:
+    unit: tonne CO2

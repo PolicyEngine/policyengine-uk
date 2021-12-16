@@ -1,0 +1,30 @@
+aggregate_household_land_value:
+  description: Total value of land held by households
+  values:
+    2014-01-01: 3_125_384_000_000
+    2015-01-01: 3_487_388_000_000
+    2016-01-01: 3_713_692_000_000
+    2017-01-01: 3_899_194_000_000
+    2018-01-01: 3_947_306_000_000
+    2019-01-01: 3_961_152_000_000
+    2020-01-01: 4_309_138_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: ONS National Balance Sheet (Table 11)
+        href: https://www.ons.gov.uk/economy/nationalaccounts/uksectoraccounts/datasets/thenationalbalancesheetestimates/current
+aggregate_corporate_land_value:
+  description: Total value of land held by (non-financial and financial) corporations
+  values:
+    2014-01-01: 1_285_861_000_000
+    2015-01-01: 1_421_660_000_000
+    2016-01-01: 1_481_408_000_000
+    2017-01-01: 1_623_384_000_000
+    2018-01-01: 1_695_825_000_000
+    2019-01-01: 1_683_117_000_000
+    2020-01-01: 1_757_818_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: ONS National Balance Sheet (Tables 3 and 6)
+        href: https://www.ons.gov.uk/economy/nationalaccounts/uksectoraccounts/datasets/thenationalbalancesheetestimates/current
