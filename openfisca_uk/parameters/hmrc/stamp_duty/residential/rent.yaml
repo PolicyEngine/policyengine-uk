@@ -1,0 +1,22 @@
+description: Stamp Duty Land Tax progressive rates for cumulative rents on residential property
+brackets:
+  - rate: 
+      2003-07-10: 0
+    threshold: 
+      2003-07-10: 0
+  - rate:
+      2003-07-10: 0.01
+    threshold:
+      2003-07-10: 60_000
+      2005-04-07: 120_000
+      2006-07-19: 125_000
+      2020-07-08: 500_000
+      2021-03-31: 125_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: currency-GBP
+  reference: 
+    - title: Finance Act 2003 schedule 5
+      href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/5
+    - title: Stamp Duty Land Tax (Temporary Relief) Act 2020
+      href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted

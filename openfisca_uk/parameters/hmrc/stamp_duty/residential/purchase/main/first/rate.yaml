@@ -1,0 +1,16 @@
+description: Stamp Duty Land Tax progressive rates for residential property transfers
+brackets:
+  - rate: 
+      2018-03-15: 0
+    threshold: 
+      2018-03-15: 0
+  - rate:
+      2018-03-15: 0.05
+    threshold:
+      2018-03-15: 300_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference: 
+    - title: Finance Act 2003 schedule 6ZA(4)
+      href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA/2018-03-15

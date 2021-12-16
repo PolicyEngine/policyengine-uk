@@ -9,13 +9,6 @@ class weekly_rent(Variable):
     definition_period = YEAR
 
 
-class rent(Variable):
-    value_type = float
-    entity = Household
-    label = u"Gross rent for the household"
-    definition_period = YEAR
-
-
 @uprated(by="CPI")
 class benunit_rent(Variable):
     value_type = float

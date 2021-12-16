@@ -1,0 +1,27 @@
+description: Carbon intensity by consumption type (where microsimulation data is not available)
+alcohol_and_tobacco_consumption:
+  2019-01-01: 7.7e-05
+clothing_and_footwear_consumption:
+  2019-01-01: 0.000262
+communication_consumption:
+  2019-01-01: 0.000404
+education_consumption:
+  2019-01-01: 0.000241
+food_and_non_alcoholic_beverages_consumption:
+  2019-01-01: 0.000689
+health_consumption:
+  2019-01-01: 0.000656
+household_furnishings_consumption:
+  2019-01-01: 0.000212
+housing_water_and_electricity_consumption:
+  2019-01-01: 0.0012
+miscellaneous_consumption:
+  2019-01-01: 0.000203
+recreation_consumption:
+  2019-01-01: 0.000185
+restaurants_and_hotels_consumption:
+  2019-01-01: 0.000311
+transport_consumption:
+  2019-01-01: 0.00107
+metadata:
+  unit: tonnes per gbp

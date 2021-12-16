@@ -1,0 +1,6 @@
+- name: Sale rate for 2021
+  period: 2021
+  absolute_error_margin: 0.001
+  input: {}
+  output:
+    property_sale_rate: 0.054

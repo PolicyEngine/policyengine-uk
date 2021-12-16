@@ -1,0 +1,18 @@
+description: ONS National Balance Sheet statistics on wealth
+household:
+  dwellings:
+    2020-01-01: 1_425_250_000_000
+  other_structures:
+    2020-01-01: 146_466_000_000
+  land:
+    2020-01-01: 4_309_180_000_000
+corporate:
+  dwellings:
+    2020-01-01: 388_496_000_000
+  other_structures:
+    2020-01-01: 979_153_000_000
+  land:
+    2020-01-01: 1_738_203_000_000
+metadata:
+  unit: currency-GBP
+  reference: none

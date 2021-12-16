@@ -1,0 +1,50 @@
+description: Stamp Duty Land Tax progressive rates for residential property transfers
+brackets:
+  - rate: 
+      2003-07-10: 0
+    threshold: 
+      2003-07-10: 0
+  - rate:
+      2003-07-10: 0.01
+      2015-02-12: 0.02
+      2020-07-08: null
+      2021-03-31: 0.02
+    threshold:
+      2003-07-10: 60_000
+      2005-04-07: 120_000
+      2006-07-19: 125_000
+      2020-07-08: null
+      2021-03-31: 125_000
+  - rate:
+      2003-07-10: 0.03
+      2015-02-12: 0.05
+    threshold:
+      2003-07-10: 250_000
+      2020-07-08: 500_000
+      2021-03-31: 250_000
+  - rate:
+      2003-07-10: 0.04
+      2015-02-12: 0.10
+    threshold:
+      2003-07-10: 500_000
+      2015-02-12: 925_000
+  - rate:
+      2008-04-08: 0.05
+      2015-02-12: 0.12
+    threshold:
+      2003-07-10: 1_000_000
+      2015-02-12: 1_500_000
+  - rate:
+      2012-07-17: 0.07
+      2015-02-12: null
+    threshold:
+      2012-07-17: 2_000_000
+      2015-02-12: null
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference: 
+    - title: Finance Act 2003 s. 55
+      href: https://www.legislation.gov.uk/ukpga/2003/14/section/55
+    - title: Stamp Duty Land Tax (Temporary Relief) Act 2020
+      href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted

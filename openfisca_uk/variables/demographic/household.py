@@ -49,7 +49,7 @@ class Country(Enum):
 class country(Variable):
     value_type = Enum
     possible_values = Country
-    default_value = Country.UNKNOWN
+    default_value = Country.ENGLAND
     entity = Household
     label = u"Country of the UK"
     definition_period = ETERNITY
@@ -91,7 +91,7 @@ class Region(Enum):
 class region(Variable):
     value_type = Enum
     possible_values = Region
-    default_value = Region.UNKNOWN
+    default_value = Region.LONDON
     entity = Household
     label = u"Region"
     documentation = "Area of the UK"
@@ -221,3 +221,16 @@ class household_num_benunits(Variable):
 
     def formula(household, period, parameters):
         return household.sum(household.members("is_benunit_head", period))
+
+
+class household_random_number(Variable):
+    label = "Randomness"
+    documentation = (
+        "A random number between zero and one generated for this household"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+
+    def formula(household, period):
+        return random(household)
