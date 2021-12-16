@@ -30,7 +30,6 @@ class household_tax(Variable):
             + household("corporate_tax_incidence", period)
             + household("council_tax", period)
         )
-        print(household_taxes)
         return personal_taxes + household_taxes
 
 
