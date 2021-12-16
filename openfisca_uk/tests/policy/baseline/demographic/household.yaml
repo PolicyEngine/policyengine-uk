@@ -12,9 +12,3 @@
     region: "SCOTLAND"
   output:
     country: "SCOTLAND"
-- name: Country and region - Unknown
-  period: 2020
-  absolute_error_margin: 0
-  output:
-    region: "UNKNOWN"
-    country: "UNKNOWN"

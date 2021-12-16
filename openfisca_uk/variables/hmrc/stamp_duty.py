@@ -122,7 +122,8 @@ class corporate_stamp_duty_change(Variable):
 
     def formula(household, period, parameters):
         sd = parameters(period).hmrc.stamp_duty.statistics
-        baseline_sd = (
+        in_force = not parameters(period).hmrc.stamp_duty.abolition
+        baseline_sd = in_force * (
             sd.residential.corporate.revenue
             + sd.non_residential.corporate.revenue
         )
