@@ -88,8 +88,9 @@ class stamp_duty_liable(Variable):
     def formula(household, period):
         country = household("country", period)
         countries = country.possible_values
-        return (country == countries.ENGLAND) | (
-            country == countries.NORTHERN_IRELAND
+        return np.isin(
+            country.decode_to_str(),
+            [countries.ENGLAND.name, countries.NORTHERN_IRELAND.name],
         )
 
 
