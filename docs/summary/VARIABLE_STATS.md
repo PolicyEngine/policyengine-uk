@@ -53,6 +53,396 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 32417746.0
 
 
+- corporate_stamp_duty:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty (corporations)
+  - Mean: 3129999872.0
+  - Median: 3129999872.0
+  - Stddev: 128762.203125
+  - Non-zero count: 28023811.0
+
+
+- corporate_stamp_duty_change:
+  - Type: float
+  - Entity: household
+  - Description: Change in corporate Stamp Duty liabilities
+  - Mean: -128.0
+  - Median: -128.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- expected_stamp_duty:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- stamp_duty:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty Land Tax
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- stamp_duty_liable:
+  - Type: bool
+  - Entity: household
+  - Description: Liable for Stamp Duty
+  - Mean: 0.8619471134743236
+  - Median: 1.0
+  - Stddev: 0.38597379928653364
+  - Non-zero count: 24155043.0
+
+
+- stamp_duty_on_non_residential_property:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty on non-residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- stamp_duty_on_residential_property:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty on residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- corporate_tax_incidence:
+  - Type: float
+  - Entity: household
+  - Description: Corporate tax incidence
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- corporate_wealth:
+  - Type: float
+  - Entity: household
+  - Description: Corporate wealth
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- main_residence_value:
+  - Type: float
+  - Entity: household
+  - Description: Main residence value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- non_residential_property_value:
+  - Type: float
+  - Entity: household
+  - Description: Non-residential property value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- other_residential_property_value:
+  - Type: float
+  - Entity: household
+  - Description: Other residence value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- property_wealth:
+  - Type: float
+  - Entity: household
+  - Description: Property wealth
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- residential_property_value:
+  - Type: float
+  - Entity: household
+  - Description: Residential property value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- land_value:
+  - Type: float
+  - Entity: household
+  - Description: Land value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- owned_land:
+  - Type: float
+  - Entity: household
+  - Description: Owned land
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- carbon_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Carbon consumption
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- alcohol_and_tobacco_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Alcohol and tobacco
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- clothing_and_footwear_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Clothing and footwear
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- communication_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Communication
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- education_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Education
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- food_and_non_alcoholic_beverages_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Food and alcoholic beverages
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- health_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Health
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- household_furnishings_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Household furnishings
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- housing_water_and_electricity_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Housing, water and electricity
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- miscellaneous_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Miscellaneous
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- recreation_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Recreation
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- restaurants_and_hotels_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Restaurants and hotels
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- transport_consumption:
+  - Type: float
+  - Entity: household
+  - Description: Transport
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- additional_residential_property_purchased:
+  - Type: float
+  - Entity: household
+  - Description: Residential property bought (additional)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- cumulative_non_residential_rent:
+  - Type: float
+  - Entity: household
+  - Description: Cumulative non-residential rent
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- cumulative_residential_rent:
+  - Type: float
+  - Entity: household
+  - Description: Cumulative residential rent
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- main_residential_property_purchased:
+  - Type: float
+  - Entity: household
+  - Description: Residential property bought (main)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- main_residential_property_purchased_is_first_home:
+  - Type: bool
+  - Entity: household
+  - Description: Residential property bought is first home
+  - Mean: 0.1969045894578721
+  - Median: 0.0
+  - Stddev: 0.39157297346490233
+  - Non-zero count: 5518017.0
+
+
+- non_residential_property_purchased:
+  - Type: float
+  - Entity: household
+  - Description: Non-residential property bought
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- non_residential_rent:
+  - Type: float
+  - Entity: household
+  - Description: Non-residential rent
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- property_purchased:
+  - Type: bool
+  - Entity: household
+  - Description: All property bought this year
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: 0.0
+  - Non-zero count: 28023811.0
+
+
+- property_sale_rate:
+  - Type: float
+  - Entity: household
+  - Description: Residential property sale rate
+  - Mean: 0.05399347469210625
+  - Median: 0.05399347469210625
+  - Stddev: 9.612601388653275e-06
+  - Non-zero count: 28023811.0
+
+
+- rent:
+  - Type: float
+  - Entity: household
+  - Description: Rent
+  - Mean: 2587.238890527773
+  - Median: -52.0
+  - Stddev: 4221.08203125
+  - Non-zero count: 9879081.0
+
+
 - base_net_income:
   - Type: float
   - Entity: person
@@ -89,6 +479,26 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Description: Employment status of the person
 
 
+- equiv_hbai_household_net_income:
+  - Type: float
+  - Entity: household
+  - Description: Equivalised household net income (HBAI)
+  - Mean: 31990.78612610447
+  - Median: 27461.119318641573
+  - Stddev: 21769.8359375
+  - Non-zero count: 27492245.0
+
+
+- equiv_hbai_household_net_income_ahc:
+  - Type: float
+  - Entity: household
+  - Description: Equivalised household net income, after housing costs (HBAI)
+  - Mean: 28528.591183491902
+  - Median: 24584.534375341755
+  - Stddev: 22135.423828125
+  - Non-zero count: 26853515.0
+
+
 - equiv_household_net_income:
   - Type: float
   - Entity: household
@@ -99,16 +509,6 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 27492245.0
 
 
-- equiv_household_net_income_ahc:
-  - Type: float
-  - Entity: household
-  - Description: Equivalised household net income, after housing costs
-  - Mean: 28528.591183491902
-  - Median: 24584.534375341755
-  - Stddev: 22135.423828125
-  - Non-zero count: 26853515.0
-
-
 - gross_income:
   - Type: float
   - Entity: person
@@ -117,6 +517,26 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Median: 13224.222533595286
   - Stddev: 25344.11328125
   - Non-zero count: 48574182.32209778
+
+
+- hbai_household_net_income:
+  - Type: float
+  - Entity: household
+  - Description: Household net income (HBAI definition)
+  - Mean: 34559.17597469817
+  - Median: 28021.101067243304
+  - Stddev: 26356.55859375
+  - Non-zero count: 27492245.0
+
+
+- hbai_household_net_income_ahc:
+  - Type: float
+  - Entity: household
+  - Description: Household net income, after housing costs
+  - Mean: 30408.022911887234
+  - Median: 24261.8148847055
+  - Stddev: 25901.3359375
+  - Non-zero count: 26853515.0
 
 
 - hours_worked:
@@ -157,16 +577,6 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Median: 28021.101067243304
   - Stddev: 26356.55859375
   - Non-zero count: 27492245.0
-
-
-- household_net_income_ahc:
-  - Type: float
-  - Entity: household
-  - Description: Household net income, after housing costs
-  - Mean: 30408.022911887234
-  - Median: 24261.8148847055
-  - Stddev: 25901.3359375
-  - Non-zero count: 26853515.0
 
 
 - in_work:
@@ -429,16 +839,6 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Median: 0.0
   - Stddev: 172.5945281982422
   - Non-zero count: 2094149.3220367432
-
-
-- rent:
-  - Type: float
-  - Entity: household
-  - Description: Gross rent for the household
-  - Mean: 2587.238890527773
-  - Median: -52.0
-  - Stddev: 4221.08203125
-  - Non-zero count: 9879081.0
 
 
 - water_and_sewerage_charges:
@@ -3620,6 +4020,16 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Mean: 2.3413876149821307
   - Median: 2.0
   - Stddev: 1.2539736242005226
+  - Non-zero count: 28023811.0
+
+
+- household_random_number:
+  - Type: float
+  - Entity: household
+  - Description: Randomness
+  - Mean: 0.4947288814453084
+  - Median: 0.493000848577249
+  - Stddev: 0.2904878258705139
   - Non-zero count: 28023811.0
 
 
