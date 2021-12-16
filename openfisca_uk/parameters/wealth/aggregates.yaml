@@ -1,8 +1,0 @@
-description: Aggregates of WAS-imputed wealth variables from OpenFisca-UK.
-property_wealth:
-  2019-01-01: 6_237_000_000_000
-corporate_wealth:
-  2019-01-01: 4_824_0255_000_000
-metadata:
-  unit: currency-GBP
-  reference: none

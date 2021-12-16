@@ -1,4 +1,6 @@
 from openfisca_uk.model_api import *
+import yaml
+import sys
 
 
 class carbon_consumption(Variable):
@@ -34,17 +36,28 @@ class carbon_consumption(Variable):
                 spending_by_sector,
             )
         )
-        carbon_emissions = parameters(period).consumption.carbon_emissions
+        carbon = parameters(period).consumption.carbon
         aggregate_emissions_by_sector = [
-            carbon_emissions[category.replace("_consumption", "")]
+            carbon.emissions[category.replace("_consumption", "")]
             for category in CONSUMPTION_VARIABLES
         ]
         carbon_intensity_by_sector = [
-            emissions / spending if spending > 0 else 0
-            for emissions, spending in zip(
-                aggregate_emissions_by_sector, aggregate_spending_by_sector
+            emissions / spending if spending > 0 else carbon.intensity[name]
+            for emissions, spending, name in zip(
+                aggregate_emissions_by_sector,
+                aggregate_spending_by_sector,
+                CONSUMPTION_VARIABLES,
             )
         ]
+        yaml.dump(
+            {
+                x: {"2019-01-01": round(float(y), 6)}
+                for x, y in zip(
+                    CONSUMPTION_VARIABLES, carbon_intensity_by_sector
+                )
+            },
+            sys.stdout,
+        )
         return sum(
             [
                 spending * carbon_intensity
