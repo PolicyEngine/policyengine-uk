@@ -26,5 +26,7 @@ class corporate_tax_incidence(Variable):
             household("corporate_wealth", period)
             * household("household_weight", period)
         ).sum()
-        percentage_change = where(total_wealth > 0, total_change / total_wealth, 0)
+        percentage_change = where(
+            total_wealth > 0, total_change / total_wealth, 0
+        )
         return percentage_change * household("corporate_wealth", period)
