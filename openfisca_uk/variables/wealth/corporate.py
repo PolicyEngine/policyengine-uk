@@ -21,7 +21,7 @@ class corporate_tax_incidence(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        total_change = household.country(
+        total_change = household.state(
             "corporate_stamp_duty_revenue_change", period
         )
         total_wealth = (

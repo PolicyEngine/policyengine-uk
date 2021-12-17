@@ -1,17 +1,17 @@
 from openfisca_uk.model_api import *
 
 
-class country_id(Variable):
-    label = "Country ID"
-    documentation = "Identity of the country"
-    entity = Country
+class state_id(Variable):
+    label = "State ID"
+    documentation = "Identity of the state"
+    entity = State
     definition_period = ETERNITY
     value_type = int
 
 
-class country_weight(Variable):
-    label = "Country weight"
-    documentation = "Number of countries represented"
-    entity = Country
+class state_weight(Variable):
+    label = "State weight"
+    documentation = "Weight value"
+    entity = State
     definition_period = ETERNITY
     value_type = float

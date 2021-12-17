@@ -97,12 +97,12 @@ class stamp_duty_liable(Variable):
 class corporate_stamp_duty_revenue(Variable):
     label = "Stamp Duty (corporations)"
     documentation = "Stamp Duty paid by corporations"
-    entity = Country
+    entity = State
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
 
-    def formula(country, period, parameters):
+    def formula(state, period, parameters):
         sd = parameters(period).hmrc.stamp_duty.statistics
         in_force = not parameters(period).hmrc.stamp_duty.abolition
         return in_force * (
@@ -116,18 +116,18 @@ class corporate_stamp_duty_revenue_change(Variable):
     documentation = (
         "Tota increase in tax revenues from corporations for Stamp Duty"
     )
-    entity = Country
+    entity = State
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
 
-    def formula(country, period, parameters):
+    def formula(state, period, parameters):
         sd = parameters(period).hmrc.stamp_duty.statistics
         baseline_sd = (
             sd.residential.corporate.revenue
             + sd.non_residential.corporate.revenue
         )
-        return country("corporate_stamp_duty_revenue", period) - baseline_sd
+        return state("corporate_stamp_duty_revenue", period) - baseline_sd
 
 
 class stamp_duty(Variable):
