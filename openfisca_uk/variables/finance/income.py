@@ -205,8 +205,10 @@ class hbai_household_net_income(Variable):
     def formula(household, period, parameters):
         gross_income = household("household_gross_income", period)
         tax = household("household_tax", period)
-        ignored_taxes = household("expected_stamp_duty", period) + household(
-            "corporate_tax_incidence", period
+        ignored_taxes = (
+            household("expected_stamp_duty", period)
+            + household("expected_land_transaction_tax", period)
+            + household("corporate_tax_incidence", period)
         )
         return gross_income - tax + ignored_taxes
 

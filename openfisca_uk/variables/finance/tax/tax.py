@@ -27,6 +27,7 @@ class household_tax(Variable):
         personal_taxes = household.sum(household.members("tax", period))
         household_taxes = (
             household("expected_stamp_duty", period)
+            + household("expected_land_transaction_tax", period)
             + household("corporate_tax_incidence", period)
             + household("council_tax", period)
         )
