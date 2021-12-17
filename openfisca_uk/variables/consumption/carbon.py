@@ -1,6 +1,4 @@
 from openfisca_uk.model_api import *
-import yaml
-import sys
 
 
 class carbon_consumption(Variable):
@@ -49,15 +47,6 @@ class carbon_consumption(Variable):
                 CONSUMPTION_VARIABLES,
             )
         ]
-        yaml.dump(
-            {
-                x: {"2019-01-01": round(float(y), 6)}
-                for x, y in zip(
-                    CONSUMPTION_VARIABLES, carbon_intensity_by_sector
-                )
-            },
-            sys.stdout,
-        )
         return sum(
             [
                 spending * carbon_intensity

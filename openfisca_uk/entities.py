@@ -3,6 +3,20 @@
 # This file defines the entities needed by our legislation.
 from openfisca_core.entities import build_entity
 
+State = build_entity(
+    key="state",
+    plural="states",
+    label="State",
+    roles=[
+        {
+            "key": "citizen",
+            "plural": "citizens",
+            "label": "Citizen",
+            "doc": "A person who is a citizen of a country.",
+        }
+    ],
+)
+
 Household = build_entity(
     key="household",
     plural="households",
@@ -22,6 +36,7 @@ Household = build_entity(
             "doc": u"Dependent children in the household.",
         },
     ],
+    containing_entities=["state"],
 )
 
 BenUnit = build_entity(
@@ -44,6 +59,7 @@ BenUnit = build_entity(
             "doc": u"Dependent children.",
         },
     ],
+    containing_entities=["household", "state"],
 )
 
 Person = build_entity(
@@ -54,4 +70,4 @@ Person = build_entity(
     is_person=True,
 )
 
-entities = [Household, BenUnit, Person]
+entities = [State, Household, BenUnit, Person]
