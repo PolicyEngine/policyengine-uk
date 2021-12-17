@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class property_sale_rate(Variable):
     label = "Residential property sale rate"
     documentation = "The percentage of residential property value owned by households sold in the year"
-    entity = Household
+    entity = State
     definition_period = YEAR
     value_type = float
     unit = "/1"

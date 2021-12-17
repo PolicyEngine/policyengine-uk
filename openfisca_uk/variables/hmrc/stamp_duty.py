@@ -146,7 +146,7 @@ class stamp_duty(Variable):
 
 class expected_stamp_duty(Variable):
     label = "Stamp Duty (expected)"
-    documentation = "Expected value of Stamp Duty taxes"
+    documentation = "Expected value of Stamp Duty Land Tax"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -156,6 +156,6 @@ class expected_stamp_duty(Variable):
         in_force = not parameters(period).hmrc.stamp_duty.abolition
         return (
             in_force
-            * household("property_sale_rate", period)
+            * household.state("property_sale_rate", period)
             * household("stamp_duty", period)
         )

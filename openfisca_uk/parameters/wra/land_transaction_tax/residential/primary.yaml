@@ -1,0 +1,32 @@
+description: Residential property progressive tax scale for primary residences
+brackets:
+  - rate: 
+      2018-04-01: 0.0
+    threshold:
+      2018-04-01: 0.0
+  - rate: 
+      2018-04-01: 0.035
+    threshold:
+      2018-04-01: 80_000
+  - rate: 
+      2018-04-01: 0.05
+    threshold:
+      2018-04-01: 250_000
+  - rate: 
+      2018-04-01: 0.075
+    threshold:
+      2018-04-01: 400_000
+  - rate: 
+      2018-04-01: 0.10
+    threshold:
+      2018-04-01: 750_000
+  - rate: 
+      2018-04-01: 0.12
+    threshold:
+      2018-04-01: 1_500_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference:
+    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018 Schedule
+      href: https://www.legislation.gov.uk/wsi/2018/128/schedule
