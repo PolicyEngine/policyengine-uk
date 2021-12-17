@@ -1,0 +1,6 @@
+- name: LTT only in Wales
+  period: 2021
+  input:
+    country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
+  output:
+    ltt_liable: [false, true, false, false]
