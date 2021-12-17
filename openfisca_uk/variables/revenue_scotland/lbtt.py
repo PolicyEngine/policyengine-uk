@@ -87,15 +87,20 @@ class lbtt_liable(Variable):
 
 class land_and_buildings_transaction_tax(Variable):
     label = "Land and Buildings Transaction Tax"
-    documentation = "Total tax liability for LBTT"
+    documentation = "Total tax liability for Scotland's LBTT"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("lbtt_on_residential_property", period) + household(
-            "lbtt_on_non_residential_property", period
+        return add(
+            household,
+            period,
+            [
+                "lbtt_on_residential_property",
+                "lbtt_on_non_residential_property",
+            ],
         )
 
 

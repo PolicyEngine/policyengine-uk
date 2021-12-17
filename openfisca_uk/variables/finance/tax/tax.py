@@ -25,11 +25,16 @@ class household_tax(Variable):
 
     def formula(household, period):
         personal_taxes = household.sum(household.members("tax", period))
-        household_taxes = (
-            household("expected_stamp_duty", period)
-            + household("expected_land_transaction_tax", period)
-            + household("corporate_tax_incidence", period)
-            + household("council_tax", period)
+        household_taxes = add(
+            household,
+            period,
+            [
+                "expected_stamp_duty",
+                "expected_land_transaction_tax",
+                "expected_lbtt",
+                "corporate_tax_incidence",
+                "council_tax",
+            ],
         )
         return personal_taxes + household_taxes
 

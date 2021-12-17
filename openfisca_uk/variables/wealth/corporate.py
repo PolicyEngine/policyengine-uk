@@ -39,7 +39,6 @@ class corporate_tax_incidence(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        total_change = household("corporate_stamp_duty", period) - household(
+        return household("corporate_stamp_duty", period) - household(
             "baseline_corporate_stamp_duty", period
         )
-        return total_change

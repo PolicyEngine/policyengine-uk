@@ -21,8 +21,13 @@ class land_value(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("household_land_value", period) + household(
-            "corporate_land_value", period
+        return add(
+            household,
+            period,
+            [
+                "household_land_value",
+                "corporate_land_value",
+            ],
         )
 
 
