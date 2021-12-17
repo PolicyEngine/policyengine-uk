@@ -1,0 +1,36 @@
+description: Nil threshold used for first time buyers
+brackets:
+  - rate:
+      2015-04-01: 0.0
+    threshold:
+      2015-04-01: 0.0
+  - rate:
+      2015-04-01: 0.02
+      2020-07-15: null
+      2021-03-31: 0.02
+    threshold:
+      2015-04-01: 175_000
+      2020-07-15: null
+      2021-03-31: 175_000
+  - rate:
+      2015-04-01: 0.05
+    threshold:
+      2015-04-01: 250_000
+  - rate:
+      2015-04-01: 0.10
+    threshold:
+      2015-04-01: 325_000
+  - rate:
+      2015-04-01: 0.12
+    threshold:
+      2015-04-01: 750_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference:
+    - title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands) (Scotland) Order 2015
+      href: https://www.legislation.gov.uk/ssi/2015/126/schedule
+    - title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands) (Scotland) Amendment (No. 2) (Coronavirus) Order 2020(2)
+      href: https://www.legislation.gov.uk/ssi/2020/215/article/2/made
+    - title: Land and Buildings Transaction Tax (Scotland) Act 2013 Schedule 4A(3)
+      href: https://www.legislation.gov.uk/asp/2013/11/schedule/4A/paragraph/3

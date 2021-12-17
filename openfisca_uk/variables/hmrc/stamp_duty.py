@@ -94,40 +94,43 @@ class stamp_duty_liable(Variable):
         )
 
 
-class corporate_stamp_duty_revenue(Variable):
-    label = "Stamp Duty (corporations)"
-    documentation = "Stamp Duty paid by corporations"
-    entity = State
+class baseline_corporate_stamp_duty(Variable):
+    label = "Stamp Duty (corporations, baseline)"
+    documentation = "Stamp Duty paid by corporations, incident on this household in the baseline"
+    entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
 
-    def formula(state, period, parameters):
+    def formula(household, period, parameters):
+        sd = parameters(period).hmrc.stamp_duty.statistics
+        return household("shareholding", period) * (
+            sd.residential.corporate.revenue
+            + sd.non_residential.corporate.revenue
+        )
+
+
+class corporate_stamp_duty(Variable):
+    label = "Stamp Duty (corporations)"
+    documentation = (
+        "Stamp Duty paid by corporations, incident on this household"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
         sd = parameters(period).hmrc.stamp_duty.statistics
         in_force = not parameters(period).hmrc.stamp_duty.abolition
-        return in_force * (
-            sd.residential.corporate.revenue
-            + sd.non_residential.corporate.revenue
+        return (
+            household("shareholding", period)
+            * in_force
+            * (
+                sd.residential.corporate.revenue
+                + sd.non_residential.corporate.revenue
+            )
         )
-
-
-class corporate_stamp_duty_revenue_change(Variable):
-    label = "Change in corporate Stamp Duty liabilities"
-    documentation = (
-        "Tota increase in tax revenues from corporations for Stamp Duty"
-    )
-    entity = State
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"
-
-    def formula(state, period, parameters):
-        sd = parameters(period).hmrc.stamp_duty.statistics
-        baseline_sd = (
-            sd.residential.corporate.revenue
-            + sd.non_residential.corporate.revenue
-        )
-        return state("corporate_stamp_duty_revenue", period) - baseline_sd
 
 
 class stamp_duty(Variable):

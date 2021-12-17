@@ -10,6 +10,24 @@ class corporate_wealth(Variable):
     unit = "currency-GBP"
 
 
+class shareholding(Variable):
+    label = "Share in the corporate sector"
+    documentation = "Exposure to taxes on corporations"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        nbs = parameters(period).wealth.national_balance_sheet
+        wealth = household("corporate_wealth", period)
+        total_wealth = (wealth * household("household_weight", period)).sum()
+        total_wealth = where(
+            total_wealth > 0, total_wealth, nbs.household.financial_net_worth
+        )
+        return wealth / total_wealth
+
+
 class corporate_tax_incidence(Variable):
     label = "Corporate tax incidence"
     documentation = (
@@ -21,14 +39,7 @@ class corporate_tax_incidence(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        total_change = household.state(
-            "corporate_stamp_duty_revenue_change", period
+        total_change = household("corporate_stamp_duty", period) - household(
+            "baseline_corporate_stamp_duty", period
         )
-        total_wealth = (
-            household("corporate_wealth", period)
-            * household("household_weight", period)
-        ).sum()
-        percentage_change = where(
-            total_wealth > 0, total_change / total_wealth, 0
-        )
-        return percentage_change * household("corporate_wealth", period)
+        return total_change
