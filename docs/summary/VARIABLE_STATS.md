@@ -53,22 +53,62 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 32417746.0
 
 
+- baseline_business_rates:
+  - Type: float
+  - Entity: household
+  - Description: Baseline business rates incidence
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- business_rates:
+  - Type: float
+  - Entity: household
+  - Description: Business rates incidence
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- business_rates_change_incidence:
+  - Type: float
+  - Entity: household
+  - Description: Business rates changes
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- baseline_corporate_stamp_duty:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty (corporations, baseline)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
 - corporate_stamp_duty:
   - Type: float
   - Entity: household
   - Description: Stamp Duty (corporations)
-  - Mean: 3129999872.0
-  - Median: 3129999872.0
-  - Stddev: 128762.203125
-  - Non-zero count: 28023811.0
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 
 
-- corporate_stamp_duty_change:
+- corporate_stamp_duty_change_incidence:
   - Type: float
   - Entity: household
-  - Description: Change in corporate Stamp Duty liabilities
-  - Mean: -128.0
-  - Median: -128.0
+  - Description: Corporate Stamp Duty
+  - Mean: 0.0
+  - Median: 0.0
   - Stddev: 0.0
   - Non-zero count: 0.0
 
@@ -143,6 +183,16 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 0.0
 
 
+- shareholding:
+  - Type: float
+  - Entity: household
+  - Description: Share in the corporate sector
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
 - main_residence_value:
   - Type: float
   - Entity: household
@@ -193,6 +243,26 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 0.0
 
 
+- corporate_land_value:
+  - Type: float
+  - Entity: household
+  - Description: Land value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- household_land_value:
+  - Type: float
+  - Entity: household
+  - Description: Land value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
 - land_value:
   - Type: float
   - Entity: household
@@ -207,6 +277,56 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Owned land
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- expected_lbtt:
+  - Type: float
+  - Entity: household
+  - Description: Land and Buildings Transaction Tax (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- land_and_buildings_transaction_tax:
+  - Type: float
+  - Entity: household
+  - Description: Land and Buildings Transaction Tax
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_liable:
+  - Type: bool
+  - Entity: household
+  - Description: Liable for Land and Buildings Transaction Tax
+  - Mean: 0.08940190183269506
+  - Median: 0.0
+  - Stddev: 0.3490154380400467
+  - Non-zero count: 2505382.0
+
+
+- lbtt_on_non_residential_property:
+  - Type: float
+  - Entity: household
+  - Description: LBTT on non-residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_on_residential_property:
+  - Type: float
+  - Entity: household
+  - Description: Land and Buildings Transaction Tax on residential property
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
@@ -425,12 +545,12 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
 
 - property_sale_rate:
   - Type: float
-  - Entity: household
+  - Entity: state
   - Description: Residential property sale rate
   - Mean: 0.05399347469210625
   - Median: 0.05399347469210625
-  - Stddev: 9.612601388653275e-06
-  - Non-zero count: 28023811.0
+  - Stddev: nan
+  - Non-zero count: 1.0
 
 
 - rent:
@@ -4231,4 +4351,74 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Median: inf
   - Stddev: nan
   - Non-zero count: 34527020.0
+
+
+- state_id:
+  - Type: int
+  - Entity: state
+  - Description: State ID
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: nan
+  - Non-zero count: 1.0
+
+
+- state_weight:
+  - Type: float
+  - Entity: state
+  - Description: State weight
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: nan
+  - Non-zero count: 1.0
+
+
+- expected_land_transaction_tax:
+  - Type: float
+  - Entity: household
+  - Description: Land Transaction Tax (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- land_transaction_tax:
+  - Type: float
+  - Entity: household
+  - Description: Land Transaction Tax
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_liable:
+  - Type: bool
+  - Entity: household
+  - Description: Liable for Land Transaction Tax
+  - Mean: 0.048650984692981264
+  - Median: 0.0
+  - Stddev: 0.19640362298074734
+  - Non-zero count: 1363386.0
+
+
+- ltt_on_non_residential_property:
+  - Type: float
+  - Entity: household
+  - Description: LTT on non-residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_on_residential_property:
+  - Type: float
+  - Entity: household
+  - Description: LTT on residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 

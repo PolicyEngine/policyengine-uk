@@ -1,9 +1,14 @@
-format: jb-article
+format: jb-book
 root: index
-sections:
-  - file: reforms
-  - file: weighting
-  - file: individuals
-  - file: graphs
-  - file: validation
-  - file: child_benefit
+parts:
+  - caption: Model
+    chapters:
+      - file: model/child_benefit
+      - file: model/stamp_duty
+      - file: model/validation
+  - caption: Usage
+    chapters:
+      - file: usage/reforms
+      - file: usage/weighting
+      - file: usage/individuals
+      - file: usage/graphs

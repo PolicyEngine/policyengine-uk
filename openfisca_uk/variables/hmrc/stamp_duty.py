@@ -133,6 +133,20 @@ class corporate_stamp_duty(Variable):
         )
 
 
+class corporate_stamp_duty_change_incidence(Variable):
+    label = "Corporate Stamp Duty"
+    documentation = "Total incidence of changes to corporate Stamp duty"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        return household("corporate_stamp_duty", period) - household(
+            "baseline_corporate_stamp_duty", period
+        )
+
+
 class stamp_duty(Variable):
     label = "Stamp Duty Land Tax"
     documentation = "Total tax liability for Stamp Duty Land Tax"
