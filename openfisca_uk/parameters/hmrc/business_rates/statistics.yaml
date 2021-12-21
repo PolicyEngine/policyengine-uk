@@ -1,0 +1,33 @@
+revenue:
+  description: Total revenue raised by Business Rates
+  ENGLAND: 
+    values:
+      2019-01-01: 24_967_000_000  # Outturn
+      2020-01-01: 16_403_000_000  # Forecast
+      2021-01-01: 27_222_000_000  # Forecast
+    metadata:
+      reference:
+        - title: National non-domestic (non-residential) rates collected by councils in England
+          href: https://www.gov.uk/government/collections/national-non-domestic-rates-collected-by-councils#2021-to-2022
+  WALES:
+    values:
+      2020-01-01: 1_053_499_000
+    metadata:
+      reference:
+        - title: Non-domestic (non-residential) rates estimates by authority (£ thousand) | StatsWales
+          href: https://statswales.gov.wales/Catalogue/Local-Government/Finance/Non-Domestic-Rates/Estimates/nondomesticratesestimates-by-authority
+  SCOTLAND:
+    values:
+      2020-01-01: 1_912_000_000
+      2021-01-01: 2_123_000_000
+    metadata:
+      reference:
+        - title: Non-domestic (non-residential) rates income statistics
+          href: https://www.gov.scot/publications/non-domestic-rates-income-statistics/
+  NORTHERN_IRELAND:
+    values:
+      2018-01-01: 1_334_000_000
+    metadata:
+      reference:
+        - title: 2019 Review of Business Rates
+          href: https://minutes.belfastcity.gov.uk/documents/s81213/Terms%20of%20Reference.pdf

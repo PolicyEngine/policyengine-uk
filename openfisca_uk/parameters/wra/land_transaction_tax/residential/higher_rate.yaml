@@ -1,0 +1,40 @@
+description: Higher residential property progressive tax scale for non-primary residences
+brackets:
+  - rate: 
+      2018-04-01: 0.03
+      2020-12-22: 0.04
+    threshold:
+      2018-04-01: 0.0
+  - rate: 
+      2018-04-01: 0.065
+      2020-12-22: 0.075
+    threshold:
+      2018-04-01: 180_000
+  - rate: 
+      2018-04-01: 0.08
+      2020-12-22: 0.09
+    threshold:
+      2018-04-01: 250_000
+  - rate: 
+      2018-04-01: 0.105
+      2020-12-22: 0.115
+    threshold:
+      2018-04-01: 400_000
+  - rate: 
+      2018-04-01: 0.13
+      2020-12-22: 0.14
+    threshold:
+      2018-04-01: 750_000
+  - rate: 
+      2018-04-01: 0.15
+      2020-12-22: 0.16
+    threshold:
+      2018-04-01: 1_500_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference:
+    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018 Schedule
+      href: https://www.legislation.gov.uk/wsi/2018/128/schedule
+    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) (Amendment) Regulations 2020
+      href: https://www.legislation.gov.uk/wsi/2020/1618/regulation/6/made

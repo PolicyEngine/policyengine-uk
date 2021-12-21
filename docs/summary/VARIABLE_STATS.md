@@ -3,6 +3,156 @@
 All statistics generated from the uprated (to 2020) 2018-19 Family Resources Survey, with simulation turned on.
 
 
+- baseline_hbai_excluded_income:
+  - Type: float
+  - Entity: household
+  - Description: HBAI-excluded income (baseline)
+  - Mean: -1041.8182101039463
+  - Median: 0.0
+  - Stddev: 4469.97998046875
+  - Non-zero count: 0.0
+
+
+- hbai_excluded_income:
+  - Type: float
+  - Entity: household
+  - Description: HBAI-excluded income
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- hbai_excluded_income_change:
+  - Type: float
+  - Entity: household
+  - Description: Change in HBAI-excluded income
+  - Mean: 1041.8182101039463
+  - Median: 0.0
+  - Stddev: 4469.97998046875
+  - Non-zero count: 13565526.0
+
+
+- baseline_corporate_sdlt:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty (corporations, baseline)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- corporate_sdlt:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty (corporations)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- corporate_sdlt_change_incidence:
+  - Type: float
+  - Entity: household
+  - Description: Corporate Stamp Duty
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- expected_sdlt:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- sdlt_liable:
+  - Type: bool
+  - Entity: household
+  - Description: Liable for Stamp Duty
+  - Mean: 0.8619471134743236
+  - Median: 1.0
+  - Stddev: 0.38597379928653364
+  - Non-zero count: 24155043.0
+
+
+- sdlt_on_non_residential_property_rent:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty on non-residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- sdlt_on_non_residential_property_transactions:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty on non-residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- sdlt_on_rent:
+  - Type: float
+  - Entity: household
+  - Description: SDLT on property rental
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- sdlt_on_residential_property_rent:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty on residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- sdlt_on_residential_property_transactions:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty on residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- sdlt_on_transactions:
+  - Type: float
+  - Entity: household
+  - Description: SDLT on property transactions
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- stamp_duty_land_tax:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty Land Tax
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
 - child_benefit:
   - Type: float
   - Entity: benunit
@@ -53,70 +203,30 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 32417746.0
 
 
-- corporate_stamp_duty:
+- baseline_business_rates:
   - Type: float
   - Entity: household
-  - Description: Stamp Duty (corporations)
-  - Mean: 3129999872.0
-  - Median: 3129999872.0
-  - Stddev: 128762.203125
-  - Non-zero count: 28023811.0
-
-
-- corporate_stamp_duty_change:
-  - Type: float
-  - Entity: household
-  - Description: Change in corporate Stamp Duty liabilities
-  - Mean: -128.0
-  - Median: -128.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
-
-
-- expected_stamp_duty:
-  - Type: float
-  - Entity: household
-  - Description: Stamp Duty (expected)
+  - Description: Baseline business rates incidence
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
   - Non-zero count: 0.0
 
 
-- stamp_duty:
+- business_rates:
   - Type: float
   - Entity: household
-  - Description: Stamp Duty Land Tax
+  - Description: Business rates incidence
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
   - Non-zero count: 0.0
 
 
-- stamp_duty_liable:
-  - Type: bool
-  - Entity: household
-  - Description: Liable for Stamp Duty
-  - Mean: 0.8619471134743236
-  - Median: 1.0
-  - Stddev: 0.38597379928653364
-  - Non-zero count: 24155043.0
-
-
-- stamp_duty_on_non_residential_property:
+- business_rates_change_incidence:
   - Type: float
   - Entity: household
-  - Description: Stamp Duty on non-residential property
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
-
-
-- stamp_duty_on_residential_property:
-  - Type: float
-  - Entity: household
-  - Description: Stamp Duty on residential property
+  - Description: Business rates changes
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
@@ -137,6 +247,16 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Corporate wealth
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- shareholding:
+  - Type: float
+  - Entity: household
+  - Description: Share in the corporate sector
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
@@ -193,6 +313,26 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Non-zero count: 0.0
 
 
+- corporate_land_value:
+  - Type: float
+  - Entity: household
+  - Description: Land value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- household_land_value:
+  - Type: float
+  - Entity: household
+  - Description: Land value
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
 - land_value:
   - Type: float
   - Entity: household
@@ -207,6 +347,96 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Owned land
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- expected_lbtt:
+  - Type: float
+  - Entity: household
+  - Description: Land and Buildings Transaction Tax (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- land_and_buildings_transaction_tax:
+  - Type: float
+  - Entity: household
+  - Description: Land and Buildings Transaction Tax
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_liable:
+  - Type: bool
+  - Entity: household
+  - Description: Liable for Land and Buildings Transaction Tax
+  - Mean: 0.08940190183269506
+  - Median: 0.0
+  - Stddev: 0.3490154380400467
+  - Non-zero count: 2505382.0
+
+
+- lbtt_on_non_residential_property_rent:
+  - Type: float
+  - Entity: household
+  - Description: LBTT on non-residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_on_non_residential_property_transactions:
+  - Type: float
+  - Entity: household
+  - Description: LBTT on non-residential property transactions
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_on_rent:
+  - Type: float
+  - Entity: household
+  - Description: LBTT on property rental
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_on_residential_property_rent:
+  - Type: float
+  - Entity: household
+  - Description: LBTT on residential property rent
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_on_residential_property_transactions:
+  - Type: float
+  - Entity: household
+  - Description: LBTT on residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- lbtt_on_transactions:
+  - Type: float
+  - Entity: household
+  - Description: LBTT on property transactions
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
@@ -425,12 +655,12 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
 
 - property_sale_rate:
   - Type: float
-  - Entity: household
+  - Entity: state
   - Description: Residential property sale rate
   - Mean: 0.05399347469210625
   - Median: 0.05399347469210625
-  - Stddev: 9.612601388653275e-06
-  - Non-zero count: 28023811.0
+  - Stddev: nan
+  - Non-zero count: 1.0
 
 
 - rent:
@@ -483,20 +713,20 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Equivalised household net income (HBAI)
-  - Mean: 31990.78612610447
-  - Median: 27461.119318641573
-  - Stddev: 21769.8359375
-  - Non-zero count: 27492245.0
+  - Mean: 32940.16243299035
+  - Median: 27990.282807884047
+  - Stddev: 23121.50390625
+  - Non-zero count: 27528718.0
 
 
 - equiv_hbai_household_net_income_ahc:
   - Type: float
   - Entity: household
   - Description: Equivalised household net income, after housing costs (HBAI)
-  - Mean: 28528.591183491902
-  - Median: 24584.534375341755
-  - Stddev: 22135.423828125
-  - Non-zero count: 26853515.0
+  - Mean: 29492.47590520277
+  - Median: 25222.284309223156
+  - Stddev: 23509.021484375
+  - Non-zero count: 26911887.0
 
 
 - equiv_household_net_income:
@@ -523,20 +753,20 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Household net income (HBAI definition)
-  - Mean: 34559.17597469817
-  - Median: 28021.101067243304
-  - Stddev: 26356.55859375
-  - Non-zero count: 27492245.0
+  - Mean: 35600.99417337193
+  - Median: 28725.006893677702
+  - Stddev: 27947.359375
+  - Non-zero count: 27528718.0
 
 
 - hbai_household_net_income_ahc:
   - Type: float
   - Entity: household
   - Description: Household net income, after housing costs
-  - Mean: 30408.022911887234
-  - Median: 24261.8148847055
-  - Stddev: 25901.3359375
-  - Non-zero count: 26853515.0
+  - Mean: 31449.84110679653
+  - Median: 24866.352727557634
+  - Stddev: 27529.150390625
+  - Non-zero count: 26911887.0
 
 
 - hours_worked:
@@ -3573,10 +3803,10 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: bool
   - Entity: household
   - Description: Whether the household is in deep absolute poverty (below half the poverty line), after housing costs
-  - Mean: 0.10003757162079062
+  - Mean: 0.09664142396621216
   - Median: 0.0
-  - Stddev: 0.29344175255950317
-  - Non-zero count: 2803434.0
+  - Stddev: 0.2891568911388552
+  - Non-zero count: 2708261.0
 
 
 - in_deep_poverty_bhc:
@@ -3593,40 +3823,40 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Type: bool
   - Entity: household
   - Description: Whether the household is in absolute poverty, after housing costs
-  - Mean: 0.22332761950185862
+  - Mean: 0.21505576097412304
   - Median: 0.0
-  - Stddev: 0.417653176927343
-  - Non-zero count: 6258491.0
+  - Stddev: 0.412264448261856
+  - Non-zero count: 6026682.0
 
 
 - in_poverty_bhc:
   - Type: bool
   - Entity: household
   - Description: Whether the household is in absolute poverty, before housing costs
-  - Mean: 0.19885396743505016
+  - Mean: 0.1904155005898377
   - Median: 0.0
-  - Stddev: 0.40424179393325643
-  - Non-zero count: 5572646.0
+  - Stddev: 0.3983217270535231
+  - Non-zero count: 5336168.0
 
 
 - poverty_gap_ahc:
   - Type: float
   - Entity: household
   - Description: Positive financial gap between net household income and the poverty line, after housing costs
-  - Mean: 1626.753515845878
+  - Mean: 1571.4026647839407
   - Median: 0.0
-  - Stddev: 4194.80224609375
-  - Non-zero count: 6258491.0
+  - Stddev: 4133.63818359375
+  - Non-zero count: 6026682.0
 
 
 - poverty_gap_bhc:
   - Type: float
   - Entity: household
   - Description: Positive financial gap between net household income and the poverty line
-  - Mean: 1144.604029494545
+  - Mean: 1087.7067825807642
   - Median: 0.0
-  - Stddev: 3170.0283203125
-  - Non-zero count: 5572646.0
+  - Stddev: 3086.734375
+  - Non-zero count: 5336168.0
 
 
 - poverty_line_ahc:
@@ -4231,4 +4461,114 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   - Median: inf
   - Stddev: nan
   - Non-zero count: 34527020.0
+
+
+- state_id:
+  - Type: int
+  - Entity: state
+  - Description: State ID
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: nan
+  - Non-zero count: 1.0
+
+
+- state_weight:
+  - Type: float
+  - Entity: state
+  - Description: State weight
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: nan
+  - Non-zero count: 1.0
+
+
+- expected_ltt:
+  - Type: float
+  - Entity: household
+  - Description: Land Transaction Tax (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- land_transaction_tax:
+  - Type: float
+  - Entity: household
+  - Description: Land Transaction Tax
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_liable:
+  - Type: bool
+  - Entity: household
+  - Description: Liable for Land Transaction Tax
+  - Mean: 0.048650984692981264
+  - Median: 0.0
+  - Stddev: 0.19640362298074734
+  - Non-zero count: 1363386.0
+
+
+- ltt_on_non_residential_property_rent:
+  - Type: float
+  - Entity: household
+  - Description: LTT on non-residential property rent
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_on_non_residential_property_transactions:
+  - Type: float
+  - Entity: household
+  - Description: LTT on non-residential property transactions
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_on_rent:
+  - Type: float
+  - Entity: household
+  - Description: LTT on property rental
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_on_residential_property_rent:
+  - Type: float
+  - Entity: household
+  - Description: LTT on residential property rent
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_on_residential_property_transactions:
+  - Type: float
+  - Entity: household
+  - Description: LTT on residential property
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
+
+
+- ltt_on_transactions:
+  - Type: float
+  - Entity: household
+  - Description: LTT on property transactions
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 

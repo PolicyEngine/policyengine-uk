@@ -1,10 +1,10 @@
 from openfisca_uk import Microsimulation
 import pytest
-from openfisca_uk_data import FRS
+from openfisca_uk_data import FRSEnhanced
 
 YEARS = range(2017, 2022)
 
-baseline = Microsimulation(dataset=FRS, year=2018)
+baseline = Microsimulation(dataset=FRSEnhanced, year=2019)
 
 
 @pytest.mark.parametrize("year", YEARS)

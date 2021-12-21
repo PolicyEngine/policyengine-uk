@@ -1,0 +1,43 @@
+# Tests from official calculator at https://lttcalculator.wra.gov.wales/
+- name: Residential property - low value
+  period: 2021
+  input:
+    main_residential_property_purchased: 160_000
+    country: WALES
+  output:
+    land_transaction_tax: 0
+- name: Residential property - medium value in LTT holiday
+  period: 2021
+  input:
+    main_residential_property_purchased: 450_000
+    country: WALES
+  output:
+    land_transaction_tax: 11_250
+- name: Residential property - medium value after LTT holiday
+  period: 2022
+  input:
+    main_residential_property_purchased: 450_000
+    country: WALES
+  output:
+    land_transaction_tax: 13_700
+- name: Residential property - very high value after LTT holiday
+  period: 2022
+  input:
+    main_residential_property_purchased: 2_500_000
+    country: WALES
+  output:
+    land_transaction_tax: 231_200
+- name: Residential property - very high value after LTT holiday, second home
+  period: 2022
+  input:
+    additional_residential_property_purchased: 2_500_000
+    country: WALES
+  output:
+    land_transaction_tax: 331_200
+- name: Non-residential property - very high value after LTT holiday
+  period: 2022
+  input:
+    non_residential_property_purchased: 2_500_000
+    country: WALES
+  output:
+    land_transaction_tax: 127_750

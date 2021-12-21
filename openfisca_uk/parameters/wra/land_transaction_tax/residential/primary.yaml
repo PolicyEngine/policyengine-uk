@@ -1,0 +1,43 @@
+description: Residential property progressive tax scale for primary residences
+brackets:
+  - rate: 
+      2018-04-01: 0.0
+    threshold:
+      2018-04-01: 0.0
+  - rate: 
+      2018-04-01: 0.035
+      2020-07-27: null
+      2021-07-01: 0.035
+    threshold:
+      2018-04-01: 180_000
+      2020-07-27: null
+      2021-07-01: 180_000
+  - rate: 
+      2018-04-01: 0.05
+    threshold:
+      2018-04-01: 250_000
+  - rate: 
+      2018-04-01: 0.075
+    threshold:
+      2018-04-01: 400_000
+  - rate: 
+      2018-04-01: 0.10
+    threshold:
+      2018-04-01: 750_000
+  - rate: 
+      2018-04-01: 0.12
+    threshold:
+      2018-04-01: 1_500_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference:
+    # Original rates
+    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018 Schedule
+      href: https://www.legislation.gov.uk/wsi/2018/128/schedule
+    # LTT pandemic-related holiday
+    - title: The Land Transaction Tax (Temporary Variation of Rates and Bands for Residential Property Transactions) (Wales) Regulations 2020 Schedule
+      href: https://www.legislation.gov.uk/wsi/2020/794/schedule
+    # Extension of LTT holiday (1 April to 1 July 2021)
+    - title: The Land Transaction Tax (Temporary Variation of Rates and Bands for Residential Property Transactions) (Wales) (Amendment) Regulations 2021
+      href: https://www.legislation.gov.uk/wsi/2021/238/regulation/2/made

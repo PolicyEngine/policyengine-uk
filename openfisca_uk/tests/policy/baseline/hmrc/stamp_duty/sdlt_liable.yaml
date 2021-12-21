@@ -1,0 +1,6 @@
+- name: Stamp Duty only in England and NI
+  period: 2021
+  input:
+    country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
+  output:
+    sdlt_liable: [true, false, false, true]

@@ -11,21 +11,40 @@ class owned_land(Variable):
 
 
 class land_value(Variable):
+    label = "Land value"
+    documentation = (
+        "Estimated total land value (directly and indirectly owned)"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period):
+        return add(
+            household,
+            period,
+            [
+                "household_land_value",
+                "corporate_land_value",
+            ],
+        )
+
+
+class household_land_value(Variable):
     entity = Household
     label = "Land value"
-    documentation = "Estimated total land value exposure (your property's land value, and any share of corporate land value)"
+    documentation = (
+        "Estimated total land value directly owned by the household"
+    )
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
 
     def formula(household, period, parameters):
         property_wealth = household("property_wealth", period)
-        corporate_wealth = household("corporate_wealth", period)
         total_property_wealth = (
             property_wealth * household("household_weight", period)
-        ).sum()
-        total_corporate_wealth = (
-            corporate_wealth * household("household_weight", period)
         ).sum()
         land = parameters(period).wealth.land
         property_wealth_intensity = (
@@ -36,6 +55,25 @@ class land_value(Variable):
             property_wealth_intensity,
             land.intensity.property_wealth,
         )
+        return property_wealth * property_wealth_intensity + household(
+            "owned_land", period
+        )
+
+
+class corporate_land_value(Variable):
+    entity = Household
+    label = "Land value"
+    documentation = "Estimated total land value indirectly owned by the household from corporate holdings"
+    unit = "currency-GBP"
+    definition_period = YEAR
+    value_type = float
+
+    def formula(household, period, parameters):
+        corporate_wealth = household("corporate_wealth", period)
+        total_corporate_wealth = (
+            corporate_wealth * household("household_weight", period)
+        ).sum()
+        land = parameters(period).wealth.land
         corporate_wealth_intensity = (
             land.value.aggregate_corporate_land_value / total_corporate_wealth
         )
@@ -44,8 +82,4 @@ class land_value(Variable):
             corporate_wealth_intensity,
             land.intensity.corporate_wealth,
         )
-        return (
-            property_wealth * property_wealth_intensity
-            + corporate_wealth * corporate_wealth_intensity
-            + household("owned_land", period)
-        )
+        return corporate_wealth * corporate_wealth_intensity

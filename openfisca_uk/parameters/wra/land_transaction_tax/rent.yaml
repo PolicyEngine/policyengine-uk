@@ -1,0 +1,23 @@
+description: Progressive tax scale for cumulative rent
+brackets:
+  - rate: 
+      2018-04-01: 0.0
+    threshold:
+      2018-04-01: 0.0
+  - rate: 
+      2018-04-01: 0.01
+    threshold:
+      2018-04-01: 150_000
+      2020-12-22: 225_000
+  - rate: 
+      2018-04-01: 0.02
+    threshold:
+      2018-04-01: 2_000_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference:
+    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018 Schedule
+      href: https://www.legislation.gov.uk/wsi/2018/128/schedule
+    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) (Amendment) Regulations 2020
+      href: https://www.legislation.gov.uk/wsi/2020/1618/regulation/6/made
