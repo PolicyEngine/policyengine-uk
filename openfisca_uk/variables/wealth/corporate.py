@@ -43,7 +43,7 @@ class corporate_tax_incidence(Variable):
             household,
             period,
             [
-                "corporate_stamp_duty_change_incidence",
+                "corporate_sdlt_change_incidence",
                 "business_rates_change_incidence",
             ],
         )

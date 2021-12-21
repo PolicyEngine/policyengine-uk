@@ -140,7 +140,7 @@ class land_transaction_tax(Variable):
         )
 
 
-class expected_land_transaction_tax(Variable):
+class expected_ltt(Variable):
     label = "Land Transaction Tax (expected)"
     documentation = "Expected value of Land Transaction Tax"
     entity = Household

@@ -29,10 +29,9 @@ class household_tax(Variable):
             household,
             period,
             [
-                "expected_stamp_duty",
-                "expected_land_transaction_tax",
+                "expected_sdlt",
+                "expected_ltt",
                 "expected_lbtt",
-                "corporate_tax_incidence",
                 "council_tax",
             ],
         )

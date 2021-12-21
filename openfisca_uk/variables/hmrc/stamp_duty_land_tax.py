@@ -138,7 +138,7 @@ class sdlt_liable(Variable):
         )
 
 
-class baseline_corporate_stamp_duty(Variable):
+class baseline_corporate_sdlt(Variable):
     label = "Stamp Duty (corporations, baseline)"
     documentation = "Stamp Duty paid by corporations, incident on this household in the baseline"
     entity = Household
@@ -164,7 +164,7 @@ class corporate_sdlt(Variable):
     value_type = float
     unit = "currency-GBP"
 
-    formula = baseline_corporate_stamp_duty.formula
+    formula = baseline_corporate_sdlt.formula
 
 
 class corporate_sdlt_change_incidence(Variable):
@@ -176,8 +176,8 @@ class corporate_sdlt_change_incidence(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("corporate_stamp_duty", period) - household(
-            "baseline_corporate_stamp_duty", period
+        return household("corporate_sdlt", period) - household(
+            "baseline_corporate_sdlt", period
         )
 
 
@@ -191,7 +191,7 @@ class stamp_duty_land_tax(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/part/4"
 
     def formula(household, period):
-        return household("stamp_duty_land_tax_liable", period) * add(
+        return household("sdlt_liable", period) * add(
             household,
             period,
             [
