@@ -1,8 +1,5 @@
 adjusted_net_income: 
   ukmod: il_tinty
-income_tax: 
-  ukmod: tin_s
-  max_mean_rel_error: 0.9
 employee_NI: tscee_s
 self_employed_NI:
   ukmod: tscse_s
