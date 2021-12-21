@@ -1,0 +1,29 @@
+- name: No Child Benefit, no charge
+  period: 2021
+  input:
+    child_benefit: 0
+  output:
+    CB_HITC: 0
+
+- name: Child Benefit, under income threshold
+  period: 2021
+  input:
+    child_benefit: 1_000
+  output:
+    CB_HITC: 0
+
+- name: Child Benefit, halfway through phase-out
+  period: 2021
+  input:
+    child_benefit: 1_000
+    employment_income: 55_000
+  output:
+    CB_HITC: 500
+
+- name: Child Benefit, all the way through phase-out
+  period: 2021
+  input:
+    child_benefit: 1_000
+    employment_income: 60_000
+  output:
+    CB_HITC: 1_000
