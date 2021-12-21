@@ -135,8 +135,9 @@ class land_transaction_tax(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("ltt_on_transactions", period) + household(
-            "ltt_on_rent", period
+        return household("ltt_liable", period) * (
+            household("ltt_on_transactions", period)
+            + household("ltt_on_rent", period)
         )
 
 

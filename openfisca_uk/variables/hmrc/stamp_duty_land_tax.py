@@ -213,4 +213,4 @@ class expected_sdlt(Variable):
         return (
             household.state("property_sale_rate", period)
             * household("stamp_duty_land_tax", period)
-        ) + household("corporate_sdlt_change_incidence", period)
+        ) + household("corporate_sdlt", period)
