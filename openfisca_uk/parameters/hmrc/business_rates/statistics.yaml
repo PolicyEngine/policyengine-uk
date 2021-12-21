@@ -2,9 +2,9 @@ revenue:
   description: Total revenue raised by Business Rates
   ENGLAND: 
     values:
-      2019-01-01: 24_967_000_000 # Outturn
-      2020-01-01: 16_403_000_000 # Forecast
-      2021-01-01: 27_222_000_000 # Forecast
+      2019-01-01: 24_967_000_000  # Outturn
+      2020-01-01: 16_403_000_000  # Forecast
+      2021-01-01: 27_222_000_000  # Forecast
     metadata:
       reference:
         - title: National non-domestic (non-residential) rates collected by councils in England
