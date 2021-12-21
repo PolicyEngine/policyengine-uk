@@ -53,24 +53,17 @@ class meets_marriage_allowance_income_conditions(Variable):
     definition_period = YEAR
     value_type = bool
 
-    def formula(person, period, parameters):
+    def formula(person, period):
         tax_band = person("tax_band", period)
         bands = tax_band.possible_values
-        under_PA = person("tax_band", period) == bands.NONE
         band = person("tax_band", period)
-        is_adult = person("is_adult", period)
-        partner_is_under_PA = ~under_PA & (
-            person.benunit.max(is_adult & under_PA) > 0
-        )
         # Marriage Allowance is eligible for couples with one in the basic rate bracket and
         # one not in a tax bracket. For those paying Scottish rates, the taxpayer can be in
         # the starter or intermediate rate brackets.
-        meets_band_eligibility = ~(band == bands.HIGHER) | ~(
+        meets_band_eligibility = ~(band == bands.HIGHER) & ~(
             band == bands.ADDITIONAL
         )
-        marital = person("marital_status", period)
-        married = marital == marital.possible_values.MARRIED
-        return married & partner_is_under_PA & meets_band_eligibility
+        return meets_band_eligibility
 
 
 class partners_unused_personal_allowance(Variable):
@@ -95,7 +88,11 @@ class marriage_allowance(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
 
     def formula(person, period, parameters):
-        eligible = person("meets_marriage_allowance_income_conditions", period)
+        marital = person("marital_status", period)
+        married = marital == marital.possible_values.MARRIED
+        eligible = married & person(
+            "meets_marriage_allowance_income_conditions", period
+        )
         transferable_amount = person(
             "partners_unused_personal_allowance", period
         )

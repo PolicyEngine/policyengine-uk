@@ -9,7 +9,7 @@ This file calculates the overall liability for Income Tax.
 class earned_taxable_income(Variable):
     value_type = float
     entity = Person
-    label = u"Non-savings, non-dividend income for Income Tax"
+    label = "Non-savings, non-dividend income for Income Tax"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 10"
 
@@ -27,7 +27,7 @@ class earned_taxable_income(Variable):
 class taxed_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income which is taxed"
+    label = "Income which is taxed"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -42,7 +42,7 @@ class taxed_income(Variable):
 class basic_rate_earned_income(Variable):
     value_type = float
     entity = Person
-    label = u"Earned income (non-savings, non-dividend) at the basic rate"
+    label = "Earned income (non-savings, non-dividend) at the basic rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -55,7 +55,7 @@ class basic_rate_earned_income(Variable):
 class higher_rate_earned_income(Variable):
     value_type = float
     entity = Person
-    label = u"Earned income (non-savings, non-dividend) at the higher rate"
+    label = "Earned income (non-savings, non-dividend) at the higher rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -71,7 +71,7 @@ class higher_rate_earned_income(Variable):
 class add_rate_earned_income(Variable):
     value_type = float
     entity = Person
-    label = u"Earned income (non-savings, non-dividend) at the additional rate"
+    label = "Earned income (non-savings, non-dividend) at the additional rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -86,7 +86,7 @@ class add_rate_earned_income(Variable):
 class basic_rate_earned_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income tax on earned income at the basic rate"
+    label = "Income tax on earned income at the basic rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -98,7 +98,7 @@ class basic_rate_earned_income_tax(Variable):
 class higher_rate_earned_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income tax on earned income at the higher rate"
+    label = "Income tax on earned income at the higher rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -110,7 +110,7 @@ class higher_rate_earned_income_tax(Variable):
 class add_rate_earned_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income tax on earned income at the additional rate"
+    label = "Income tax on earned income at the additional rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -122,7 +122,7 @@ class add_rate_earned_income_tax(Variable):
 class earned_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income tax on earned income"
+    label = "Income tax on earned income"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 10"
 
@@ -164,7 +164,7 @@ class TaxBand(Enum):
 class pays_scottish_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Whether the individual pays Scottish Income Tax rates"
+    label = "Whether the individual pays Scottish Income Tax rates"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -178,7 +178,7 @@ class tax_band(Variable):
     possible_values = TaxBand
     default_value = TaxBand.NONE
     entity = Person
-    label = u"Tax band of the individual"
+    label = "Tax band of the individual"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -248,7 +248,7 @@ class tax_band(Variable):
 class basic_rate_savings_income_pre_starter(Variable):
     value_type = float
     entity = Person
-    label = u"Savings income which would otherwise be taxed at the basic rate, without the starter rate"
+    label = "Savings income which would otherwise be taxed at the basic rate, without the starter rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -276,7 +276,7 @@ class basic_rate_savings_income_pre_starter(Variable):
 class savings_starter_rate_income(Variable):
     value_type = float
     entity = Person
-    label = u"Savings income which is tax-free under the starter rate"
+    label = "Savings income which is tax-free under the starter rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 12"
 
@@ -291,7 +291,7 @@ class savings_starter_rate_income(Variable):
 class basic_rate_savings_income(Variable):
     value_type = float
     entity = Person
-    label = u"Savings income at the basic rate"
+    label = "Savings income at the basic rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
 
@@ -325,7 +325,7 @@ class basic_rate_savings_income(Variable):
 class higher_rate_savings_income(Variable):
     value_type = float
     entity = Person
-    label = u"Savings income at the higher rate"
+    label = "Savings income at the higher rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
 
@@ -359,7 +359,7 @@ class higher_rate_savings_income(Variable):
 class add_rate_savings_income(Variable):
     value_type = float
     entity = Person
-    label = u"Savings income at the higher rate"
+    label = "Savings income at the higher rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
 
@@ -393,7 +393,7 @@ class add_rate_savings_income(Variable):
 class taxed_savings_income(Variable):
     value_type = float
     entity = Person
-    label = u"Savings income which advances the person's income tax schedule"
+    label = "Savings income which advances the person's income tax schedule"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
 
@@ -410,7 +410,7 @@ class taxed_savings_income(Variable):
 class taxed_dividend_income(Variable):
     value_type = float
     entity = Person
-    label = u"Dividend income which is taxed"
+    label = "Dividend income which is taxed"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -424,7 +424,7 @@ class taxed_dividend_income(Variable):
 class savings_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income tax on savings income"
+    label = "Income tax on savings income"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
 
@@ -444,7 +444,7 @@ class savings_income_tax(Variable):
 class dividend_income_tax(Variable):
     value_type = float
     entity = Person
-    label = u"Income tax on dividend income"
+    label = "Income tax on dividend income"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 13"
 
@@ -465,7 +465,7 @@ class dividend_income_tax(Variable):
 class income_tax_pre_charges(Variable):
     value_type = float
     entity = Person
-    label = u"Income Tax before any tax charges"
+    label = "Income Tax before any tax charges"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 23"
 
@@ -482,7 +482,7 @@ class income_tax_pre_charges(Variable):
 class is_higher_earner(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is the highest earner in a family"
+    label = "Whether this person is the highest earner in a family"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -497,20 +497,21 @@ class is_higher_earner(Variable):
 class CB_HITC(Variable):
     value_type = float
     entity = Person
-    label = u"Child Benefit High-Income Tax Charge"
+    label = "Child Benefit High-Income Tax Charge"
     definition_period = YEAR
     reference = "Finance Act 2012 s. 681B"
 
     def formula(person, period, parameters):
         CB_received = person.benunit("child_benefit", period, options=[ADD])
         CB_HITC = parameters(period).tax.income_tax.charges.CB_HITC
-        phase_length = CB_HITC.phase_out_end - CB_HITC.phase_out_start
-        income = amount_between(
-            person("adjusted_net_income", period),
-            CB_HITC.phase_out_start,
-            CB_HITC.phase_out_end,
+        percentage = (
+            amount_over(
+                person("adjusted_net_income", period),
+                CB_HITC.phase_out_start,
+            )
+            / 1_000
+            * CB_HITC.phase_out_rate
         )
-        percentage = income / phase_length
         return (percentage * CB_received) * person("is_higher_earner", period)
 
 
