@@ -1,7 +1,0 @@
-values:
-  2010-01-01: false
-metadata:
-  unit: abolition
-  type: bool
-  label: Abolish Stamp Duty Land Tax
-  name: abolish_SDLT

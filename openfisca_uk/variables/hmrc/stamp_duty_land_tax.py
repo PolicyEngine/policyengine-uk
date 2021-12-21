@@ -1,15 +1,14 @@
 from openfisca_uk.model_api import *
 
 
-class stamp_duty_on_residential_property(Variable):
+class sdlt_on_residential_property_transactions(Variable):
     label = "Stamp Duty on residential property"
-    documentation = (
-        "Tax charge from purchase or rental of residential property"
-    )
+    documentation = "Tax charge from purchase of residential property"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period, parameters):
         stamp_duty = parameters(period).hmrc.stamp_duty
@@ -36,48 +35,93 @@ class stamp_duty_on_residential_property(Variable):
         additional_residential_purchase_tax = (
             stamp_duty.residential.purchase.additional.rate.calc(price)
         )
-        # Tax on residential rents
-        cumulative_rent = household("cumulative_residential_rent", period)
-        rent = household("rent", period)
-        residential_rent_tax = stamp_duty.residential.rent.calc(
-            cumulative_rent + rent
-        ) - stamp_duty.residential.rent.calc(cumulative_rent)
-        return household("stamp_duty_liable", period) * (
-            main_residential_purchase_tax
-            + additional_residential_purchase_tax
-            + residential_rent_tax
+        return (
+            main_residential_purchase_tax + additional_residential_purchase_tax
         )
 
 
-class stamp_duty_on_non_residential_property(Variable):
-    label = "Stamp Duty on non-residential property"
-    documentation = (
-        "Tax charge from purchase or rental of non-residential property"
-    )
+class sdlt_on_residential_property_rent(Variable):
+    label = "Stamp Duty on residential property"
+    documentation = "Tax charge from rental of residential property"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/ukpga/2003/14/schedule/5"
 
     def formula(household, period, parameters):
         stamp_duty = parameters(period).hmrc.stamp_duty
-        # Tax on non-residential purchases
+        cumulative_rent = household("cumulative_residential_rent", period)
+        rent = household("rent", period)
+        return stamp_duty.residential.rent.calc(
+            cumulative_rent + rent
+        ) - stamp_duty.residential.rent.calc(cumulative_rent)
+
+
+class sdlt_on_non_residential_property_transactions(Variable):
+    label = "Stamp Duty on non-residential property"
+    documentation = "Tax charge from purchase of non-residential property"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
+
+    def formula(household, period, parameters):
+        stamp_duty = parameters(period).hmrc.stamp_duty
         price = household("non_residential_property_purchased", period)
-        non_residential_purchase_tax = (
-            stamp_duty.non_residential.purchase.calc(price)
-        )
-        # Tax on non-residential rents
+        return stamp_duty.non_residential.purchase.calc(price)
+
+
+class sdlt_on_non_residential_property_rent(Variable):
+    label = "Stamp Duty on non-residential property"
+    documentation = "Tax charge from rental of non-residential property"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/ukpga/2003/14/schedule/5"
+
+    def formula(household, period, parameters):
+        stamp_duty = parameters(period).hmrc.stamp_duty
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
-        non_residential_rent_tax = stamp_duty.non_residential.rent.calc(
+        return stamp_duty.non_residential.rent.calc(
             cumulative_rent + rent
         ) - stamp_duty.non_residential.rent.calc(cumulative_rent)
-        return household("stamp_duty_liable", period) * (
-            non_residential_purchase_tax + non_residential_rent_tax
-        )
 
 
-class stamp_duty_liable(Variable):
+class sdlt_on_transactions(Variable):
+    label = "SDLT on property transactions"
+    documentation = "Stamp Duty Land Tax on property transfers"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
+
+    def formula(household, period):
+        return household(
+            "sdlt_on_residential_property_transactions", period
+        ) + household("sdlt_on_non_residential_property_transactions", period)
+
+
+class sdlt_on_rent(Variable):
+    label = "SDLT on property rental"
+    documentation = "Stamp Duty Land Tax on property rental agreements"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
+
+    def formula(household, period):
+        return household(
+            "sdlt_on_residential_property_rent", period
+        ) + household("sdlt_on_non_residential_property_rent", period)
+
+
+class sdlt_liable(Variable):
     label = "Liable for Stamp Duty"
     documentation = "Whether the household is liable for Stamp Duty Land Tax"
     entity = Household
@@ -110,7 +154,7 @@ class baseline_corporate_stamp_duty(Variable):
         )
 
 
-class corporate_stamp_duty(Variable):
+class corporate_sdlt(Variable):
     label = "Stamp Duty (corporations)"
     documentation = (
         "Stamp Duty paid by corporations, incident on this household"
@@ -120,20 +164,10 @@ class corporate_stamp_duty(Variable):
     value_type = float
     unit = "currency-GBP"
 
-    def formula(household, period, parameters):
-        sd = parameters(period).hmrc.stamp_duty.statistics
-        in_force = not parameters(period).hmrc.stamp_duty.abolition
-        return (
-            household("shareholding", period)
-            * in_force
-            * (
-                sd.residential.corporate.revenue
-                + sd.non_residential.corporate.revenue
-            )
-        )
+    formula = baseline_corporate_stamp_duty.formula
 
 
-class corporate_stamp_duty_change_incidence(Variable):
+class corporate_sdlt_change_incidence(Variable):
     label = "Corporate Stamp Duty"
     documentation = "Total incidence of changes to corporate Stamp duty"
     entity = Household
@@ -141,27 +175,33 @@ class corporate_stamp_duty_change_incidence(Variable):
     value_type = float
     unit = "currency-GBP"
 
-    def formula(household, period, parameters):
+    def formula(household, period):
         return household("corporate_stamp_duty", period) - household(
             "baseline_corporate_stamp_duty", period
         )
 
 
-class stamp_duty(Variable):
+class stamp_duty_land_tax(Variable):
     label = "Stamp Duty Land Tax"
     documentation = "Total tax liability for Stamp Duty Land Tax"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/ukpga/2003/14/part/4"
 
     def formula(household, period):
-        return household(
-            "stamp_duty_on_residential_property", period
-        ) + household("stamp_duty_on_non_residential_property", period)
+        return household("stamp_duty_land_tax_liable", period) * add(
+            household,
+            period,
+            [
+                "sdlt_on_transactions",
+                "sdlt_on_rent",
+            ],
+        )
 
 
-class expected_stamp_duty(Variable):
+class expected_sdlt(Variable):
     label = "Stamp Duty (expected)"
     documentation = "Expected value of Stamp Duty Land Tax"
     entity = Household
@@ -169,10 +209,8 @@ class expected_stamp_duty(Variable):
     value_type = float
     unit = "currency-GBP"
 
-    def formula(household, period, parameters):
-        in_force = not parameters(period).hmrc.stamp_duty.abolition
+    def formula(household, period):
         return (
-            in_force
-            * household.state("property_sale_rate", period)
-            * household("stamp_duty", period)
-        )
+            household.state("property_sale_rate", period)
+            * household("stamp_duty_land_tax", period)
+        ) + household("corporate_sdlt_change_incidence", period)

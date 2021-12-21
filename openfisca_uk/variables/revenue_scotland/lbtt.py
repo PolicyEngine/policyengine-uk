@@ -1,11 +1,9 @@
 from openfisca_uk.model_api import *
 
 
-class lbtt_on_residential_property(Variable):
-    label = "Land and Buildings Transaction Tax on residential property"
-    documentation = (
-        "Tax charge from purchase or rental of residential property"
-    )
+class lbtt_on_residential_property_transactions(Variable):
+    label = "LBTT on residential property"
+    documentation = "LBTT charge on purchase of residential property"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -32,24 +30,31 @@ class lbtt_on_residential_property(Variable):
         ) + (
             lbtt.residential.additional_residence_surcharge * second_home_price
         )
-        # Tax on residential rents
-        cumulative_rent = household("cumulative_residential_rent", period)
-        rent = household("rent", period)
-        residential_rent_tax = lbtt.rent.calc(
-            cumulative_rent + rent
-        ) - lbtt.rent.calc(cumulative_rent)
-        return household("lbtt_liable", period) * (
-            main_residential_purchase_tax
-            + additional_residential_purchase_tax
-            + residential_rent_tax
+        return (
+            main_residential_purchase_tax + additional_residential_purchase_tax
         )
 
 
-class lbtt_on_non_residential_property(Variable):
-    label = "LBTT on non-residential property"
-    documentation = (
-        "Tax charge from purchase or rental of non-residential property"
-    )
+class lbtt_on_residential_property_rent(Variable):
+    label = "LBTT on residential property rent"
+    documentation = "LBTT charge on rental of residential property"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        lbtt = parameters(period).revenue_scotland.lbtt
+        cumulative_rent = household("cumulative_residential_rent", period)
+        rent = household("rent", period)
+        return lbtt.rent.calc(cumulative_rent + rent) - lbtt.rent.calc(
+            cumulative_rent
+        )
+
+
+class lbtt_on_non_residential_property_transactions(Variable):
+    label = "LBTT on non-residential property transactions"
+    documentation = "LBTT charge from purchase of non-residential property"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -59,15 +64,25 @@ class lbtt_on_non_residential_property(Variable):
         lbtt = parameters(period).revenue_scotland.lbtt
         # Tax on non-residential purchases
         price = household("non_residential_property_purchased", period)
-        non_residential_purchase_tax = lbtt.non_residential.calc(price)
-        # Tax on non-residential rents
+        return lbtt.non_residential.calc(price)
+
+
+class lbtt_on_non_residential_property_rent(Variable):
+    label = "LBTT on non-residential property"
+    documentation = (
+        "LBTT charge from purchase or rental of non-residential property"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        lbtt = parameters(period).revenue_scotland.lbtt
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
-        non_residential_rent_tax = lbtt.rent.calc(
-            cumulative_rent + rent
-        ) - lbtt.rent.calc(cumulative_rent)
-        return household("lbtt_liable", period) * (
-            non_residential_purchase_tax + non_residential_rent_tax
+        return lbtt.rent.calc(cumulative_rent + rent) - lbtt.rent.calc(
+            cumulative_rent
         )
 
 
@@ -85,6 +100,36 @@ class lbtt_liable(Variable):
         return country == countries.SCOTLAND
 
 
+class lbtt_on_transactions(Variable):
+    label = "LBTT on property transactions"
+    documentation = "Land and Buildings Transaction Tax on property transfers"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period):
+        return household(
+            "lbtt_on_residential_property_transactions", period
+        ) + household("lbtt_on_non_residential_property_transactions", period)
+
+
+class lbtt_on_rent(Variable):
+    label = "LBTT on property rental"
+    documentation = (
+        "Land and Buildings Transaction Tax on property rental agreements"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period):
+        return household(
+            "lbtt_on_residential_property_rent", period
+        ) + household("lbtt_on_non_residential_property_rent", period)
+
+
 class land_and_buildings_transaction_tax(Variable):
     label = "Land and Buildings Transaction Tax"
     documentation = "Total tax liability for Scotland's LBTT"
@@ -98,8 +143,8 @@ class land_and_buildings_transaction_tax(Variable):
             household,
             period,
             [
-                "lbtt_on_residential_property",
-                "lbtt_on_non_residential_property",
+                "lbtt_on_transactions",
+                "lbtt_on_rent",
             ],
         )
 

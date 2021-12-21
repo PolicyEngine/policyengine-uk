@@ -212,7 +212,6 @@ class hbai_household_net_income(Variable):
                 "expected_stamp_duty",
                 "expected_land_transaction_tax",
                 "expected_lbtt",
-                "corporate_tax_incidence",
             ],
         )
         return gross_income - tax + ignored_taxes
