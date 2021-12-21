@@ -1,0 +1,10 @@
+description: Maximum Marriage Allowance taxable income reduction, as a percentage of the full Personal Allowance
+values:
+  2016-04-01: 0.1
+metadata:
+  unit: /1
+  name: marriage_allowance_cap
+  label: Marriage Allowance maximum percentage
+  reference:
+    - title: Income Tax Act 2007 s. 55B(4)(b)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A
