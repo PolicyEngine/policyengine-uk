@@ -1,7 +1,6 @@
 from openfisca_uk.model_api import *
 
 
-
 class unused_personal_allowance(Variable):
     value_type = float
     entity = Person

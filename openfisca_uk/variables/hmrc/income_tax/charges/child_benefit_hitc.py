@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class CB_HITC(Variable):
     value_type = float
     entity = Person
