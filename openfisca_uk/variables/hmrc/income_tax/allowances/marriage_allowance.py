@@ -26,7 +26,7 @@ class meets_marriage_allowance_income_conditions(Variable):
     def formula(person, period):
         tax_band = person("tax_band", period)
         bands = tax_band.possible_values
-        band = person("tax_band", period)
+        return ~np.isin(tax_band, [bands.HIGHER, bands.ADDITIONAL])
         meets_band_eligibility = ~(band == bands.HIGHER) & ~(
             band == bands.ADDITIONAL
         )
