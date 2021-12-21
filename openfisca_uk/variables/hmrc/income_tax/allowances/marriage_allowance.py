@@ -24,9 +24,8 @@ class meets_marriage_allowance_income_conditions(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
 
     def formula(person, period):
-        tax_band = person("tax_band", period)
-        bands = tax_band.possible_values
-        return ~np.isin(tax_band, [bands.HIGHER, bands.ADDITIONAL])
+        band = person("tax_band", period)
+        bands = band.possible_values
         meets_band_eligibility = ~(band == bands.HIGHER) & ~(
             band == bands.ADDITIONAL
         )
