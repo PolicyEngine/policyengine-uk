@@ -20,4 +20,6 @@ class CB_HITC(Variable):
             / 1_000
             * CB_HITC.phase_out_rate
         )
-        return (percentage * CB_received) * person("is_higher_earner", period)
+        return (min_(percentage, 1) * CB_received) * person(
+            "is_higher_earner", period
+        )
