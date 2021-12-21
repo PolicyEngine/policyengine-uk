@@ -46,35 +46,63 @@ class unused_personal_allowance(Variable):
         )
 
 
-class marriage_allowance(Variable):
-    value_type = float
+class meets_marriage_allowance_income_conditions(Variable):
+    label = "Meets Marriage Allowance income conditions"
+    documentation = "Whether this person (and their partner) meets the conditions for this person to be eligible for the Marriage Allowance, as set out in the Income Tax Act 2007 sections 55B and 55C"
     entity = Person
-    label = u"Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)"
     definition_period = YEAR
-    reference = "Income Tax Act 2007 s. 55"
+    value_type = bool
 
     def formula(person, period, parameters):
         tax_band = person("tax_band", period)
         bands = tax_band.possible_values
         under_PA = person("tax_band", period) == bands.NONE
         band = person("tax_band", period)
+        is_adult = person("is_adult", period)
+        partner_is_under_PA = ~under_PA & (
+            person.benunit.max(is_adult & under_PA) > 0
+        )
         # Marriage Allowance is eligible for couples with one in the basic rate bracket and
         # one not in a tax bracket. For those paying Scottish rates, the taxpayer can be in
         # the starter or intermediate rate brackets.
-        meets_band_eligibility = np.isin(
-            band, (bands.STARTER, bands.BASIC, bands.INTERMEDIATE)
+        meets_band_eligibility = ~(band == bands.HIGHER) | ~(
+            band == bands.ADDITIONAL
         )
         marital = person("marital_status", period)
         married = marital == marital.possible_values.MARRIED
-        transferable_allowance = person.benunit.sum(
-            married
-            * under_PA
-            * min_(
-                person("unused_personal_allowance", period),
-                0.1 * person("personal_allowance", period),
-            )
+        return married & partner_is_under_PA & meets_band_eligibility
+
+
+class partners_unused_personal_allowance(Variable):
+    label = "Partner's unused personal allowance"
+    documentation = "The personal tax allowance not used by this person's partner, if they exist"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(person, period, parameters):
+        is_adult = person("is_adult", period)
+        pa = person("unused_personal_allowance", period)
+        return person.benunit.sum(is_adult * pa) - pa
+
+
+class marriage_allowance(Variable):
+    value_type = float
+    entity = Person
+    label = u"Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)"
+    definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
+
+    def formula(person, period, parameters):
+        eligible = person("meets_marriage_allowance_income_conditions", period)
+        transferable_amount = person(
+            "partners_unused_personal_allowance", period
         )
-        return married * meets_band_eligibility * transferable_allowance
+        allowances = parameters(period).tax.income_tax.allowances
+        capped_percentage = allowances.marriage_allowance.max
+        max_amount = allowances.personal_allowance.amount * capped_percentage
+        return eligible * min_(transferable_amount, max_amount)
 
 
 class married_couples_allowance(Variable):
