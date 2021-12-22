@@ -45,6 +45,7 @@ class hbai_excluded_income(Variable):
                 "expected_sdlt",
                 "expected_ltt",
                 "expected_lbtt",
+                "business_rates",
             ],
         )
 

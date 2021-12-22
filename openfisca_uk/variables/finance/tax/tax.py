@@ -32,6 +32,7 @@ class household_tax(Variable):
                 "expected_sdlt",
                 "expected_ltt",
                 "expected_lbtt",
+                "business_rates",
                 "council_tax",
             ],
         )
