@@ -14,14 +14,16 @@ class earned_taxable_income(Variable):
     reference = "Income Tax Act 2007 s. 10"
 
     def formula(person, period, parameters):
-        amount = person("adjusted_net_income", period) - add(
-            person,
-            period,
-            ["taxable_savings_interest_income", "taxable_dividend_income"],
+        EXCLUSIONS = [
+            "taxable_savings_interest_income",
+            "taxable_dividend_income",
+            "allowances",
+            "marriage_allowance",
+        ]
+        unbounded_amount = person("adjusted_net_income", period) - add(
+            person, period, EXCLUSIONS
         )
-        reductions = add(person, period, ["allowances", "marriage_allowance"])
-        final_amount = max_(0, amount - reductions)
-        return final_amount
+        return max_(0, unbounded_amount)
 
 
 class taxed_income(Variable):
