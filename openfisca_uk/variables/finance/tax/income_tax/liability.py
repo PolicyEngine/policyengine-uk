@@ -12,6 +12,7 @@ class earned_taxable_income(Variable):
     label = "Non-savings, non-dividend income for Income Tax"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 10"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         EXCLUSIONS = [
@@ -31,6 +32,7 @@ class taxed_income(Variable):
     entity = Person
     label = "Income which is taxed"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -46,6 +48,7 @@ class basic_rate_earned_income(Variable):
     entity = Person
     label = "Earned income (non-savings, non-dividend) at the basic rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
@@ -59,6 +62,7 @@ class higher_rate_earned_income(Variable):
     entity = Person
     label = "Earned income (non-savings, non-dividend) at the higher rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
@@ -75,6 +79,7 @@ class add_rate_earned_income(Variable):
     entity = Person
     label = "Earned income (non-savings, non-dividend) at the additional rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
@@ -90,6 +95,7 @@ class basic_rate_earned_income_tax(Variable):
     entity = Person
     label = "Income tax on earned income at the basic rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         amount = person("basic_rate_earned_income", period)
@@ -102,6 +108,7 @@ class higher_rate_earned_income_tax(Variable):
     entity = Person
     label = "Income tax on earned income at the higher rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         amount = person("higher_rate_earned_income", period)
@@ -114,6 +121,7 @@ class add_rate_earned_income_tax(Variable):
     entity = Person
     label = "Income tax on earned income at the additional rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         amount = person("add_rate_earned_income", period)
@@ -127,6 +135,7 @@ class earned_income_tax(Variable):
     label = "Income tax on earned income"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 10"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -252,6 +261,7 @@ class basic_rate_savings_income_pre_starter(Variable):
     entity = Person
     label = "Savings income which would otherwise be taxed at the basic rate, without the starter rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates.uk
@@ -281,6 +291,7 @@ class savings_starter_rate_income(Variable):
     label = "Savings income which is tax-free under the starter rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 12"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         income = person("basic_rate_savings_income_pre_starter", period)
@@ -296,6 +307,7 @@ class basic_rate_savings_income(Variable):
     label = "Savings income at the basic rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -330,6 +342,7 @@ class higher_rate_savings_income(Variable):
     label = "Savings income at the higher rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -364,6 +377,7 @@ class add_rate_savings_income(Variable):
     label = "Savings income at the higher rate"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -398,6 +412,7 @@ class taxed_savings_income(Variable):
     label = "Savings income which advances the person's income tax schedule"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -414,6 +429,7 @@ class taxed_dividend_income(Variable):
     entity = Person
     label = "Dividend income which is taxed"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return max_(
@@ -429,6 +445,7 @@ class savings_income_tax(Variable):
     label = "Income tax on savings income"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 11D"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -449,6 +466,7 @@ class dividend_income_tax(Variable):
     label = "Income tax on dividend income"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 13"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -470,6 +488,7 @@ class income_tax_pre_charges(Variable):
     label = "Income Tax before any tax charges"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 23"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [
