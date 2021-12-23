@@ -7,6 +7,7 @@ class earned_income(Variable):
     entity = Person
     label = u"Total earned income"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -22,6 +23,7 @@ class sublet_income(Variable):
     entity = Person
     label = u"Income received from sublet agreements"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class miscellaneous_income(Variable):
@@ -29,6 +31,7 @@ class miscellaneous_income(Variable):
     entity = Person
     label = u"Income from other sources"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class private_transfer_income(Variable):
@@ -36,6 +39,7 @@ class private_transfer_income(Variable):
     entity = Person
     label = u"Private transfers"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class lump_sum_income(Variable):
@@ -43,6 +47,7 @@ class lump_sum_income(Variable):
     entity = Person
     label = u"Lump sum income"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class market_income(Variable):
@@ -50,26 +55,26 @@ class market_income(Variable):
     entity = Person
     label = u"Market income"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return (
-            add(
-                person,
-                period,
-                [
-                    "employment_income",
-                    "self_employment_income",
-                    "savings_interest_income",
-                    "dividend_income",
-                    "miscellaneous_income",
-                    "property_income",
-                    "pension_income",
-                    "private_transfer_income",
-                    "maintenance_income",
-                ],
-            )
-            - person("maintenance_expenses", period)
+        INCOME_VARIABLES = [
+            "employment_income",
+            "self_employment_income",
+            "savings_interest_income",
+            "dividend_income",
+            "miscellaneous_income",
+            "property_income",
+            "pension_income",
+            "private_transfer_income",
+            "maintenance_income",
+        ]
+        income = add(
+            person,
+            period,
+            INCOME_VARIABLES,
         )
+        return income - person("maintenance_expenses", period)
 
 
 class gross_income(Variable):
@@ -77,6 +82,7 @@ class gross_income(Variable):
     entity = Person
     label = u"Gross income, including benefits"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -98,6 +104,7 @@ class household_gross_income(Variable):
     unit = "currency-GBP"
     label = u"Household gross income"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(household, period, parameters):
         return household.sum(household.members("gross_income", period))
@@ -120,6 +127,7 @@ class hours_worked(Variable):
     entity = Person
     label = u"Total amount of hours worked by this person"
     definition_period = YEAR
+    unit = "hour"
 
 
 class in_work(Variable):
@@ -130,12 +138,10 @@ class in_work(Variable):
 
     def formula(person, period, parameters):
         has_hours_worked = person("hours_worked", period) > 0
-        has_earnings = (
-            add(
-                person, period, ["employment_income", "self_employment_income"]
-            )
-            > 0
+        earnings = add(
+            person, period, ["employment_income", "self_employment_income"]
         )
+        has_earnings = earnings > 0
         return has_hours_worked | has_earnings
 
 
@@ -180,6 +186,7 @@ class capital_income(Variable):
     entity = Person
     label = u"Income from savings or dividends"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return add(
@@ -192,6 +199,7 @@ class maintenance_income(Variable):
     entity = Person
     label = u"Maintenance payments"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class hbai_household_net_income(Variable):
@@ -228,11 +236,12 @@ class hbai_household_net_income_ahc(Variable):
     entity = Household
     label = u"Household net income, after housing costs"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household("hbai_household_net_income", period) - household(
-            "housing_costs", period
-        )
+        income = household("hbai_household_net_income", period)
+        housing_costs = household("housing_costs", period)
+        return income - housing_costs
 
 
 class equiv_household_net_income(Variable):
@@ -240,11 +249,12 @@ class equiv_household_net_income(Variable):
     entity = Household
     label = u"Equivalised household net income"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household("household_net_income", period) / household(
-            "household_equivalisation_bhc", period
-        )
+        income = household("household_net_income", period)
+        equivalisation = household("household_equivalisation_bhc", period)
+        return income / equivalisation
 
 
 class equiv_hbai_household_net_income(Variable):
@@ -252,11 +262,12 @@ class equiv_hbai_household_net_income(Variable):
     entity = Household
     label = u"Equivalised household net income (HBAI)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household("hbai_household_net_income", period) / household(
-            "household_equivalisation_bhc", period
-        )
+        income = household("hbai_household_net_income", period)
+        equivalisation = household("household_equivalisation_bhc", period)
+        return income / equivalisation
 
 
 class equiv_hbai_household_net_income_ahc(Variable):
@@ -264,11 +275,12 @@ class equiv_hbai_household_net_income_ahc(Variable):
     entity = Household
     label = u"Equivalised household net income, after housing costs (HBAI)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household("hbai_household_net_income_ahc", period) / household(
-            "household_equivalisation_ahc", period
-        )
+        income = household("hbai_household_net_income_ahc", period)
+        equivalisation = household("household_equivalisation_ahc", period)
+        return income / equivalisation
 
 
 class base_net_income(Variable):
@@ -276,6 +288,7 @@ class base_net_income(Variable):
     entity = Person
     label = "Existing net income for the person to use as a base in microsimulation"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class is_apprentice(Variable):
