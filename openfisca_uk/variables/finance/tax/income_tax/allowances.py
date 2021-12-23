@@ -20,8 +20,7 @@ class personal_allowance(Variable):
         ANI = person("adjusted_net_income", period)
         excess = max_(0, ANI - PA.maximum_ANI)
         reduction = excess * PA.reduction_rate
-        amount = max_(0, PA.amount - reduction)
-        return amount
+        return max_(0, PA.amount - reduction)
 
 
 class blind_persons_allowance(Variable):
@@ -64,8 +63,7 @@ class pension_annual_allowance(Variable):
         ).tax.income_tax.allowances.annual_allowance
         ANI = person("adjusted_net_income", period)
         reduction = max_(0, ANI - allowance.taper) * allowance.reduction_rate
-        amount = max_(allowance.minimum, allowance.default - reduction)
-        return amount
+        return max_(allowance.minimum, allowance.default - reduction)
 
 
 class trading_allowance(Variable):
@@ -87,11 +85,10 @@ class trading_allowance_deduction(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
 
     def formula(person, period, parameters):
-        amount = min_(
+        return min_(
             person("trading_allowance", period),
             person("self_employment_income", period),
         )
-        return amount
 
 
 class property_allowance(Variable):
@@ -113,11 +110,10 @@ class property_allowance_deduction(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
 
     def formula(person, period, parameters):
-        amount = min_(
+        return min_(
             person("property_income", period),
             person("property_allowance", period),
         )
-        return amount
 
 
 class savings_allowance(Variable):
@@ -133,7 +129,7 @@ class savings_allowance(Variable):
         amounts = parameters(
             period
         ).tax.income_tax.allowances.personal_savings_allowance
-        allowance = select(
+        return select(
             [
                 tax_band == tax_bands.ADDITIONAL,
                 tax_band == tax_bands.HIGHER,
@@ -142,7 +138,6 @@ class savings_allowance(Variable):
             ],
             [amounts.additional, amounts.higher, amounts.basic, amounts.basic],
         )
-        return allowance
 
 
 class dividend_allowance(Variable):
@@ -153,10 +148,7 @@ class dividend_allowance(Variable):
     reference = "Income Tax Act 2007 s. 13A"
 
     def formula(person, period, parameters):
-        amount = parameters(
-            period
-        ).tax.income_tax.allowances.dividend_allowance
-        return amount
+        return parameters(period).tax.income_tax.allowances.dividend_allowance
 
 
 class gift_aid(Variable):
@@ -202,5 +194,4 @@ class allowances(Variable):
             "charitable_investment_gifts",
             "other_deductions",
         ]
-        allowance = add(person, period, ALLOWANCES)
-        return allowance
+        return add(person, period, ALLOWANCES)
