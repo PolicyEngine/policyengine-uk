@@ -52,9 +52,8 @@ class basic_rate_earned_income(Variable):
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
-        rates = parameters(period).tax.income_tax.rates
-        amount = clip(income, rates.uk.thresholds[0], rates.uk.thresholds[1])
-        return amount
+        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        return clip(income, thresholds[0], thresholds[1])
 
 
 class higher_rate_earned_income(Variable):
@@ -66,12 +65,8 @@ class higher_rate_earned_income(Variable):
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
-        rates = parameters(period).tax.income_tax.rates
-        amount = (
-            clip(income, rates.uk.thresholds[1], rates.uk.thresholds[2])
-            - rates.uk.thresholds[1]
-        )
-        return amount
+        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        return clip(income, thresholds[1], thresholds[2]) - thresholds[1]
 
 
 class add_rate_earned_income(Variable):
@@ -83,11 +78,8 @@ class add_rate_earned_income(Variable):
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
-        rates = parameters(period).tax.income_tax.rates
-        amount = (
-            clip(income, rates.uk.thresholds[2], inf) - rates.uk.thresholds[2]
-        )
-        return amount
+        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        return clip(income, thresholds[2], inf) - thresholds[2])
 
 
 class basic_rate_earned_income_tax(Variable):
@@ -99,8 +91,7 @@ class basic_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("basic_rate_earned_income", period)
-        charge = parameters(period).tax.income_tax.rates.uk.rates[0] * amount
-        return charge
+        return parameters(period).tax.income_tax.rates.uk.rates[0] * amount
 
 
 class higher_rate_earned_income_tax(Variable):
@@ -112,8 +103,7 @@ class higher_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("higher_rate_earned_income", period)
-        charge = parameters(period).tax.income_tax.rates.uk.rates[1] * amount
-        return charge
+        return parameters(period).tax.income_tax.rates.uk.rates[1] * amount
 
 
 class add_rate_earned_income_tax(Variable):
@@ -125,8 +115,7 @@ class add_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("add_rate_earned_income", period)
-        charge = parameters(period).tax.income_tax.rates.uk.rates[2] * amount
-        return charge
+        return parameters(period).tax.income_tax.rates.uk.rates[2] * amount
 
 
 class earned_income_tax(Variable):
@@ -139,8 +128,7 @@ class earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
-        uk_amount = rates.uk.calc(person("earned_taxable_income", period))
-        return uk_amount
+        return rates.uk.calc(person("earned_taxable_income", period))
 
     def formula_2017_04_06(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -149,8 +137,7 @@ class earned_income_tax(Variable):
         scot_amount = rates.scotland.pre_starter_rate.calc(
             person("earned_taxable_income", period)
         )
-        amount = where(scot, scot_amount, uk_amount)
-        return amount
+        return where(scot, scot_amount, uk_amount)
 
     def formula_2018_04_06(person, period, parameters):
         rates = parameters(period).tax.income_tax.rates
@@ -159,8 +146,7 @@ class earned_income_tax(Variable):
         scot_amount = rates.scotland.post_starter_rate.calc(
             person("earned_taxable_income", period)
         )
-        amount = where(scot, scot_amount, uk_amount)
-        return amount
+        return where(scot, scot_amount, uk_amount)
 
 
 class TaxBand(Enum):
@@ -199,11 +185,10 @@ class tax_band(Variable):
         basic = allowances + rates.uk.thresholds[0]
         higher = allowances + rates.uk.thresholds[-2]
         add = allowances + rates.uk.thresholds[-1]
-        band = select(
+        return select(
             [ANI >= add, ANI >= higher, ANI > basic, ANI <= basic],
             [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC, TaxBand.NONE],
         )
-        return band
 
     def formula_2017_04_06(person, period, parameters):
         allowances = person("allowances", period)
@@ -264,7 +249,7 @@ class basic_rate_savings_income_pre_starter(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates.uk
+        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
         savings_income_total = person(
             "taxable_savings_interest_income", period
         )
@@ -273,16 +258,13 @@ class basic_rate_savings_income_pre_starter(Variable):
         other_income = person("earned_taxable_income", period)
         basic_rate_amount_with_savings = clip(
             savings_income + other_income,
-            rates.thresholds[0],
-            rates.thresholds[1],
+            thresholds[0],
+            thresholds[1],
         )
         basic_rate_amount_without_savings = clip(
-            other_income, rates.thresholds[0], rates.thresholds[1]
+            other_income, thresholds[0], thresholds[1]
         )
-        amount = (
-            basic_rate_amount_with_savings - basic_rate_amount_without_savings
-        )
-        return amount
+        return basic_rate_amount_with_savings - basic_rate_amount_without_savings
 
 
 class savings_starter_rate_income(Variable):
@@ -310,7 +292,7 @@ class basic_rate_savings_income(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
         other_income = person("earned_taxable_income", period)
         savings_deductions = add(
             person,
@@ -324,16 +306,15 @@ class basic_rate_savings_income(Variable):
         )
         basic_rate_amount_with = clip(
             other_income + savings_income_less_deductions,
-            rates.uk.thresholds[0],
-            rates.uk.thresholds[1],
+            thresholds[0],
+            thresholds[1],
         )
         basic_rate_amount_without = clip(
-            other_income, rates.uk.thresholds[0], rates.uk.thresholds[1]
+            other_income, thresholds[0], thresholds[1]
         )
-        basic_rate_amount = max_(
+        return max_(
             0, basic_rate_amount_with - basic_rate_amount_without
         )
-        return basic_rate_amount
 
 
 class higher_rate_savings_income(Variable):
@@ -345,7 +326,7 @@ class higher_rate_savings_income(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
         other_income = person("earned_taxable_income", period)
         savings_deductions = add(
             person,
@@ -359,16 +340,15 @@ class higher_rate_savings_income(Variable):
         )
         higher_rate_amount_with = clip(
             other_income + savings_income_less_deductions,
-            rates.uk.thresholds[1],
-            rates.uk.thresholds[2],
+            thresholds[1],
+            thresholds[2],
         )
         higher_rate_amount_without = clip(
-            other_income, rates.uk.thresholds[1], rates.uk.thresholds[2]
+            other_income, thresholds[1], thresholds[2]
         )
-        higher_rate_amount = max_(
+        return max_(
             0, higher_rate_amount_with - higher_rate_amount_without
         )
-        return higher_rate_amount
 
 
 class add_rate_savings_income(Variable):
@@ -380,7 +360,7 @@ class add_rate_savings_income(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
         other_income = person("earned_taxable_income", period)
         savings_deductions = add(
             person,
@@ -394,16 +374,15 @@ class add_rate_savings_income(Variable):
         )
         add_rate_amount_with = clip(
             other_income + savings_income_less_deductions,
-            rates.uk.thresholds[2],
+            thresholds[2],
             inf,
         )
         add_rate_amount_without = clip(
-            other_income, rates.uk.thresholds[2], inf
+            other_income, thresholds[2], inf
         )
-        add_rate_amount = max_(
+        return max_(
             0, add_rate_amount_with - add_rate_amount_without
         )
-        return add_rate_amount
 
 
 class taxed_savings_income(Variable):
@@ -420,8 +399,7 @@ class taxed_savings_income(Variable):
             "higher_rate_savings_income",
             "add_rate_savings_income",
         ]
-        amount = add(person, period, COMPONENTS)
-        return amount
+        return add(person, period, COMPONENTS)
 
 
 class taxed_dividend_income(Variable):
@@ -448,16 +426,15 @@ class savings_income_tax(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).tax.income_tax.rates.uk.rates
         basic_rate_amount = person("basic_rate_savings_income", period)
         higher_rate_amount = person("higher_rate_savings_income", period)
         add_rate_amount = person("add_rate_savings_income", period)
-        charge = (
-            rates.uk.rates[0] * basic_rate_amount
-            + rates.uk.rates[1] * higher_rate_amount
-            + rates.uk.rates[2] * add_rate_amount
+        return (
+            rates[0] * basic_rate_amount
+            + rates[1] * higher_rate_amount
+            + rates[2] * add_rate_amount
         )
-        return charge
 
 
 class dividend_income_tax(Variable):
@@ -478,8 +455,7 @@ class dividend_income_tax(Variable):
             other_income + taxable_dividends
         )
         tax_without_dividends = rates.dividends.calc(other_income)
-        dividend_tax = tax_with_dividends - tax_without_dividends
-        return dividend_tax
+        return tax_with_dividends - tax_without_dividends
 
 
 class income_tax_pre_charges(Variable):
@@ -496,8 +472,7 @@ class income_tax_pre_charges(Variable):
             "savings_income_tax",
             "dividend_income_tax",
         ]
-        total = add(person, period, COMPONENTS)
-        return total
+        return add(person, period, COMPONENTS)
 
 
 class is_higher_earner(Variable):
