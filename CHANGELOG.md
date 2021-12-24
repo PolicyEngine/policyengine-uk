@@ -4,20 +4,20 @@
 
 * First stable version with tax modelling, UBI reforms, and some benefits modelling.
 * Details:
-  - Income Tax, National Insurance, Capital Gains Tax.
-  - All benefits are at least taken from survey reporting (can be switched on-off).
-  - Child Benefit is modelled, others such as Income Support, JSA (both types), Tax Credits can be simulated/reformed but require more reviewing in how to account for discrepancies caused by take-up rates.
-  - Four budget-neutral UBI reforms are implemented.
-  - 15 test cases (unit and integration) testing benefits and taxes.
-  - Simulation helper tools.
+  + Income Tax, National Insurance, Capital Gains Tax.
+  + All benefits are at least taken from survey reporting (can be switched on-off).
+  + Child Benefit is modelled, others such as Income Support, JSA (both types), Tax Credits can be simulated/reformed but require more reviewing in how to account for discrepancies caused by take-up rates.
+  + Four budget-neutral UBI reforms are implemented.
+  + 15 test cases (unit and integration) testing benefits and taxes.
+  + Simulation helper tools.
 
 ### 0.2.0
 
 * Improvements to handling of time periods, MTRs and more
 * Details:
-  - Time periods now appropriate, using an implementation of WEEK for most benefits
-  - MTRs handled properly and include a breakdown
-  - Simulation tools are improved and included in a class
+  + Time periods now appropriate, using an implementation of WEEK for most benefits
+  + MTRs handled properly and include a breakdown
+  + Simulation tools are improved and included in a class
 
 ### 0.2.1
 
@@ -51,3 +51,7 @@
 * Tests for variable naming conventions
 * Postcode lookup optional features available
 * LHA rates for all BRMA areas added
+
+### 0.7.17
+
+* Code refactoring
