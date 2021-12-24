@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class household_id(Variable):
@@ -55,12 +54,15 @@ class country(Variable):
     definition_period = ETERNITY
 
     def formula(household, period, parameters):
-        unknown_region = household("region", period) == Region.UNKNOWN
-        wales = household("region", period) == Region.WALES
-        ni = household("region", period) == Region.NORTHERN_IRELAND
-        scot = household("region", period) == Region.SCOTLAND
-        country = select(
-            [unknown_region, scot, wales, ni, True],
+        region = household("region", period)
+        return select(
+            [
+                region == Region.UNKNOWN,
+                region == Region.SCOTLAND,
+                region == Region.WALES,
+                region == Region.NORTHERN_IRELAND,
+                True,
+            ],
             [
                 Country.UNKNOWN,
                 Country.SCOTLAND,
@@ -69,7 +71,6 @@ class country(Variable):
                 Country.ENGLAND,
             ],
         )
-        return country
 
 
 class Region(Enum):
@@ -123,12 +124,12 @@ class is_renting(Variable):
 
     def formula(household, period, parameters):
         tenure = household("tenure_type", period)
-        rent_types = (
+        rent_types = [
             TenureType.RENT_PRIVATELY,
             TenureType.RENT_FROM_COUNCIL,
             TenureType.RENT_PRIVATELY,
-        )
-        return sum([tenure == rent_type for rent_type in rent_types])
+        ]
+        return np.isin(tenure, rent_types)
 
 
 class AccommodationType(Enum):
@@ -167,13 +168,12 @@ class household_equivalisation_bhc(Variable):
         num_older_children = household.sum(
             household.members("is_older_child", period)
         )
-        weighting = (
+        return (
             0.67
             + 0.33 * other_adults
             + 0.33 * num_older_children
             + 0.2 * num_young_children
         )
-        return weighting
 
 
 class household_equivalisation_ahc(Variable):
@@ -192,13 +192,12 @@ class household_equivalisation_ahc(Variable):
         num_older_children = household.sum(
             household.members("is_older_child", period)
         )
-        weighting = (
+        return (
             0.58
             + 0.42 * other_adults
             + 0.42 * num_older_children
             + 0.2 * num_young_children
         )
-        return weighting
 
 
 class household_num_people(Variable):
