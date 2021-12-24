@@ -124,12 +124,13 @@ class is_renting(Variable):
 
     def formula(household, period, parameters):
         tenure = household("tenure_type", period)
-        rent_types = [
-            TenureType.RENT_PRIVATELY,
-            TenureType.RENT_FROM_COUNCIL,
-            TenureType.RENT_PRIVATELY,
+        tenures = tenure.possible_values
+        RENT_TENURES = [
+            tenures.RENT_PRIVATELY,
+            tenures.RENT_FROM_COUNCIL,
+            tenures.RENT_PRIVATELY,
         ]
-        return np.isin(tenure, rent_types)
+        return np.isin(tenure, RENT_TENURES)
 
 
 class AccommodationType(Enum):
@@ -159,20 +160,20 @@ class household_equivalisation_bhc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        other_adults = max_(
+        count_other_adults = max_(
             household.sum(household.members("is_adult", period)) - 1, 0
         )
-        num_young_children = household.sum(
+        count_young_children = household.sum(
             household.members("is_young_child", period)
         )
-        num_older_children = household.sum(
+        count_older_children = household.sum(
             household.members("is_older_child", period)
         )
         return (
             0.67
-            + 0.33 * other_adults
-            + 0.33 * num_older_children
-            + 0.2 * num_young_children
+            + 0.33 * count_other_adults
+            + 0.33 * count_older_children
+            + 0.2 * count_young_children
         )
 
 
@@ -183,20 +184,20 @@ class household_equivalisation_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        other_adults = max_(
+        count_other_adults = max_(
             household.sum(household.members("is_adult", period)) - 1, 0
         )
-        num_young_children = household.sum(
+        count_young_children = household.sum(
             household.members("is_young_child", period)
         )
-        num_older_children = household.sum(
+        count_older_children = household.sum(
             household.members("is_older_child", period)
         )
         return (
             0.58
-            + 0.42 * other_adults
-            + 0.42 * num_older_children
-            + 0.2 * num_young_children
+            + 0.42 * count_other_adults
+            + 0.42 * count_older_children
+            + 0.2 * count_young_children
         )
 
 
