@@ -54,4 +54,4 @@
 
 ### 0.7.17
 
-* Code refactoring
+* Code refactoring, including adding units to more variables
