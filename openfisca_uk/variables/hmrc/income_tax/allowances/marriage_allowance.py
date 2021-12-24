@@ -27,7 +27,7 @@ class meets_marriage_allowance_income_conditions(Variable):
     def formula(person, period):
         band = person("tax_band", period)
         bands = band.possible_values
-        return ~np.isin(band, [bands.HIGHER, bands.ADDITIONAL])
+        return ~(band == bands.HIGHER) & ~(band == bands.ADDITIONAL)
 
 
 class partners_unused_personal_allowance(Variable):
