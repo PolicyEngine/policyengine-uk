@@ -9,10 +9,9 @@ class benefit_cap(Variable):
 
     def formula(benunit, period, parameters):
         children = benunit("num_children", period) > 0
-        region = benunit.value_from_first_person(
-            benunit.members.household("region", period)
-        )
-        regions = benunit.members.household("region", period).possible_values
+        household_region = benunit.members.household("region", period)
+        region = benunit.value_from_first_person(household_region)
+        regions = household_region.possible_values
         in_london = region == regions.LONDON
         cap = parameters(period).benefit.benefit_cap
         rate = (
@@ -33,8 +32,7 @@ class benefit_cap(Variable):
             * WEEKS_IN_YEAR
         )
         exempt = benunit("is_benefit_cap_exempt", period)
-        cap = where(exempt, np.inf * np.ones_like(children), rate)
-        return cap
+        return where(exempt, np.inf * np.ones_like(children), rate)
 
 
 class is_benefit_cap_exempt(Variable):
@@ -50,10 +48,11 @@ class is_benefit_cap_exempt(Variable):
             "DLA_M",
             "ESA_contrib",
         ]
-        qualifying = (
-            add(benunit, period, ["working_tax_credit"])
-            + add(benunit, period, ["ESA_income"])
-            + aggr(benunit, period, QUAL_PERSONAL_BENEFITS)
-            > 0
+        QUAL_BENUNIT_BENEFITS = ["working_tax_credit", "ESA_income"]
+        qualifying_benunit_benefits = add(
+            benunit, period, QUAL_BENUNIT_BENEFITS
         )
-        return qualifying
+        qualifying_personal_benefits = aggr(
+            benunit, period, QUAL_PERSONAL_BENEFITS
+        )
+        return (qualifying_personal_benefits + qualifying_benunit_benefits) > 0
