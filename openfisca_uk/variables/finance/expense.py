@@ -1,7 +1,4 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.finance.tax.income_tax.liability import (
-    is_higher_earner,
-)
 
 
 class weekly_rent(Variable):
