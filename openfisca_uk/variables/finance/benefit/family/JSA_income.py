@@ -50,26 +50,30 @@ class JSA_income_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
     label = u"Maximum amount of JSA (income-based)"
+    documentation = "Maximum amount of income-based Jobseeker's Allowance"
     definition_period = YEAR
     reference = "Jobseekers Act 1995 s. 4"
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        JSA = parameters(period).benefit.JSA
+        income = parameters(period).benefit.JSA.income
         age = benunit("youngest_adult_age", period)
-        personal_allowance = (
-            benunit("is_single", period)
-            * (
-                (age < 25) * JSA.income.amount_18_24
-                + (age >= 25) * JSA.income.amount_over_25
-            )
-            + benunit("is_couple", period) * JSA.income.couple
-        ) * WEEKS_IN_YEAR
-        premiums = benunit("benefits_premiums", period)
-        return (
-            (personal_allowance + premiums)
-            * benunit("JSA_income_eligible", period)
-            * benunit("claims_JSA", period)
+        single = benunit("is_single", period)
+        couple = benunit("is_couple", period)
+        single_18_24 = single & (age < 25)
+        single_over_25 = single & (age >= 25)
+        pa_single_18_24 = single_18_24 * income.amount_18_24
+        pa_single_over_25 = single_over_25 * income.amount_over_25
+        pa_couple = couple * income.couple
+        weekly_personal_allowance = (
+            pa_single_18_24 + pa_single_over_25 + pa_couple
         )
+        personal_allowance = weekly_personal_allowance * WEEKS_IN_YEAR
+        premiums = benunit("benefits_premiums", period)
+        amount_if_claims = personal_allowance + premiums
+        eligible = benunit("JSA_income_eligible", period)
+        claims = benunit("claims_JSA", period)
+        return amount_if_claims * eligible * claims
 
 
 class would_claim_JSA(Variable):
@@ -82,9 +86,10 @@ class would_claim_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
+        would_takeup = (
             random(benunit) <= parameters(period).benefit.JSA.income.takeup
-        ) + benunit("claims_all_entitled_benefits", period)
+        )
+        return would_takeup | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_JSA(Variable):
@@ -94,9 +99,9 @@ class claims_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("would_claim_JSA", period) & benunit(
-            "claims_legacy_benefits", period
-        )
+        would_claim = benunit("would_claim_JSA", period)
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
+        return would_claim & claims_legacy_benefits
 
 
 class JSA_income_applicable_income(Variable):
