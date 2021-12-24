@@ -127,22 +127,22 @@ class JSA_income_applicable_income(Variable):
         income += aggr(benunit, period, ["social_security_income"])
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
+        # Calculate disregard.
         family_type = benunit("family_type", period)
         families = family_type.possible_values
-        income = max_(
-            0,
-            income
-            - (family_type == families.SINGLE)
-            * JSA.income.income_disregard_single
-            * WEEKS_IN_YEAR
-            - benunit("is_couple", period)
-            * JSA.income.income_disregard_couple
-            * WEEKS_IN_YEAR
-            - (family_type == families.LONE_PARENT)
-            * JSA.income.income_disregard_lone_parent
-            * WEEKS_IN_YEAR,
+        single = family_type == families.SINGLE
+        single_disregard = single * JSA.income.income_disregard_single
+        couple = benunit("is_couple", period)
+        couple_disregard = couple * JSA.income.income_disregard_couple
+        lone_parent = family_type == families.LONE_PARENT
+        lone_parent_disregard = (
+            lone_parent * JSA.income.income_disregard_lone_parent
         )
-        return income
+        weekly_disregard = (
+            single_disregard + couple_disregard + lone_parent_disregard
+        )
+        disregard = weekly_disregard * WEEKS_IN_YEAR
+        return max_(0, income - disregard)
 
 
 class JSA_income(Variable):
@@ -152,17 +152,12 @@ class JSA_income(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        amount = benunit("JSA_income_applicable_amount", period)
-        income = benunit("JSA_income_applicable_income", period)
-        claims_JSA = benunit("claims_JSA", period)
-        return (
-            max_(
-                0,
-                (amount - income),
-            )
-            * claims_JSA
-            * benunit("JSA_income_eligible", period)
-        )
+        applicable_amount = benunit("JSA_income_applicable_amount", period)
+        applicable_income = benunit("JSA_income_applicable_income", period)
+        amount_if_claims = max_(0, applicable_amount - applicable_income)
+        claims = benunit("claims_JSA", period)
+        eligible = benunit("JSA_income_eligible", period)
+        return amount_if_claims * claims * eligible
 
 
 class JSA(Variable):
@@ -172,6 +167,6 @@ class JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["JSA_contrib"]) + benunit(
-            "JSA_income", period
-        )
+        JSA_contrib = aggr(benunit, period, ["JSA_contrib"])
+        JSA_income = benunit("JSA_income", period)
+        return JSA_contrib + JSA_income
