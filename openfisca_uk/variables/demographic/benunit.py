@@ -1,6 +1,7 @@
 from openfisca_uk.variables.demographic.household import TenureType
 from openfisca_uk.model_api import *
 
+
 class benunit_id(Variable):
     value_type = int
     entity = BenUnit
@@ -167,14 +168,13 @@ class benunit_is_renting(Variable):
 
     def formula(benunit, period, parameters):
         tenure = benunit("benunit_tenure_type", period)
-        return np.isin(
-            tenure,
-            [
-                TenureType.RENT_PRIVATELY,
-                TenureType.RENT_FROM_COUNCIL,
-                TenureType.RENT_FROM_HA,
-            ),
-        )
+        tenures = tenure.possible_values
+        RENT_TENURES = [
+            tenures.RENT_PRIVATELY,
+            tenures.RENT_FROM_COUNCIL,
+            tenures.RENT_FROM_HA,
+        ]
+        return np.isin(tenure, RENT_TENURES)
 
 
 class benunit_random_number(Variable):
