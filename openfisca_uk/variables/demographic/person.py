@@ -56,6 +56,7 @@ class age(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
+        # Default age is 65 for adults and 10 for children.
         return where(person.benunit.members_role == BenUnit.ADULT, 18, 10)
 
 
@@ -286,8 +287,7 @@ class in_social_housing(Variable):
     def formula(person, period, parameters):
         tenure = person.household("tenure_type", period.this_year)
         tenures = tenure.possible_values
-        social = is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
-        return social
+        return is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
 
 
 class is_WA_adult(Variable):
@@ -327,8 +327,7 @@ class age_18_64(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        age = person("age", period)
-        return (age >= 18) & (age <= 64)
+        return 18 <= person("age", period) <= 64
 
 
 class age_over_64(Variable):
@@ -348,4 +347,4 @@ class is_older_child(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (person("age", period) >= 14) * (person("age", period) < 18)
+        return 14 <= person("age", period) < 18
