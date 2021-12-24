@@ -1,0 +1,20 @@
+- name: Basic rate band is eligible for Marriage Allowance
+  period: 2021
+  input:
+    tax_band: BASIC
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Higher rate band is ineligible for Marriage Allowance
+  period: 2021
+  input:
+    tax_band: HIGHER
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Additional rate band is ineligible for Marriage Allowance
+  period: 2021
+  input:
+    tax_band: ADDITIONAL
+  output:
+    meets_marriage_allowance_income_conditions: false
