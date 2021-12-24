@@ -156,10 +156,9 @@ class benunit_tenure_type(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        tenure = benunit.value_from_first_person(
+        return benunit.value_from_first_person(
             benunit.members.household("tenure_type", period)
         )
-        return tenure
 
 
 class benunit_is_renting(Variable):
