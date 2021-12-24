@@ -285,9 +285,7 @@ class in_social_housing(Variable):
     def formula(person, period, parameters):
         tenure = person.household("tenure_type", period.this_year)
         tenures = tenure.possible_values
-        return np.isin(
-            tenure, [tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA]
-        )
+        return is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
 
 
 class is_WA_adult(Variable):
