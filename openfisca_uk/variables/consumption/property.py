@@ -43,9 +43,9 @@ class main_residential_property_purchased(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("property_purchased", period) * household(
-            "main_residence_value", period
-        )
+        property_purchased = household("property_purchased", period)
+        main_residence_value = household("main_residence_value", period)
+        return main_residence_value * property_purchased
 
 
 class additional_residential_property_purchased(Variable):
@@ -57,9 +57,11 @@ class additional_residential_property_purchased(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("property_purchased", period) * household(
+        property_purchased = household("property_purchased", period)
+        other_residential_property_value = household(
             "other_residential_property_value", period
         )
+        return other_residential_property_value * property_purchased
 
 
 class main_residential_property_purchased_is_first_home(Variable):
@@ -103,9 +105,11 @@ class non_residential_property_purchased(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("property_purchased", period) * household(
+        property_purchased = household("property_purchased", period)
+        non_residential_property_value = household(
             "non_residential_property_value", period
         )
+        return property_purchased * non_residential_property_value
 
 
 class cumulative_non_residential_rent(Variable):
