@@ -6,6 +6,7 @@ class housing_benefit_reported(Variable):
     entity = Person
     label = u"Housing Benefit (reported amount)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class housing_benefit_eligible(Variable):
@@ -29,9 +30,13 @@ class would_claim_HB(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
+        would_randomly_take_up = (
             random(benunit) < parameters(period).benefit.housing_benefit.takeup
-        ) | benunit("claims_all_entitled_benefits", period)
+        )
+        claims_all_entitled_benefits = benunit(
+            "claims_all_entitled_benefits", period
+        )
+        return would_randomly_take_up | claims_all_entitled_benefits
 
 
 class claims_HB(Variable):
@@ -44,9 +49,9 @@ class claims_HB(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("would_claim_HB", period) & benunit(
-            "claims_legacy_benefits", period
-        )
+        would_claim_HB = benunit("would_claim_HB", period)
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
+        return would_claim_HB & claims_legacy_benefits
 
 
 class housing_benefit_applicable_amount(Variable):
@@ -54,6 +59,7 @@ class housing_benefit_applicable_amount(Variable):
     entity = BenUnit
     label = u"Applicable amount for Housing Benefit"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         HB = parameters(period).benefit.housing_benefit
@@ -88,9 +94,8 @@ class housing_benefit_applicable_amount(Variable):
             )
         ) * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
-        return (personal_allowance + premiums) * benunit(
-            "housing_benefit_eligible", period
-        )
+        housing_benefit_eligible = benunit("housing_benefit_eligible", period)
+        return (personal_allowance + premiums) * housing_benefit_eligible
 
 
 class housing_benefit_applicable_income(Variable):
@@ -98,6 +103,7 @@ class housing_benefit_applicable_income(Variable):
     entity = BenUnit
     label = u"Relevant income for Housing Benefit means test"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -136,7 +142,7 @@ class housing_benefit_applicable_income(Variable):
             max_childcare_amount,
             benunit.sum(benunit.members("childcare_expenses", period)),
         )
-        applicable_income = max_(
+        return max_(
             0,
             income
             - benunit("is_single_person", period)
@@ -163,7 +169,6 @@ class housing_benefit_applicable_income(Variable):
             * WEEKS_IN_YEAR
             - childcare_element,
         )
-        return applicable_income
 
 
 class HB_individual_non_dep_deduction(Variable):
@@ -171,6 +176,7 @@ class HB_individual_non_dep_deduction(Variable):
     entity = Person
     label = u"Non-dependent deduction (individual)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         not_rent_liable = person.benunit("benunit_rent", period) == 0
@@ -188,6 +194,7 @@ class HB_non_dep_deductions(Variable):
     entity = BenUnit
     label = u"Non-dependent deductions"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         non_dep_deductions_in_hh = benunit.max(
@@ -206,6 +213,7 @@ class housing_benefit(Variable):
     entity = BenUnit
     label = u"Housing Benefit"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
