@@ -73,25 +73,25 @@ class housing_benefit_applicable_amount(Variable):
         single = benunit("is_single_person", period)
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_lone_parent", period)
+        single_personal_allowance = (
+            u_25 * PA.single.under_25
+            + o_25 * PA.single.over_25
+            + one_over_SP_age * PA.single.SP_age
+        )
+        couple_personal_allowance = (
+            u_18 * PA.couple.both_under_18
+            + o_18 * PA.couple.over_18
+            + one_over_SP_age * PA.couple.SP_age
+        )
+        lone_parent_personal_allowance = (
+            u_18 * PA.lone_parent.under_18
+            + o_18 * PA.lone_parent.over_18
+            + one_over_SP_age * PA.lone_parent.SP_age
+        )
         personal_allowance = (
-            single
-            * (
-                u_25 * PA.single.under_25
-                + o_25 * PA.single.over_25
-                + one_over_SP_age * PA.single.SP_age
-            )
-            + couple
-            * (
-                u_18 * PA.couple.both_under_18
-                + o_18 * PA.couple.over_18
-                + one_over_SP_age * PA.couple.SP_age
-            )
-            + lone_parent
-            * (
-                u_18 * PA.lone_parent.under_18
-                + o_18 * PA.lone_parent.over_18
-                + one_over_SP_age * PA.lone_parent.SP_age
-            )
+            single * single_personal_allowance
+            + couple * couple_personal_allowance
+            + lone_parent * lone_parent_personal_allowance
         ) * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
         housing_benefit_eligible = benunit("housing_benefit_eligible", period)
@@ -120,13 +120,10 @@ class housing_benefit_applicable_income(Variable):
             "property_income",
             "pension_income",
         ]
+        TAX_COMPONENTS = ["income_tax", "national_insurance"]
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = aggr(benunit, period, INCOME_COMPONENTS)
-        tax = aggr(
-            benunit,
-            period,
-            ["income_tax", "national_insurance"],
-        )
+        tax = aggr(benunit, period, TAX_COMPONENTS)
         income += aggr(benunit, period, ["personal_benefits"])
         income += add(benunit, period, ["tax_credits"])
         income -= tax
@@ -231,20 +228,25 @@ class housing_benefit(Variable):
         amount = where(
             LHA, min_(final_amount, benunit("LHA_cap", period)), final_amount
         )
-        other_capped_benefits = add(
-            benunit,
-            period,
-            [
-                "child_benefit",
-                "child_tax_credit",
-                "JSA_income",
-                "income_support",
-                "ESA_income",
-            ],
-        ) + aggr(
-            benunit,
-            period,
-            ["JSA_contrib", "incapacity_benefit", "ESA_contrib", "SDA"],
+        CAPPED_BENUNIT_BENEFITS = [
+            "child_benefit",
+            "child_tax_credit",
+            "JSA_income",
+            "income_support",
+            "ESA_income",
+        ]
+        capped_benunit_benefits = add(benunit, period, CAPPED_BENUNIT_BENEFITS)
+        CAPPED_PERSONAL_BENEFITS = [
+            "JSA_contrib",
+            "incapacity_benefit",
+            "ESA_contrib",
+            "SDA",
+        ]
+        capped_personal_benefits = aggr(
+            benunit, period, CAPPED_PERSONAL_BENEFITS
+        )
+        other_capped_benefits = (
+            capped_benunit_benefits + capped_personal_benefits
         )
         amount = max_(0, amount - benunit("HB_non_dep_deductions", period))
         final_amount = min_(
