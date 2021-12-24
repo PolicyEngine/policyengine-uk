@@ -79,7 +79,7 @@ class add_rate_earned_income(Variable):
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
         thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
-        return clip(income, thresholds[2], inf) - thresholds[2])
+        return clip(income, thresholds[2], inf) - thresholds[2]
 
 
 class basic_rate_earned_income_tax(Variable):
@@ -264,7 +264,9 @@ class basic_rate_savings_income_pre_starter(Variable):
         basic_rate_amount_without_savings = clip(
             other_income, thresholds[0], thresholds[1]
         )
-        return basic_rate_amount_with_savings - basic_rate_amount_without_savings
+        return (
+            basic_rate_amount_with_savings - basic_rate_amount_without_savings
+        )
 
 
 class savings_starter_rate_income(Variable):
@@ -312,9 +314,7 @@ class basic_rate_savings_income(Variable):
         basic_rate_amount_without = clip(
             other_income, thresholds[0], thresholds[1]
         )
-        return max_(
-            0, basic_rate_amount_with - basic_rate_amount_without
-        )
+        return max_(0, basic_rate_amount_with - basic_rate_amount_without)
 
 
 class higher_rate_savings_income(Variable):
@@ -346,9 +346,7 @@ class higher_rate_savings_income(Variable):
         higher_rate_amount_without = clip(
             other_income, thresholds[1], thresholds[2]
         )
-        return max_(
-            0, higher_rate_amount_with - higher_rate_amount_without
-        )
+        return max_(0, higher_rate_amount_with - higher_rate_amount_without)
 
 
 class add_rate_savings_income(Variable):
@@ -377,12 +375,8 @@ class add_rate_savings_income(Variable):
             thresholds[2],
             inf,
         )
-        add_rate_amount_without = clip(
-            other_income, thresholds[2], inf
-        )
-        return max_(
-            0, add_rate_amount_with - add_rate_amount_without
-        )
+        add_rate_amount_without = clip(other_income, thresholds[2], inf)
+        return max_(0, add_rate_amount_with - add_rate_amount_without)
 
 
 class taxed_savings_income(Variable):
