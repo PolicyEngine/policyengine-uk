@@ -11,11 +11,9 @@ class in_poverty_bhc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return (
-            household("equiv_hbai_household_net_income", period)
-            < parameters(period).poverty.absolute_poverty_threshold_bhc
-            * WEEKS_IN_YEAR
-        )
+        income = household("equiv_hbai_household_net_income", period)
+        threshold = parameters(period).poverty.absolute_poverty_threshold_bhc
+        return income < (threshold * WEEKS_IN_YEAR)
 
 
 class in_poverty_ahc(Variable):
@@ -27,11 +25,9 @@ class in_poverty_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return (
-            household("equiv_hbai_household_net_income_ahc", period)
-            < parameters(period).poverty.absolute_poverty_threshold_ahc
-            * WEEKS_IN_YEAR
-        )
+        income = household("equiv_hbai_household_net_income_ahc", period)
+        threshold = parameters(period).poverty.absolute_poverty_threshold_ahc
+        return income < (threshold * WEEKS_IN_YEAR)
 
 
 class in_deep_poverty_bhc(Variable):
@@ -41,11 +37,9 @@ class in_deep_poverty_bhc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return household("equiv_household_net_income", period) < (
-            parameters(period).poverty.absolute_poverty_threshold_bhc
-            * WEEKS_IN_YEAR
-            / 2
-        )
+        income = household("equiv_hbai_household_net_income", period)
+        threshold = parameters(period).poverty.absolute_poverty_threshold_bhc
+        return income < (threshold * WEEKS_IN_YEAR / 2)
 
 
 class in_deep_poverty_ahc(Variable):
@@ -55,11 +49,9 @@ class in_deep_poverty_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return household("equiv_hbai_household_net_income_ahc", period) < (
-            parameters(period).poverty.absolute_poverty_threshold_ahc
-            * WEEKS_IN_YEAR
-            / 2
-        )
+        income = household("equiv_hbai_household_net_income_ahc", period)
+        threshold = parameters(period).poverty.absolute_poverty_threshold_ahc
+        return income < (threshold * WEEKS_IN_YEAR / 2)
 
 
 class poverty_line_bhc(Variable):
@@ -69,11 +61,9 @@ class poverty_line_bhc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return (
-            parameters(period).poverty.absolute_poverty_threshold_bhc
-            * WEEKS_IN_YEAR
-            * household("household_equivalisation_bhc", period)
-        )
+        threshold = parameters(period).poverty.absolute_poverty_threshold_bhc
+        equivalisation = household("household_equivalisation_bhc", period)
+        return threshold * equivalisation * WEEKS_IN_YEAR
 
 
 class poverty_line_ahc(Variable):
@@ -83,11 +73,9 @@ class poverty_line_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        return (
-            parameters(period).poverty.absolute_poverty_threshold_ahc
-            * WEEKS_IN_YEAR
-            * household("household_equivalisation_ahc", period)
-        )
+        threshold = parameters(period).poverty.absolute_poverty_threshold_ahc
+        equivalisation = household("household_equivalisation_ahc", period)
+        return threshold * equivalisation * WEEKS_IN_YEAR
 
 
 class poverty_gap_bhc(Variable):
