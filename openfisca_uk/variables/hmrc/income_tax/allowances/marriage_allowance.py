@@ -6,6 +6,7 @@ class unused_personal_allowance(Variable):
     entity = Person
     label = u"Unused personal allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return max_(
@@ -26,10 +27,7 @@ class meets_marriage_allowance_income_conditions(Variable):
     def formula(person, period):
         band = person("tax_band", period)
         bands = band.possible_values
-        meets_band_eligibility = ~(band == bands.HIGHER) & ~(
-            band == bands.ADDITIONAL
-        )
-        return meets_band_eligibility
+        return ~np.isin(band, [bands.HIGHER, bands.ADDITIONAL])
 
 
 class partners_unused_personal_allowance(Variable):
@@ -52,6 +50,7 @@ class marriage_allowance(Variable):
     label = u"Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)"
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         marital = person("marital_status", period)
