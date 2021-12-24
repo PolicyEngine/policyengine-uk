@@ -1,7 +1,5 @@
 from openfisca_uk.variables.demographic.household import TenureType
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
-
+from openfisca_uk.model_api import *
 
 class benunit_id(Variable):
     value_type = int
@@ -171,7 +169,7 @@ class benunit_is_renting(Variable):
         tenure = benunit("benunit_tenure_type", period)
         return np.isin(
             tenure,
-            (
+            [
                 TenureType.RENT_PRIVATELY,
                 TenureType.RENT_FROM_COUNCIL,
                 TenureType.RENT_FROM_HA,

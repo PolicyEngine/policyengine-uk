@@ -1,6 +1,5 @@
 import openfisca_uk
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 from typing import Union
 
 

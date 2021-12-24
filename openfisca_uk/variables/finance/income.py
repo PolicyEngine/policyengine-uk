@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class earned_income(Variable):
