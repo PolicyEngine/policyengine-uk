@@ -117,10 +117,7 @@ class child_index(Variable):
             + 1
         )
         # Fill in adult values
-        adjusted_for_adults = where(
-            person("is_child", period), child_ranking, 100
-        )
-        return adjusted_for_adults
+        return where(person("is_child", period), child_ranking, 100)
 
 
 class is_eldest_child(Variable):
@@ -327,7 +324,8 @@ class age_18_64(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return 18 <= person("age", period) <= 64
+        age = person("age", period)
+        return (age >= 18) & (age <= 64)
 
 
 class age_over_64(Variable):
@@ -347,4 +345,5 @@ class is_older_child(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return 14 <= person("age", period) < 18
+        age = person("age", period)
+        return (age >= 14) & (age < 18)
