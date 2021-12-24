@@ -6,31 +6,44 @@ class JSA_income_reported(Variable):
     entity = Person
     label = u"JSA (income-based) (reported amount)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class JSA_income_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether eligible for JSA (income-based)"
+    label = u"Eligibility for income-based JSA"
+    documentation = "Whether the benefit unit is eligible for income-based Jobseekers' Allowance"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        JSA = parameters(period).benefit.JSA
+        # Calculate work hours eligibility.
+        hours_limit = parameters(period).benefit.JSA.hours
         hours = benunit("benunit_weekly_hours", period)
-        eligible = benunit("is_single", period) * (
-            hours < JSA.hours.single
-        ) + benunit("is_couple", period) * (hours < JSA.hours.couple)
-        under_SP_age = benunit.min(benunit.members("is_SP_age", period)) == 0
-        eligible *= under_SP_age
+        single = benunit("is_single", period)
+        hours_eligible_as_single = single & (hours < hours_limit.single)
+        couple = benunit("is_couple", period)
+        hours_eligible_as_couple = couple & (hours < hours_limit.couple)
+        hours_eligible = hours_eligible_as_single | hours_eligible_as_couple
+        # Benefit units with state pension age people are ineligible.
+        all_under_SP_age = (
+            benunit.min(benunit.members("is_SP_age", period)) == 0
+        )
+        # Must have at least one unemployed person.
         employment_statuses = benunit.members("employment_status", period)
-        one_unemployed = benunit.any(
+        unemployed_members = (
             employment_statuses
             == employment_statuses.possible_values.UNEMPLOYED
         )
-        eligible *= (
-            not_(benunit("income_support", period) > 0) * one_unemployed
+        any_unemployed = benunit.any(unemployed_members)
+        # Cannot claim Income Support.
+        not_on_income_support = not_(benunit("income_support", period) > 0)
+        return (
+            hours_eligible
+            & all_under_SP_age
+            & any_unemployed
+            & not_on_income_support
         )
-        return eligible
 
 
 class JSA_income_applicable_amount(Variable):
