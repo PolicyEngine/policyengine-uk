@@ -6,6 +6,7 @@ class ESA_income_reported(Variable):
     entity = Person
     label = u"ESA (income-based) (reported amount)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class would_claim_ESA_income(Variable):
@@ -16,11 +17,9 @@ class would_claim_ESA_income(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
-            aggr(benunit, period, ["ESA_income_reported"])
-            + benunit("claims_all_entitled_benefits", period)
-            > 0
-        )
+        reported = aggr(benunit, period, ["ESA_income_reported"])
+        claims_all = benunit("claims_all_entitled_benefits", period)
+        return reported | claims_all
 
 
 class ESA_income_eligible(Variable):
@@ -52,6 +51,7 @@ class ESA_income(Variable):
     label = u"ESA (income-based)"
     documentation = "Employment and Support Allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["ESA_income_reported"])
