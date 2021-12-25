@@ -42,6 +42,6 @@ class business_rates_change_incidence(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("business_rates", period) - household(
-            "baseline_business_rates", period
-        )
+        business_rates = household("business_rates", period)
+        baseline_business_rates = household("baseline_business_rates", period)
+        return business_rates - baseline_business_rates

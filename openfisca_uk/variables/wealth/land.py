@@ -21,14 +21,11 @@ class land_value(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return add(
-            household,
-            period,
-            [
-                "household_land_value",
-                "corporate_land_value",
-            ],
-        )
+        VARIABLES = [
+            "household_land_value",
+            "corporate_land_value",
+        ]
+        return add(household, period, VARIABLES)
 
 
 class household_land_value(Variable):
@@ -55,9 +52,8 @@ class household_land_value(Variable):
             property_wealth_intensity,
             land.intensity.property_wealth,
         )
-        return property_wealth * property_wealth_intensity + household(
-            "owned_land", period
-        )
+        owned_land = household("owned_land", period)
+        return property_wealth * property_wealth_intensity + owned_land
 
 
 class corporate_land_value(Variable):

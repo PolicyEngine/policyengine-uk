@@ -55,6 +55,8 @@ class property_wealth(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("residential_property_value", period) + household(
-            "non_residential_property_value", period
-        )
+        VARIABLES = [
+            "residential_property_value",
+            "non_residential_property_value",
+        ]
+        return add(household, period, VARIABLES)
