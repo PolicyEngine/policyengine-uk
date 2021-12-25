@@ -19,7 +19,7 @@ class benunit_rent(Variable):
     unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("personal_rent", period))
+        return aggr(benunit, period, ["personal_rent"])
 
 
 class personal_rent(Variable):

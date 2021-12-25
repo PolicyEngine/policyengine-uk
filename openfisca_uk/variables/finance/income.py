@@ -68,11 +68,7 @@ class market_income(Variable):
             "private_transfer_income",
             "maintenance_income",
         ]
-        income = add(
-            person,
-            period,
-            INCOME_VARIABLES,
-        )
+        income = add(person, period, INCOME_VARIABLES)
         return income - person("maintenance_expenses", period)
 
 
@@ -106,7 +102,7 @@ class household_gross_income(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household.sum(household.members("gross_income", period))
+        return aggr(household, period, ["gross_income"])
 
 
 class net_income(Variable):
@@ -358,4 +354,4 @@ class household_market_income(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household.sum(household.members("market_income", period))
+        return aggr(household, period, ["market_income"])
