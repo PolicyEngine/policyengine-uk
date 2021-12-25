@@ -10,7 +10,7 @@ class NI_exempt(Variable):
     reference = "Social Security Contributions and Benefits Act 1992 s. 6"
 
     def formula(person, period, parameters):
-        return not_(person("over_16", period)) | person("is_SP_age", period)
+        return ~person("over_16", period) | person("is_SP_age", period)
 
 
 class employee_NI_class_1(Variable):
