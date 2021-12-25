@@ -64,29 +64,29 @@ class housing_benefit_applicable_amount(Variable):
     def formula(benunit, period, parameters):
         HB = parameters(period).benefit.housing_benefit
         PA = HB.allowances
-        one_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
         eldest_age = benunit("eldest_adult_age", period)
         u_18 = eldest_age < 18
         u_25 = eldest_age < 25
-        o_25 = (eldest_age >= 25) * not_(one_over_SP_age)
-        o_18 = (eldest_age >= 18) * not_(one_over_SP_age)
+        o_25 = (eldest_age >= 25) & ~any_over_SP_age
+        o_18 = (eldest_age >= 18) * ~any_over_SP_age
         single = benunit("is_single_person", period)
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_lone_parent", period)
         single_personal_allowance = (
             u_25 * PA.single.under_25
             + o_25 * PA.single.over_25
-            + one_over_SP_age * PA.single.SP_age
+            + any_over_SP_age * PA.single.SP_age
         )
         couple_personal_allowance = (
             u_18 * PA.couple.both_under_18
             + o_18 * PA.couple.over_18
-            + one_over_SP_age * PA.couple.SP_age
+            + any_over_SP_age * PA.couple.SP_age
         )
         lone_parent_personal_allowance = (
             u_18 * PA.lone_parent.under_18
             + o_18 * PA.lone_parent.over_18
-            + one_over_SP_age * PA.lone_parent.SP_age
+            + any_over_SP_age * PA.lone_parent.SP_age
         )
         personal_allowance = (
             single * single_personal_allowance
@@ -130,11 +130,10 @@ class housing_benefit_applicable_income(Variable):
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         income += benefits
         num_children = benunit.nb_persons(BenUnit.CHILD)
-        max_childcare_amount = (
-            num_children == 1
-        ) * WTC.elements.childcare_1 * WEEKS_IN_YEAR + (
-            num_children > 1
-        ) * WTC.elements.childcare_2 * WEEKS_IN_YEAR
+        childcare_amount_1 = (num_children == 1) * WTC.elements.childcare_1
+        childcare_amount_2 = (num_children > 1) * WTC.elements.childcare_2
+        max_weekly_childcare_amount = childcare_amount_1 + childcare_amount_2
+        max_childcare_amount = max_weekly_childcare_amount * WEEKS_IN_YEAR
         childcare_element = min_(
             max_childcare_amount,
             aggr(benunit, period, ["childcare_expenses"]),
@@ -195,8 +194,8 @@ class HB_non_dep_deductions(Variable):
                 benunit.members("HB_individual_non_dep_deduction", period)
             )
         )
-        non_dep_deductions_in_bu = benunit.sum(
-            benunit.members("HB_individual_non_dep_deduction", period)
+        non_dep_deductions_in_bu = aggr(
+            benunit, period, ["HB_individual_non_dep_deduction"]
         )
         return non_dep_deductions_in_hh - non_dep_deductions_in_bu
 
