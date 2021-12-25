@@ -490,40 +490,38 @@ class UC_work_allowance(Variable):
 class UC_earned_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC earned income (after disregards and tax)"
+    label = u"Universal Credit earned income (after disregards and tax)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        personal_gross_earned_income = benunit.sum(
-            benunit.members("UC_MIF_capped_earned_income", period)
+        personal_gross_earned_income = aggr(
+            benunit, period, ["UC_MIF_capped_earned_income"]
         )
-        return max_(
-            0,
-            personal_gross_earned_income
-            - benunit("UC_work_allowance", period)
-            - benunit("benunit_tax", period)
-            - aggr(benunit, period, ["pension_contributions"]),
+        benunit_disregards = add(
+            benunit, period, ["UC_work_allowance", "benunit_tax"]
         )
+        person_disregards = aggr(benunit, period, ["pension_contributions"])
+        disregards = benunit_disregards + person_disregards
+        return max_(0, personal_gross_earned_income - disregards)
 
 
 class UC_unearned_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC unearned income"
+    label = u"Universal Credit unearned income"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        return aggr(
-            benunit,
-            period,
-            [
-                "carers_allowance",
-                "JSA_contrib",
-                "pension_income",
-                "savings_interest_income",
-                "dividend_income",
-            ],
-        )
+        SOURCES = [
+            "carers_allowance",
+            "JSA_contrib",
+            "pension_income",
+            "savings_interest_income",
+            "dividend_income",
+        ]
+        return aggr(benunit, period, SOURCES)
 
 
 class UC_income_reduction(Variable):
@@ -531,15 +529,15 @@ class UC_income_reduction(Variable):
     entity = BenUnit
     label = u"Reduction from income for Universal Credit"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        return max_(
-            0,
-            benunit("UC_unearned_income", period)
-            + UC.means_test.reduction_rate
-            * benunit("UC_earned_income", period),
+        earned_income_reduction = UC.means_test.reduction_rate * benunit(
+            "UC_earned_income", period
         )
+        unearned_income_reduction = benunit("UC_unearned_income", period)
+        return max_(0, earned_income_reduction + unearned_income_reduction)
 
 
 class universal_credit(Variable):
@@ -547,14 +545,16 @@ class universal_credit(Variable):
     entity = BenUnit
     label = u"Universal Credit"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
+        amount = max_(
+            0,
+            benunit("UC_maximum_amount", period)
+            - benunit("UC_income_reduction", period),
+        )
         return (
-            max_(
-                0,
-                benunit("UC_maximum_amount", period)
-                - benunit("UC_income_reduction", period),
-            )
+            amount
             * benunit("claims_UC", period)
             * benunit("is_UC_eligible", period)
         )
@@ -605,11 +605,12 @@ class UC_minimum_income_floor(Variable):
 class UC_MIF_capped_earned_income(Variable):
     value_type = float
     entity = Person
-    label = u"UC gross earned income (incl. MIF)"
+    label = u"Universal Credit gross earned income (incl. MIF)"
     documentation = (
         "Gross earned income for UC, with MIF applied where applicable"
     )
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         INCOME_COMPONENTS = [
@@ -618,11 +619,9 @@ class UC_MIF_capped_earned_income(Variable):
             "miscellaneous_income",
         ]
         personal_gross_earned_income = add(person, period, INCOME_COMPONENTS)
-        return where(
+        floor = where(
             person("UC_MIF_applies", period),
-            max_(
-                person("UC_minimum_income_floor", period),
-                personal_gross_earned_income,
-            ),
-            personal_gross_earned_income,
+            person("UC_minimum_income_floor", period),
+            -inf,
         )
+        return max_(personal_gross_earned_income, floor)
