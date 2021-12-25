@@ -17,9 +17,9 @@ class would_claim_ESA_income(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        reported = aggr(benunit, period, ["ESA_income_reported"])
+        reports_ESA_income = aggr(benunit, period, ["ESA_income_reported"]) > 0
         claims_all = benunit("claims_all_entitled_benefits", period)
-        return reported | claims_all
+        return reports_ESA_income | claims_all
 
 
 class ESA_income_eligible(Variable):
