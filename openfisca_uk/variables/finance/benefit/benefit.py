@@ -48,11 +48,7 @@ class family_benefits_reported(Variable):
             "working_tax_credit",
             "child_tax_credit",
         ]
-        return add(
-            person,
-            period,
-            map(lambda ben: ben + "_reported", FAMILY_BENEFITS),
-        )
+        return add(person, period, [i + "_reported" for i in FAMILY_BENEFITS])
 
 
 class benefits(Variable):
@@ -75,7 +71,7 @@ class household_benefits(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household.sum(household.members("benefits", period))
+        return aggr(household, period, ["benefits"])
 
 
 class other_benefits(Variable):
@@ -101,11 +97,8 @@ class benefits_reported(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return add(
-            person,
-            period,
-            ["personal_benefits_reported", "family_benefits_reported"],
-        )
+        BENS = ["personal_benefits_reported", "family_benefits_reported"]
+        return add(person, period, BENS)
 
 
 class benefits_modelling(Variable):
@@ -171,7 +164,7 @@ class benunit_weekly_hours(Variable):
     unit = "hour"
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("weekly_hours", period))
+        return aggr(benunit, period, ["weekly_hours"])
 
 
 class is_single(Variable):
@@ -297,10 +290,9 @@ class claims_legacy_benefits(Variable):
 
     def formula(benunit, period, parameters):
         # Assign legacy/UC claimant status, consistently for each household
+        household = benunit.members.household
         benunit_random = benunit.value_from_first_person(
-            benunit.members.household.project(
-                random(benunit.members.household)
-            )
+            household.project(random(household))
         )
-        uc_rollout = parameters(period).benefit.universal_credit.rollout_rate
-        return benunit_random > uc_rollout
+        UC_rollout = parameters(period).benefit.universal_credit.rollout_rate
+        return benunit_random > UC_rollout
