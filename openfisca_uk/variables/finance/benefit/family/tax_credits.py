@@ -435,7 +435,7 @@ class WTC_worker_element(Variable):
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
-        hours = benunit.sum(benunit.members("weekly_hours", period))
+        hours = aggr(benunit, period, ["weekly_hours"])
         meets_hours_requirement = hours >= WTC.min_hours.lower
         return (
             benunit("is_WTC_eligible", period)
@@ -459,7 +459,7 @@ class WTC_childcare_element(Variable):
         childcare_1 = (num_children == 1) * WTC.elements.childcare_1
         childcare_2 = (num_children > 1) * WTC.elements.childcare_2
         max_childcare_amount = (childcare_1 + childcare_2) * WEEKS_IN_YEAR
-        expenses = benunit.sum(benunit.members("childcare_expenses", period))
+        expenses = aggr(benunit, period, ["childcare_expenses"])
         childcare_element = min_(
             max_childcare_amount,
             WTC.elements.childcare_coverage * expenses,

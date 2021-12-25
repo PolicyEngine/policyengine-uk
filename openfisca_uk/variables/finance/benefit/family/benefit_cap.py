@@ -6,31 +6,30 @@ class benefit_cap(Variable):
     entity = BenUnit
     label = u"Benefit cap for the family"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        children = benunit("num_children", period) > 0
+        has_children = benunit("num_children", period) > 0
         household_region = benunit.members.household("region", period)
         region = benunit.value_from_first_person(household_region)
         regions = household_region.possible_values
         in_london = region == regions.LONDON
         cap = parameters(period).benefit.benefit_cap
-        rate = (
-            select(
-                [
-                    children * in_london,
-                    children * not_(in_london),
-                    not_(children) * in_london,
-                    not_(children) * not_(in_london),
-                ],
-                [
-                    cap.london_children,
-                    cap.has_children,
-                    cap.london_no_children,
-                    cap.no_children,
-                ],
-            )
-            * WEEKS_IN_YEAR
+        weekly_rate = select(
+            [
+                has_children & in_london,
+                has_children & ~in_london,
+                ~has_children & in_london,
+                ~has_children & ~in_london,
+            ],
+            [
+                cap.london_children,
+                cap.has_children,
+                cap.london_no_children,
+                cap.no_children,
+            ],
         )
+        rate = weekly_rate * WEEKS_IN_YEAR
         exempt = benunit("is_benefit_cap_exempt", period)
         return where(exempt, np.inf * np.ones_like(children), rate)
 

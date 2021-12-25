@@ -180,8 +180,8 @@ class num_UC_eligible_children(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        children_born_before_limit = benunit.sum(
-            benunit.members("is_child_born_before_child_limit", period)
+        children_born_before_limit = aggr(
+            benunit, period, ["is_child_born_before_child_limit"]
         )
         child_limit = parameters(
             period
@@ -204,9 +204,7 @@ class UC_child_element(Variable):
     unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        return benunit.sum(
-            benunit.members("UC_individual_child_element", period)
-        )
+        return aggr(benunit, period, ["UC_individual_child_element"])
 
 
 class UC_carer_element(Variable):
@@ -412,9 +410,10 @@ class num_UC_eligible_children(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit.sum(
+        eligible_child = (
             benunit.members("UC_individual_child_element", period) > 0
         )
+        return benunit.sum(eligible_child)
 
 
 class UC_maximum_childcare(Variable):
@@ -441,8 +440,8 @@ class UC_childcare_element(Variable):
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        eligible_childcare_expenses = benunit.sum(
-            benunit.members("childcare_expenses", period)
+        eligible_childcare_expenses = aggr(
+            benunit, period, ["childcare_expenses"]
         )
         covered_expenses = (
             eligible_childcare_expenses * UC.elements.childcare.coverage_rate
