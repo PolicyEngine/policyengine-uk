@@ -31,7 +31,7 @@ class benefit_cap(Variable):
         )
         rate = weekly_rate * WEEKS_IN_YEAR
         exempt = benunit("is_benefit_cap_exempt", period)
-        return where(exempt, np.inf * np.ones_like(children), rate)
+        return where(exempt, np.inf * np.ones_like(has_children), rate)
 
 
 class is_benefit_cap_exempt(Variable):
