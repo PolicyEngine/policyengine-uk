@@ -53,13 +53,16 @@ class family_type(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        two_adults = benunit.sum(benunit.members("is_adult", period)) == 2
-        has_children = benunit.sum(benunit.members("is_child", period)) > 0
-        is_single = not_(two_adults) * not_(has_children)
-        is_couple = two_adults * not_(has_children)
-        is_lone = not_(two_adults) * has_children
-        is_full = two_adults * has_children
-        return select([is_single, is_couple, is_lone, is_full], FamilyType)
+        two_adults = aggr(benunit, period, ["is_adult"]) == 2
+        has_children = benunit.any(benunit.members("is_child", period))
+        single = ~two_adults & ~has_children
+        couple_no_children = two_adults & ~has_children
+        lone_parent = ~two_adults & has_children
+        couple_with_children = two_adults & has_children
+        return select(
+            [single, couple_no_children, lone_parent, couple_with_children],
+            FamilyType,
+        )
 
 
 class relation_type(Variable):
