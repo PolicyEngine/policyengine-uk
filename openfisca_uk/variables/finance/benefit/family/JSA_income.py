@@ -26,9 +26,7 @@ class JSA_income_eligible(Variable):
         hours_eligible_as_couple = couple & (hours < hours_limit.couple)
         hours_eligible = hours_eligible_as_single | hours_eligible_as_couple
         # Benefit units with state pension age people are ineligible.
-        all_under_SP_age = (
-            benunit.min(benunit.members("is_SP_age", period)) == 0
-        )
+        all_under_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         # Must have at least one unemployed person.
         employment_statuses = benunit.members("employment_status", period)
         unemployed_members = (
@@ -37,7 +35,7 @@ class JSA_income_eligible(Variable):
         )
         any_unemployed = benunit.any(unemployed_members)
         # Cannot claim Income Support.
-        not_on_income_support = not_(benunit("income_support", period) > 0)
+        not_on_income_support = benunit("income_support", period) == 0
         return (
             hours_eligible
             & all_under_SP_age
@@ -150,6 +148,7 @@ class JSA_income(Variable):
     entity = BenUnit
     label = u"JSA (income-based)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         applicable_amount = benunit("JSA_income_applicable_amount", period)
@@ -165,6 +164,7 @@ class JSA(Variable):
     entity = BenUnit
     label = u"Amount of Jobseeker's Allowance for this family"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         JSA_contrib = aggr(benunit, period, ["JSA_contrib"])
