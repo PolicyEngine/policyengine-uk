@@ -6,9 +6,10 @@ class PIP(Variable):
     entity = Person
     label = u"Personal Independence Payment"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return person("PIP_M", period) + person("PIP_DL", period)
+        return add(person, period, ["PIP_M", "PIP_DL"])
 
 
 class PIP_DL(Variable):
@@ -16,6 +17,7 @@ class PIP_DL(Variable):
     entity = Person
     label = u"Personal Independence Payment (Daily Living)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("PIP_DL_reported", period)
@@ -26,6 +28,7 @@ class PIP_M(Variable):
     entity = Person
     label = u"Personal Independence Payment (Mobility)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("PIP_M_reported", period)
@@ -36,6 +39,7 @@ class PIP_DL_reported(Variable):
     entity = Person
     label = u"Personal Independence Payment (Daily Living) (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class PIP_M_reported(Variable):
@@ -43,3 +47,4 @@ class PIP_M_reported(Variable):
     entity = Person
     label = u"Personal Independence Payment (Mobility) (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"

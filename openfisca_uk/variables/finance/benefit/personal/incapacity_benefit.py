@@ -6,6 +6,7 @@ class incapacity_benefit(Variable):
     entity = Person
     label = u"Incapacity Benefit"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("incapacity_benefit_reported", period)
@@ -16,3 +17,4 @@ class incapacity_benefit_reported(Variable):
     entity = Person
     label = u"Incapacity Benefit (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"

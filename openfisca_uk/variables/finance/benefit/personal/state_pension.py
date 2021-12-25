@@ -6,12 +6,11 @@ class state_pension_age(Variable):
     entity = Person
     label = u"State Pension age for this person"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         SP = parameters(period).benefit.state_pension
-        male = person("is_male", period)
-        threshold = male * SP.male_age + not_(male) * SP.female_age
-        return threshold
+        return where(person("is_male", period), SP.male_age, SP.female_age)
 
 
 class is_SP_age(Variable):
@@ -19,12 +18,12 @@ class is_SP_age(Variable):
     entity = Person
     label = u"Whether the person is State Pension Age"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         age = person("age", period)
         threshold = person("state_pension_age", period)
-        over = age >= threshold
-        return over
+        return age >= threshold
 
 
 class triple_lock_uprating(Variable):
@@ -37,14 +36,10 @@ class triple_lock_uprating(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        cpi_growth = (
-            parameters(period).uprating.CPI
-            / parameters(period.last_year).uprating.CPI
-        )
-        earnings_growth = (
-            parameters(period).uprating.earnings
-            / parameters(period.last_year).uprating.earnings
-        )
+        uprating = parameters(period).uprating
+        uprating_ly = parameters(period.last_year).uprating
+        cpi_growth = uprating.CPI / uprating_ly.CPI
+        earnings_growth = uprating.earnings / uprating_ly.earnings
         return max(
             parameters(period).benefit.state_pension.triple_lock_minimum,
             cpi_growth,
@@ -59,6 +54,7 @@ class state_pension(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
     documentation = "Gross State Pension payments"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("state_pension_reported", period)
@@ -69,8 +65,8 @@ class state_pension_reported(Variable):
     entity = Person
     label = u"Reported income from the State Pension"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula_2015(person, period, parameters):
-        return person("state_pension_reported", period.last_year) * person(
-            "triple_lock_uprating", period
-        )
+        sp_ly = person("state_pension_reported", period.last_year)
+        return sp_ly * person("triple_lock_uprating", period)

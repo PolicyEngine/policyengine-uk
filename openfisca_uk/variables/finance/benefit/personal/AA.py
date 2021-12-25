@@ -6,6 +6,7 @@ class AA(Variable):
     entity = Person
     label = u"Attendance Allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("AA_reported", period)
@@ -16,3 +17,4 @@ class AA_reported(Variable):
     entity = Person
     label = u"Attendance Allowance (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"

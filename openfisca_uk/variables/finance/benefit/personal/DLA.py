@@ -6,9 +6,10 @@ class DLA(Variable):
     entity = Person
     label = u"Disability Living Allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return person("DLA_M", period) + person("DLA_SC", period)
+        return add(person, period, ["DLA_M", "DLA_SC"])
 
 
 class DLA_M(Variable):
@@ -16,6 +17,7 @@ class DLA_M(Variable):
     entity = Person
     label = u"Disability Living Allowance (mobility component)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("DLA_M_reported", period)
@@ -26,6 +28,7 @@ class DLA_SC(Variable):
     entity = Person
     label = u"Disability Living Allowance (self-care)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("DLA_SC_reported", period)
@@ -47,6 +50,7 @@ class DLA_M_reported(Variable):
     entity = Person
     label = u"Disability Living Allowance (mobility component) (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class DLA_SC_reported(Variable):
@@ -54,3 +58,4 @@ class DLA_SC_reported(Variable):
     entity = Person
     label = u"Disability Living Allowance (self-care) (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"

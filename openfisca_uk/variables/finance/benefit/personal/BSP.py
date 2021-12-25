@@ -6,6 +6,7 @@ class BSP(Variable):
     entity = Person
     label = u"Bereavement Support Payment"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("BSP_reported", period)
@@ -16,3 +17,4 @@ class BSP_reported(Variable):
     entity = Person
     label = u"Bereavement Support Payment (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"

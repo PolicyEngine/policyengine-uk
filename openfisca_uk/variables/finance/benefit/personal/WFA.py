@@ -6,3 +6,4 @@ class winter_fuel_allowance_reported(Variable):
     entity = Person
     label = u"Winter fuel allowance"
     definition_period = YEAR
+    unit = "currency-GBP"

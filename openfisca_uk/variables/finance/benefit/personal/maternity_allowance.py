@@ -6,3 +6,4 @@ class maternity_allowance_reported(Variable):
     entity = Person
     label = u"Maternity allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
