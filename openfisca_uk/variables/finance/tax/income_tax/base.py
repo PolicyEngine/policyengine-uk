@@ -40,6 +40,7 @@ class social_security_income(Variable):
     label = u"Income from social security for tax purposes"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [

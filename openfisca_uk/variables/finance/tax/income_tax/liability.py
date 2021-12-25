@@ -20,10 +20,9 @@ class earned_taxable_income(Variable):
             "allowances",
             "marriage_allowance",
         ]
-        unbounded_amount = person("adjusted_net_income", period) - add(
-            person, period, EXCLUSIONS
-        )
-        return max_(0, unbounded_amount)
+        ANI = person("adjusted_net_income", period)
+        exclusions = add(person, period, EXCLUSIONS)
+        return max_(0, ANI - exclusions)
 
 
 class taxed_income(Variable):
@@ -493,8 +492,10 @@ class income_tax(Variable):
     reference = "Income Tax Act 2007 s. 23"
 
     def formula(person, period, parameters):
-        return max_(
-            0,
-            add(person, period, ["income_tax_pre_charges", "CB_HITC"])
-            - person("married_couples_allowance_deduction", period),
+        tax_with_hitc = add(
+            person, period, ["income_tax_pre_charges", "CB_HITC"]
         )
+        married_deduction = person(
+            "married_couples_allowance_deduction", period
+        )
+        return max_(0, tax_with_hitc - married_deduction)

@@ -226,12 +226,10 @@ class taxable_self_employment_income(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
+        self_employment_income = person("self_employment_income", period)
         DEDUCTIONS = ["loss_relief", "capital_allowances", "trading_allowance"]
-        return max_(
-            0,
-            person("self_employment_income", period)
-            - add(person, period, DEDUCTIONS),
-        )
+        deductions = add(person, period, DEDUCTIONS)
+        return max_(0, self_employment_income - deductions)
 
 
 # Property income
@@ -336,7 +334,4 @@ class adjusted_net_income(Variable):
             "taxable_dividend_income",
             "taxable_miscellaneous_income",
         ]
-        return max_(
-            0,
-            add(person, period, COMPONENTS),
-        )
+        return max_(0, add(person, period, COMPONENTS))
