@@ -30,8 +30,12 @@ class claims_UC(Variable):
         JSA_income = benunit("would_claim_JSA", period) & benunit(
             "JSA_income_eligible", period
         )
-        return not_(benunit("claims_legacy_benefits", period)) & (
+        eligible_and_would_claim_any_legacy_benefits = (
             sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
+        )
+        return (
+            ~benunit("claims_legacy_benefits", period)
+            & eligible_and_would_claim_any_legacy_benefits
         )
 
 
