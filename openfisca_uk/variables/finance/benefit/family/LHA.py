@@ -101,11 +101,10 @@ class LHA_category(Variable):
 
     def formula(benunit, period, parameters):
         num_rooms = benunit("LHA_allowed_bedrooms", period.this_year)
-        household = benunit.members.household
         person = benunit.members
-        is_shared = (
-            benunit.max(household("is_shared_accommodation", period.this_year))
-            > 0
+        household = person.household
+        is_shared = benunit.any(
+            household("is_shared_accommodation", period.this_year)
         )
         num_adults_in_hh = benunit.max(
             household.sum(person("is_adult", period))
@@ -113,6 +112,7 @@ class LHA_category(Variable):
         eldest_adult_age_in_hh = benunit.max(
             household.max(person("age", period))
         )
+        # Households with only one adult, if under 35, can only claim shared.
         can_only_claim_shared = (num_adults_in_hh == 1) & (
             eldest_adult_age_in_hh < 35
         )

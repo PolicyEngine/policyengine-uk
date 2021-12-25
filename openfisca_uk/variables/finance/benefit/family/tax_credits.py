@@ -164,10 +164,7 @@ class CTC_child_element(Variable):
         exempt_child = is_child_for_CTC & is_CTC_child_limit_exempt
         exempt_children = benunit.sum(exempt_child)
         spaces_left = max_(0, 2 - exempt_children)
-        non_exempt_children = min_(
-            spaces_left,
-            benunit.sum(is_child_for_CTC),
-        )
+        non_exempt_children = min_(spaces_left, benunit.sum(is_child_for_CTC))
         children = exempt_children + non_exempt_children
         CTC = parameters(period).benefit.tax_credits.child_tax_credit
         amount = CTC.elements.child_element * children
