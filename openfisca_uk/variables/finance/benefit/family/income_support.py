@@ -6,6 +6,7 @@ class income_support_reported(Variable):
     entity = Person
     label = u"Income Support (reported amount)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class would_claim_IS(Variable):
@@ -18,9 +19,11 @@ class would_claim_IS(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
+        takes_up = (
             random(benunit) <= parameters(period).benefit.income_support.takeup
-        ) + benunit("claims_all_entitled_benefits", period)
+        )
+        claims_all = benunit("claims_all_entitled_benefits", period)
+        return takes_up | claims_all
 
 
 class claims_IS(Variable):
@@ -30,9 +33,9 @@ class claims_IS(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("would_claim_IS", period) & benunit(
-            "claims_legacy_benefits", period
-        )
+        would_claim = benunit("would_claim_IS", period)
+        claims_legacy = benunit("claims_legacy_benefits", period)
+        return would_claim & claims_legacy
 
 
 class income_support_applicable_income(Variable):
@@ -40,6 +43,7 @@ class income_support_applicable_income(Variable):
     entity = BenUnit
     label = u"Relevant income for Income Support means test"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefit.income_support
@@ -90,13 +94,14 @@ class income_support_eligible(Variable):
         youngest_child_5_or_under = benunit("youngest_child_age", period) <= 5
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_with_young_child = lone_parent & youngest_child_5_or_under
-        QUALIFYING_COMPONENTS = ["is_carer_for_benefits"]
-        eligible = (
-            aggr(benunit, period, QUALIFYING_COMPONENTS) > 0
-        ) | lone_parent_with_young_child
-        under_SP_age = benunit.any(benunit.members("is_SP_age", period)) == 0
-        eligible *= under_SP_age
-        return not_(benunit("ESA_income", period) > 0) & eligible
+        has_carers = aggr(benunit, period, ["is_carer_for_benefits"]) > 0
+        none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
+        has_ESA_income = benunit("ESA_income", period) > 0
+        return (
+            (has_carers | lone_parent_with_young_child)
+            & none_SP_age
+            & ~has_ESA_income
+        )
 
 
 class income_support_applicable_amount(Variable):
@@ -104,44 +109,46 @@ class income_support_applicable_amount(Variable):
     entity = BenUnit
     label = u"Applicable amount of Income Support"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefit.income_support
         amounts = IS.amounts
         younger_age = benunit("youngest_adult_age", period)
         older_age = benunit("eldest_adult_age", period)
-        children = benunit.sum(benunit.members("is_child", period)) > 0
+        younger_under_18 = younger_age < 18
+        younger_under_25 = younger_age < 25
+        older_under_18 = older_age < 18
+        has_children = benunit.any(benunit.members("is_child", period))
         single = benunit("is_single", period)
-        single_under_25 = single * not_(children) * (younger_age < 25)
-        single_over_25 = single * not_(children) * (younger_age >= 25)
-        lone_young = single * children * (younger_age < 18)
-        lone_old = single * children * (younger_age >= 18)
-        couple_young = not_(single) * (older_age < 18)
-        couple_mixed = not_(single) * (older_age >= 18) * (younger_age < 18)
-        couple_old = not_(single) * (younger_age >= 18)
-        personal_allowance = (
-            select(
-                [
-                    single_under_25,
-                    single_over_25,
-                    lone_young,
-                    lone_old,
-                    couple_young,
-                    couple_mixed,
-                    couple_old,
-                ],
-                [
-                    amounts.amount_16_24,
-                    amounts.amount_over_25,
-                    amounts.amount_lone_16_17,
-                    amounts.amount_lone_over_18,
-                    amounts.amount_couples_16_17,
-                    amounts.amount_couples_age_gap,
-                    amounts.amount_couples_over_18,
-                ],
-            )
-            * WEEKS_IN_YEAR
+        single_under_25 = single & ~has_children & younger_under_25
+        single_over_25 = single & ~has_children & ~younger_under_25
+        lone_young = single & has_children & younger_under_18
+        lone_old = single & has_children & ~younger_under_18
+        couple_young = ~single & older_under_18
+        couple_mixed = ~single & ~older_under_18 & younger_under_18
+        couple_old = ~single & ~younger_under_18
+        personal_allowance_weekly = select(
+            [
+                single_under_25,
+                single_over_25,
+                lone_young,
+                lone_old,
+                couple_young,
+                couple_mixed,
+                couple_old,
+            ],
+            [
+                amounts.amount_16_24,
+                amounts.amount_over_25,
+                amounts.amount_lone_16_17,
+                amounts.amount_lone_over_18,
+                amounts.amount_couples_16_17,
+                amounts.amount_couples_age_gap,
+                amounts.amount_couples_over_18,
+            ],
         )
+        personal_allowance = personal_allowance_weekly * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
         return (
             (personal_allowance + premiums)
@@ -155,6 +162,7 @@ class income_support(Variable):
     entity = BenUnit
     label = u"Income Support"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         amount = benunit("income_support_applicable_amount", period)
