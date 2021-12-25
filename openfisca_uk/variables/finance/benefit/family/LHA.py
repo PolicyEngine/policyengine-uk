@@ -1,17 +1,21 @@
 from openfisca_uk.model_api import *
-import pandas as pd
 
 
 class LHA_eligible(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Whether eligible for Local Housing Allowance"
+    label = u"Eligibility for Local Housing Allowance"
+    documentation = (
+        "Whether benefit unit is eligible for Local Housing Allowance"
+    )
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("benunit_is_renting", period) * not_(
-            benunit.any(benunit.members("in_social_housing", period))
+        renting = benunit("benunit_is_renting", period)
+        anyone_in_social_housing = benunit.any(
+            benunit.members("in_social_housing", period)
         )
+        return renting & ~anyone_in_social_housing
 
 
 class LHA_allowed_bedrooms(Variable):
@@ -82,13 +86,14 @@ class LHA_cap(Variable):
     value_type = float
     entity = BenUnit
     label = u"Applicable amount for LHA"
+    documentation = "Applicable amount for Local Housing Allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
         cap = benunit("BRMA_LHA_rate", period)
-        amount = min_(rent, cap)
-        return amount
+        return min_(rent, cap)
 
 
 class LHACategory(Enum):
@@ -109,24 +114,22 @@ class LHA_category(Variable):
 
     def formula(benunit, period, parameters):
         num_rooms = benunit("LHA_allowed_bedrooms", period.this_year)
+        household = benunit.members.household
+        person = benunit.members
         is_shared = (
-            benunit.max(
-                benunit.members.household(
-                    "is_shared_accommodation", period.this_year
-                )
-            )
+            benunit.max(household("is_shared_accommodation", period.this_year))
             > 0
         )
         num_adults_in_hh = benunit.max(
-            benunit.members.household.sum(benunit.members("is_adult", period))
+            household.sum(person("is_adult", period))
         )
         eldest_adult_age_in_hh = benunit.max(
-            benunit.members.household.max(benunit.members("age", period))
+            household.max(person("age", period))
         )
         can_only_claim_shared = (num_adults_in_hh == 1) & (
             eldest_adult_age_in_hh < 35
         )
-        category = select(
+        return select(
             [
                 is_shared | can_only_claim_shared,
                 num_rooms == 1,
@@ -142,14 +145,15 @@ class LHA_category(Variable):
                 LHACategory.E,
             ],
         )
-        return category
 
 
 class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
-    label = u"LHA Rate"
+    label = u"LHA rate"
+    documentation = "Local Housing Allowance rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         BRMA = benunit.value_from_first_person(
