@@ -5,7 +5,7 @@ from openfisca_uk.variables.demographic.household import TenureType
 class claims_UC(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Would claim UC"
+    label = "Would claim Universal Credit"
     documentation = (
         "Whether this family would claim Universal Credit if eligible"
     )
@@ -43,7 +43,7 @@ class is_UC_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit.max(benunit.members("is_WA_adult", period)) > 0
+        return benunit.any(benunit.members("is_WA_adult", period))
 
 
 class universal_credit_reported(Variable):
@@ -58,23 +58,20 @@ class universal_credit_reported(Variable):
 class UC_maximum_amount(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Maximum UC amount"
+    label = u"Maximum Universal Credit amount"
     definition_period = YEAR
     unit = "currency-GBP"
 
     def formula(benunit, period):
-        return add(
-            benunit,
-            period,
-            [
-                "UC_standard_allowance",
-                "UC_child_element",
-                "UC_disability_elements",
-                "UC_carer_element",
-                "UC_housing_costs_element",
-                "UC_childcare_element",
-            ],
-        )
+        ELEMENTS = [
+            "UC_standard_allowance",
+            "UC_child_element",
+            "UC_disability_elements",
+            "UC_carer_element",
+            "UC_housing_costs_element",
+            "UC_childcare_element",
+        ]
+        return add(benunit, period, ELEMENTS)
 
 
 class UCClaimantType(Enum):
@@ -97,13 +94,13 @@ class UC_claimant_type(Variable):
 
     def formula(benunit, period):
         is_single = benunit("is_single", period)
-        one_over_25 = benunit("eldest_adult_age", period.this_year) >= 25
+        any_over_25 = benunit("eldest_adult_age", period.this_year) >= 25
         return select(
             [
-                is_single * not_(one_over_25),
-                is_single * one_over_25,
-                not_(is_single) * not_(one_over_25),
-                not_(is_single) * one_over_25,
+                is_single & ~any_over_25,
+                is_single & any_over_25,
+                ~is_single & ~any_over_25,
+                ~is_single & any_over_25,
             ],
             [
                 UCClaimantType.SINGLE_YOUNG,
@@ -117,15 +114,13 @@ class UC_claimant_type(Variable):
 class UC_standard_allowance(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC Standard Allowance"
+    label = u"Universal Credit standard allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         SA = parameters(period).benefit.universal_credit.standard_allowance
-        basic_amount = (
-            SA.amount[benunit("UC_claimant_type", period)] * MONTHS_IN_YEAR
-        )
-        return basic_amount
+        return SA.amount[benunit("UC_claimant_type", period)] * MONTHS_IN_YEAR
 
 
 class is_child_born_before_child_limit(Variable):
@@ -144,9 +139,10 @@ class is_child_born_before_child_limit(Variable):
 class UC_individual_child_element(Variable):
     value_type = float
     entity = Person
-    label = u"UC child element for this child"
-    documentation = "Assuming UC eligibility"
+    label = u"Universal Credit child element"
+    documentation = "For this child, given Universal Credit eligibility"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -180,7 +176,7 @@ class UC_individual_child_element(Variable):
 class num_UC_eligible_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Eligible children"
+    label = u"Children eligible for Universal Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -203,8 +199,9 @@ class num_UC_eligible_children(Variable):
 class UC_child_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC child element"
+    label = u"Universal Credit child element"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         return benunit.sum(
@@ -215,8 +212,9 @@ class UC_child_element(Variable):
 class UC_carer_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC carer element"
+    label = u"Universal Credit carer element"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -227,8 +225,9 @@ class UC_carer_element(Variable):
 class UC_housing_costs_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC housing costs element"
+    label = u"Universal Credit housing costs element"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         tenure_type = benunit.value_from_first_person(
@@ -237,8 +236,13 @@ class UC_housing_costs_element(Variable):
         rent = benunit("benunit_rent", period)
         max_housing_costs = select(
             [
-                (tenure_type == TenureType.RENT_FROM_COUNCIL.name)
-                | (tenure_type == TenureType.RENT_FROM_HA.name),
+                np.isin(
+                    tenure_type,
+                    [
+                        TenureType.RENT_FROM_COUNCIL.name,
+                        tenure_type == TenureType.RENT_FROM_HA.name,
+                    ],
+                ),
                 tenure_type == TenureType.RENT_PRIVATELY.name,
                 True,
             ],
@@ -254,7 +258,7 @@ class UC_housing_costs_element(Variable):
 class UC_non_dep_deduction_exempt(Variable):
     value_type = bool
     entity = Person
-    label = u"Not expected to contribute to housing costs"
+    label = u"Not expected to contribute to housing costs for Universal Credit"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -270,8 +274,9 @@ class UC_non_dep_deduction_exempt(Variable):
 class UC_individual_non_dep_deduction(Variable):
     value_type = float
     entity = Person
-    label = u"Non-dependent deduction (individual)"
+    label = u"Universal Credit non-dependent deduction (individual)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         not_rent_liable = person.benunit("benunit_rent", period) == 0
@@ -286,8 +291,9 @@ class UC_individual_non_dep_deduction(Variable):
 class UC_non_dep_deductions(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Non-dependent deductions"
+    label = u"Universal Credit non-dependent deductions"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         # Deductions are made for non-dependents outside the benefit unit,
@@ -319,25 +325,25 @@ class limited_capability_for_WRA(Variable):
 class UC_LCWRA_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Limited capability for work-related-activity element of UC"
+    label = u"Universal Credit limited capability for work-related-activity element"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
-        return (
-            benunit.sum(
-                benunit.members("limited_capability_for_WRA", period)
-                * UC.elements.disabled.amount
-            )
-            * MONTHS_IN_YEAR
+        person_amounts = (
+            benunit.members("limited_capability_for_WRA", period)
+            * UC.elements.disabled.amount
         )
+        return benunit.sum(person_amounts) * MONTHS_IN_YEAR
 
 
 class UC_individual_disabled_child_element(Variable):
     value_type = float
     entity = Person
-    label = u"Disabled child element of UC"
+    label = u"Universal Credit disabled child element"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -351,8 +357,9 @@ class UC_individual_disabled_child_element(Variable):
 class UC_individual_severely_disabled_child_element(Variable):
     value_type = float
     entity = Person
-    label = u"Severely disabled element of UC"
+    label = u"Universal Credit severely disabled child element"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -366,40 +373,42 @@ class UC_individual_severely_disabled_child_element(Variable):
 class UC_disability_elements(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC disability element"
+    label = u"Universal Credit disability elements"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period):
-        return benunit("UC_LCWRA_element", period) + aggr(
-            benunit,
-            period,
-            [
-                "UC_individual_disabled_child_element",
-                "UC_individual_severely_disabled_child_element",
-            ],
-        )
+        PERSONAL_ELEMENTS = [
+            "UC_individual_disabled_child_element",
+            "UC_individual_severely_disabled_child_element",
+        ]
+        personal_elements = aggr(benunit, period, PERSONAL_ELEMENTS)
+        benunit_elements = benunit("UC_LCWRA_element", period)
+        return personal_elements + benunit_elements
 
 
 class UC_childcare_work_condition(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Meets childcare work condition"
+    label = u"Meets Universal Credit childcare work condition"
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/32/2020-04-06"
     )
 
     def formula(benunit, period, parameters):
-        adults_not_in_work = benunit.members("is_adult", period) * not_(
-            benunit.members("in_work", period)
-        )
-        return not_(benunit.any(adults_not_in_work))
+        person = benunit.members
+        adult = person("is_adult", period)
+        in_work = person("in_work", period)
+        adults_not_in_work = adult & ~in_work
+        # Benefit unit must not have any adults not in work.
+        return ~benunit.any(adults_not_in_work)
 
 
 class num_UC_eligible_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of UC-eligible children"
+    label = u"Children eligible for Universal Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -411,43 +420,44 @@ class num_UC_eligible_children(Variable):
 class UC_maximum_childcare(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Maximum UC childcare element"
+    label = u"Maximum Universal Credit childcare element"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
         children = benunit("num_UC_eligible_children", period)
-        childcare_limit = (
+        return (
             UC.elements.childcare.maximum[clip(children, 1, 2)]
             * MONTHS_IN_YEAR
         )
-        return childcare_limit
 
 
 class UC_childcare_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC childcare element"
+    label = u"Universal Credit childcare element"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
         eligible_childcare_expenses = benunit.sum(
             benunit.members("childcare_expenses", period)
         )
+        covered_expenses = (
+            eligible_childcare_expenses * UC.elements.childcare.coverage_rate
+        )
         childcare_element = min_(
-            benunit("UC_maximum_childcare", period),
-            eligible_childcare_expenses * UC.elements.childcare.coverage_rate,
+            benunit("UC_maximum_childcare", period), covered_expenses
         )
-        return (
-            benunit("UC_childcare_work_condition", period) * childcare_element
-        )
+        work_condition = benunit("UC_childcare_work_condition", period)
+        return work_condition * childcare_element
 
 
 class is_UC_work_allowance_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Family receives a Work Allowance"
+    label = u"Family receives a Universal Credit Work Allowance"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -461,20 +471,20 @@ class is_UC_work_allowance_eligible(Variable):
 class UC_work_allowance(Variable):
     value_type = float
     entity = BenUnit
-    label = u"UC Work Allowance"
+    label = u"Universal Credit work allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
         housing = benunit("UC_housing_costs_element", period)
-        return (
-            where(
-                housing > 0,
-                UC.means_test.work_allowance_with_housing,
-                UC.means_test.work_allowance_without_housing,
-            )
-            * MONTHS_IN_YEAR
-        ) * benunit("is_UC_work_allowance_eligible", period)
+        monthly_allowance = where(
+            housing > 0,
+            UC.means_test.work_allowance_with_housing,
+            UC.means_test.work_allowance_without_housing,
+        )
+        eligible = benunit("is_UC_work_allowance_eligible", period)
+        return eligible * monthly_allowance * MONTHS_IN_YEAR
 
 
 class UC_earned_income(Variable):
