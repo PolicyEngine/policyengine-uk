@@ -59,9 +59,9 @@ class ltt_on_residential_property_rent(Variable):
         ltt = parameters(period).wra.land_transaction_tax
         cumulative_rent = household("cumulative_residential_rent", period)
         rent = household("rent", period)
-        return ltt.rent.calc(cumulative_rent + rent) - ltt.rent.calc(
-            cumulative_rent
-        )
+        ltt_on_cumulative_rent = ltt.rent.calc(cumulative_rent)
+        ltt_on_total_rent = ltt.rent.calc(cumulative_rent + rent)
+        return ltt_on_total_rent - ltt_on_cumulative_rent
 
 
 class ltt_on_non_residential_property_transactions(Variable):
@@ -93,9 +93,9 @@ class ltt_on_non_residential_property_rent(Variable):
         ltt = parameters(period).wra.land_transaction_tax
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
-        return ltt.rent.calc(cumulative_rent + rent) - ltt.rent.calc(
-            cumulative_rent
-        )
+        ltt_on_cumulative_rent = ltt.rent.calc(cumulative_rent)
+        ltt_on_total_rent = ltt.rent.calc(cumulative_rent + rent)
+        return ltt_on_total_rent - ltt_on_cumulative_rent
 
 
 class ltt_on_transactions(Variable):
@@ -107,9 +107,11 @@ class ltt_on_transactions(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household(
-            "ltt_on_residential_property_transactions", period
-        ) + household("ltt_on_non_residential_property_transactions", period)
+        LTT_TRANSACTION_VARIABLES = [
+            "ltt_on_residential_property_transactions",
+            "ltt_on_non_residential_property_transactions",
+        ]
+        return add(household, period, LTT_TRANSACTION_VARIABLES)
 
 
 class ltt_on_rent(Variable):
@@ -121,9 +123,11 @@ class ltt_on_rent(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household(
-            "ltt_on_residential_property_rent", period
-        ) + household("ltt_on_non_residential_property_rent", period)
+        LTT_RENT_VARIABLES = [
+            "ltt_on_residential_property_rent",
+            "ltt_on_non_residential_property_rent",
+        ]
+        return add(household, period, LTT_RENT_VARIABLES)
 
 
 class land_transaction_tax(Variable):
@@ -135,10 +139,10 @@ class land_transaction_tax(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household("ltt_liable", period) * (
-            household("ltt_on_transactions", period)
-            + household("ltt_on_rent", period)
+        ltt_if_liable = add(
+            household, period, ["ltt_on_transactions", "ltt_on_rent"]
         )
+        return household("ltt_liable", period) * ltt_if_liable
 
 
 class expected_ltt(Variable):
@@ -150,6 +154,6 @@ class expected_ltt(Variable):
     unit = "currency-GBP"
 
     def formula(household, period):
-        return household.state("property_sale_rate", period) * household(
-            "land_transaction_tax", period
-        )
+        property_sale_rate = household.state("property_sale_rate", period)
+        land_transaction_tax = household("land_transaction_tax", period)
+        return property_sale_rate * land_transaction_tax

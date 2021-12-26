@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class JSA_income_reported(Variable):
@@ -7,57 +6,72 @@ class JSA_income_reported(Variable):
     entity = Person
     label = u"JSA (income-based) (reported amount)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class JSA_income_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether eligible for JSA (income-based)"
+    label = u"Eligibility for income-based JSA"
+    documentation = "Whether the benefit unit is eligible for income-based Jobseekers' Allowance"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        JSA = parameters(period).benefit.JSA
+        # Calculate work hours eligibility.
+        hours_limit = parameters(period).benefit.JSA.hours
         hours = benunit("benunit_weekly_hours", period)
-        eligible = benunit("is_single", period) * (
-            hours < JSA.hours.single
-        ) + benunit("is_couple", period) * (hours < JSA.hours.couple)
-        under_SP_age = benunit.min(benunit.members("is_SP_age", period)) == 0
-        eligible *= under_SP_age
+        single = benunit("is_single", period)
+        hours_eligible_as_single = single & (hours < hours_limit.single)
+        couple = benunit("is_couple", period)
+        hours_eligible_as_couple = couple & (hours < hours_limit.couple)
+        hours_eligible = hours_eligible_as_single | hours_eligible_as_couple
+        # Benefit units with state pension age people are ineligible.
+        all_under_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
+        # Must have at least one unemployed person.
         employment_statuses = benunit.members("employment_status", period)
-        one_unemployed = benunit.any(
+        unemployed_members = (
             employment_statuses
             == employment_statuses.possible_values.UNEMPLOYED
         )
-        eligible *= (
-            not_(benunit("income_support", period) > 0) * one_unemployed
+        any_unemployed = benunit.any(unemployed_members)
+        # Cannot claim Income Support.
+        not_on_income_support = benunit("income_support", period) == 0
+        return (
+            hours_eligible
+            & all_under_SP_age
+            & any_unemployed
+            & not_on_income_support
         )
-        return eligible
 
 
 class JSA_income_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
     label = u"Maximum amount of JSA (income-based)"
+    documentation = "Maximum amount of income-based Jobseeker's Allowance"
     definition_period = YEAR
     reference = "Jobseekers Act 1995 s. 4"
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        JSA = parameters(period).benefit.JSA
+        income = parameters(period).benefit.JSA.income
         age = benunit("youngest_adult_age", period)
-        personal_allowance = (
-            benunit("is_single", period)
-            * (
-                (age < 25) * JSA.income.amount_18_24
-                + (age >= 25) * JSA.income.amount_over_25
-            )
-            + benunit("is_couple", period) * JSA.income.couple
-        ) * WEEKS_IN_YEAR
-        premiums = benunit("benefits_premiums", period)
-        return (
-            (personal_allowance + premiums)
-            * benunit("JSA_income_eligible", period)
-            * benunit("claims_JSA", period)
+        single = benunit("is_single", period)
+        couple = benunit("is_couple", period)
+        single_18_24 = single & (age < 25)
+        single_over_25 = single & (age >= 25)
+        pa_single_18_24 = single_18_24 * income.amount_18_24
+        pa_single_over_25 = single_over_25 * income.amount_over_25
+        pa_couple = couple * income.couple
+        weekly_personal_allowance = (
+            pa_single_18_24 + pa_single_over_25 + pa_couple
         )
+        personal_allowance = weekly_personal_allowance * WEEKS_IN_YEAR
+        premiums = benunit("benefits_premiums", period)
+        amount_if_claims = personal_allowance + premiums
+        eligible = benunit("JSA_income_eligible", period)
+        claims = benunit("claims_JSA", period)
+        return amount_if_claims * eligible * claims
 
 
 class would_claim_JSA(Variable):
@@ -70,9 +84,10 @@ class would_claim_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
+        would_takeup = (
             random(benunit) <= parameters(period).benefit.JSA.income.takeup
-        ) + benunit("claims_all_entitled_benefits", period)
+        )
+        return would_takeup | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_JSA(Variable):
@@ -82,9 +97,9 @@ class claims_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("would_claim_JSA", period) & benunit(
-            "claims_legacy_benefits", period
-        )
+        would_claim = benunit("would_claim_JSA", period)
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
+        return would_claim & claims_legacy_benefits
 
 
 class JSA_income_applicable_income(Variable):
@@ -110,22 +125,22 @@ class JSA_income_applicable_income(Variable):
         income += aggr(benunit, period, ["social_security_income"])
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
+        # Calculate disregard.
         family_type = benunit("family_type", period)
         families = family_type.possible_values
-        income = max_(
-            0,
-            income
-            - (family_type == families.SINGLE)
-            * JSA.income.income_disregard_single
-            * WEEKS_IN_YEAR
-            - benunit("is_couple", period)
-            * JSA.income.income_disregard_couple
-            * WEEKS_IN_YEAR
-            - (family_type == families.LONE_PARENT)
-            * JSA.income.income_disregard_lone_parent
-            * WEEKS_IN_YEAR,
+        single = family_type == families.SINGLE
+        single_disregard = single * JSA.income.income_disregard_single
+        couple = benunit("is_couple", period)
+        couple_disregard = couple * JSA.income.income_disregard_couple
+        lone_parent = family_type == families.LONE_PARENT
+        lone_parent_disregard = (
+            lone_parent * JSA.income.income_disregard_lone_parent
         )
-        return income
+        weekly_disregard = (
+            single_disregard + couple_disregard + lone_parent_disregard
+        )
+        disregard = weekly_disregard * WEEKS_IN_YEAR
+        return max_(0, income - disregard)
 
 
 class JSA_income(Variable):
@@ -133,19 +148,15 @@ class JSA_income(Variable):
     entity = BenUnit
     label = u"JSA (income-based)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        amount = benunit("JSA_income_applicable_amount", period)
-        income = benunit("JSA_income_applicable_income", period)
-        claims_JSA = benunit("claims_JSA", period)
-        return (
-            max_(
-                0,
-                (amount - income),
-            )
-            * claims_JSA
-            * benunit("JSA_income_eligible", period)
-        )
+        applicable_amount = benunit("JSA_income_applicable_amount", period)
+        applicable_income = benunit("JSA_income_applicable_income", period)
+        amount_if_claims = max_(0, applicable_amount - applicable_income)
+        claims = benunit("claims_JSA", period)
+        eligible = benunit("JSA_income_eligible", period)
+        return amount_if_claims * claims * eligible
 
 
 class JSA(Variable):
@@ -153,8 +164,9 @@ class JSA(Variable):
     entity = BenUnit
     label = u"Amount of Jobseeker's Allowance for this family"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["JSA_contrib"]) + benunit(
-            "JSA_income", period
-        )
+        JSA_contrib = aggr(benunit, period, ["JSA_contrib"])
+        JSA_income = benunit("JSA_income", period)
+        return JSA_contrib + JSA_income

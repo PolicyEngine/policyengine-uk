@@ -1,6 +1,5 @@
 from openfisca_uk.variables.demographic.household import TenureType
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class benunit_id(Variable):
@@ -54,13 +53,16 @@ class family_type(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        two_adults = benunit.sum(benunit.members("is_adult", period)) == 2
-        has_children = benunit.sum(benunit.members("is_child", period)) > 0
-        is_single = not_(two_adults) * not_(has_children)
-        is_couple = two_adults * not_(has_children)
-        is_lone = not_(two_adults) * has_children
-        is_full = two_adults * has_children
-        return select([is_single, is_couple, is_lone, is_full], FamilyType)
+        two_adults = aggr(benunit, period, ["is_adult"]) == 2
+        has_children = benunit.any(benunit.members("is_child", period))
+        single = ~two_adults & ~has_children
+        couple_no_children = two_adults & ~has_children
+        lone_parent = ~two_adults & has_children
+        couple_with_children = two_adults & has_children
+        return select(
+            [single, couple_no_children, lone_parent, couple_with_children],
+            FamilyType,
+        )
 
 
 class relation_type(Variable):
@@ -156,10 +158,9 @@ class benunit_tenure_type(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        tenure = benunit.value_from_first_person(
+        return benunit.value_from_first_person(
             benunit.members.household("tenure_type", period)
         )
-        return tenure
 
 
 class benunit_is_renting(Variable):
@@ -170,14 +171,13 @@ class benunit_is_renting(Variable):
 
     def formula(benunit, period, parameters):
         tenure = benunit("benunit_tenure_type", period)
-        return np.isin(
-            tenure,
-            (
-                TenureType.RENT_PRIVATELY,
-                TenureType.RENT_FROM_COUNCIL,
-                TenureType.RENT_FROM_HA,
-            ),
-        )
+        tenures = tenure.possible_values
+        RENT_TENURES = [
+            tenures.RENT_PRIVATELY,
+            tenures.RENT_FROM_COUNCIL,
+            tenures.RENT_FROM_HA,
+        ]
+        return np.isin(tenure, RENT_TENURES)
 
 
 class benunit_random_number(Variable):

@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class is_disabled_for_benefits(Variable):
@@ -30,8 +29,7 @@ class is_enhanced_disabled_for_benefits(Variable):
         DLA_requirement = (
             parameters(period).benefit.DLA.self_care.highest * WEEKS_IN_YEAR
         )
-        sufficient_DLA = person("DLA_SC", period) >= DLA_requirement
-        return sufficient_DLA
+        return person("DLA_SC", period) >= DLA_requirement
 
 
 class is_severely_disabled_for_benefits(Variable):
@@ -69,8 +67,8 @@ class num_disabled_children(Variable):
 
     def formula(benunit, period, parameters):
         child = benunit.members("is_child_or_QYP", period)
-        disabled = benunit.members("is_disabled_for_benefits", period) > 0
-        return benunit.sum(child * disabled)
+        disabled = benunit.members("is_disabled_for_benefits", period)
+        return benunit.sum(child & disabled)
 
 
 class num_enhanced_disabled_children(Variable):
@@ -81,10 +79,10 @@ class num_enhanced_disabled_children(Variable):
 
     def formula(benunit, period, parameters):
         child = benunit.members("is_child_or_QYP", period)
-        disabled = (
-            benunit.members("is_enhanced_disabled_for_benefits", period) > 0
+        enhanced_disabled = benunit.members(
+            "is_enhanced_disabled_for_benefits", period
         )
-        return benunit.sum(child * disabled)
+        return benunit.sum(child & enhanced_disabled)
 
 
 class num_severely_disabled_children(Variable):
@@ -95,10 +93,10 @@ class num_severely_disabled_children(Variable):
 
     def formula(benunit, period, parameters):
         child = benunit.members("is_child_or_QYP", period)
-        disabled = (
-            benunit.members("is_severely_disabled_for_benefits", period) > 0
+        severely_disabled = benunit.members(
+            "is_severely_disabled_for_benefits", period
         )
-        return benunit.sum(child * disabled)
+        return benunit.sum(child & severely_disabled)
 
 
 class num_disabled_adults(Variable):
@@ -109,8 +107,8 @@ class num_disabled_adults(Variable):
 
     def formula(benunit, period, parameters):
         adult = benunit.members("is_adult", period)
-        disabled = benunit.members("is_disabled_for_benefits", period) > 0
-        return benunit.sum(adult * disabled)
+        disabled = benunit.members("is_disabled_for_benefits", period)
+        return benunit.sum(adult & disabled)
 
 
 class num_enhanced_disabled_adults(Variable):
@@ -121,10 +119,10 @@ class num_enhanced_disabled_adults(Variable):
 
     def formula(benunit, period, parameters):
         adult = benunit.members("is_adult", period)
-        disabled = (
-            benunit.members("is_enhanced_disabled_for_benefits", period) > 0
+        enhanced_disabled = benunit.members(
+            "is_enhanced_disabled_for_benefits", period
         )
-        return benunit.sum(adult * disabled)
+        return benunit.sum(adult & enhanced_disabled)
 
 
 class num_severely_disabled_adults(Variable):
@@ -135,10 +133,10 @@ class num_severely_disabled_adults(Variable):
 
     def formula(benunit, period, parameters):
         adult = benunit.members("is_adult", period)
-        disabled = (
-            benunit.members("is_severely_disabled_for_benefits", period) > 0
+        severely_disabled = benunit.members(
+            "is_severely_disabled_for_benefits", period
         )
-        return benunit.sum(adult * disabled)
+        return benunit.sum(adult & severely_disabled)
 
 
 class disability_premium(Variable):
@@ -147,19 +145,19 @@ class disability_premium(Variable):
     label = u"Disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefit.disability_premia
-        amount = (
-            (benunit("num_disabled_adults", period.this_year) > 0)
-            * (
-                benunit("is_single", period.this_year) * dis.disability_single
-                + benunit("is_couple", period.this_year)
-                * dis.disability_couple
-            )
-            * WEEKS_IN_YEAR
+        single = benunit("is_single", period.this_year)
+        couple = benunit("is_couple", period.this_year)
+        single_premium = single * dis.disability_single
+        couple_premium = couple * dis.disability_couple
+        has_disabled_adults = (
+            benunit("num_disabled_adults", period.this_year) > 0
         )
-        return amount
+        weekly_amount = single_premium + couple_premium
+        return weekly_amount * WEEKS_IN_YEAR * has_disabled_adults
 
 
 class severe_disability_premium(Variable):
@@ -168,18 +166,19 @@ class severe_disability_premium(Variable):
     label = u"Severe disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefit.disability_premia
-        amount = (
-            (benunit("num_severely_disabled_adults", period.this_year) > 0)
-            * (
-                benunit("is_single", period.this_year) * dis.severe_single
-                + benunit("is_couple", period.this_year) * dis.severe_couple
-            )
-            * WEEKS_IN_YEAR
+        single = benunit("is_single", period.this_year)
+        couple = benunit("is_couple", period.this_year)
+        single_premium = single * dis.severe_single
+        couple_premium = couple * dis.severe_couple
+        has_severely_disabled_adults = (
+            benunit("num_severely_disabled_adults", period.this_year) > 0
         )
-        return amount
+        weekly_amount = single_premium + couple_premium
+        return weekly_amount * WEEKS_IN_YEAR * has_severely_disabled_adults
 
 
 class enhanced_disability_premium(Variable):
@@ -188,15 +187,16 @@ class enhanced_disability_premium(Variable):
     label = u"Enhanced disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefit.disability_premia
-        amount = (
-            (benunit("num_enhanced_disabled_adults", period.this_year) > 0)
-            * (
-                benunit("is_single", period.this_year) * dis.enhanced_single
-                + benunit("is_couple", period.this_year) * dis.enhanced_couple
-            )
-            * WEEKS_IN_YEAR
+        single = benunit("is_single", period.this_year)
+        couple = benunit("is_couple", period.this_year)
+        single_premium = single * dis.enhanced_single
+        couple_premium = couple * dis.enhanced_couple
+        has_enhanced_disabled_adults = (
+            benunit("num_enhanced_disabled_adults", period.this_year) > 0
         )
-        return amount
+        weekly_amount = single_premium + couple_premium
+        return weekly_amount * WEEKS_IN_YEAR * has_enhanced_disabled_adults

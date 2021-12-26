@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class benefit_cap(Variable):
@@ -7,35 +6,32 @@ class benefit_cap(Variable):
     entity = BenUnit
     label = u"Benefit cap for the family"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        children = benunit("num_children", period) > 0
-        region = benunit.value_from_first_person(
-            benunit.members.household("region", period)
-        )
-        regions = benunit.members.household("region", period).possible_values
+        has_children = benunit("num_children", period) > 0
+        household_region = benunit.members.household("region", period)
+        region = benunit.value_from_first_person(household_region)
+        regions = household_region.possible_values
         in_london = region == regions.LONDON
         cap = parameters(period).benefit.benefit_cap
-        rate = (
-            select(
-                [
-                    children * in_london,
-                    children * not_(in_london),
-                    not_(children) * in_london,
-                    not_(children) * not_(in_london),
-                ],
-                [
-                    cap.london_children,
-                    cap.has_children,
-                    cap.london_no_children,
-                    cap.no_children,
-                ],
-            )
-            * WEEKS_IN_YEAR
+        weekly_rate = select(
+            [
+                has_children & in_london,
+                has_children & ~in_london,
+                ~has_children & in_london,
+                ~has_children & ~in_london,
+            ],
+            [
+                cap.london_children,
+                cap.has_children,
+                cap.london_no_children,
+                cap.no_children,
+            ],
         )
+        rate = weekly_rate * WEEKS_IN_YEAR
         exempt = benunit("is_benefit_cap_exempt", period)
-        cap = where(exempt, np.inf * np.ones_like(children), rate)
-        return cap
+        return where(exempt, np.inf * np.ones_like(has_children), rate)
 
 
 class is_benefit_cap_exempt(Variable):
@@ -51,10 +47,11 @@ class is_benefit_cap_exempt(Variable):
             "DLA_M",
             "ESA_contrib",
         ]
-        qualifying = (
-            add(benunit, period, ["working_tax_credit"])
-            + add(benunit, period, ["ESA_income"])
-            + aggr(benunit, period, QUAL_PERSONAL_BENEFITS)
-            > 0
+        QUAL_BENUNIT_BENEFITS = ["working_tax_credit", "ESA_income"]
+        qualifying_benunit_benefits = add(
+            benunit, period, QUAL_BENUNIT_BENEFITS
         )
-        return qualifying
+        qualifying_personal_benefits = aggr(
+            benunit, period, QUAL_PERSONAL_BENEFITS
+        )
+        return (qualifying_personal_benefits + qualifying_benunit_benefits) > 0

@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 import pandas as pd
 
 
@@ -56,7 +55,10 @@ class age(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return where(person.benunit.members_role == BenUnit.ADULT, 18, 10)
+        ADULT_DEFAULT_AGE = 18
+        CHILD_DEFAULT_AGE = 10
+        is_adult = person.benunit.members_role == BenUnit.ADULT
+        return where(is_adult, ADULT_DEFAULT_AGE, CHILD_DEFAULT_AGE)
 
 
 class birth_year(Variable):
@@ -116,10 +118,7 @@ class child_index(Variable):
             + 1
         )
         # Fill in adult values
-        adjusted_for_adults = where(
-            person("is_child", period), child_ranking, 100
-        )
-        return adjusted_for_adults
+        return where(person("is_child", period), child_ranking, 100)
 
 
 class is_eldest_child(Variable):
@@ -286,8 +285,7 @@ class in_social_housing(Variable):
     def formula(person, period, parameters):
         tenure = person.household("tenure_type", period.this_year)
         tenures = tenure.possible_values
-        social = is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
-        return social
+        return is_in(tenure, tenures.RENT_FROM_COUNCIL, tenures.RENT_FROM_HA)
 
 
 class is_WA_adult(Variable):
@@ -297,7 +295,7 @@ class is_WA_adult(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("is_adult", period) * not_(person("is_SP_age", period))
+        return person("is_adult", period) & ~person("is_SP_age", period)
 
 
 class is_young_child(Variable):
@@ -348,4 +346,5 @@ class is_older_child(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (person("age", period) >= 14) * (person("age", period) < 18)
+        age = person("age", period)
+        return (age >= 14) & (age < 18)

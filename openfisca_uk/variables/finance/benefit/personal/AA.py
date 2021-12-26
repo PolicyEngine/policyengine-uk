@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class AA(Variable):
@@ -7,6 +6,7 @@ class AA(Variable):
     entity = Person
     label = u"Attendance Allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("AA_reported", period)
@@ -17,3 +17,4 @@ class AA_reported(Variable):
     entity = Person
     label = u"Attendance Allowance (reported)"
     definition_period = YEAR
+    unit = "currency-GBP"

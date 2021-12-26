@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class winter_fuel_allowance_reported(Variable):
@@ -7,3 +6,4 @@ class winter_fuel_allowance_reported(Variable):
     entity = Person
     label = u"Winter fuel allowance"
     definition_period = YEAR
+    unit = "currency-GBP"

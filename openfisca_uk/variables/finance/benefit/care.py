@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class is_carer_for_benefits(Variable):
@@ -29,7 +28,7 @@ class num_carers(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("is_carer_for_benefits", period))
+        return aggr(benunit, period, ["is_carer_for_benefits"])
 
 
 class carer_premium(Variable):
@@ -40,14 +39,13 @@ class carer_premium(Variable):
     reference = (
         "The Social Security Amendment (Carer Premium) Regulations 2002"
     )
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         carers = benunit("num_carers", period.this_year)
         CP = parameters(period).benefit.carer_premium
-        return (
-            select(
-                [carers == 0, carers == 1, carers == 2],
-                [0, CP.single, CP.couple],
-            )
-            * WEEKS_IN_YEAR
+        weekly_premium = select(
+            [carers == 0, carers == 1, carers == 2],
+            [0, CP.single, CP.couple],
         )
+        return weekly_premium * WEEKS_IN_YEAR

@@ -38,16 +38,13 @@ class hbai_excluded_income(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return -add(
-            household,
-            period,
-            [
-                "expected_sdlt",
-                "expected_ltt",
-                "expected_lbtt",
-                "business_rates",
-            ],
-        )
+        VARIABLES = [
+            "expected_sdlt",
+            "expected_ltt",
+            "expected_lbtt",
+            "business_rates",
+        ]
+        return -add(household, period, VARIABLES)
 
 
 class hbai_excluded_income_change(Variable):
@@ -59,6 +56,8 @@ class hbai_excluded_income_change(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household("hbai_excluded_income", period) - household(
+        hbai_excluded_income = household("hbai_excluded_income", period)
+        baseline_hbai_excluded_income = household(
             "baseline_hbai_excluded_income", period
         )
+        return hbai_excluded_income - baseline_hbai_excluded_income

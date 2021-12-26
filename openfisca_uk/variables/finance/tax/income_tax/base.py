@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 """
 The calculation of income tax is specified by the Income Tax Act 2007 s. 23
@@ -41,6 +40,7 @@ class social_security_income(Variable):
     label = u"Income from social security for tax purposes"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [

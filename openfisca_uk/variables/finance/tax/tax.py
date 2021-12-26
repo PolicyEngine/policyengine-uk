@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class tax(Variable):
@@ -7,13 +6,11 @@ class tax(Variable):
     entity = Person
     label = u"Total tax"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return add(
-            person,
-            period,
-            ["income_tax", "national_insurance"],
-        )
+        TAXES = ["income_tax", "national_insurance"]
+        return add(person, period, TAXES)
 
 
 class household_tax(Variable):
@@ -25,17 +22,14 @@ class household_tax(Variable):
 
     def formula(household, period):
         personal_taxes = household.sum(household.members("tax", period))
-        household_taxes = add(
-            household,
-            period,
-            [
-                "expected_sdlt",
-                "expected_ltt",
-                "expected_lbtt",
-                "business_rates",
-                "council_tax",
-            ],
-        )
+        HOUSEHOLD_TAXES = [
+            "expected_sdlt",
+            "expected_ltt",
+            "expected_lbtt",
+            "business_rates",
+            "council_tax",
+        ]
+        household_taxes = add(household, period, HOUSEHOLD_TAXES)
         return personal_taxes + household_taxes
 
 
@@ -44,9 +38,10 @@ class benunit_tax(Variable):
     entity = BenUnit
     label = u"Benefit unit tax paid"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("tax", period))
+        return aggr(benunit, period, ["tax"])
 
 
 class tax_reported(Variable):
@@ -54,6 +49,7 @@ class tax_reported(Variable):
     entity = Person
     label = u"Reported tax paid"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class tax_modelling(Variable):
@@ -61,6 +57,7 @@ class tax_modelling(Variable):
     entity = Person
     label = u"Difference between reported and imputed tax liabilities"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("tax", period) - person("tax_reported", period)

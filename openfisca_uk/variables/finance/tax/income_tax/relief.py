@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 """
 These variables calculate the tax reliefs that a taxpayer is eligible for, following the Income Tax Act (2007) s. 23.
@@ -17,6 +16,7 @@ class taxable_employment_income(Variable):
     label = u"Net taxable earnings"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 11"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         taxable_earnings = person("employment_income", period)
@@ -32,6 +32,7 @@ class employment_benefits(Variable):
     entity = Person
     label = u"Employment benefits"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return add(person, period, ["SSP", "SMP"])
@@ -40,8 +41,9 @@ class employment_benefits(Variable):
 class SMP(Variable):
     value_type = float
     entity = Person
-    label = u"SMP"
+    label = u"Statutory Maternity Pay"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class SSP(Variable):
@@ -49,6 +51,7 @@ class SSP(Variable):
     entity = Person
     label = u"Statutory Sick Pay"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class employment_deductions(Variable):
@@ -57,10 +60,10 @@ class employment_deductions(Variable):
     label = u"Deductions from employment income"
     definition_period = YEAR
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 327"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        DEDUCTIONS = ["employment_expenses"]
-        return add(person, period, DEDUCTIONS)
+        return person("employment_expenses", period)
 
 
 class employment_expenses(Variable):
@@ -71,6 +74,7 @@ class employment_expenses(Variable):
     )
     definition_period = YEAR
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 333"
+    unit = "currency-GBP"
 
 
 class pension_contributions(Variable):
@@ -78,16 +82,14 @@ class pension_contributions(Variable):
     entity = Person
     label = u"Amount contributed to registered pension schemes paid by the individual (not the employer)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return add(
-            person,
-            period,
-            (
-                "private_pension_contributions",
-                "occupational_pension_contributions",
-            ),
-        )
+        PENSIONS = [
+            "private_pension_contributions",
+            "occupational_pension_contributions",
+        ]
+        return add(person, period, PENSIONS)
 
 
 class pension_contributions_relief(Variable):
@@ -96,6 +98,7 @@ class pension_contributions_relief(Variable):
     label = u"Reduction in taxable income from pension contributions"
     definition_period = YEAR
     reference = "Finance Act 2004 s. 188-194"
+    unit = "currency-GBP"
 
     def formula_2004_07_22(person, period, parameters):
         contributions = person("pension_contributions", period)
@@ -107,10 +110,7 @@ class pension_contributions_relief(Variable):
             period
         ).tax.income_tax.reliefs.pension_contribution.basic_amount
         tax_relief = min_(pay, max_(basic_amount, contributions)) * under_75
-        capped_relief = min_(
-            tax_relief, person("pension_annual_allowance", period)
-        )
-        return capped_relief
+        return min_(tax_relief, person("pension_annual_allowance", period))
 
 
 # Savings interest income
@@ -122,6 +122,7 @@ class taxable_savings_interest_income(Variable):
     label = u"Amount of savings interest which is taxable"
     definition_period = YEAR
     reference = "Income Tax Act (Trading and Other Income) 2005 s. 369"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         total_interest = person("savings_interest_income", period)
@@ -134,6 +135,7 @@ class tax_free_savings_income(Variable):
     entity = Person
     label = u"Income from savings in tax-free accounts"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("ISA_interest_income", period)
@@ -144,6 +146,7 @@ class ISA_interest_income(Variable):
     entity = Person
     label = u"Amount received in interest from Individual Savings Accounts"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 # Trading income
@@ -154,6 +157,7 @@ class trading_loss(Variable):
     entity = Person
     label = u"Loss from trading in the current year."
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class capital_allowances(Variable):
@@ -162,6 +166,7 @@ class capital_allowances(Variable):
     label = u"Full relief from capital expenditure allowances"
     definition_period = YEAR
     reference = "Capital Allowances Act 2001 s. 1"
+    unit = "currency-GBP"
 
 
 class loss_relief(Variable):
@@ -171,6 +176,7 @@ class loss_relief(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 59"
     documentation = u"Can be set against general income."
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         current_loss = person("trading_loss", period)
@@ -187,6 +193,7 @@ class taxable_pension_income(Variable):
     label = u"Amount of pension income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 567"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("pension_income", period)
@@ -201,6 +208,7 @@ class taxable_social_security_income(Variable):
     label = u"Amount of social security income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 658"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("social_security_income", period)
@@ -215,15 +223,13 @@ class taxable_self_employment_income(Variable):
     label = u"Amount of trading income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 5"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
+        self_employment_income = person("self_employment_income", period)
         DEDUCTIONS = ["loss_relief", "capital_allowances", "trading_allowance"]
-        return max_(
-            0,
-            person("self_employment_income", period)
-            - add(person, period, DEDUCTIONS),
-        )
-        return amount
+        deductions = add(person, period, DEDUCTIONS)
+        return max_(0, self_employment_income - deductions)
 
 
 # Property income
@@ -235,6 +241,7 @@ class taxable_property_income(Variable):
     label = u"Amount of property income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 268"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return max_(
@@ -252,6 +259,7 @@ class deficiency_relief(Variable):
     entity = Person
     label = u"Deficiency relief"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class taxable_dividend_income(Variable):
@@ -260,6 +268,7 @@ class taxable_dividend_income(Variable):
     label = u"Amount of dividend income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 383"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return max_(
@@ -278,6 +287,7 @@ class taxable_miscellaneous_income(Variable):
     label = u"Amount of miscellaneous income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 574"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("miscellaneous_income", period)
@@ -289,6 +299,7 @@ class total_income(Variable):
     label = u"Taxable income after tax reliefs and before allowances"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 23"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -310,6 +321,7 @@ class adjusted_net_income(Variable):
     label = u"Taxable income after tax reliefs and before allowances"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 23"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -322,7 +334,4 @@ class adjusted_net_income(Variable):
             "taxable_dividend_income",
             "taxable_miscellaneous_income",
         ]
-        return max_(
-            0,
-            add(person, period, COMPONENTS),
-        )
+        return max_(0, add(person, period, COMPONENTS))

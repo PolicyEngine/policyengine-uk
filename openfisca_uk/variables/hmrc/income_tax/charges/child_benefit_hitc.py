@@ -7,6 +7,7 @@ class CB_HITC(Variable):
     label = "Child Benefit High-Income Tax Charge"
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/ukpga/2003/1/part/10/chapter/8"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         CB_received = person.benunit("child_benefit", period)
@@ -20,6 +21,5 @@ class CB_HITC(Variable):
             / 1_000
             * CB_HITC.phase_out_rate
         )
-        return (min_(percentage, 1) * CB_received) * person(
-            "is_higher_earner", period
-        )
+        is_higher_earner = person("is_higher_earner", period)
+        return (min_(percentage, 1) * CB_received) * is_higher_earner

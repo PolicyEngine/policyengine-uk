@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 from openfisca_uk.variables.finance.tax.income_tax.liability import TaxBand
 
 """
@@ -20,8 +19,7 @@ class personal_allowance(Variable):
         ANI = person("adjusted_net_income", period)
         excess = max_(0, ANI - PA.maximum_ANI)
         reduction = excess * PA.reduction_rate
-        amount = max_(0, PA.amount - reduction)
-        return amount
+        return max_(0, PA.amount - reduction)
 
 
 class blind_persons_allowance(Variable):
@@ -30,6 +28,7 @@ class blind_persons_allowance(Variable):
     label = u"Blind Person's Allowance for the year (not simulated)"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 38"
+    unit = "currency-GBP"
 
 
 class married_couples_allowance(Variable):
@@ -37,6 +36,7 @@ class married_couples_allowance(Variable):
     entity = Person
     label = u"Married Couples' allowance for the year"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class married_couples_allowance_deduction(Variable):
@@ -44,6 +44,7 @@ class married_couples_allowance_deduction(Variable):
     entity = Person
     label = u"Deduction from Married Couples' allowance for the year"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         rate = parameters(
@@ -57,6 +58,7 @@ class pension_annual_allowance(Variable):
     entity = Person
     label = u"Annual Allowance for pension contributions"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         allowance = parameters(
@@ -64,8 +66,7 @@ class pension_annual_allowance(Variable):
         ).tax.income_tax.allowances.annual_allowance
         ANI = person("adjusted_net_income", period)
         reduction = max_(0, ANI - allowance.taper) * allowance.reduction_rate
-        amount = max_(allowance.minimum, allowance.default - reduction)
-        return amount
+        return max_(allowance.minimum, allowance.default - reduction)
 
 
 class trading_allowance(Variable):
@@ -74,6 +75,7 @@ class trading_allowance(Variable):
     label = u"Trading Allowance for the year"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return parameters(period).tax.income_tax.allowances.trading_allowance
@@ -85,13 +87,13 @@ class trading_allowance_deduction(Variable):
     label = u"Deduction applied by the trading allowance"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        amount = min_(
+        return min_(
             person("trading_allowance", period),
             person("self_employment_income", period),
         )
-        return amount
 
 
 class property_allowance(Variable):
@@ -100,6 +102,7 @@ class property_allowance(Variable):
     label = u"Property Allowance for the year"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783BF"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return parameters(period).tax.income_tax.allowances.property_allowance
@@ -111,13 +114,13 @@ class property_allowance_deduction(Variable):
     label = u"Deduction applied by the property allowance"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        amount = min_(
+        return min_(
             person("property_income", period),
             person("property_allowance", period),
         )
-        return amount
 
 
 class savings_allowance(Variable):
@@ -126,6 +129,7 @@ class savings_allowance(Variable):
     label = u"Savings Allowance for the year"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 12B"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         tax_band = person("tax_band", period)
@@ -133,7 +137,7 @@ class savings_allowance(Variable):
         amounts = parameters(
             period
         ).tax.income_tax.allowances.personal_savings_allowance
-        allowance = select(
+        return select(
             [
                 tax_band == tax_bands.ADDITIONAL,
                 tax_band == tax_bands.HIGHER,
@@ -142,7 +146,6 @@ class savings_allowance(Variable):
             ],
             [amounts.additional, amounts.higher, amounts.basic, amounts.basic],
         )
-        return allowance
 
 
 class dividend_allowance(Variable):
@@ -151,12 +154,10 @@ class dividend_allowance(Variable):
     label = u"Dividend allowance for the person"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 13A"
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        amount = parameters(
-            period
-        ).tax.income_tax.allowances.dividend_allowance
-        return amount
+        return parameters(period).tax.income_tax.allowances.dividend_allowance
 
 
 class gift_aid(Variable):
@@ -164,6 +165,7 @@ class gift_aid(Variable):
     entity = Person
     label = u"Expenditure under Gift Aid"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class covenanted_payments(Variable):
@@ -171,6 +173,7 @@ class covenanted_payments(Variable):
     entity = Person
     label = u"Covenanted payments to charities"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class charitable_investment_gifts(Variable):
@@ -178,6 +181,7 @@ class charitable_investment_gifts(Variable):
     entity = Person
     label = u"Gifts of qualifying investment or property to charities"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class other_deductions(Variable):
@@ -185,6 +189,7 @@ class other_deductions(Variable):
     entity = Person
     label = u"All other tax deductions"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class allowances(Variable):
@@ -192,6 +197,7 @@ class allowances(Variable):
     entity = Person
     label = u"Allowances applicable to adjusted net income"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         ALLOWANCES = [
@@ -202,5 +208,4 @@ class allowances(Variable):
             "charitable_investment_gifts",
             "other_deductions",
         ]
-        allowance = add(person, period, ALLOWANCES)
-        return allowance
+        return add(person, period, ALLOWANCES)

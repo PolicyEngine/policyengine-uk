@@ -1,5 +1,4 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
+from openfisca_uk.model_api import *
 
 
 class ESA_income_reported(Variable):
@@ -7,6 +6,7 @@ class ESA_income_reported(Variable):
     entity = Person
     label = u"ESA (income-based) (reported amount)"
     definition_period = YEAR
+    unit = "currency-GBP"
 
 
 class would_claim_ESA_income(Variable):
@@ -17,11 +17,9 @@ class would_claim_ESA_income(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
-            aggr(benunit, period, ["ESA_income_reported"])
-            + benunit("claims_all_entitled_benefits", period)
-            > 0
-        )
+        reports_ESA_income = aggr(benunit, period, ["ESA_income_reported"]) > 0
+        claims_all = benunit("claims_all_entitled_benefits", period)
+        return reports_ESA_income | claims_all
 
 
 class ESA_income_eligible(Variable):
@@ -38,19 +36,22 @@ class claims_ESA_income(Variable):
     value_type = bool
     entity = BenUnit
     label = u"Claims ESA (income)"
+    documentation = "Claims income-based Employment and Support Allowance"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("would_claim_ESA_income", period) & benunit(
-            "claims_legacy_benefits", period
-        )
+        would_claim = benunit("would_claim_ESA_income", period)
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
+        return would_claim & claims_legacy_benefits
 
 
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit
     label = u"ESA (income-based)"
+    documentation = "Employment and Support Allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["ESA_income_reported"])

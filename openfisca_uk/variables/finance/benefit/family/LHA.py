@@ -1,18 +1,21 @@
-from openfisca_uk.tools.general import *
-from openfisca_uk.entities import *
-import pandas as pd
+from openfisca_uk.model_api import *
 
 
 class LHA_eligible(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Whether eligible for Local Housing Allowance"
+    label = u"Eligibility for Local Housing Allowance"
+    documentation = (
+        "Whether benefit unit is eligible for Local Housing Allowance"
+    )
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit("benunit_is_renting", period) * not_(
-            benunit.any(benunit.members("in_social_housing", period))
+        renting = benunit("benunit_is_renting", period)
+        anyone_in_social_housing = benunit.any(
+            benunit.members("in_social_housing", period)
         )
+        return renting & ~anyone_in_social_housing
 
 
 class LHA_allowed_bedrooms(Variable):
@@ -39,43 +42,30 @@ class LHA_allowed_bedrooms(Variable):
         under_16 = age < 16
         under_10 = age < 10
         child_over_10 = ~under_10 & under_16
-
         # One room each for over-16s outside the benefit unit
-
         non_dependants = benunit.max(
             person.household.sum(~under_16)
         ) - benunit.sum(~under_16)
-
         boys_under_10 = benunit.sum(under_10 & male)
         boys_over_10 = benunit.sum(child_over_10 & male)
         girls_under_10 = benunit.sum(under_10 & ~male)
         girls_over_10 = benunit.sum(child_over_10 & ~male)
-
         # First, have over-10s share where possible
-
         over_10_rooms = (boys_over_10 + 1) // 2 + (girls_over_10 + 1) // 2
-
         # There may children over 10 still not sharing
-
         space_for_boy_under_10 = boys_over_10 % 2
         space_for_girl_under_10 = girls_over_10 % 2
-
-        # Have those spaces filled where possible by children
-        # under 10
-
+        # Have those spaces filled where possible by children under 10
         left_over_boys_under_10 = max_(
             boys_under_10 - space_for_boy_under_10, 0
         )
         left_over_girls_under_10 = max_(
             girls_under_10 - space_for_girl_under_10, 0
         )
-
         # The remaining children must share in pairs
-
         under_10_rooms = (
             left_over_boys_under_10 + left_over_girls_under_10 + 1
         ) // 2
-
         return 1 + non_dependants + over_10_rooms + under_10_rooms
 
 
@@ -83,13 +73,14 @@ class LHA_cap(Variable):
     value_type = float
     entity = BenUnit
     label = u"Applicable amount for LHA"
+    documentation = "Applicable amount for Local Housing Allowance"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
         cap = benunit("BRMA_LHA_rate", period)
-        amount = min_(rent, cap)
-        return amount
+        return min_(rent, cap)
 
 
 class LHACategory(Enum):
@@ -110,24 +101,22 @@ class LHA_category(Variable):
 
     def formula(benunit, period, parameters):
         num_rooms = benunit("LHA_allowed_bedrooms", period.this_year)
-        is_shared = (
-            benunit.max(
-                benunit.members.household(
-                    "is_shared_accommodation", period.this_year
-                )
-            )
-            > 0
+        person = benunit.members
+        household = person.household
+        is_shared = benunit.any(
+            household("is_shared_accommodation", period.this_year)
         )
         num_adults_in_hh = benunit.max(
-            benunit.members.household.sum(benunit.members("is_adult", period))
+            household.sum(person("is_adult", period))
         )
         eldest_adult_age_in_hh = benunit.max(
-            benunit.members.household.max(benunit.members("age", period))
+            household.max(person("age", period))
         )
+        # Households with only one adult, if under 35, can only claim shared.
         can_only_claim_shared = (num_adults_in_hh == 1) & (
             eldest_adult_age_in_hh < 35
         )
-        category = select(
+        return select(
             [
                 is_shared | can_only_claim_shared,
                 num_rooms == 1,
@@ -143,14 +132,15 @@ class LHA_category(Variable):
                 LHACategory.E,
             ],
         )
-        return category
 
 
 class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
-    label = u"LHA Rate"
+    label = u"LHA rate"
+    documentation = "Local Housing Allowance rate"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         BRMA = benunit.value_from_first_person(
