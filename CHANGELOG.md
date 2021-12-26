@@ -55,3 +55,8 @@
 ### 0.7.17
 
 * Code refactoring, including adding units to more variables
+
+### 0.7.18
+
+* Apply Working Tax Credit old-age provision to 60-year-olds
+* Qualify people working 30 hours for the Working Tax Credit
