@@ -239,7 +239,7 @@ class is_WTC_eligible(Variable):
         has_disabled_adults = benunit("num_disabled_adults", period) > 0
         family_type = benunit("family_type", period)
         families = family_type.possible_values
-        old = person("age", period.this_year) > WTC.min_hours.old_age
+        old = person("age", period.this_year) >= WTC.min_hours.old_age
         has_old = benunit.any(old)
         lone_parent = family_type == families.LONE_PARENT
         couple_with_children = family_type == families.COUPLE_WITH_CHILDREN
