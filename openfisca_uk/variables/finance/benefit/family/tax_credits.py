@@ -433,7 +433,7 @@ class WTC_worker_element(Variable):
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
         hours = aggr(benunit, period, ["weekly_hours"])
-        meets_hours_requirement = hours > WTC.min_hours.default
+        meets_hours_requirement = hours >= WTC.min_hours.default
         return (
             benunit("is_WTC_eligible", period)
             * benunit("claims_WTC", period)
