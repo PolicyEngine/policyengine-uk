@@ -62,3 +62,4 @@
 * Qualify people working 30 hours for the Working Tax Credit
 * Backdate tax credits reduction rate to 2002
 * Add legislative references for tax credit reduction rate and childcare coverage rate
+* Point AFCS to AFCS_reported instead of AA_reported
