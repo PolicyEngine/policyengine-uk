@@ -1,13 +1,9 @@
 description: Working Tax Credit couple element
 values:
-  2016-04-06: 2_010
-  # NB: EUROMOD reports 2_055 for 2020. This is the gov.uk value.
-  2020-04-06: 2_045
-  2021-04-06: 2_060
+
 metadata:
   period: year
   unit: currency-GBP
   reference:
-  - https://www.gov.uk/working-tax-credit/what-youll-get
-  - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
-  - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
+    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
+    href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2
