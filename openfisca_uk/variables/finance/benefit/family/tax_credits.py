@@ -44,7 +44,7 @@ class tax_credits_applicable_income(Variable):
         income += aggr(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
         on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
-        return income * not_(on_exempt_benefits)
+        return income * ~on_exempt_benefits
 
 
 class is_CTC_child_limit_exempt(Variable):
