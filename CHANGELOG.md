@@ -56,10 +56,10 @@
 
 * Code refactoring, including adding units to more variables
 
-### 0.7.18
+### 0.8.0
 
+* Add historical Working Tax Credit parameters since 2002, with legislative references
 * Apply Working Tax Credit old-age provision to 60-year-olds
 * Qualify people working 30 hours for the Working Tax Credit
-* Backdate tax credits reduction rate to 2002
-* Add legislative references for tax credit reduction rate and childcare coverage rate
 * Point AFCS to AFCS_reported instead of AA_reported
+* Fix units on some variables
