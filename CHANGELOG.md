@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Point AFCS to AFCS_reported instead of AA_reported.
 * Fix units on some variables.
 
-## 0.7.17 - 2021-12-23
+## [0.7.17] - 2021-12-23
 
 ### Added
 
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Code refactoring.
 
-## 0.4.0
+## 0.4.0 - 2021-07-05
 
 ### Added
 
@@ -59,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Variable time periods made more consistent.
 * Derivative calculations made more efficient and have more options.
 
-## 0.2.3
+## 0.2.3 - 2021-04-21
 
 ### Changed
 
@@ -91,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Bug in CB-HITC that caused overestimation.
 
-## 0.2.0
+## 0.2.0 - 2020-12-05
 
 ### Changed
 
@@ -99,7 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * MTRs handled properly and include a breakdown.
 * Simulation tools are improved and included in a class.
 
-## 0.1.0
+## 0.1.0 - 2020-11-08
 
 ### Added
 
