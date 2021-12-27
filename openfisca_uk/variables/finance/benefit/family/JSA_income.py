@@ -107,6 +107,7 @@ class JSA_income_applicable_income(Variable):
     entity = BenUnit
     label = u"Relevant income for JSA (income-based) means test"
     definition_period = YEAR
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).benefit.JSA

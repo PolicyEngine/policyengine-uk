@@ -44,7 +44,7 @@ class tax_credits_applicable_income(Variable):
         income += aggr(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
         on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
-        return income * not_(on_exempt_benefits)
+        return income * ~on_exempt_benefits
 
 
 class is_CTC_child_limit_exempt(Variable):
@@ -239,7 +239,7 @@ class is_WTC_eligible(Variable):
         has_disabled_adults = benunit("num_disabled_adults", period) > 0
         family_type = benunit("family_type", period)
         families = family_type.possible_values
-        old = person("age", period.this_year) > WTC.min_hours.old_age
+        old = person("age", period.this_year) >= WTC.min_hours.old_age
         has_old = benunit.any(old)
         lone_parent = family_type == families.LONE_PARENT
         couple_with_children = family_type == families.COUPLE_WITH_CHILDREN
@@ -433,7 +433,7 @@ class WTC_worker_element(Variable):
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
         hours = aggr(benunit, period, ["weekly_hours"])
-        meets_hours_requirement = hours > WTC.min_hours.default
+        meets_hours_requirement = hours >= WTC.min_hours.default
         return (
             benunit("is_WTC_eligible", period)
             * benunit("claims_WTC", period)
@@ -457,10 +457,8 @@ class WTC_childcare_element(Variable):
         childcare_2 = (num_children > 1) * WTC.elements.childcare_2
         max_childcare_amount = (childcare_1 + childcare_2) * WEEKS_IN_YEAR
         expenses = aggr(benunit, period, ["childcare_expenses"])
-        childcare_element = min_(
-            max_childcare_amount,
-            WTC.elements.childcare_coverage * expenses,
-        )
+        eligible_expenses = min_(max_childcare_amount, expenses)
+        childcare_element = WTC.elements.childcare_coverage * eligible_expenses
         return (
             benunit("is_WTC_eligible", period)
             * benunit("claims_WTC", period)

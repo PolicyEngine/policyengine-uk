@@ -1,4 +1,4 @@
-adjusted_net_income: 
+adjusted_net_income:
   ukmod: il_tinty
 employee_NI: tscee_s
 self_employed_NI:
@@ -8,15 +8,15 @@ self_employed_NI:
 employer_NI:
   ukmod: tscer_s
   max_rel_error: 0.15
-working_tax_credit: 
+working_tax_credit:
   ukmod: bwkmt_s
-  max_rel_error: 0.3
+  max_rel_error: 0.35
   skip_household_matching: true
-child_tax_credit: 
+child_tax_credit:
   ukmod: bfamt_s
-  max_rel_error: 0.15
+  max_rel_error: 0.2
   skip_household_matching: true
-housing_benefit: 
+housing_benefit:
   ukmod: bho_s
   max_rel_error: 0.3
   skip_household_matching: true

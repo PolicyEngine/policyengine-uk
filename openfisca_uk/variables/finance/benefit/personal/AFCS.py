@@ -9,7 +9,7 @@ class AFCS(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return person("AA_reported", period)
+        return person("AFCS_reported", period)
 
 
 class AFCS_reported(Variable):
