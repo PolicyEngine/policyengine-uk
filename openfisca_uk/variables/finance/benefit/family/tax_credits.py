@@ -457,10 +457,8 @@ class WTC_childcare_element(Variable):
         childcare_2 = (num_children > 1) * WTC.elements.childcare_2
         max_childcare_amount = (childcare_1 + childcare_2) * WEEKS_IN_YEAR
         expenses = aggr(benunit, period, ["childcare_expenses"])
-        childcare_element = min_(
-            max_childcare_amount,
-            WTC.elements.childcare_coverage * expenses,
-        )
+        eligible_expenses = min_(max_childcare_amount, expenses)
+        childcare_element = WTC.elements.childcare_coverage * eligible_expenses
         return (
             benunit("is_WTC_eligible", period)
             * benunit("claims_WTC", period)

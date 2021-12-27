@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Historical Working Tax Credit parameters since 2002 (previously since 2016).
 * Legislative references for Working Tax Credit parameters.
 
+### Changed
+
+* Working Tax Credit child care parameters represent the maximum amount, prior to the share covered.
+
 ### Fixed
 
 * Apply Working Tax Credit old-age provision to 60-year-olds.
