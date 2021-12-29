@@ -10,6 +10,18 @@ class child_benefit_reported(Variable):
     unit = "currency-GBP"
 
 
+class is_imputed_to_take_up_child_benefit(Variable):
+    label = "Is imputed to take up Child Benefit"
+    documentation = "Based on a random number and the take-up rate"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        takeup_rate = parameters(period).hmrc.child_benefit.takeup_rate
+        return random(benunit) <= takeup_rate
+
+
 class would_claim_child_benefit(Variable):
     label = "Would claim Child Benefit"
     documentation = (
@@ -21,10 +33,7 @@ class would_claim_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         claims_benefits = benunit("claims_all_entitled_benefits", period)
-        takeup_rate = parameters(period).hmrc.child_benefit.takeup_rate
-        imputed_takeup = (
-            benunit("benunit_random_number", period) <= takeup_rate
-        )
+        imputed_takeup = benunit("is_imputed_to_take_up_child_benefit", period)
         return claims_benefits | imputed_takeup
 
 
