@@ -3,7 +3,7 @@ This module tests the FRS dataset produced by openfisca-uk-data against UKMOD - 
 """
 
 import pandas as pd
-from openfisca_uk_data import FRS, UKMODOutput
+from openfisca_uk_data import FRSEnhanced, UKMODOutput
 from openfisca_uk import Microsimulation, REPO
 import pytest
 from microdf import MicroDataFrame
@@ -24,11 +24,11 @@ MIN_NONZERO_AGREEMENT = 0.99
 
 if TEST_YEAR not in UKMODOutput.years:
     raise FileNotFoundError("UKMOD FRS needed to run tests against.")
-if TEST_YEAR not in FRS.years:
+if TEST_YEAR not in FRSEnhanced.years:
     raise FileNotFoundError("FRS needed to run tests.")
 
 baseline = Microsimulation(
-    dataset=FRS,
+    dataset=FRSEnhanced,
     year=TEST_YEAR,
 )
 ukmod = UKMODOutput.load(TEST_YEAR, "person")
