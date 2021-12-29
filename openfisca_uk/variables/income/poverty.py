@@ -1,3 +1,6 @@
+from openfisca_uk_data.datasets.frs.frs_enhanced.frs_enhanced import (
+    FRSEnhanced,
+)
 from openfisca_uk.model_api import *
 
 
@@ -15,9 +18,9 @@ class baseline_hbai_excluded_income(Variable):
             from openfisca_uk import Microsimulation
 
             # Simulate baseline policy
-            result = Microsimulation().simulation.calculate(
-                "hbai_excluded_income", period
-            )
+            result = Microsimulation(
+                dataset=FRSEnhanced, year=period.year
+            ).simulation.calculate("hbai_excluded_income", period)
             # Check that the dataset/year combination is valid
             # (i.e. that the arrays are the same size)
             if len(result) == len(household.nb_persons()):
