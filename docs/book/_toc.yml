@@ -4,6 +4,7 @@ parts:
   - caption: Model
     chapters:
       - file: model/child_benefit
+      - file: model/tax_credits
       - file: model/stamp_duty
       - file: model/validation
   - caption: Usage
