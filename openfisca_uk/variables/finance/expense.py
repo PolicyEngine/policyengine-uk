@@ -158,6 +158,20 @@ class council_tax(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
 
+class council_tax_less_benefit(Variable):
+    label = "Council Tax (less CTB)"
+    documentation = "Council Tax minus the Council Tax Benefit"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        return (
+            household("council_tax", period)
+            - household("council_tax_benefit", period)
+        )
+
 
 class CouncilTaxBand(Enum):
     A = "A"
