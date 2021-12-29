@@ -3821,15 +3821,6 @@ All statistics generated from the uprated (to 2020) 2018-19 Family Resources Sur
   + Stddev: 1.2539736242005226
   + Non-zero count: 28023811.0
 
-* household_random_number:
-  + Type: float
-  + Entity: household
-  + Description: Randomness
-  + Mean: 0.4947288814453084
-  + Median: 0.493000848577249
-  + Stddev: 0.2904878258705139
-  + Non-zero count: 28023811.0
-
 * household_weight:
   + Type: float
   + Entity: household
