@@ -19,7 +19,7 @@ class baseline_hbai_excluded_income(Variable):
 
             # Simulate baseline policy
             result = Microsimulation(
-                dataset=FRSEnhanced, year=period.year
+                dataset=FRSEnhanced, year=2019
             ).simulation.calculate("hbai_excluded_income", period)
             # Check that the dataset/year combination is valid
             # (i.e. that the arrays are the same size)
