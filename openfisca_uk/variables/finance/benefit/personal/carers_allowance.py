@@ -6,7 +6,6 @@ class receives_carers_allowance(Variable):
     entity = Person
     label = "Receives Carer's Allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         return person("carers_allowance", period) > 0

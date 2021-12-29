@@ -6,7 +6,7 @@ class state_pension_age(Variable):
     entity = Person
     label = u"State Pension age for this person"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = "year"
 
     def formula(person, period, parameters):
         SP = parameters(period).benefit.state_pension
@@ -18,7 +18,6 @@ class is_SP_age(Variable):
     entity = Person
     label = u"Whether the person is State Pension Age"
     definition_period = YEAR
-    unit = "currency-GBP"
 
     def formula(person, period, parameters):
         age = person("age", period)

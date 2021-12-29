@@ -92,3 +92,37 @@
     WTC_worker_element: 825
     WTC_childcare_element: 0
     WTC_maximum_rate: 2834
+- name: 60-year-old only needs to meet the lower hours requirement (16)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 60
+    weekly_hours: 16
+  output:
+    is_WTC_eligible: true
+- name: 59-year-old needs to meet the default hours requirement (30)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 59
+    weekly_hours: 16
+  output:
+    is_WTC_eligible: false
+- name: 29 hours does not qualify someone for worker element
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    is_WTC_eligible: true
+    claims_WTC: true
+    weekly_hours: 29
+  output:
+    WTC_worker_element: 0
+- name: 30 hours qualifies someone for worker element
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    is_WTC_eligible: true
+    claims_WTC: true
+    weekly_hours: 30
+  output:
+    WTC_worker_element: 830
