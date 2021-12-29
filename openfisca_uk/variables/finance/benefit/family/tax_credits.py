@@ -530,4 +530,8 @@ class tax_credits(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return add(person, period, ["working_tax_credit", "child_tax_credit"])
+        amount = add(
+            person, period, ["working_tax_credit", "child_tax_credit"]
+        )
+        min_benefit = parameters(period).benefit.tax_credits.min_benefit
+        return where(amount < min_benefit, 0, amount)
