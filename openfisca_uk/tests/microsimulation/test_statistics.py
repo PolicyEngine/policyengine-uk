@@ -95,8 +95,9 @@ class AbsoluteErrorLessThan(StatisticTest):
 
 class RelativeErrorLessThan(StatisticTest):
     def test(self):
-        openfisca_uk_error = abs(self.openfisca_uk - self.official)
-        return openfisca_uk_error / self.official < self.max_error
+        absolute_error = abs(self.openfisca_uk - self.official)
+        relative_error = absolute_error / self.official
+        return relative_error < self.max_error
 
     def describe(self):
         return f"OpenFisca-UK {self.variable_label} {self.statistic} relative error is less than {self.max_error:,} in {self.year}"
