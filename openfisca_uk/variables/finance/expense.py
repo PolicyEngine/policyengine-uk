@@ -169,7 +169,10 @@ class council_tax_less_benefit(Variable):
     def formula(household, period, parameters):
         return (
             household("council_tax", period)
-            - household("council_tax_benefit", period)
+            - household.sum(
+                household.members.benunit("council_tax_benefit", period)
+                * household.members("is_benunit_head", period)
+            )
         )
 
 

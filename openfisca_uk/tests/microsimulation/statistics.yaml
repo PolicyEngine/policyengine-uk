@@ -1,6 +1,6 @@
 child_benefit:
   test:
-    - aggregate_error_less_than: 500_000
+    - aggregate_error_less_than: 500_000_000
     - relative_error_less_than: 0.05
     - closer_than_ukmod
   official:
@@ -18,16 +18,19 @@ child_benefit:
       2021: 11_573_000_000
       2022: 11_668_000_000
 council_tax_less_benefit:
-  test: []
+  test:
+    - aggregate_error_less_than: 5_000_000_000
+    - relative_error_less_than: 0.07
   official:
     aggregate:
-      2018: 36_300_000_000
       2019: 37_500_000_000
       2020: 38_700_000_000
       2021: 39_900_000_000
       2022: 41_100_000_000
 tax_credits:
-  test: []
+  test:
+    - aggregate_error_less_than: 7_000_000_000
+    - closer_than_ukmod
   official:
     aggregate:
       2018: 22_005_000_000

@@ -19,34 +19,104 @@ def get_openfisca_uk_aggregate(variable: str, year: int) -> float:
         sim = sim_2019
     return sim.calc(variable, period=year).sum()
 
-class CloserThanUKMOD:
-    def __init__(self, variable: str, statistic: str, year: int):
-        self.variable = variable
-        self.statistic = statistic
-        self.year = year
+def get_openfisca_uk_caseload(variable: str, year: int) -> float:
+    if year == 2018:
+        sim = sim_2018
+    else:
+        sim = sim_2019
+    return (sim.calc(variable, period=year) > 0).sum()
 
-    def __call__(self):
-        openfisca_uk_aggregate = get_openfisca_uk_aggregate(self.variable, self.year)
-        ukmod_aggregate = statistics[self.variable]["ukmod"][self.statistic][self.year]
-        official_aggregate = statistics[self.variable]["official"][self.statistic][self.year]
-        openfisca_uk_error = abs(openfisca_uk_aggregate - official_aggregate)
-        ukmod_error = abs(ukmod_aggregate - official_aggregate)
+class StatisticTest:
+    def __init__(self, variable: str, statistic: str, year: int, **kwargs):
+        self.variable = variable
+        self.year = year
+        self.statistic = statistic
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    @property
+    def openfisca_uk(self):
+        if self.statistic == "aggregate":
+            return get_openfisca_uk_aggregate(self.variable, self.year)
+        elif self.statistic == "caseload":
+            return get_openfisca_uk_caseload(self.variable, self.year)
+        raise ValueError(f"Unknown statistic: {self.statistic}")
+    
+    def stored_result(self, source: str):
+        if self.statistic == "aggregate":
+            return statistics[self.variable][source]["aggregate"][self.year]
+        elif self.statistic == "caseload":
+            return statistics[self.variable][source]["caseload"][self.year]
+        raise ValueError(f"Unknown statistic: {self.statistic}")
+
+    @property
+    def ukmod(self):
+        return self.stored_result("ukmod")
+    
+    @property
+    def official(self):
+        return self.stored_result("official")
+
+    @property
+    def variable_label(self):
+        return variables[self.variable].label
+    
+    def test(self) -> bool:
+        raise NotImplementedError("Test not specified")
+
+    def describe(self) -> str:
+        raise NotImplementedError("Description not specified")
+    
+    __repr__ = lambda self: self.describe()
+
+class CloserThanUKMOD(StatisticTest):
+    def test(self) -> bool:
+        openfisca_uk_error = abs(self.openfisca_uk - self.official)
+        ukmod_error = abs(self.ukmod - self.official)
         return openfisca_uk_error < ukmod_error
 
-    def __repr__(self):
-        variable_name = variables[self.variable].label
-        return f"OpenFisca-UK {variable_name} {self.statistic} is closer to official aggregate than UKMOD in {self.year}"
+    def describe(self):
+        return f"OpenFisca-UK {self.variable_label} {self.statistic} is closer to official aggregate than UKMOD in {self.year}"
+
+class AbsoluteErrorLessThan(StatisticTest):    
+    def test(self):
+        openfisca_uk_error = abs(self.openfisca_uk - self.official)
+        return openfisca_uk_error < self.max_error
+
+    def describe(self):
+        return f"OpenFisca-UK {self.variable_label} {self.statistic} absolute error is less than {self.max_error} in {self.year}"
+
+
+class RelativeErrorLessThan(StatisticTest):
+    def test(self):
+        openfisca_uk_error = abs(self.openfisca_uk - self.official)
+        return openfisca_uk_error / self.official < self.max_error
+
+    def describe(self):
+        return f"OpenFisca-UK {self.variable_label} {self.statistic} relative error is less than {self.max_error} in {self.year}"
 
 tests = []
 
 for variable in statistics:
     variable_tests = statistics[variable]["test"]
-    if "closer_than_ukmod" in variable_tests:
+    test_names = list(map(lambda item: item if isinstance(item, str) else list(item.keys())[0], variable_tests))
+    dict_tests = {list(item.keys())[0]: item for item in variable_tests if isinstance(item, dict)}
+    if "closer_than_ukmod" in test_names:
         for statistic in ("aggregate", "caseload"):
             if statistic in statistics[variable]["ukmod"]:
                 for year in statistics[variable]["ukmod"][statistic]:
                     tests += [CloserThanUKMOD(variable, statistic, year)]
+    if "aggregate_error_less_than" in test_names:
+        for statistic in ("aggregate", "caseload"):
+            if statistic in statistics[variable]["official"]:
+                for year in statistics[variable]["official"][statistic]:
+                    tests += [AbsoluteErrorLessThan(variable, statistic, year, max_error=dict_tests["aggregate_error_less_than"]["aggregate_error_less_than"])]
+    if "relative_error_less_than" in test_names:
+        for statistic in ("aggregate", "caseload"):
+            if statistic in statistics[variable]["official"]:
+                for year in statistics[variable]["official"][statistic]:
+                    tests += [RelativeErrorLessThan(variable, statistic, year, max_error=dict_tests["relative_error_less_than"]["relative_error_less_than"])]
 
 @pytest.mark.parametrize("test", tests, ids=str)
 def test_statistics(test):
-    assert test()
+    assert test.test()
