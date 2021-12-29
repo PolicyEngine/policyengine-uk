@@ -73,10 +73,10 @@ class CloserThanUKMOD(StatisticTest):
     def test(self) -> bool:
         openfisca_uk_error = abs(self.openfisca_uk - self.official)
         ukmod_error = abs(self.ukmod - self.official)
-        return openfisca_uk_error < ukmod_error
+        return openfisca_uk_error <= ukmod_error
 
     def describe(self):
-        return f"OpenFisca-UK {self.variable_label} {self.statistic} is closer to official aggregate than UKMOD in {self.year}"
+        return f"OpenFisca-UK {self.variable_label} {self.statistic} at least as close to the official aggregate as UKMOD in {self.year}"
 
 class AbsoluteErrorLessThan(StatisticTest):    
     def test(self):
@@ -84,7 +84,7 @@ class AbsoluteErrorLessThan(StatisticTest):
         return openfisca_uk_error < self.max_error
 
     def describe(self):
-        return f"OpenFisca-UK {self.variable_label} {self.statistic} absolute error is less than {self.max_error} in {self.year}"
+        return f"OpenFisca-UK {self.variable_label} {self.statistic} absolute error is less than {self.max_error:,} in {self.year}"
 
 
 class RelativeErrorLessThan(StatisticTest):
@@ -93,7 +93,7 @@ class RelativeErrorLessThan(StatisticTest):
         return openfisca_uk_error / self.official < self.max_error
 
     def describe(self):
-        return f"OpenFisca-UK {self.variable_label} {self.statistic} relative error is less than {self.max_error} in {self.year}"
+        return f"OpenFisca-UK {self.variable_label} {self.statistic} relative error is less than {self.max_error:,} in {self.year}"
 
 tests = []
 
