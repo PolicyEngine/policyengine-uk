@@ -136,6 +136,7 @@ class savings_credit_applicable_income(Variable):
         exempted_personal_benefits = aggr(
             benunit, period, EXEMPTED_PERSONAL_BENEFITS
         )
+        # This makes me think we need to push the minimum benefit back to CTC+WTC
         EXEMPTED_FAMILY_BENEFITS = ["working_tax_credit"]
         exempted_family_benefits = add(
             benunit,
