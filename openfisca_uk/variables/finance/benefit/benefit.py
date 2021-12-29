@@ -22,8 +22,7 @@ class family_benefits(Variable):
             "pension_credit",
             "universal_credit",
             "council_tax_benefit",
-            "working_tax_credit",
-            "child_tax_credit",
+            "tax_credits",
         ]
         benefits = add(person.benunit, period, FAMILY_BENEFITS)
         return benefits * person("is_benunit_head", period)
@@ -45,8 +44,7 @@ class family_benefits_reported(Variable):
             "JSA_income",
             "pension_credit",
             "universal_credit",
-            "working_tax_credit",
-            "child_tax_credit",
+            "tax_credits",
         ]
         return add(person, period, [i + "_reported" for i in FAMILY_BENEFITS])
 
