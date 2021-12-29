@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Minimum tax credit benefit amount.
 
+## [0.8.1] - 2021-12-29
+
+### Removed
+
+* Benefit unit- and household-level saved random numbers for take-up.
+
 ## [0.8.0] - 2021-12-27
 
 ### Added
