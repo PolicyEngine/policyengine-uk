@@ -168,10 +168,12 @@ class council_tax_less_benefit(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return household("council_tax", period) - household.sum(
-            household.members.benunit("council_tax_benefit", period)
-            * household.members("is_benunit_head", period)
+        person = household.members
+        council_tax_benefit = household.sum(
+            person.benunit("council_tax_benefit", period)
+            * person("is_benunit_head", period)
         )
+        return household("council_tax", period) - council_tax_benefit
 
 
 class CouncilTaxBand(Enum):
