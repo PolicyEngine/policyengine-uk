@@ -44,7 +44,8 @@ class family_benefits_reported(Variable):
             "JSA_income",
             "pension_credit",
             "universal_credit",
-            "tax_credits",
+            "working_tax_credit",
+            "child_tax_credit",
         ]
         return add(person, period, [i + "_reported" for i in FAMILY_BENEFITS])
 

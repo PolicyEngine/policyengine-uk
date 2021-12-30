@@ -92,7 +92,8 @@ class guarantee_credit_applicable_income(Variable):
         tax = aggr(benunit, period, ["tax"])
         BENEFIT_COMPONENTS = [
             "child_benefit",
-            "tax_credits",
+            "child_tax_credit",
+            "working_tax_credit",
             "housing_benefit",
         ]
         benefits = add(benunit, period, BENEFIT_COMPONENTS)
