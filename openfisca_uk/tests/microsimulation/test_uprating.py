@@ -1,5 +1,5 @@
 from openfisca_uk import Microsimulation
-from openfisca_uk_data import FRS
+from openfisca_uk_data import FRSEnhanced
 import pytest
 from itertools import product
 
@@ -13,7 +13,7 @@ UPRATED_VARIABLES = (
     "dividend_income",
 )
 
-sim = Microsimulation(dataset=FRS, year=2018)
+sim = Microsimulation(dataset=FRSEnhanced, year=2018)
 
 
 @pytest.mark.parametrize(

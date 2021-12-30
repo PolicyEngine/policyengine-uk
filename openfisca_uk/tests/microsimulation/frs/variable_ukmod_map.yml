@@ -1,10 +1,7 @@
 adjusted_net_income:
   ukmod: il_tinty
+  max_rel_error: 0.06
 employee_NI: tscee_s
-self_employed_NI:
-  ukmod: tscse_s
-  max_rel_error: 0.15
-  max_mean_rel_error: 0.07
 employer_NI:
   ukmod: tscer_s
   max_rel_error: 0.15
@@ -24,7 +21,9 @@ universal_credit:
   ukmod: bsauc_s
   max_rel_error: 0.45
   skip_household_matching: true
-market_income: ils_origy
+market_income: 
+  ukmod: ils_origy
+  max_rel_error: 0.06
 benefits:
   ukmod: ils_ben
   skip_household_matching: true
@@ -32,3 +31,4 @@ benefits:
 net_income:
   ukmod: ils_dispy
   skip_household_matching: true
+  max_rel_error: 0.07

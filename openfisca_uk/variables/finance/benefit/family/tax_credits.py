@@ -531,7 +531,8 @@ class child_tax_credit_pre_minimum(Variable):
 class tax_credits(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Value of the Tax Credits (benefits) for this family"
+    label = "Tax Credits"
+    documentation = "Value of the Tax Credits (benefits) for this family"
     definition_period = YEAR
     unit = "currency-GBP"
 

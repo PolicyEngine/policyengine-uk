@@ -26,5 +26,6 @@ serve:
 
 documentation:
 	python docs/summary/generate_descriptions.py
+	python docs/summary/generate_summary.py
 	jb clean docs/book
 	jb build docs/book -W
