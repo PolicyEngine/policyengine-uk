@@ -130,14 +130,14 @@
   period: 2022
   absolute_error_margin: 0
   input:
-    child_tax_credit: 20
-    working_tax_credit: 5.99
+    child_tax_credit_pre_minimum: 20
+    working_tax_credit_pre_minimum: 5.99
   output:
     tax_credits: 0
 - name: Tax credits equal to £26 are paid
   period: 2022
   absolute_error_margin: 0
   input:
-    child_tax_credit: 26
+    child_tax_credit_pre_minimum: 26
   output:
     tax_credits: 26
