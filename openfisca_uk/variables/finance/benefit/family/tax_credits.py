@@ -488,10 +488,13 @@ class tax_credits_reduction(Variable):
         return overage * means_test.income_reduction_rate
 
 
-class working_tax_credit(Variable):
+class working_tax_credit_pre_minimum(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit"
+    label = u"Working Tax Credit pre-minimum"
+    documentation = (
+        "Working Tax Credit amount before the minimum tax credit is applied"
+    )
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -503,10 +506,13 @@ class working_tax_credit(Variable):
         )
 
 
-class child_tax_credit(Variable):
+class child_tax_credit_pre_minimum(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Tax Credit"
+    label = u"Child Tax Credit pre-minimum"
+    documentation = (
+        "Child Tax Credit amount before the minimum tax credit is applied"
+    )
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -531,4 +537,40 @@ class tax_credits(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return add(person, period, ["working_tax_credit", "child_tax_credit"])
+        amount = add(
+            person,
+            period,
+            ["working_tax_credit_pre_minimum", "child_tax_credit_pre_minimum"],
+        )
+        min_benefit = parameters(period).benefit.tax_credits.min_benefit
+        return where(amount < min_benefit, 0, amount)
+
+
+class child_tax_credit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Child Tax Credit"
+    definition_period = YEAR
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
+        return where(
+            benunit("tax_credits", period) > 0,
+            benunit("child_tax_credit_pre_minimum", period),
+            0,
+        )
+
+
+class working_tax_credit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = u"Working Tax Credit"
+    definition_period = YEAR
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
+        return where(
+            benunit("tax_credits", period) > 0,
+            benunit("working_tax_credit_pre_minimum", period),
+            0,
+        )
