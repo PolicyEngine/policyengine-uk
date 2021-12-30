@@ -5,7 +5,7 @@ metadata:
   label: Tax credits minimum benefit
   name: tax_credits_minimum_benefit
   unit: currency-USD
-  period: week
+  period: year
   reference:
     - name: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002
       href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/9
