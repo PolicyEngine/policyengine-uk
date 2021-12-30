@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from openfisca_uk import Microsimulation
-from openfisca_uk_data import FRS
+from openfisca_uk_data import FRSEnhanced
 import yaml
 
 
@@ -13,7 +13,7 @@ def gbp(x: float) -> str:
 
 
 def main():
-    sim = Microsimulation()
+    sim = Microsimulation(dataset=FRSEnhanced, year=2019)
     year = 2022
 
     results = {
