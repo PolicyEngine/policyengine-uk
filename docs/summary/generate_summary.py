@@ -13,7 +13,7 @@ def gbp(x: float) -> str:
 
 
 def main():
-    sim = Microsimulation(dataset=FRS)
+    sim = Microsimulation()
     year = 2022
 
     results = {
