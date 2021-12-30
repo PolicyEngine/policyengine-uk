@@ -104,6 +104,11 @@
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="tax_credits.html">
+   Tax Credits
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="stamp_duty.html">
    Property Taxes
   </a>
@@ -263,6 +268,11 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#automated-tests">
+   Automated tests
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -283,10 +293,10 @@ Numbers are in billions of pounds.</p>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk</span> <span class="kn">import</span> <span class="n">Microsimulation</span>
-<span class="kn">from</span> <span class="nn">openfisca_uk_data</span> <span class="kn">import</span> <span class="n">FRS</span>
+<span class="kn">from</span> <span class="nn">openfisca_uk_data</span> <span class="kn">import</span> <span class="n">FRSEnhanced</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2018</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">FRS</span><span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">FRSEnhanced</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="mi">2018</span><span class="p">)</span>
 
 <span class="n">VARIABLES</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
     <span class="n">income_tax</span><span class="o">=</span><span class="s2">&quot;Income Tax&quot;</span><span class="p">,</span>
@@ -359,19 +369,19 @@ Numbers are in billions of pounds.</p>
   <tbody>
     <tr>
       <th>Income Tax</th>
-      <td>167.3</td>
+      <td>186.7</td>
       <td>163.7</td>
       <td>190.0</td>
-      <td>1.02</td>
-      <td>0.88</td>
+      <td>1.14</td>
+      <td>0.98</td>
     </tr>
     <tr>
       <th>Non-employer National Insurance</th>
-      <td>61.2</td>
+      <td>62.1</td>
       <td>64.0</td>
       <td>55.7</td>
-      <td>0.96</td>
-      <td>1.10</td>
+      <td>0.97</td>
+      <td>1.11</td>
     </tr>
     <tr>
       <th>Employee Class 1 NI</th>
@@ -391,11 +401,11 @@ Numbers are in billions of pounds.</p>
     </tr>
     <tr>
       <th>Class 2 &amp; 4 NI</th>
-      <td>5.1</td>
+      <td>5.9</td>
       <td>5.0</td>
       <td>3.7</td>
-      <td>1.01</td>
-      <td>1.37</td>
+      <td>1.19</td>
+      <td>1.60</td>
     </tr>
     <tr>
       <th>Universal Credit</th>
@@ -473,7 +483,7 @@ Numbers are in billions of pounds.</p>
 <span class="n">ukmod_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
         <span class="s2">&quot;Income Tax&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">163.7</span><span class="p">,</span> <span class="mf">165.9</span><span class="p">,</span> <span class="mf">165.0</span><span class="p">,</span> <span class="mf">173.9</span><span class="p">],</span>
-        <span class="s2">&quot;NI (total)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">138.6</span><span class="p">,</span> <span class="mf">144.2</span><span class="p">,</span> <span class="mf">141.6</span><span class="p">,</span> <span class="mf">148.0</span><span class="p">],</span>
+        <span class="s2">&quot;National Insurance (total)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">138.6</span><span class="p">,</span> <span class="mf">144.2</span><span class="p">,</span> <span class="mf">141.6</span><span class="p">,</span> <span class="mf">148.0</span><span class="p">],</span>
         <span class="s2">&quot;Universal Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">11.7</span><span class="p">,</span> <span class="mf">24.8</span><span class="p">,</span> <span class="mf">41.3</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">],</span>
         <span class="s2">&quot;Working Tax Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span>
         <span class="s2">&quot;Child Tax Credit&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">11.4</span><span class="p">,</span> <span class="mf">7.1</span><span class="p">,</span> <span class="mf">4.4</span><span class="p">,</span> <span class="mf">2.8</span><span class="p">],</span>
@@ -495,7 +505,7 @@ Numbers are in billions of pounds.</p>
             <span class="mf">188.2</span><span class="p">,</span>
             <span class="mf">203.6</span><span class="p">,</span>
         <span class="p">],</span>  <span class="c1"># source: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/</span>
-        <span class="s2">&quot;NI (total)&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;National Insurance (total)&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="mf">137.4</span><span class="p">,</span>
             <span class="mf">145.0</span><span class="p">,</span>
             <span class="mf">140.8</span><span class="p">,</span>
@@ -572,10 +582,10 @@ Numbers are in billions of pounds.</p>
   <tbody>
     <tr>
       <th>Income Tax</th>
-      <td>167.3</td>
-      <td>173.6</td>
-      <td>167.4</td>
-      <td>178.7</td>
+      <td>186.7</td>
+      <td>193.7</td>
+      <td>187.5</td>
+      <td>199.6</td>
       <td>163.7</td>
       <td>165.9</td>
       <td>165.0</td>
@@ -587,18 +597,18 @@ Numbers are in billions of pounds.</p>
     </tr>
     <tr>
       <th>National Insurance (total)</th>
-      <td>140.5</td>
+      <td>141.4</td>
+      <td>145.9</td>
+      <td>146.6</td>
+      <td>150.2</td>
+      <td>138.6</td>
+      <td>144.2</td>
+      <td>141.6</td>
+      <td>148.0</td>
+      <td>137.4</td>
       <td>145.0</td>
-      <td>145.7</td>
-      <td>149.2</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>140.8</td>
+      <td>145.9</td>
     </tr>
     <tr>
       <th>Universal Credit</th>
@@ -720,21 +730,6 @@ Numbers are in billions of pounds.</p>
       <td>0.4</td>
       <td>0.3</td>
     </tr>
-    <tr>
-      <th>NI (total)</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>138.6</td>
-      <td>144.2</td>
-      <td>141.6</td>
-      <td>148.0</td>
-      <td>137.4</td>
-      <td>145.0</td>
-      <td>140.8</td>
-      <td>145.9</td>
-    </tr>
   </tbody>
 </table>
 </div></div></div>
@@ -798,33 +793,33 @@ Numbers are in billions of pounds.</p>
   <tbody>
     <tr>
       <th>Income Tax</th>
-      <td>167.3</td>
-      <td>173.6</td>
-      <td>167.4</td>
-      <td>178.7</td>
-      <td>3.6</td>
-      <td>7.7</td>
-      <td>2.4</td>
-      <td>4.8</td>
-      <td>-25.2</td>
-      <td>-20.0</td>
-      <td>-20.8</td>
-      <td>-24.9</td>
+      <td>186.7</td>
+      <td>193.7</td>
+      <td>187.5</td>
+      <td>199.6</td>
+      <td>23.0</td>
+      <td>27.8</td>
+      <td>22.5</td>
+      <td>25.7</td>
+      <td>-5.8</td>
+      <td>0.1</td>
+      <td>-0.7</td>
+      <td>-4.0</td>
     </tr>
     <tr>
       <th>National Insurance (total)</th>
-      <td>140.5</td>
-      <td>145.0</td>
-      <td>145.7</td>
-      <td>149.2</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>141.4</td>
+      <td>145.9</td>
+      <td>146.6</td>
+      <td>150.2</td>
+      <td>2.8</td>
+      <td>1.7</td>
+      <td>5.0</td>
+      <td>2.2</td>
+      <td>4.0</td>
+      <td>0.9</td>
+      <td>5.8</td>
+      <td>4.3</td>
     </tr>
     <tr>
       <th>Universal Credit</th>
@@ -946,20 +941,252 @@ Numbers are in billions of pounds.</p>
       <td>0.0</td>
       <td>0.2</td>
     </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="automated-tests">
+<h2>Automated tests<a class="headerlink" href="#automated-tests" title="Permalink to this headline">¶</a></h2>
+<p>Below are test results from the most recent version.</p>
+<div class="cell tag_hide-input docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openfisca_uk.tests.microsimulation.test_statistics</span> <span class="kn">import</span> <span class="n">tests</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_colwidth&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Name&quot;</span><span class="p">:</span> <span class="n">tests</span><span class="p">,</span> <span class="s2">&quot;Passed&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">test</span><span class="p">()</span> <span class="k">for</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">tests</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Name</th>
+      <th>Passed</th>
+    </tr>
+  </thead>
+  <tbody>
     <tr>
-      <th>NI (total)</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <th>0</th>
+      <td>OpenFisca-UK Child Benefit aggregate at least as close to the official aggregate as UKMOD in 2018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>OpenFisca-UK Child Benefit aggregate at least as close to the official aggregate as UKMOD in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>OpenFisca-UK Child Benefit aggregate at least as close to the official aggregate as UKMOD in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>OpenFisca-UK Child Benefit aggregate at least as close to the official aggregate as UKMOD in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>OpenFisca-UK Child Benefit aggregate at least as close to the official aggregate as UKMOD in 2022</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>OpenFisca-UK Child Benefit aggregate absolute error is less than 500,000,000 in 2018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>OpenFisca-UK Child Benefit aggregate absolute error is less than 500,000,000 in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>OpenFisca-UK Child Benefit aggregate absolute error is less than 500,000,000 in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>OpenFisca-UK Child Benefit aggregate absolute error is less than 500,000,000 in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>OpenFisca-UK Child Benefit aggregate absolute error is less than 500,000,000 in 2022</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>OpenFisca-UK Child Benefit aggregate relative error is less than 0.05 in 2018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>OpenFisca-UK Child Benefit aggregate relative error is less than 0.05 in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>OpenFisca-UK Child Benefit aggregate relative error is less than 0.05 in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>OpenFisca-UK Child Benefit aggregate relative error is less than 0.05 in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>OpenFisca-UK Child Benefit aggregate relative error is less than 0.05 in 2022</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate absolute error is less than 5,000,000,000 in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate absolute error is less than 5,000,000,000 in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate absolute error is less than 5,000,000,000 in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate absolute error is less than 5,000,000,000 in 2022</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate relative error is less than 0.07 in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate relative error is less than 0.07 in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate relative error is less than 0.07 in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>OpenFisca-UK Council Tax (less CTB) aggregate relative error is less than 0.07 in 2022</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>OpenFisca-UK Tax Credits aggregate at least as close to the official aggregate as UKMOD in 2018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>OpenFisca-UK Tax Credits aggregate at least as close to the official aggregate as UKMOD in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>OpenFisca-UK Tax Credits aggregate at least as close to the official aggregate as UKMOD in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>OpenFisca-UK Tax Credits aggregate at least as close to the official aggregate as UKMOD in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>OpenFisca-UK Tax Credits aggregate at least as close to the official aggregate as UKMOD in 2022</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>OpenFisca-UK Tax Credits caseload at least as close to the official aggregate as UKMOD in 2018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>OpenFisca-UK Tax Credits caseload at least as close to the official aggregate as UKMOD in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>OpenFisca-UK Tax Credits caseload at least as close to the official aggregate as UKMOD in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>OpenFisca-UK Tax Credits caseload at least as close to the official aggregate as UKMOD in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>OpenFisca-UK Tax Credits aggregate absolute error is less than 7,000,000,000 in 2018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>OpenFisca-UK Tax Credits aggregate absolute error is less than 7,000,000,000 in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>OpenFisca-UK Tax Credits aggregate absolute error is less than 7,000,000,000 in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>OpenFisca-UK Tax Credits aggregate absolute error is less than 7,000,000,000 in 2021</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>OpenFisca-UK Tax Credits aggregate absolute error is less than 7,000,000,000 in 2022</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>OpenFisca-UK Tax Credits caseload absolute error is less than 7,000,000,000 in 2018</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>OpenFisca-UK Tax Credits caseload absolute error is less than 7,000,000,000 in 2019</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>OpenFisca-UK Tax Credits caseload absolute error is less than 7,000,000,000 in 2020</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>OpenFisca-UK Tax Credits caseload absolute error is less than 7,000,000,000 in 2021</td>
+      <td>True</td>
     </tr>
   </tbody>
 </table>
@@ -973,7 +1200,6 @@ Numbers are in billions of pounds.</p>
 <a class="reference external" href="https://www.fiscalcommission.scot/forecast/supplementary-costing-child-winter-heating-assistance">https://www.fiscalcommission.scot/forecast/supplementary-costing-child-winter-heating-assistance</a>; Income tax: HMRC statistics <a class="reference external" href="https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2014-to-2015-to-tax-year-2017-to-2018">https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2014-to-2015-to-tax-year-2017-to-2018</a>; National Insurance Contributions: ONS Blue Book Table 5.2.4s</p>
 </dd>
 </dl>
-</div>
 </div>
 </div>
 
