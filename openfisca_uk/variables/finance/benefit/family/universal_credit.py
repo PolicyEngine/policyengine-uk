@@ -153,7 +153,7 @@ class UC_individual_child_element(Variable):
         child_index = person("child_index", period)
         born_before_limit = person("is_child_born_before_child_limit", period)
         child_limit_applying = where(
-            ~born_before_limit, UC.elements.child.limit.num_children, 1e2
+            ~born_before_limit, UC.elements.child.limit.child_count, 1e2
         )
         is_eligible = (child_index != -1) & (
             child_index <= child_limit_applying
@@ -189,7 +189,7 @@ class num_UC_eligible_children(Variable):
         )
         child_limit = parameters(
             period
-        ).benefit.universal_credit.elements.child.limit.num_children
+        ).benefit.universal_credit.elements.child.limit.child_count
         spaces_left = clip(
             child_limit - children_born_before_limit, 0, child_limit
         )
