@@ -47,7 +47,7 @@ class is_UC_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit.any(benunit.members("is_WA_adult", period))
+        return aggr(benunit, period, ["is_WA_adult"])
 
 
 class universal_credit_reported(Variable):
@@ -137,7 +137,7 @@ class is_child_born_before_child_limit(Variable):
         UC = parameters(period).benefit.universal_credit
         start_year = UC.elements.child.limit.start_year
         born_before_limit = person("birth_year", period) < start_year
-        return person("is_child", period) * born_before_limit
+        return person("is_child", period) & born_before_limit
 
 
 class UC_individual_child_element(Variable):
