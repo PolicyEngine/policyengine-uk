@@ -50,16 +50,14 @@ class tax_credits_applicable_income(Variable):
 class is_CTC_child_limit_exempt(Variable):
     value_type = bool
     entity = Person
-    label = u"Exemption from Child Tax Credit two-child limit"
-    documentation = (
-        "Exemption from Child Tax Credit two-child limit based on birth year"
-    )
+    label = u"Exemption from Child Tax Credit child limit"
+    documentation = "Exemption from Child Tax Credit limit on number of children based on birth year"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         limit_year = parameters(
             period
-        ).benefit.tax_credits.child_tax_credit.two_child_limit_year
+        ).benefit.tax_credits.child_tax_credit.limit.start_year
         return person("birth_year", period.this_year) <= limit_year
 
 
@@ -159,14 +157,15 @@ class CTC_child_element(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
+        CTC = parameters(period).benefit.tax_credits.child_tax_credit
         is_child_for_CTC = person("is_child_for_CTC", period)
         is_CTC_child_limit_exempt = person("is_CTC_child_limit_exempt", period)
         exempt_child = is_child_for_CTC & is_CTC_child_limit_exempt
         exempt_children = benunit.sum(exempt_child)
-        spaces_left = max_(0, 2 - exempt_children)
+        child_limit = CTC.limit.num_children
+        spaces_left = max_(0, child_limit - exempt_children)
         non_exempt_children = min_(spaces_left, benunit.sum(is_child_for_CTC))
         children = exempt_children + non_exempt_children
-        CTC = parameters(period).benefit.tax_credits.child_tax_credit
         amount = CTC.elements.child_element * children
         return amount * benunit("claims_CTC", period)
 
