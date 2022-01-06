@@ -47,7 +47,7 @@ class is_UC_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["is_WA_adult"])
+        return benunit.any(benunit.members("is_WA_adult", period))
 
 
 class universal_credit_reported(Variable):
