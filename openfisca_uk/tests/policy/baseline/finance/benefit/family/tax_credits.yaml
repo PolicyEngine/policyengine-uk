@@ -73,6 +73,26 @@
   output:
     age: [18, 4, 6]
     CTC_maximum_rate: 6100
+- name: "CTC for three children born pre-2017: maximum rate for two children"
+  period: 2020
+  absolute_error_margin: 100
+  input:
+    people:
+      adult1: {}
+      child1:
+        age: 1
+      child2:
+        age: 1
+      child3:
+        age: 1
+    benunits:
+      benunit1:
+        claims_CTC: true
+        claims_WTC: true
+        adults: ["adult1"]
+        children: ["child1", "child2", "child3"]
+  output:
+    CTC_maximum_rate: 6100
 - name: WTC for working earner with no taxable income
   period: 2020
   absolute_error_margin: 100
