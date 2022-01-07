@@ -1,6 +1,6 @@
 description: Limit on the number of children for which the Universal Credit child element is payable
 values:
-  0001-01-01: 100
+  0001-01-01: .inf
   2017-04-06: 2
 metadata:
   unit: int

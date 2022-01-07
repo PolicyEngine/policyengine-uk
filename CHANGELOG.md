@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.2] - 2022-01-06
+## [0.10.0] - 2022-01-07
+
+### Added
+
+* Parameter representing the Child Tax Credit's child limit.
+
+### Changed
+
+* Renamed parameter representing Universal Credit's child limit.
+
+## [0.9.2] - 2022-01-07
 
 ### Added
 
@@ -24,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Minimum tax credit benefit amount.
-
 
 ## [0.8.1] - 2021-12-29
 

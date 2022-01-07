@@ -29,7 +29,7 @@ council_tax_less_benefit:
       2022: 41_100_000_000
 tax_credits:
   test:
-    - aggregate_error_less_than: 7_000_000_000
+    - aggregate_error_less_than: 8_000_000_000
     - closer_than_ukmod
   official:
     aggregate:
