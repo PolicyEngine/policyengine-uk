@@ -15,9 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Microsimulation tests and YAML data for Child Benefit, Tax Credits and Council Tax
-* Documentation page for Tax Credits
-* Simplified dataset usage to enhanced FRS only
+* Microsimulation tests and YAML data for Child Benefit, Tax Credits and Council Tax.
+* Documentation page for Tax Credits.
+* Simplified dataset usage to enhanced FRS only.
 
 ## [0.9.0] - 2021-12-29
 
