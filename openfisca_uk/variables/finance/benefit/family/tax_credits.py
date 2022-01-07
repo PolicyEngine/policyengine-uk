@@ -58,7 +58,9 @@ class is_CTC_child_limit_exempt(Variable):
         limit_year = parameters(
             period
         ).benefit.tax_credits.child_tax_credit.limit.start_year
-        return person("birth_year", period.this_year) <= limit_year
+        # Children must be born before April 2017.
+        # We use < 2017 as the closer approximation than <= 2017.
+        return person("birth_year", period) < limit_year
 
 
 class is_child_for_CTC(Variable):
