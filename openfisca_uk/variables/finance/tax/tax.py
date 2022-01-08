@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class tax(Variable):
     value_type = float
     entity = Person
-    label = u"Total tax"
+    label = u"Taxes"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -16,7 +16,7 @@ class tax(Variable):
 class household_tax(Variable):
     value_type = float
     entity = Household
-    label = u"Total tax"
+    label = u"Taxes"
     definition_period = YEAR
     unit = "currency-GBP"
 
