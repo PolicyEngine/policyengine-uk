@@ -5,14 +5,14 @@ from openfisca_uk.model_api import *
 class benunit_id(Variable):
     value_type = int
     entity = BenUnit
-    label = u"ID for the family"
+    label = "ID for the family"
     definition_period = YEAR
 
 
 class families(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Variable holding families"
+    label = "Variable holding families"
     definition_period = YEAR
     default_value = 1
 
@@ -20,7 +20,7 @@ class families(Variable):
 class benunit_weight(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Weight factor for the benefit unit"
+    label = "Weight factor for the benefit unit"
     definition_period = YEAR
 
 
@@ -33,15 +33,15 @@ class is_married(Variable):
 
 
 class FamilyType(Enum):
-    SINGLE = u"Single, with no children"
-    COUPLE_NO_CHILDREN = u"Couple, with no children"
-    LONE_PARENT = u"Lone parent, with children"
-    COUPLE_WITH_CHILDREN = u"Couple, with children"
+    SINGLE = "Single, with no children"
+    COUPLE_NO_CHILDREN = "Couple, with no children"
+    LONE_PARENT = "Lone parent, with children"
+    COUPLE_WITH_CHILDREN = "Couple, with children"
 
 
 class RelationType(Enum):
-    SINGLE = u"Single"
-    COUPLE = u"Couple"
+    SINGLE = "Single"
+    COUPLE = "Couple"
 
 
 class family_type(Variable):
@@ -49,7 +49,7 @@ class family_type(Variable):
     entity = BenUnit
     default_value = FamilyType.SINGLE
     possible_values = FamilyType
-    label = u"Family composition"
+    label = "Family composition"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -70,7 +70,7 @@ class relation_type(Variable):
     entity = BenUnit
     default_value = RelationType.SINGLE
     possible_values = RelationType
-    label = u"Whether single or a couple"
+    label = "Whether single or a couple"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -84,7 +84,7 @@ class relation_type(Variable):
 class eldest_adult_age(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Eldest adult age"
+    label = "Eldest adult age"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -96,7 +96,7 @@ class eldest_adult_age(Variable):
 class youngest_adult_age(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Eldest adult age"
+    label = "Eldest adult age"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -108,7 +108,7 @@ class youngest_adult_age(Variable):
 class eldest_child_age(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Eldest adult age"
+    label = "Eldest adult age"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -120,7 +120,7 @@ class eldest_child_age(Variable):
 class youngest_child_age(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Eldest adult age"
+    label = "Eldest adult age"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -132,7 +132,7 @@ class youngest_child_age(Variable):
 class num_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"The number of children in the family"
+    label = "The number of children in the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -142,7 +142,7 @@ class num_children(Variable):
 class num_adults(Variable):
     value_type = int
     entity = BenUnit
-    label = u"The number of adults in the family"
+    label = "The number of adults in the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -154,7 +154,7 @@ class benunit_tenure_type(Variable):
     possible_values = TenureType
     default_value = TenureType.RENT_PRIVATELY
     entity = BenUnit
-    label = u"Tenure type of the family's household"
+    label = "Tenure type of the family's household"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -166,7 +166,7 @@ class benunit_tenure_type(Variable):
 class benunit_is_renting(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is renting"
+    label = "Whether this family is renting"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

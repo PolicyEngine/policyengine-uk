@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class JSA_contrib(Variable):
     value_type = float
     entity = Person
-    label = u"JSA (contribution-based)"
+    label = "JSA (contribution-based)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class JSA_contrib(Variable):
 class JSA_contrib_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Job Seeker's Allowance (contribution-based) (reported)"
+    label = "Job Seeker's Allowance (contribution-based) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

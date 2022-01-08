@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class BSP(Variable):
     value_type = float
     entity = Person
-    label = u"Bereavement Support Payment"
+    label = "Bereavement Support Payment"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class BSP(Variable):
 class BSP_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Bereavement Support Payment (reported)"
+    label = "Bereavement Support Payment (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

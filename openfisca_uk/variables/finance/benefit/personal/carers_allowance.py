@@ -14,7 +14,7 @@ class receives_carers_allowance(Variable):
 class carers_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Carer's Allowance"
+    label = "Carer's Allowance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -25,6 +25,6 @@ class carers_allowance(Variable):
 class carers_allowance_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Carer's Allowance (reported)"
+    label = "Carer's Allowance (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

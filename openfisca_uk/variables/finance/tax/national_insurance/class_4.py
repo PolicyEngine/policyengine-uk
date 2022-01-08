@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class NI_class_4(Variable):
     value_type = float
     entity = Person
-    label = u"Class 4 Contributions for National Insurance for the year"
+    label = "Class 4 Contributions for National Insurance for the year"
     definition_period = YEAR
     reference = "Social Security and Benefits Act 1992 s. 15"
     unit = "currency-GBP"
@@ -30,7 +30,7 @@ class NI_class_4(Variable):
 class employee_NI(Variable):
     value_type = float
     entity = Person
-    label = u"Employee-side National Insurance"
+    label = "Employee-side National Insurance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -41,7 +41,7 @@ class employee_NI(Variable):
 class self_employed_NI(Variable):
     value_type = float
     entity = Person
-    label = u"Self-employed National Insurance"
+    label = "Self-employed National Insurance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -52,7 +52,7 @@ class self_employed_NI(Variable):
 class national_insurance(Variable):
     value_type = float
     entity = Person
-    label = u"National Insurance"
+    label = "National Insurance"
     documentation = "Total National Insurance contributions"
     definition_period = YEAR
     unit = "currency-GBP"

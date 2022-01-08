@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class housing_benefit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Housing Benefit (reported amount)"
+    label = "Housing Benefit (reported amount)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -12,7 +12,7 @@ class housing_benefit_reported(Variable):
 class housing_benefit_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether eligible for Housing Benefit"
+    label = "Whether eligible for Housing Benefit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -23,7 +23,7 @@ class housing_benefit_eligible(Variable):
 class would_claim_HB(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Housing Benefit"
+    label = "Would claim Housing Benefit"
     documentation = (
         "Whether this family would claim Housing Benefit if eligible"
     )
@@ -42,7 +42,7 @@ class would_claim_HB(Variable):
 class claims_HB(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Housing Benefit"
+    label = "Would claim Housing Benefit"
     documentation = (
         "Whether this family would claim Housing Benefit if eligible"
     )
@@ -57,7 +57,7 @@ class claims_HB(Variable):
 class housing_benefit_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Applicable amount for Housing Benefit"
+    label = "Applicable amount for Housing Benefit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -101,7 +101,7 @@ class housing_benefit_applicable_amount(Variable):
 class housing_benefit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Relevant income for Housing Benefit means test"
+    label = "Relevant income for Housing Benefit means test"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -166,7 +166,7 @@ class housing_benefit_applicable_income(Variable):
 class HB_individual_non_dep_deduction(Variable):
     value_type = float
     entity = Person
-    label = u"Non-dependent deduction (individual)"
+    label = "Non-dependent deduction (individual)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -184,7 +184,7 @@ class HB_individual_non_dep_deduction(Variable):
 class HB_non_dep_deductions(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Non-dependent deductions"
+    label = "Non-dependent deductions"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -203,7 +203,7 @@ class HB_non_dep_deductions(Variable):
 class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Housing Benefit"
+    label = "Housing Benefit"
     definition_period = YEAR
     unit = "currency-GBP"
 

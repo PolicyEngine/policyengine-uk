@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class income_support_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Income Support (reported amount)"
+    label = "Income Support (reported amount)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -12,7 +12,7 @@ class income_support_reported(Variable):
 class would_claim_IS(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Income Support"
+    label = "Would claim Income Support"
     documentation = (
         "Whether this family would claim Income Support if eligible"
     )
@@ -29,7 +29,7 @@ class would_claim_IS(Variable):
 class claims_IS(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim Income Support"
+    label = "Whether this family is imputed to claim Income Support"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -41,7 +41,7 @@ class claims_IS(Variable):
 class income_support_applicable_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Relevant income for Income Support means test"
+    label = "Relevant income for Income Support means test"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -87,7 +87,7 @@ class income_support_applicable_income(Variable):
 class income_support_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether eligible for Income Support"
+    label = "Whether eligible for Income Support"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -107,7 +107,7 @@ class income_support_eligible(Variable):
 class income_support_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Applicable amount of Income Support"
+    label = "Applicable amount of Income Support"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -160,7 +160,7 @@ class income_support_applicable_amount(Variable):
 class income_support(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Income Support"
+    label = "Income Support"
     definition_period = YEAR
     unit = "currency-GBP"
 

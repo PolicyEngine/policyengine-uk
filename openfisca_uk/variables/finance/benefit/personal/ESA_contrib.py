@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class ESA_contrib(Variable):
     value_type = float
     entity = Person
-    label = u"ESA (contribution-based)"
+    label = "ESA (contribution-based)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class ESA_contrib(Variable):
 class ESA_contrib_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Employment and Support Allowance (contribution-based) (reported)"
+    label = "Employment and Support Allowance (contribution-based) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

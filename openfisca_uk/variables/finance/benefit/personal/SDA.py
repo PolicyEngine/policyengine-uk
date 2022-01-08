@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class SDA(Variable):
     value_type = float
     entity = Person
-    label = u"Severe Disablement Allowance"
+    label = "Severe Disablement Allowance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class SDA(Variable):
 class SDA_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Severe Disablement Allowance (reported)"
+    label = "Severe Disablement Allowance (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

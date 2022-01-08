@@ -28,7 +28,7 @@ LA_index = (
 class postcode(Variable):
     value_type = str
     entity = Household
-    label = u"Postcode for the household"
+    label = "Postcode for the household"
     definition_period = YEAR
 
 
@@ -37,7 +37,7 @@ class local_authority(Variable):
     possible_values = LocalAuthority
     default_value = LocalAuthority.MAIDSTONE
     entity = Household
-    label = u"The Local Authority for the household"
+    label = "The Local Authority for the household"
     definition_period = YEAR
 
     def formula(household, period, parameters):

@@ -42,7 +42,7 @@ class claims_UC(Variable):
 class is_UC_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Universal Credit eligible"
+    label = "Universal Credit eligible"
     documentation = "Whether this family is eligible for Universal Credit"
     definition_period = YEAR
 
@@ -53,7 +53,7 @@ class is_UC_eligible(Variable):
 class universal_credit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Universal Credit (reported)"
+    label = "Universal Credit (reported)"
     documentation = "Reported amount of Universal Credit"
     definition_period = YEAR
     unit = "currency-GBP"
@@ -62,7 +62,7 @@ class universal_credit_reported(Variable):
 class UC_maximum_amount(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Maximum Universal Credit amount"
+    label = "Maximum Universal Credit amount"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -90,7 +90,7 @@ class UC_claimant_type(Variable):
     possible_values = UCClaimantType
     default_value = UCClaimantType.SINGLE_YOUNG
     entity = BenUnit
-    label = u"UC claimant type"
+    label = "UC claimant type"
     documentation = (
         "The category of the UC claimant, assuming their eligibilty to UC"
     )
@@ -118,7 +118,7 @@ class UC_claimant_type(Variable):
 class UC_standard_allowance(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit standard allowance"
+    label = "Universal Credit standard allowance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -130,7 +130,7 @@ class UC_standard_allowance(Variable):
 class is_child_born_before_child_limit(Variable):
     value_type = bool
     entity = Person
-    label = u"Born before child limit (exempt)"
+    label = "Born before child limit (exempt)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -143,7 +143,7 @@ class is_child_born_before_child_limit(Variable):
 class UC_individual_child_element(Variable):
     value_type = float
     entity = Person
-    label = u"Universal Credit child element"
+    label = "Universal Credit child element"
     documentation = "For this child, given Universal Credit eligibility"
     definition_period = YEAR
     unit = "currency-GBP"
@@ -180,7 +180,7 @@ class UC_individual_child_element(Variable):
 class num_UC_eligible_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Children eligible for Universal Credit"
+    label = "Children eligible for Universal Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -203,7 +203,7 @@ class num_UC_eligible_children(Variable):
 class UC_child_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit child element"
+    label = "Universal Credit child element"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -214,7 +214,7 @@ class UC_child_element(Variable):
 class UC_carer_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit carer element"
+    label = "Universal Credit carer element"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -227,7 +227,7 @@ class UC_carer_element(Variable):
 class UC_housing_costs_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit housing costs element"
+    label = "Universal Credit housing costs element"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -260,7 +260,7 @@ class UC_housing_costs_element(Variable):
 class UC_non_dep_deduction_exempt(Variable):
     value_type = bool
     entity = Person
-    label = u"Not expected to contribute to housing costs for Universal Credit"
+    label = "Not expected to contribute to housing costs for Universal Credit"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -276,7 +276,7 @@ class UC_non_dep_deduction_exempt(Variable):
 class UC_individual_non_dep_deduction(Variable):
     value_type = float
     entity = Person
-    label = u"Universal Credit non-dependent deduction (individual)"
+    label = "Universal Credit non-dependent deduction (individual)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -293,7 +293,7 @@ class UC_individual_non_dep_deduction(Variable):
 class UC_non_dep_deductions(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit non-dependent deductions"
+    label = "Universal Credit non-dependent deductions"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -327,7 +327,9 @@ class limited_capability_for_WRA(Variable):
 class UC_LCWRA_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit limited capability for work-related-activity element"
+    label = (
+        "Universal Credit limited capability for work-related-activity element"
+    )
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -343,7 +345,7 @@ class UC_LCWRA_element(Variable):
 class UC_individual_disabled_child_element(Variable):
     value_type = float
     entity = Person
-    label = u"Universal Credit disabled child element"
+    label = "Universal Credit disabled child element"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -359,7 +361,7 @@ class UC_individual_disabled_child_element(Variable):
 class UC_individual_severely_disabled_child_element(Variable):
     value_type = float
     entity = Person
-    label = u"Universal Credit severely disabled child element"
+    label = "Universal Credit severely disabled child element"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -375,7 +377,7 @@ class UC_individual_severely_disabled_child_element(Variable):
 class UC_disability_elements(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit disability elements"
+    label = "Universal Credit disability elements"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -392,7 +394,7 @@ class UC_disability_elements(Variable):
 class UC_childcare_work_condition(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Meets Universal Credit childcare work condition"
+    label = "Meets Universal Credit childcare work condition"
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/32/2020-04-06"
@@ -410,7 +412,7 @@ class UC_childcare_work_condition(Variable):
 class num_UC_eligible_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Children eligible for Universal Credit"
+    label = "Children eligible for Universal Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -423,7 +425,7 @@ class num_UC_eligible_children(Variable):
 class UC_maximum_childcare(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Maximum Universal Credit childcare element"
+    label = "Maximum Universal Credit childcare element"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -438,7 +440,7 @@ class UC_maximum_childcare(Variable):
 class UC_childcare_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit childcare element"
+    label = "Universal Credit childcare element"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -460,7 +462,7 @@ class UC_childcare_element(Variable):
 class is_UC_work_allowance_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Family receives a Universal Credit Work Allowance"
+    label = "Family receives a Universal Credit Work Allowance"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -474,7 +476,7 @@ class is_UC_work_allowance_eligible(Variable):
 class UC_work_allowance(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit work allowance"
+    label = "Universal Credit work allowance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -493,7 +495,7 @@ class UC_work_allowance(Variable):
 class UC_earned_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit earned income (after disregards and tax)"
+    label = "Universal Credit earned income (after disregards and tax)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -512,7 +514,7 @@ class UC_earned_income(Variable):
 class UC_unearned_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit unearned income"
+    label = "Universal Credit unearned income"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -530,7 +532,7 @@ class UC_unearned_income(Variable):
 class UC_income_reduction(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Reduction from income for Universal Credit"
+    label = "Reduction from income for Universal Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -546,7 +548,7 @@ class UC_income_reduction(Variable):
 class universal_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit"
+    label = "Universal Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -582,7 +584,7 @@ class UC_MIF_applies(Variable):
 class is_in_startup_period(Variable):
     value_type = bool
     entity = Person
-    label = u"In a start-up period"
+    label = "In a start-up period"
     documentation = (
         "Whether this person is in a 'start-up' period for Universal Credit"
     )
@@ -593,7 +595,7 @@ class is_in_startup_period(Variable):
 class UC_minimum_income_floor(Variable):
     value_type = float
     entity = Person
-    label = u"Minimum Income Floor"
+    label = "Minimum Income Floor"
     definition_period = YEAR
     unit = "currency-GBP"
     reference = ""
@@ -608,7 +610,7 @@ class UC_minimum_income_floor(Variable):
 class UC_MIF_capped_earned_income(Variable):
     value_type = float
     entity = Person
-    label = u"Universal Credit gross earned income (incl. MIF)"
+    label = "Universal Credit gross earned income (incl. MIF)"
     documentation = (
         "Gross earned income for UC, with MIF applied where applicable"
     )

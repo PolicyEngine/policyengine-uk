@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class PIP(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Independence Payment"
+    label = "Personal Independence Payment"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,7 +15,7 @@ class PIP(Variable):
 class PIP_DL(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Independence Payment (Daily Living)"
+    label = "Personal Independence Payment (Daily Living)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -26,7 +26,7 @@ class PIP_DL(Variable):
 class PIP_M(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Independence Payment (Mobility)"
+    label = "Personal Independence Payment (Mobility)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -37,7 +37,7 @@ class PIP_M(Variable):
 class PIP_DL_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Independence Payment (Daily Living) (reported)"
+    label = "Personal Independence Payment (Daily Living) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -45,6 +45,6 @@ class PIP_DL_reported(Variable):
 class PIP_M_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Independence Payment (Mobility) (reported)"
+    label = "Personal Independence Payment (Mobility) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class tax(Variable):
     value_type = float
     entity = Person
-    label = u"Taxes"
+    label = "Taxes"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -16,7 +16,7 @@ class tax(Variable):
 class household_tax(Variable):
     value_type = float
     entity = Household
-    label = u"Taxes"
+    label = "Taxes"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -36,7 +36,7 @@ class household_tax(Variable):
 class benunit_tax(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Benefit unit tax paid"
+    label = "Benefit unit tax paid"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -47,7 +47,7 @@ class benunit_tax(Variable):
 class tax_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Reported tax paid"
+    label = "Reported tax paid"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -55,7 +55,7 @@ class tax_reported(Variable):
 class tax_modelling(Variable):
     value_type = float
     entity = Person
-    label = u"Difference between reported and imputed tax liabilities"
+    label = "Difference between reported and imputed tax liabilities"
     definition_period = YEAR
     unit = "currency-GBP"
 

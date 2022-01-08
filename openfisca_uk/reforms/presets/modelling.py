@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class tax(Variable):
     value_type = float
     entity = Person
-    label = u"Total tax liability"
+    label = "Total tax liability"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -19,7 +19,7 @@ class reported_tax(Reform):
 class child_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Benefit entitlement for the family"
+    label = "Child Benefit entitlement for the family"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 141"
 
@@ -30,7 +30,7 @@ class child_benefit(Variable):
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"ESA (income-based)"
+    label = "ESA (income-based)"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -40,7 +40,7 @@ class ESA_income(Variable):
 class housing_benefit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Housing Benefit for the family"
+    label = "Housing Benefit for the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -50,7 +50,7 @@ class housing_benefit(Variable):
 class income_support(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Income Support"
+    label = "Income Support"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -60,7 +60,7 @@ class income_support(Variable):
 class JSA_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Job Seeker's Allowance (income-based)"
+    label = "Job Seeker's Allowance (income-based)"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -70,7 +70,7 @@ class JSA_income(Variable):
 class pension_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Pension credit amount"
+    label = "Pension credit amount"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -80,7 +80,7 @@ class pension_credit(Variable):
 class working_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit"
+    label = "Working Tax Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -90,7 +90,7 @@ class working_tax_credit(Variable):
 class child_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Amount of Child Tax Credit entitled to"
+    label = "Amount of Child Tax Credit entitled to"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -100,7 +100,7 @@ class child_tax_credit(Variable):
 class universal_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Universal Credit amount"
+    label = "Universal Credit amount"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -110,7 +110,7 @@ class universal_credit(Variable):
 class benefits(Variable):
     value_type = float
     entity = Person
-    label = u"Total simulated"
+    label = "Total simulated"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -120,7 +120,7 @@ class benefits(Variable):
 class AA(Variable):
     value_type = float
     entity = Person
-    label = u"Attendance Allowance"
+    label = "Attendance Allowance"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -130,7 +130,7 @@ class AA(Variable):
 class AFCS(Variable):
     value_type = float
     entity = Person
-    label = u"Armed Forces Compensation Scheme"
+    label = "Armed Forces Compensation Scheme"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -140,7 +140,7 @@ class AFCS(Variable):
 class BSP(Variable):
     value_type = float
     entity = Person
-    label = u"Bereavement Support Payment"
+    label = "Bereavement Support Payment"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -150,7 +150,7 @@ class BSP(Variable):
 class carers_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Carer's Allowance"
+    label = "Carer's Allowance"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -160,7 +160,7 @@ class carers_allowance(Variable):
 class DLA_M(Variable):
     value_type = float
     entity = Person
-    label = u"Disability Living Allowance (mobility component)"
+    label = "Disability Living Allowance (mobility component)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -170,7 +170,7 @@ class DLA_M(Variable):
 class DLA_SC(Variable):
     value_type = float
     entity = Person
-    label = u"Disability Living Allowance (self-care)"
+    label = "Disability Living Allowance (self-care)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -180,7 +180,7 @@ class DLA_SC(Variable):
 class ESA_contrib(Variable):
     value_type = float
     entity = Person
-    label = u"Employment and Support Allowance (contribution-based)"
+    label = "Employment and Support Allowance (contribution-based)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -190,7 +190,7 @@ class ESA_contrib(Variable):
 class IIDB(Variable):
     value_type = float
     entity = Person
-    label = u"Industrial Injuries Disablement Benefit"
+    label = "Industrial Injuries Disablement Benefit"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -200,7 +200,7 @@ class IIDB(Variable):
 class incapacity_benefit(Variable):
     value_type = float
     entity = Person
-    label = u"Incapacity Benefit"
+    label = "Incapacity Benefit"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -210,7 +210,7 @@ class incapacity_benefit(Variable):
 class JSA_contrib(Variable):
     value_type = float
     entity = Person
-    label = u"Job Seeker's Allowance (contribution-based)"
+    label = "Job Seeker's Allowance (contribution-based)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -220,7 +220,7 @@ class JSA_contrib(Variable):
 class PIP_DL(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Independence Payment (Daily Living)"
+    label = "Personal Independence Payment (Daily Living)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -230,7 +230,7 @@ class PIP_DL(Variable):
 class PIP_M(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Independence Payment (Mobility)"
+    label = "Personal Independence Payment (Mobility)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -240,7 +240,7 @@ class PIP_M(Variable):
 class SDA(Variable):
     value_type = float
     entity = Person
-    label = u"Severe Disablement Allowance"
+    label = "Severe Disablement Allowance"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -250,7 +250,7 @@ class SDA(Variable):
 class state_pension(Variable):
     value_type = float
     entity = Person
-    label = u"Income from the State Pension"
+    label = "Income from the State Pension"
     definition_period = YEAR
     unit = "currency-GBP"
     documentation = "Gross State Pension payments"

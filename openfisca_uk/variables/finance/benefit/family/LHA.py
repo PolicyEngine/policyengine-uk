@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class LHA_eligible(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Eligibility for Local Housing Allowance"
+    label = "Eligibility for Local Housing Allowance"
     documentation = (
         "Whether benefit unit is eligible for Local Housing Allowance"
     )
@@ -21,7 +21,7 @@ class LHA_eligible(Variable):
 class LHA_allowed_bedrooms(Variable):
     value_type = float
     entity = BenUnit
-    label = u"The number of bedrooms covered by LHA for the benefit unit"
+    label = "The number of bedrooms covered by LHA for the benefit unit"
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/10/2021-04-06"
 
@@ -72,7 +72,7 @@ class LHA_allowed_bedrooms(Variable):
 class LHA_cap(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Applicable amount for LHA"
+    label = "Applicable amount for LHA"
     documentation = "Applicable amount for Local Housing Allowance"
     definition_period = YEAR
     unit = "currency-GBP"
@@ -94,7 +94,7 @@ class LHACategory(Enum):
 class LHA_category(Variable):
     value_type = Enum
     entity = BenUnit
-    label = u"LHA category for the benefit unit, taking into account LHA rules on the number of LHA-covered bedrooms"
+    label = "LHA category for the benefit unit, taking into account LHA rules on the number of LHA-covered bedrooms"
     definition_period = YEAR
     possible_values = LHACategory
     default_value = LHACategory.C
@@ -137,7 +137,7 @@ class LHA_category(Variable):
 class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
-    label = u"LHA rate"
+    label = "LHA rate"
     documentation = "Local Housing Allowance rate"
     definition_period = YEAR
     unit = "currency-GBP"

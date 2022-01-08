@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class AA(Variable):
     value_type = float
     entity = Person
-    label = u"Attendance Allowance"
+    label = "Attendance Allowance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class AA(Variable):
 class AA_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Attendance Allowance (reported)"
+    label = "Attendance Allowance (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

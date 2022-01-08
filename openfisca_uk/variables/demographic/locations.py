@@ -161,7 +161,7 @@ class BRMA(Variable):
     possible_values = BRMAName
     default_value = BRMAName.MAIDSTONE
     entity = Household
-    label = u"Broad Rental Market Area"
+    label = "Broad Rental Market Area"
     definition_period = YEAR
 
 
@@ -554,5 +554,5 @@ class local_authority(Variable):
     possible_values = LocalAuthority
     default_value = LocalAuthority.MAIDSTONE
     entity = Household
-    label = u"The Local Authority for the household"
+    label = "The Local Authority for the household"
     definition_period = YEAR

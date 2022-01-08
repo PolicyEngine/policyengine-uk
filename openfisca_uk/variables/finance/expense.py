@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class weekly_rent(Variable):
     value_type = float
     entity = Household
-    label = u"Weekly average rent"
+    label = "Weekly average rent"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -13,7 +13,7 @@ class weekly_rent(Variable):
 class benunit_rent(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Rent"
+    label = "Rent"
     documentation = "Gross rent that members of this family are liable for"
     definition_period = YEAR
     unit = "currency-GBP"
@@ -25,7 +25,7 @@ class benunit_rent(Variable):
 class personal_rent(Variable):
     value_type = float
     entity = Person
-    label = u"Rent liable"
+    label = "Rent liable"
     documentation = "The gross rent this person is liable for"
     definition_period = YEAR
     unit = "currency-GBP"
@@ -39,7 +39,7 @@ class personal_rent(Variable):
 class family_rent(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Gross rent for the family"
+    label = "Gross rent for the family"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -51,7 +51,7 @@ class family_rent(Variable):
 class childcare_expenses(Variable):
     value_type = float
     entity = Person
-    label = u"Cost of childcare"
+    label = "Cost of childcare"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -59,7 +59,7 @@ class childcare_expenses(Variable):
 class private_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u"Private pension contributions"
+    label = "Private pension contributions"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -67,7 +67,7 @@ class private_pension_contributions(Variable):
 class occupational_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u"Occupational pension contributions"
+    label = "Occupational pension contributions"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -75,7 +75,7 @@ class occupational_pension_contributions(Variable):
 class housing_service_charges(Variable):
     value_type = float
     entity = Household
-    label = u"Housing service charges"
+    label = "Housing service charges"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -83,14 +83,14 @@ class housing_service_charges(Variable):
 class water_and_sewerage_charges(Variable):
     value_type = float
     entity = Household
-    label = u"Water and sewerage charges"
+    label = "Water and sewerage charges"
     definition_period = YEAR
 
 
 class employer_pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u"Employer pension contributions"
+    label = "Employer pension contributions"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -98,7 +98,7 @@ class employer_pension_contributions(Variable):
 class weekly_childcare_expenses(Variable):
     value_type = float
     entity = Person
-    label = u"Average cost of childcare"
+    label = "Average cost of childcare"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -110,7 +110,7 @@ class weekly_childcare_expenses(Variable):
 class housing_costs(Variable):
     value_type = float
     entity = Household
-    label = u"Total housing costs"
+    label = "Total housing costs"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -121,7 +121,7 @@ class housing_costs(Variable):
 class maintenance_expenses(Variable):
     value_type = float
     entity = Person
-    label = u"Maintenance expenses"
+    label = "Maintenance expenses"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -129,7 +129,7 @@ class maintenance_expenses(Variable):
 class mortgage_interest_repayment(Variable):
     value_type = float
     entity = Household
-    label = u"Total mortgage payments"
+    label = "Total mortgage payments"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -137,7 +137,7 @@ class mortgage_interest_repayment(Variable):
 class mortgage_capital_repayment(Variable):
     value_type = float
     entity = Household
-    label = u"Mortgage payments"
+    label = "Mortgage payments"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -145,7 +145,7 @@ class mortgage_capital_repayment(Variable):
 class mortgage(Variable):
     value_type = float
     entity = Household
-    label = u"Total mortgage payments"
+    label = "Total mortgage payments"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -154,7 +154,7 @@ class mortgage(Variable):
 class council_tax(Variable):
     value_type = float
     entity = Household
-    label = u"Council Tax"
+    label = "Council Tax"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -193,5 +193,5 @@ class council_tax_band(Variable):
     possible_values = CouncilTaxBand
     default_value = CouncilTaxBand.D
     entity = Household
-    label = u"Council Tax Band"
+    label = "Council Tax Band"
     definition_period = YEAR
