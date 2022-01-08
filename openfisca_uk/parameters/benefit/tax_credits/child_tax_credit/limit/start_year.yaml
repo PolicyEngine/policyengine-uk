@@ -1,6 +1,6 @@
-description: Year of the Child Tax Credit's two child limit introduction
+description: Year in which the Child Tax Credit child limit applies
 values:
-  2015-04-04: 2017
+  0001-01-01: 2017
 metadata:
   unit: year
   reference: https://www.gov.uk/guidance/child-tax-credit-exceptions-to-the-2-child-limit
