@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class NI_exempt(Variable):
     value_type = bool
     entity = Person
-    label = u"Exempt from National Insurance"
+    label = "Exempt from National Insurance"
     documentation = "Whether a person is exempt from National Insurance"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 6"
@@ -16,7 +16,7 @@ class NI_exempt(Variable):
 class employee_NI_class_1(Variable):
     value_type = float
     entity = Person
-    label = u"Employee Class 1 Contributions for National Insurance"
+    label = "Employee Class 1 Contributions for National Insurance"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 8"
     unit = "currency-GBP"
@@ -40,7 +40,7 @@ class employee_NI_class_1(Variable):
 class employer_NI_class_1(Variable):
     value_type = float
     entity = Person
-    label = u"Employer Class 1 Contributions for National Insurance"
+    label = "Employer Class 1 Contributions for National Insurance"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 8"
     unit = "currency-GBP"
@@ -58,7 +58,7 @@ class employer_NI_class_1(Variable):
 class employer_NI(Variable):
     value_type = float
     entity = Person
-    label = u"Employer contributions to National Insurance"
+    label = "Employer contributions to National Insurance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -69,7 +69,7 @@ class employer_NI(Variable):
 class total_NI(Variable):
     value_type = float
     entity = Person
-    label = u"National Insurance (total)"
+    label = "National Insurance (total)"
     definition_period = YEAR
     unit = "currency-GBP"
 

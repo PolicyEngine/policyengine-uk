@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class AFCS(Variable):
     value_type = float
     entity = Person
-    label = u"Armed Forces Compensation Scheme"
+    label = "Armed Forces Compensation Scheme"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class AFCS(Variable):
 class AFCS_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Armed Forces Compensation Scheme (reported)"
+    label = "Armed Forces Compensation Scheme (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

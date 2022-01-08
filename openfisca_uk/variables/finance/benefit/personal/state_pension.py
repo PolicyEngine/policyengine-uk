@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class state_pension_age(Variable):
     value_type = float
     entity = Person
-    label = u"State Pension age for this person"
+    label = "State Pension age for this person"
     definition_period = YEAR
     unit = "year"
 
@@ -16,7 +16,7 @@ class state_pension_age(Variable):
 class is_SP_age(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is State Pension Age"
+    label = "Whether the person is State Pension Age"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -28,7 +28,7 @@ class is_SP_age(Variable):
 class triple_lock_uprating(Variable):
     value_type = float
     entity = Person
-    label = u"Triple lock relative increase"
+    label = "Triple lock relative increase"
     documentation = (
         "A government commitment, rather than a legislative requirement"
     )
@@ -49,7 +49,7 @@ class triple_lock_uprating(Variable):
 class state_pension(Variable):
     value_type = float
     entity = Person
-    label = u"Income from the State Pension"
+    label = "Income from the State Pension"
     definition_period = YEAR
     unit = "currency-GBP"
     documentation = "Gross State Pension payments"
@@ -62,7 +62,7 @@ class state_pension(Variable):
 class state_pension_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Reported income from the State Pension"
+    label = "Reported income from the State Pension"
     definition_period = YEAR
     unit = "currency-GBP"
 

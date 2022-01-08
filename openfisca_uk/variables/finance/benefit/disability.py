@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class is_disabled_for_benefits(Variable):
     value_type = bool
     entity = Person
-    label = u"Has a disability"
+    label = "Has a disability"
     documentation = "Whether this person is disabled for benefits purposes"
     definition_period = YEAR
     reference = "Child Tax Credit Regulations 2002 s. 8"
@@ -22,7 +22,7 @@ class is_disabled_for_benefits(Variable):
 class is_enhanced_disabled_for_benefits(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether meets the middle disability benefit entitlement"
+    label = "Whether meets the middle disability benefit entitlement"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -35,7 +35,7 @@ class is_enhanced_disabled_for_benefits(Variable):
 class is_severely_disabled_for_benefits(Variable):
     value_type = bool
     entity = Person
-    label = u"Has a severe disability"
+    label = "Has a severe disability"
     documentation = (
         "Whether this person is severely disabled for benefits purposes"
     )
@@ -62,7 +62,7 @@ class is_severely_disabled_for_benefits(Variable):
 class num_disabled_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of disabled children"
+    label = "Number of disabled children"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -74,7 +74,7 @@ class num_disabled_children(Variable):
 class num_enhanced_disabled_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of enhanced disabled children"
+    label = "Number of enhanced disabled children"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -88,7 +88,7 @@ class num_enhanced_disabled_children(Variable):
 class num_severely_disabled_children(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of severely disabled children"
+    label = "Number of severely disabled children"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -102,7 +102,7 @@ class num_severely_disabled_children(Variable):
 class num_disabled_adults(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of disabled adults"
+    label = "Number of disabled adults"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -114,7 +114,7 @@ class num_disabled_adults(Variable):
 class num_enhanced_disabled_adults(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of enhanced disabled adults"
+    label = "Number of enhanced disabled adults"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -128,7 +128,7 @@ class num_enhanced_disabled_adults(Variable):
 class num_severely_disabled_adults(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of severely disabled adults"
+    label = "Number of severely disabled adults"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -142,7 +142,7 @@ class num_severely_disabled_adults(Variable):
 class disability_premium(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Disability premium"
+    label = "Disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
     unit = "currency-GBP"
@@ -163,7 +163,7 @@ class disability_premium(Variable):
 class severe_disability_premium(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Severe disability premium"
+    label = "Severe disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
     unit = "currency-GBP"
@@ -184,7 +184,7 @@ class severe_disability_premium(Variable):
 class enhanced_disability_premium(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Enhanced disability premium"
+    label = "Enhanced disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
     unit = "currency-GBP"

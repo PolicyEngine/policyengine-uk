@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class benefit_cap(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Benefit cap for the family"
+    label = "Benefit cap for the family"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -37,7 +37,7 @@ class benefit_cap(Variable):
 class is_benefit_cap_exempt(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether exempt from the benefits cap"
+    label = "Whether exempt from the benefits cap"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class DLA(Variable):
     value_type = float
     entity = Person
-    label = u"Disability Living Allowance"
+    label = "Disability Living Allowance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,7 +15,7 @@ class DLA(Variable):
 class DLA_M(Variable):
     value_type = float
     entity = Person
-    label = u"Disability Living Allowance (mobility component)"
+    label = "Disability Living Allowance (mobility component)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -26,7 +26,7 @@ class DLA_M(Variable):
 class DLA_SC(Variable):
     value_type = float
     entity = Person
-    label = u"Disability Living Allowance (self-care)"
+    label = "Disability Living Allowance (self-care)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -37,7 +37,7 @@ class DLA_SC(Variable):
 class DLA_SC_middle_plus(Variable):
     value_type = bool
     entity = Person
-    label = u"Receives at least DLA (self-care) middle rate"
+    label = "Receives at least DLA (self-care) middle rate"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -48,7 +48,7 @@ class DLA_SC_middle_plus(Variable):
 class DLA_M_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Disability Living Allowance (mobility component) (reported)"
+    label = "Disability Living Allowance (mobility component) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -56,6 +56,6 @@ class DLA_M_reported(Variable):
 class DLA_SC_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Disability Living Allowance (self-care) (reported)"
+    label = "Disability Living Allowance (self-care) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

@@ -9,7 +9,7 @@ This file calculates the allowances to which taxpayers are entitled. This follow
 class personal_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Personal Allowance for the year"
+    label = "Personal Allowance for the year"
     unit = "currency-GBP"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 35"
@@ -25,7 +25,7 @@ class personal_allowance(Variable):
 class blind_persons_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Blind Person's Allowance for the year (not simulated)"
+    label = "Blind Person's Allowance for the year (not simulated)"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 38"
     unit = "currency-GBP"
@@ -34,7 +34,7 @@ class blind_persons_allowance(Variable):
 class married_couples_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Married Couples' allowance for the year"
+    label = "Married Couples' allowance for the year"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -42,7 +42,7 @@ class married_couples_allowance(Variable):
 class married_couples_allowance_deduction(Variable):
     value_type = float
     entity = Person
-    label = u"Deduction from Married Couples' allowance for the year"
+    label = "Deduction from Married Couples' allowance for the year"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -56,7 +56,7 @@ class married_couples_allowance_deduction(Variable):
 class pension_annual_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Annual Allowance for pension contributions"
+    label = "Annual Allowance for pension contributions"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -72,7 +72,7 @@ class pension_annual_allowance(Variable):
 class trading_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Trading Allowance for the year"
+    label = "Trading Allowance for the year"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
     unit = "currency-GBP"
@@ -84,7 +84,7 @@ class trading_allowance(Variable):
 class trading_allowance_deduction(Variable):
     value_type = float
     entity = Person
-    label = u"Deduction applied by the trading allowance"
+    label = "Deduction applied by the trading allowance"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
     unit = "currency-GBP"
@@ -99,7 +99,7 @@ class trading_allowance_deduction(Variable):
 class property_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Property Allowance for the year"
+    label = "Property Allowance for the year"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783BF"
     unit = "currency-GBP"
@@ -111,7 +111,7 @@ class property_allowance(Variable):
 class property_allowance_deduction(Variable):
     value_type = float
     entity = Person
-    label = u"Deduction applied by the property allowance"
+    label = "Deduction applied by the property allowance"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 783AF"
     unit = "currency-GBP"
@@ -126,7 +126,7 @@ class property_allowance_deduction(Variable):
 class savings_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Savings Allowance for the year"
+    label = "Savings Allowance for the year"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 12B"
     unit = "currency-GBP"
@@ -151,7 +151,7 @@ class savings_allowance(Variable):
 class dividend_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Dividend allowance for the person"
+    label = "Dividend allowance for the person"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 13A"
     unit = "currency-GBP"
@@ -163,7 +163,7 @@ class dividend_allowance(Variable):
 class gift_aid(Variable):
     value_type = float
     entity = Person
-    label = u"Expenditure under Gift Aid"
+    label = "Expenditure under Gift Aid"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -171,7 +171,7 @@ class gift_aid(Variable):
 class covenanted_payments(Variable):
     value_type = float
     entity = Person
-    label = u"Covenanted payments to charities"
+    label = "Covenanted payments to charities"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -179,7 +179,7 @@ class covenanted_payments(Variable):
 class charitable_investment_gifts(Variable):
     value_type = float
     entity = Person
-    label = u"Gifts of qualifying investment or property to charities"
+    label = "Gifts of qualifying investment or property to charities"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -187,7 +187,7 @@ class charitable_investment_gifts(Variable):
 class other_deductions(Variable):
     value_type = float
     entity = Person
-    label = u"All other tax deductions"
+    label = "All other tax deductions"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -195,7 +195,7 @@ class other_deductions(Variable):
 class allowances(Variable):
     value_type = float
     entity = Person
-    label = u"Allowances applicable to adjusted net income"
+    label = "Allowances applicable to adjusted net income"
     definition_period = YEAR
     unit = "currency-GBP"
 

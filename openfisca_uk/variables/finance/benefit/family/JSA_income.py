@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class JSA_income_reported(Variable):
     value_type = float
     entity = Person
-    label = u"JSA (income-based) (reported amount)"
+    label = "JSA (income-based) (reported amount)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -12,7 +12,7 @@ class JSA_income_reported(Variable):
 class JSA_income_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Eligibility for income-based JSA"
+    label = "Eligibility for income-based JSA"
     documentation = "Whether the benefit unit is eligible for income-based Jobseekers' Allowance"
     definition_period = YEAR
 
@@ -47,7 +47,7 @@ class JSA_income_eligible(Variable):
 class JSA_income_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Maximum amount of JSA (income-based)"
+    label = "Maximum amount of JSA (income-based)"
     documentation = "Maximum amount of income-based Jobseeker's Allowance"
     definition_period = YEAR
     reference = "Jobseekers Act 1995 s. 4"
@@ -77,7 +77,7 @@ class JSA_income_applicable_amount(Variable):
 class would_claim_JSA(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim income-based JSA"
+    label = "Would claim income-based JSA"
     documentation = (
         "Whether this family would claim income-based JSA if eligible"
     )
@@ -93,7 +93,7 @@ class would_claim_JSA(Variable):
 class claims_JSA(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim JSA based on survey response and take-up rates"
+    label = "Whether this family is imputed to claim JSA based on survey response and take-up rates"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -105,7 +105,7 @@ class claims_JSA(Variable):
 class JSA_income_applicable_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Relevant income for JSA (income-based) means test"
+    label = "Relevant income for JSA (income-based) means test"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -147,7 +147,7 @@ class JSA_income_applicable_income(Variable):
 class JSA_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"JSA (income-based)"
+    label = "JSA (income-based)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -163,7 +163,7 @@ class JSA_income(Variable):
 class JSA(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Amount of Jobseeker's Allowance for this family"
+    label = "Amount of Jobseeker's Allowance for this family"
     definition_period = YEAR
     unit = "currency-GBP"
 

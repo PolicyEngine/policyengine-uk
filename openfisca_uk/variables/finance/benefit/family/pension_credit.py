@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class pension_credit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Reported amount of Pension Credit"
+    label = "Reported amount of Pension Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -12,7 +12,7 @@ class pension_credit_reported(Variable):
 class would_claim_PC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Pension Credit"
+    label = "Would claim Pension Credit"
     documentation = (
         "Whether this family would claim Pension Credit if eligible"
     )
@@ -27,7 +27,7 @@ class would_claim_PC(Variable):
 class claims_PC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim Pension Credit"
+    label = "Whether this family is imputed to claim Pension Credit"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -37,7 +37,7 @@ class claims_PC(Variable):
 class pension_credit_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Eligible for Pension Credit"
+    label = "Eligible for Pension Credit"
     definition_period = YEAR
 
     def formula(benunit, period):
@@ -51,7 +51,7 @@ class pension_credit_eligible(Variable):
 class pension_credit_MG(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Pension Credit (Minimum Guarantee) amount per week"
+    label = "Pension Credit (Minimum Guarantee) amount per week"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -73,7 +73,7 @@ class pension_credit_MG(Variable):
 class guarantee_credit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Applicable income for Pension Credit"
+    label = "Applicable income for Pension Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -103,7 +103,7 @@ class guarantee_credit_applicable_income(Variable):
 class pension_credit_GC(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Pension Credit (Guarantee Credit) amount"
+    label = "Pension Credit (Guarantee Credit) amount"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -120,7 +120,7 @@ class pension_credit_GC(Variable):
 class savings_credit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Applicable income for Savings Credit"
+    label = "Applicable income for Savings Credit"
     definition_period = YEAR
     unit = "currency-GBP"
     reference = "https://www.gov.uk/government/publications/pension-credit-technical-guidance/a-detailed-guide-to-pension-credit-for-advisers-and-others#working-out-income-for-savings-credit"
@@ -152,7 +152,7 @@ class savings_credit_applicable_income(Variable):
 class pension_credit_SC(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Pension Credit (Savings Credit) amount per week"
+    label = "Pension Credit (Savings Credit) amount per week"
     definition_period = YEAR
     unit = "currency-GBP"
     reference = "https://www.gov.uk/government/publications/pension-credit-technical-guidance/a-detailed-guide-to-pension-credit-for-advisers-and-others#legislation-60-return"
@@ -184,7 +184,7 @@ class pension_credit_SC(Variable):
 class pension_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Pension Credit"
+    label = "Pension Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 

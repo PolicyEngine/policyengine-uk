@@ -13,7 +13,7 @@ Not all reliefs are calculated here - only the major ones.
 class taxable_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u"Net taxable earnings"
+    label = "Net taxable earnings"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 11"
     unit = "currency-GBP"
@@ -30,7 +30,7 @@ class taxable_employment_income(Variable):
 class employment_benefits(Variable):
     value_type = float
     entity = Person
-    label = u"Employment benefits"
+    label = "Employment benefits"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -41,7 +41,7 @@ class employment_benefits(Variable):
 class SMP(Variable):
     value_type = float
     entity = Person
-    label = u"Statutory Maternity Pay"
+    label = "Statutory Maternity Pay"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -49,7 +49,7 @@ class SMP(Variable):
 class SSP(Variable):
     value_type = float
     entity = Person
-    label = u"Statutory Sick Pay"
+    label = "Statutory Sick Pay"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -57,7 +57,7 @@ class SSP(Variable):
 class employment_deductions(Variable):
     value_type = float
     entity = Person
-    label = u"Deductions from employment income"
+    label = "Deductions from employment income"
     definition_period = YEAR
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 327"
     unit = "currency-GBP"
@@ -70,7 +70,7 @@ class employment_expenses(Variable):
     value_type = float
     entity = Person
     label = (
-        u"Cost of expenses necessarily incurred and reimbursed by employment"
+        "Cost of expenses necessarily incurred and reimbursed by employment"
     )
     definition_period = YEAR
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 333"
@@ -80,7 +80,7 @@ class employment_expenses(Variable):
 class pension_contributions(Variable):
     value_type = float
     entity = Person
-    label = u"Amount contributed to registered pension schemes paid by the individual (not the employer)"
+    label = "Amount contributed to registered pension schemes paid by the individual (not the employer)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -95,7 +95,7 @@ class pension_contributions(Variable):
 class pension_contributions_relief(Variable):
     value_type = float
     entity = Person
-    label = u"Reduction in taxable income from pension contributions"
+    label = "Reduction in taxable income from pension contributions"
     definition_period = YEAR
     reference = "Finance Act 2004 s. 188-194"
     unit = "currency-GBP"
@@ -119,7 +119,7 @@ class pension_contributions_relief(Variable):
 class taxable_savings_interest_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount of savings interest which is taxable"
+    label = "Amount of savings interest which is taxable"
     definition_period = YEAR
     reference = "Income Tax Act (Trading and Other Income) 2005 s. 369"
     unit = "currency-GBP"
@@ -133,7 +133,7 @@ class taxable_savings_interest_income(Variable):
 class tax_free_savings_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from savings in tax-free accounts"
+    label = "Income from savings in tax-free accounts"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -144,7 +144,7 @@ class tax_free_savings_income(Variable):
 class ISA_interest_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount received in interest from Individual Savings Accounts"
+    label = "Amount received in interest from Individual Savings Accounts"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -155,7 +155,7 @@ class ISA_interest_income(Variable):
 class trading_loss(Variable):
     value_type = float
     entity = Person
-    label = u"Loss from trading in the current year."
+    label = "Loss from trading in the current year."
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -163,7 +163,7 @@ class trading_loss(Variable):
 class capital_allowances(Variable):
     value_type = float
     entity = Person
-    label = u"Full relief from capital expenditure allowances"
+    label = "Full relief from capital expenditure allowances"
     definition_period = YEAR
     reference = "Capital Allowances Act 2001 s. 1"
     unit = "currency-GBP"
@@ -172,10 +172,10 @@ class capital_allowances(Variable):
 class loss_relief(Variable):
     value_type = float
     entity = Person
-    label = u"Tax relief from trading losses"
+    label = "Tax relief from trading losses"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 59"
-    documentation = u"Can be set against general income."
+    documentation = "Can be set against general income."
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
@@ -190,7 +190,7 @@ class loss_relief(Variable):
 class taxable_pension_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount of pension income that is taxable"
+    label = "Amount of pension income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 567"
     unit = "currency-GBP"
@@ -205,7 +205,7 @@ class taxable_pension_income(Variable):
 class taxable_social_security_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount of social security income that is taxable"
+    label = "Amount of social security income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 658"
     unit = "currency-GBP"
@@ -220,7 +220,7 @@ class taxable_social_security_income(Variable):
 class taxable_self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount of trading income that is taxable"
+    label = "Amount of trading income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 5"
     unit = "currency-GBP"
@@ -238,7 +238,7 @@ class taxable_self_employment_income(Variable):
 class taxable_property_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount of property income that is taxable"
+    label = "Amount of property income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 268"
     unit = "currency-GBP"
@@ -257,7 +257,7 @@ class taxable_property_income(Variable):
 class deficiency_relief(Variable):
     value_type = float
     entity = Person
-    label = u"Deficiency relief"
+    label = "Deficiency relief"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -265,7 +265,7 @@ class deficiency_relief(Variable):
 class taxable_dividend_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount of dividend income that is taxable"
+    label = "Amount of dividend income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 383"
     unit = "currency-GBP"
@@ -284,7 +284,7 @@ class taxable_dividend_income(Variable):
 class taxable_miscellaneous_income(Variable):
     value_type = float
     entity = Person
-    label = u"Amount of miscellaneous income that is taxable"
+    label = "Amount of miscellaneous income that is taxable"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 574"
     unit = "currency-GBP"
@@ -296,7 +296,7 @@ class taxable_miscellaneous_income(Variable):
 class total_income(Variable):
     value_type = float
     entity = Person
-    label = u"Taxable income after tax reliefs and before allowances"
+    label = "Taxable income after tax reliefs and before allowances"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 23"
     unit = "currency-GBP"
@@ -318,7 +318,7 @@ class total_income(Variable):
 class adjusted_net_income(Variable):
     value_type = float
     entity = Person
-    label = u"Taxable income after tax reliefs and before allowances"
+    label = "Taxable income after tax reliefs and before allowances"
     definition_period = YEAR
     reference = "Income Tax Act 2007 s. 23"
     unit = "currency-GBP"

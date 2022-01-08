@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class earned_income(Variable):
     value_type = float
     entity = Person
-    label = u"Total earned income"
+    label = "Total earned income"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -20,7 +20,7 @@ class earned_income(Variable):
 class sublet_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income received from sublet agreements"
+    label = "Income received from sublet agreements"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -28,7 +28,7 @@ class sublet_income(Variable):
 class miscellaneous_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from other sources"
+    label = "Income from other sources"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -36,7 +36,7 @@ class miscellaneous_income(Variable):
 class private_transfer_income(Variable):
     value_type = float
     entity = Person
-    label = u"Private transfers"
+    label = "Private transfers"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -44,7 +44,7 @@ class private_transfer_income(Variable):
 class lump_sum_income(Variable):
     value_type = float
     entity = Person
-    label = u"Lump sum income"
+    label = "Lump sum income"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -75,7 +75,7 @@ class market_income(Variable):
 class gross_income(Variable):
     value_type = float
     entity = Person
-    label = u"Gross income, including benefits"
+    label = "Gross income, including benefits"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -97,7 +97,7 @@ class household_gross_income(Variable):
     value_type = float
     entity = Household
     unit = "currency-GBP"
-    label = u"Household gross income"
+    label = "Household gross income"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -108,7 +108,7 @@ class household_gross_income(Variable):
 class net_income(Variable):
     value_type = float
     entity = Person
-    label = u"Net income"
+    label = "Net income"
     documentation = "Market income, minus taxes, plus benefits"
     unit = "currency-GBP"
     definition_period = YEAR
@@ -120,7 +120,7 @@ class net_income(Variable):
 class hours_worked(Variable):
     value_type = float
     entity = Person
-    label = u"Total amount of hours worked by this person"
+    label = "Total amount of hours worked by this person"
     definition_period = YEAR
     unit = "hour"
 
@@ -128,7 +128,7 @@ class hours_worked(Variable):
 class in_work(Variable):
     value_type = bool
     entity = Person
-    label = u"Worked some hours"
+    label = "Worked some hours"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -143,7 +143,7 @@ class in_work(Variable):
 class weekly_hours(Variable):
     value_type = float
     entity = Person
-    label = u"Weekly hours"
+    label = "Weekly hours"
     documentation = "Average weekly hours worked"
     definition_period = YEAR
     unit = "hour"
@@ -172,14 +172,14 @@ class employment_status(Variable):
     entity = Person
     possible_values = EmploymentStatus
     default_value = EmploymentStatus.UNEMPLOYED
-    label = u"Employment status of the person"
+    label = "Employment status of the person"
     definition_period = YEAR
 
 
 class capital_income(Variable):
     value_type = float
     entity = Person
-    label = u"Income from savings or dividends"
+    label = "Income from savings or dividends"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -192,7 +192,7 @@ class capital_income(Variable):
 class maintenance_income(Variable):
     value_type = float
     entity = Person
-    label = u"Maintenance payments"
+    label = "Maintenance payments"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -200,7 +200,7 @@ class maintenance_income(Variable):
 class hbai_household_net_income(Variable):
     value_type = float
     entity = Household
-    label = u"Household net income (HBAI definition)"
+    label = "Household net income (HBAI definition)"
     documentation = "Disposable income for the household, following the definition used for official poverty statistics"
     unit = "currency-GBP"
     definition_period = YEAR
@@ -229,7 +229,7 @@ class household_net_income(Variable):
 class hbai_household_net_income_ahc(Variable):
     value_type = float
     entity = Household
-    label = u"Household net income, after housing costs"
+    label = "Household net income, after housing costs"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -242,7 +242,7 @@ class hbai_household_net_income_ahc(Variable):
 class equiv_household_net_income(Variable):
     value_type = float
     entity = Household
-    label = u"Equivalised household net income"
+    label = "Equivalised household net income"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -255,7 +255,7 @@ class equiv_household_net_income(Variable):
 class equiv_hbai_household_net_income(Variable):
     value_type = float
     entity = Household
-    label = u"Equivalised household net income (HBAI)"
+    label = "Equivalised household net income (HBAI)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -268,7 +268,7 @@ class equiv_hbai_household_net_income(Variable):
 class equiv_hbai_household_net_income_ahc(Variable):
     value_type = float
     entity = Household
-    label = u"Equivalised household net income, after housing costs (HBAI)"
+    label = "Equivalised household net income, after housing costs (HBAI)"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -289,7 +289,7 @@ class base_net_income(Variable):
 class is_apprentice(Variable):
     value_type = bool
     entity = Person
-    label = u"In an apprenticeship programme"
+    label = "In an apprenticeship programme"
     definition_period = YEAR
     default_value = False
 
@@ -336,7 +336,7 @@ class minimum_wage_category(Variable):
 class minimum_wage(Variable):
     value_type = float
     entity = Person
-    label = u"Minimum wage"
+    label = "Minimum wage"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -348,7 +348,7 @@ class minimum_wage(Variable):
 class household_market_income(Variable):
     value_type = float
     entity = Household
-    label = u"Household market income"
+    label = "Household market income"
     documentation = "Market income for the household"
     definition_period = YEAR
     unit = "currency-GBP"

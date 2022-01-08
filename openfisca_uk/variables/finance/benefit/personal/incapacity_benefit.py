@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class incapacity_benefit(Variable):
     value_type = float
     entity = Person
-    label = u"Incapacity Benefit"
+    label = "Incapacity Benefit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class incapacity_benefit(Variable):
 class incapacity_benefit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Incapacity Benefit (reported)"
+    label = "Incapacity Benefit (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

@@ -5,14 +5,14 @@ import pandas as pd
 class person_id(Variable):
     value_type = int
     entity = Person
-    label = u"ID for the person"
+    label = "ID for the person"
     definition_period = YEAR
 
 
 class people(Variable):
     value_type = float
     entity = Person
-    label = u"Variable holding people"
+    label = "Variable holding people"
     definition_period = YEAR
     default_value = 1
 
@@ -49,7 +49,7 @@ class person_weight(Variable):
 class age(Variable):
     value_type = int
     entity = Person
-    label = u"Age"
+    label = "Age"
     unit = "year"
     documentation = "The age of the person in years"
     definition_period = YEAR
@@ -64,7 +64,7 @@ class age(Variable):
 class birth_year(Variable):
     value_type = int
     entity = Person
-    label = u"The birth year of the person"
+    label = "The birth year of the person"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -74,7 +74,7 @@ class birth_year(Variable):
 class over_16(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is over 16"
+    label = "Whether the person is over 16"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -84,7 +84,7 @@ class over_16(Variable):
 class is_adult(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is an adult"
+    label = "Whether this person is an adult"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -94,7 +94,7 @@ class is_adult(Variable):
 class is_child(Variable):
     value_type = bool
     entity = Person
-    label = u"Is a child"
+    label = "Is a child"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -104,7 +104,7 @@ class is_child(Variable):
 class child_index(Variable):
     value_type = int
     entity = Person
-    label = u"Child reference number"
+    label = "Child reference number"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -137,7 +137,7 @@ class is_eldest_child(Variable):
 class is_benunit_eldest_child(Variable):
     value_type = bool
     entity = Person
-    label = u"Eldest child in the benefit unit"
+    label = "Eldest child in the benefit unit"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -165,7 +165,7 @@ class marital_status(Variable):
     possible_values = MaritalStatus
     default_value = MaritalStatus.SINGLE
     entity = Person
-    label = u"Marital status"
+    label = "Marital status"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -192,7 +192,7 @@ class current_education(Variable):
     possible_values = EducationType
     default_value = EducationType.NOT_IN_EDUCATION
     entity = Person
-    label = u"Current education"
+    label = "Current education"
     definition_period = YEAR
 
 
@@ -201,14 +201,14 @@ class highest_education(Variable):
     possible_values = EducationType
     default_value = EducationType.UPPER_SECONDARY
     entity = Person
-    label = u"Highest status education completed"
+    label = "Highest status education completed"
     definition_period = YEAR
 
 
 class in_FE(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is in Further Education"
+    label = "Whether this person is in Further Education"
     definition_period = YEAR
     set_input = set_input_dispatch_by_period
 
@@ -216,7 +216,7 @@ class in_FE(Variable):
 class in_HE(Variable):
     value_type = bool
     entity = Person
-    label = u"In higher education"
+    label = "In higher education"
     definition_period = YEAR
     reference = "Whether this person is in Higher Education"
     set_input = set_input_dispatch_by_period
@@ -232,14 +232,14 @@ class gender(Variable):
     possible_values = Gender
     default_value = Gender.MALE
     entity = Person
-    label = u"Gender of the person"
+    label = "Gender of the person"
     definition_period = ETERNITY
 
 
 class is_male(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is male"
+    label = "Whether the person is male"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -249,7 +249,7 @@ class is_male(Variable):
 class is_female(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is female"
+    label = "Whether the person is female"
     definition_period = ETERNITY
 
     def formula(person, period, parameters):
@@ -259,7 +259,7 @@ class is_female(Variable):
 class is_household_head(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is the head-of-household"
+    label = "Whether this person is the head-of-household"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -269,7 +269,7 @@ class is_household_head(Variable):
 class is_benunit_head(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is the head-of-family"
+    label = "Whether this person is the head-of-family"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -279,7 +279,7 @@ class is_benunit_head(Variable):
 class in_social_housing(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person lives in social housing"
+    label = "Whether this person lives in social housing"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -291,7 +291,7 @@ class in_social_housing(Variable):
 class is_WA_adult(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether is a working-age adult"
+    label = "Whether is a working-age adult"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -301,7 +301,7 @@ class is_WA_adult(Variable):
 class is_young_child(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is under 14"
+    label = "Whether the person is under 14"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -311,7 +311,7 @@ class is_young_child(Variable):
 class age_under_18(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is under age 18"
+    label = "Whether the person is under age 18"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -321,7 +321,7 @@ class age_under_18(Variable):
 class age_18_64(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is age 18 to 64"
+    label = "Whether the person is age 18 to 64"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -332,7 +332,7 @@ class age_18_64(Variable):
 class age_over_64(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is over age 64"
+    label = "Whether the person is over age 64"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -342,7 +342,7 @@ class age_over_64(Variable):
 class is_older_child(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether the person is over 14 but under 18"
+    label = "Whether the person is over 14 but under 18"
     definition_period = YEAR
 
     def formula(person, period, parameters):

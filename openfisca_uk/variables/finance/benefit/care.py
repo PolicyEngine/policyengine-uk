@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class is_carer_for_benefits(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is a carer for benefits purposes"
+    label = "Whether this person is a carer for benefits purposes"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -14,7 +14,7 @@ class is_carer_for_benefits(Variable):
 class benunit_has_carer(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Benefit unit has a carer"
+    label = "Benefit unit has a carer"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -24,7 +24,7 @@ class benunit_has_carer(Variable):
 class num_carers(Variable):
     value_type = int
     entity = BenUnit
-    label = u"Number of carers in the family"
+    label = "Number of carers in the family"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -34,7 +34,7 @@ class num_carers(Variable):
 class carer_premium(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Carer premium"
+    label = "Carer premium"
     definition_period = YEAR
     reference = (
         "The Social Security Amendment (Carer Premium) Regulations 2002"

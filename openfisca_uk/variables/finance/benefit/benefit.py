@@ -8,7 +8,7 @@ This file contains variables that are commonly used in benefit eligibility calcu
 class family_benefits(Variable):
     value_type = float
     entity = Person
-    label = u"Total simulated family benefits for this person"
+    label = "Total simulated family benefits for this person"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -32,7 +32,7 @@ class family_benefits(Variable):
 class family_benefits_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Total reported family benefits for this person"
+    label = "Total reported family benefits for this person"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -54,7 +54,7 @@ class family_benefits_reported(Variable):
 class benefits(Variable):
     value_type = float
     entity = Person
-    label = u"Total benefits"
+    label = "Total benefits"
     documentation = "Total state benefits"
     unit = "currency-GBP"
     definition_period = YEAR
@@ -66,7 +66,7 @@ class benefits(Variable):
 class household_benefits(Variable):
     value_type = float
     entity = Household
-    label = u"Benefits"
+    label = "Benefits"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -77,7 +77,7 @@ class household_benefits(Variable):
 class other_benefits(Variable):
     value_type = float
     entity = Person
-    label = u"Income from benefits not modelled or detailed in the model"
+    label = "Income from benefits not modelled or detailed in the model"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -92,7 +92,7 @@ class other_benefits(Variable):
 class benefits_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Total simulated"
+    label = "Total simulated"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -105,7 +105,7 @@ class benefits_modelling(Variable):
     value_type = float
     entity = Person
     label = (
-        u"Difference between reported and simulated benefits for this person"
+        "Difference between reported and simulated benefits for this person"
     )
     definition_period = YEAR
     unit = "currency-GBP"
@@ -117,7 +117,7 @@ class benefits_modelling(Variable):
 class is_QYP(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is a qualifying young person for benefits purposes"
+    label = "Whether this person is a qualifying young person for benefits purposes"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -132,7 +132,7 @@ class is_QYP(Variable):
 class is_child_or_QYP(Variable):
     value_type = bool
     entity = Person
-    label = u"Whether this person is a child or qualifying young person for most benefits"
+    label = "Whether this person is a child or qualifying young person for most benefits"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -142,7 +142,7 @@ class is_child_or_QYP(Variable):
 class benefits_premiums(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Value of premiums for disability and carer status"
+    label = "Value of premiums for disability and carer status"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -159,7 +159,7 @@ class benefits_premiums(Variable):
 class benunit_weekly_hours(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Average weekly hours worked by adults in the benefit unit"
+    label = "Average weekly hours worked by adults in the benefit unit"
     definition_period = YEAR
     unit = "hour"
 
@@ -170,9 +170,7 @@ class benunit_weekly_hours(Variable):
 class is_single(Variable):
     value_type = bool
     entity = BenUnit
-    label = (
-        u"Whether this benefit unit contains a single claimant for benefits"
-    )
+    label = "Whether this benefit unit contains a single claimant for benefits"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -184,7 +182,7 @@ class is_single(Variable):
 class is_couple(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this benefit unit contains a joint couple claimant for benefits"
+    label = "Whether this benefit unit contains a joint couple claimant for benefits"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -196,7 +194,7 @@ class is_couple(Variable):
 class is_lone_parent(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether the family is a lone parent family"
+    label = "Whether the family is a lone parent family"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -208,7 +206,7 @@ class is_lone_parent(Variable):
 class is_single_person(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether the family is a single person"
+    label = "Whether the family is a single person"
     definition_period = ETERNITY
 
     def formula(benunit, period, parameters):
@@ -220,7 +218,7 @@ class is_single_person(Variable):
 class personal_benefits(Variable):
     value_type = float
     entity = Person
-    label = u"Value of personal, non-means-tested benefits"
+    label = "Value of personal, non-means-tested benefits"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -247,7 +245,7 @@ class personal_benefits(Variable):
 class personal_benefits_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Value of personal, non-means-tested benefits"
+    label = "Value of personal, non-means-tested benefits"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -274,7 +272,7 @@ class personal_benefits_reported(Variable):
 class claims_all_entitled_benefits(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Claims all eligible benefits"
+    label = "Claims all eligible benefits"
     definition_period = YEAR
     documentation = (
         "Whether this family would claim any benefit they are entitled to"
@@ -284,7 +282,7 @@ class claims_all_entitled_benefits(Variable):
 class claims_legacy_benefits(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Claims legacy benefits"
+    label = "Claims legacy benefits"
     documentation = "Whether this family is currently receiving legacy benefits (overrides UC claimant status)"
     definition_period = YEAR
 

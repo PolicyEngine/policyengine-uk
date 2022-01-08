@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class IIDB(Variable):
     value_type = float
     entity = Person
-    label = u"Industrial Injuries Disablement Benefit"
+    label = "Industrial Injuries Disablement Benefit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -15,6 +15,6 @@ class IIDB(Variable):
 class IIDB_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Industrial Injuries Disablement Benefit (reported)"
+    label = "Industrial Injuries Disablement Benefit (reported)"
     definition_period = YEAR
     unit = "currency-GBP"

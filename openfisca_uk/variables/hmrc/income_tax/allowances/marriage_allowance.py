@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class unused_personal_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Unused personal allowance"
+    label = "Unused personal allowance"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -47,7 +47,7 @@ class partners_unused_personal_allowance(Variable):
 class marriage_allowance(Variable):
     value_type = float
     entity = Person
-    label = u"Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)"
+    label = "Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)"
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
     unit = "currency-GBP"

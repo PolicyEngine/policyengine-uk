@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class weekly_NI_class_2(Variable):
     value_type = float
     entity = Person
-    label = u"Class 2 Contributions for National Insurance"
+    label = "Class 2 Contributions for National Insurance"
     definition_period = YEAR
     reference = "Social Security and Benefits Act 1992 s. 11"
     unit = "currency-GBP"
@@ -19,7 +19,7 @@ class weekly_NI_class_2(Variable):
 class NI_class_2(Variable):
     value_type = float
     entity = Person
-    label = u"Class 2 Contributions for National Insurance for the year"
+    label = "Class 2 Contributions for National Insurance for the year"
     definition_period = YEAR
     unit = "currency-GBP"
 

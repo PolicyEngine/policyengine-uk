@@ -4,7 +4,7 @@ from openfisca_uk.model_api import *
 class working_tax_credit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Working Tax Credit"
+    label = "Working Tax Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -12,7 +12,7 @@ class working_tax_credit_reported(Variable):
 class child_tax_credit_reported(Variable):
     value_type = float
     entity = Person
-    label = u"Working Tax Credit"
+    label = "Working Tax Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -20,7 +20,7 @@ class child_tax_credit_reported(Variable):
 class tax_credits_applicable_income(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Applicable income for Tax Credits"
+    label = "Applicable income for Tax Credits"
     definition_period = YEAR
     unit = "currency-GBP"
     reference = "The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3"
@@ -50,7 +50,7 @@ class tax_credits_applicable_income(Variable):
 class is_CTC_child_limit_exempt(Variable):
     value_type = bool
     entity = Person
-    label = u"Exemption from Child Tax Credit child limit"
+    label = "Exemption from Child Tax Credit child limit"
     documentation = "Exemption from Child Tax Credit limit on number of children based on birth year"
     definition_period = YEAR
 
@@ -66,7 +66,7 @@ class is_CTC_child_limit_exempt(Variable):
 class is_child_for_CTC(Variable):
     value_type = bool
     entity = Person
-    label = u"Child eligible for Child Tax Credit"
+    label = "Child eligible for Child Tax Credit"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 8"
 
@@ -77,7 +77,7 @@ class is_child_for_CTC(Variable):
 class is_CTC_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Child Tax Credit eligibility"
+    label = "Child Tax Credit eligibility"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 8"
 
@@ -88,7 +88,7 @@ class is_CTC_eligible(Variable):
 class would_claim_CTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Child Tax Credit"
+    label = "Would claim Child Tax Credit"
     documentation = (
         "Whether this family would claim Child Tax Credit if eligible"
     )
@@ -105,7 +105,7 @@ class would_claim_CTC(Variable):
 class claims_CTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim Child Tax Credit, based on survey response and take-up rates"
+    label = "Whether this family is imputed to claim Child Tax Credit, based on survey response and take-up rates"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -117,7 +117,7 @@ class claims_CTC(Variable):
 class CTC_maximum_rate(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Maximum Child Tax Credit"
+    label = "Maximum Child Tax Credit"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = "currency-GBP"
@@ -135,7 +135,7 @@ class CTC_maximum_rate(Variable):
 class CTC_family_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"CTC entitlement in the Family Element"
+    label = "CTC entitlement in the Family Element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = "currency-GBP"
@@ -152,7 +152,7 @@ class CTC_family_element(Variable):
 class CTC_child_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Tax Credit child element"
+    label = "Child Tax Credit child element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = "currency-GBP"
@@ -175,7 +175,7 @@ class CTC_child_element(Variable):
 class CTC_disabled_child_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"CTC entitlement from disabled child elements"
+    label = "CTC entitlement from disabled child elements"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = "currency-GBP"
@@ -198,7 +198,7 @@ class CTC_disabled_child_element(Variable):
 class CTC_severely_disabled_child_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"CTC entitlement from severely disabled child elements"
+    label = "CTC entitlement from severely disabled child elements"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = "currency-GBP"
@@ -227,7 +227,7 @@ class CTC_severely_disabled_child_element(Variable):
 class is_WTC_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Working Tax Credit eligibility"
+    label = "Working Tax Credit eligibility"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 10"
 
@@ -268,7 +268,7 @@ class is_WTC_eligible(Variable):
 class would_claim_WTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Would claim Working Tax Credit"
+    label = "Would claim Working Tax Credit"
     documentation = (
         "Whether this family would claim Working Tax Credit if eligible"
     )
@@ -286,7 +286,7 @@ class would_claim_WTC(Variable):
 class claims_WTC(Variable):
     value_type = bool
     entity = BenUnit
-    label = u"Whether this family is imputed to claim Working Tax Credit, based on survey response and take-up rates"
+    label = "Whether this family is imputed to claim Working Tax Credit, based on survey response and take-up rates"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -298,7 +298,7 @@ class claims_WTC(Variable):
 class WTC_maximum_rate(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit maximum rate"
+    label = "Working Tax Credit maximum rate"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -319,7 +319,7 @@ class WTC_maximum_rate(Variable):
 class WTC_basic_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit basic element"
+    label = "Working Tax Credit basic element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -336,7 +336,7 @@ class WTC_basic_element(Variable):
 class WTC_couple_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit couple element"
+    label = "Working Tax Credit couple element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -356,7 +356,7 @@ class WTC_couple_element(Variable):
 class WTC_lone_parent_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit lone parent element"
+    label = "Working Tax Credit lone parent element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -377,7 +377,7 @@ class WTC_lone_parent_element(Variable):
 class WTC_disabled_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit disabled element"
+    label = "Working Tax Credit disabled element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -405,7 +405,7 @@ class WTC_disabled_element(Variable):
 class WTC_severely_disabled_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit severely disabled element"
+    label = "Working Tax Credit severely disabled element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -426,7 +426,7 @@ class WTC_severely_disabled_element(Variable):
 class WTC_worker_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit worker element"
+    label = "Working Tax Credit worker element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -446,7 +446,7 @@ class WTC_worker_element(Variable):
 class WTC_childcare_element(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit childcare element"
+    label = "Working Tax Credit childcare element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = "currency-GBP"
@@ -470,7 +470,7 @@ class WTC_childcare_element(Variable):
 class tax_credits_reduction(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Reduction in Tax Credits from means-tested income"
+    label = "Reduction in Tax Credits from means-tested income"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -492,7 +492,7 @@ class tax_credits_reduction(Variable):
 class working_tax_credit_pre_minimum(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit pre-minimum"
+    label = "Working Tax Credit pre-minimum"
     documentation = (
         "Working Tax Credit amount before the minimum tax credit is applied"
     )
@@ -510,7 +510,7 @@ class working_tax_credit_pre_minimum(Variable):
 class child_tax_credit_pre_minimum(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Tax Credit pre-minimum"
+    label = "Child Tax Credit pre-minimum"
     documentation = (
         "Child Tax Credit amount before the minimum tax credit is applied"
     )
@@ -550,7 +550,7 @@ class tax_credits(Variable):
 class child_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Child Tax Credit"
+    label = "Child Tax Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 
@@ -565,7 +565,7 @@ class child_tax_credit(Variable):
 class working_tax_credit(Variable):
     value_type = float
     entity = BenUnit
-    label = u"Working Tax Credit"
+    label = "Working Tax Credit"
     definition_period = YEAR
     unit = "currency-GBP"
 

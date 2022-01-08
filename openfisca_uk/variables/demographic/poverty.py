@@ -5,7 +5,7 @@ class in_poverty_bhc(Variable):
     value_type = bool
     entity = Household
     label = (
-        u"Whether the household is in absolute poverty, before housing costs"
+        "Whether the household is in absolute poverty, before housing costs"
     )
     definition_period = YEAR
 
@@ -18,9 +18,7 @@ class in_poverty_bhc(Variable):
 class in_poverty_ahc(Variable):
     value_type = bool
     entity = Household
-    label = (
-        u"Whether the household is in absolute poverty, after housing costs"
-    )
+    label = "Whether the household is in absolute poverty, after housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -32,7 +30,7 @@ class in_poverty_ahc(Variable):
 class in_deep_poverty_bhc(Variable):
     value_type = bool
     entity = Household
-    label = u"Whether the household is in deep absolute poverty (below half the poverty line), before housing costs"
+    label = "Whether the household is in deep absolute poverty (below half the poverty line), before housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -44,7 +42,7 @@ class in_deep_poverty_bhc(Variable):
 class in_deep_poverty_ahc(Variable):
     value_type = bool
     entity = Household
-    label = u"Whether the household is in deep absolute poverty (below half the poverty line), after housing costs"
+    label = "Whether the household is in deep absolute poverty (below half the poverty line), after housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -56,7 +54,7 @@ class in_deep_poverty_ahc(Variable):
 class poverty_line_bhc(Variable):
     value_type = float
     entity = Household
-    label = u"The poverty line for the household, before housing costs"
+    label = "The poverty line for the household, before housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -68,7 +66,7 @@ class poverty_line_bhc(Variable):
 class poverty_line_ahc(Variable):
     value_type = float
     entity = Household
-    label = u"The poverty line for the household, after housing costs"
+    label = "The poverty line for the household, after housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -80,7 +78,7 @@ class poverty_line_ahc(Variable):
 class poverty_gap_bhc(Variable):
     value_type = float
     entity = Household
-    label = u"Positive financial gap between net household income and the poverty line"
+    label = "Positive financial gap between net household income and the poverty line"
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -91,7 +89,7 @@ class poverty_gap_bhc(Variable):
 class poverty_gap_ahc(Variable):
     value_type = float
     entity = Household
-    label = u"Positive financial gap between net household income and the poverty line, after housing costs"
+    label = "Positive financial gap between net household income and the poverty line, after housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):
