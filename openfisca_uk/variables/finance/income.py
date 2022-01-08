@@ -52,7 +52,7 @@ class lump_sum_income(Variable):
 class market_income(Variable):
     value_type = float
     entity = Person
-    label = u"Market income"
+    label = "Market income"
     definition_period = YEAR
     unit = "currency-GBP"
 
