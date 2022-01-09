@@ -1,0 +1,24 @@
+- name: Four children, two disabled, one severely, two born after 2018
+  period: 2022
+  absolute_error_margin: 15
+  input:
+    people:
+      child_1:
+        birth_date: 2015-01-01
+        is_severely_disabled_for_benefits: true
+      child_2:
+        birth_date: 2016-01-01
+        is_disabled_for_benefits: true
+      child_3:
+        birth_date: 2018-01-01
+      child_4:
+        birth_date: 2019-01-01
+    benunits:
+      benunit:
+        children: [child_1, child_2, child_3, child_4]
+  output:
+    maximum_ctc: 279.01 * 52
+    # This result is from entitledto.co.uk. GOV.UK (https://www.tax.service.gov.uk/tax-credits-calculator) 
+    # estimates a lower entitlement (£851.30 every four weeks, £212.83 per week), but this 
+    # is possibly incorrect, since it asks for less information (only total numbers of children
+    # in each category, not characteristics of individual children like entitledto.
