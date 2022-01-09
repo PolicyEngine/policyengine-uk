@@ -1,0 +1,10 @@
+description: The child limit for the Child Tax Credit. Children who are born after the n-th child (where n is this parameter), and who are born after the date this parameter changes, are not eligible for the individual child element of the Child Tax Credit.
+values:
+  2003-04-06: .inf
+  2017-04-06: 2
+metadata:
+  unit: child
+  label: CTC child limit
+  reference:
+    - title: The Child Tax Credit Regulations 2002 reg. 7(2)(2A)
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/7
