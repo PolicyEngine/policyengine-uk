@@ -5,6 +5,7 @@ values:
   2021-04-06: 2_845
 metadata:
   label: CTC child element
+  name: ctc_child_element
   period: year
   unit: currency-GBP
   reference:

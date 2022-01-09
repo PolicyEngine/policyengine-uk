@@ -80,6 +80,18 @@ class relation_type(Variable):
             RelationType.COUPLE,
         )
 
+class is_joint_benunit(Variable):
+    label = "Joint benefit unit"
+    documentation = "Whether this benefit unit has two adults"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        return benunit.sum(benunit.members("is_adult", period)) == 2
+
+
+
 
 class eldest_adult_age(Variable):
     value_type = float

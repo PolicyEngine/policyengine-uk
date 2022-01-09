@@ -1,0 +1,37 @@
+lower:
+  description: The lower hours requirement for claims meeting other conditions relating to disability or childcare.
+  values:
+    2003-04-06: 16
+  metadata:
+    unit: hour
+    period: week
+    name: wtc_lower_hours_requirement
+    label: WTC lower hours requirement
+    reference:
+      - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 4
+        href: https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/basic-element
+couple:
+  description: Couples with children must meet this additional hours requirement.
+  values:
+    2003-04-06: 24
+  metadata:
+    unit: hour
+    period: week
+    label: WTC couple hours requirement
+    name: wtc_couple_hours_requirement
+    reference:
+      - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 4
+        href: https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/basic-element
+
+standard:
+  description: The standard hours requirement for most working-age claims.
+  values:
+    2003-04-06: 30
+  metadata:
+    unit: hour
+    period: week
+    name: wtc_standard_hours_requirement
+    label: WTC standard hours requirement
+    reference:
+      - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 4
+        href: https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/basic-element

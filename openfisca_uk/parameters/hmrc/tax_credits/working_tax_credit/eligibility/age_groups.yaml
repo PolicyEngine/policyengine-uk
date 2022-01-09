@@ -1,0 +1,33 @@
+lower:
+  description: Individuals aged between the lower age threshold and the middle age threshold can claim Working Tax Credit if they satisfy specific conditions related to disability or childcare and meet a reduced work requirement.
+  values:
+    2003-04-06: 16
+  metadata:
+    unit: year
+    name: wtc_lower_age_threshold
+    label: WTC lower age threshold
+    reference:
+      - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 4
+        href: https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/basic-element
+middle:
+  description: Individuals aged between the middle age threshold and the upper age threshold can claim Working Tax Credit if they satisfy specific conditions related to disability or childcare and meet a reduced work requirement.
+  values:
+    2003-04-06: 25
+  metadata:
+    name: wtc_middle_age_threshold
+    unit: year
+    label: WTC middle age threshold
+    reference:
+      - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 4
+        href: https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/basic-element
+upper:
+  description: Individuals aged over the upper age threshold must meet a lower work requirement to claim Working Tax Credit.
+  values:
+    2003-04-06: 60
+  metadata:
+    name: wtc_upper_age_threshold
+    unit: year
+    label: WTC upper age threshold
+    reference:
+      - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 4
+        href: https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/basic-element
