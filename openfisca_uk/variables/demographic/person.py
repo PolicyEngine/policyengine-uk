@@ -82,10 +82,10 @@ class child_index(Variable):
     value_type = int
     entity = Person
     label = "Child reference number"
+    documentation = "The child index, by age, descending (e.g. 'first child' = 1)"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        # The child index, by age, descending (e.g. "first child" = 1)
         child_ranking = (
             person.get_rank(
                 person.benunit,
@@ -94,8 +94,7 @@ class child_index(Variable):
             )
             + 1
         )
-        # Fill in adult values
-        return where(person("is_child", period), child_ranking, 100)
+        return where(person("is_child", period), child_ranking, np.inf)
 
 
 class is_eldest_child(Variable):
@@ -107,7 +106,7 @@ class is_eldest_child(Variable):
     definition_period = YEAR
     value_type = bool
 
-    def formula(person, period, parameters):
+    def formula(person, period):
         return person("child_index", period) == 1
 
 
