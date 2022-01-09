@@ -1,0 +1,19 @@
+- name: Over 20, not a child for CTC
+  period: 2021
+  input:
+    age: 20
+  output:
+    is_child_for_ctc: false
+- name: Under 16, qualifies
+  period: 2021
+  input:
+    age: 15
+  output:
+    is_child_for_ctc: true
+- name: Over 16 but in FT-education, qualifies
+  period: 2021
+  input:
+    age: 18
+    current_education: POST_SECONDARY
+  output:
+    is_child_for_ctc: true
