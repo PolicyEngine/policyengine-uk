@@ -3,6 +3,7 @@ amount:
   values:
     2011-04-06: 545
   metadata:
+    label: CTC family element
     unit: currency-GBP
     reference:
       - title: The Child Tax Credit Regulations 2002 reg. 7(2)(a)
@@ -13,6 +14,7 @@ active:
     2003-04-06: true
     2017-04-06: false
   metadata:
+    label: CTC family element is payable
     unit: currency-GBP
     reference:
       - title: The Child Tax Credit Regulations 2002 reg. 7(2)(a)

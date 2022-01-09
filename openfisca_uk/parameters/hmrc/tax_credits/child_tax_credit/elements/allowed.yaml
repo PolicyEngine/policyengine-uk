@@ -5,6 +5,7 @@ values:
     - ctc_child_element
     - ctc_disability_element
 metadata:
+  label: CTC elements
   unit: list
   reference:
     - title: The Child Tax Credit Regulations 2002 reg. 7(2)(a)
