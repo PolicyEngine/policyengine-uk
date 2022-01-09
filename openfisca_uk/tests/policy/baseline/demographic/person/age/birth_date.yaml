@@ -1,0 +1,12 @@
+- name: DOB is preserved when input is a string
+  period: 2021
+  input:
+    birth_date: 2000-01-01
+  output:
+    birth_date: 2000-01-01
+- name: DOB is imputed from age
+  period: 2021
+  input:
+    age: 20
+  output:
+    birth_date: 2001-01-01
