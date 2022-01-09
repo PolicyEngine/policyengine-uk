@@ -1,0 +1,27 @@
+- name: No children, no payment
+  period: 2021
+  input:
+    people:
+      adult: {}
+    benunits:
+      benunit:
+        adults: [adult]
+        children: []
+  output:
+    ctc_child_element: 0
+
+- name: Three children, two of which are born before 2017, one of which is born after 2018, partial payment
+  period: 2022
+  input:
+    people:
+      child_1:
+        birth_date: 2013-01-01
+      child_2:
+        birth_date: 2014-01-01
+      child_3:
+        birth_date: 2018-01-01
+    benunits:
+      benunit:
+        children: [child_1, child_2, child_3]
+  output:
+    ctc_child_element: 2_845 * 2

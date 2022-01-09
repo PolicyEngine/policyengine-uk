@@ -1,0 +1,18 @@
+- name: Three children, one severely disabled, all born after 2018
+  period: 2022
+  input:
+    people:
+      child_1:
+        birth_date: 2018-01-01
+        is_severely_disabled_for_benefits: true
+      child_2:
+        birth_date: 2018-01-01
+        is_disabled_for_benefits: true
+      child_3:
+        birth_date: 2018-01-01
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        children: [child_1, child_2, child_3]
+  output:
+    ctc_disability_element: 4825 + 3435 + 3435

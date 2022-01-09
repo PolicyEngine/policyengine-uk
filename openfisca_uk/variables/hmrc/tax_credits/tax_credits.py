@@ -47,32 +47,6 @@ class tax_credits_applicable_income(Variable):
         return income * ~on_exempt_benefits
 
 
-class is_CTC_child_limit_exempt(Variable):
-    value_type = bool
-    entity = Person
-    label = "Exemption from Child Tax Credit child limit"
-    documentation = "Exemption from Child Tax Credit limit on number of children based on birth year"
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        limit_year = parameters(
-            period
-        ).benefit.tax_credits.child_tax_credit.limit.start_year
-        # Children must be born before April 2017.
-        # We use < 2017 as the closer approximation than <= 2017.
-        return person("birth_year", period) < limit_year
-
-
-class is_child_for_CTC(Variable):
-    value_type = bool
-    entity = Person
-    label = "Child eligible for Child Tax Credit"
-    definition_period = YEAR
-    reference = "Tax Credits Act 2002 s. 8"
-
-    def formula(person, period, parameters):
-        return person("is_child_or_QYP", period)
-
 
 class is_CTC_eligible(Variable):
     value_type = bool
@@ -147,29 +121,6 @@ class CTC_family_element(Variable):
             * benunit("claims_CTC", period)
             * CTC.elements.family_element
         )
-
-
-class CTC_child_element(Variable):
-    value_type = float
-    entity = BenUnit
-    label = "Child Tax Credit child element"
-    definition_period = YEAR
-    reference = "Tax Credits Act 2002 s. 9"
-    unit = "currency-GBP"
-
-    def formula(benunit, period, parameters):
-        person = benunit.members
-        CTC = parameters(period).benefit.tax_credits.child_tax_credit
-        is_child_for_CTC = person("is_child_for_CTC", period)
-        is_CTC_child_limit_exempt = person("is_CTC_child_limit_exempt", period)
-        exempt_child = is_child_for_CTC & is_CTC_child_limit_exempt
-        exempt_children = benunit.sum(exempt_child)
-        child_limit = CTC.limit.child_count
-        spaces_left = max_(0, child_limit - exempt_children)
-        non_exempt_children = min_(spaces_left, benunit.sum(is_child_for_CTC))
-        children = exempt_children + non_exempt_children
-        amount = CTC.elements.child_element * children
-        return amount * benunit("claims_CTC", period)
 
 
 class CTC_disabled_child_element(Variable):

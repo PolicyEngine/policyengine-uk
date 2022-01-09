@@ -1,0 +1,23 @@
+- name: Child born before 2017, receives family element
+  period: 2021
+  input:
+    people:
+      child_1:
+        birth_date: 2013-01-01
+    benunits:
+      benunit:
+        children: [child_1]
+  output:
+    ctc_family_element: 545
+
+- name: Child born after 2018, no family element
+  period: 2021
+  input:
+    people:
+      child_1:
+        birth_date: 2018-01-01
+    benunits:
+      benunit:
+        children: [child_1]
+  output:
+    ctc_family_element: 0

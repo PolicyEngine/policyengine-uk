@@ -1,0 +1,12 @@
+description: Value of the per-child element of the Child Tax Credit
+values:
+  2017-04-06: 4_465
+  2018-04-09: 4_600
+  2019-04-06: 4_715
+  2020-04-06: 4_800
+  2021-04-06: 4_825
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: The Child Tax Credit Regulations 2002 reg. 7(2)(a)
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/7

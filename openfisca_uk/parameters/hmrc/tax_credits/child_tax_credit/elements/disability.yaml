@@ -1,0 +1,14 @@
+description: Value of the disabled element of the Child Tax Credit
+values:
+  2017-04-06: 3_175
+  2018-04-09: 3_275
+  2019-04-06: 3_355
+  2020-04-06: 3_415
+  2021-04-06: 3_435
+metadata:
+  label: CTC disabled child element
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: The Child Tax Credit Regulations 2002 reg. 7(2)(a)
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/7

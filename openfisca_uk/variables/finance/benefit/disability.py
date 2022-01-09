@@ -7,7 +7,7 @@ class is_disabled_for_benefits(Variable):
     label = "Has a disability"
     documentation = "Whether this person is disabled for benefits purposes"
     definition_period = YEAR
-    reference = "Child Tax Credit Regulations 2002 s. 8"
+    reference = "https://www.legislation.gov.uk/uksi/2002/2007/regulation/8"
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
@@ -40,7 +40,7 @@ class is_severely_disabled_for_benefits(Variable):
         "Whether this person is severely disabled for benefits purposes"
     )
     definition_period = YEAR
-    reference = "Child Tax Credit Regulations 2002 s. 8"
+    reference = "https://www.legislation.gov.uk/uksi/2002/2007/regulation/8"
 
     def formula(person, period, parameters):
         benefit = parameters(period).benefit

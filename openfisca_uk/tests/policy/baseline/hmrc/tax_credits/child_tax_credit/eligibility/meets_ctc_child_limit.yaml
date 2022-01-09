@@ -1,0 +1,59 @@
+- name: Five children born before 6th April 2017, all qualify
+  period: 2021
+  input:
+    people:
+      child_1:
+        birth_date: 2013-01-01
+      child_2:
+        birth_date: 2014-01-01
+      child_3:
+        birth_date: 2015-01-01
+      child_4:
+        birth_date: 2016-01-01
+      child_5:
+        birth_date: 2017-01-01
+    benunits:
+      benunit:
+        children: [child_1, child_2, child_3, child_4, child_5]
+  output:
+    meets_ctc_child_limit: [true, true, true, true, true]
+
+- name: Three of five children born after 6th April 2017, only those born before qualify
+  period: 2021
+  input:
+    people:
+      child_1:
+        birth_date: 2015-01-01
+      child_2:
+        birth_date: 2016-01-01
+      child_3:
+        birth_date: 2017-04-07
+      child_4:
+        birth_date: 2018-01-01
+      child_5:
+        birth_date: 2019-01-01
+    benunits:
+      benunit:
+        children: [child_1, child_2, child_3, child_4, child_5]
+  output:
+    meets_ctc_child_limit: [true, true, false, false, false]
+
+- name: Five children born after 6th April 2017, only the first two qualify
+  period: 2021
+  input:
+    people:
+      child_1:
+        birth_date: 2018-01-01
+      child_2:
+        birth_date: 2018-01-01
+      child_3:
+        birth_date: 2019-01-01
+      child_4:
+        birth_date: 2019-01-01
+      child_5:
+        birth_date: 2020-01-01
+    benunits:
+      benunit:
+        children: [child_1, child_2, child_3, child_4, child_5]
+  output:
+    meets_ctc_child_limit: [true, true, false, false, false]

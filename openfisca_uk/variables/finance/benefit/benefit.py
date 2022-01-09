@@ -117,7 +117,8 @@ class benefits_modelling(Variable):
 class is_QYP(Variable):
     value_type = bool
     entity = Person
-    label = "Whether this person is a qualifying young person for benefits purposes"
+    label = "Is qualifying young person"
+    documentation = "Whether this person is a qualifying young person for benefits purposes"
     definition_period = YEAR
 
     def formula(person, period, parameters):
