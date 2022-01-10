@@ -1,0 +1,15 @@
+description: Working Tax Credit elements.
+values:
+  2003-04-06:
+    - basic
+    - couple
+    - lone_parent
+    - disability
+    - severe_disability
+    - childcare
+    - worker
+metadata:
+  unit: list
+  reference:
+    - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 pt. 2
+      href: https://www.legislation.gov.uk/uksi/2002/2005/part/2
