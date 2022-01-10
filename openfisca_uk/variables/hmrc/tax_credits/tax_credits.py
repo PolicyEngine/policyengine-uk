@@ -56,7 +56,7 @@ class is_CTC_eligible(Variable):
     reference = "Tax Credits Act 2002 s. 8"
 
     def formula(benunit, period, parameters):
-        return benunit.any(benunit.members("is_child_for_CTC", period))
+        return benunit.any(benunit.members("is_child_for_ctc", period))
 
 
 class would_claim_CTC(Variable):
@@ -99,7 +99,7 @@ class CTC_maximum_rate(Variable):
     def formula(benunit, period, parameters):
         ELEMENTS = [
             "CTC_family_element",
-            "CTC_child_element",
+            "ctc_child_element",
             "CTC_disabled_child_element",
             "CTC_severely_disabled_child_element",
         ]
@@ -133,9 +133,9 @@ class CTC_disabled_child_element(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        is_child_for_CTC = person("is_child_for_CTC", period)
+        is_child_for_ctc = person("is_child_for_ctc", period)
         is_disabled_for_benefits = person("is_disabled_for_benefits", period)
-        is_disabled_child = is_child_for_CTC & is_disabled_for_benefits
+        is_disabled_child = is_child_for_ctc & is_disabled_for_benefits
         disabled_children = benunit.sum(is_disabled_child)
         CTC = parameters(period).benefit.tax_credits.child_tax_credit
         amount = CTC.elements.dis_child_element * disabled_children
@@ -156,12 +156,12 @@ class CTC_severely_disabled_child_element(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        is_child_for_CTC = person("is_child_for_CTC", period)
+        is_child_for_ctc = person("is_child_for_ctc", period)
         is_severely_disabled_for_benefits = person(
             "is_severely_disabled_for_benefits", period
         )
         is_severely_disabled_child = (
-            is_child_for_CTC & is_severely_disabled_for_benefits
+            is_child_for_ctc & is_severely_disabled_for_benefits
         )
         severely_disabled_children = benunit.sum(is_severely_disabled_child)
         CTC = parameters(period).benefit.tax_credits.child_tax_credit

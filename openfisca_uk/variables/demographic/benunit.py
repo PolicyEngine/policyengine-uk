@@ -87,10 +87,26 @@ class is_joint_benunit(Variable):
     definition_period = YEAR
     value_type = bool
 
-    def formula(benunit, period, parameters):
+    def formula(benunit, period):
         return benunit.sum(benunit.members("is_adult", period)) == 2
 
+class benunit_has_children(Variable):
+    label = "Has children"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
 
+    def formula(benunit, period):
+        return benunit.sum(benunit.members("is_child", period)) > 0
+
+class benunit_has_children_or_qyp(Variable):
+    label = "Has children or qualifying young people"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period):
+        return benunit.sum(benunit.members("is_child_or_QYP", period)) > 0
 
 
 class eldest_adult_age(Variable):

@@ -35,14 +35,14 @@ class ctc_child_element(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         CTC = parameters(period).benefit.tax_credits.child_tax_credit
-        exempt_from_limit = benunit("is_ctc_child_limit_exempt", period)
-        is_child_for_CTC = (
+        exempt_from_limit = benunit.project(benunit("is_ctc_child_limit_exempt", period))
+        is_child_for_ctc = (
             person("is_child_for_ctc", period)
             & (
                 person("meets_ctc_child_limit", period)
                 | exempt_from_limit
             )
         )
-        eligible_children = benunit.sum(is_child_for_CTC)
+        eligible_children = benunit.sum(is_child_for_ctc)
         amount = CTC.elements.child_element * eligible_children
         return amount
