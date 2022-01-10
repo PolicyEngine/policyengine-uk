@@ -13,6 +13,7 @@ amount:
 active:
   description: Whether the family element of the CTC is payable, by the birth date of the eldest child
   values:
+    0000-01-01: false
     2003-04-06: true
     2017-04-06: false
   metadata:

@@ -13,7 +13,7 @@ lower:
 couple:
   description: Couples with children must meet this additional hours requirement.
   values:
-    2003-04-06: 24
+    2012-04-06: 24 # No special rule prior to 2012.
   metadata:
     unit: hour
     period: week

@@ -1,0 +1,16 @@
+description: Benefits that confer a disadvantaged status when looking for work.
+values:
+  2003-04-06:
+    - AA
+    - incapacity_benefit
+    - ESA_contrib
+    - SDA
+    - DLA
+    - PIP
+metadata:
+  unit: list
+  name: wtc_disadvantage_benefits
+  label: WTC disadvantage-conferring benefits
+  reference:
+    - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 9
+      href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/9

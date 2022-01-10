@@ -1,0 +1,29 @@
+description: The severe disability element of Working Tax Credit.
+values:
+  2002-08-01: 865
+  2004-04-06: 890
+  2005-04-06: 920
+  2006-04-06: 945
+  2007-04-06: 980
+  2009-04-06: 1_075
+  2010-04-06: 1_095
+  2011-04-06: 1_130
+  2012-04-06: 1_190
+  2013-04-06: 1_220
+  2014-04-06: 1_255
+  2015-04-06: 1_275
+  2016-03-16: 1_275
+  2017-04-06: 1_290
+  2018-04-06: 1_330
+  2019-04-06: 1_365
+  2020-03-25: 1_365
+  2020-04-06: 1_390
+  2021-04-06: 1_400
+metadata:
+  unit: currency-GBP
+  name: wtc_severe_disability_element
+  label: WTC severe disability element
+  period: year
+  reference:
+    - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg. 20
+      href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/20
