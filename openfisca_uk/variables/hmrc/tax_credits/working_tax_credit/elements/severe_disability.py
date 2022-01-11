@@ -10,5 +10,5 @@ class wtc_severe_disability_element(Variable):
 
     def formula(benunit, period, parameters):
         wtc = parameters(period).hmrc.tax_credits.working_tax_credit
-        is_severely_disabled = benunit.any(benunit.members("is_severely_disabled", period))
+        is_severely_disabled = benunit.any(benunit.members("is_severely_disabled_for_benefits", period))
         return wtc.elements.disability * is_severely_disabled

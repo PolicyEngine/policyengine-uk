@@ -21,4 +21,6 @@ class is_ctc_eligible(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2002/21/section/8"
 
     def formula(benunit, period):
-        return benunit.any(benunit.members("is_child_for_ctc", period))
+        has_children = benunit.any(benunit.members("is_child_for_ctc", period))
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
+        return has_children & claims_legacy_benefits

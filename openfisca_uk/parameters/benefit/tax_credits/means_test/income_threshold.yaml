@@ -1,7 +1,6 @@
 description: Yearly income threshold after which the Child Tax Credit is reduced for benefit units claiming Working Tax Credit
 values:
   2016-04-06: 6_420
-  # NB: EUROMOD reports 6_555 for 2020. This is the gov.uk value.
   2020-04-06: 6_530
   2021-04-06: 6_565
 metadata:

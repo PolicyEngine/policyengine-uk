@@ -12,11 +12,11 @@ class claims_UC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        WTC = benunit("would_claim_WTC", period) & benunit(
-            "is_WTC_eligible", period
+        WTC = benunit("would_claim_wtc", period) & benunit(
+            "is_wtc_eligible", period
         )
-        CTC = benunit("would_claim_CTC", period) & benunit(
-            "is_CTC_eligible", period
+        CTC = benunit("would_claim_ctc", period) & benunit(
+            "is_ctc_eligible", period
         )
         HB = benunit("would_claim_HB", period) & benunit(
             "housing_benefit_eligible", period

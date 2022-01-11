@@ -20,7 +20,7 @@ class wtc_worker_element(Variable):
         meets_reduced_condition = (
             is_joint
             & has_children
-            & benunit.sum(hours) >= wtc.elements.worker.hours
+            & (benunit.sum(hours) >= wtc.elements.worker.hours)
             & benunit.any(lower_hours)
         )
         amount = wtc.elements.worker.rate

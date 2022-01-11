@@ -7,8 +7,8 @@ class is_work_disadvantaged(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        eligible_benefits = parameters(period).hmrc.tax_credits.working_tax_credits.eligibility.work_disadvantage
-        return np.any([person(benefit, period) > 0 for benefit in eligible_benefits])
+        eligible_benefits = parameters(period).hmrc.tax_credits.working_tax_credit.eligibility.work_disadvantage
+        return np.any([person(benefit, period) > 0 for benefit in eligible_benefits], axis=0)
 
 class in_wtc_qualifying_remunerative_work(Variable):
     label = "In qualifying remunerative work"
@@ -88,5 +88,7 @@ class is_wtc_eligible(Variable):
         "https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/basic-element",
     )
 
-    def formula(benunit, period, parameters):
-        return benunit.any(benunit.members("in_wtc_qualifying_remunerative_work", period))
+    def formula(benunit, period):
+        qualifies = benunit.any(benunit.members("in_wtc_qualifying_remunerative_work", period))
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
+        return qualifies & claims_legacy_benefits

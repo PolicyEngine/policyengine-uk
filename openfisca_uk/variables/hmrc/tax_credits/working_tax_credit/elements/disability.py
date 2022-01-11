@@ -10,4 +10,4 @@ class wtc_disability_element(Variable):
 
     def formula(benunit, period, parameters):
         wtc = parameters(period).hmrc.tax_credits.working_tax_credit
-        return wtc.elements.disability * benunit("is_work_disadvantaged", period)
+        return wtc.elements.disability * benunit.any(benunit.members("is_work_disadvantaged", period))

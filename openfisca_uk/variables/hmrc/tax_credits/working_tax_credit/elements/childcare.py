@@ -10,7 +10,7 @@ class wtc_childcare_element(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2002/2005/part/2/crossheading/child-care-element"
 
     def formula(benunit, period, parameters):
-        wtc = parameters(period).benefit.tax_credits.working_tax_credit
+        wtc = parameters(period).hmrc.tax_credits.working_tax_credit
         person = benunit.members
         is_adult = person("is_adult", period)
         works_lower_hours = person("weekly_hours", period) >= wtc.eligibility.work_requirements.lower

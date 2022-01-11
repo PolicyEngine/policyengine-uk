@@ -1,0 +1,21 @@
+description: Income sources which are treated as earned income for the Tax Credits.
+values:
+  2003-04-06:
+    - employment_income
+    - self_employment_income
+    # The regulations specify only which benefits are excluded;
+    # HMRC's internal manual clarifies as the following:
+    - JSA_contrib
+    - ESA_contrib
+    - incapacity_benefit
+    - carers_allowance
+    - BSP
+metadata:
+  unit: list
+  name: tc_earned_income
+  label: Tax Credits earned income
+  reference: 
+    - title: The Tax Credits (Definition and Calculation of Income) Regulations 2002 reg. 3
+      href: https://www.legislation.gov.uk/uksi/2002/2006/part/2
+    - title: HMRC internal manual | Tax Credits Technical Manual | TCTM04402 - Social Security Income
+      href: https://www.gov.uk/hmrc-internal-manuals/tax-credits-technical-manual/tctm04402

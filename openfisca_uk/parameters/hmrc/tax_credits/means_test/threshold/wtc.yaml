@@ -1,0 +1,14 @@
+description: Threshold for reduction of Working Tax Credit.
+values:
+  2003-04-06: 5_060
+  2016-04-06: 6_420
+  2020-04-06: 6_530
+  2021-04-06: 6_565
+metadata:
+  unit: currency-GBP
+  period: year
+  name: wtc_reduction_threshold
+  label: WTC reduction threshold
+  reference:
+    - title: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002
+      href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/7
