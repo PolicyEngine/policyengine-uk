@@ -13,7 +13,14 @@ def test_variable_names_match_return_types():
             elif var_name[:3] == "is_":
                 assert variable.value_type == bool
             else:
-                assert variable.value_type in (Enum, float, bool, str, int, date)
+                assert variable.value_type in (
+                    Enum,
+                    float,
+                    bool,
+                    str,
+                    int,
+                    date,
+                )
         except Exception as e:
             exceptions += [f"{var_name} returns {variable.value_type}"]
     print(

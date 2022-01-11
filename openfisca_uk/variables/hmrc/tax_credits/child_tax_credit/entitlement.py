@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class maximum_ctc(Variable):
     label = "CTC maximum rate"
     documentation = "The Child Tax Credit entitlement, before means-testing"
@@ -9,10 +10,13 @@ class maximum_ctc(Variable):
     unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        allowed = parameters(period).hmrc.tax_credits.child_tax_credit.elements.allowed
+        allowed = parameters(
+            period
+        ).hmrc.tax_credits.child_tax_credit.elements.allowed
         total = sum([benunit(element, period) for element in allowed])
         eligible = benunit("is_ctc_eligible", period)
         return eligible * total
+
 
 class ctc_reduction(Variable):
     label = "Child Tax Credit reduction"
@@ -33,6 +37,7 @@ class ctc_reduction(Variable):
         maximum_rate = benunit("maximum_ctc", period)
         reduction = means_test.reduction_rate * income_over_threshold
         return min_(maximum_rate, reduction)
+
 
 class ctc_pre_minimum(Variable):
     label = "Child Tax Credit (before minimum benefit rules)"

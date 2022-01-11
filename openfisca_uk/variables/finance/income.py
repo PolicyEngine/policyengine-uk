@@ -152,7 +152,6 @@ class weekly_hours(Variable):
         return person("hours_worked", period) / WEEKS_IN_YEAR
 
 
-
 class capital_income(Variable):
     value_type = float
     entity = Person

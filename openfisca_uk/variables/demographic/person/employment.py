@@ -25,6 +25,7 @@ class employment_status(Variable):
     documentation = "The employment status of this person"
     definition_period = YEAR
 
+
 class is_in_work(Variable):
     label = "In work"
     documentation = "Whether this person is in work"
@@ -34,9 +35,12 @@ class is_in_work(Variable):
 
     def formula(person, period):
         employment_status = person("employment_status", period)
-        return is_in(employment_status, *[
-            EmploymentStatus.FT_EMPLOYED,
-            EmploymentStatus.PT_EMPLOYED,
-            EmploymentStatus.FT_SELF_EMPLOYED,
-            EmploymentStatus.PT_SELF_EMPLOYED,
-        ])
+        return is_in(
+            employment_status,
+            *[
+                EmploymentStatus.FT_EMPLOYED,
+                EmploymentStatus.PT_EMPLOYED,
+                EmploymentStatus.FT_SELF_EMPLOYED,
+                EmploymentStatus.PT_SELF_EMPLOYED,
+            ]
+        )

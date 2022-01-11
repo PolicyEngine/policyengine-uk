@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class is_work_disadvantaged(Variable):
     label = "Has a disadvantage when looking for work"
     entity = Person
@@ -7,8 +8,14 @@ class is_work_disadvantaged(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        eligible_benefits = parameters(period).hmrc.tax_credits.working_tax_credit.eligibility.work_disadvantage
-        return np.any([person(benefit, period) > 0 for benefit in eligible_benefits], axis=0)
+        eligible_benefits = parameters(
+            period
+        ).hmrc.tax_credits.working_tax_credit.eligibility.work_disadvantage
+        return np.any(
+            [person(benefit, period) > 0 for benefit in eligible_benefits],
+            axis=0,
+        )
+
 
 class in_wtc_qualifying_remunerative_work(Variable):
     label = "In qualifying remunerative work"
@@ -26,10 +33,12 @@ class in_wtc_qualifying_remunerative_work(Variable):
         The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002,
         and these specify that a person is in "qualifying remunerative work" if,
         and only if, they satisfy four conditions. The first two are modelled here;
-        the third requires that the work continues for at least four weeks and 
+        the third requires that the work continues for at least four weeks and
         the fourth is that the work is remunerative.
         """
-        wtc = parameters(period).hmrc.tax_credits.working_tax_credit.eligibility
+        wtc = parameters(
+            period
+        ).hmrc.tax_credits.working_tax_credit.eligibility
 
         in_work = person("is_in_work", period)
         claim_is_joint = person.benunit("is_joint_benunit", period)
@@ -39,11 +48,15 @@ class in_wtc_qualifying_remunerative_work(Variable):
         has_children = person.benunit("benunit_has_children_or_qyp", period)
 
         lower_hours = hours >= wtc.work_requirements.lower
-        couple_hours = person.benunit.sum(hours) >= wtc.work_requirements.couple
+        couple_hours = (
+            person.benunit.sum(hours) >= wtc.work_requirements.couple
+        )
         standard_hours = hours >= wtc.work_requirements.standard
 
         young = (age >= wtc.age_groups.lower) & (age < wtc.age_groups.middle)
-        middle_aged = (age >= wtc.age_groups.middle) & (age < wtc.age_groups.upper)
+        middle_aged = (age >= wtc.age_groups.middle) & (
+            age < wtc.age_groups.upper
+        )
         old = age >= wtc.age_groups.upper
 
         meets_hours_requirement = (
@@ -75,11 +88,12 @@ class in_wtc_qualifying_remunerative_work(Variable):
 
         return in_work & meets_hours_requirement
 
-        
 
 class is_wtc_eligible(Variable):
     label = "Eligible for WTC"
-    documentation = "Whether this benefit unit is eligible for Working Tax Credit"
+    documentation = (
+        "Whether this benefit unit is eligible for Working Tax Credit"
+    )
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
@@ -89,6 +103,8 @@ class is_wtc_eligible(Variable):
     )
 
     def formula(benunit, period):
-        qualifies = benunit.any(benunit.members("in_wtc_qualifying_remunerative_work", period))
+        qualifies = benunit.any(
+            benunit.members("in_wtc_qualifying_remunerative_work", period)
+        )
         claims_legacy_benefits = benunit("claims_legacy_benefits", period)
         return qualifies & claims_legacy_benefits

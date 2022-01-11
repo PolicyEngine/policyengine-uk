@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class tax_credits_applicable_income(Variable):
     label = "Income for Tax Credits"
     entity = BenUnit
@@ -17,4 +18,3 @@ class tax_credits_applicable_income(Variable):
         )
         earned_income = aggr(benunit, period, tc.income.earned)
         return unearned_income + earned_income
-

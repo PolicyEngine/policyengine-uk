@@ -80,6 +80,7 @@ class relation_type(Variable):
             RelationType.COUPLE,
         )
 
+
 class is_joint_benunit(Variable):
     label = "Joint benefit unit"
     documentation = "Whether this benefit unit has two adults"
@@ -90,6 +91,7 @@ class is_joint_benunit(Variable):
     def formula(benunit, period):
         return benunit.sum(benunit.members("is_adult", period)) == 2
 
+
 class benunit_has_children(Variable):
     label = "Has children"
     entity = BenUnit
@@ -98,6 +100,7 @@ class benunit_has_children(Variable):
 
     def formula(benunit, period):
         return benunit.sum(benunit.members("is_child", period)) > 0
+
 
 class benunit_has_children_or_qyp(Variable):
     label = "Has children or qualifying young people"

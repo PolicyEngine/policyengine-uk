@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class age(Variable):
     value_type = int
     entity = Person
@@ -24,6 +25,7 @@ class birth_year(Variable):
 
     def formula(person, period):
         return period.start.year - person("age", period)
+
 
 class birth_date(Variable):
     label = "Date of birth"

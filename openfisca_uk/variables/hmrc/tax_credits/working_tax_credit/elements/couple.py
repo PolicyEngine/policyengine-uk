@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class wtc_couple_element(Variable):
     label = "WTC couple element"
     entity = BenUnit

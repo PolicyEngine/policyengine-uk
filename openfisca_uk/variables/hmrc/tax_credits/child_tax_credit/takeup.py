@@ -8,6 +8,7 @@ class child_tax_credit_reported(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
 
+
 class would_claim_ctc(Variable):
     value_type = bool
     entity = BenUnit

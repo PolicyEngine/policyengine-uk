@@ -37,4 +37,3 @@ class claims_wtc(Variable):
         would_claim_wtc = benunit("would_claim_wtc", period)
         claims_legacy_benefits = benunit("claims_legacy_benefits", period)
         return would_claim_wtc & claims_legacy_benefits
-

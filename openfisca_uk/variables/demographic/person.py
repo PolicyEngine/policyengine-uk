@@ -46,8 +46,6 @@ class person_weight(Variable):
         return scale_factor * frs_person_weight
 
 
-
-
 class over_16(Variable):
     value_type = bool
     entity = Person
@@ -82,7 +80,9 @@ class child_index(Variable):
     value_type = int
     entity = Person
     label = "Child reference number"
-    documentation = "The child index, by age, descending (e.g. 'first child' = 1)"
+    documentation = (
+        "The child index, by age, descending (e.g. 'first child' = 1)"
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):

@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class wtc_basic_element(Variable):
     label = "WTC basic element"
     entity = BenUnit

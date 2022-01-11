@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class wtc_lone_parent_element(Variable):
     label = "WTC lone parent element"
     entity = BenUnit
