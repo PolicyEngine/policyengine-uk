@@ -243,6 +243,12 @@ class personal_benefits(Variable):
             "PIP_DL",
             "SDA",
             "state_pension",
+            "student_payments",
+            "student_loans",
+            "maternity_allowance",
+            "SSP",
+            "SMP",
+            "ssmg",
         ]
         return add(person, period, BENEFITS)
 
@@ -270,12 +276,6 @@ class personal_benefits_reported(Variable):
             "PIP_DL",
             "SDA",
             "state_pension",
-            "student_payments",
-            "student_loans",
-            "maternity_allowance",
-            "SSP",
-            "SMP",
-            "ssmg",
         ]
         return add(person, period, [i + "_reported" for i in BENEFITS])
 
