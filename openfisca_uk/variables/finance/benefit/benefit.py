@@ -71,7 +71,12 @@ class household_benefits(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return aggr(household, period, ["benefits"])
+        HOUSEHOLD_BENEFITS = [
+            "winter_fuel_allowance",
+        ]
+        personal_benefits = aggr(household, period, ["benefits"])
+        household_benefits = add(household, period, HOUSEHOLD_BENEFITS)
+        return personal_benefits + household_benefits
 
 
 class other_benefits(Variable):
@@ -238,6 +243,12 @@ class personal_benefits(Variable):
             "PIP_DL",
             "SDA",
             "state_pension",
+            "student_payments",
+            "student_loans",
+            "maternity_allowance",
+            "SSP",
+            "SMP",
+            "ssmg",
         ]
         return add(person, period, BENEFITS)
 
@@ -265,6 +276,12 @@ class personal_benefits_reported(Variable):
             "PIP_DL",
             "SDA",
             "state_pension",
+            "student_payments",
+            "student_loans",
+            "maternity_allowance",
+            "SSP",
+            "SMP",
+            "ssmg",
         ]
         return add(person, period, [i + "_reported" for i in BENEFITS])
 

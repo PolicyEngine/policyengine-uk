@@ -8,6 +8,7 @@ class student_loans(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
 
+
 class adult_ema(Variable):
     label = "Adult EMA"
     documentation = "Educational Maintenance Allowance for adults"
@@ -15,6 +16,7 @@ class adult_ema(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 class child_ema(Variable):
     label = "Child EMA"
@@ -24,6 +26,7 @@ class child_ema(Variable):
     value_type = float
     unit = "currency-GBP"
 
+
 class access_fund(Variable):
     label = "Access Fund"
     documentation = "Access Fund for educational assistance"
@@ -31,6 +34,7 @@ class access_fund(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 class education_grants(Variable):
     label = "Education grants"
