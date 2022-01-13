@@ -35,12 +35,10 @@ class is_in_work(Variable):
 
     def formula(person, period):
         employment_status = person("employment_status", period)
-        return is_in(
-            employment_status,
-            *[
-                EmploymentStatus.FT_EMPLOYED,
-                EmploymentStatus.PT_EMPLOYED,
-                EmploymentStatus.FT_SELF_EMPLOYED,
-                EmploymentStatus.PT_SELF_EMPLOYED,
-            ]
-        )
+        WORK_STATUSES = [
+            EmploymentStatus.FT_EMPLOYED,
+            EmploymentStatus.PT_EMPLOYED,
+            EmploymentStatus.FT_SELF_EMPLOYED,
+            EmploymentStatus.PT_SELF_EMPLOYED,
+        ]
+        return is_in(employment_status, *WORK_STATUSES)
