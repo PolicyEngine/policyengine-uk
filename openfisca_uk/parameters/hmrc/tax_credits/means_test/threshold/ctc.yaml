@@ -1,4 +1,4 @@
-description: Threshold for reduction of the Child Tax Credit, if the claimant has no WTC eligibility.
+description: Threshold for reduction of the Child Tax Credit, if the claimant is ineligible for the Working Tax Credit.
 values:
   2016-04-06: 16_105
   2020-04-06: 16_385
@@ -9,5 +9,5 @@ metadata:
   name: ctc_only_reduction_threshold
   label: CTC-only reduction threshold
   reference:
-    - title: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002
-      href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/7
+    - title: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002 reg. 8
+      href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/8

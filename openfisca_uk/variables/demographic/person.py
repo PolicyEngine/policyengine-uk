@@ -106,7 +106,7 @@ class is_eldest_child(Variable):
     definition_period = YEAR
     value_type = bool
 
-    def formula(person, period):
+    def formula(person, period, parameters):
         return person("child_index", period) == 1
 
 

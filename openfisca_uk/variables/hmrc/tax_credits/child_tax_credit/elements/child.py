@@ -54,5 +54,4 @@ class ctc_child_element(Variable):
             person("meets_ctc_child_limit", period) | exempt_from_limit
         )
         eligible_children = benunit.sum(is_child_for_ctc)
-        amount = CTC.elements.child_element * eligible_children
-        return amount
+        return CTC.elements.child_element * eligible_children
