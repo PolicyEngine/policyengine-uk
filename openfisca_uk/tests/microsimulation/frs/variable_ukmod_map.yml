@@ -31,4 +31,4 @@ benefits:
 net_income:
   ukmod: ils_dispy
   skip_household_matching: true
-  max_rel_error: 0.07
+  max_rel_error: 0.08
