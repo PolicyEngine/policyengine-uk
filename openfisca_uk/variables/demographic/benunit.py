@@ -89,7 +89,7 @@ class is_joint_benunit(Variable):
     value_type = bool
 
     def formula(benunit, period):
-        return aggr(benunit, period, "is_adult") == 2
+        return aggr(benunit, period, ["is_adult"]) == 2
 
 
 class benunit_has_children(Variable):
@@ -99,7 +99,7 @@ class benunit_has_children(Variable):
     value_type = bool
 
     def formula(benunit, period):
-        return aggr(benunit, period, "is_child") > 0
+        return aggr(benunit, period, ["is_child"]) > 0
 
 
 class benunit_has_children_or_qyp(Variable):
