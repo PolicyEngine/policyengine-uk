@@ -30,12 +30,9 @@ class wtc_reduction(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/7"
 
     def formula(benunit, period, parameters):
-        maximum_rate = benunit("maximum_wtc", period)
-        income = benunit("tax_credits_applicable_income", period)
-        means_test = parameters(period).hmrc.tax_credits.means_test
-        income_over_threshold = max_(0, income - means_test.threshold.wtc)
-        reduction = means_test.reduction_rate * income_over_threshold
-        return min_(maximum_rate, reduction)
+        tax_credits_reduction = benunit("tax_credits_reduction", period)
+        wtc = benunit("maximum_wtc", period)
+        return min_(tax_credits_reduction, wtc)
 
 
 class wtc_pre_minimum(Variable):
@@ -46,10 +43,25 @@ class wtc_pre_minimum(Variable):
     unit = "currency-GBP"
     reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/7"
 
-    def formula(benunit, period):
+    def formula(benunit, period, parameters):
         maximum_rate = benunit("maximum_wtc", period)
         reduction = benunit("wtc_reduction", period)
         return maximum_rate - reduction
+
+
+class wtc_pre_takeup(Variable):
+    label = "Working Tax Credit"
+    documentation = "Working Tax Credit entitlement, before take-up imputations."
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/7"
+
+    def formula(benunit, period, parameters):
+        maximum_rate = benunit("wtc_pre_minimum", period)
+        below_minimum = benunit("tax_credits_below_minimum", period)
+        return maximum_rate * ~below_minimum
 
 
 class working_tax_credit(Variable):
@@ -60,7 +72,14 @@ class working_tax_credit(Variable):
     unit = "currency-GBP"
     reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/7"
 
-    def formula(benunit, period):
-        maximum_rate = benunit("wtc_pre_minimum", period)
-        below_minimum = benunit("tax_credits_below_minimum", period)
-        return maximum_rate * ~below_minimum * benunit("claims_wtc", period)
+    def formula(benunit, period, parameters):
+        return benunit("wtc_pre_takeup", period) * benunit("claims_wtc", period)
+
+    def formula_2021(benunit, period, parameters):
+        covid_payment = parameters(period).hmrc.tax_credits.working_tax_credit.coronavirus_payment
+        wtc = benunit("wtc_pre_takeup", period)
+        increased_wtc = where(wtc > 0, wtc + covid_payment, wtc)
+        return increased_wtc * benunit("claims_wtc", period)
+
+    def formula(benunit, period, parameters):
+        return benunit("wtc_pre_takeup", period) * benunit("claims_wtc", period)

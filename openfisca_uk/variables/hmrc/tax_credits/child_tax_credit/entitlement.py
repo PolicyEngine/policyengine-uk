@@ -28,15 +28,10 @@ class ctc_reduction(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/8"
 
     def formula(benunit, period, parameters):
-        means_test = parameters(period).hmrc.tax_credits.means_test
-        wtc = benunit("wtc_pre_minimum", period)
-        wtc_eliminating_income = wtc / means_test.reduction_rate
-        threshold = means_test.threshold.ctc - wtc_eliminating_income
-        income = benunit("tax_credits_applicable_income", period)
-        income_over_threshold = max_(0, income - threshold)
-        maximum_rate = benunit("maximum_ctc", period)
-        reduction = means_test.reduction_rate * income_over_threshold
-        return min_(maximum_rate, reduction)
+        tax_credits_reduction = benunit("tax_credits_reduction", period)
+        wtc_reduction = benunit("wtc_reduction", period)
+        ctc = benunit("maximum_ctc", period)
+        return min_(tax_credits_reduction - wtc_reduction, ctc)
 
 
 class ctc_pre_minimum(Variable):
@@ -52,6 +47,18 @@ class ctc_pre_minimum(Variable):
         reduction = benunit("ctc_reduction", period)
         return maximum_rate - reduction
 
+class ctc_pre_takeup(Variable):
+    label = "Child Tax Credit entitlement, before take-up imputations."
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/8"
+
+    def formula(benunit, period, parameters):
+        maximum_rate = benunit("ctc_pre_minimum", period)
+        below_minimum = benunit("tax_credits_below_minimum", period)
+        return maximum_rate * ~below_minimum
 
 class child_tax_credit(Variable):
     label = "Child Tax Credit"
@@ -61,7 +68,5 @@ class child_tax_credit(Variable):
     unit = "currency-GBP"
     reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/8"
 
-    def formula(benunit, period):
-        maximum_rate = benunit("ctc_pre_minimum", period)
-        below_minimum = benunit("tax_credits_below_minimum", period)
-        return maximum_rate * ~below_minimum * benunit("claims_ctc", period)
+    def formula(benunit, period, parameters):
+        return benunit("ctc_pre_takeup", period) * benunit("claims_ctc", period)

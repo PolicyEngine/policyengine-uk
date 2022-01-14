@@ -5,7 +5,6 @@ values:
     - couple
     - lone_parent
     - disability
-    - severe_disability
     - childcare
     - worker
 metadata:

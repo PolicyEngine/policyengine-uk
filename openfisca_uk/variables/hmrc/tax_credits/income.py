@@ -18,3 +18,22 @@ class tax_credits_applicable_income(Variable):
         )
         earned_income = aggr(benunit, period, tc.income.earned)
         return unearned_income + earned_income
+
+class tax_credits_reduction(Variable):
+    label = "Label"
+    documentation = "Description"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
+        wtc = benunit("maximum_wtc", period)
+        ctc = benunit("maximum_ctc", period)
+        entitlement = wtc + ctc
+        income = benunit("tax_credits_applicable_income", period)
+        means_test = parameters(period).hmrc.tax_credits.means_test
+        threshold = where(wtc > 0, means_test.threshold.wtc, means_test.threshold.ctc)
+        income_over_threshold = max_(0, income - threshold)
+        reduction = means_test.reduction_rate * income_over_threshold
+        return min_(reduction, entitlement)

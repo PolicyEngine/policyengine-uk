@@ -1,0 +1,10 @@
+description: The Covid-19 Support Scheme one-off payment for Working Tax Credit recipients.
+values:
+  2021-01-01: 500
+metadata:
+  unit: currency-GBP
+  name: wtc_covid_payment
+  label: WTC Covid-19 Support Scheme one-off payment
+  reference:
+    - title: HMRC Covid-19 Support Scheme (working households receiving tax credits) direction
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1016649/210909_OS_HMT_TC_direction_signed.pdf
