@@ -5,9 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.5] - 2022-01-16
+
+### Added
+
+* When datasets are not available, a prompt is displayed to download them or use synthetic data.
+* CLI interface trigger changed from `openfisca-uk-setup` to `openfisca-uk` and default years updated.
+
 ## [0.10.4] - 2022-01-14
 
-###
+### Changed
 
 * OpenFisca-UK-Data version increased to 0.7.0.
 
