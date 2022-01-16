@@ -44,7 +44,7 @@ class Microsimulation(GeneralMicrosimulation):
         else:
             dataset = dataset
         if year is None:
-            year = self.default_year or max(self.dataset.years)
+            year = self.default_year or max(dataset.years)
         else:
             year = year
 
