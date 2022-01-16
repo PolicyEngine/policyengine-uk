@@ -1,15 +1,16 @@
-from openfisca_uk_data import FRS, SynthFRS, DATASETS
+from openfisca_uk_data import FRSEnhanced, SynthFRS, DATASETS
 from pathlib import Path
 import inquirer
 import yaml
 import argparse
-from openfisca_uk import REPO
+
+REPO = Path(__file__).parent
 
 NEWLINE = "\n"
 
 DATASET_CONFIG_FILE = Path(__file__).parent / "tools" / "datasets.yml"
 
-key_to_ds = {ds.name: ds for ds in DATASETS}
+key_to_ds = {ds.name: ds for ds in DATASETS if ds.model == "openfisca_uk"}
 
 
 def set_default(dataset):
@@ -32,43 +33,39 @@ def main():
         set_default(key_to_ds[args.set_default])
         print("Just setting default dataset, skipping questions.")
     else:
+        USE_FRS_2019 = "Use the enhanced 2019 FRS"
         USE_SYNTHETIC = "Just use the synthetic FRS"
-        USE_FRS_2018 = "Use the 2018 FRS"
         CUSTOM = "Use a specific dataset"
         setup_question = inquirer.List(
             "setup_mode",
             message="How would you like to set up OpenFisca-UK's default dataset?",
-            choices=[USE_SYNTHETIC, USE_FRS_2018, CUSTOM],
+            choices=[USE_FRS_2019, USE_SYNTHETIC, CUSTOM],
         )
         setup_mode = inquirer.prompt([setup_question])["setup_mode"]
         if setup_mode == USE_SYNTHETIC:
             if len(SynthFRS.years) == 0:
                 print("Couldn't find the synthetic dataset, downloading.")
-                SynthFRS.save()
+                SynthFRS.download(2019)
             else:
                 print(
                     f"You currently have the synthetic FRS dataset for: {', '.join(map(str, SynthFRS.years))}."
                 )
-            with open(REPO / "tools" / "datasets.yml") as f:
-                data = yaml.safe_load(f)
-                data["default"] = "synth_frs"
-        elif setup_mode == USE_FRS_2018:
-            file_input = inquirer.Path(
-                "file_path",
-                message="Please enter the filepath to frs_2018.h5",
-                path_type=inquirer.Path.FILE,
-                normalize_to_absolute_path=True,
-            )
-            filepath = str(
-                Path(inquirer.prompt([file_input])["file_path"]).expanduser()
-            )
-            FRS.save(filepath, 2018)
-            set_default(FRS)
+            set_default(SynthFRS)
+        elif setup_mode == USE_FRS_2019:
+            if 2019 not in FRSEnhanced.years:
+                print("Couldn't find the enhanced 2019 dataset, downloading.")
+                FRSEnhanced.download(2019)
+            set_default(SynthFRS)
         elif setup_mode == CUSTOM:
             dataset_question = inquirer.List(
                 "default_dataset",
                 message="Which dataset would you like OpenFisca-UK to use by default?",
-                choices=list(map(lambda x: x.name, DATASETS)),
+                choices=list(
+                    map(
+                        lambda x: x.name,
+                        filter(lambda x: x.model == "openfisca_uk", DATASETS),
+                    )
+                ),
             )
             default_dataset = inquirer.prompt([dataset_question])[
                 "default_dataset"
