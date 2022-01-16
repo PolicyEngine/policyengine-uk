@@ -33,7 +33,7 @@ setup(
         "pytest>=5.4.3",
         "OpenFisca-Core>=35.4.1",
         "microdf_python>=0.3.0",
-        "OpenFisca-UK-Data>=0.7.0",
+        "OpenFisca-UK-Data>=0.7.1",
         "OpenFisca-Tools>=0.1.7,<0.2.0",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
@@ -49,9 +49,7 @@ setup(
         ]
     },
     entry_points={
-        "console_scripts": [
-            "openfisca-uk-setup=openfisca_uk.initial_setup:main"
-        ],
+        "console_scripts": ["openfisca-uk=openfisca_uk.initial_setup:main"],
     },
     packages=find_packages(),
 )
