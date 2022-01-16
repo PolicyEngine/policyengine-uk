@@ -55,7 +55,7 @@ def main():
             if 2019 not in FRSEnhanced.years:
                 print("Couldn't find the enhanced 2019 dataset, downloading.")
                 FRSEnhanced.download(2019)
-            set_default(SynthFRS)
+            set_default(FRSEnhanced)
         elif setup_mode == CUSTOM:
             dataset_question = inquirer.List(
                 "default_dataset",
