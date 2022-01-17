@@ -8,6 +8,7 @@ class food_and_non_alcoholic_beverages_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class alcohol_and_tobacco_consumption(Variable):
@@ -17,6 +18,7 @@ class alcohol_and_tobacco_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class clothing_and_footwear_consumption(Variable):
@@ -26,6 +28,7 @@ class clothing_and_footwear_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class housing_water_and_electricity_consumption(Variable):
@@ -37,6 +40,7 @@ class housing_water_and_electricity_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class household_furnishings_consumption(Variable):
@@ -46,6 +50,7 @@ class household_furnishings_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class health_consumption(Variable):
@@ -55,6 +60,7 @@ class health_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class transport_consumption(Variable):
@@ -64,6 +70,7 @@ class transport_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class communication_consumption(Variable):
@@ -73,6 +80,7 @@ class communication_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class recreation_consumption(Variable):
@@ -82,6 +90,7 @@ class recreation_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class education_consumption(Variable):
@@ -91,6 +100,7 @@ class education_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class restaurants_and_hotels_consumption(Variable):
@@ -100,6 +110,7 @@ class restaurants_and_hotels_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW
 
 
 class miscellaneous_consumption(Variable):
@@ -109,3 +120,4 @@ class miscellaneous_consumption(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = FLOW

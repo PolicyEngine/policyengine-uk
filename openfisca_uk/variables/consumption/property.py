@@ -130,6 +130,7 @@ class rent(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+    quantity_type = FLOW
 
 
 class non_residential_rent(Variable):

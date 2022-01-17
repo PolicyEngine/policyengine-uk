@@ -147,6 +147,7 @@ class weekly_hours(Variable):
     documentation = "Average weekly hours worked"
     definition_period = YEAR
     unit = "hour"
+    quantity_type = FLOW
 
     def formula(person, period, parameters):
         return person("hours_worked", period) / WEEKS_IN_YEAR

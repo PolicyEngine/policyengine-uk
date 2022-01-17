@@ -21,6 +21,7 @@ class employment_income(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
+    quantity_type = FLOW
 
 
 @uprated(by="earnings")
@@ -32,6 +33,7 @@ class pension_income(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
+    quantity_type = FLOW
 
 
 class social_security_income(Variable):
@@ -62,6 +64,7 @@ class self_employment_income(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
+    quantity_type = FLOW
 
 
 @uprated(by="earnings")
@@ -73,6 +76,7 @@ class property_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
     unit = "currency-GBP"
+    quantity_type = FLOW
 
 
 @uprated(by="earnings")
@@ -84,6 +88,7 @@ class savings_interest_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
     unit = "currency-GBP"
+    quantity_type = FLOW
 
 
 @uprated(by="earnings")
@@ -95,3 +100,4 @@ class dividend_income(Variable):
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
     unit = "currency-GBP"
+    quantity_type = FLOW

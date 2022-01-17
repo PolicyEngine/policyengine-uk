@@ -8,6 +8,7 @@ class corporate_wealth(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+    quantity_type = STOCK
 
 
 class shareholding(Variable):

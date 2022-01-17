@@ -53,6 +53,7 @@ class age(Variable):
     unit = "year"
     documentation = "The age of the person in years"
     definition_period = YEAR
+    quantity_type = STOCK
 
     def formula(person, period, parameters):
         ADULT_DEFAULT_AGE = 18
