@@ -54,6 +54,7 @@ class state_pension(Variable):
     unit = "currency-GBP"
     documentation = "Gross State Pension payments"
     unit = "currency-GBP"
+    quantity_type = FLOW
 
     def formula(person, period, parameters):
         return person("state_pension_reported", period)

@@ -8,6 +8,7 @@ class owned_land(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = STOCK
 
 
 class land_value(Variable):
@@ -19,6 +20,7 @@ class land_value(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+    quantity_type = STOCK
 
     def formula(household, period):
         VARIABLES = [
@@ -37,6 +39,7 @@ class household_land_value(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = STOCK
 
     def formula(household, period, parameters):
         property_wealth = household("property_wealth", period)
@@ -63,6 +66,7 @@ class corporate_land_value(Variable):
     unit = "currency-GBP"
     definition_period = YEAR
     value_type = float
+    quantity_type = STOCK
 
     def formula(household, period, parameters):
         corporate_wealth = household("corporate_wealth", period)

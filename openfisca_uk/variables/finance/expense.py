@@ -157,6 +157,7 @@ class council_tax(Variable):
     label = "Council Tax"
     definition_period = YEAR
     unit = "currency-GBP"
+    quantity_type = FLOW
 
 
 class council_tax_less_benefit(Variable):
