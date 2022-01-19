@@ -2,11 +2,11 @@ name: openfisca_uk
 channels:
   - defaults
 dependencies:
-- numpy
-- pandas
-- pip
-- pytest
-- setuptools
-- pip:
-  - jupyter-book>=0.11.1
-  - sphinxcontrib-bibtex>=1.0.0
+  - numpy
+  - pandas
+  - pip
+  - pytest
+  - setuptools
+  - pip:
+      - jupyter-book>=0.11.1
+      - sphinxcontrib-bibtex>=1.0.0

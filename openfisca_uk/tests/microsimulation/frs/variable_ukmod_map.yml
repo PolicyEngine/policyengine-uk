@@ -21,7 +21,7 @@ universal_credit:
   ukmod: bsauc_s
   max_rel_error: 0.45
   skip_household_matching: true
-market_income: 
+market_income:
   ukmod: ils_origy
   max_rel_error: 0.06
 benefits:

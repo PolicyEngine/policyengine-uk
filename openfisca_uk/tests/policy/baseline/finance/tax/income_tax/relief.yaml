@@ -52,7 +52,7 @@
   absolute_error_margin: 0
   input:
     self_employment_income: 1000
-    loss_relief: 
+    loss_relief:
       2019: 2000
   output:
     taxable_self_employment_income: 0
