@@ -18,7 +18,7 @@ values:
   2024-01-01: 117.11
 metadata:
   unit: currency-GBP
-  reference: 
+  reference:
     - title: ONS
       href: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23
     - title: UKMOD Country Report

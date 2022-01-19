@@ -18,6 +18,6 @@ COUPLE:
 metadata:
   period: week
   unit: currency-GBP
-  reference: 
+  reference:
     - title: The State Pension Credit Regulations 2002 reg. 6
       url: https://www.legislation.gov.uk/uksi/2002/1792/regulation/6/2021-04-12

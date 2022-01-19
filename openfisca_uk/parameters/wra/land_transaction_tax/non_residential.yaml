@@ -1,19 +1,19 @@
 description: Non-residential property progressive tax scale
 brackets:
-  - rate: 
+  - rate:
       2018-04-01: 0.0
     threshold:
       2018-04-01: 0.0
-  - rate: 
+  - rate:
       2018-04-01: 0.01
     threshold:
       2018-04-01: 150_000
       2020-12-22: 225_000
-  - rate: 
+  - rate:
       2018-04-01: 0.05
     threshold:
       2018-04-01: 250_000
-  - rate: 
+  - rate:
       2018-04-01: 0.06
     threshold:
       2018-04-01: 1_000_000

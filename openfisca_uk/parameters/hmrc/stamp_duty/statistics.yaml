@@ -18,7 +18,7 @@ residential:
       description: Number of transactions by age
       metadata:
         reference:
-          - title:  UK Stamp Tax statistics (Table 6c) (Experimental)
+          - title: UK Stamp Tax statistics (Table 6c) (Experimental)
             href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
       brackets:
         - threshold:
@@ -81,7 +81,7 @@ residential:
       description: Number of claims for First Time Buyer's Relief
       metadata:
         reference:
-          - title:  UK Stamp Tax statistics (Table 6a) (Experimental)
+          - title: UK Stamp Tax statistics (Table 6a) (Experimental)
             href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
       brackets:
         - threshold:

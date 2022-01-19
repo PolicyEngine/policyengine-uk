@@ -28,7 +28,7 @@
   absolute_error_margin: 0
   input:
     hours_worked: 52
-  output: 
+  output:
     benunit_weekly_hours: 1
 - name: Family structure
   period: 2020
