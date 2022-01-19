@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * Household gross income calculated directly from household benefits and market income.
-* Child Benefit takeup rate simulated from OpenFisca-UK to match official caseloads.
 
 ## [0.10.6] - 2022-01-17
 
