@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * Household gross income calculated directly from household benefits and market income.
+* Savings allowance was previously set to zero erroneously for households in Scotland at the starter or intermediate bands.
 
 ## [0.10.6] - 2022-01-17
 
