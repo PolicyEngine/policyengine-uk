@@ -1,0 +1,20 @@
+expenditure:
+  values:
+    2018-01-01: 11_170_000_000
+    2019-01-01: 11_081_000_000
+    2020-01-01: 11_116_000_000
+    2021-01-01: 10_981_000_000
+    2022-01-01: 11_213_000_000
+  metadata:
+    reference:
+      - title: Benefit expenditure and caseload tables 2021
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+caseload:
+  values:
+    2018-01-01: 7_325_845
+    2019-01-01: 7_281_535
+    2020-01-01: 7_210_595
+  metadata:
+    reference:
+      - title: "Child Benefit Statistics: Annual Releast, August 2020"
+        href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020
