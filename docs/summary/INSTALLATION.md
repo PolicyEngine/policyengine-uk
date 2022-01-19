@@ -35,6 +35,7 @@ Two install procedures are available. Pick procedure A or B below depending on h
 ### A. Minimal Installation (Pip Install)
 
 Follow this installation if you wish to:
+
 - run calculations on a large population;
 - create tax & benefits simulations;
 - write an extension to this legislation (e.g. city specific tax & benefits);
@@ -55,6 +56,7 @@ python --version  # should print "Python 2.7.xx".
 pip --version  # should print at least 9.0.
 #if not, run "pip install --upgrade pip"
 ```
+
 Install the Country Package:
 
 ```sh
@@ -69,6 +71,7 @@ pip install openfisca_uk
 - To serve this Country Package, serve the [OpenFisca web API](#serve-your-country-package-with-the-openFisca-web-api).
 
 Depending on what you want to do with OpenFisca, you may want to install yet other packages in your virtualenv:
+
 - To install extensions or write on top of this Country Package, head to the [Extensions documentation](https://openfisca.org/doc/contribute/extensions.html).
 - To plot simulation results, try [matplotlib](http://matplotlib.org/).
 - To manage data, check out [pandas](http://pandas.pydata.org/).
@@ -76,6 +79,7 @@ Depending on what you want to do with OpenFisca, you may want to install yet oth
 ### B. Advanced Installation (Git Clone)
 
 Follow this tutorial if you wish to:
+
 - create or change this Country Package's legislation;
 - contribute to the source code.
 
@@ -96,6 +100,7 @@ python --version  # should print "Python 2.7.xx".
 pip --version  # should print at least 9.0.
 #if not, run "pip install --upgrade pip"
 ```
+
 Clone this Country Package on your machine:
 
 ```sh

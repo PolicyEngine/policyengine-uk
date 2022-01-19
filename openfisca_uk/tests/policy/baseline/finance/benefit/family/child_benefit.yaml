@@ -3,9 +3,9 @@
   absolute_error_margin: 1
   input:
     people:
-      parent1: 
+      parent1:
         age: 41
-      parent2: 
+      parent2:
         age: 42
     benunits:
       benunit:
@@ -18,11 +18,11 @@
   absolute_error_margin: 1
   input:
     people:
-      parent1: 
+      parent1:
         age: 41
-      parent2: 
+      parent2:
         age: 42
-      child1: 
+      child1:
         age: 15
     benunits:
       benunit:
@@ -35,13 +35,13 @@
   absolute_error_margin: 1
   input:
     people:
-      parent1: 
+      parent1:
         age: 41
-      parent2: 
+      parent2:
         age: 42
-      child1: 
+      child1:
         age: 14
-      child2: 
+      child2:
         age: 17
         current_education: POST_SECONDARY
     benunits:

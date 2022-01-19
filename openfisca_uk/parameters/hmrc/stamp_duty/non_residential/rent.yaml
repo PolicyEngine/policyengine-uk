@@ -1,8 +1,8 @@
 description: "Stamp Duty Land Tax progressive rates for cumulative rents on non-residential property"
 brackets:
-  - rate: 
+  - rate:
       2003-07-10: 0
-    threshold: 
+    threshold:
       2003-07-10: 0
   - rate:
       2003-07-10: 0.01
@@ -15,6 +15,6 @@ brackets:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
-  reference: 
+  reference:
     - title: Finance Act 2003 schedule 5
       href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/5

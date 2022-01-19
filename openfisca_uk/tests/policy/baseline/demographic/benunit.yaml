@@ -3,7 +3,7 @@
   absolute_error_margin: 0
   input:
     people:
-      adult: 
+      adult:
         age: 30
       child:
         age: 14
@@ -19,13 +19,13 @@
   absolute_error_margin: 0
   input:
     people:
-      adult_1: 
+      adult_1:
         age: 34
-      adult_2: 
+      adult_2:
         age: 35
-      child_1: 
+      child_1:
         age: 3
-      child_2: 
+      child_2:
         age: 4
     benunits:
       benunit:

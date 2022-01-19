@@ -1,10 +1,10 @@
 description: Residential property progressive tax scale for primary residences
 brackets:
-  - rate: 
+  - rate:
       2018-04-01: 0.0
     threshold:
       2018-04-01: 0.0
-  - rate: 
+  - rate:
       2018-04-01: 0.035
       2020-07-27: null
       2021-07-01: 0.035
@@ -12,19 +12,19 @@ brackets:
       2018-04-01: 180_000
       2020-07-27: null
       2021-07-01: 180_000
-  - rate: 
+  - rate:
       2018-04-01: 0.05
     threshold:
       2018-04-01: 250_000
-  - rate: 
+  - rate:
       2018-04-01: 0.075
     threshold:
       2018-04-01: 400_000
-  - rate: 
+  - rate:
       2018-04-01: 0.10
     threshold:
       2018-04-01: 750_000
-  - rate: 
+  - rate:
       2018-04-01: 0.12
     threshold:
       2018-04-01: 1_500_000
