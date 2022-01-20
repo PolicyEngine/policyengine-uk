@@ -1,0 +1,26 @@
+caseload:
+  description: Number of families claiming income-based JSA.
+  values:
+    2018-01-01: 274_000
+    2019-01-01: 138_000
+    2020-01-01: 97_000
+    2021-01-01: 67_000
+    2022-01-01: 44_000
+  metadata:
+    unit: benefit unit
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+expenditure:
+  description: Total spending on income-based JSA.
+  values:
+    2018-01-01: 1_144_000_000
+    2019-01-01: 603_000_000
+    2020-01-01: 435_000_000
+    2021-01-01: 297_000_000
+    2022-01-01: 196_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
