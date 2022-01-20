@@ -130,6 +130,18 @@ save_parameter(
     parameter_folder / "hmrc" / "child_benefit" / "takeup_rate.yaml",
 )
 
+uc = Program(
+    "universal_credit",
+    parameters.benefit.universal_credit.statistics.caseload,
+    parameters.benefit.universal_credit.statistics.expenditure,
+    parameters.benefit.universal_credit.takeup_rate,
+)
+
+save_parameter(
+    uc.fit_takeup_rate(),
+    parameter_folder / "benefit" / "universal_credit" / "takeup_rate.yaml",
+)
+
 ctc = Program(
     "child_tax_credit",
     parameters.benefit.tax_credits.child_tax_credit.statistics.caseload,
