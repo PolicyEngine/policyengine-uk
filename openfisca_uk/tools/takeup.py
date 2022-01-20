@@ -175,3 +175,51 @@ save_parameter(
     / "working_tax_credit"
     / "takeup.yaml",
 )
+
+hb = Program(
+    "housing_benefit",
+    parameters.benefit.housing_benefit.statistics.caseload,
+    parameters.benefit.housing_benefit.statistics.expenditure,
+    parameters.benefit.housing_benefit.takeup_rate,
+)
+
+save_parameter(
+    hb.fit_takeup_rate(),
+    parameter_folder / "benefit" / "housing_benefit" / "takeup.yaml",
+)
+
+i_s = Program(
+    "income_support",
+    parameters.benefit.income_support.statistics.caseload,
+    parameters.benefit.income_support.statistics.expenditure,
+    parameters.benefit.income_support.takeup,
+)
+
+save_parameter(
+    i_s.fit_takeup_rate(),
+    parameter_folder / "benefit" / "income_support" / "takeup.yaml",
+)
+
+ib_jsa = Program(
+    "jsa_income",
+    parameters.benefit.JSA.income.statistics.caseload,
+    parameters.benefit.JSA.income.statistics.expenditure,
+    parameters.benefit.JSA.income.takeup_rate,
+)
+
+save_parameter(
+    ib_jsa.fit_takeup_rate(),
+    parameter_folder / "benefit" / "JSA" / "income" / "takeup.yaml",
+)
+
+pc = Program(
+    "pension_credit",
+    parameters.benefit.pension_credit.statistics.caseload,
+    parameters.benefit.pension_credit.statistics.expenditure,
+    parameters.benefit.pension_credit.takeup_rate,
+)
+
+save_parameter(
+    pc.fit_takeup_rate(),
+    parameter_folder / "benefit" / "pension_credit" / "takeup.yaml",
+)
