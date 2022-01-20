@@ -36,11 +36,13 @@ class JSA_income_eligible(Variable):
         any_unemployed = benunit.any(unemployed_members)
         # Cannot claim Income Support.
         not_on_income_support = benunit("income_support", period) == 0
+        not_on_UC = ~benunit("would_claim_UC", period)
         return (
             hours_eligible
             & all_under_SP_age
             & any_unemployed
             & not_on_income_support
+            & not_on_UC
         )
 
 
@@ -70,7 +72,7 @@ class JSA_income_applicable_amount(Variable):
         premiums = benunit("benefits_premiums", period)
         amount_if_claims = personal_allowance + premiums
         eligible = benunit("JSA_income_eligible", period)
-        claims = benunit("claims_JSA", period)
+        claims = benunit("would_claim_JSA", period)
         return amount_if_claims * eligible * claims
 
 
@@ -90,7 +92,7 @@ class would_claim_JSA(Variable):
         return would_takeup | benunit("claims_all_entitled_benefits", period)
 
 
-class claims_JSA(Variable):
+class would_claim_JSA(Variable):
     value_type = bool
     entity = BenUnit
     label = "Whether this family is imputed to claim JSA based on survey response and take-up rates"
@@ -155,7 +157,7 @@ class JSA_income(Variable):
         applicable_amount = benunit("JSA_income_applicable_amount", period)
         applicable_income = benunit("JSA_income_applicable_income", period)
         amount_if_claims = max_(0, applicable_amount - applicable_income)
-        claims = benunit("claims_JSA", period)
+        claims = benunit("would_claim_JSA", period)
         eligible = benunit("JSA_income_eligible", period)
         return amount_if_claims * claims * eligible
 

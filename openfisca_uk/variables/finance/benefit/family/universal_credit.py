@@ -2,7 +2,7 @@ from openfisca_uk.model_api import *
 from openfisca_uk.variables.demographic.household import TenureType
 
 
-class claims_UC(Variable):
+class would_claim_UC(Variable):
     value_type = bool
     entity = BenUnit
     label = "Would claim Universal Credit"
@@ -539,7 +539,7 @@ class universal_credit(Variable):
         )
         return (
             amount
-            * benunit("claims_UC", period)
+            * benunit("would_claim_UC", period)
             * benunit("is_UC_eligible", period)
         )
 

@@ -17,7 +17,8 @@ class housing_benefit_eligible(Variable):
 
     def formula(benunit, period, parameters):
         social = benunit.any(benunit.members("in_social_housing", period))
-        return social + benunit("LHA_eligible", period)
+        not_on_UC = ~benunit("would_claim_UC", period)
+        return not_on_UC & (social + benunit("LHA_eligible", period))
 
 
 class would_claim_HB(Variable):
@@ -37,21 +38,6 @@ class would_claim_HB(Variable):
             "claims_all_entitled_benefits", period
         )
         return would_randomly_take_up | claims_all_entitled_benefits
-
-
-class claims_HB(Variable):
-    value_type = bool
-    entity = BenUnit
-    label = "Would claim Housing Benefit"
-    documentation = (
-        "Whether this family would claim Housing Benefit if eligible"
-    )
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        would_claim_HB = benunit("would_claim_HB", period)
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return would_claim_HB & claims_legacy_benefits
 
 
 class housing_benefit_applicable_amount(Variable):
@@ -245,7 +231,7 @@ class housing_benefit(Variable):
         )
         amount = max_(0, amount - benunit("HB_non_dep_deductions", period))
         final_amount = min_(
-            amount * benunit("claims_HB", period),
+            amount * benunit("would_claim_HB", period),
             benunit("benefit_cap", period) - other_capped_benefits,
         )
         return max_(0, final_amount)

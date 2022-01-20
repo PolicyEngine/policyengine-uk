@@ -24,16 +24,6 @@ class would_claim_PC(Variable):
         return takes_up | benunit("claims_all_entitled_benefits", period)
 
 
-class claims_PC(Variable):
-    value_type = bool
-    entity = BenUnit
-    label = "Whether this family is imputed to claim Pension Credit"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return benunit("would_claim_PC", period)
-
-
 class pension_credit_eligible(Variable):
     value_type = bool
     entity = BenUnit
@@ -66,7 +56,7 @@ class pension_credit_MG(Variable):
         return (
             applicable_amount
             * benunit("pension_credit_eligible", period)
-            * benunit("claims_PC", period)
+            * benunit("would_claim_PC", period)
         )
 
 
@@ -112,7 +102,7 @@ class pension_credit_GC(Variable):
         amount = max_(0, benunit("pension_credit_MG", period) - income)
         return (
             benunit("pension_credit_eligible", period)
-            * benunit("claims_PC", period)
+            * benunit("would_claim_PC", period)
             * amount
         )
 
@@ -177,7 +167,7 @@ class pension_credit_SC(Variable):
         return (
             amount
             * benunit("pension_credit_eligible", period)
-            * benunit("claims_PC", period)
+            * benunit("would_claim_PC", period)
         )
 
 

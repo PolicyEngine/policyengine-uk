@@ -26,18 +26,6 @@ class would_claim_IS(Variable):
         return takes_up | claims_all
 
 
-class claims_IS(Variable):
-    value_type = bool
-    entity = BenUnit
-    label = "Whether this family is imputed to claim Income Support"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        would_claim = benunit("would_claim_IS", period)
-        claims_legacy = benunit("claims_legacy_benefits", period)
-        return would_claim & claims_legacy
-
-
 class income_support_applicable_income(Variable):
     value_type = float
     entity = BenUnit
@@ -97,10 +85,12 @@ class income_support_eligible(Variable):
         has_carers = aggr(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_ESA_income = benunit("ESA_income", period) > 0
+        not_on_UC = ~benunit("would_claim_UC", period)
         return (
             (has_carers | lone_parent_with_young_child)
             & none_SP_age
             & ~has_ESA_income
+            & not_on_UC
         )
 
 
@@ -153,7 +143,7 @@ class income_support_applicable_amount(Variable):
         return (
             (personal_allowance + premiums)
             * benunit("income_support_eligible", period)
-            * benunit("claims_IS", period)
+            * benunit("would_claim_IS", period)
         )
 
 
