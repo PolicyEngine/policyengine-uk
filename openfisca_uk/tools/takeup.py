@@ -40,7 +40,9 @@ class Program:
         return param
 
     def _reset_simulation(self, year: int = 2018):
-        self.microsimulation = Microsimulation(year=2018 if year == 2018 else 2019)
+        self.microsimulation = Microsimulation(
+            year=2018 if year == 2018 else 2019
+        )
         self.variable_label = (
             self.microsimulation.simulation.tax_benefit_system.variables[
                 self.variable
@@ -61,7 +63,9 @@ class Program:
         actual_expenditure = self.expenditure(instant(year))
         caseload_rel_error = abs(caseload / actual_caseload - 1)
         expenditure_rel_error = abs(expenditure / actual_expenditure - 1)
-        logging.info(f"{self.variable_label} in {year} | {takeup_rate:.3%} -> caseload error: {caseload_rel_error:.3%}, expenditure error: {expenditure_rel_error:.3%}")
+        logging.info(
+            f"{self.variable_label} in {year} | {takeup_rate:.1%} -> caseload error: {caseload_rel_error:.1%}, expenditure error: {expenditure_rel_error:.1%}"
+        )
         self._reset_simulation(year)
         return (
             caseload_rel_error * self.expenditure_weight
