@@ -61,7 +61,7 @@ class Program:
         actual_expenditure = self.expenditure(instant(year))
         caseload_rel_error = abs(caseload / actual_caseload - 1)
         expenditure_rel_error = abs(expenditure / actual_expenditure - 1)
-        logging.info(f"{self.variable_label} {year} {takeup_rate:.3f} -> caseload error: {caseload_rel_error:.3f}, expenditure error: {expenditure_rel_error:.3f}")
+        logging.info(f"{self.variable_label} in {year} | {takeup_rate:.3%} -> caseload error: {caseload_rel_error:.3%}, expenditure error: {expenditure_rel_error:.3%}")
         self._reset_simulation(year)
         return (
             caseload_rel_error * self.expenditure_weight
