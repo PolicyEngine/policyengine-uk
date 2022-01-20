@@ -99,7 +99,8 @@ class would_claim_CTC(Variable):
             random(benunit)
             <= parameters(period).benefit.tax_credits.child_tax_credit.takeup
         )
-        return takes_up | benunit("claims_all_entitled_benefits", period)
+        reported_ctc = aggr(benunit, period, "child_tax_credit_reported") > 0
+        return takes_up | reported_ctc | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_CTC(Variable):

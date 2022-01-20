@@ -80,5 +80,14 @@ class Program:
 
 parameters = CountryTaxBenefitSystem().parameters
 
-child_benefit = Program("child_benefit", parameters.hmrc.child_benefit.statistics.caseload, parameters.hmrc.child_benefit.statistics.expenditure, parameters.hmrc.child_benefit.takeup_rate)
+child_benefit = Program(
+    "child_benefit", 
+    parameters.hmrc.child_benefit.statistics.caseload, 
+    parameters.hmrc.child_benefit.statistics.expenditure, 
+    parameters.hmrc.child_benefit.takeup_rate
+)
 print(f"\n\nChild Benefit\n\n{child_benefit.fit_takeup_rate()}")
+
+ctc = Program(
+    "child_tax_credit",
+    

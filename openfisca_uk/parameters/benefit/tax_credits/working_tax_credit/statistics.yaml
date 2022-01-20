@@ -1,0 +1,22 @@
+caseload:
+  description: Number of families receiving Working Tax Credit
+  values:
+    2018-01-01: 1_970_000
+    2019-01-01: 1_615_000
+    2020-01-01: 1_199_000
+    2021-01-01: 1_044_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
+        href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021
+expenditure:
+  description: Expenditure on Working Tax Credit.
+  values:
+    2018-01-01: 5_003_000_000
+    2019-01-01: 3_825_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"
+        href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-finalised-annual-awards-supplement-on-payments-2019-to-2020
