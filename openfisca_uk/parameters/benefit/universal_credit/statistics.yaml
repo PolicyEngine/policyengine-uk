@@ -1,0 +1,26 @@
+caseload:
+  description: Number of families claiming Universal Credit.
+  values:
+    2018-01-01: 1_282_000
+    2019-01-01: 2_132_000
+    2020-01-01: 4_052_000
+    2021-01-01: 4_267_000
+    2022-01-01: 4_649_000
+  metadata:
+    unit: benefit unit
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+expenditure:
+  description: Total spending on Universal Credit.
+  values:
+    2018-01-01: 8_135_000_000
+    2019-01-01: 18_386_000_000
+    2020-01-01: 38_272_000_000
+    2021-01-01: 41_097_000_000
+    2022-01-01: 43_657_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
