@@ -1,8 +1,18 @@
 description: Share of eligible Child Benefit recipients that participate
+metadata:
+  label: Child Benefit take-up rate
+  name: CB_takeup
+  reference:
+    href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020/child-benefit-statistics-annual-release-august-2020-main-commentary
+    name: 'Child Benefit Statistics: Annual Release, August 2020 Main Commentary |
+      Table 3.1'
+  unit: /1
 values:
-  2021-01-01: 0.976
-  2020-01-01: 1.024
-  2019-01-01: 1.034
+  2023-01-01: 0.976
+  2022-01-01: 0.692
+  2021-01-01: 0.692
+  2020-01-01: 0.692
+  2019-01-01: 0.692
   2018-01-01: 1.04
   2017-04-06: 0.93
   2016-04-06: 0.93
@@ -17,10 +27,3 @@ values:
   2008-04-06: 0.96
   2007-04-06: 0.97
   2006-04-06: 0.97
-metadata:
-  label: Child Benefit take-up rate
-  name: CB_takeup
-  unit: /1
-  reference:
-    name: "Child Benefit Statistics: Annual Release, August 2020 Main Commentary | Table 3.1"
-    href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020/child-benefit-statistics-annual-release-august-2020-main-commentary
