@@ -19,9 +19,9 @@ expenditure:
     # does provide revenue estimates, but only for combined Tax Credits.
     # We split the revenue by their fractions in 2019, the most recent
     # HMRC estimates.
-    2020-01-01: 14_581_000_000 * (3_825 / (13_875 + 3_825))
-    2021-01-01: 10_307_000_000 * (3_825 / (13_875 + 3_825))
-    2022-01-01: 7_640_000_000 * (3_825 / (13_875 + 3_825))
+    2020-01-01: 3_139_000_000 #  14_581_000_000 * (3_825 / (13_875 + 3_825))
+    2021-01-01: 2_219_000_000 #  10_307_000_000 * (3_825 / (13_875 + 3_825))
+    2022-01-01: 1_644_000_000 #  7_640_000_000 * (3_825 / (13_875 + 3_825))
   metadata:
     unit: currency-GBP
     reference:
