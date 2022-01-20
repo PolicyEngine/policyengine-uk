@@ -31,7 +31,7 @@ class Program:
         self.takeup = takeup
         self.takeup_name = takeup.name
         self.expenditure_weight = expenditure_weight
-        self._reset_simulation()
+        self._reset_simulation(year=2018)
 
     def _get_param(self, name: str):
         param = self.microsimulation.simulation.tax_benefit_system.parameters
@@ -39,8 +39,8 @@ class Program:
             param = getattr(param, part)
         return param
 
-    def _reset_simulation(self):
-        self.microsimulation = Microsimulation()
+    def _reset_simulation(self, year: int = 2018):
+        self.microsimulation = Microsimulation(year=2018 if year == 2018 else 2019)
         self.variable_label = (
             self.microsimulation.simulation.tax_benefit_system.variables[
                 self.variable
@@ -61,14 +61,15 @@ class Program:
         actual_expenditure = self.expenditure(instant(year))
         caseload_rel_error = abs(caseload / actual_caseload - 1)
         expenditure_rel_error = abs(expenditure / actual_expenditure - 1)
-        self._reset_simulation()
+        logging.info(f"{self.variable_label} {year} {takeup_rate:.3f} -> caseload error: {caseload_rel_error:.3f}, expenditure error: {expenditure_rel_error:.3f}")
+        self._reset_simulation(year)
         return (
             caseload_rel_error * self.expenditure_weight
             + expenditure_rel_error * (1 - self.expenditure_weight)
         )
 
     def fit_takeup_rate(
-        self, start_year: int = 2019, end_year: int = 2022
+        self, start_year: int = 2018, end_year: int = 2022
     ) -> Parameter:
         takeup_parameter = self.takeup.clone()
         for year in tqdm(
@@ -95,6 +96,7 @@ class Program:
             takeup_parameter.update(
                 period=f"year:{year}-01-01:1", value=round(takeup, 3)
             )
+            self._reset_simulation(year + 1)
         return takeup_parameter
 
 
