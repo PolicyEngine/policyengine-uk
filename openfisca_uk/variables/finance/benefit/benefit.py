@@ -299,9 +299,4 @@ class claims_legacy_benefits(Variable):
 
     def formula(benunit, period, parameters):
         # Assign legacy/UC claimant status, consistently for each household
-        household = benunit.members.household
-        benunit_random = benunit.value_from_first_person(
-            household.project(random(household))
-        )
-        UC_rollout = parameters(period).benefit.universal_credit.rollout_rate
-        return benunit_random > UC_rollout
+        return ~benunit("claims_UC", period)
