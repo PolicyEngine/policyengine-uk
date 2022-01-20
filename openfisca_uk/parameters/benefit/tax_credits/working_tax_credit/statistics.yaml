@@ -15,6 +15,13 @@ expenditure:
   values:
     2018-01-01: 5_003_000_000
     2019-01-01: 3_825_000_000
+    # HMRC does not forward-estimate revenue, only caseloads. The DWP
+    # does provide revenue estimates, but only for combined Tax Credits.
+    # We split the revenue by their fractions in 2019, the most recent
+    # HMRC estimates.
+    2020-01-01: 14_581_000_000 * (3_825 / (13_875 + 3_825))
+    2021-01-01: 10_307_000_000 * (3_825 / (13_875 + 3_825))
+    2022-01-01: 7_640_000_000 * (3_825 / (13_875 + 3_825))
   metadata:
     unit: currency-GBP
     reference:
