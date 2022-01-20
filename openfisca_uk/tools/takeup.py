@@ -184,7 +184,7 @@ hb = Program(
     "housing_benefit",
     parameters.benefit.housing_benefit.statistics.caseload,
     parameters.benefit.housing_benefit.statistics.expenditure,
-    parameters.benefit.housing_benefit.takeup_rate,
+    parameters.benefit.housing_benefit.takeup,
 )
 
 save_parameter(
@@ -205,10 +205,10 @@ save_parameter(
 )
 
 ib_jsa = Program(
-    "jsa_income",
+    "JSA_income",
     parameters.benefit.JSA.income.statistics.caseload,
     parameters.benefit.JSA.income.statistics.expenditure,
-    parameters.benefit.JSA.income.takeup_rate,
+    parameters.benefit.JSA.income.takeup,
 )
 
 save_parameter(
@@ -220,7 +220,7 @@ pc = Program(
     "pension_credit",
     parameters.benefit.pension_credit.statistics.caseload,
     parameters.benefit.pension_credit.statistics.expenditure,
-    parameters.benefit.pension_credit.takeup_rate,
+    parameters.benefit.pension_credit.takeup,
 )
 
 save_parameter(

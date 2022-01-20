@@ -1,14 +1,22 @@
-description: Share of eligible Income-based Jobseeker's Allowance recipients that participate
-values:
-  2009-04-06: 0.69
-  2012-04-06: 0.67
-  2013-04-06: 0.67
-  2014-04-06: 0.59
-  2015-04-06: 0.56
+description: Share of eligible Income-based Jobseeker's Allowance recipients that
+  participate
 metadata:
   label: Income-based Jobseeker's Allowance take-up rate
   name: JSA_income_takeup
-  unit: /1
   reference:
-    name: "Income-related benefits: estimates of take-up: financial year 2015/16 | Jobseeker's Allowance: tables | JSA1"
     href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/645577/income-related-benefits-estimates-of-take-up-2015-16.pdf
+    name: 'Income-related benefits: estimates of take-up: financial year 2015/16 |
+      Jobseeker''s Allowance: tables | JSA1'
+  unit: /1
+values:
+  2023-01-01: 0.56
+  2022-01-01: 0.313
+  2021-01-01: 0.313
+  2020-01-01: 0.347
+  2019-01-01: 0.36
+  2018-01-01: 0.569
+  2015-04-06: 0.56
+  2014-04-06: 0.59
+  2013-04-06: 0.67
+  2012-04-06: 0.67
+  2009-04-06: 0.69
