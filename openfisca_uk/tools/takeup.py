@@ -4,6 +4,7 @@ from typing import Tuple
 import numpy as np
 from openfisca_core.parameters import Parameter
 from openfisca_core.periods import instant
+from path import Path
 from scipy.optimize import minimize, bisect, basinhopping, brute, least_squares
 from tqdm import tqdm
 from openfisca_uk.system import CountryTaxBenefitSystem
@@ -78,7 +79,14 @@ class Program:
             takeup_parameter.update(period=f"year:{year}-01-01:1", value=round(takeup, 3))
         return takeup_parameter
 
+def save_parameter(parameter: Parameter, filename: Path):
+    with open(filename, "w") as f:
+        f.write(str(parameter))
+    logging.info(f"Saved parameter {parameter.name} to {filename}")
+
 parameters = CountryTaxBenefitSystem().parameters
+
+parameter_folder = Path(__file__).parent.parent / "parameters"
 
 child_benefit = Program(
     "child_benefit", 
@@ -86,8 +94,23 @@ child_benefit = Program(
     parameters.hmrc.child_benefit.statistics.expenditure, 
     parameters.hmrc.child_benefit.takeup_rate
 )
-print(f"\n\nChild Benefit\n\n{child_benefit.fit_takeup_rate()}")
+
+save_parameter(child_benefit.fit_takeup_rate(), parameter_folder / "hmrc" / "child_benefit" / "takeup_rate.yaml")
 
 ctc = Program(
     "child_tax_credit",
-    
+    parameters.benefit.tax_credits.child_tax_credit.statistics.caseload,
+    parameters.benefit.tax_credits.child_tax_credit.statistics.expenditure,
+    parameters.benefit.tax_credits.child_tax_credit.takeup_rate
+)
+
+save_parameter(child_benefit.fit_takeup_rate(), parameter_folder / "benefit" / "tax_credits" / "child_tax_credit" / "takeup_rate.yaml")
+
+ctc = Program(
+    "child_tax_credit",
+    parameters.benefit.tax_credits.child_tax_credit.statistics.caseload,
+    parameters.benefit.tax_credits.child_tax_credit.statistics.expenditure,
+    parameters.benefit.tax_credits.child_tax_credit.takeup_rate
+)
+
+save_parameter(child_benefit.fit_takeup_rate(), parameter_folder / "benefit" / "tax_credits" / "working_tax_credit" / "takeup_rate.yaml")

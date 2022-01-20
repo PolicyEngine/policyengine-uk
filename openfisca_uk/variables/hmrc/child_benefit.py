@@ -33,7 +33,7 @@ class would_claim_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         claims_benefits = benunit("claims_all_entitled_benefits", period)
-        reported_cb = aggr(benunit, period, "child_benefit_reported") > 0
+        reported_cb = aggr(benunit, period, ["child_benefit_reported"]) > 0
         imputed_takeup = benunit("is_imputed_to_take_up_child_benefit", period)
         return reported_cb | claims_benefits | imputed_takeup
 

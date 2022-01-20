@@ -99,7 +99,7 @@ class would_claim_CTC(Variable):
             random(benunit)
             <= parameters(period).benefit.tax_credits.child_tax_credit.takeup
         )
-        reported_ctc = aggr(benunit, period, "child_tax_credit_reported") > 0
+        reported_ctc = aggr(benunit, period, ["child_tax_credit_reported"]) > 0
         return takes_up | reported_ctc | benunit("claims_all_entitled_benefits", period)
 
 
@@ -280,8 +280,9 @@ class would_claim_WTC(Variable):
             period
         ).benefit.tax_credits.working_tax_credit.takeup
         takes_up = random(benunit) < takeup_rate
+        reported_wtc = aggr(benunit, period, ["working_tax_credit_reported"]) > 0
         would_take_up = benunit("claims_legacy_benefits", period) & takes_up
-        return would_take_up | benunit("claims_all_entitled_benefits", period)
+        return reported_wtc | would_take_up | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_WTC(Variable):
