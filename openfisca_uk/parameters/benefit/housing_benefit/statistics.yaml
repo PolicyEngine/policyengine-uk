@@ -1,0 +1,26 @@
+caseload:
+  description: Number of families claiming Housing Benefit.
+  values:
+    2018-01-01: 3_984_000
+    2019-01-01: 3_394_000
+    2020-01-01: 3_028_000
+    2021-01-01: 2_923_000
+    2022-01-01: 2_708_000
+  metadata:
+    unit: benefit unit
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+expenditure:
+  description: Total spending on Housing Benefit.
+  values:
+    2018-01-01: 20_730_000_000
+    2019-01-01: 18_379_000_000
+    2020-01-01: 17_334_000_000
+    2021-01-01: 17_112_000_000
+    2022-01-01: 15_894_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
