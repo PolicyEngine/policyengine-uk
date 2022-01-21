@@ -1,11 +1,7 @@
-description: Takeup rate
+description: Share of eligible (but not reported) recipients who take up Universal Credit.
 metadata:
-  unit: currency-GBP
+  label: Universal Credit take-up rate
+  name: UC_takeup
+  unit: /1
 values:
-  2023-01-01: 1
-  2022-01-01: 0.501
-  2021-01-01: 0.388
-  2020-01-01: 0.407
-  2019-01-01: 0.126
-  2018-01-01: 0.062
-  2010-01-01: 1
+  2000-01-01: 0

@@ -1,24 +1,7 @@
-description: Share of eligible Income Support recipients that participate
+description: Share of eligible (but not reported) recipients who take up Income Support.
 metadata:
   label: Income Support take-up rate
   name: IS_takeup
-  reference:
-    href: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019
-    name: 'Income-related benefits: estimates of take-up: financial year 2018 to 2019
-      | Income Support and Employment and Support Allowance: tables 2018 to 2019 |
-      Table ISESA1'
   unit: /1
 values:
-  2023-01-01: 0.9
-  2022-01-01: 0.806
-  2021-01-01: 0.792
-  2020-01-01: 0.909
-  2019-01-01: 0.716
-  2018-01-01: 0.688
-  2017-04-06: 0.88
-  2016-04-06: 0.85
-  2015-04-06: 0.84
-  2014-04-06: 0.87
-  2013-04-06: 0.86
-  2012-04-06: 0.85
-  2009-04-06: 0.82
+  2000-01-01: 0

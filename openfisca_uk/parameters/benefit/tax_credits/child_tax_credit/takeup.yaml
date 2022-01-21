@@ -1,29 +1,7 @@
-description: Share of eligible Child Tax Credit recipients that participate
+description: Share of eligible (but not reported) recipients who take up Child Tax Credit.
 metadata:
   label: Child Tax Credit take-up rate
-  reference:
-    href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/851148/Child_Benefit__Child_Tax_Credit_and_Working_Tax_Credit_take-up_rates_2016_to_2017_restated.pdf#page=15
-    name: Child Benefit, Child Tax Credit and Working Tax Credit Take-up rates 2016
-      to 2017 | Table B.1B
+  name: CTC_takeup
   unit: /1
 values:
-  2023-01-01: 0.83
-  2022-01-01: 0.001
-  2021-01-01: 0.044
-  2020-01-01: 0.366
-  2019-01-01: 0.687
-  2018-01-01: 0.868
-  2016-04-06: 0.83
-  2015-04-06: 0.83
-  2014-04-06: 0.86
-  2013-04-06: 0.87
-  2012-04-06: 0.88
-  2011-04-06: 0.85
-  2010-04-06: 0.83
-  2009-04-06: 0.81
-  2008-04-06: 0.8
-  2007-04-06: 0.81
-  2006-04-06: 0.81
-  2005-04-06: 0.82
-  2004-04-06: 0.82
-  2003-04-06: 0.79
+  2000-01-01: 0

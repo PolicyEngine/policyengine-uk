@@ -1,23 +1,7 @@
-description: Share of eligible Housing Benefit recipients that participate
+description: Share of eligible (but not reported) recipients who take up Housing Benefit.
 metadata:
   label: Housing Benefit take-up rate
   name: HB_takeup
-  reference:
-    href: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019
-    name: 'Income-related benefits: estimates of take-up: financial year 2018 to 2019
-      | Housing Benefit: tables 2018 to 2019 | Table HB1'
   unit: /1
 values:
-  2023-01-01: 0.81
-  2022-01-01: 0.876
-  2021-01-01: 0.876
-  2020-01-01: 0.899
-  2019-01-01: 0.933
-  2018-01-01: 0.993
-  2017-04-06: 0.83
-  2016-04-06: 0.81
-  2015-04-06: 0.78
-  2014-04-06: 0.81
-  2013-04-06: 0.82
-  2012-04-06: 0.83
-  2009-04-06: 0.79
+  2000-01-01: 0

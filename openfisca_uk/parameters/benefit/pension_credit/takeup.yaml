@@ -1,22 +1,7 @@
-description: Share of eligible Pension Credit recipients that participate
+description: Share of eligible (but not reported) recipients who take up Pension Credit.
 metadata:
   label: Pension Credit take-up rate
   name: PC_takeup
-  reference:
-    href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/929669/pension-credit-tables-2018-2019.ods
-    name: 'Pension Credit: tables 2018 to 2019, table PC1'
   unit: /1
 values:
-  2023-01-01: 0.63
-  2022-01-01: 0.876
-  2021-01-01: 0.905
-  2020-01-01: 0.905
-  2019-01-01: 0.999
-  2018-01-01: 0.999
-  2017-04-06: 0.61
-  2016-04-06: 0.61
-  2015-04-06: 0.61
-  2014-04-06: 0.62
-  2013-04-06: 0.63
-  2012-04-06: 0.62
-  2009-04-06: 0.61
+  2000-01-01: 0
