@@ -18,7 +18,7 @@ class housing_benefit_eligible(Variable):
     def formula(benunit, period, parameters):
         social = benunit.any(benunit.members("in_social_housing", period))
         not_on_UC = ~benunit("would_claim_UC", period)
-        return not_on_UC & (social + benunit("LHA_eligible", period))
+        return not_on_UC & (social | benunit("LHA_eligible", period))
 
 
 class would_claim_HB(Variable):

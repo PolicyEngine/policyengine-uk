@@ -92,18 +92,6 @@ class would_claim_JSA(Variable):
         return would_takeup | benunit("claims_all_entitled_benefits", period)
 
 
-class would_claim_JSA(Variable):
-    value_type = bool
-    entity = BenUnit
-    label = "Whether this family is imputed to claim JSA based on survey response and take-up rates"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        would_claim = benunit("would_claim_JSA", period)
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return would_claim & claims_legacy_benefits
-
-
 class JSA_income_applicable_income(Variable):
     value_type = float
     entity = BenUnit
