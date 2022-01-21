@@ -12,7 +12,7 @@ class would_claim_UC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takeup_rate = parameters(period).benefit.universal_credit.takeup_rate
+        takeup_rate = parameters(period).benefit.universal_credit.takeup
         imputed_to_claim = random(benunit) < takeup_rate
         reported_UC = aggr(benunit, period, ["universal_credit_reported"]) > 0
         return imputed_to_claim | reported_UC

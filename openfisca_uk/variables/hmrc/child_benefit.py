@@ -18,7 +18,7 @@ class is_imputed_to_take_up_child_benefit(Variable):
     value_type = bool
 
     def formula(benunit, period, parameters):
-        takeup_rate = parameters(period).hmrc.child_benefit.takeup_rate
+        takeup_rate = parameters(period).hmrc.child_benefit.takeup
         return random(benunit) <= takeup_rate
 
 

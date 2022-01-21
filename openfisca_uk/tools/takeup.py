@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List, Tuple
 import numpy as np
 from openfisca_core.parameters import Parameter
 from openfisca_core.periods import instant
@@ -9,28 +9,24 @@ from openfisca_uk.tools.simulation import Microsimulation
 import logging
 import yaml
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN)
 
 
 class Program:
-    """A government program with receipients who must choose to apply."""
+    """A government program with recipients who must choose to apply."""
 
     def __init__(
         self,
         variable: str,
-        caseload: Parameter,
-        expenditure: Parameter,
-        takeup: Parameter,
-        expenditure_weight: float = 0.5,
+        parameter: Parameter,
     ):
         self.variable = variable
-        self.caseload = caseload
-        self.caseload_name = caseload.name
-        self.expenditure = expenditure
-        self.expenditure_name = expenditure.name
-        self.takeup = takeup
-        self.takeup_name = takeup.name
-        self.expenditure_weight = expenditure_weight
+        self.caseload = parameter.statistics.caseload
+        self.caseload_name = self.caseload.name
+        self.expenditure = parameter.statistics.expenditure
+        self.expenditure_name = self.expenditure.name
+        self.takeup = parameter.takeup
+        self.takeup_name = self.takeup.name
         self._reset_simulation(year=2018)
 
     def _get_param(self, name: str):
@@ -54,7 +50,7 @@ class Program:
 
     def takeup_rate_error(self, takeup_rate: float, year: int) -> float:
         if takeup_rate < 0 or takeup_rate > 1:
-            return np.inf
+            return np.inf, {}
         self.takeup.update(period=f"year:{year}-01-01:1", value=takeup_rate)
         values = self.microsimulation.calc(self.variable, year)
         caseload = (values > 0).sum()
@@ -67,18 +63,32 @@ class Program:
             f"{self.variable_label} in {year} | {takeup_rate:.1%} -> caseload error: {caseload_rel_error:.1%}, expenditure error: {expenditure_rel_error:.1%}"
         )
         self._reset_simulation(year)
-        return (
-            caseload_rel_error * self.expenditure_weight
-            + expenditure_rel_error * (1 - self.expenditure_weight)
+        info = dict(
+            takeup_rate=takeup_rate,
+            caseload=caseload,
+            expenditure=expenditure,
+            actual_caseload=actual_caseload,
+            actual_expenditure=actual_expenditure,
+            caseload_rel_error=caseload_rel_error,
+            expenditure_rel_error=expenditure_rel_error,
         )
+        error = (
+            caseload_rel_error * (1 - self.expenditure_weight)
+            + expenditure_rel_error * self.expenditure_weight
+        )
+        return error, info
 
     def fit_takeup_rate(
-        self, start_year: int = 2018, end_year: int = 2022
+        self, start_year: int = 2018, end_year: int = 2022, 
+        expenditure_weight: float = 0.5,
     ) -> Parameter:
+        self.expenditure_weight = expenditure_weight
         takeup_parameter = self.takeup.clone()
+        log = {}
         for year in tqdm(
             range(start_year, end_year + 1),
             desc=f"Solving yearly take-up rates for {self.variable_label}",
+            position=1,
         ):
             takeup = 0.0
             last_error = None
@@ -86,10 +96,10 @@ class Program:
             step = 1
             while step > 1e-3:
                 if last_error is None:
-                    last_error = self.takeup_rate_error(takeup, year)
+                    last_error, info = self.takeup_rate_error(takeup, year)
                     takeup += step if increasing else -step
                 else:
-                    error = self.takeup_rate_error(takeup, year)
+                    error, info = self.takeup_rate_error(takeup, year)
                     change = error - last_error
                     last_error = error
                     step /= 2
@@ -100,130 +110,82 @@ class Program:
             takeup_parameter.update(
                 period=f"year:{year}-01-01:1", value=round(takeup, 3)
             )
+            log[year] = info
             self._reset_simulation(year + 1)
-        return takeup_parameter
+        self._fitted_takeup = takeup_parameter
+        return takeup_parameter, log
+    
 
+    def save_takeup(self):
+        filename = Path(__file__).parent.parent / "parameters"
+        parameter = self._fitted_takeup
+        for part in parameter.name.split("."):
+            filename = filename / part
+        filename = filename.with_suffix(".yaml")
+        with open(filename, "w") as f:
+            param = yaml.dump(
+                {
+                    "description": parameter.description,
+                    "metadata": parameter.metadata,
+                }
+            )
+            param += "values:"
+            for param_instant in parameter.values_list:
+                param += f"\n  {param_instant.instant_str}: {param_instant.value}"
+            param += "\n"
+            f.write(param)
+        logging.info(f"Saved parameter {parameter.name} to {filename}")
 
-def save_parameter(parameter: Parameter, filename: Path):
-    with open(filename, "w") as f:
-        param = yaml.dump(
-            {
-                "description": parameter.description,
-                "metadata": parameter.metadata,
-            }
-        )
-        param += "values:"
-        for param_instant in parameter.values_list:
-            param += f"\n  {param_instant.instant_str}: {param_instant.value}"
-        param += "\n"
-        f.write(param)
-    logging.info(f"Saved parameter {parameter.name} to {filename}")
 
 
 parameters = CountryTaxBenefitSystem().parameters
 
-parameter_folder = Path(__file__).parent.parent / "parameters"
-
-child_benefit = Program(
+cb = Program(
     "child_benefit",
-    parameters.hmrc.child_benefit.statistics.caseload,
-    parameters.hmrc.child_benefit.statistics.expenditure,
-    parameters.hmrc.child_benefit.takeup_rate,
-)
-
-save_parameter(
-    child_benefit.fit_takeup_rate(),
-    parameter_folder / "hmrc" / "child_benefit" / "takeup_rate.yaml",
+    parameters.hmrc.child_benefit,
 )
 
 uc = Program(
     "universal_credit",
-    parameters.benefit.universal_credit.statistics.caseload,
-    parameters.benefit.universal_credit.statistics.expenditure,
-    parameters.benefit.universal_credit.takeup_rate,
-)
-
-save_parameter(
-    uc.fit_takeup_rate(),
-    parameter_folder / "benefit" / "universal_credit" / "takeup_rate.yaml",
+    parameters.benefit.universal_credit,
 )
 
 ctc = Program(
     "child_tax_credit",
-    parameters.benefit.tax_credits.child_tax_credit.statistics.caseload,
-    parameters.benefit.tax_credits.child_tax_credit.statistics.expenditure,
-    parameters.benefit.tax_credits.child_tax_credit.takeup,
-)
-
-save_parameter(
-    ctc.fit_takeup_rate(),
-    parameter_folder
-    / "benefit"
-    / "tax_credits"
-    / "child_tax_credit"
-    / "takeup.yaml",
+    parameters.benefit.tax_credits.child_tax_credit,
 )
 
 wtc = Program(
     "working_tax_credit",
-    parameters.benefit.tax_credits.working_tax_credit.statistics.caseload,
-    parameters.benefit.tax_credits.working_tax_credit.statistics.expenditure,
-    parameters.benefit.tax_credits.working_tax_credit.takeup,
-)
-
-save_parameter(
-    wtc.fit_takeup_rate(),
-    parameter_folder
-    / "benefit"
-    / "tax_credits"
-    / "working_tax_credit"
-    / "takeup.yaml",
+    parameters.benefit.tax_credits.working_tax_credit,
 )
 
 hb = Program(
     "housing_benefit",
-    parameters.benefit.housing_benefit.statistics.caseload,
-    parameters.benefit.housing_benefit.statistics.expenditure,
-    parameters.benefit.housing_benefit.takeup,
-)
-
-save_parameter(
-    hb.fit_takeup_rate(),
-    parameter_folder / "benefit" / "housing_benefit" / "takeup.yaml",
+    parameters.benefit.housing_benefit,
 )
 
 i_s = Program(
     "income_support",
-    parameters.benefit.income_support.statistics.caseload,
-    parameters.benefit.income_support.statistics.expenditure,
-    parameters.benefit.income_support.takeup,
-)
-
-save_parameter(
-    i_s.fit_takeup_rate(),
-    parameter_folder / "benefit" / "income_support" / "takeup.yaml",
+    parameters.benefit.income_support,
 )
 
 ib_jsa = Program(
     "JSA_income",
-    parameters.benefit.JSA.income.statistics.caseload,
-    parameters.benefit.JSA.income.statistics.expenditure,
-    parameters.benefit.JSA.income.takeup,
-)
-
-save_parameter(
-    ib_jsa.fit_takeup_rate(),
-    parameter_folder / "benefit" / "JSA" / "income" / "takeup.yaml",
+    parameters.benefit.JSA.income
 )
 
 pc = Program(
     "pension_credit",
-    parameters.benefit.pension_credit.statistics.caseload,
-    parameters.benefit.pension_credit.statistics.expenditure,
-    parameters.benefit.pension_credit.takeup,
+    parameters.benefit.pension_credit
 )
 
-save_parameter(
-    pc.fit_takeup_rate(),
-    parameter_folder / "benefit" / "pension_credit" / "takeup.yaml",
-)
+info = {}
+
+programs: List[Program] = [cb, uc, ctc, wtc, hb, i_s, ib_jsa, pc]
+
+for program in tqdm(programs, desc="Fitting take-up rates"):
+    program: Program
+    takeup, log = program.fit_takeup_rate(start_year=2018, end_year=2022, expenditure_weight=0.7)
+    info[program.variable_label] = log
+    program.save_takeup()
