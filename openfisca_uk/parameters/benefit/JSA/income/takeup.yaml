@@ -1,7 +1,14 @@
-description: Share of eligible (but not reported) recipients who take up income-based JSA.
+description: Share of eligible (but not reported) recipients who take up income-based
+  JSA.
 metadata:
   label: Income-based JSA take-up rate
   name: JSA_income_takeup
   unit: /1
 values:
+  2023-01-01: 0
+  2022-01-01: 0.499
+  2021-01-01: 0.499
+  2020-01-01: 0.829
+  2019-01-01: 0.499
+  2018-01-01: 0.63
   2000-01-01: 0

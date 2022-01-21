@@ -1,7 +1,14 @@
-description: Share of eligible (but not reported) recipients who take up Universal Credit.
+description: Share of eligible (but not reported) recipients who take up Universal
+  Credit.
 metadata:
   label: Universal Credit take-up rate
   name: UC_takeup
   unit: /1
 values:
+  2023-01-01: 0
+  2022-01-01: 0.636
+  2021-01-01: 0.495
+  2020-01-01: 0.593
+  2019-01-01: 0.188
+  2018-01-01: 0.05
   2000-01-01: 0

@@ -299,4 +299,4 @@ class claims_legacy_benefits(Variable):
 
     def formula(benunit, period, parameters):
         # Assign legacy/UC claimant status, consistently for each household
-        return ~benunit("claims_UC", period)
+        return ~benunit("would_claim_UC", period)

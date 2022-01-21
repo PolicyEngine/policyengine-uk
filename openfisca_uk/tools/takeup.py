@@ -189,3 +189,6 @@ for program in tqdm(programs, desc="Fitting take-up rates"):
     takeup, log = program.fit_takeup_rate(start_year=2018, end_year=2022, expenditure_weight=0.7)
     info[program.variable_label] = log
     program.save_takeup()
+
+with open(Path(__file__).parent / "takeup_rate_statistics.yaml", "w") as f:
+    f.write(yaml.dump(info))
