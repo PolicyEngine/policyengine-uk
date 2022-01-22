@@ -1,4 +1,4 @@
-description: Earned income sources for Universal Credit
+description: Earned income sources for Universal Credit.
 values:
   2010-01-01:
     - employment_income
@@ -6,3 +6,5 @@ values:
     - miscellaneous_income
 metadata:
   unit: list
+  name: UC_earned_income_sources
+  label: "UC earned income sources"
