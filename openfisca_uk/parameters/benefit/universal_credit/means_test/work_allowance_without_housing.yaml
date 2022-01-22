@@ -1,4 +1,4 @@
-description: Universal Credit Work Allowance if household does not receive housing support
+description: Universal Credit Work Allowance if household does not receive housing support.
 values:
   # Skip 2013-2016, when the parameterization was different.
   2016-04-11: 397

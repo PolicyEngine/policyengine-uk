@@ -1,4 +1,4 @@
-description: Child element of Universal Credit
+description: Child element of Universal Credit.
 values:
   2018-04-09: 231.67
   2020-04-06: 235.85
@@ -6,6 +6,8 @@ values:
 metadata:
   period: month
   unit: currency-GBP
+  name: UC_child_element
+  label: "UC child element"
   reference:
     - name: The Universal Credit Regulations 2013 reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

@@ -1,4 +1,4 @@
-description: Universal Credit standard allowance
+description: Universal Credit standard allowance.
 SINGLE_YOUNG:
   description: Standard allowance for single claimants under 25
   values:
@@ -11,7 +11,7 @@ SINGLE_YOUNG:
     unit: currency-GBP
     period: month
 SINGLE_OLD:
-  description: Standard allowance for single claimants over 25
+  description: Standard allowance for single claimants over 25.
   values:
     2015-06-01: 317.82
     2020-04-06: 411.51 # From gov.uk and entitledto
@@ -22,7 +22,7 @@ SINGLE_OLD:
     unit: currency-GBP
     period: month
 COUPLE_YOUNG:
-  description: Standard allowance for couples where both are under 25
+  description: Standard allowance for couples where both are under 25.
   values:
     2015-06-01: 395.20
     2020-04-06: 490.60 # From gov.uk and entitledto
@@ -33,7 +33,7 @@ COUPLE_YOUNG:
     unit: currency-GBP
     period: month
 COUPLE_OLD:
-  description: Standard allowance for couples where one is over 25
+  description: Standard allowance for couples where one is over 25.
   values:
     2013-04-29: 489.06
     2015-06-01: 498.89
