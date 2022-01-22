@@ -1,10 +1,13 @@
-description: Child element for the first child in Universal Credit
+description: Child element for the first child in Universal Credit.
 values:
   2017-04-10: 277.08
   2020-04-06: 281.25
   2021-04-12: 282.50
 metadata:
   unit: currency-GBP
+  period: month
+  name: UC_first_child_element
+  label: "UC first child element"
   reference:
     - name: The Universal Credit Regulations 2013 reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
