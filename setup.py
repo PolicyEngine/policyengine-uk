@@ -34,7 +34,7 @@ setup(
         "OpenFisca-Core>=35.4.1",
         "microdf_python>=0.3.0",
         "OpenFisca-UK-Data>=0.7.1",
-        "OpenFisca-Tools>=0.2.1,<0.3.0",
+        "OpenFisca-Tools>=0.2.3,<0.3.0",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
         "argparse>=1.4.0",
