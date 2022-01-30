@@ -84,10 +84,8 @@ class would_claim_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        would_takeup = (
-            random(benunit) <= parameters(period).benefit.JSA.income.takeup
-        )
-        return would_takeup | benunit("claims_all_entitled_benefits", period)
+        reported_JSA = aggr(benunit, period, "JSA_income_reported") > 0
+        return reported_JSA | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_JSA(Variable):
