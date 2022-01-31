@@ -75,12 +75,12 @@ def loss(
     return l
 
 
-opt = tf.keras.optimizers.Adam(learning_rate=1e3)
+opt = tf.keras.optimizers.Adam(learning_rate=1e2)
 # Run training
 weight_changes = tf.Variable(
     np.zeros((4, survey_num_households)), dtype=tf.float32
 )
-task = tqdm(range(1024), desc="Training")
+task = tqdm(range(4096), desc="Training")
 for i in task:
     with tf.GradientTape() as tape:
         l = loss(weight_changes)
