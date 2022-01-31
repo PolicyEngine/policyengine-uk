@@ -16,6 +16,7 @@ from openfisca_tools.microsimulation import (
 from openfisca_tools.hypothetical import IndividualSim as GeneralIndividualSim
 import yaml
 from pathlib import Path
+import h5py
 
 
 with open(Path(__file__).parent / "datasets.yml") as f:
@@ -37,7 +38,11 @@ class Microsimulation(GeneralMicrosimulation):
     post_reform = backdate_parameters()
 
     def __init__(
-        self, reform: ReformType = (), dataset: type = None, year: int = None
+        self,
+        reform: ReformType = (),
+        dataset: type = None,
+        year: int = None,
+        adjust_weights: bool = True,
     ):
         if dataset is None:
             dataset = self.default_dataset
@@ -66,6 +71,22 @@ class Microsimulation(GeneralMicrosimulation):
                     dataset.download(year)
 
         super().__init__(reform=reform, dataset=dataset, year=year)
+
+        if (
+            (dataset.name == "frs_enhanced")
+            and adjust_weights
+            and year >= 2019
+        ):
+            weight_file = (
+                Path(__file__).parent.parent / "calibration" / "frs_weights.h5"
+            )
+            if not weight_file.exists():
+                raise FileNotFoundError("Weight adjustment file not found.")
+            with h5py.File(weight_file, "r") as f:
+                for year in f.keys():
+                    self.simulation.set_input(
+                        "household_weight", year, np.array(f[year])
+                    )
 
 
 class IndividualSim(GeneralIndividualSim):

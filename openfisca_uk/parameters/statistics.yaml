@@ -132,6 +132,28 @@ aggregate:
       reference:
         - title: OBR 2021 forecast
           href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/
+
+  total_NI:
+    description: Total revenue from National Insurance.
+    values:
+      2018-01-01: 137_500_000_000
+      2019-01-01: 145_000_000_000
+      2020-01-01: 140_800_000_000
+      2021-01-01: 145_900_000_000
+      2022-01-01: 151_300_000_000
+    metadata:
+      reference:
+        - title: OBR 2021 forecast
+          href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/national-insurance-contributions-nics/
+
+  council_tax_less_benefit:
+    description: Council Tax spending, minus CTB.
+    values:
+      2019: 37_500_000_000
+      2020: 38_700_000_000
+      2021: 39_900_000_000
+      2022: 41_100_000_000
+
 count:
   JSA_income:
     description: Number of families claiming income-based JSA.

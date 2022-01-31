@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 sim = Microsimulation(dataset=FRSEnhanced, year=2019)
 
-text = "# OpenFisca-UK Variable Statistics\n\nAll statistics generated from the uprated (to 2020) 2018-19 Family Resources Survey, with simulation turned on.\n\n"
+text = "# OpenFisca-UK Variable Statistics\n\nAll statistics generated from the uprated (to 2020) 2019-20 Family Resources Survey, with simulation turned on.\n\n"
 
 for name, var in tqdm(
     sim.simulation.tax_benefit_system.variables.items(),

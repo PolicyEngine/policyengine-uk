@@ -1,57 +1,30 @@
 child_benefit:
   test:
-    - aggregate_error_less_than: 500_000_000
     - relative_error_less_than: 0.05
-    - closer_than_ukmod
-  official:
-    aggregate:
-      2018: 11_170_000_000
-      2019: 11_081_000_000
-      2020: 11_116_000_000
-      2021: 10_981_000_000
-      2022: 11_213_000_000
-  ukmod:
-    aggregate:
-      2018: 11_480_000_000
-      2019: 11_432_000_000
-      2020: 11_621_000_000
-      2021: 11_573_000_000
-      2022: 11_668_000_000
 council_tax_less_benefit:
   test:
-    - aggregate_error_less_than: 5_000_000_000
     - relative_error_less_than: 0.07
-  official:
-    aggregate:
-      2019: 37_500_000_000
-      2020: 38_700_000_000
-      2021: 39_900_000_000
-      2022: 41_100_000_000
-tax_credits:
+child_tax_credit:
   test:
-    - aggregate_error_less_than: 8_000_000_000
-    - closer_than_ukmod
-  official:
-    aggregate:
-      2018: 22_005_000_000
-      2019: 17_243_000_000
-      2020: 14_581_000_000
-      2021: 10_307_000_000
-      2022: 7_640_000_000
-    caseload:
-      2018: 3_290_000
-      2019: 2_481_000
-      2020: 1_989_000
-      2021: 1_902_000
-  ukmod:
-    aggregate:
-      2018: 13_925_000_000
-      2019: 8_648_000_000
-      2020: 5_725_000_000
-      2021: 3_407_000_000
-      2022: 1_460_000_000
-    caseload:
-      2018: 2_423_000
-      2019: 1_498_000
-      2020: 913_000
-      2021: 564_000
+    - relative_error_less_than: 0.05
+working_tax_credit:
+  test:
+    - relative_error_less_than: 0.05
+housing_benefit:
+  test:
+    - relative_error_less_than: 0.05
+JSA_income:
+  test:
+    - relative_error_less_than: 0.05
+income_support:
+  test:
+    - relative_error_less_than: 0.05
+universal_credit:
+  test:
+    - relative_error_less_than: 0.05
+income_tax:
+  test:
+    - relative_error_less_than: 0.05
+total_NI:
+  test:
+    - relative_error_less_than: 0.05

@@ -8,24 +8,15 @@ import pytest
 with open(Path(__file__).parent / "statistics.yaml") as f:
     statistics = yaml.load(f, Loader=yaml.SafeLoader)
 
-sim_2018 = Microsimulation(dataset=FRSEnhanced, year=2018)
-sim_2019 = Microsimulation(dataset=FRSEnhanced, year=2019)
-variables = sim_2018.simulation.tax_benefit_system.variables
+sim = Microsimulation(dataset=FRSEnhanced, year=2019)
+variables = sim.simulation.tax_benefit_system.variables
 
 
 def get_openfisca_uk_aggregate(variable: str, year: int) -> float:
-    if year == 2018:
-        sim = sim_2018
-    else:
-        sim = sim_2019
     return sim.calc(variable, period=year).sum()
 
 
 def get_openfisca_uk_caseload(variable: str, year: int) -> float:
-    if year == 2018:
-        sim = sim_2018
-    else:
-        sim = sim_2019
     return (sim.calc(variable, period=year) > 0).sum()
 
 
@@ -125,7 +116,7 @@ for variable in statistics:
             if statistic in statistics[variable]["ukmod"]:
                 for year in statistics[variable]["ukmod"][statistic]:
                     tests += [CloserThanUKMOD(variable, statistic, year)]
-    if "aggregate_error_less_than" in test_names:
+    if "absolute_aggregate_error_less_than" in test_names:
         for statistic in ("aggregate", "caseload"):
             if statistic in statistics[variable]["official"]:
                 for year in statistics[variable]["official"][statistic]:
@@ -139,7 +130,7 @@ for variable in statistics:
                             ],
                         )
                     ]
-    if "relative_error_less_than" in test_names:
+    if "relative_aggregate_error_less_than" in test_names:
         for statistic in ("aggregate", "caseload"):
             if statistic in statistics[variable]["official"]:
                 for year in statistics[variable]["official"][statistic]:
