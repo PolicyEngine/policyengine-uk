@@ -88,6 +88,14 @@ class Microsimulation(GeneralMicrosimulation):
                         "household_weight", year, np.array(f[year])
                     )
 
+                    self.simulation.set_input(
+                        "person_weight",
+                        year,
+                        self.calc(
+                            "household_weight", period=year, map_to="person"
+                        ).values,
+                    )
+
 
 class IndividualSim(GeneralIndividualSim):
     tax_benefit_system = CountryTaxBenefitSystem
