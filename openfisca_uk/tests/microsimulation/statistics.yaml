@@ -5,7 +5,6 @@ child_benefit:
 council_tax_less_benefit:
   test:
     - relative_aggregate_error_less_than: 0.05
-    - relative_caseload_error_less_than: 0.05
 child_tax_credit:
   test:
     - relative_aggregate_error_less_than: 0.05

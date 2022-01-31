@@ -18,13 +18,17 @@ START_YEAR = 2019
 END_YEAR = 2022
 
 FORCE_ALL_METRIC_IMPROVEMENT = False  # Don't save weights unless all (program, year, aggregate/caseload) tests improve. If false, regressions will be logged.
-MODIFICATION_PENALTY = 1e-10
 
 household_population = sim.calc("people", map_to="household").values
 household_region = sim.calc("region").values
 regions = list(pd.Series(household_region).unique())
 survey_num_households = len(sim.calc("household_id"))
 
+AGGREGATE_ERROR_PENALTY = 1e0
+CASELOAD_ERROR_PENALTY = 1e0
+REGIONAL_POPULATION_ERROR_PENALTY = 1e0
+UK_POPULATION_ERROR_PENALTY = 1e1
+MODIFICATION_PENALTY = 1e-11
 
 def loss(
     weight_modification: np.array, include_modification_penalty: float = True
@@ -49,20 +53,20 @@ def loss(
                 # Calculate aggregate error
                 agg = tf.reduce_sum(modified_weights * household_totals)
                 target = getattr(statistic_set.aggregate, variable)
-                l += ((agg / target) - 1) ** 2
+                l += AGGREGATE_ERROR_PENALTY * ((agg / target) - 1) ** 2
             if variable in statistic_set.count._children:
                 # Calculate caseload error
                 count = tf.reduce_sum(modified_weights * household_participants)
                 target = getattr(statistic_set.count, variable)
-                l += ((count - target) / 1e6) ** 2
+                l += CASELOAD_ERROR_PENALTY * ((count / target) - 1) ** 2
         for region in regions:
             in_region = household_region == region
             people_in_region = household_population * in_region
             population = tf.reduce_sum(people_in_region * modified_weights)
             target = getattr(statistic_set.populations, region)
-            l += ((population - target) / 1e6) ** 2
+            l += REGIONAL_POPULATION_ERROR_PENALTY * ((population / target) - 1) ** 2
         
-        l += 10 * ((tf.reduce_sum(modified_weights) - weights.sum()) / 1e6) ** 2
+        l += UK_POPULATION_ERROR_PENALTY * ((tf.reduce_sum(modified_weights) - weights.sum())) ** 2
 
 
     # Add penalty for weight changes
