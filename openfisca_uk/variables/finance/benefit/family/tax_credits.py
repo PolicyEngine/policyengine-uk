@@ -272,7 +272,9 @@ class would_claim_WTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        reported_wtc = aggr(benunit, period, ["working_tax_credit_reported"])
+        reported_wtc = (
+            aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+        )
         return reported_wtc | benunit("claims_all_entitled_benefits", period)
 
 

@@ -84,7 +84,7 @@ class would_claim_JSA(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        reported_JSA = aggr(benunit, period, "JSA_income_reported") > 0
+        reported_JSA = aggr(benunit, period, ["JSA_income_reported"]) > 0
         return reported_JSA | benunit("claims_all_entitled_benefits", period)
 
 
