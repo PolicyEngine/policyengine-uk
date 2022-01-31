@@ -18,7 +18,7 @@ START_YEAR = 2019
 END_YEAR = 2022
 
 FORCE_ALL_METRIC_IMPROVEMENT = False  # Don't save weights unless all (program, year, aggregate/caseload) tests improve. If false, regressions will be logged.
-MODIFICATION_PENALTY = 1e-11
+MODIFICATION_PENALTY = 1e-10
 
 household_population = sim.calc("people", map_to="household").values
 household_region = sim.calc("region").values
@@ -29,11 +29,6 @@ survey_num_households = len(sim.calc("household_id"))
 def loss(
     weight_modification: np.array, include_modification_penalty: float = True
 ) -> float:
-    # Ensure the weight modification doesn't increase the total number of UK households
-    weight_modification = (
-        weight_modification
-        - tf.reduce_sum(weight_modification, axis=0) / survey_num_households
-    )
     l = 0
     for year in range(START_YEAR, END_YEAR + 1):
         instant_str = f"{year}-01-01"
@@ -46,25 +41,29 @@ def loss(
         for variable in variables:
             if variable in statistic_set.aggregate._children:
                 values = sim.calc(
-                    variable, period=year, map_to="household"
+                    variable, period=year
                 ).values
+                entity = sim.simulation.tax_benefit_system.variables[variable].entity.key
+                household_totals = sim.map_to(values, entity, "household")
+                household_participants = sim.map_to((values > 0) * 1, entity, "household")
                 # Calculate aggregate error
-                agg = tf.reduce_sum(modified_weights * values)
+                agg = tf.reduce_sum(modified_weights * household_totals)
                 target = getattr(statistic_set.aggregate, variable)
-                l += ((agg - target) / 1e9) ** 2
+                l += ((agg / target) - 1) ** 2
             if variable in statistic_set.count._children:
                 # Calculate caseload error
-                values = (values > 0) * 1
-                count = tf.reduce_sum(modified_weights * values)
+                count = tf.reduce_sum(modified_weights * household_participants)
                 target = getattr(statistic_set.count, variable)
                 l += ((count - target) / 1e6) ** 2
         for region in regions:
-            people_in_region = household_population * (
-                household_region == region
-            )
+            in_region = household_region == region
+            people_in_region = household_population * in_region
             population = tf.reduce_sum(people_in_region * modified_weights)
             target = getattr(statistic_set.populations, region)
             l += ((population - target) / 1e6) ** 2
+        
+        l += 10 * ((tf.reduce_sum(modified_weights) - weights.sum()) / 1e6) ** 2
+
 
     # Add penalty for weight changes
     if include_modification_penalty:
@@ -77,7 +76,7 @@ opt = tf.keras.optimizers.Adam(learning_rate=1e3)
 weight_changes = tf.Variable(
     np.zeros((4, survey_num_households)), dtype=tf.float32
 )
-task = tqdm(range(512), desc="Training")
+task = tqdm(range(1024), desc="Training")
 for i in task:
     with tf.GradientTape() as tape:
         l = loss(weight_changes)
@@ -87,20 +86,19 @@ for i in task:
     opt.apply_gradients(zip([gradients], [weight_changes]))
 
 x = weight_changes.numpy()
-# Apply normalisation step from loss function
-x -= x.sum(axis=0) / survey_num_households
 
 sim_reweighted = Microsimulation()
 for year in range(START_YEAR, END_YEAR + 1):
+    added_households = x[year - START_YEAR].sum()
+    new_weights = np.maximum(
+        0, sim.calc("household_weight", period=year).values + x[year - START_YEAR]
+    )
     sim_reweighted.set_input(
         "household_weight",
         year,
-        np.maximum(
-            0, sim.calc("household_weight", year).values + x[year - START_YEAR]
-        ),
+        new_weights,
     )
 variables = list(statistics.aggregate.children)
-
 
 programs = []
 years = []
@@ -109,7 +107,7 @@ frs = []
 reweight = []
 official_stats = []
 
-for year in range(2019, 2023):
+for year in range(START_YEAR, END_YEAR + 1):
     for program in variables:
         if program in statistics.aggregate.children:
             # Aggregate
