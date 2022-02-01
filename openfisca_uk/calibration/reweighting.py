@@ -22,6 +22,8 @@ FORCE_ALL_METRIC_IMPROVEMENT = False  # Don't save weights unless all (program, 
 household_population = sim.calc("people", map_to="household").values
 household_region = sim.calc("region").values
 regions = list(pd.Series(household_region).unique())
+household_country = sim.calc("country").values
+countries = list(pd.Series(household_country).unique())
 survey_num_households = len(sim.calc("household_id"))
 
 AGGREGATE_ERROR_PENALTY = 1e0
@@ -65,6 +67,22 @@ def loss(
             population = tf.reduce_sum(people_in_region * modified_weights)
             target = getattr(statistic_set.populations, region)
             l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * target * ((population / target) - 1) ** 2
+
+        for country in countries:
+            for program in statistic_set.aggregate_by_country._children:
+                in_country = household_country == country
+                values = sim.calc(
+                    variable, period=year
+                ).values
+                entity = sim.simulation.tax_benefit_system.variables[variable].entity.key
+                household_totals = sim.map_to(values, entity, "household")
+                aggregate = tf.reduce_sum(modified_weights * in_country * household_totals)
+                target = getattr(statistic_set.aggregate_by_country, program)
+                l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * target * ((aggregate / target) - 1) ** 2
+        # Income tax payers by tax band
+
+        # Income tax aggregate by income band
+
         
         l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * weights.sum() * ((tf.reduce_sum(modified_weights) - weights.sum())) ** 2
 
