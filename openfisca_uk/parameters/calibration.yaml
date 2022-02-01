@@ -372,3 +372,234 @@ populations:
       2023-07-01: 3_200_000
       2028-07-01: 3_200_000
       2033-07-01: 3_200_000
+aggregate_by_country:
+  description: Aggregates for variables split by country.
+  income_tax:
+    description: Income Tax by country
+    metadata:
+      reference:
+        - title: HMRC SPI Analysis
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf#page=14
+    ENGLAND:
+      values:
+        2018-01-01: 169_958_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+    WALES:
+      values:
+        2018-01-01: 5_235_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+    SCOTLAND:
+      values:
+        2018-01-01: 12_991_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+    NORTHERN_IRELAND:
+      values:
+        2018-01-01: 2_847_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+  total_NI:
+    description: National Insurance (total) by country.
+    metadata:
+      reference:
+        - title: HMRC SPI Analysis
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf#page=18
+    ENGLAND:
+      values:
+        2018-01-01: 118_591_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+    WALES:
+      values:
+        2018-01-01: 4_787_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+    SCOTLAND:
+      values:
+        2018-01-01: 10_532_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+    NORTHERN_IRELAND:
+      values:
+        2018-01-01: 2_736_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+income_tax_payers_by_band:
+  description: Total number of taxpayers by Income Tax band.
+  metadata:
+    reference:
+      - title: NS Summary Statistics | Income Tax payer numbers by type
+        href: https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2018-to-2019-to-tax-year-2021-to-2022/summary-statistics
+  BASIC:
+    # Includes Scottish starter and intermediate bands.
+    values:
+      2018-01-01: 26_300_000
+      2019-01-01: 26_400_000
+      2020-01-01: 26_600_000
+      2021-01-01: 27_000_000
+    metadata:
+      uprating: 
+        parameter: calibration.count.income_tax
+  HIGHER:
+    values:
+      2018-01-01: 4_230_000
+      2019-01-01: 3_860_000
+      2020-01-01: 3_970_000
+      2021-01-01: 4_130_000
+    metadata:
+      uprating: 
+        parameter: calibration.count.income_tax
+  ADDITIONAL:
+    values:
+      2018-01-01: 399_000
+      2019-01-01: 425_000
+      2020-01-01: 420_000
+      2021-01-01: 440_000
+    metadata:
+      uprating: 
+        parameter: calibration.count.income_tax
+income_tax_by_income_range:
+  description: Income Tax aggregate by income range.
+  metadata:
+    reference:
+      - title: HMRC SPI Analysis
+        href: https://docs.google.com/spreadsheets/d/1tFQNlaDjeEwsxtwfYBUNzZtLcpG1Izy7N0R3V-83mlU/edit#gid=1243033274
+    type: single_amount
+  brackets:
+    - threshold: 
+        values:
+          2018-01-01: 11_850
+          2019-01-01: 12_500
+          2021-01-01: 12_570
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+      amount: 
+        values:
+          2018-01-01: 1_180_000_000
+          2019-01-01: 700_000_000
+          2020-01-01: 718_000_000
+          2021-01-01: 686_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 15_000
+      amount: 
+        values:
+          2018-01-01: 6_500_000_000
+          2019-01-01: 5_620_000_000
+          2020-01-01: 5_740_000_000
+          2021-01-01: 5_660_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 20_000
+      amount: 
+        values:
+          2018-01-01: 20_900_000_000
+          2019-01-01: 20_100_000_000
+          2020-01-01: 20_300_000_000
+          2021-01-01: 20_400_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 30_000
+      amount: 
+        values:
+          2018-01-01: 37_400_000_000
+          2019-01-01: 38_200_000_000
+          2020-01-01: 37_800_000_000
+          2021-01-01: 39_100_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 50_000
+      amount: 
+        values:
+          2018-01-01: 43_000_000_000
+          2019-01-01: 43_600_000_000
+          2020-01-01: 45_000_000_000
+          2021-01-01: 46_900_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 100_000
+      amount: 
+        values:
+          2018-01-01: 18_000_000_000
+          2019-01-01: 20_000_000_000
+          2020-01-01: 21_600_000_000
+          2021-01-01: 22_700_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 150_000
+      amount: 
+        values:
+          2018-01-01: 10_200_000_000
+          2019-01-01: 10_600_000_000
+          2020-01-01: 10_800_000_000
+          2021-01-01: 11_400_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 200_000
+      amount: 
+        values:
+          2018-01-01: 21_200_000_000
+          2019-01-01: 22_600_000_000
+          2020-01-01: 22_300_000_000
+          2021-01-01: 23_100_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 500_000
+      amount: 
+        values:
+          2018-01-01: 10_100_000_000
+          2019-01-01: 10_700_000_000
+          2020-01-01: 10_400_000_000
+          2021-01-01: 10_700_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 1_000_000
+      amount: 
+        values:
+          2018-01-01: 6_700_000_000
+          2019-01-01: 7_140_000_000
+          2020-01-01: 6_940_000_000
+          2021-01-01: 7_040_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 2_000_000
+      amount:
+        values:
+          2018-01-01: 11_400_000_000
+          2019-01-01: 12_200_000_000
+          2020-01-01: 11_500_000_000
+          2021-01-01: 11_700_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax

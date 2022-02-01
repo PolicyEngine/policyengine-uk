@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 sim = Microsimulation(adjust_weights=False)
 parameters = sim.simulation.tax_benefit_system.parameters
-statistics = parameters.statistics
+statistics = parameters.calibration
 
 START_YEAR = 2019
 END_YEAR = 2022
@@ -25,10 +25,10 @@ regions = list(pd.Series(household_region).unique())
 survey_num_households = len(sim.calc("household_id"))
 
 AGGREGATE_ERROR_PENALTY = 1e0
-CASELOAD_ERROR_PENALTY = 1e0
-REGIONAL_POPULATION_ERROR_PENALTY = 1e0
-UK_POPULATION_ERROR_PENALTY = 1e1
+PARTICIPATION_ERROR_PENALTY = 1e4 # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
 MODIFICATION_PENALTY = 1e-11
+
+POPULATION_ERROR_PENALTY = 5
 
 def loss(
     weight_modification: np.array, include_modification_penalty: float = True
@@ -53,20 +53,20 @@ def loss(
                 # Calculate aggregate error
                 agg = tf.reduce_sum(modified_weights * household_totals)
                 target = getattr(statistic_set.aggregate, variable)
-                l += AGGREGATE_ERROR_PENALTY * ((agg / target) - 1) ** 2
+                l += AGGREGATE_ERROR_PENALTY * target * ((agg / target) - 1) ** 2
             if variable in statistic_set.count._children:
                 # Calculate caseload error
                 count = tf.reduce_sum(modified_weights * household_participants)
                 target = getattr(statistic_set.count, variable)
-                l += CASELOAD_ERROR_PENALTY * ((count / target) - 1) ** 2
+                l += PARTICIPATION_ERROR_PENALTY * target * ((count / target) - 1) ** 2
         for region in regions:
             in_region = household_region == region
             people_in_region = household_population * in_region
             population = tf.reduce_sum(people_in_region * modified_weights)
             target = getattr(statistic_set.populations, region)
-            l += REGIONAL_POPULATION_ERROR_PENALTY * ((population / target) - 1) ** 2
+            l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * target * ((population / target) - 1) ** 2
         
-        l += UK_POPULATION_ERROR_PENALTY * ((tf.reduce_sum(modified_weights) - weights.sum())) ** 2
+        l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * weights.sum() * ((tf.reduce_sum(modified_weights) - weights.sum())) ** 2
 
 
     # Add penalty for weight changes
