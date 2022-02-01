@@ -27,10 +27,11 @@ countries = list(pd.Series(household_country).unique())
 survey_num_households = len(sim.calc("household_id"))
 
 AGGREGATE_ERROR_PENALTY = 1e0
-PARTICIPATION_ERROR_PENALTY = 1e4 # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
+PARTICIPATION_ERROR_PENALTY = 1e4  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
 MODIFICATION_PENALTY = 1e-11
 
 POPULATION_ERROR_PENALTY = 5
+
 
 def loss(
     weight_modification: np.array, include_modification_penalty: float = True
@@ -46,46 +47,162 @@ def loss(
         )
         for variable in variables:
             if variable in statistic_set.aggregate._children:
-                values = sim.calc(
-                    variable, period=year
-                ).values
-                entity = sim.simulation.tax_benefit_system.variables[variable].entity.key
+                values = sim.calc(variable, period=year).values
+                entity = sim.simulation.tax_benefit_system.variables[
+                    variable
+                ].entity.key
                 household_totals = sim.map_to(values, entity, "household")
-                household_participants = sim.map_to((values > 0) * 1, entity, "household")
+                household_participants = sim.map_to(
+                    (values > 0) * 1, entity, "household"
+                )
                 # Calculate aggregate error
                 agg = tf.reduce_sum(modified_weights * household_totals)
                 target = getattr(statistic_set.aggregate, variable)
-                l += AGGREGATE_ERROR_PENALTY * target * ((agg / target) - 1) ** 2
+                l += (
+                    AGGREGATE_ERROR_PENALTY
+                    * target
+                    * ((agg / target) - 1) ** 2
+                )
             if variable in statistic_set.count._children:
                 # Calculate caseload error
-                count = tf.reduce_sum(modified_weights * household_participants)
+                count = tf.reduce_sum(
+                    modified_weights * household_participants
+                )
                 target = getattr(statistic_set.count, variable)
-                l += PARTICIPATION_ERROR_PENALTY * target * ((count / target) - 1) ** 2
+                l += (
+                    PARTICIPATION_ERROR_PENALTY
+                    * target
+                    * ((count / target) - 1) ** 2
+                )
         for region in regions:
             in_region = household_region == region
             people_in_region = household_population * in_region
             population = tf.reduce_sum(people_in_region * modified_weights)
             target = getattr(statistic_set.populations, region)
-            l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * target * ((population / target) - 1) ** 2
+            l += (
+                POPULATION_ERROR_PENALTY
+                * PARTICIPATION_ERROR_PENALTY
+                * target
+                * ((population / target) - 1) ** 2
+            )
 
         for country in countries:
             for program in statistic_set.aggregate_by_country._children:
                 in_country = household_country == country
-                values = sim.calc(
-                    variable, period=year
-                ).values
-                entity = sim.simulation.tax_benefit_system.variables[variable].entity.key
+                values = sim.calc(variable, period=year).values
+                entity = sim.simulation.tax_benefit_system.variables[
+                    variable
+                ].entity.key
                 household_totals = sim.map_to(values, entity, "household")
-                aggregate = tf.reduce_sum(modified_weights * in_country * household_totals)
+                aggregate = tf.reduce_sum(
+                    modified_weights * in_country * household_totals
+                )
                 target = getattr(statistic_set.aggregate_by_country, program)
-                l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * target * ((aggregate / target) - 1) ** 2
+                l += (
+                    POPULATION_ERROR_PENALTY
+                    * PARTICIPATION_ERROR_PENALTY
+                    * target
+                    * ((aggregate / target) - 1) ** 2
+                )
+
         # Income tax payers by tax band
+
+        tax_band = sim.calc("tax_band", period=year).values
+        pays_basic_rate = (
+            (tax_band == "BASIC")
+            | (tax_band == "INTERMEDIATE")
+            | (tax_band == "STARTER")
+        )
+        pays_higher_rate = tax_band == "HIGHER"
+        pays_add_rate = tax_band == "ADDITIONAL"
+
+        basic_rate_payers = sim.map_to(pays_basic_rate, "person", "household")
+        higher_rate_payers = sim.map_to(
+            pays_higher_rate, "person", "household"
+        )
+        add_rate_payers = sim.map_to(pays_add_rate, "person", "household")
+
+        for value, target in zip(
+            [
+                basic_rate_payers,
+                higher_rate_payers,
+                add_rate_payers,
+            ],
+            [
+                statistic_set.income_tax_payers_by_band.BASIC,
+                statistic_set.income_tax_payers_by_band.HIGHER,
+                statistic_set.income_tax_payers_by_band.ADDITIONAL,
+            ],
+        ):
+            population = tf.reduce_sum(modified_weights * value)
+            l += (
+                POPULATION_ERROR_PENALTY
+                * target
+                * ((population / target) - 1) ** 2
+            )
 
         # Income tax aggregate by income band
 
-        
-        l += POPULATION_ERROR_PENALTY * PARTICIPATION_ERROR_PENALTY * weights.sum() * ((tf.reduce_sum(modified_weights) - weights.sum())) ** 2
+        brackets = statistic_set.income_tax_by_income_range.brackets
+        num_thresholds = len(brackets)
+        for i in range(num_thresholds):
+            lower_threshold = brackets[i].threshold
+            upper_threshold = (
+                brackets[i + 1].threshold if i < num_thresholds - 1 else np.inf
+            )
+            income = sim.calc("total_income", period=year)
+            person_in_range = (income >= lower_threshold) & (
+                income < upper_threshold
+            )
+            income_tax_in_range = sim.calc("income_tax", period=year)[
+                person_in_range
+            ]
+            household_income_tax = sim.map_to(
+                income_tax_in_range, "person", "household"
+            )
+            aggregate = tf.reduce_sum(modified_weights * household_income_tax)
+            target = brackets[i].amount
+            l += (
+                AGGREGATE_ERROR_PENALTY
+                * target
+                * ((aggregate / target) - 1) ** 2
+            )
 
+        # Population by age
+
+        brackets = statistic_set.population_by_age.brackets
+        total_population = sum([bracket.amount for bracket in brackets])
+        num_thresholds = len(brackets)
+        for i in range(num_thresholds):
+            lower_threshold = brackets[i].threshold
+            upper_threshold = (
+                brackets[i + 1].threshold if i < num_thresholds - 1 else np.inf
+            )
+            age = sim.calc("age", period=year)
+            person_in_range = (age >= lower_threshold) & (
+                age < upper_threshold
+            )
+            household_count = sim.map_to(
+                person_in_range, "person", "household"
+            )
+            population = tf.reduce_sum(modified_weights * household_count)
+            target_ratio = brackets[i].amount / total_population
+            population_ratio = (
+                population
+                / sim.calc("people", map_to="household", period=year).sum()
+            )
+            l += (
+                POPULATION_ERROR_PENALTY
+                * target_ratio
+                * ((population_ratio / target_ratio) - 1) ** 2
+            )
+
+        l += (
+            POPULATION_ERROR_PENALTY
+            * PARTICIPATION_ERROR_PENALTY
+            * weights.sum()
+            * ((tf.reduce_sum(modified_weights) - weights.sum())) ** 2
+        )
 
     # Add penalty for weight changes
     if include_modification_penalty:
@@ -113,7 +230,9 @@ sim_reweighted = Microsimulation()
 for year in range(START_YEAR, END_YEAR + 1):
     added_households = x[year - START_YEAR].sum()
     new_weights = np.maximum(
-        0, sim.calc("household_weight", period=year).values + x[year - START_YEAR]
+        0,
+        sim.calc("household_weight", period=year).values
+        + x[year - START_YEAR],
     )
     sim_reweighted.set_input(
         "household_weight",
