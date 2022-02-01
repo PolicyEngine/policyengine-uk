@@ -86,7 +86,6 @@ def loss(
                 * ((population / target) - 1) ** 2
             )
 
-
         for country in countries:
             for variable in statistic_set.aggregate_by_country._children:
                 in_country = household_country == country
@@ -98,7 +97,10 @@ def loss(
                 aggregate = tf.reduce_sum(
                     modified_weights * in_country * household_totals
                 )
-                target = getattr(getattr(statistic_set.aggregate_by_country, variable), country)
+                target = getattr(
+                    getattr(statistic_set.aggregate_by_country, variable),
+                    country,
+                )
                 l += (
                     AGGREGATE_ERROR_PENALTY
                     * target
@@ -140,7 +142,7 @@ def loss(
                 * target
                 * ((population / target) - 1) ** 2
             )
-        
+
         # Income tax aggregate by income band
 
         brackets = statistics.income_tax_by_income_range.brackets
@@ -149,13 +151,17 @@ def loss(
         for i in range(num_thresholds):
             lower_threshold = brackets[i].threshold(instant_str)
             upper_threshold = (
-                brackets[i + 1].threshold(instant_str) if i < num_thresholds - 1 else np.inf
+                brackets[i + 1].threshold(instant_str)
+                if i < num_thresholds - 1
+                else np.inf
             )
             income = sim.calc("total_income", period=year)
             person_in_range = (income >= lower_threshold) & (
                 income < upper_threshold
             )
-            income_tax_in_range = sim.calc("income_tax", period=year) * person_in_range
+            income_tax_in_range = (
+                sim.calc("income_tax", period=year) * person_in_range
+            )
             household_income_tax = sim.map_to(
                 income_tax_in_range, "person", "household"
             )
@@ -175,7 +181,9 @@ def loss(
         for i in range(num_thresholds):
             lower_threshold = brackets[i].threshold(instant_str)
             upper_threshold = (
-                brackets[i + 1].threshold(instant_str) if i < num_thresholds - 1 else np.inf
+                brackets[i + 1].threshold(instant_str)
+                if i < num_thresholds - 1
+                else np.inf
             )
             age = sim.calc("age", period=year)
             person_in_range = (age >= lower_threshold) & (
@@ -186,12 +194,28 @@ def loss(
             )
             population = tf.reduce_sum(modified_weights * household_count)
             if year > 2019:
-                current_population = sum([getattr(statistic_set.populations, region) for region in regions])
-                last_year_population = sum([getattr(statistics(f"{year-1}-01-01").populations, region) for region in regions])
-                population_increase_ratio = current_population / last_year_population
+                current_population = sum(
+                    [
+                        getattr(statistic_set.populations, region)
+                        for region in regions
+                    ]
+                )
+                last_year_population = sum(
+                    [
+                        getattr(
+                            statistics(f"{year-1}-01-01").populations, region
+                        )
+                        for region in regions
+                    ]
+                )
+                population_increase_ratio = (
+                    current_population / last_year_population
+                )
             else:
                 population_increase_ratio = 1
-            target = brackets[i].amount(instant_str) * population_increase_ratio
+            target = (
+                brackets[i].amount(instant_str) * population_increase_ratio
+            )
             l += (
                 POPULATION_ERROR_PENALTY
                 * AGE_DISTRIBUTION_PENALTY
@@ -213,7 +237,7 @@ def loss(
     return l
 
 
-opt = tf.keras.optimizers.Adam(learning_rate=4e+1)
+opt = tf.keras.optimizers.Adam(learning_rate=4e1)
 # Run training
 weight_changes = tf.Variable(
     np.zeros((4, survey_num_households)), dtype=tf.float32
@@ -224,7 +248,9 @@ for i in task:
     with tf.GradientTape() as tape:
         l = loss(weight_changes)
         l_acc = loss(weight_changes, include_modification_penalty=False)
-        task.set_description(f"Loss reduction: {(l_acc.numpy() / start_loss.numpy())-1:.2%}")
+        task.set_description(
+            f"Loss reduction: {(l_acc.numpy() / start_loss.numpy())-1:.2%}"
+        )
         gradients = tape.gradient(l, weight_changes)
     opt.apply_gradients(zip([gradients], [weight_changes]))
 
@@ -256,7 +282,9 @@ for year in range(START_YEAR, END_YEAR + 1):
     for program in variables:
         values = sim.calc(program, period=year).values
         frs_weights = sim.calc("household_weight", period=year).values
-        new_weights = sim_reweighted.calc("household_weight", period=year).values
+        new_weights = sim_reweighted.calc(
+            "household_weight", period=year
+        ).values
         entity = sim.simulation.tax_benefit_system.variables[
             program
         ].entity.key
