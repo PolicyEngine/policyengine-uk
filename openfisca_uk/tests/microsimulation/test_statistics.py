@@ -48,7 +48,7 @@ class StatisticTest:
         except:
             # Not overridden - use statistics parameter
             if source == "official":
-                return parameters.statistics.children[
+                return parameters.calibration.children[
                     {"aggregate": "aggregate", "caseload": "count"}[
                         self.statistic
                     ]
