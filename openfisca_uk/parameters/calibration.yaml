@@ -603,3 +603,84 @@ income_tax_by_income_range:
         metadata:
           uprating: 
             parameter: calibration.aggregate.income_tax
+population_by_age:
+  brackets:
+    - threshold:
+        2018-01-01: 0
+      amount:
+        2020-01-01: 3_782_300
+    - threshold:
+        2018-01-01: 5
+      amount:
+        2020-01-01: 4_147_413
+    - threshold:
+        2018-01-01: 10
+      amount:
+        2020-01-01: 4_045_114
+    - threshold:
+        2018-01-01: 15
+      amount:
+        2020-01-01: 3_683_680
+    - threshold:
+        2018-01-01: 20
+      amount:
+        2020-01-01: 4_133_158
+    - threshold:
+        2018-01-01: 25
+      amount:
+        2020-01-01: 4_476_630
+    - threshold:
+        2018-01-01: 30
+      amount:
+        2020-01-01: 4_521_975
+    - threshold:
+        2018-01-01: 35
+      amount:
+        2020-01-01: 4_404_100
+    - threshold:
+        2018-01-01: 40
+      amount:
+        2020-01-01: 4_091_543
+    - threshold:
+        2018-01-01: 45
+      amount:
+        2020-01-01: 4_303_967
+    - threshold:
+        2018-01-01: 50
+      amount:
+        2020-01-01: 4_616_017
+    - threshold:
+        2018-01-01: 55
+      amount:
+        2020-01-01: 4_510_851
+    - threshold:
+        2018-01-01: 60
+      amount:
+        2020-01-01: 3_855_818
+    - threshold:
+        2018-01-01: 65
+      amount:
+        2020-01-01: 3_355_818
+    - threshold:
+        2018-01-01: 70
+      amount:
+        2020-01-01: 3_363_906
+    - threshold:
+        2018-01-01: 75
+      amount:
+        2020-01-01: 2_403_759
+    - threshold:
+        2018-01-01: 80
+      amount:
+        2020-01-01: 1_726_223
+    - threshold:
+        2018-01-01: 85
+      amount:
+        2020-01-01: 1_049_866
+    - threshold:
+        2018-01-01: 90
+      amount:
+        2020-01-01: 609_503
+  metadata:
+    type: single_amount
+  
