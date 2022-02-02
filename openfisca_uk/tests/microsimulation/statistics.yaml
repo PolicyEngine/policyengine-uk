@@ -32,6 +32,7 @@ universal_credit:
 income_tax:
   test:
     - relative_aggregate_error_less_than: 0.05
+    - relative_caseload_error_less_than: 0.05
 total_NI:
   test:
     - relative_aggregate_error_less_than: 0.05

@@ -11,15 +11,15 @@ working_tax_credit:
   skip_household_matching: true
 child_tax_credit:
   ukmod: bfamt_s
-  max_rel_error: 0.2
+  max_rel_error: 0.4
   skip_household_matching: true
 housing_benefit:
   ukmod: bho_s
-  max_rel_error: 0.3
+  max_rel_error: 0.6
   skip_household_matching: true
 universal_credit:
   ukmod: bsauc_s
-  max_rel_error: 0.45
+  max_rel_error: 0.6
   skip_household_matching: true
 market_income:
   ukmod: ils_origy

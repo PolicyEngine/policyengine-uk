@@ -18,7 +18,12 @@ def get_openfisca_uk_aggregate(variable: str, year: int) -> float:
 
 
 def get_openfisca_uk_caseload(variable: str, year: int) -> float:
-    return (sim.calc(variable, period=year, map_to="household") > 0).sum()
+    values = sim.map_to(
+        sim.calc(variable, period=year).values > 0,
+        variables[variable].entity.key,
+        "household",
+    )
+    return (sim.calc("household_weight", period=year).values * values).sum()
 
 
 class StatisticTest:
@@ -44,7 +49,7 @@ class StatisticTest:
                     self.year
                 ]
             elif self.statistic == "caseload":
-                return statistics[self.variable][source]["caseload"][self.year]
+                return statistics[self.variable][source]["count"][self.year]
         except:
             # Not overridden - use statistics parameter
             if source == "official":
@@ -111,7 +116,7 @@ class RelativeErrorLessThan(StatisticTest):
         return relative_error < self.max_error, locals()
 
     def describe(self):
-        return f"OpenFisca-UK {self.variable_label} {self.statistic} error is less than {self.max_error:%} in {self.year}"
+        return f"OpenFisca-UK {self.variable_label} {self.statistic} error is less than {self.max_error:.1%} in {self.year}"
 
 
 tests = []
@@ -144,8 +149,8 @@ for variable in statistics:
                         statistic,
                         year,
                         max_error=dict_tests[
-                            "absolute_aggregate_error_less_than"
-                        ]["absolute_aggregate_error_less_than"],
+                            f"absolute_{statistic}_error_less_than"
+                        ][f"absolute_{statistic}_error_less_than"],
                     )
                 ]
         if f"relative_{statistic}_error_less_than" in test_names:
@@ -156,8 +161,8 @@ for variable in statistics:
                         statistic,
                         year,
                         max_error=dict_tests[
-                            "relative_aggregate_error_less_than"
-                        ]["relative_aggregate_error_less_than"],
+                            f"relative_{statistic}_error_less_than"
+                        ][f"relative_{statistic}_error_less_than"],
                     )
                 ]
 
