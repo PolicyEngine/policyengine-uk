@@ -219,7 +219,7 @@ count:
       2020-01-01: 2_125_000
       2021-01-01: 1_686_000
     metadata:
-      unit: currency-GBP
+      unit: benefit unit
       reference:
         - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
           href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021
@@ -232,7 +232,7 @@ count:
       2020-01-01: 1_199_000
       2021-01-01: 1_044_000
     metadata:
-      unit: currency-GBP
+      unit: benefit unit
       reference:
         - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
           href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021
@@ -258,6 +258,7 @@ count:
       2019-01-01: 7_281_535
       2020-01-01: 7_210_595
     metadata:
+      unit: benefit unit
       reference:
         - title: "Child Benefit Statistics: Annual Releast, August 2020"
           href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020
@@ -270,6 +271,7 @@ count:
       2020-01-01: 31_700_000
       2021-01-01: 38_272_000
     metadata:
+      unit: benefit unit
       reference:
         - title: Number of Individual Income Tax Payers (SPI, National Statistics)
           href: https://www.gov.uk/government/statistics/number-of-individual-income-taxpayers-by-marginal-rate-gender-and-age
