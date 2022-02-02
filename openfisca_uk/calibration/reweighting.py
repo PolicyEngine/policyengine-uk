@@ -32,7 +32,7 @@ survey_num_households = len(sim.calc("household_id"))
 AGGREGATE_ERROR_PENALTY = 1e-5
 PARTICIPATION_ERROR_PENALTY = 1e-1  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
 MODIFICATION_PENALTY = 1e-11
-AGE_DISTRIBUTION_PENALTY = 1e-1
+AGE_DISTRIBUTION_PENALTY = 1e-1  # Age distribution errors have a lower importance (10x lower)
 POPULATION_ERROR_PENALTY = 5
 
 
