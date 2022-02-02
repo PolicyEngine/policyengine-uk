@@ -311,7 +311,7 @@ def loss(
 
     # Add penalty for weight changes
     if include_modification_penalty:
-        l += tf.reduce_sum(MODIFICATION_PENALTY * weight_modification ** 2)
+        l += tf.reduce_sum(MODIFICATION_PENALTY * weight_modification**2)
     return l
 
 
