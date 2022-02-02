@@ -237,19 +237,19 @@ def loss(
     return l
 
 
-opt = tf.keras.optimizers.Adam(learning_rate=4e1)
+opt = tf.keras.optimizers.Adam(learning_rate=1e1)
 # Run training
 weight_changes = tf.Variable(
     np.zeros((4, survey_num_households)), dtype=tf.float32
 )
-task = tqdm(range(512), desc="Training")
+task = tqdm(range(8192), desc="Training")
 start_loss = loss(weight_changes, include_modification_penalty=False)
 for i in task:
     with tf.GradientTape() as tape:
         l = loss(weight_changes)
         l_acc = loss(weight_changes, include_modification_penalty=False)
         task.set_description(
-            f"Loss reduction: {(l_acc.numpy() / start_loss.numpy())-1:.2%}"
+            f"Loss reduction: {(l_acc.numpy() / start_loss.numpy())-1:.4%}"
         )
         gradients = tape.gradient(l, weight_changes)
     opt.apply_gradients(zip([gradients], [weight_changes]))
