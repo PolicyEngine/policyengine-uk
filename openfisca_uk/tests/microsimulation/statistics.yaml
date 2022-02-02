@@ -20,7 +20,7 @@ housing_benefit:
 JSA_income:
   test:
     - relative_aggregate_error_less_than: 0.05
-    - relative_caseload_error_less_than: 0.05
+    - relative_caseload_error_less_than: 0.1
 income_support:
   test:
     - relative_aggregate_error_less_than: 0.05
