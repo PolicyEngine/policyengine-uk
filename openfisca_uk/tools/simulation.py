@@ -123,6 +123,7 @@ class Microsimulation(GeneralMicrosimulation):
             (dataset.name == "frs_enhanced")
             and adjust_weights
             and year >= 2019
+            and duplicate_records > 1
         ):
             weight_file = (
                 Path(__file__).parent.parent / "calibration" / "frs_weights.h5"
