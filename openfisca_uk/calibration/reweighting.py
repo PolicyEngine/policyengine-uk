@@ -12,7 +12,7 @@ import logging
 from openfisca_core.parameters import ParameterAtInstant
 
 LEARNING_RATE = 5e1
-NUM_EPOCHS = 64
+NUM_EPOCHS = 256
 
 tf.get_logger().setLevel("INFO")
 logging.basicConfig(level=logging.INFO)
