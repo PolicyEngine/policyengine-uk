@@ -35,7 +35,7 @@ survey_num_households = len(sim.calc("household_id"))
 
 AGGREGATE_ERROR_PENALTY = 1e-4
 PARTICIPATION_ERROR_PENALTY = 1e-0  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
-MODIFICATION_PENALTY = 1e-8
+MODIFICATION_PENALTY = 1e-6
 AGE_DISTRIBUTION_PENALTY = 1e0
 POPULATION_ERROR_PENALTY = 1
 
@@ -47,10 +47,20 @@ def squared_relative_deviation(
 
 
 VAL_PROGRAMS = {
-    2019: [],
-    2020: [],
-    2021: [],
-    2022: [],
+    2019: [
+        "council_tax_less_benefit",
+        "housing_benefit",
+    ],
+    2020: [
+        "income_support",
+        "ESA_income",
+    ],
+    2021: [
+        "total_NI",
+        "JSA_income",
+    ],
+    2022: [
+    ],
 }
 
 
@@ -272,20 +282,6 @@ def population_age_distribution_loss(
     return l
 
 
-def uk_wide_population_loss(
-    original_weights: ArrayLike, modified_weights: tf.Tensor
-) -> tf.Tensor:
-    total_population = original_weights.sum()
-    new_population = tf.reduce_sum(modified_weights)
-
-    return (
-        POPULATION_ERROR_PENALTY
-        * PARTICIPATION_ERROR_PENALTY
-        * total_population
-        * squared_relative_deviation(new_population, total_population)
-    )
-
-
 losses_over_time = {}
 
 
@@ -334,9 +330,7 @@ def loss(
             statistic_set, year, modified_weights
         )
 
-        loss_types["UK population"] = uk_wide_population_loss(
-            weights, modified_weights
-        )
+        loss_types["Modification penalty"] = tf.reduce_sum(MODIFICATION_PENALTY * weight_modification**2)
 
         for loss_type, loss_value in loss_types.items():
             if loss_type not in losses_over_time:
@@ -346,14 +340,14 @@ def loss(
             l += loss_value
 
     # Add penalty for weight changes
-    if include_modification_penalty:
-        l += tf.reduce_sum(MODIFICATION_PENALTY * weight_modification**2)
+    if not include_modification_penalty:
+        l -= loss_types["Modification penalty"]
     return l
 
 
 def val_loss(weight_modification: np.array) -> float:
     # Out-of-scope metrics go here
-    l = tf.constant(0)
+    l = tf.constant(0, dtype=tf.float32)
     for year in range(START_YEAR, END_YEAR + 1):
         instant_str = f"{year}-01-01"
         statistic_set = statistics(instant_str)
@@ -388,8 +382,14 @@ def train_weights() -> ArrayLike:
             l = loss(weight_changes)
             l_acc = loss(weight_changes, include_modification_penalty=False)
             v_loss = val_loss(weight_changes)
+            if "Total training loss" not in losses_over_time:
+                losses_over_time["Total training loss"] = []
+            losses_over_time["Total training loss"] += [float(l.numpy())]
+            if "Total validation loss" not in losses_over_time:
+                losses_over_time["Total validation loss"] = []
+            losses_over_time["Total validation loss"] += [float(v_loss.numpy())]
             task.set_description(
-                f"Loss reduction: {(l_acc.numpy() / start_loss.numpy())-1:.4%} | Validation metrics: {(v_loss.numpy() / start_val_loss.numpy())-1:.4%}"
+                f"Training loss: {(l_acc.numpy() / start_loss.numpy())-1:.4%} | Validation loss: {(v_loss.numpy() / start_val_loss.numpy())-1:.4%}"
             )
             gradients = tape.gradient(l, weight_changes)
         opt.apply_gradients(zip([gradients], [weight_changes]))
