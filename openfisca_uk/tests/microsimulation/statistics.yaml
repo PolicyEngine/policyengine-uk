@@ -1,21 +1,21 @@
 child_benefit:
   test:
-    - relative_aggregate_error_less_than: 0.05
-    - relative_caseload_error_less_than: 0.05
+    - relative_aggregate_error_less_than: 0.10
+    - relative_caseload_error_less_than: 0.10
 council_tax_less_benefit:
   test:
     - relative_aggregate_error_less_than: 0.10
 child_tax_credit:
   test:
-    - relative_aggregate_error_less_than: 0.15
-    - relative_caseload_error_less_than: 0.15
+    - relative_aggregate_error_less_than: 0.25
+    - relative_caseload_error_less_than: 0.25
 working_tax_credit:
   test:
-    - relative_aggregate_error_less_than: 0.05
-    - relative_caseload_error_less_than: 0.05
+    - relative_aggregate_error_less_than: 0.45
+    - relative_caseload_error_less_than: 0.40
 housing_benefit:
   test:
-    - relative_aggregate_error_less_than: 0.15
+    - relative_aggregate_error_less_than: 0.25
     - relative_caseload_error_less_than: 0.15
 JSA_income:
   test:
