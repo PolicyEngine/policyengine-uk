@@ -72,7 +72,7 @@ class Microsimulation(GeneralMicrosimulation):
                     )
                     dataset.download(year)
 
-        if duplicate_records > 1:
+        if dataset.name == "frs_enhanced" and duplicate_records > 1:
             data = dataset.load(year)
 
             def duplicate(key, values):
@@ -113,7 +113,7 @@ class Microsimulation(GeneralMicrosimulation):
                     return None
 
                 years = dataset.years
-                name = dataset.name
+                name = "frs_enhanced_duplicated"
 
             dataset = ProxyDataset
 
