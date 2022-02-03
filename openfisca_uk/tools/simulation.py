@@ -72,7 +72,7 @@ class Microsimulation(GeneralMicrosimulation):
                     )
                     dataset.download(year)
 
-        if dataset.name == "frs_enhanced" and duplicate_records > 1:
+        if (dataset.name == "frs_enhanced") and (duplicate_records > 1):
             data = dataset.load(year)
 
             def duplicate(key, values):
@@ -120,10 +120,10 @@ class Microsimulation(GeneralMicrosimulation):
         super().__init__(reform=reform, dataset=dataset, year=year)
 
         if (
-            (dataset.name == "frs_enhanced")
+            ("frs_enhanced" in dataset.name)
             and adjust_weights
             and year >= 2019
-            and duplicate_records > 1
+            and (duplicate_records > 1)
         ):
             weight_file = (
                 Path(__file__).parent.parent / "calibration" / "frs_weights.h5"

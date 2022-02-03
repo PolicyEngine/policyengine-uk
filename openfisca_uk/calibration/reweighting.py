@@ -11,7 +11,7 @@ import tensorflow as tf
 import logging
 from openfisca_core.parameters import ParameterAtInstant
 
-LEARNING_RATE = 6e1
+LEARNING_RATE = 5e1
 NUM_EPOCHS = 64
 
 tf.get_logger().setLevel("INFO")
@@ -24,14 +24,6 @@ statistics = parameters.calibration
 START_YEAR = 2019
 END_YEAR = 2022
 
-sim.set_input(
-    "claims_legacy_benefits",
-    START_YEAR,
-    np.repeat(
-        [True, False], len(sim.calc("benunit_id", START_YEAR).values) / 2
-    ),
-)
-
 FORCE_ALL_METRIC_IMPROVEMENT = False  # Don't save weights unless all (program, year, aggregate/caseload) tests improve. If false, regressions will be logged.
 
 household_population = sim.calc("people", map_to="household").values
@@ -41,11 +33,11 @@ household_country = sim.calc("country").values
 countries = list(pd.Series(household_country).unique())
 survey_num_households = len(sim.calc("household_id"))
 
-AGGREGATE_ERROR_PENALTY = 1e-5
-PARTICIPATION_ERROR_PENALTY = 1e-1  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
+AGGREGATE_ERROR_PENALTY = 1e-4
+PARTICIPATION_ERROR_PENALTY = 1e-0  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
 MODIFICATION_PENALTY = 1e-8
 AGE_DISTRIBUTION_PENALTY = 1e0
-POPULATION_ERROR_PENALTY = 5
+POPULATION_ERROR_PENALTY = 1
 
 
 def squared_relative_deviation(
@@ -407,13 +399,6 @@ def train_weights() -> ArrayLike:
 
 def get_microsimulation(weights: ArrayLike) -> Microsimulation:
     sim_reweighted = Microsimulation(adjust_weights=False, duplicate_records=2)
-    sim_reweighted.set_input(
-        "claims_legacy_benefits",
-        START_YEAR,
-        np.repeat(
-            [True, False], len(sim.calc("benunit_id", START_YEAR).values) / 2
-        ),
-    )
     for year in range(START_YEAR, END_YEAR + 1):
         new_weights = np.maximum(
             0,
@@ -507,12 +492,11 @@ def check_validation_performance_regression(df: pd.DataFrame):
                     subset = subset.iloc[0]
                 original_error = subset["FRS-weighted"] - subset.Official
                 new_error = subset["Re-weighted"] - subset.Official
-                if abs(new_error) > abs(original_error):
-                    message = f"{program} {year} {metric} error increases to {new_error:,.2f} from {original_error:,.2f}"
-                    if FORCE_ALL_METRIC_IMPROVEMENT:
-                        raise ValueError(message)
-                    else:
-                        logging.info(message)
+                message = f"{program} {year} {metric} error changes from {original_error:,.0f} to {new_error:,.0f}."
+                if FORCE_ALL_METRIC_IMPROVEMENT:
+                    raise ValueError(message)
+                else:
+                    logging.info(message)
 
 
 def save_weights(sim_reweighted: Microsimulation):
