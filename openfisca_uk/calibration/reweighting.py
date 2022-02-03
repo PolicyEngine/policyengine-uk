@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List
+import yaml
 import h5py
 from tqdm import tqdm
 from openfisca_uk import Microsimulation
@@ -10,15 +11,26 @@ import tensorflow as tf
 import logging
 from openfisca_core.parameters import ParameterAtInstant
 
+LEARNING_RATE = 6e1
+NUM_EPOCHS = 64
+
 tf.get_logger().setLevel("INFO")
 logging.basicConfig(level=logging.INFO)
 
-sim = Microsimulation(adjust_weights=False)
+sim = Microsimulation(adjust_weights=False, duplicate_records=2)
 parameters = sim.simulation.tax_benefit_system.parameters
 statistics = parameters.calibration
 
 START_YEAR = 2019
 END_YEAR = 2022
+
+sim.set_input(
+    "claims_legacy_benefits",
+    START_YEAR,
+    np.repeat(
+        [True, False], len(sim.calc("benunit_id", START_YEAR).values) / 2
+    ),
+)
 
 FORCE_ALL_METRIC_IMPROVEMENT = False  # Don't save weights unless all (program, year, aggregate/caseload) tests improve. If false, regressions will be logged.
 
@@ -31,10 +43,8 @@ survey_num_households = len(sim.calc("household_id"))
 
 AGGREGATE_ERROR_PENALTY = 1e-5
 PARTICIPATION_ERROR_PENALTY = 1e-1  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
-MODIFICATION_PENALTY = 1e-11
-AGE_DISTRIBUTION_PENALTY = (
-    1e-1  # Age distribution errors have a lower importance (10x lower)
-)
+MODIFICATION_PENALTY = 1e-8
+AGE_DISTRIBUTION_PENALTY = 1e0
 POPULATION_ERROR_PENALTY = 5
 
 
@@ -44,15 +54,25 @@ def squared_relative_deviation(
     return ((pred / actual) - 1) ** 2
 
 
+VAL_PROGRAMS = {
+    2019: [],
+    2020: [],
+    2021: [],
+    2022: [],
+}
+
+
 def uk_wide_program_statistic_loss(
     variables: List[str],
     statistic_set: ParameterAtInstant,
     year: int,
     modified_weights: tf.Tensor,
+    validation: bool = False,
 ) -> tf.Tensor:
     l = 0
     for variable in variables:
         if variable in statistic_set.aggregate._children:
+            val_program = variable in VAL_PROGRAMS[year]
             values = sim.calc(variable, period=year).values
             entity = sim.simulation.tax_benefit_system.variables[
                 variable
@@ -64,20 +84,26 @@ def uk_wide_program_statistic_loss(
             # Calculate aggregate error
             agg = tf.reduce_sum(modified_weights * household_totals)
             target = getattr(statistic_set.aggregate, variable)
-            l += (
-                AGGREGATE_ERROR_PENALTY
-                * target
-                * squared_relative_deviation(agg, target)
-            )
+            if (val_program and validation) or (
+                not val_program and not validation
+            ):
+                l += (
+                    AGGREGATE_ERROR_PENALTY
+                    * target
+                    * squared_relative_deviation(agg, target)
+                )
         if variable in statistic_set.count._children:
             # Calculate caseload error
             count = tf.reduce_sum(modified_weights * household_participants)
             target = getattr(statistic_set.count, variable)
-            l += (
-                PARTICIPATION_ERROR_PENALTY
-                * target
-                * squared_relative_deviation(count, target)
-            )
+            if (val_program and validation) or (
+                not val_program and not validation
+            ):
+                l += (
+                    PARTICIPATION_ERROR_PENALTY
+                    * target
+                    * squared_relative_deviation(count, target)
+                )
     return l
 
 
@@ -100,11 +126,15 @@ def regional_population_loss(
 
 
 def country_level_program_statistic_loss(
-    statistic_set: ParameterAtInstant, year: int, modified_weights: tf.Tensor
+    statistic_set: ParameterAtInstant,
+    year: int,
+    modified_weights: tf.Tensor,
+    validation: bool = False,
 ) -> tf.Tensor:
     l = 0
     for country in countries:
         for variable in statistic_set.aggregate_by_country._children:
+            val_program = variable in VAL_PROGRAMS[year]
             in_country = household_country == country
             values = sim.calc(variable, period=year).values
             entity = sim.simulation.tax_benefit_system.variables[
@@ -118,11 +148,14 @@ def country_level_program_statistic_loss(
                 getattr(statistic_set.aggregate_by_country, variable),
                 country,
             )
-            l += (
-                AGGREGATE_ERROR_PENALTY
-                * target
-                * squared_relative_deviation(aggregate, target)
-            )
+            if (val_program and validation) or (
+                not val_program and not validation
+            ):
+                l += (
+                    AGGREGATE_ERROR_PENALTY
+                    * target
+                    * squared_relative_deviation(aggregate, target)
+                )
     return l
 
 
@@ -197,6 +230,7 @@ def tax_revenue_by_income_band_loss(
             * squared_relative_deviation(aggregate, target)
             / num_thresholds
         )
+    return l
 
 
 def population_age_distribution_loss(
@@ -260,24 +294,7 @@ def uk_wide_population_loss(
     )
 
 
-def train_weights() -> ArrayLike:
-    opt = tf.keras.optimizers.Adam(learning_rate=1e1)
-    weight_changes = tf.Variable(
-        np.zeros((4, survey_num_households)), dtype=tf.float32
-    )
-    task = tqdm(range(8192), desc="Training")
-    start_loss = loss(weight_changes, include_modification_penalty=False)
-    for i in task:
-        with tf.GradientTape() as tape:
-            l = loss(weight_changes)
-            l_acc = loss(weight_changes, include_modification_penalty=False)
-            task.set_description(
-                f"Loss reduction: {(l_acc.numpy() / start_loss.numpy())-1:.4%}"
-            )
-            gradients = tape.gradient(l, weight_changes)
-        opt.apply_gradients(zip([gradients], [weight_changes]))
-
-    return weight_changes.numpy()
+losses_over_time = {}
 
 
 def loss(
@@ -293,21 +310,48 @@ def loss(
             weight_modification[year - START_YEAR] + weights
         )
 
-        l += uk_wide_program_statistic_loss(
+        loss_types = {}
+
+        loss_types[
+            "UK-wide program statistics"
+        ] = uk_wide_program_statistic_loss(
             variables, statistic_set, year, modified_weights
         )
 
-        l += regional_population_loss(statistic_set, modified_weights)
-
-        l += taxpayers_by_band_loss(year, modified_weights)
-
-        l += tax_revenue_by_income_band_loss(year, modified_weights)
-
-        l += population_age_distribution_loss(
+        loss_types[
+            "Country-level program statistics"
+        ] = country_level_program_statistic_loss(
             statistic_set, year, modified_weights
         )
 
-        l += uk_wide_population_loss(weights, modified_weights)
+        loss_types["Regional populations"] = regional_population_loss(
+            statistic_set, modified_weights
+        )
+
+        loss_types["Taxpayer counts by tax band"] = taxpayers_by_band_loss(
+            statistic_set, year, modified_weights
+        )
+
+        loss_types[
+            "Tax revenues by income range"
+        ] = tax_revenue_by_income_band_loss(year, modified_weights)
+
+        loss_types[
+            "UK population age distribution"
+        ] = population_age_distribution_loss(
+            statistic_set, year, modified_weights
+        )
+
+        loss_types["UK population"] = uk_wide_population_loss(
+            weights, modified_weights
+        )
+
+        for loss_type, loss_value in loss_types.items():
+            if loss_type not in losses_over_time:
+                losses_over_time[loss_type] = [float(loss_value.numpy())]
+            else:
+                losses_over_time[loss_type] += [float(loss_value.numpy())]
+            l += loss_value
 
     # Add penalty for weight changes
     if include_modification_penalty:
@@ -315,10 +359,62 @@ def loss(
     return l
 
 
-def get_microsimulation(weights: ArrayLike) -> Microsimulation:
-    sim_reweighted = Microsimulation()
+def val_loss(weight_modification: np.array) -> float:
+    # Out-of-scope metrics go here
+    l = tf.constant(0)
     for year in range(START_YEAR, END_YEAR + 1):
-        added_households = weights[year - START_YEAR].sum()
+        instant_str = f"{year}-01-01"
+        statistic_set = statistics(instant_str)
+        variables = list(statistic_set.aggregate._children)
+        weights = sim.calc("household_weight", period=year).values
+        modified_weights = tf.nn.relu(
+            weight_modification[year - START_YEAR] + weights
+        )
+
+        l += uk_wide_program_statistic_loss(
+            variables, statistic_set, year, modified_weights, True
+        )
+
+        l += country_level_program_statistic_loss(
+            statistic_set, year, modified_weights, True
+        )
+
+    return l
+
+
+def train_weights() -> ArrayLike:
+    opt = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+    weight_changes = tf.Variable(
+        np.zeros((END_YEAR + 1 - START_YEAR, survey_num_households)),
+        dtype=tf.float32,
+    )
+    task = tqdm(range(NUM_EPOCHS), desc="Training")
+    start_loss = loss(weight_changes, include_modification_penalty=False)
+    start_val_loss = val_loss(weight_changes)
+    for i in task:
+        with tf.GradientTape() as tape:
+            l = loss(weight_changes)
+            l_acc = loss(weight_changes, include_modification_penalty=False)
+            v_loss = val_loss(weight_changes)
+            task.set_description(
+                f"Loss reduction: {(l_acc.numpy() / start_loss.numpy())-1:.4%} | Validation metrics: {(v_loss.numpy() / start_val_loss.numpy())-1:.4%}"
+            )
+            gradients = tape.gradient(l, weight_changes)
+        opt.apply_gradients(zip([gradients], [weight_changes]))
+
+    return weight_changes.numpy()
+
+
+def get_microsimulation(weights: ArrayLike) -> Microsimulation:
+    sim_reweighted = Microsimulation(adjust_weights=False, duplicate_records=2)
+    sim_reweighted.set_input(
+        "claims_legacy_benefits",
+        START_YEAR,
+        np.repeat(
+            [True, False], len(sim.calc("benunit_id", START_YEAR).values) / 2
+        ),
+    )
+    for year in range(START_YEAR, END_YEAR + 1):
         new_weights = np.maximum(
             0,
             sim.calc("household_weight", period=year).values
@@ -420,7 +516,8 @@ def check_validation_performance_regression(df: pd.DataFrame):
 
 
 def save_weights(sim_reweighted: Microsimulation):
-    with h5py.File(Path(__file__).parent / "frs_weights.h5", "w") as f:
+    folder = Path(__file__).parent
+    with h5py.File(folder / "frs_weights.h5", "w") as f:
         for year in range(START_YEAR, END_YEAR + 1):
             f.create_dataset(
                 f"{year}",
@@ -428,6 +525,9 @@ def save_weights(sim_reweighted: Microsimulation):
                     "household_weight", period=year
                 ).values,
             )
+
+    with open(folder / "losses.yaml", "w+") as f:
+        yaml.safe_dump(losses_over_time, f)
 
 
 new_weights = train_weights()

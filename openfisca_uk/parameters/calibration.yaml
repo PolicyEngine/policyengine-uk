@@ -154,6 +154,31 @@ aggregate:
       2021-01-01: 39_900_000_000
       2022-01-01: 41_100_000_000
 
+  state_pension:
+    description: State Pension spending.
+    values:
+      2019-01-01: 98_797_000_000
+      2020-01-01: 101_475_000_000
+      2021-01-01: 104_598_000_000
+      2022-01-01: 110_098_000_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+
+  ESA_income:
+    description: Income-based ESA spending.
+    values:
+      2019-01-01: 9_339_000_000
+      2020-01-01: 8_815_000_000
+      2021-01-01: 8_254_000_000
+      2022-01-01: 8_216_000_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
 count:
   JSA_income:
     description: Number of families claiming income-based JSA.
@@ -269,12 +294,37 @@ count:
       2018-01-01: 31_600_000
       2019-01-01: 31_400_000
       2020-01-01: 31_700_000
-      2021-01-01: 38_272_000
+      2021-01-01: 32_200_000
     metadata:
-      unit: benefit unit
+      unit: person
       reference:
         - title: Number of Individual Income Tax Payers (SPI, National Statistics)
           href: https://www.gov.uk/government/statistics/number-of-individual-income-taxpayers-by-marginal-rate-gender-and-age
+
+  state_pension:
+    description: Number of individuals claiming State Pension.
+    values:
+      2019-01-01: 12_556_000
+      2020-01-01: 12_379_000
+      2021-01-01: 12_506_000
+      2022-01-01: 12_678_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  ESA_income:
+    description: Number of families claiming income-based ESA.
+    values:
+      2019-01-01: 1_056_000
+      2020-01-01: 961_000
+      2021-01-01: 395_000
+      2022-01-01: 373_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
 
 populations:
   description: Population by region

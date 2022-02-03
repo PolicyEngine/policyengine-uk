@@ -17,6 +17,7 @@ from openfisca_tools.hypothetical import IndividualSim as GeneralIndividualSim
 import yaml
 from pathlib import Path
 import h5py
+import pandas as pd
 
 
 with open(Path(__file__).parent / "datasets.yml") as f:
@@ -42,6 +43,7 @@ class Microsimulation(GeneralMicrosimulation):
         reform: ReformType = (),
         dataset: type = None,
         year: int = None,
+        duplicate_records: int = 2,
         adjust_weights: bool = True,
     ):
         if dataset is None:
@@ -69,6 +71,51 @@ class Microsimulation(GeneralMicrosimulation):
                         f"Year {year} synthetic FRS not stored, downloading..."
                     )
                     dataset.download(year)
+
+        if duplicate_records > 1:
+            data = dataset.load(year)
+
+            def duplicate(key, values):
+                if "_id" in key:
+                    return np.concatenate(
+                        tuple([values] * duplicate_records)
+                    ) * 10 + np.repeat(
+                        list(range(1, 1 + duplicate_records)), len(values)
+                    )
+                elif "_weight" in key:
+                    return (
+                        np.concatenate(tuple([values] * duplicate_records))
+                        / duplicate_records
+                    )
+                else:
+                    return np.concatenate(tuple([values] * duplicate_records))
+
+            class ProxyDataObject(dict):
+                def close(self):
+                    return None
+
+            df = ProxyDataObject(
+                {
+                    key: duplicate(key, dataset.load(year, key))
+                    for key in data.keys()
+                }
+            )
+
+            df["claims_legacy_benefits"] = np.repeat(
+                [True, False], len(df["benunit_id"]) / 2
+            )
+
+            class ProxyDataset:
+                def load(year):
+                    return df
+
+                def close():
+                    return None
+
+                years = dataset.years
+                name = dataset.name
+
+            dataset = ProxyDataset
 
         super().__init__(reform=reform, dataset=dataset, year=year)
 
