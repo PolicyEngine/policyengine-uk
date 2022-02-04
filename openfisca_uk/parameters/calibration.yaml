@@ -1,0 +1,738 @@
+aggregate:
+  JSA_income:
+    description: Total spending on income-based JSA.
+    values:
+      2018-01-01: 1_144_000_000
+      2019-01-01: 603_000_000
+      2020-01-01: 435_000_000
+      2021-01-01: 297_000_000
+      2022-01-01: 196_000_000
+    metadata:
+      unit: currency-GBP
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+  
+  housing_benefit:
+    description: Total spending on Housing Benefit.
+    values:
+      2018-01-01: 20_730_000_000
+      2019-01-01: 18_379_000_000
+      2020-01-01: 17_334_000_000
+      2021-01-01: 17_112_000_000
+      2022-01-01: 15_894_000_000
+    metadata:
+      unit: currency-GBP
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  income_support:
+    description: Total spending on Income Support.
+    values:
+      2018-01-01: 1_839_000_000
+      2019-01-01: 1_376_000_000
+      2020-01-01: 1_080_000_000
+      2021-01-01: 854_000_000
+      2022-01-01: 670_000_000
+    metadata:
+      unit: currency-GBP
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  pension_credit:
+    description: Total spending on Pension Credit.
+    values:
+      2018-01-01: 5_140_000_000
+      2019-01-01: 5_061_000_000
+      2020-01-01: 5_071_000_000
+      2021-01-01: 4_969_000_000
+      2022-01-01: 4_466_000_000
+    metadata:
+      unit: currency-GBP
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Pension Credit
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  child_tax_credit:
+    description: Expenditure on Working Tax Credit.
+    values:
+      2018-01-01: 17_656_000_000
+      2019-01-01: 13_875_000_000
+      # HMRC does not forward-estimate revenue, only caseloads. The DWP
+      # does provide revenue estimates, but only for combined Tax Credits.
+      # We split the revenue by their fractions in 2019, the most recent
+      # HMRC estimates.
+      2020-01-01: 11_441_000_000 #  14_581_000_000 * (13_875 / (13_875 + 3_825))
+      2021-01-01: 8_088_000_000 #  10_307_000_000 * (13_875 / (13_875 + 3_825))
+      2022-01-01: 5_995_000_000 #  7_640_000_000 * (13_875 / (13_875 + 3_825))
+    metadata:
+      unit: currency-GBP
+      reference:
+        - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"
+          href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-finalised-annual-awards-supplement-on-payments-2019-to-2020
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+    
+  working_tax_credit:
+    description: Expenditure on Working Tax Credit.
+    values:
+      2018-01-01: 5_003_000_000
+      2019-01-01: 3_825_000_000
+      # HMRC does not forward-estimate revenue, only caseloads. The DWP
+      # does provide revenue estimates, but only for combined Tax Credits.
+      # We split the revenue by their fractions in 2019, the most recent
+      # HMRC estimates.
+      2020-01-01: 3_139_000_000 #  14_581_000_000 * (3_825 / (13_875 + 3_825))
+      2021-01-01: 2_219_000_000 #  10_307_000_000 * (3_825 / (13_875 + 3_825))
+      2022-01-01: 1_644_000_000 #  7_640_000_000 * (3_825 / (13_875 + 3_825))
+    metadata:
+      unit: currency-GBP
+      reference:
+        - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"
+          href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-finalised-annual-awards-supplement-on-payments-2019-to-2020
+
+  universal_credit:
+    description: Total spending on Universal Credit.
+    values:
+      2018-01-01: 8_135_000_000
+      2019-01-01: 18_386_000_000
+      2020-01-01: 38_272_000_000
+      2021-01-01: 41_097_000_000
+      2022-01-01: 43_657_000_000
+    metadata:
+      unit: currency-GBP
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  child_benefit:
+    description: Total spending on Child Benefit.
+    values:
+      2018-01-01: 11_170_000_000
+      2019-01-01: 11_081_000_000
+      2020-01-01: 11_116_000_000
+      2021-01-01: 10_981_000_000
+      2022-01-01: 11_213_000_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  income_tax:
+    description: Total revenue from Income Tax.
+    values:
+      2018-01-01: 192_500_000_000
+      2019-01-01: 193_600_000_000
+      2020-01-01: 188_200_000_000
+      2021-01-01: 203_600_000_000
+      2022-01-01: 205_000_000_000
+    metadata:
+      reference:
+        - title: OBR 2021 forecast
+          href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/
+
+  total_NI:
+    description: Total revenue from National Insurance.
+    values:
+      2018-01-01: 137_500_000_000
+      2019-01-01: 145_000_000_000
+      2020-01-01: 140_800_000_000
+      2021-01-01: 145_900_000_000
+      2022-01-01: 151_300_000_000
+    metadata:
+      reference:
+        - title: OBR 2021 forecast
+          href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/national-insurance-contributions-nics/
+
+  council_tax_less_benefit:
+    description: Council Tax spending, minus CTB.
+    values:
+      2019-01-01: 37_500_000_000
+      2020-01-01: 38_700_000_000
+      2021-01-01: 39_900_000_000
+      2022-01-01: 41_100_000_000
+
+  state_pension:
+    description: State Pension spending.
+    values:
+      2019-01-01: 98_797_000_000
+      2020-01-01: 101_475_000_000
+      2021-01-01: 104_598_000_000
+      2022-01-01: 110_098_000_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+
+  ESA_income:
+    description: Income-based ESA spending.
+    values:
+      2019-01-01: 9_339_000_000
+      2020-01-01: 8_815_000_000
+      2021-01-01: 8_254_000_000
+      2022-01-01: 8_216_000_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+count:
+  JSA_income:
+    description: Number of families claiming income-based JSA.
+    values:
+      2018-01-01: 274_000
+      2019-01-01: 138_000
+      2020-01-01: 97_000
+      2021-01-01: 67_000
+      2022-01-01: 44_000
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+  
+  housing_benefit:
+    description: Number of families claiming Housing Benefit.
+    values:
+      2018-01-01: 3_984_000
+      2019-01-01: 3_394_000
+      2020-01-01: 3_028_000
+      2021-01-01: 2_923_000
+      2022-01-01: 2_708_000
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  income_support:
+    description: Number of families claiming Income Support.
+    values:
+      2018-01-01: 494_000
+      2019-01-01: 360_000
+      2020-01-01: 273_000
+      2021-01-01: 210_000
+      2022-01-01: 157_000
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  pension_credit:
+    description: Number of families claiming Pension Credit.
+    values:
+      2018-01-01: 1_654_000
+      2019-01-01: 1_563_000
+      2020-01-01: 1_480_000
+      2021-01-01: 1_479_000
+      2022-01-01: 1_406_000
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Pension Credit
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  child_tax_credit:
+    description: Number of families receiving Child Tax Credit
+    values:
+      2018-01-01: 3_434_000
+      2019-01-01: 2_835_000
+      2020-01-01: 2_125_000
+      2021-01-01: 1_686_000
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
+          href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021
+
+  working_tax_credit:
+    description: Number of families receiving Working Tax Credit
+    values:
+      2018-01-01: 1_970_000
+      2019-01-01: 1_615_000
+      2020-01-01: 1_199_000
+      2021-01-01: 1_044_000
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
+          href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021
+
+  universal_credit:
+    description: Number of families claiming Universal Credit.
+    values:
+      2018-01-01: 1_282_000
+      2019-01-01: 2_132_000
+      2020-01-01: 4_052_000
+      2021-01-01: 4_267_000
+      2022-01-01: 4_649_000
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: Benefit expenditure and caseload tables 2021 | Table 1c
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  child_benefit:
+    description: Number of families claiming Child Benefit.
+    values:
+      2018-01-01: 7_325_845
+      2019-01-01: 7_281_535
+      2020-01-01: 7_210_595
+    metadata:
+      unit: benefit unit
+      reference:
+        - title: "Child Benefit Statistics: Annual Releast, August 2020"
+          href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020
+
+  income_tax:
+    description: Number of individuals paying Income Tax.
+    values:
+      2018-01-01: 31_600_000
+      2019-01-01: 31_400_000
+      2020-01-01: 31_700_000
+      2021-01-01: 32_200_000
+    metadata:
+      unit: person
+      reference:
+        - title: Number of Individual Income Tax Payers (SPI, National Statistics)
+          href: https://www.gov.uk/government/statistics/number-of-individual-income-taxpayers-by-marginal-rate-gender-and-age
+
+  state_pension:
+    description: Number of individuals claiming State Pension.
+    values:
+      2019-01-01: 12_556_000
+      2020-01-01: 12_379_000
+      2021-01-01: 12_506_000
+      2022-01-01: 12_678_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+  ESA_income:
+    description: Number of families claiming income-based ESA.
+    values:
+      2019-01-01: 1_056_000
+      2020-01-01: 961_000
+      2021-01-01: 395_000
+      2022-01-01: 373_000
+    metadata:
+      reference:
+        - title: Benefit expenditure and caseload tables 2021
+          href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+
+populations:
+  description: Population by region
+  metadata:
+    reference:
+      - title: ONS population projections
+        href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/datasets/regionsinenglandtable1
+      - title: StatsWales Population Estimates
+        href: https://statswales.gov.wales/catalogue/population-and-migration/population/estimates/nationallevelpopulationestimates-by-year-age-ukcountry
+      - title: ONS National Population Projections (2018-based)
+        href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2018based
+
+  NORTH_EAST:
+    values:
+      2018-01-01: 2_657_909
+      2019-01-01: 2_667_130
+      2020-01-01: 2_674_568
+      2021-01-01: 2_681_149
+      2022-01-01: 2_687_238
+  NORTH_WEST:
+    values:
+      2018-01-01: 7_292_093
+      2019-01-01: 7_329_535
+      2020-01-01: 7_363_337
+      2021-01-01: 7_395_093
+      2022-01-01: 7_425_161
+  YORKSHIRE:
+    values:
+      2018-01-01: 5_479_615
+      2019-01-01: 5_505_362
+      2020-01-01: 5_528_103
+      2021-01-01: 5_548_941
+      2022-01-01: 5_568_636
+  EAST_MIDLANDS:
+    values:
+      2018-01-01: 4_804_149
+      2019-01-01: 4_844_625
+      2020-01-01: 4_882_232
+      2021-01-01: 4_917_711
+      2022-01-01: 4_951_585
+  WEST_MIDLANDS:
+    values:
+      2018-01-01: 5_900_757
+      2019-01-01: 5_945_140
+      2020-01-01: 5_985_916
+      2021-01-01: 6_024_811
+      2022-01-01: 6_062_195
+  EAST_OF_ENGLAND:
+    values:
+      2018-01-01: 6_201_214
+      2019-01-01: 6_240_417
+      2020-01-01: 6_277_257
+      2021-01-01: 6_312_979
+      2022-01-01: 6_346_769
+  LONDON:
+    values:
+      2018-01-01: 8_908_081
+      2019-01-01: 8_977_525
+      2020-01-01: 9_039_390
+      2021-01-01: 9_095_459
+      2022-01-01: 9_145_215
+  SOUTH_EAST:
+    values:
+      2018-01-01: 9_133_625
+      2019-01-01: 9_186_741
+      2020-01-01: 9_235_982
+      2021-01-01: 9_282_330
+      2022-01-01: 9_325_970
+  SOUTH_WEST:
+    values:
+      2018-01-01: 5_599_735
+      2019-01-01: 5_646_598
+      2020-01-01: 5_691_687
+      2021-01-01: 5_731_097
+      2022-01-01: 5_769_336
+  NORTHERN_IRELAND:
+    values:
+      2018-07-01: 1_881_641
+      2019-07-01: 1_893_667
+      2020-07-01: 1_895_510
+      2023-07-01: 1_900_000
+      2028-07-01: 2_000_000
+      2033-07-01: 2_000_000
+  SCOTLAND:
+    values:
+      2018-07-01: 5_438_100
+      2019-07-01: 5_463_300
+      2020-07-01: 5_466_000
+      2023-07-01: 5_500_000
+      2028-07-01: 5_500_000
+      2033-07-01: 5_600_000
+  WALES:
+    values:
+      2018-07-01: 3_138_631
+      2019-07-01: 3_152_879
+      2020-07-01: 3_169_586
+      2023-07-01: 3_200_000
+      2028-07-01: 3_200_000
+      2033-07-01: 3_200_000
+aggregate_by_country:
+  description: Aggregates for variables split by country.
+  income_tax:
+    description: Income Tax by country
+    metadata:
+      reference:
+        - title: HMRC SPI Analysis
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf#page=14
+    ENGLAND:
+      values:
+        2018-01-01: 169_958_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+    WALES:
+      values:
+        2018-01-01: 5_235_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+    SCOTLAND:
+      values:
+        2018-01-01: 12_991_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+    NORTHERN_IRELAND:
+      values:
+        2018-01-01: 2_847_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.income_tax
+  total_NI:
+    description: National Insurance (total) by country.
+    metadata:
+      reference:
+        - title: HMRC SPI Analysis
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf#page=18
+    ENGLAND:
+      values:
+        2018-01-01: 118_591_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+    WALES:
+      values:
+        2018-01-01: 4_787_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+    SCOTLAND:
+      values:
+        2018-01-01: 10_532_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+    NORTHERN_IRELAND:
+      values:
+        2018-01-01: 2_736_000_000
+      metadata:
+        uprating: 
+          parameter: calibration.aggregate.total_NI
+income_tax_payers_by_band:
+  description: Total number of taxpayers by Income Tax band.
+  metadata:
+    reference:
+      - title: NS Summary Statistics | Income Tax payer numbers by type
+        href: https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2018-to-2019-to-tax-year-2021-to-2022/summary-statistics
+  BASIC:
+    # Includes Scottish starter and intermediate bands.
+    values:
+      2018-01-01: 26_300_000
+      2019-01-01: 26_400_000
+      2020-01-01: 26_600_000
+      2021-01-01: 27_000_000
+    metadata:
+      uprating: 
+        parameter: calibration.count.income_tax
+  HIGHER:
+    values:
+      2018-01-01: 4_230_000
+      2019-01-01: 3_860_000
+      2020-01-01: 3_970_000
+      2021-01-01: 4_130_000
+    metadata:
+      uprating: 
+        parameter: calibration.count.income_tax
+  ADDITIONAL:
+    values:
+      2018-01-01: 399_000
+      2019-01-01: 425_000
+      2020-01-01: 420_000
+      2021-01-01: 440_000
+    metadata:
+      uprating: 
+        parameter: calibration.count.income_tax
+income_tax_by_income_range:
+  description: Income Tax aggregate by income range.
+  metadata:
+    reference:
+      - title: HMRC SPI Analysis
+        href: https://docs.google.com/spreadsheets/d/1tFQNlaDjeEwsxtwfYBUNzZtLcpG1Izy7N0R3V-83mlU/edit#gid=1243033274
+    type: single_amount
+  brackets:
+    - threshold: 
+        values:
+          2018-01-01: 11_850
+          2019-01-01: 12_500
+          2021-01-01: 12_570
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+      amount: 
+        values:
+          2018-01-01: 1_180_000_000
+          2019-01-01: 700_000_000
+          2020-01-01: 718_000_000
+          2021-01-01: 686_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 15_000
+      amount: 
+        values:
+          2018-01-01: 6_500_000_000
+          2019-01-01: 5_620_000_000
+          2020-01-01: 5_740_000_000
+          2021-01-01: 5_660_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 20_000
+      amount: 
+        values:
+          2018-01-01: 20_900_000_000
+          2019-01-01: 20_100_000_000
+          2020-01-01: 20_300_000_000
+          2021-01-01: 20_400_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 30_000
+      amount: 
+        values:
+          2018-01-01: 37_400_000_000
+          2019-01-01: 38_200_000_000
+          2020-01-01: 37_800_000_000
+          2021-01-01: 39_100_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 50_000
+      amount: 
+        values:
+          2018-01-01: 43_000_000_000
+          2019-01-01: 43_600_000_000
+          2020-01-01: 45_000_000_000
+          2021-01-01: 46_900_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 100_000
+      amount: 
+        values:
+          2018-01-01: 18_000_000_000
+          2019-01-01: 20_000_000_000
+          2020-01-01: 21_600_000_000
+          2021-01-01: 22_700_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 150_000
+      amount: 
+        values:
+          2018-01-01: 10_200_000_000
+          2019-01-01: 10_600_000_000
+          2020-01-01: 10_800_000_000
+          2021-01-01: 11_400_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 200_000
+      amount: 
+        values:
+          2018-01-01: 21_200_000_000
+          2019-01-01: 22_600_000_000
+          2020-01-01: 22_300_000_000
+          2021-01-01: 23_100_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 500_000
+      amount: 
+        values:
+          2018-01-01: 10_100_000_000
+          2019-01-01: 10_700_000_000
+          2020-01-01: 10_400_000_000
+          2021-01-01: 10_700_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 1_000_000
+      amount: 
+        values:
+          2018-01-01: 6_700_000_000
+          2019-01-01: 7_140_000_000
+          2020-01-01: 6_940_000_000
+          2021-01-01: 7_040_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+    - threshold: 
+        2018-01-01: 2_000_000
+      amount:
+        values:
+          2018-01-01: 11_400_000_000
+          2019-01-01: 12_200_000_000
+          2020-01-01: 11_500_000_000
+          2021-01-01: 11_700_000_000
+        metadata:
+          uprating: 
+            parameter: calibration.aggregate.income_tax
+population_by_age:
+  brackets:
+    - threshold:
+        2018-01-01: 0
+      amount:
+        2019-01-01: 3_782_300
+    - threshold:
+        2018-01-01: 5
+      amount:
+        2019-01-01: 4_147_413
+    - threshold:
+        2018-01-01: 10
+      amount:
+        2019-01-01: 4_045_114
+    - threshold:
+        2018-01-01: 15
+      amount:
+        2019-01-01: 3_683_680
+    - threshold:
+        2018-01-01: 20
+      amount:
+        2019-01-01: 4_133_158
+    - threshold:
+        2018-01-01: 25
+      amount:
+        2019-01-01: 4_476_630
+    - threshold:
+        2018-01-01: 30
+      amount:
+        2019-01-01: 4_521_975
+    - threshold:
+        2018-01-01: 35
+      amount:
+        2019-01-01: 4_404_100
+    - threshold:
+        2018-01-01: 40
+      amount:
+        2019-01-01: 4_091_543
+    - threshold:
+        2018-01-01: 45
+      amount:
+        2019-01-01: 4_303_967
+    - threshold:
+        2018-01-01: 50
+      amount:
+        2019-01-01: 4_616_017
+    - threshold:
+        2018-01-01: 55
+      amount:
+        2019-01-01: 4_510_851
+    - threshold:
+        2018-01-01: 60
+      amount:
+        2019-01-01: 3_855_818
+    - threshold:
+        2018-01-01: 65
+      amount:
+        2019-01-01: 3_355_818
+    - threshold:
+        2018-01-01: 70
+      amount:
+        2019-01-01: 3_363_906
+    - threshold:
+        2018-01-01: 75
+      amount:
+        2019-01-01: 2_403_759
+    - threshold:
+        2018-01-01: 80
+      amount:
+        2019-01-01: 1_726_223
+    - threshold:
+        2018-01-01: 85
+      amount:
+        2019-01-01: 1_049_866
+    - threshold:
+        2018-01-01: 90
+      amount:
+        2019-01-01: 609_503
+  metadata:
+    type: single_amount
+  

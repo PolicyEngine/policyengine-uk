@@ -2,6 +2,25 @@ from openfisca_uk.model_api import *
 from openfisca_uk.variables.demographic.household import TenureType
 
 
+class legacy_benefits(Variable):
+    label = "Legacy benefits"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
+        BENEFITS = [
+            "JSA_income",
+            "housing_benefit",
+            "income_support",
+            "ESA_income",
+            "working_tax_credit",
+            "child_tax_credit",
+        ]
+        return add(benunit, period, BENEFITS)
+
+
 class claims_UC(Variable):
     value_type = bool
     entity = BenUnit
@@ -33,9 +52,18 @@ class claims_UC(Variable):
         eligible_and_would_claim_any_legacy_benefits = (
             sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
         )
+        claims_all_entitled_benefits = benunit(
+            "claims_all_entitled_benefits", period
+        )
+        reported_uc = aggr(benunit, period, ["universal_credit_reported"]) > 0
+        on_legacy_benefits = benunit("claims_legacy_benefits", period)
         return (
-            ~benunit("claims_legacy_benefits", period)
-            & eligible_and_would_claim_any_legacy_benefits
+            reported_uc
+            | claims_all_entitled_benefits
+            | (
+                eligible_and_would_claim_any_legacy_benefits
+                & ~on_legacy_benefits
+            )
         )
 
 

@@ -19,11 +19,9 @@ class would_claim_IS(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takes_up = (
-            random(benunit) <= parameters(period).benefit.income_support.takeup
-        )
         claims_all = benunit("claims_all_entitled_benefits", period)
-        return takes_up | claims_all
+        reported_is = aggr(benunit, period, ["income_support_reported"]) > 0
+        return reported_is | claims_all
 
 
 class claims_IS(Variable):

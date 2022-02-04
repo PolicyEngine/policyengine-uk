@@ -19,9 +19,8 @@ class would_claim_PC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takeup_rate = parameters(period).benefit.pension_credit.takeup
-        takes_up = random(benunit) < takeup_rate
-        return takes_up | benunit("claims_all_entitled_benefits", period)
+        reported_pc = aggr(benunit, period, ["pension_credit_reported"]) > 0
+        return reported_pc | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_PC(Variable):

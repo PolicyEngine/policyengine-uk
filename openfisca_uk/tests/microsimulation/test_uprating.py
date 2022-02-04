@@ -13,14 +13,14 @@ UPRATED_VARIABLES = (
     "dividend_income",
 )
 
-sim = Microsimulation(dataset=FRSEnhanced, year=2018)
+sim = Microsimulation(dataset=FRSEnhanced, year=2019)
 
 
 @pytest.mark.parametrize(
-    "variable,year", product(UPRATED_VARIABLES, range(2019, 2022))
+    "variable,year", product(UPRATED_VARIABLES, range(2020, 2022))
 )
 def test_uprating(variable: str, year: int):
-    assert (
-        sim.calc(variable, period=year).sum()
-        != sim.calc(variable, period=2018).sum()
+    assert any(
+        sim.calc(variable, period=year).values
+        != sim.calc(variable, period=2019).values
     )
