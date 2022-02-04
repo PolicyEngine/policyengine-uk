@@ -53,7 +53,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Weighting" href="weighting.html" />
-    <link rel="prev" title="Validation" href="../model/validation.html" />
+    <link rel="prev" title="Re-weighting" href="../model/reweighting.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -116,6 +116,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../model/validation.html">
    Validation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../model/reweighting.html">
+   Re-weighting
   </a>
  </li>
 </ul>
@@ -424,19 +429,19 @@
   <tbody>
     <tr>
       <th>1</th>
-      <td>-0.1</td>
+      <td>-0.0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>-0.5</td>
+      <td>-0.3</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>-0.6</td>
+      <td>-0.5</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>-0.8</td>
+      <td>-0.7</td>
     </tr>
     <tr>
       <th>5</th>
@@ -456,11 +461,11 @@
     </tr>
     <tr>
       <th>9</th>
-      <td>-2.5</td>
+      <td>-2.4</td>
     </tr>
     <tr>
       <th>10</th>
-      <td>-2.9</td>
+      <td>-2.8</td>
     </tr>
   </tbody>
 </table>
@@ -490,7 +495,7 @@
 <span class="k">class</span> <span class="nc">gross_income</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
     <span class="n">value_type</span> <span class="o">=</span> <span class="nb">float</span>
     <span class="n">entity</span> <span class="o">=</span> <span class="n">Person</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Gross income, including benefits&quot;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Gross income, including benefits&quot;</span>
     <span class="n">definition_period</span> <span class="o">=</span> <span class="n">YEAR</span>
 
     <span class="k">def</span> <span class="nf">formula</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
@@ -659,15 +664,15 @@
   <tbody>
     <tr>
       <th>Tax only</th>
-      <td>-13.7</td>
+      <td>-12.9</td>
     </tr>
     <tr>
       <th>UBI only</th>
-      <td>163.9</td>
+      <td>164.6</td>
     </tr>
     <tr>
       <th>Tax and UBI</th>
-      <td>150.2</td>
+      <td>151.7</td>
     </tr>
   </tbody>
 </table>
@@ -710,11 +715,11 @@
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="../model/validation.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../model/reweighting.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Validation</p>
+            <p class="prev-next-title">Re-weighting</p>
         </div>
     </a>
     <a class='right-next' id="next-link" href="weighting.html" title="next page">
