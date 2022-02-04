@@ -37,7 +37,7 @@ AGGREGATE_ERROR_PENALTY = 1e-4
 PARTICIPATION_ERROR_PENALTY = 1e-0  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
 MODIFICATION_PENALTY = 1e-7
 AGE_DISTRIBUTION_PENALTY = 1e0
-POPULATION_ERROR_PENALTY = 1
+POPULATION_ERROR_PENALTY = 1e1
 
 
 def squared_relative_deviation(
@@ -63,6 +63,20 @@ VAL_PROGRAMS = {
 }
 
 VAL_PROGRAMS = {year: [] for year in range(2019, 2023)}
+
+
+def uk_wide_population_loss(
+    original_weights: ArrayLike, modified_weights: tf.Tensor
+) -> tf.Tensor:
+    total_population = original_weights.sum()
+    new_population = tf.reduce_sum(modified_weights)
+
+    return (
+        POPULATION_ERROR_PENALTY
+        * PARTICIPATION_ERROR_PENALTY
+        * total_population
+        * squared_relative_deviation(new_population, total_population)
+    )
 
 
 def uk_wide_program_statistic_loss(
@@ -329,6 +343,10 @@ def loss(
             "UK population age distribution"
         ] = population_age_distribution_loss(
             statistic_set, year, modified_weights
+        )
+
+        loss_types["UK population"] = uk_wide_population_loss(
+            weights, modified_weights
         )
 
         loss_types["Modification penalty"] = tf.reduce_sum(
