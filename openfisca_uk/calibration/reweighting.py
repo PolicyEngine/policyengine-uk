@@ -11,7 +11,7 @@ import tensorflow as tf
 import logging
 from openfisca_core.parameters import ParameterAtInstant
 
-LEARNING_RATE = 5e1
+LEARNING_RATE = 8e1
 NUM_EPOCHS = 256
 
 tf.get_logger().setLevel("INFO")
@@ -35,7 +35,7 @@ survey_num_households = len(sim.calc("household_id"))
 
 AGGREGATE_ERROR_PENALTY = 1e-4
 PARTICIPATION_ERROR_PENALTY = 1e-0  # Person-deviations are 10,000 more loss-heavy than spending deviations per pound
-MODIFICATION_PENALTY = 1e-6
+MODIFICATION_PENALTY = 1e-7
 AGE_DISTRIBUTION_PENALTY = 1e0
 POPULATION_ERROR_PENALTY = 1
 
@@ -59,9 +59,10 @@ VAL_PROGRAMS = {
         "total_NI",
         "JSA_income",
     ],
-    2022: [
-    ],
+    2022: [],
 }
+
+VAL_PROGRAMS = {year: [] for year in range(2019, 2023)}
 
 
 def uk_wide_program_statistic_loss(
@@ -330,7 +331,9 @@ def loss(
             statistic_set, year, modified_weights
         )
 
-        loss_types["Modification penalty"] = tf.reduce_sum(MODIFICATION_PENALTY * weight_modification**2)
+        loss_types["Modification penalty"] = tf.reduce_sum(
+            MODIFICATION_PENALTY * weight_modification**2
+        )
 
         for loss_type, loss_value in loss_types.items():
             if loss_type not in losses_over_time:
@@ -387,7 +390,9 @@ def train_weights() -> ArrayLike:
             losses_over_time["Total training loss"] += [float(l.numpy())]
             if "Total validation loss" not in losses_over_time:
                 losses_over_time["Total validation loss"] = []
-            losses_over_time["Total validation loss"] += [float(v_loss.numpy())]
+            losses_over_time["Total validation loss"] += [
+                float(v_loss.numpy())
+            ]
             task.set_description(
                 f"Training loss: {(l_acc.numpy() / start_loss.numpy())-1:.4%} | Validation loss: {(v_loss.numpy() / start_val_loss.numpy())-1:.4%}"
             )
