@@ -345,7 +345,7 @@ def loss(
             statistic_set, year, modified_weights
         )
 
-        loss_types["UK population"] = uk_wide_population_loss(
+        loss_types["UK household population"] = uk_wide_population_loss(
             weights, modified_weights
         )
 
