@@ -19,11 +19,8 @@ class would_claim_ctc(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takes_up = (
-            random(benunit)
-            <= parameters(period).hmrc.tax_credits.child_tax_credit.takeup
-        )
-        return takes_up | benunit("claims_all_entitled_benefits", period)
+        reported_ctc = aggr(benunit, period, ["child_tax_credit_reported"]) > 0
+        return reported_ctc | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_ctc(Variable):

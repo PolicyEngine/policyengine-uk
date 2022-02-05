@@ -19,12 +19,10 @@ class would_claim_wtc(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takeup_rate = parameters(
-            period
-        ).hmrc.tax_credits.working_tax_credit.takeup
-        takes_up = random(benunit) < takeup_rate
-        would_take_up = benunit("claims_legacy_benefits", period) & takes_up
-        return would_take_up | benunit("claims_all_entitled_benefits", period)
+        reported_wtc = (
+            aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+        )
+        return reported_wtc | benunit("claims_all_entitled_benefits", period)
 
 
 class claims_wtc(Variable):
