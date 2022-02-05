@@ -177,7 +177,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Child Benefit (reported amount)
-  - Mean: 154.5
+  - Mean: 162.4
   - Median: 0.0
   - Stddev: 537.6
   - Non-zero count: 4,408.0
@@ -1079,7 +1079,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Description: Residential property sale rate
   - Mean: 0.1
   - Median: 0.1
-  - Stddev: nan
+  - Stddev: 0.0
   - Non-zero count: 1.0
   - Aggregate: 0.0
 
@@ -1087,7 +1087,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Rent
-  - Mean: 2,587.2
+  - Mean: 2,914.2
   - Median: -52.0
   - Stddev: 4,221.1
   - Non-zero count: 6,664.0
@@ -1187,7 +1187,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Total amount of hours worked by this person
-  - Mean: 887.9
+  - Mean: 843.2
   - Median: 0.0
   - Stddev: 1,034.4
   - Non-zero count: 18,928.0
@@ -1247,7 +1247,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Lump sum income
-  - Mean: 77.3
+  - Mean: 76.9
   - Median: -1.0
   - Stddev: 1,944.6
   - Non-zero count: 146.0
@@ -1257,7 +1257,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Maintenance payments
-  - Mean: 35.6
+  - Mean: 41.9
   - Median: 0.0
   - Stddev: 512.9
   - Non-zero count: 566.0
@@ -1333,7 +1333,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Weekly hours
-  - Mean: 17.1
+  - Mean: 16.2
   - Median: 0.0
   - Stddev: 19.9
   - Non-zero count: 18,928.0
@@ -1419,7 +1419,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Housing service charges
-  - Mean: 66.3
+  - Mean: 50.2
   - Median: 0.0
   - Stddev: 339.3
   - Non-zero count: 1,810.0
@@ -1429,7 +1429,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Maintenance expenses
-  - Mean: 42.1
+  - Mean: 35.9
   - Median: 0.0
   - Stddev: 621.6
   - Non-zero count: 437.0
@@ -1449,7 +1449,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Mortgage payments
-  - Mean: 2,275.8
+  - Mean: 2,373.5
   - Median: 0.0
   - Stddev: 5,618.8
   - Non-zero count: 4,908.0
@@ -1459,7 +1459,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Total mortgage payments
-  - Mean: 878.5
+  - Mean: 870.5
   - Median: -52.0
   - Stddev: 2,093.6
   - Non-zero count: 4,900.0
@@ -1469,7 +1469,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Occupational pension contributions
-  - Mean: 471.6
+  - Mean: 406.8
   - Median: 0.0
   - Stddev: 1,300.1
   - Non-zero count: 11,040.0
@@ -1489,7 +1489,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Private pension contributions
-  - Mean: 29.0
+  - Mean: 30.4
   - Median: 0.0
   - Stddev: 172.6
   - Non-zero count: 1,333.0
@@ -1499,7 +1499,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Water and sewerage charges
-  - Mean: 376.4
+  - Mean: 388.6
   - Median: 358.8
   - Stddev: 252.8
   - Non-zero count: 16,848.0
@@ -1509,7 +1509,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Average cost of childcare
-  - Mean: 2.2
+  - Mean: 2.0
   - Median: 0.0
   - Stddev: 17.0
   - Non-zero count: 1,675.0
@@ -1599,7 +1599,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: bool
   - Entity: person
   - Description: Exempt from National Insurance
-  - Mean: 0.4
+  - Mean: 0.3
   - Median: 0.0
   - Stddev: 0.5
   - Non-zero count: 17,184.0
@@ -1709,7 +1709,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Savings income at the higher rate
-  - Mean: 0.2
+  - Mean: 0.3
   - Median: 0.0
   - Stddev: 23.9
   - Non-zero count: 4.0
@@ -1925,7 +1925,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Statutory Maternity Pay
-  - Mean: 18.4
+  - Mean: 16.4
   - Median: 0.0
   - Stddev: 378.6
   - Non-zero count: 107.0
@@ -1935,7 +1935,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Statutory Sick Pay
-  - Mean: 6.3
+  - Mean: 7.2
   - Median: 0.0
   - Stddev: 170.4
   - Non-zero count: 73.0
@@ -1975,7 +1975,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Employment benefits
-  - Mean: 24.8
+  - Mean: 23.6
   - Median: 0.0
   - Stddev: 416.9
   - Non-zero count: 179.0
@@ -2015,7 +2015,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Amount contributed to registered pension schemes paid by the individual (not the employer)
-  - Mean: 500.7
+  - Mean: 437.2
   - Median: 0.0
   - Stddev: 1,319.6
   - Non-zero count: 11,856.0
@@ -2035,7 +2035,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Income from savings in tax-free accounts
-  - Mean: 41.8
+  - Mean: 51.9
   - Median: 0.0
   - Stddev: 380.0
   - Non-zero count: 6,180.0
@@ -2455,7 +2455,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Total reported family benefits for this person
-  - Mean: 876.3
+  - Mean: 1,367.8
   - Median: 0.0
   - Stddev: 3,105.0
   - Non-zero count: 7,592.0
@@ -2625,7 +2625,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: bool
   - Entity: person
   - Description: Has a disability
-  - Mean: 0.0
+  - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.2
   - Non-zero count: 2,260.0
@@ -2725,7 +2725,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Bereavement Support Payment
-  - Mean: 13.5
+  - Mean: 10.2
   - Median: 0.0
   - Stddev: 383.8
   - Non-zero count: 119.0
@@ -2735,7 +2735,17 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Bereavement Support Payment (reported)
-  - Mean: 13.5
+  - Mean: 10.2
+  - Median: 0.0
+  - Stddev: 383.7
+  - Non-zero count: 128,117.73638916016
+
+
+- maternity_allowance:
+  - Type: float
+  - Entity: person
+  - Description: Maternity Allowance
+  - Mean: 1.3
   - Median: 0.0
   - Stddev: 383.8
   - Non-zero count: 119.0
@@ -2755,7 +2765,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Maternity allowance
-  - Mean: 1.5
+  - Mean: 1.3
   - Median: 0.0
   - Stddev: 106.5
   - Non-zero count: 10.0
@@ -2785,7 +2795,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Personal Independence Payment
-  - Mean: 135.0
+  - Mean: 171.5
   - Median: 0.0
   - Stddev: 952.6
   - Non-zero count: 1,303.0
@@ -2795,7 +2805,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Personal Independence Payment (Daily Living)
-  - Mean: 91.7
+  - Mean: 115.5
   - Median: 0.0
   - Stddev: 633.9
   - Non-zero count: 1,237.0
@@ -2805,7 +2815,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Personal Independence Payment (Daily Living) (reported)
-  - Mean: 91.7
+  - Mean: 115.5
   - Median: 0.0
   - Stddev: 633.9
   - Non-zero count: 1,237.0
@@ -2885,7 +2895,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Disability Living Allowance
-  - Mean: 82.1
+  - Mean: 99.6
   - Median: 0.0
   - Stddev: 770.2
   - Non-zero count: 964.0
@@ -2915,7 +2925,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Disability Living Allowance (self-care)
-  - Mean: 49.4
+  - Mean: 63.4
   - Median: 0.0
   - Stddev: 490.4
   - Non-zero count: 842.0
@@ -2935,7 +2945,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Disability Living Allowance (self-care) (reported)
-  - Mean: 49.4
+  - Mean: 63.4
   - Median: 0.0
   - Stddev: 490.4
   - Non-zero count: 842.0
@@ -2945,7 +2955,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: ESA (contribution-based)
-  - Mean: 27.9
+  - Mean: 24.8
   - Median: 0.0
   - Stddev: 513.3
   - Non-zero count: 248.0
@@ -2955,7 +2965,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Employment and Support Allowance (contribution-based) (reported)
-  - Mean: 27.9
+  - Mean: 24.8
   - Median: 0.0
   - Stddev: 513.3
   - Non-zero count: 248.0
@@ -2985,7 +2995,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Carer's Allowance
-  - Mean: 34.6
+  - Mean: 37.8
   - Median: 0.0
   - Stddev: 366.1
   - Non-zero count: 499.0
@@ -2995,7 +3005,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Carer's Allowance (reported)
-  - Mean: 34.6
+  - Mean: 37.8
   - Median: 0.0
   - Stddev: 366.1
   - Non-zero count: 499.0
@@ -3015,7 +3025,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Industrial Injuries Disablement Benefit
-  - Mean: 7.6
+  - Mean: 5.1
   - Median: 0.0
   - Stddev: 206.9
   - Non-zero count: 116.0
@@ -3025,7 +3035,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Industrial Injuries Disablement Benefit (reported)
-  - Mean: 7.6
+  - Mean: 5.1
   - Median: 0.0
   - Stddev: 206.9
   - Non-zero count: 116.0
@@ -3035,7 +3045,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Severe Disablement Allowance
-  - Mean: 1.0
+  - Mean: 1.1
   - Median: 0.0
   - Stddev: 77.1
   - Non-zero count: 13.0
@@ -3045,7 +3055,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Severe Disablement Allowance (reported)
-  - Mean: 1.0
+  - Mean: 1.1
   - Median: 0.0
   - Stddev: 77.1
   - Non-zero count: 13.0
@@ -3115,7 +3125,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Armed Forces Compensation Scheme
-  - Mean: 4.3
+  - Mean: 2.5
   - Median: 0.0
   - Stddev: 192.3
   - Non-zero count: 44.0
@@ -3125,7 +3135,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Armed Forces Compensation Scheme (reported)
-  - Mean: 4.3
+  - Mean: 2.5
   - Median: 0.0
   - Stddev: 192.3
   - Non-zero count: 44.0
@@ -3135,7 +3145,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: JSA (contribution-based)
-  - Mean: 1.6
+  - Mean: 2.2
   - Median: 0.0
   - Stddev: 79.9
   - Non-zero count: 20.0
@@ -3145,7 +3155,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Job Seeker's Allowance (contribution-based) (reported)
-  - Mean: 1.6
+  - Mean: 2.2
   - Median: 0.0
   - Stddev: 79.9
   - Non-zero count: 20.0
@@ -3271,7 +3281,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Council Tax Benefit (reported)
-  - Mean: 49.0
+  - Mean: 66.9
   - Median: 0.0
   - Stddev: 217.2
   - Non-zero count: 2,696.0
@@ -3291,7 +3301,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Non-dependent deductions
-  - Mean: 388.1
+  - Mean: 235.0
   - Median: 0.0
   - Stddev: 748.4
   - Non-zero count: 3,684.0
@@ -3351,7 +3361,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Housing Benefit (reported amount)
-  - Mean: 204.3
+  - Mean: 383.0
   - Median: 0.0
   - Stddev: 1,103.3
   - Non-zero count: 2,312.0
@@ -3421,7 +3431,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: JSA (income-based) (reported amount)
-  - Mean: 12.1
+  - Mean: 19.2
   - Median: 0.0
   - Stddev: 243.0
   - Non-zero count: 146.0
@@ -3471,7 +3481,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: ESA (income-based) (reported amount)
-  - Mean: 62.7
+  - Mean: 81.8
   - Median: 0.0
   - Stddev: 740.1
   - Non-zero count: 485.0
@@ -3627,7 +3637,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Universal Credit disabled child element
-  - Mean: 1.2
+  - Mean: 2.3
   - Median: 0.0
   - Stddev: 45.2
   - Non-zero count: 37.0
@@ -3647,7 +3657,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Universal Credit severely disabled child element
-  - Mean: 2.1
+  - Mean: 4.2
   - Median: 0.0
   - Stddev: 103.7
   - Non-zero count: 20.0
@@ -3697,7 +3707,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Universal Credit non-dependent deductions
-  - Mean: 334.8
+  - Mean: 222.6
   - Median: 0.0
   - Stddev: 624.3
   - Non-zero count: 3,854.0
@@ -3783,11 +3793,21 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Non-zero count: 0.0
   - Aggregate: 0.0
 
+- legacy_benefits:
+  - Type: float
+  - Entity: benunit
+  - Description: Legacy benefits
+  - Mean: 425.1
+  - Median: 0.0
+  - Stddev: 2,047.7
+  - Non-zero count: 2,273,298.5
+
+
 - limited_capability_for_WRA:
   - Type: bool
   - Entity: person
   - Description: Assessed to have limited capability for work-related activity
-  - Mean: 0.0
+  - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.2
   - Non-zero count: 2,260.0
@@ -3817,7 +3837,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Universal Credit (reported)
-  - Mean: 177.8
+  - Mean: 262.7
   - Median: 0.0
   - Stddev: 1,447.0
   - Non-zero count: 902.0
@@ -3897,7 +3917,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Reported amount of Pension Credit
-  - Mean: 50.8
+  - Mean: 122.6
   - Median: 0.0
   - Stddev: 578.8
   - Non-zero count: 920.0
@@ -4007,7 +4027,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: bool
   - Entity: household
   - Description: Whether the household is in deep absolute poverty (below half the poverty line), before housing costs
-  - Mean: 0.1
+  - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.2
   - Non-zero count: 1,117.0
@@ -4421,7 +4441,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: int
   - Entity: household
   - Description: Number of people
-  - Mean: 2.3
+  - Mean: 2.4
   - Median: 2.0
   - Stddev: 1.3
   - Non-zero count: 19,216.0
@@ -4471,7 +4491,7 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: int
   - Entity: household
   - Description: The number of bedrooms in the house
-  - Mean: 2.8
+  - Mean: 2.9
   - Median: 3.0
   - Stddev: 1.0
   - Non-zero count: 19,216.0
@@ -4651,9 +4671,9 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: int
   - Entity: state
   - Description: State ID
-  - Mean: 1.0
-  - Median: 1.0
-  - Stddev: nan
+  - Mean: 11.5
+  - Median: 11.5
+  - Stddev: 0.7
   - Non-zero count: 1.0
   - Aggregate: 1.0
 
@@ -4661,9 +4681,9 @@ All statistics generated from the uprated (to 2022) 2018-19 Family Resources Sur
   - Type: float
   - Entity: state
   - Description: State weight
-  - Mean: 1.0
-  - Median: 1.0
-  - Stddev: nan
+  - Mean: 0.5
+  - Median: 0.5
+  - Stddev: 0.0
   - Non-zero count: 1.0
   - Aggregate: 1.0
 

@@ -1,8 +1,8 @@
 description: Child Benefit amount for each additional child
 values:
   2007-04-09:
-    value: 12.10 
-    # Legislation.gov.uk amends this amount to £12.55, but 
+    value: 12.10
+    # Legislation.gov.uk amends this amount to £12.55, but
     # the amendment it references directs that it should be
     # amended to £12.10. We use the original amendment.
     reference:
@@ -13,12 +13,12 @@ values:
     reference:
       - title: The Child Benefit (Rates) (Amendment) Regulations 2008(3)(b)
         href: https://www.legislation.gov.uk/uksi/2008/3246/regulation/3/made
-  2010-04-12: 
+  2010-04-12:
     value: 13.40
     reference:
       - title: The Child Benefit Up-rating Order 2010(2)(b)
         href: https://www.legislation.gov.uk/uksi/2010/982/article/2/made
-  2014-04-07: 
+  2014-04-07:
     value: 13.55
     reference:
       - title: The Child Benefit and Tax Credits Up-rating Order 2014(2)(b)
@@ -33,7 +33,7 @@ values:
     reference:
       - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(b)
         href: https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made
-  2021-04-12: 
+  2021-04-12:
     value: 14.00
     reference:
       - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)

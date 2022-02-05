@@ -1,4 +1,4 @@
-description: Limited capability for work-related activity element for Universal Credit
+description: Limited capability for work-related activity element for Universal Credit.
 values:
   2017-04-10: 318.76
   2018-04-09: 328.32
@@ -7,6 +7,8 @@ values:
   2021-04-12: 343.63
 metadata:
   period: month
+  name: UC_lcwra_element
+  label: "UC disability element"
   unit: currency-GBP
   reference:
     - name: The Universal Credit Regulations 2013 reg. 36

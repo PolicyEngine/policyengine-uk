@@ -7,6 +7,7 @@ parts:
       - file: model/tax_credits
       - file: model/stamp_duty
       - file: model/validation
+      - file: model/reweighting
   - caption: Usage
     chapters:
       - file: usage/reforms

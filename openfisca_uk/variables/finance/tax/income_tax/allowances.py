@@ -141,7 +141,11 @@ class savings_allowance(Variable):
             [
                 tax_band == tax_bands.ADDITIONAL,
                 tax_band == tax_bands.HIGHER,
-                tax_band == tax_bands.BASIC,
+                (
+                    (tax_band == tax_bands.STARTER)
+                    | (tax_band == tax_bands.BASIC)
+                    | (tax_band == tax_bands.INTERMEDIATE)
+                ),
                 tax_band == tax_bands.NONE,
             ],
             [amounts.additional, amounts.higher, amounts.basic, amounts.basic],

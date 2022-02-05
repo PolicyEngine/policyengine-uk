@@ -1,4 +1,4 @@
-description: Unearned income sources for Universal Credit
+description: Unearned income sources for Universal Credit.
 values:
   2010-01-01:
     - carers_allowance
@@ -8,3 +8,5 @@ values:
     - dividend_income
 metadata:
   unit: list
+  name: UC_unearned_income_sources
+  label: "UC unearned income sources"

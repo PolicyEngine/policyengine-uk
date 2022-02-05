@@ -30,13 +30,11 @@ class would_claim_HB(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        would_randomly_take_up = (
-            random(benunit) < parameters(period).benefit.housing_benefit.takeup
-        )
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        return would_randomly_take_up | claims_all_entitled_benefits
+        reported_hb = aggr(benunit, period, ["housing_benefit_reported"]) > 0
+        return reported_hb | claims_all_entitled_benefits
 
 
 class claims_HB(Variable):

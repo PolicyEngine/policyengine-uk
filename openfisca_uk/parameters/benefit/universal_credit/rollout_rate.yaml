@@ -1,5 +1,5 @@
 description: Roll-out rate of Universal Credit
-values:  # Interpolated quarterly
+values: # Interpolated quarterly
   2010-01-01: 0
   2018-01-01: 0.2
   2018-04-01: 0.25

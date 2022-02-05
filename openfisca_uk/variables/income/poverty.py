@@ -1,6 +1,4 @@
-from openfisca_uk_data.datasets.frs.frs_enhanced.frs_enhanced import (
-    FRSEnhanced,
-)
+from openfisca_uk_data.datasets import FRSEnhanced, SynthFRS
 from openfisca_uk.model_api import *
 
 
@@ -18,8 +16,9 @@ class baseline_hbai_excluded_income(Variable):
             from openfisca_uk import Microsimulation
 
             # Simulate baseline policy
+            dataset = FRSEnhanced if 2019 in FRSEnhanced.years else SynthFRS
             result = Microsimulation(
-                dataset=FRSEnhanced, year=2019
+                dataset=dataset, year=2019
             ).simulation.calculate("hbai_excluded_income", period)
             # Check that the dataset/year combination is valid
             # (i.e. that the arrays are the same size)

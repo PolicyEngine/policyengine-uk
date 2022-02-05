@@ -1,31 +1,31 @@
 description: Higher residential property progressive tax scale for non-primary residences
 brackets:
-  - rate: 
+  - rate:
       2018-04-01: 0.03
       2020-12-22: 0.04
     threshold:
       2018-04-01: 0.0
-  - rate: 
+  - rate:
       2018-04-01: 0.065
       2020-12-22: 0.075
     threshold:
       2018-04-01: 180_000
-  - rate: 
+  - rate:
       2018-04-01: 0.08
       2020-12-22: 0.09
     threshold:
       2018-04-01: 250_000
-  - rate: 
+  - rate:
       2018-04-01: 0.105
       2020-12-22: 0.115
     threshold:
       2018-04-01: 400_000
-  - rate: 
+  - rate:
       2018-04-01: 0.13
       2020-12-22: 0.14
     threshold:
       2018-04-01: 750_000
-  - rate: 
+  - rate:
       2018-04-01: 0.15
       2020-12-22: 0.16
     threshold:

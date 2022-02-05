@@ -46,6 +46,32 @@ class person_weight(Variable):
         return scale_factor * frs_person_weight
 
 
+class age(Variable):
+    value_type = int
+    entity = Person
+    label = "Age"
+    unit = "year"
+    documentation = "The age of the person in years"
+    definition_period = YEAR
+    quantity_type = STOCK
+
+    def formula(person, period, parameters):
+        ADULT_DEFAULT_AGE = 18
+        CHILD_DEFAULT_AGE = 10
+        is_adult = person.benunit.members_role == BenUnit.ADULT
+        return where(is_adult, ADULT_DEFAULT_AGE, CHILD_DEFAULT_AGE)
+
+
+class birth_year(Variable):
+    value_type = int
+    entity = Person
+    label = "The birth year of the person"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return period.start.year - person("age", period)
+
+
 class over_16(Variable):
     value_type = bool
     entity = Person

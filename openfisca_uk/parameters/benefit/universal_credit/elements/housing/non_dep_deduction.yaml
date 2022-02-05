@@ -1,5 +1,8 @@
-description: Non-dependent deduction for Universal Credit
+description: Non-dependent deduction for Universal Credit (housing element).
 values:
   2017-06-01: 75.53
 metadata:
   unit: currency-GBP
+  period: month
+  name: UC_non_dep_deduction
+  label: "UC non-dependent deduction"

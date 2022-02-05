@@ -1,0 +1,6 @@
+- name: Benefit unit rent is summed from personal rent
+  period: 2022
+  input:
+    personal_rent: 1
+  output:
+    benunit_rent: 1

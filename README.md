@@ -10,7 +10,7 @@ The elements are described in different folders. All the modelling happens withi
 - The formulas and inputs are in the `variables` folder.
 - This country package comes also with reforms in the `reforms` folder.
 
-The files that are outside from the `openfisca_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the ```docs``` folder.
+The files that are outside from the `openfisca_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the `docs` folder.
 
 We're grateful to the [UKMOD](https://www.iser.essex.ac.uk/research/projects/ukmod) team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK's development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.
 
@@ -20,16 +20,9 @@ The model supports multiple different input datasets provided by the user, one o
 
 ## Fast setup instructions
 
-1. `pip install git+https://github.com/PSLmodels/openfisca-uk`
+1. Run `pip install openfisca-uk`
 
-For microdata instructions, follow (from [openfisca-uk-data](https://github.com/nikhilwoodruff/openfisca-uk-data)):
-2. Download the [synthetic FRS file](https://github.com/nikhilwoodruff/openfisca-uk-data/releases/download/synth-frs/synth_frs_2018.h5)
-3. Run `openfisca-uk-data synth_frs save synth_frs_2018`
-
-Or with the actual microdata:
-2. Have the `8633~~~.zip` file ready
-3. Run `openfisca-uk-data raw_frs generate 2018 8633~~~.zip`
-4. Run `openfisca-uk-data frs generate 2018`
+2. Run `openfisca-uk` and go through the prompt to setup microdata.
 
 ## Contact
 

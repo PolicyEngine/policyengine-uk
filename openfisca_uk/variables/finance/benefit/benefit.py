@@ -297,12 +297,3 @@ class claims_legacy_benefits(Variable):
     label = "Claims legacy benefits"
     documentation = "Whether this family is currently receiving legacy benefits (overrides UC claimant status)"
     definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        # Assign legacy/UC claimant status, consistently for each household
-        household = benunit.members.household
-        benunit_random = benunit.value_from_first_person(
-            household.project(random(household))
-        )
-        UC_rollout = parameters(period).benefit.universal_credit.rollout_rate
-        return benunit_random > UC_rollout

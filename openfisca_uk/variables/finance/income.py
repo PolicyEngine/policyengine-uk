@@ -81,13 +81,7 @@ class gross_income(Variable):
 
     def formula(person, period, parameters):
         COMPONENTS = [
-            "employment_income",
-            "pension_income",
-            "self_employment_income",
-            "property_income",
-            "savings_interest_income",
-            "dividend_income",
-            "miscellaneous_income",
+            "market_income",
             "benefits",
         ]
         return add(person, period, COMPONENTS)
@@ -102,7 +96,11 @@ class household_gross_income(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return aggr(household, period, ["gross_income"])
+        return add(
+            household,
+            period,
+            ["household_market_income", "household_benefits"],
+        )
 
 
 class net_income(Variable):
@@ -147,6 +145,7 @@ class weekly_hours(Variable):
     documentation = "Average weekly hours worked"
     definition_period = YEAR
     unit = "hour"
+    quantity_type = FLOW
 
     def formula(person, period, parameters):
         return person("hours_worked", period) / WEEKS_IN_YEAR

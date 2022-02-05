@@ -3,6 +3,7 @@
   absolute_error_margin: 0
   input:
     age: 70
+    would_claim_PC: true
   output:
     pension_credit_GC: 177.10 * 52
 - name: Minimum Guarantee, couple over SP age
@@ -17,5 +18,6 @@
     benunits:
       benunit:
         adults: [p1, p2]
+        would_claim_PC: true
   output:
     pension_credit_GC: 270.30 * 52
