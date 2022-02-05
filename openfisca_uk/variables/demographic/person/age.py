@@ -38,6 +38,7 @@ class birth_date(Variable):
         birth_years = person("birth_year", period)
         return np.array([date(year, 1, 1) for year in birth_years])
 
+
 class over_16(Variable):
     label = "Over 16"
     entity = Person

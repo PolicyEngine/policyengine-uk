@@ -47,6 +47,7 @@ class ctc_pre_minimum(Variable):
         reduction = benunit("ctc_reduction", period)
         return maximum_rate - reduction
 
+
 class ctc_pre_takeup(Variable):
     label = "Child Tax Credit entitlement, before take-up imputations."
     entity = BenUnit
@@ -60,6 +61,7 @@ class ctc_pre_takeup(Variable):
         below_minimum = benunit("tax_credits_below_minimum", period)
         return maximum_rate * ~below_minimum
 
+
 class child_tax_credit(Variable):
     label = "Child Tax Credit"
     entity = BenUnit
@@ -69,4 +71,6 @@ class child_tax_credit(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/8"
 
     def formula(benunit, period, parameters):
-        return benunit("ctc_pre_takeup", period) * benunit("claims_ctc", period)
+        return benunit("ctc_pre_takeup", period) * benunit(
+            "claims_ctc", period
+        )

@@ -51,7 +51,9 @@ class wtc_pre_minimum(Variable):
 
 class wtc_pre_takeup(Variable):
     label = "Working Tax Credit"
-    documentation = "Working Tax Credit entitlement, before take-up imputations."
+    documentation = (
+        "Working Tax Credit entitlement, before take-up imputations."
+    )
     entity = BenUnit
     definition_period = YEAR
     value_type = float
@@ -73,13 +75,9 @@ class working_tax_credit(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2002/2008/regulation/7"
 
     def formula(benunit, period, parameters):
-        return benunit("wtc_pre_takeup", period) * benunit("claims_wtc", period)
-
-    def formula_2021(benunit, period, parameters):
-        covid_payment = parameters(period).hmrc.tax_credits.working_tax_credit.coronavirus_payment
+        covid_payment = parameters(
+            period
+        ).hmrc.tax_credits.working_tax_credit.coronavirus_payment
         wtc = benunit("wtc_pre_takeup", period)
         increased_wtc = where(wtc > 0, wtc + covid_payment, wtc)
         return increased_wtc * benunit("claims_wtc", period)
-
-    def formula(benunit, period, parameters):
-        return benunit("wtc_pre_takeup", period) * benunit("claims_wtc", period)

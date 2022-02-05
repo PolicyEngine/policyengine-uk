@@ -1,6 +1,8 @@
 description: The Covid-19 Support Scheme one-off payment for Working Tax Credit recipients.
 values:
+  2003-01-01: 0
   2021-01-01: 500
+  2022-01-01: 0
 metadata:
   unit: currency-GBP
   name: wtc_covid_payment
