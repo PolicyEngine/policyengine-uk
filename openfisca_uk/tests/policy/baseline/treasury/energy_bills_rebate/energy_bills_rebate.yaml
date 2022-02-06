@@ -1,6 +1,7 @@
 - name: A household in band C gets £350.
   period: 2023
   input:
+    council_tax: 150
     council_tax_band: C
   output:
     energy_bills_rebate: 350

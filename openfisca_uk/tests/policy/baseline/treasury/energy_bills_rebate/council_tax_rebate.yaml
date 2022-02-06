@@ -1,6 +1,16 @@
 - name: CT bands A-D get full rebate, others don't.
   period: 2023
   input:
+    council_tax:
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
     council_tax_band:
       - A
       - B

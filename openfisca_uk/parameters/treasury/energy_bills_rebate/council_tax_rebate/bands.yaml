@@ -1,11 +1,11 @@
 description: Qualifying Council Tax bands under the Energy Bills Rebate.
 values:
-  2022-01-01:
+  2022-10-01:
     - A
     - B
     - C
     - D
-  2023-01-01: []
+  2023-10-01: []
 metadata:
   unit: list
   period: year
