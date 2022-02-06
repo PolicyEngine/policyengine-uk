@@ -1,0 +1,34 @@
+- name: CT bands A-D get full rebate, others don't.
+  period: 2023
+  input:
+    council_tax:
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+      - 150
+    council_tax_band:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      - G
+      - H
+      - I
+  output:
+    ebr_council_tax_rebate:
+      - 150
+      - 150
+      - 150
+      - 150
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
