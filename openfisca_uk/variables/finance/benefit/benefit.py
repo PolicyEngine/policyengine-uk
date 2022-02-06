@@ -73,6 +73,7 @@ class household_benefits(Variable):
     def formula(household, period, parameters):
         HOUSEHOLD_BENEFITS = [
             "winter_fuel_allowance",
+            "energy_bills_rebate",
         ]
         personal_benefits = aggr(household, period, ["benefits"])
         household_benefits = add(household, period, HOUSEHOLD_BENEFITS)
