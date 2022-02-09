@@ -15,8 +15,8 @@ def gbp(x: float) -> str:
 
 def main(args):
     with open("docs/summary/summary.yaml", "r") as f:
-        previous_results = yaml.load(f)
-    
+        previous_results = yaml.safe_load(f)
+
     sim = Microsimulation(dataset=FRSEnhanced, year=2019)
     year = 2022
 
@@ -44,13 +44,15 @@ def main(args):
 
     if args.save:
         with open("docs/summary/summary.yaml", "w") as f:
-            yaml.dump(results, f)
+            yaml.safe_dump(results, f)
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(
         description="Generate a summary of the tax-benefit system."
     )
-    parser.add_argument("--save", action="store_true", help="Save the results.")
+    parser.add_argument(
+        "--save", action="store_true", help="Save the results."
+    )
     args = parser.parse_args()
     main(args)
