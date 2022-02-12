@@ -13,8 +13,8 @@
       b1:
         adults: p1
         claims_IS: true
-        claims_WTC: true
-        claims_CTC: true
+        claims_wtc: true
+        claims_ctc: true
         children: [c1, c2]
   output:
     child_tax_credit: 6205
@@ -40,8 +40,8 @@
         adults: p1
         children: [c1, c2]
         claims_IS: true
-        claims_WTC: true
-        claims_CTC: true
+        claims_wtc: true
+        claims_ctc: true
   output:
     child_tax_credit: 0
     child_benefit: 35 * 52
@@ -66,8 +66,8 @@
         adults: p1
         children: [c1, c2]
         claims_IS: true
-        claims_WTC: true
-        claims_CTC: true
+        claims_wtc: true
+        claims_ctc: true
   output:
     child_tax_credit: 6205
     child_benefit: 35 * 52

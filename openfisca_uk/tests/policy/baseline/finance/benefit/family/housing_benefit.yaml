@@ -6,15 +6,14 @@
     weekly_hours: 31
     employment_income: 0
     tenure_type: RENT_FROM_COUNCIL
-    claims_HB: true
-    claims_WTC: true
+    claims_legacy_benefits: true
     benunit_rent: 88 * 52
     is_household_head: true
   output:
-    WTC_basic_element: 3040
-    WTC_worker_element: 825
-    working_tax_credit: 3040 + 825
-    housing_benefit: 88 * 52
+    wtc_basic_element: 3040
+    wtc_worker_element: 825
+    working_tax_credit: 4365
+    housing_benefit: 80 * 52
 - name: Check no change up until the phase-out point
   period: 2021
   absolute_error_margin: 5
@@ -23,16 +22,15 @@
     weekly_hours: 31
     employment_income: 3801 - (3865 - 52 * (5 + 37.1))
     tenure_type: RENT_FROM_COUNCIL
-    claims_HB: true
-    claims_WTC: true
+    claims_legacy_benefits: true
     benunit_rent: 88 * 52
     is_household_head: true
   output:
-    WTC_basic_element: 3040
-    WTC_worker_element: 825
-    working_tax_credit: 3865
-    housing_benefit_applicable_income: 3801
-    housing_benefit: 88 * 52
+    wtc_basic_element: 3040
+    wtc_worker_element: 825
+    working_tax_credit: 4365
+    housing_benefit_applicable_income: 4301
+    housing_benefit: 80 * 52
 - name: Check phase-out rate is 65%
   period: 2021
   absolute_error_margin: 5
@@ -41,12 +39,11 @@
     weekly_hours: 31
     employment_income: 3801 - (3865 - 52 * (5 + 37.1)) + 100
     tenure_type: RENT_FROM_COUNCIL
-    claims_HB: true
-    claims_WTC: true
+    claims_legacy_benefits: true
     benunit_rent: 88 * 52
     is_household_head: true
   output:
-    WTC_basic_element: 3040
-    WTC_worker_element: 825
-    working_tax_credit: 3865
-    housing_benefit: 88 * 52 - 65
+    wtc_basic_element: 3040
+    wtc_worker_element: 825
+    working_tax_credit: 4365
+    housing_benefit: 80 * 52 - 65
