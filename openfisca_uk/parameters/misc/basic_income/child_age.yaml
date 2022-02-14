@@ -1,0 +1,6 @@
+description: Age at which a person stops receiving the child basic income and begins receiving the adult basic income.
+values:
+  2021-01-01: 18
+metadata:
+  unit: year
+  label: Adult basic income theshold
