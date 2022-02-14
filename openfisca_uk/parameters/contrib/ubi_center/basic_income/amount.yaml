@@ -15,7 +15,7 @@ working_age:
     unit: currency-GBP
     period: week
     label: Working-age basic income
-    name: working_age_bi
+    name: adult_bi
 senior:
   description: Basic income payment to seniors (individuals over State Pension Age).
   values:
