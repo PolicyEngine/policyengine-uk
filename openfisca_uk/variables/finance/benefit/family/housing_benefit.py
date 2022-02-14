@@ -118,7 +118,7 @@ class housing_benefit_applicable_income(Variable):
             "property_income",
             "pension_income",
         ]
-        if parameters(period).misc.basic_income.include_in_means_tests:
+        if parameters(period).contrib.ubi_center.basic_income.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
