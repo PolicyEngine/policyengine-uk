@@ -4,3 +4,4 @@ values:
 metadata:
   unit: bool
   label: Withdraw Child Benefit from BI recipients
+  name: bi_withdraw_cb

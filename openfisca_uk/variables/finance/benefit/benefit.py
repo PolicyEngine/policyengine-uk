@@ -250,6 +250,7 @@ class personal_benefits(Variable):
             "SSP",
             "SMP",
             "ssmg",
+            "basic_income",
         ]
         return add(person, period, BENEFITS)
 

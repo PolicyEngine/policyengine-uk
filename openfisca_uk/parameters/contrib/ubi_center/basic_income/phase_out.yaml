@@ -6,6 +6,7 @@ threshold:
     unit: currency-GBP
     period: year
     label: Basic income phase-out threshold
+    name: bi_phase_out_threshold
 rate:
   description: Percentage of income over the phase-out threshold which is deducted from basic income payments.
   values:
@@ -13,3 +14,4 @@ rate:
   metadata:
     unit: /1
     label: Basic income phase-out rate
+    name: bi_phase_out_rate

@@ -334,4 +334,8 @@ class adjusted_net_income(Variable):
             "taxable_dividend_income",
             "taxable_miscellaneous_income",
         ]
+        if parameters(
+            period
+        ).contrib.ubi_center.basic_income.include_in_taxable_income:
+            COMPONENTS.append("basic_income")
         return max_(0, add(person, period, COMPONENTS))

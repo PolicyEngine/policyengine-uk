@@ -6,6 +6,7 @@ child:
     unit: currency-GBP
     period: week
     label: Child basic income
+    name: child_bi
 working_age:
   description: Basic income payment to working-age adults.
   values:
@@ -14,6 +15,7 @@ working_age:
     unit: currency-GBP
     period: week
     label: Working-age basic income
+    name: working_age_bi
 senior:
   description: Basic income payment to seniors (individuals over State Pension Age).
   values:
@@ -22,3 +24,4 @@ senior:
     unit: currency-GBP
     period: week
     label: Senior basic income
+    name: senior_bi
