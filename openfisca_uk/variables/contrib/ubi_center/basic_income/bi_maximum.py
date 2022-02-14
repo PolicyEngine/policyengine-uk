@@ -13,7 +13,10 @@ class bi_maximum(Variable):
         is_senior_for_bi = person("is_SP_age", period)
         is_child_for_bi = person("age", period) < bi.child_age
         is_wa_for_bi = ~is_senior_for_bi & ~is_child_for_bi
-        return select(
-            [is_child_for_bi, is_wa_for_bi, is_senior_for_bi],
-            [bi.amount.child, bi.amount.working_age, bi.amount.senior],
-        ) * WEEKS_IN_YEAR
+        return (
+            select(
+                [is_child_for_bi, is_wa_for_bi, is_senior_for_bi],
+                [bi.amount.child, bi.amount.working_age, bi.amount.senior],
+            )
+            * WEEKS_IN_YEAR
+        )
