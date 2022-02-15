@@ -250,6 +250,7 @@ class personal_benefits(Variable):
             "SSP",
             "SMP",
             "ssmg",
+            "basic_income",
         ]
         return add(person, period, BENEFITS)
 
@@ -289,6 +290,25 @@ class claims_all_entitled_benefits(Variable):
     documentation = (
         "Whether this family would claim any benefit they are entitled to"
     )
+
+    def formula(benunit, period, parameters):
+        # Return false we have any reported values in the simulation for benefits.
+        return (
+            aggr(
+                benunit,
+                period,
+                [
+                    "child_tax_credit_reported",
+                    "working_tax_credit_reported",
+                    "universal_credit_reported",
+                    "housing_benefit_reported",
+                    "JSA_income_reported",
+                    "income_support_reported",
+                    "ESA_income_reported",
+                ],
+            ).sum()
+            < 1
+        )
 
 
 class claims_legacy_benefits(Variable):

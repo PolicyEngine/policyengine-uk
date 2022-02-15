@@ -87,6 +87,9 @@ class guarantee_credit_applicable_income(Variable):
             "savings_interest_income",
             "dividend_income",
         ]
+        bi = parameters(period).contrib.ubi_center.basic_income
+        if bi.include_in_means_tests:
+            INCOME_COMPONENTS.append("basic_income")
         income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(benunit, period, ["tax"])
         BENEFIT_COMPONENTS = [

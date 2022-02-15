@@ -1,0 +1,95 @@
+- name: Basic income variables default to 0.
+  period: 2021
+  input: {}
+  output:
+    basic_income: 0
+
+- name: Basic income for all age groups.
+  period: 2021
+  input:
+    contrib.ubi_center.basic_income.amount.child: 1
+    contrib.ubi_center.basic_income.amount.working_age: 2
+    contrib.ubi_center.basic_income.amount.senior: 3
+    people:
+      child:
+        age: 7
+      working_age:
+        age: 18
+      senior:
+        age: 68
+    benunits:
+      benunit:
+        adults: [working_age, senior]
+        children: child
+  output:
+    basic_income: [52, 104, 156]
+    child_benefit: 1094.60
+
+- name: Basic income with phase-out and CB withdrawal
+  period: 2021
+  input:
+    contrib.ubi_center.basic_income.amount.child: 100
+    contrib.ubi_center.basic_income.amount.working_age: 100
+    contrib.ubi_center.basic_income.phase_out.threshold: 100_000
+    contrib.ubi_center.basic_income.phase_out.rate: 1
+    contrib.ubi_center.basic_income.withdraw_cb: true
+    people:
+      child:
+        age: 7
+      working_age:
+        age: 18
+        employment_income: 150_000
+    benunits:
+      benunit:
+        adults: working_age
+        children: child
+  output:
+    basic_income: [5_200, 0]
+    bi_phaseout: [0, 5_200]
+    child_benefit: 0
+    income_tax: [0, 52_500]
+
+- name: Basic income included in taxable income.
+  period: 2021
+  input:
+    contrib.ubi_center.basic_income.amount.working_age: 100
+    contrib.ubi_center.basic_income.include_in_taxable_income: true
+    people:
+      adult:
+        age: 30
+        employment_income: 150_000
+    benunits:
+      benunit:
+        adults: adult
+  output:
+    income_tax: 52_500 + 5_200 * 0.45
+
+- name: Basic income not included in means tests.
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    contrib.ubi_center.basic_income.amount.working_age: 100
+    contrib.ubi_center.basic_income.include_in_means_tests: false
+    people:
+      adult:
+        age: 30
+    benunits:
+      benunit:
+        adults: adult
+  output:
+    universal_credit: 4_938
+
+- name: Basic income included in means tests.
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    contrib.ubi_center.basic_income.amount.working_age: 100
+    contrib.ubi_center.basic_income.include_in_means_tests: true
+    people:
+      adult:
+        age: 30
+    benunits:
+      benunit:
+        adults: adult
+  output:
+    universal_credit: 4_938 - 5_200 * 0.63
