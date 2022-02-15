@@ -49,7 +49,10 @@ setup(
         ]
     },
     entry_points={
-        "console_scripts": ["openfisca-uk=openfisca_uk.initial_setup:main"],
+        "console_scripts": [
+            "openfisca-uk-setup=openfisca_uk.initial_setup:main",
+            "openfisca-uk=openfisca_uk.tools.cli:main",
+        ],
     },
     packages=find_packages(),
 )
