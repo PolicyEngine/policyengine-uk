@@ -1,7 +1,7 @@
 threshold:
   description: Threshold for taxable income at which basic income is reduced.
   values:
-    2010-01-01: 100_000
+    2010-01-01: 0
   metadata:
     unit: currency-GBP
     period: year
