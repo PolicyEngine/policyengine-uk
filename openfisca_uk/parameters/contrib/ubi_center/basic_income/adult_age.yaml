@@ -4,4 +4,4 @@ values:
 metadata:
   unit: year
   label: Adult basic income threshold
-  name: bi_child_age
+  name: bi_adult_age
