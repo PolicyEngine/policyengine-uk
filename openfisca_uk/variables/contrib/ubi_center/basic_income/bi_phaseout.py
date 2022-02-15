@@ -9,7 +9,7 @@ class bi_phaseout(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        income = person("adjusted_net_income", period)
+        income = person("total_income", period)
         bi = parameters(period).contrib.ubi_center.basic_income
         max_bi = person("bi_maximum", period)
         income_over_threshold = max_(income - bi.phase_out.threshold, 0)
