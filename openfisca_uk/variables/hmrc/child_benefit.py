@@ -52,7 +52,7 @@ class child_benefit_respective_amount(Variable):
     def formula(person, period, parameters):
         eligible = person("is_child_or_QYP", period)
         if parameters(period).contrib.ubi_center.basic_income.withdraw_cb:
-            eligible *= person("basic_income", period) == 0
+            eligible &= person("basic_income", period) == 0
         is_eldest = person("is_eldest_child", period)
         child_benefit = parameters(period).hmrc.child_benefit.amount
         amount = where(
