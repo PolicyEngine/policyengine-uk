@@ -13,6 +13,7 @@
         is_disabled_for_benefits: true
     benunits:
       benunit:
+        claims_legacy_benefits: true
         children: [child_1, child_2, child_3]
   output:
     ctc_disability_element: 4825 + 3435 + 3435

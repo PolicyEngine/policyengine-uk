@@ -15,6 +15,7 @@
         birth_date: 2019-01-01
     benunits:
       benunit:
+        claims_legacy_benefits: true
         children: [child_1, child_2, child_3, child_4]
   output:
     maximum_ctc: 279.01 * 52

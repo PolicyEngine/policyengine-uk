@@ -5,6 +5,7 @@
       adult: {}
     benunits:
       benunit:
+        claims_legacy_benefits: true
         adults: [adult]
         children: []
   output:
@@ -22,6 +23,7 @@
         birth_date: 2018-01-01
     benunits:
       benunit:
+        claims_legacy_benefits: true
         children: [child_1, child_2, child_3]
   output:
     ctc_child_element: 2_845 * 2
