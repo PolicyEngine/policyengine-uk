@@ -55,3 +55,5 @@ jobs:
       - name: Generate documentation
         if: matrix.os == 'ubuntu-latest'
         run: make documentation
+      - name: Print summary metrics
+        run: python docs/summary/generate_summary.py

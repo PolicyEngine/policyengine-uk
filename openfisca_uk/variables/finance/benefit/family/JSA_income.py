@@ -115,6 +115,9 @@ class JSA_income_applicable_income(Variable):
             "property_income",
             "pension_income",
         ]
+        bi = parameters(period).contrib.ubi_center.basic_income
+        if bi.include_in_means_tests:
+            INCOME_COMPONENTS.append("basic_income")
         income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(
             benunit,

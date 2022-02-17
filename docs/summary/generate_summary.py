@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from openfisca_uk import Microsimulation
 from openfisca_uk_data import FRSEnhanced
 import yaml
+import subprocess
 
 
 def percentage(x: float) -> str:
@@ -12,7 +13,10 @@ def gbp(x: float) -> str:
     return f"{round(x / 1e9, 1):,}bn"
 
 
-def main():
+def main(args):
+    with open("docs/summary/summary.yaml", "r") as f:
+        previous_results = yaml.safe_load(f)
+
     sim = Microsimulation(dataset=FRSEnhanced, year=2019)
     year = 2022
 
@@ -27,20 +31,28 @@ def main():
         "National Insurance (employee-side) revenue": gbp(
             sim.calc("national_insurance", period=year).sum()
         ),
-        "Employment income": gbp(
-            sim.calc("employment_income", period=year).sum()
-        ),
         "Total income": gbp(sim.calc("total_income", period=year).sum()),
         "Benefit expenditure": gbp(sim.calc("benefits", period=year).sum()),
     }
 
-    with open("docs/summary/summary.yaml", "w+") as f:
-        yaml.dump(results, f)
+    for key, value in results.items():
+        previous_value = previous_results.get(key, "")
+        if previous_value != value:
+            print(f"{key}: {previous_value} -> {value}")
+        else:
+            print(f"{key}: {value}")
+
+    if args.save:
+        with open("docs/summary/summary.yaml", "w") as f:
+            yaml.safe_dump(results, f)
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(
-        description="Generate a summary of the tax-benefit system"
+        description="Generate a summary of the tax-benefit system."
+    )
+    parser.add_argument(
+        "--save", action="store_true", help="Save the results."
     )
     args = parser.parse_args()
-    main()
+    main(args)

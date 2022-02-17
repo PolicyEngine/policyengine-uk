@@ -1,0 +1,14 @@
+description: Qualifying Council Tax bands under the Energy Bills Rebate.
+values:
+  0001-01-01: 
+    - A
+    - B
+    - C
+    - D
+metadata:
+  unit: list
+  period: year
+  label: Council Tax rebate qualifying bands
+  reference:
+    - title: GOV.UK Press release
+      href: https://www.gov.uk/government/news/millions-to-receive-350-boost-to-help-with-rising-energy-costs
