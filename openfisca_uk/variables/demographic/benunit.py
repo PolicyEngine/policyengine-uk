@@ -109,7 +109,7 @@ class benunit_has_children_or_qyp(Variable):
     value_type = bool
 
     def formula(benunit, period):
-        return benunit.sum(benunit.members("is_child_or_QYP", period)) > 0
+        return aggr(benunit, period, ["is_child_or_QYP"]) > 0
 
 
 class eldest_adult_age(Variable):
