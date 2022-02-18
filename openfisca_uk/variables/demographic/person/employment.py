@@ -56,7 +56,7 @@ class employment_status(Variable):
                 EmploymentStatus.UNEMPLOYED,
             ],
         )
-
+    
 
 class is_in_work(Variable):
     label = "In work"

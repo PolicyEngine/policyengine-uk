@@ -12,7 +12,6 @@ https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-st
 """
 
 
-@uprated(by="earnings")
 class employment_income(Variable):
     value_type = float
     entity = Person
@@ -23,9 +22,20 @@ class employment_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
     quantity_type = FLOW
 
-    def formula(person, period, parameters):
-        hours = person("weekly_hours", period)
-        return hours * person("minimum_wage", period)
+    def formula_2015(person, period, parameters):
+        last_years_earnings = person("employment_income", period.last_year)
+        if any(last_years_earnings > 0):
+            # If we have last year's earnings (but not this year's), apply uprating
+            earnings_uprating = (
+                parameters(period).uprating.earnings
+                / parameters(period.last_year).uprating.earnings
+            )
+            return last_years_earnings * earnings_uprating
+        else:
+            # Else, if we have hours but not earnings, then assume the are paid the 
+            # minimum wage
+            hours = person("weekly_hours", period)
+            return hours * person("minimum_wage", period)
 
 
 @uprated(by="earnings")
