@@ -23,6 +23,10 @@ class employment_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
     quantity_type = FLOW
 
+    def formula(person, period, parameters):
+        hours = person("weekly_hours", period)
+        return hours * person("minimum_wage", period)
+
 
 @uprated(by="earnings")
 class pension_income(Variable):

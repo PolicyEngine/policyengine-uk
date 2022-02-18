@@ -1,0 +1,12 @@
+- name: Default adult and child ages are 18 and 10
+  period: 2021
+  input:
+    people:
+      adult: {}
+      child: {}
+    benunits:
+      benunit:
+        adults: adult
+        children: child
+  output:
+    age: [18, 10]

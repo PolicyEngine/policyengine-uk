@@ -9,7 +9,7 @@ class age(Variable):
     documentation = "The age of the person in years"
     definition_period = YEAR
 
-    def formula(person, period):
+    def formula(person, period, parameters):
         ADULT_DEFAULT_AGE = 18
         CHILD_DEFAULT_AGE = 10
         is_adult = person.benunit.members_role == BenUnit.ADULT

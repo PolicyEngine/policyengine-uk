@@ -24,8 +24,7 @@
   input:
     age: 35
     weekly_hours: 40
-    claims_wtc: true
-    claims_ctc: true
+    claims_legacy_benefits: true
   output:
     is_wtc_eligible: true
     is_ctc_eligible: false
@@ -35,8 +34,7 @@
   input:
     age: 35
     weekly_hours: 8
-    claims_wtc: true
-    claims_ctc: true
+    claims_legacy_benefits: true
   output:
     is_wtc_eligible: false
     is_ctc_eligible: false
@@ -51,9 +49,8 @@
       child2:
         age: 6
     benunits:
-      benunit1:
-        claims_ctc: true
-        claims_wtc: true
+      benunit:
+        claims_legacy_benefits: true
         adults: ["adult1"]
         children: ["child1", "child2"]
   output:
@@ -64,7 +61,8 @@
   absolute_error_margin: 100
   input:
     people:
-      adult1: {}
+      adult1:
+        age: 25
       child1:
         age: 1
       child2:
@@ -72,22 +70,19 @@
       child3:
         age: 1
     benunits:
-      benunit1:
-        claims_ctc: true
-        claims_wtc: true
-        adults: ["adult1"]
-        children: ["child1", "child2", "child3"]
+      benunit:
+        claims_legacy_benefits: true
+        adults: adult1
+        children: [child1, child2, child3]
   output:
-    maximum_ctc: 6100
-- name: WTC for working earner with no taxable income
+    maximum_ctc: 5_560
+- name: WTC for working earner
   period: 2020
   absolute_error_margin: 100
   input:
-    employment_income: 0
     weekly_hours: 40
     age: 26
-    claims_wtc: true
-    claims_ctc: true
+    claims_legacy_benefits: true
   output:
     is_wtc_eligible: true
     wtc_basic_element: 2060
@@ -104,6 +99,7 @@
   input:
     age: 60
     weekly_hours: 16
+    claims_legacy_benefits: true
   output:
     is_wtc_eligible: true
 - name: 59-year-old needs to meet the default hours requirement (30)
@@ -112,6 +108,7 @@
   input:
     age: 59
     weekly_hours: 16
+    claims_legacy_benefits: true
   output:
     is_wtc_eligible: false
 - name: 29 hours does not qualify someone for worker element
@@ -119,7 +116,7 @@
   absolute_error_margin: 0
   input:
     is_wtc_eligible: true
-    claims_wtc: true
+    claims_legacy_benefits: true
     weekly_hours: 29
   output:
     wtc_worker_element: 0
@@ -128,7 +125,7 @@
   absolute_error_margin: 0
   input:
     is_wtc_eligible: true
-    claims_wtc: true
+    claims_legacy_benefits: true
     weekly_hours: 30
   output:
     wtc_worker_element: 830
@@ -138,6 +135,7 @@
   input:
     ctc_pre_minimum: 20
     wtc_pre_minimum: 5.99
+    claims_legacy_benefits: true
   output:
     tax_credits: 0
 - name: Tax credits equal to £26 are paid
@@ -145,5 +143,6 @@
   absolute_error_margin: 0
   input:
     ctc_pre_minimum: 26
+    claims_legacy_benefits: true
   output:
     tax_credits: 26
