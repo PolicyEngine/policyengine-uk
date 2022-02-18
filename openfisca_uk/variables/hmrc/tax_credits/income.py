@@ -19,7 +19,7 @@ class tax_credits_applicable_income(Variable):
         earned_income = aggr(benunit, period, tc.income.earned)
         bi = parameters(period).contrib.ubi_center.basic_income
         if bi.include_in_means_tests:
-            earned_income += benunit("basic_income", period)
+            earned_income += aggr(benunit, period, "basic_income")
         return unearned_income + earned_income
 
 
