@@ -50,19 +50,25 @@ VAL_PROGRAMS = {
     2019: [
         "council_tax_less_benefit",
         "housing_benefit",
+        "total_NI",
+        "JSA_income",
     ],
     2020: [
         "income_support",
         "ESA_income",
+        "state_pension",
+        "working_tax_credit",
     ],
     2021: [
         "total_NI",
         "JSA_income",
+        "income_support",
+        "ESA_income",
     ],
     2022: [],
 }
 
-VAL_PROGRAMS = {year: [] for year in range(2019, 2023)}
+# VAL_PROGRAMS = {year: [] for year in range(2019, 2023)}
 
 
 def uk_wide_population_loss(
