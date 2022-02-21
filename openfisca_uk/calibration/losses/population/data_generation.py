@@ -39,10 +39,17 @@ def write_parameter(
     for df, label in zip([male, female], ["MALE", "FEMALE"]):
         df = df.set_index("Name")
         param = parameter[label]
-        for col in df.columns:
-            param[col] = {}
-            for region in df.index:
-                param[col][region] = {
+        for region in df.index:
+            param[region] = {
+                "metadata": {
+                    "propagate_metadata_to_children": True,
+                    "uprating": {
+                        "parameter": f"calibration.regional_populations.{region}",
+                    }
+                }
+            }
+            for col in df.columns:
+                param[region][col] = {
                     "values": {f"{year}-01-01": f"{df[col].loc[region]:_.0f}"}
                 }
     return yaml.dump(parameter).replace("'", "")

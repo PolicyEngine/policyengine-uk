@@ -1,0 +1,771 @@
+FEMALE:
+  EAST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 272_771
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 276_379
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 303_256
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 304_954
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 299_480
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 344_179
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 277_142
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 233_930
+    OVER_80:
+      values:
+        2020-01-01: 185_649
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.EAST_MIDLANDS
+  EAST_OF_ENGLAND:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 369_952
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 350_470
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 342_511
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 409_633
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 406_295
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 438_879
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 351_491
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 305_288
+    OVER_80:
+      values:
+        2020-01-01: 253_486
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.EAST_OF_ENGLAND
+  LONDON:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 585_934
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 497_669
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 648_423
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 771_784
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 624_305
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 547_042
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 374_723
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 258_934
+    OVER_80:
+      values:
+        2020-01-01: 225_091
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.LONDON
+  NORTHERN_IRELAND:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 119_622
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 116_034
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 113_192
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 127_293
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 124_112
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 131_705
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 101_430
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 77_834
+    OVER_80:
+      values:
+        2020-01-01: 63_941
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.NORTHERN_IRELAND
+  NORTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 142_974
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 146_308
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 172_653
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 169_887
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 158_787
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 192_652
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 165_498
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 130_047
+    OVER_80:
+      values:
+        2020-01-01: 108_299
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.NORTH_EAST
+  NORTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 429_107
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 415_979
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 469_894
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 481_290
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 449_119
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 515_774
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 410_848
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 337_581
+    OVER_80:
+      values:
+        2020-01-01: 281_048
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.NORTH_WEST
+  SCOTLAND:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 272_903
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 284_119
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 356_518
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 370_019
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 345_328
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 409_754
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 337_772
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 258_924
+    OVER_80:
+      values:
+        2020-01-01: 216_490
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.SCOTLAND
+  SOUTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 530_383
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 530_526
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 516_326
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 579_729
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 610_633
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 649_657
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 509_734
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 443_739
+    OVER_80:
+      values:
+        2020-01-01: 375_619
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.SOUTH_EAST
+  SOUTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 296_946
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 305_550
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 321_959
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 335_370
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 339_361
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 406_207
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 350_961
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 311_372
+    OVER_80:
+      values:
+        2020-01-01: 255_913
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.SOUTH_WEST
+  WALES:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 167_620
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 173_734
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 199_339
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 192_237
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 186_136
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 225_673
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 194_142
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 163_436
+    OVER_80:
+      values:
+        2020-01-01: 131_836
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.WALES
+  WEST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 355_415
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 347_361
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 387_332
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 384_916
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 361_335
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 400_941
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 316_317
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 271_031
+    OVER_80:
+      values:
+        2020-01-01: 228_891
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.WEST_MIDLANDS
+  YORKSHIRE:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 318_768
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 317_882
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 365_544
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 355_917
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 332_151
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 377_891
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 308_196
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 254_197
+    OVER_80:
+      values:
+        2020-01-01: 213_413
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.YORKSHIRE
+MALE:
+  EAST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 286_248
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 289_219
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 324_752
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 294_050
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 292_640
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 335_463
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 267_895
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 215_150
+    OVER_80:
+      values:
+        2020-01-01: 145_127
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.EAST_MIDLANDS
+  EAST_OF_ENGLAND:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 390_388
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 371_221
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 361_101
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 391_276
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 395_595
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 428_122
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 332_914
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 274_155
+    OVER_80:
+      values:
+        2020-01-01: 195_663
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.EAST_OF_ENGLAND
+  LONDON:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 616_198
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 527_540
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 666_019
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 830_234
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 651_693
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 531_618
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 348_995
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 217_917
+    OVER_80:
+      values:
+        2020-01-01: 171_401
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.LONDON
+  NORTHERN_IRELAND:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 125_988
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 122_851
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 118_951
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 123_641
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 116_771
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 126_381
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 98_283
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 68_762
+    OVER_80:
+      values:
+        2020-01-01: 47_176
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.NORTHERN_IRELAND
+  NORTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 151_181
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 154_886
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 183_335
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 164_384
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 151_327
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 182_070
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 156_369
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 117_359
+    OVER_80:
+      values:
+        2020-01-01: 80_527
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.NORTH_EAST
+  NORTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 450_965
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 439_339
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 491_078
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 476_053
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 436_592
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 496_561
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 394_732
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 306_963
+    OVER_80:
+      values:
+        2020-01-01: 215_218
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.NORTH_WEST
+  SCOTLAND:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 288_806
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 296_082
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 362_441
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 359_716
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 328_962
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 382_703
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 315_230
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 225_116
+    OVER_80:
+      values:
+        2020-01-01: 155_479
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.SCOTLAND
+  SOUTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 560_140
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 561_311
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 552_784
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 552_854
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 591_254
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 637_316
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 484_841
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 392_755
+    OVER_80:
+      values:
+        2020-01-01: 286_914
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.SOUTH_EAST
+  SOUTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 313_486
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 320_471
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 344_877
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 330_622
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 329_663
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 390_177
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 329_483
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 281_842
+    OVER_80:
+      values:
+        2020-01-01: 200_410
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.SOUTH_WEST
+  WALES:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 175_899
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 184_524
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 215_332
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 190_308
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 179_259
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 213_519
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 183_229
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 149_473
+    OVER_80:
+      values:
+        2020-01-01: 104_634
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.WALES
+  WEST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 374_059
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 366_971
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 411_192
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 383_421
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 356_347
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 391_985
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 304_416
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 244_212
+    OVER_80:
+      values:
+        2020-01-01: 176_538
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.WEST_MIDLANDS
+  YORKSHIRE:
+    BETWEEN_0_10:
+      values:
+        2020-01-01: 333_990
+    BETWEEN_10_20:
+      values:
+        2020-01-01: 332_368
+    BETWEEN_20_30:
+      values:
+        2020-01-01: 380_979
+    BETWEEN_30_40:
+      values:
+        2020-01-01: 346_487
+    BETWEEN_40_50:
+      values:
+        2020-01-01: 328_365
+    BETWEEN_50_60:
+      values:
+        2020-01-01: 370_599
+    BETWEEN_60_70:
+      values:
+        2020-01-01: 296_558
+    BETWEEN_70_80:
+      values:
+        2020-01-01: 227_648
+    OVER_80:
+      values:
+        2020-01-01: 159_640
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.regional_populations.YORKSHIRE
+
