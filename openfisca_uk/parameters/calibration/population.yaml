@@ -1,0 +1,669 @@
+FEMALE:
+  BETWEEN_0_10:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 272_771
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 369_952
+    LONDON:
+      values:
+        2020-01-01: 585_934
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 119_622
+    NORTH_EAST:
+      values:
+        2020-01-01: 142_974
+    NORTH_WEST:
+      values:
+        2020-01-01: 429_107
+    SCOTLAND:
+      values:
+        2020-01-01: 272_903
+    SOUTH_EAST:
+      values:
+        2020-01-01: 530_383
+    SOUTH_WEST:
+      values:
+        2020-01-01: 296_946
+    WALES:
+      values:
+        2020-01-01: 167_620
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 355_415
+    YORKSHIRE:
+      values:
+        2020-01-01: 318_768
+  BETWEEN_10_20:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 276_379
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 350_470
+    LONDON:
+      values:
+        2020-01-01: 497_669
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 116_034
+    NORTH_EAST:
+      values:
+        2020-01-01: 146_308
+    NORTH_WEST:
+      values:
+        2020-01-01: 415_979
+    SCOTLAND:
+      values:
+        2020-01-01: 284_119
+    SOUTH_EAST:
+      values:
+        2020-01-01: 530_526
+    SOUTH_WEST:
+      values:
+        2020-01-01: 305_550
+    WALES:
+      values:
+        2020-01-01: 173_734
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 347_361
+    YORKSHIRE:
+      values:
+        2020-01-01: 317_882
+  BETWEEN_20_30:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 303_256
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 342_511
+    LONDON:
+      values:
+        2020-01-01: 648_423
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 113_192
+    NORTH_EAST:
+      values:
+        2020-01-01: 172_653
+    NORTH_WEST:
+      values:
+        2020-01-01: 469_894
+    SCOTLAND:
+      values:
+        2020-01-01: 356_518
+    SOUTH_EAST:
+      values:
+        2020-01-01: 516_326
+    SOUTH_WEST:
+      values:
+        2020-01-01: 321_959
+    WALES:
+      values:
+        2020-01-01: 199_339
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 387_332
+    YORKSHIRE:
+      values:
+        2020-01-01: 365_544
+  BETWEEN_30_40:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 304_954
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 409_633
+    LONDON:
+      values:
+        2020-01-01: 771_784
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 127_293
+    NORTH_EAST:
+      values:
+        2020-01-01: 169_887
+    NORTH_WEST:
+      values:
+        2020-01-01: 481_290
+    SCOTLAND:
+      values:
+        2020-01-01: 370_019
+    SOUTH_EAST:
+      values:
+        2020-01-01: 579_729
+    SOUTH_WEST:
+      values:
+        2020-01-01: 335_370
+    WALES:
+      values:
+        2020-01-01: 192_237
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 384_916
+    YORKSHIRE:
+      values:
+        2020-01-01: 355_917
+  BETWEEN_40_50:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 299_480
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 406_295
+    LONDON:
+      values:
+        2020-01-01: 624_305
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 124_112
+    NORTH_EAST:
+      values:
+        2020-01-01: 158_787
+    NORTH_WEST:
+      values:
+        2020-01-01: 449_119
+    SCOTLAND:
+      values:
+        2020-01-01: 345_328
+    SOUTH_EAST:
+      values:
+        2020-01-01: 610_633
+    SOUTH_WEST:
+      values:
+        2020-01-01: 339_361
+    WALES:
+      values:
+        2020-01-01: 186_136
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 361_335
+    YORKSHIRE:
+      values:
+        2020-01-01: 332_151
+  BETWEEN_50_60:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 344_179
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 438_879
+    LONDON:
+      values:
+        2020-01-01: 547_042
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 131_705
+    NORTH_EAST:
+      values:
+        2020-01-01: 192_652
+    NORTH_WEST:
+      values:
+        2020-01-01: 515_774
+    SCOTLAND:
+      values:
+        2020-01-01: 409_754
+    SOUTH_EAST:
+      values:
+        2020-01-01: 649_657
+    SOUTH_WEST:
+      values:
+        2020-01-01: 406_207
+    WALES:
+      values:
+        2020-01-01: 225_673
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 400_941
+    YORKSHIRE:
+      values:
+        2020-01-01: 377_891
+  BETWEEN_60_70:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 277_142
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 351_491
+    LONDON:
+      values:
+        2020-01-01: 374_723
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 101_430
+    NORTH_EAST:
+      values:
+        2020-01-01: 165_498
+    NORTH_WEST:
+      values:
+        2020-01-01: 410_848
+    SCOTLAND:
+      values:
+        2020-01-01: 337_772
+    SOUTH_EAST:
+      values:
+        2020-01-01: 509_734
+    SOUTH_WEST:
+      values:
+        2020-01-01: 350_961
+    WALES:
+      values:
+        2020-01-01: 194_142
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 316_317
+    YORKSHIRE:
+      values:
+        2020-01-01: 308_196
+  BETWEEN_70_80:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 233_930
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 305_288
+    LONDON:
+      values:
+        2020-01-01: 258_934
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 77_834
+    NORTH_EAST:
+      values:
+        2020-01-01: 130_047
+    NORTH_WEST:
+      values:
+        2020-01-01: 337_581
+    SCOTLAND:
+      values:
+        2020-01-01: 258_924
+    SOUTH_EAST:
+      values:
+        2020-01-01: 443_739
+    SOUTH_WEST:
+      values:
+        2020-01-01: 311_372
+    WALES:
+      values:
+        2020-01-01: 163_436
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 271_031
+    YORKSHIRE:
+      values:
+        2020-01-01: 254_197
+  OVER_80:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 185_649
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 253_486
+    LONDON:
+      values:
+        2020-01-01: 225_091
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 63_941
+    NORTH_EAST:
+      values:
+        2020-01-01: 108_299
+    NORTH_WEST:
+      values:
+        2020-01-01: 281_048
+    SCOTLAND:
+      values:
+        2020-01-01: 216_490
+    SOUTH_EAST:
+      values:
+        2020-01-01: 375_619
+    SOUTH_WEST:
+      values:
+        2020-01-01: 255_913
+    WALES:
+      values:
+        2020-01-01: 131_836
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 228_891
+    YORKSHIRE:
+      values:
+        2020-01-01: 213_413
+MALE:
+  BETWEEN_0_10:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 286_248
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 390_388
+    LONDON:
+      values:
+        2020-01-01: 616_198
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 125_988
+    NORTH_EAST:
+      values:
+        2020-01-01: 151_181
+    NORTH_WEST:
+      values:
+        2020-01-01: 450_965
+    SCOTLAND:
+      values:
+        2020-01-01: 288_806
+    SOUTH_EAST:
+      values:
+        2020-01-01: 560_140
+    SOUTH_WEST:
+      values:
+        2020-01-01: 313_486
+    WALES:
+      values:
+        2020-01-01: 175_899
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 374_059
+    YORKSHIRE:
+      values:
+        2020-01-01: 333_990
+  BETWEEN_10_20:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 289_219
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 371_221
+    LONDON:
+      values:
+        2020-01-01: 527_540
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 122_851
+    NORTH_EAST:
+      values:
+        2020-01-01: 154_886
+    NORTH_WEST:
+      values:
+        2020-01-01: 439_339
+    SCOTLAND:
+      values:
+        2020-01-01: 296_082
+    SOUTH_EAST:
+      values:
+        2020-01-01: 561_311
+    SOUTH_WEST:
+      values:
+        2020-01-01: 320_471
+    WALES:
+      values:
+        2020-01-01: 184_524
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 366_971
+    YORKSHIRE:
+      values:
+        2020-01-01: 332_368
+  BETWEEN_20_30:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 324_752
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 361_101
+    LONDON:
+      values:
+        2020-01-01: 666_019
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 118_951
+    NORTH_EAST:
+      values:
+        2020-01-01: 183_335
+    NORTH_WEST:
+      values:
+        2020-01-01: 491_078
+    SCOTLAND:
+      values:
+        2020-01-01: 362_441
+    SOUTH_EAST:
+      values:
+        2020-01-01: 552_784
+    SOUTH_WEST:
+      values:
+        2020-01-01: 344_877
+    WALES:
+      values:
+        2020-01-01: 215_332
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 411_192
+    YORKSHIRE:
+      values:
+        2020-01-01: 380_979
+  BETWEEN_30_40:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 294_050
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 391_276
+    LONDON:
+      values:
+        2020-01-01: 830_234
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 123_641
+    NORTH_EAST:
+      values:
+        2020-01-01: 164_384
+    NORTH_WEST:
+      values:
+        2020-01-01: 476_053
+    SCOTLAND:
+      values:
+        2020-01-01: 359_716
+    SOUTH_EAST:
+      values:
+        2020-01-01: 552_854
+    SOUTH_WEST:
+      values:
+        2020-01-01: 330_622
+    WALES:
+      values:
+        2020-01-01: 190_308
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 383_421
+    YORKSHIRE:
+      values:
+        2020-01-01: 346_487
+  BETWEEN_40_50:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 292_640
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 395_595
+    LONDON:
+      values:
+        2020-01-01: 651_693
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 116_771
+    NORTH_EAST:
+      values:
+        2020-01-01: 151_327
+    NORTH_WEST:
+      values:
+        2020-01-01: 436_592
+    SCOTLAND:
+      values:
+        2020-01-01: 328_962
+    SOUTH_EAST:
+      values:
+        2020-01-01: 591_254
+    SOUTH_WEST:
+      values:
+        2020-01-01: 329_663
+    WALES:
+      values:
+        2020-01-01: 179_259
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 356_347
+    YORKSHIRE:
+      values:
+        2020-01-01: 328_365
+  BETWEEN_50_60:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 335_463
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 428_122
+    LONDON:
+      values:
+        2020-01-01: 531_618
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 126_381
+    NORTH_EAST:
+      values:
+        2020-01-01: 182_070
+    NORTH_WEST:
+      values:
+        2020-01-01: 496_561
+    SCOTLAND:
+      values:
+        2020-01-01: 382_703
+    SOUTH_EAST:
+      values:
+        2020-01-01: 637_316
+    SOUTH_WEST:
+      values:
+        2020-01-01: 390_177
+    WALES:
+      values:
+        2020-01-01: 213_519
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 391_985
+    YORKSHIRE:
+      values:
+        2020-01-01: 370_599
+  BETWEEN_60_70:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 267_895
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 332_914
+    LONDON:
+      values:
+        2020-01-01: 348_995
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 98_283
+    NORTH_EAST:
+      values:
+        2020-01-01: 156_369
+    NORTH_WEST:
+      values:
+        2020-01-01: 394_732
+    SCOTLAND:
+      values:
+        2020-01-01: 315_230
+    SOUTH_EAST:
+      values:
+        2020-01-01: 484_841
+    SOUTH_WEST:
+      values:
+        2020-01-01: 329_483
+    WALES:
+      values:
+        2020-01-01: 183_229
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 304_416
+    YORKSHIRE:
+      values:
+        2020-01-01: 296_558
+  BETWEEN_70_80:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 215_150
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 274_155
+    LONDON:
+      values:
+        2020-01-01: 217_917
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 68_762
+    NORTH_EAST:
+      values:
+        2020-01-01: 117_359
+    NORTH_WEST:
+      values:
+        2020-01-01: 306_963
+    SCOTLAND:
+      values:
+        2020-01-01: 225_116
+    SOUTH_EAST:
+      values:
+        2020-01-01: 392_755
+    SOUTH_WEST:
+      values:
+        2020-01-01: 281_842
+    WALES:
+      values:
+        2020-01-01: 149_473
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 244_212
+    YORKSHIRE:
+      values:
+        2020-01-01: 227_648
+  OVER_80:
+    EAST_MIDLANDS:
+      values:
+        2020-01-01: 145_127
+    EAST_OF_ENGLAND:
+      values:
+        2020-01-01: 195_663
+    LONDON:
+      values:
+        2020-01-01: 171_401
+    NORTHERN_IRELAND:
+      values:
+        2020-01-01: 47_176
+    NORTH_EAST:
+      values:
+        2020-01-01: 80_527
+    NORTH_WEST:
+      values:
+        2020-01-01: 215_218
+    SCOTLAND:
+      values:
+        2020-01-01: 155_479
+    SOUTH_EAST:
+      values:
+        2020-01-01: 286_914
+    SOUTH_WEST:
+      values:
+        2020-01-01: 200_410
+    WALES:
+      values:
+        2020-01-01: 104_634
+    WEST_MIDLANDS:
+      values:
+        2020-01-01: 176_538
+    YORKSHIRE:
+      values:
+        2020-01-01: 159_640
+
