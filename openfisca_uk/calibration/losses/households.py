@@ -34,10 +34,11 @@ class Households(LossCategory):
         parameter_name = parameter.name + "." + str(year)
         logging_dict = {parameter_name: dict(model=[], loss=[])}
         model_population = tf.reduce_sum(household_weights)
-        logging_dict[parameter_name]["model"].append(model_population)
         if parameter_name not in excluded_metrics:
             household_loss += (
                 model_population - parameter(f"{year}-01-01")
             ) ** 2
+            logging_dict[parameter_name]["model"].append(model_population.numpy())
+            logging_dict[parameter_name]["loss"].append(household_loss.numpy())
 
         return household_loss, logging_dict

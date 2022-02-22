@@ -42,14 +42,14 @@ class LossCalculator:
 
     def compute_loss(
         self,
-        household_weights: tf.Tensor,
+        weight_changes: tf.Tensor,
         validation: bool = False,
         epoch: int = 0,
     ) -> tf.Tensor:
         """Computes loss for a given set of household weights.
 
         Args:
-            household_weights (tf.Tensor): Household weights for each year
+            weight_changes (tf.Tensor): Household weight changes for each year.
             validation (bool, optional): Whether to use validation or training metrics. Defaults to False.
             epoch (int, optional): The epoch number to record losses against. Defaults to 0.
 
@@ -59,9 +59,10 @@ class LossCalculator:
         loss = 0
         for loss_category in self.losses:
             for year in range(2019, 2022):
+                frs_weights = self.sim.calc("household_weight", year).values
                 loss_category_loss, loss_category_log = loss_category.compute(
                     self.sim,
-                    household_weights[year - 2019],
+                    tf.nn.relu(frs_weights + weight_changes[year - 2019]),
                     year,
                     self.training_metrics
                     if validation

@@ -76,10 +76,14 @@ class Populations(LossCategory):
                         people_in_household * household_weights
                     )
                     logging_dict[parameter_name]["model"].append(
-                        model_population
+                        model_population.numpy()
                     )
-                    population_loss += (
+                    l = (
                         model_population - parameter(f"{year}-01-01")
                     ) ** 2
+                    population_loss += l
+                    logging_dict[parameter_name]["loss"].append(
+                        l.numpy()
+                    )
 
         return population_loss, logging_dict

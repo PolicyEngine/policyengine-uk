@@ -32,7 +32,7 @@ class CouncilTaxBandHouseholds(LossCategory):
         population_loss = 0
         logging_dict = {
             metric.name + "." + str(year): dict(model=[], loss=[])
-            for metric in ct_bands
+            for metric in cls.get_metrics()
         }
         ct_band = sim.calc("council_tax_band")
         ct_bands = cls.parameter_folder
@@ -45,9 +45,11 @@ class CouncilTaxBandHouseholds(LossCategory):
                 model_population = tf.reduce_sum(
                     (ct_band == band) * household_weights
                 )
-                logging_dict[parameter_name]["model"].append(model_population)
-                population_loss += (
+                logging_dict[parameter_name]["model"].append(model_population.numpy())
+                l = (
                     model_population - parameter(f"{year}-01-01")
                 ) ** 2
+                population_loss += l
+                logging_dict[parameter_name]["loss"].append(l.numpy())
 
         return population_loss, logging_dict

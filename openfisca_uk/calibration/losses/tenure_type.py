@@ -46,9 +46,11 @@ class TenureType(LossCategory):
                 model_population = tf.reduce_sum(
                     (tenure_type == tenure) * household_weights
                 )
-                logging_dict[parameter_name]["model"].append(model_population)
-                population_loss += (
+                logging_dict[parameter_name]["model"].append(model_population.numpy())
+                l = (
                     model_population - parameter(f"{year}-01-01")
                 ) ** 2
+                logging_dict[parameter_name]["loss"].append(l.numpy())
+                population_loss += l
 
         return population_loss, logging_dict
