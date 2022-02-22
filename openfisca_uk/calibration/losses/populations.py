@@ -6,7 +6,7 @@ from openfisca_uk import Microsimulation
 from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
-class Population(LossCategory):
+class Populations(LossCategory):
     weight = 1
     label = "Population"
     parameter_folder = parameters.calibration.age_sex_region_populations
