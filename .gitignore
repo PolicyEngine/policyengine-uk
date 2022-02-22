@@ -35,3 +35,8 @@ Untitled.ipynb
 # Config files
 
 openfisca_uk/tools/datasets.yml
+
+# Temporary files
+openfisca_uk/calibration/*.csv
+openfisca_uk/calibration/*.yaml
+openfisca_uk/calibration/*.h5
