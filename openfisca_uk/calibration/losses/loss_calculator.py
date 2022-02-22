@@ -1,8 +1,8 @@
 from typing import List
-from openfisca_uk.calibration.losses.populations import Populations
-from openfisca_uk.calibration.losses.households import Households
-from openfisca_uk.calibration.losses.tenure_type import TenureType
-from openfisca_uk.calibration.losses.council_tax_bands import (
+from openfisca_uk.calibration.losses.categories import (
+    Populations,
+    Households,
+    TenureType,
     CouncilTaxBandHouseholds,
 )
 from random import sample

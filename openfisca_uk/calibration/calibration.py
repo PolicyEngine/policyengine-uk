@@ -1,10 +1,10 @@
 import tensorflow as tf
 import numpy as np
 from openfisca_uk import Microsimulation, REPO
-from openfisca_uk.calibration.losses.total_loss import LossCalculator
+from openfisca_uk.calibration.losses import LossCalculator
 from pathlib import Path
 import h5py
-import yaml
+import pandas as pd
 
 
 class HouseholdWeights:
@@ -16,7 +16,7 @@ class HouseholdWeights:
         self,
         validation_split: float = 0.1,
         num_epochs: int = 32,
-        learning_rate: float = 1e1,
+        learning_rate: float = 1e0,
     ):
         """Calibrate FRS weights to administrative statistics.
 
@@ -55,11 +55,13 @@ class HouseholdWeights:
             print(
                 f"Epoch {epoch}: train loss = {loss.numpy() / start_train_loss - 1:.2%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.2%}"
             )
-        
+
         self.training_log = loss_calculator.training_log
-    
+
     def get_microsimulation(self):
-        sim_reweighted = Microsimulation(adjust_weights=False, duplicate_records=2)
+        sim_reweighted = Microsimulation(
+            adjust_weights=False, duplicate_records=2
+        )
         for year in range(self.start_year, self.end_year + 1):
             new_weights = np.maximum(
                 0,
@@ -72,27 +74,25 @@ class HouseholdWeights:
                 new_weights,
             )
         return sim_reweighted
-    
+
     def save(self, folder: Path = REPO / "calibration"):
         if isinstance(folder, str):
             folder = Path(folder)
 
         sim = self.get_microsimulation()
-        
+
         with h5py.File(folder / "frs_weights.h5", "w") as f:
             for year in range(self.start_year, self.end_year + 1):
                 f.create_dataset(
                     f"{year}",
-                    data=sim.calc(
-                        "household_weight", period=year
-                    ).values,
+                    data=sim.calc("household_weight", period=year).values,
                 )
 
-        with open(folder / "losses.yaml", "w+") as f:
-            yaml.safe_dump(self.training_log, f)
+        log = pd.DataFrame(self.training_log)
+        log.to_csv(folder / "training_log.csv")
 
 
 if __name__ == "__main__":
     weights = HouseholdWeights()
-    weights.calibrate(num_epochs=2, learning_rate=1)
+    weights.calibrate(num_epochs=16)
     weights.save()
