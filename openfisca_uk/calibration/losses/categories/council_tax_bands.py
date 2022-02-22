@@ -4,7 +4,7 @@ from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
 class CouncilTaxBandHouseholds(LossCategory):
-    weight = 1
+    weight = 1e3
     label = "Council Tax Band Households"
     parameter_folder = parameters.calibration.council_tax_band_counts
 

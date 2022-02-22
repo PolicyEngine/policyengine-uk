@@ -4,7 +4,7 @@ from openfisca_uk.parameters import parameters
 
 
 class TenureType(LossCategory):
-    weight = 1
+    weight = 1e3
     label = "Tenure type"
     parameter_folder = parameters.calibration.tenure_type
 

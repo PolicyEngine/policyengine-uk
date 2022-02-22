@@ -4,7 +4,7 @@ from openfisca_uk.parameters import parameters
 
 
 class Households(LossCategory):
-    weight = 1
+    weight = 1e3
     label = "Households"
     parameter_folder = parameters.calibration.households
 

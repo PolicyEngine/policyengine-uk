@@ -16,7 +16,7 @@ class HouseholdWeights:
         self,
         validation_split: float = 0.1,
         num_epochs: int = 32,
-        learning_rate: float = 8e1,
+        learning_rate: float = 1e1,
     ):
         """Calibrate FRS weights to administrative statistics.
 
@@ -89,10 +89,10 @@ class HouseholdWeights:
                 )
 
         log = pd.DataFrame(self.training_log)
-        log.to_csv(folder / "training_log.csv")
+        log.to_csv(folder / "training_log.csv", index=False)
 
 
 if __name__ == "__main__":
     weights = HouseholdWeights()
-    weights.calibrate(num_epochs=16)
+    weights.calibrate(num_epochs=32)
     weights.save()

@@ -5,7 +5,7 @@ from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
 class Populations(LossCategory):
-    weight = 1
+    weight = 1e3
     label = "Population"
     parameter_folder = parameters.calibration.age_sex_region_populations
 

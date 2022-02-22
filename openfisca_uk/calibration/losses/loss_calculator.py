@@ -80,7 +80,6 @@ class LossCalculator:
                 if validation
                 else self.validation_metrics,
             )
-            print(f"{loss_category.label}: {loss_category_loss.numpy()}")
             loss += loss_category_loss
             self.training_log += [
                 dict(**entry, epoch=epoch, validation=validation)
