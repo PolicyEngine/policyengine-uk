@@ -16,7 +16,7 @@ class HouseholdWeights:
         self,
         validation_split: float = 0.1,
         num_epochs: int = 32,
-        learning_rate: float = 1e0,
+        learning_rate: float = 8e1,
     ):
         """Calibrate FRS weights to administrative statistics.
 
@@ -24,9 +24,9 @@ class HouseholdWeights:
             sim (Microsimulation): A simulation containing demographic variables.
             validation_split (float, optional): The percentage of metrics to use as validation. Defaults to 0.1.
             num_epochs (int, optional): The number of epochs to run. Defaults to 256.
-            learning_rate (float, optional): The learning rate for the optimiser. Defaults to 1e-3.
+            learning_rate (float, optional): The learning rate for the optimiser. Defaults to 8e+1.
         """
-        self.sim = Microsimulation()
+        self.sim = Microsimulation(adjust_weights=False, duplicate_records=2)
         survey_num_households = len(self.sim.calc("household_id"))
         self.weight_changes = tf.Variable(
             np.zeros(

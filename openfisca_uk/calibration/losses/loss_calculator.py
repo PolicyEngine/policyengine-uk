@@ -1,13 +1,17 @@
 from typing import List
+
+import numpy as np
 from openfisca_uk.calibration.losses.categories import (
     Populations,
     Households,
     TenureType,
     CouncilTaxBandHouseholds,
+    CountryLevelAggregates,
+    UKProgramCaseloads,
+    UKProgramAggregates,
 )
 from random import sample
 import tensorflow as tf
-
 from openfisca_uk.tools.simulation import Microsimulation
 
 
@@ -24,6 +28,9 @@ class LossCalculator:
             Households,
             TenureType,
             CouncilTaxBandHouseholds,
+            CountryLevelAggregates,
+            UKProgramCaseloads,
+            UKProgramAggregates,
         ]
         self.validation_split = validation_split
         self.sim = sim
@@ -57,20 +64,26 @@ class LossCalculator:
             tf.Tensor: The total loss.
         """
         loss = 0
+        frs_weights = np.array(
+            [
+                self.sim.calc("household_weight", year).values
+                for year in range(2019, 2023)
+            ]
+        )
+        adjusted_weights = tf.nn.relu(frs_weights + weight_changes)
         for loss_category in self.losses:
-            for year in range(2019, 2022):
-                frs_weights = self.sim.calc("household_weight", year).values
-                loss_category_loss, loss_category_log = loss_category.compute(
-                    self.sim,
-                    tf.nn.relu(frs_weights + weight_changes[year - 2019]),
-                    year,
-                    self.training_metrics
-                    if validation
-                    else self.validation_metrics,
-                )
-                loss += loss_category_loss
-                self.training_log += [
-                    dict(**entry, epoch=epoch, validation=validation)
-                    for entry in loss_category_log
-                ]
+            frs_weights = self.sim.calc("household_weight").values
+            loss_category_loss, loss_category_log = loss_category.compute(
+                self.sim,
+                adjusted_weights,
+                self.training_metrics
+                if validation
+                else self.validation_metrics,
+            )
+            print(f"{loss_category.label}: {loss_category_loss.numpy()}")
+            loss += loss_category_loss
+            self.training_log += [
+                dict(**entry, epoch=epoch, validation=validation)
+                for entry in loss_category_log
+            ]
         return loss

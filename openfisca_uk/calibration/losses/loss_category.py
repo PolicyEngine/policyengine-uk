@@ -8,6 +8,8 @@ from openfisca_core.parameters import ParameterNode, Parameter
 def weighted_squared_relative_deviation(
     pred: tf.Tensor, actual: ArrayLike
 ) -> tf.Tensor:
+    if actual == 0:
+        return tf.constant(0, dtype=tf.float32)
     return ((pred / actual) - 1) ** 2 * actual
 
 
@@ -44,7 +46,7 @@ class LossCategory:
         log = []
         for year in cls.years:
             for name, pred, actual in cls.get_loss_subcomponents(
-                sim, household_weights, excluded_metrics, year
+                sim, household_weights[year - cls.years[0]], year
             ):
                 if name not in excluded_metrics:
                     l = cls.comparison_loss_function(pred, actual) * cls.weight
@@ -53,11 +55,12 @@ class LossCategory:
                             name=name,
                             pred=float(pred.numpy()),
                             actual=float(actual),
-                            loss=l,
+                            loss=float(l.numpy()),
                             category=cls.label,
                         )
                     ]
                     loss += l
+        return loss, log
 
     @classmethod
     def get_metrics(cls) -> List[Parameter]:
