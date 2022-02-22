@@ -27,7 +27,7 @@ class LossCalculator:
         ]
         self.validation_split = validation_split
         self.sim = sim
-        self.training_log = {}
+        self.training_log = []
         self.metrics = sum(
             [list(loss.get_metric_names()) for loss in self.losses], []
         )
@@ -69,14 +69,8 @@ class LossCalculator:
                     else self.validation_metrics,
                 )
                 loss += loss_category_loss
-                if epoch not in self.training_log:
-                    self.training_log[epoch] = dict(training={}, validation={})
-                if validation:
-                    self.training_log[epoch]["validation"].update(
-                        loss_category_log
-                    )
-                else:
-                    self.training_log[epoch]["training"].update(
-                        loss_category_log
-                    )
+                self.training_log += [
+                    dict(**entry, epoch=epoch, validation=validation)
+                    for entry in loss_category_log
+                ]
         return loss
