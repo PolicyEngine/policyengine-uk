@@ -133,13 +133,20 @@ class ons_tenure_type(Variable):
     default_value = ONSTenureType.OWNER_OCCUPIED
 
     def formula(household, period, parameters):
-        tenure = household("tenure_type", period).decode_to_str()
-        return pd.Series(tenure).apply(
-            lambda key: {
-                "OWNED_OUTRIGHT": "OWNER_OCCUPIED",
-                "OWNED_WITH_MORTGAGE": "OWNER_OCCUPIED",
-            }.get(key, key)
-        )
+        tenure = household("tenure_type", period)
+        return select([
+            tenure == TenureType.RENT_FROM_HA,
+            tenure == TenureType.RENT_FROM_COUNCIL,
+            tenure == TenureType.RENT_PRIVATELY,
+            tenure == TenureType.OWNED_OUTRIGHT,
+            tenure == TenureType.OWNED_WITH_MORTGAGE,
+        ], [
+            ONSTenureType.RENT_FROM_HA,
+            ONSTenureType.RENT_FROM_COUNCIL,
+            ONSTenureType.RENT_PRIVATELY,
+            ONSTenureType.OWNER_OCCUPIED,
+            ONSTenureType.OWNER_OCCUPIED,
+        ])
 
 
 class is_renting(Variable):

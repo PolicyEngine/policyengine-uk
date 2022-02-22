@@ -8,7 +8,7 @@ from openfisca_uk.parameters import parameters
 class TenureType(LossCategory):
     weight = 1
     label = "Tenure type"
-    parameter_folder = parameters.calibration.households
+    parameter_folder = parameters.calibration.tenure_type
 
     @classmethod
     def compute(

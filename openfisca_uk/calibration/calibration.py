@@ -11,7 +11,6 @@ class HouseholdWeights:
 
     def calibrate(
         self,
-        sim: Microsimulation,
         validation_split: float = 0.1,
         num_epochs: int = 256,
         learning_rate: float = 1e-3,
@@ -24,7 +23,7 @@ class HouseholdWeights:
             num_epochs (int, optional): The number of epochs to run. Defaults to 256.
             learning_rate (float, optional): The learning rate for the optimiser. Defaults to 1e-3.
         """
-
+        sim = Microsimulation()
         survey_num_households = len(sim.calc("household_id"))
         self.weight_changes = tf.Variable(
             np.zeros(

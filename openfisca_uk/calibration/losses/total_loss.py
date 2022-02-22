@@ -29,7 +29,7 @@ class LossCalculator:
         self.sim = sim
         self.training_log = {}
         self.metrics = sum(
-            [loss.get_metric_names() for loss in self.losses], []
+            [list(loss.get_metric_names()) for loss in self.losses], []
         )
         self.validation_metrics = sample(
             self.metrics, int(self.validation_split * len(self.metrics))
