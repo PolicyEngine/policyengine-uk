@@ -1,5 +1,4 @@
 from typing import List
-
 import numpy as np
 from openfisca_uk.calibration.losses.categories import (
     Populations,
@@ -9,6 +8,8 @@ from openfisca_uk.calibration.losses.categories import (
     CountryLevelAggregates,
     UKProgramCaseloads,
     UKProgramAggregates,
+    IncomeTaxPayersByBand,
+    IncomeTaxRevenueByIncome,
 )
 from random import sample
 import tensorflow as tf
@@ -31,6 +32,8 @@ class LossCalculator:
             CountryLevelAggregates,
             UKProgramCaseloads,
             UKProgramAggregates,
+            IncomeTaxPayersByBand,
+            IncomeTaxRevenueByIncome,
         ]
         self.validation_split = validation_split
         self.sim = sim

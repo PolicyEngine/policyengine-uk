@@ -13,3 +13,9 @@ from openfisca_uk.calibration.losses.categories.uk_program_aggregates import (
 from openfisca_uk.calibration.losses.categories.uk_program_caseloads import (
     UKProgramCaseloads,
 )
+from openfisca_uk.calibration.losses.categories.income_tax_payers_by_band import (
+    IncomeTaxPayersByBand,
+)
+from openfisca_uk.calibration.losses.categories.income_tax_revenue_by_income import (
+    IncomeTaxRevenueByIncome,
+)

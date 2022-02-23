@@ -12,7 +12,7 @@ BASIC:
     2021-01-01: 27_000_000
   metadata:
     uprating: 
-      parameter: _calibration.count.income_tax
+      parameter: calibration.program_caseloads.income_tax
 HIGHER:
   values:
     2018-01-01: 4_230_000
@@ -21,7 +21,7 @@ HIGHER:
     2021-01-01: 4_130_000
   metadata:
     uprating: 
-      parameter: _calibration.count.income_tax
+      parameter: calibration.program_caseloads.income_tax
 ADDITIONAL:
   values:
     2018-01-01: 399_000
@@ -30,4 +30,4 @@ ADDITIONAL:
     2021-01-01: 440_000
   metadata:
     uprating: 
-      parameter: _calibration.count.income_tax
+      parameter: calibration.program_caseloads.income_tax
