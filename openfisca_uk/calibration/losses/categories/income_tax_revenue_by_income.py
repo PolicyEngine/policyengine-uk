@@ -37,3 +37,13 @@ class IncomeTaxRevenueByIncome(LossCategory):
             aggregate = tf.reduce_sum(household_weights * household_income_tax)
             target = brackets[i].amount(instant_str)
             yield brackets[i].name + "." + str(year), aggregate, target
+
+    def get_metrics():
+        return IncomeTaxRevenueByIncome.parameter_folder.brackets
+
+    def get_metric_names():
+        return [
+            bracket.name + "." + str(year)
+            for bracket in IncomeTaxRevenueByIncome.parameter_folder.brackets
+            for year in range(2019, 2023)
+        ]

@@ -18,3 +18,9 @@ class Households(LossCategory):
         yield Households.parameter_folder.name + "." + str(
             year
         ), model_population, actual_population
+    
+    def get_metrics():
+        return Households.parameter_folder
+    
+    def get_metric_names():
+        return [Households.parameter_folder.name + "." + str(year) for year in range(2019, 2023)]
