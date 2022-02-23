@@ -96,5 +96,5 @@ class HouseholdWeights:
 
 if __name__ == "__main__":
     weights = HouseholdWeights()
-    weights.calibrate(num_epochs=32, validation_split=0.1, learning_rate=4e-1)
+    weights.calibrate(num_epochs=32, validation_split=0.1, learning_rate=1)
     weights.save()
