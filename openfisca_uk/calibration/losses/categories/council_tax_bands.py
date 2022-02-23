@@ -20,10 +20,15 @@ class CouncilTaxBandHouseholds(LossCategory):
             for band in ct_bands.children[country].children:
                 parameter = ct_bands.children[country].children[band]
                 parameter_name = parameter.name + "." + str(year)
-                model_population = tf.reduce_sum(
+                people_in_households = (
                     (hh_country == country)
                     * (ct_band == band)
+                )
+                model_population = tf.reduce_sum(
+                    people_in_households
                     * household_weights
                 )
                 actual_population = parameter(f"{year}-01-01")
-                yield parameter_name, model_population, actual_population
+                if people_in_households.sum() > 0:
+                    # If the FRS has no observations, skip the target.
+                    yield parameter_name, model_population, actual_population

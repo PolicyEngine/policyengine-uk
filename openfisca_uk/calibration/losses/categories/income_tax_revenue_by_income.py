@@ -5,7 +5,7 @@ from openfisca_uk.parameters import parameters
 
 
 class IncomeTaxRevenueByIncome(LossCategory):
-    weight = 1e3
+    weight = 1
     label = "Income tax revenue by income"
     parameter_folder = parameters.calibration.income_tax.revenue_by_income
 
@@ -14,7 +14,7 @@ class IncomeTaxRevenueByIncome(LossCategory):
         household_weights,
         year,
     ):
-        brackets = IncomeTaxRevenueByIncome.parameter_folder.brackets
+        brackets = IncomeTaxRevenueByIncome.parameter_folder.brackets[:-3] # Last-3 brackets are impossible due to FRS non-capture
         num_thresholds = len(brackets)
         instant_str = f"{year}-01-01"
         for i in range(num_thresholds):
@@ -36,14 +36,16 @@ class IncomeTaxRevenueByIncome(LossCategory):
             )
             aggregate = tf.reduce_sum(household_weights * household_income_tax)
             target = brackets[i].amount(instant_str)
-            yield brackets[i].name + "." + str(year), aggregate, target
+            if person_in_range.sum() > 0:
+                # If the FRS does not have any observations, skip the target.
+                yield brackets[i].name + "." + str(year), aggregate, target
 
     def get_metrics():
-        return IncomeTaxRevenueByIncome.parameter_folder.brackets
+        return IncomeTaxRevenueByIncome.parameter_folder.brackets[:-3]
 
     def get_metric_names():
         return [
             bracket.name + "." + str(year)
-            for bracket in IncomeTaxRevenueByIncome.parameter_folder.brackets
+            for bracket in IncomeTaxRevenueByIncome.parameter_folder.brackets[:-3]
             for year in range(2019, 2023)
         ]

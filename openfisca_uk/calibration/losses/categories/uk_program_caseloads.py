@@ -7,7 +7,7 @@ from openfisca_uk.parameters import parameters
 
 class UKProgramCaseloads(LossCategory):
     weight = 1e3
-    label = "UK-wide program caselaods"
+    label = "UK-wide program caseloads"
     parameter_folder = parameters.calibration.program_caseloads
 
     def get_loss_subcomponents(

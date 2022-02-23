@@ -50,4 +50,6 @@ class Populations(LossCategory):
                         people_in_household * household_weights
                     )
                     actual_population = parameter(f"{year}-01-01")
-                    yield parameter_name, model_population, actual_population
+                    if people_in_household.sum() > 0:
+                        # If the FRS has no observations, skip the target.
+                        yield parameter_name, model_population, actual_population

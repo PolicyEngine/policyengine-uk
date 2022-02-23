@@ -1,3 +1,4 @@
+from time import time
 import tensorflow as tf
 import numpy as np
 from openfisca_uk import Microsimulation, REPO
@@ -38,6 +39,7 @@ class HouseholdWeights:
         loss_calculator = LossCalculator(self.sim, validation_split)
         start_train_loss = None
         start_val_loss = None
+        start_time = time()
         for epoch in range(num_epochs):
             with tf.GradientTape() as tape:
                 loss = loss_calculator.compute_loss(
@@ -53,7 +55,7 @@ class HouseholdWeights:
                 start_val_loss = validation_loss.numpy()
             opt.apply_gradients(zip([grads], [self.weight_changes]))
             print(
-                f"Epoch {epoch}: train loss = {loss.numpy() / start_train_loss - 1:.2%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.2%}"
+                f"Epoch {epoch}: t = {time() - start_time:.1f}s, train loss = {loss.numpy() / start_train_loss - 1:.2%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.2%}"
             )
 
         self.training_log = loss_calculator.training_log
@@ -94,5 +96,5 @@ class HouseholdWeights:
 
 if __name__ == "__main__":
     weights = HouseholdWeights()
-    weights.calibrate(num_epochs=32, validation_split=0.2)
+    weights.calibrate(num_epochs=32, validation_split=0.1, learning_rate=4e-1)
     weights.save()

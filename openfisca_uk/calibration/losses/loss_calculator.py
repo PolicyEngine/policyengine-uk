@@ -76,7 +76,7 @@ class LossCalculator:
         adjusted_weights = tf.nn.relu(frs_weights + weight_changes)
         for loss_category in self.losses:
             frs_weights = self.sim.calc("household_weight").values
-            excluded_metrics = self.validation_metrics if validation else self.training_metrics
+            excluded_metrics = self.training_metrics if validation else self.validation_metrics
             loss_category_loss, loss_category_log = loss_category.compute(
                 self.sim,
                 adjusted_weights,
