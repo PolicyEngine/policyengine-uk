@@ -15,13 +15,13 @@ class CouncilTaxBandHouseholds(LossCategory):
     ):
         ct_bands = CouncilTaxBandHouseholds.parameter_folder
         ct_band = sim.calc("council_tax_band")
-        hh_region = sim.calc("region")
-        for region in ct_bands.children:
-            for band in ct_bands.children[region].children:
-                parameter = ct_bands.children[region].children[band]
+        hh_country = sim.calc("country")
+        for country in ct_bands.children:
+            for band in ct_bands.children[country].children:
+                parameter = ct_bands.children[country].children[band]
                 parameter_name = parameter.name + "." + str(year)
                 model_population = tf.reduce_sum(
-                    (hh_region == region)
+                    (hh_country == country)
                     * (ct_band == band)
                     * household_weights
                 )
