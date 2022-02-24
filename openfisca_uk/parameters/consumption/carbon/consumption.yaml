@@ -1,12 +1,13 @@
 description: Consumption emissions, [more description]
 values:
-  2016-01-01: 100
+  2016-01-01: 543_500_000
   2017-01-01: 100
   2018-01-01: 100
   2019-01-01: 100
   2020-01-01: 100
 metadata:
-  unit: mtonnes CO2
+  unit: tonnes CO2
   reference:
     - title: Our World In Data
       href: https://ourworldindata.org/grapher/consumption-co2-emissions?tab=table&time=2003..latest
+     
