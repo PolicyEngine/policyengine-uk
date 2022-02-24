@@ -19,6 +19,8 @@ class LossCategory:
     parameter_folder: ParameterNode
     years: List[int] = [2019, 2020, 2021, 2022]
     comparison_loss_function: Callable = weighted_squared_relative_deviation
+    initial_train_loss: float = None
+    initial_val_loss: float = None
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int
@@ -41,8 +43,9 @@ class LossCategory:
         sim: Microsimulation,
         household_weights: tf.Tensor,
         excluded_metrics: List[str],
+        validation: bool = False,
     ) -> Tuple[tf.Tensor, dict]:
-        loss = 0
+        loss = tf.constant(0, dtype=tf.float32)
         log = []
         for year in cls.years:
             for name, pred, actual in cls.get_loss_subcomponents(
@@ -60,7 +63,18 @@ class LossCategory:
                         )
                     ]
                     loss += l
-        return loss, log
+        if not validation and cls.initial_train_loss is None:
+            cls.initial_train_loss = loss.numpy()
+        elif validation and cls.initial_val_loss is None:
+            cls.initial_val_loss = loss.numpy()
+        initial_value = cls.initial_val_loss if validation else cls.initial_train_loss
+        if initial_value == 0:
+            initial_value += 1
+        for entry in log:
+            entry["loss"] /= initial_value
+        if len(log) == 0:
+            return loss, log
+        return loss / initial_value, log
 
     @classmethod
     def get_metrics(cls) -> List[Parameter]:

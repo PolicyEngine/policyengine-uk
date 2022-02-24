@@ -4,7 +4,7 @@ from openfisca_uk.parameters import parameters
 
 
 class Households(LossCategory):
-    weight = 1e3
+    weight = 1
     label = "Households"
     parameter_folder = parameters.calibration.households
 
@@ -20,7 +20,7 @@ class Households(LossCategory):
         ), model_population, actual_population
     
     def get_metrics():
-        return Households.parameter_folder
+        return [Households.parameter_folder]
     
     def get_metric_names():
         return [Households.parameter_folder.name + "." + str(year) for year in range(2019, 2023)]

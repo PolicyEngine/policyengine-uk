@@ -4,7 +4,7 @@ from openfisca_uk.parameters import parameters
 
 
 class TenureType(LossCategory):
-    weight = 1e3
+    weight = 1
     label = "Tenure type"
     parameter_folder = parameters.calibration.tenure_type
 
@@ -13,8 +13,8 @@ class TenureType(LossCategory):
         household_weights,
         year,
     ):
-        tenure_type = sim.calc("ons_tenure_type")
-        hh_country = sim.calc("country")
+        tenure_type = sim.calc("ons_tenure_type").values
+        hh_country = sim.calc("country").values
         tenure_metrics = TenureType.parameter_folder
         for country in tenure_metrics.children:
             for tenure in tenure_metrics.children[country].children:

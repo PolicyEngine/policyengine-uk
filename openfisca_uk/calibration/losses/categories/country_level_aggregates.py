@@ -15,7 +15,7 @@ class CountryLevelAggregates(LossCategory):
     ) -> Iterable[Tuple]:
         aggregates = CountryLevelAggregates.parameter_folder
         variables = aggregates.children
-        hh_country = sim.calc("country")
+        hh_country = sim.calc("country").values
         for variable in variables:
             countries = variables[variable].children
             for country in countries:

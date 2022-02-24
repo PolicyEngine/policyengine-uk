@@ -24,12 +24,12 @@ class IncomeTaxRevenueByIncome(LossCategory):
                 if i < num_thresholds - 1
                 else np.inf
             )
-            income = sim.calc("total_income", period=year)
+            income = sim.calc("total_income", period=year).values
             person_in_range = (income >= lower_threshold) & (
                 income < upper_threshold
             )
             income_tax_in_range = (
-                sim.calc("income_tax", period=year) * person_in_range
+                sim.calc("income_tax", period=year).values * person_in_range
             )
             household_income_tax = sim.map_to(
                 income_tax_in_range, "person", "household"

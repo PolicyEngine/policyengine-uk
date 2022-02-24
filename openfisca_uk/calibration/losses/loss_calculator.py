@@ -25,15 +25,15 @@ class LossCalculator:
             validation_split (float, optional): Percentage of metrics to use as validation. Defaults to 0.1.
         """
         self.losses = [
-            Populations,
+            #Populations,
             Households,
             TenureType,
-            CouncilTaxBandHouseholds,
-            CountryLevelAggregates,
-            UKProgramCaseloads,
-            UKProgramAggregates,
-            IncomeTaxPayersByBand,
-            IncomeTaxRevenueByIncome,
+            #CouncilTaxBandHouseholds,
+            #CountryLevelAggregates,
+            #UKProgramCaseloads,
+            #UKProgramAggregates,
+            #IncomeTaxPayersByBand,
+            #IncomeTaxRevenueByIncome,
         ]
         self.validation_split = validation_split
         self.sim = sim
@@ -75,12 +75,12 @@ class LossCalculator:
         )
         adjusted_weights = tf.nn.relu(frs_weights + weight_changes)
         for loss_category in self.losses:
-            frs_weights = self.sim.calc("household_weight").values
             excluded_metrics = self.training_metrics if validation else self.validation_metrics
             loss_category_loss, loss_category_log = loss_category.compute(
                 self.sim,
                 adjusted_weights,
                 excluded_metrics=excluded_metrics,
+                validation=validation,
             )
             loss += loss_category_loss
             self.training_log += [

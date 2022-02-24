@@ -5,7 +5,7 @@ from openfisca_uk.parameters import parameters
 
 
 class IncomeTaxPayersByBand(LossCategory):
-    weight = 1e3
+    weight = 1
     label = "Income tax payers by income"
     parameter_folder = parameters.calibration.income_tax.taxpayers_by_band
 

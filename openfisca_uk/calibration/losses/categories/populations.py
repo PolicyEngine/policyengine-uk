@@ -5,7 +5,7 @@ from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
 class Populations(LossCategory):
-    weight = 1e3
+    weight = 0.9
     label = "Population"
     parameter_folder = parameters.calibration.age_sex_region_populations
 
@@ -14,9 +14,9 @@ class Populations(LossCategory):
         household_weights,
         year,
     ):
-        person_sex = sim.calc("gender")
-        person_age = sim.calc("age")
-        person_region = sim.calc("region", map_to="person")
+        person_sex = sim.calc("gender").values
+        person_age = sim.calc("age").values
+        person_region = sim.calc("region", map_to="person").values
         population = Populations.parameter_folder
         for sex in population.children:
             for region in population.children[sex].children:
