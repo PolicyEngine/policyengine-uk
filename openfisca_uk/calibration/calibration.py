@@ -57,7 +57,7 @@ class HouseholdWeights:
             opt.apply_gradients(zip([grads], [self.weight_changes]))
             time_str = f"{epoch + 1}/{num_epochs} ({time() - start_time:.2f}s)"
             print(
-                f"{time_str}, train loss = {loss.numpy() / start_train_loss - 1:.4%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.4%}"
+                f"{time_str}, train loss = {loss.numpy() / start_train_loss - 1:.4%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.4%}, train + validation loss = {(loss.numpy() + validation_loss.numpy()) / (start_train_loss + start_val_loss) - 1:.4%}"
             )
             if epoch > 0 and epoch % 50 == 0:
                 self.training_log = loss_calculator.training_log
@@ -82,7 +82,7 @@ class HouseholdWeights:
             )
         return sim_reweighted
 
-    def save(self, folder: Path = REPO / "calibration"):
+    def save(self, folder: Path = REPO / "calibration", run_id: str = 1):
         if isinstance(folder, str):
             folder = Path(folder)
 
@@ -96,7 +96,8 @@ class HouseholdWeights:
                 )
 
         log = pd.DataFrame(self.training_log)
-        log.to_csv(folder / "training_log.csv", index=False)
+        log["run_id"] = run_id
+        log.to_csv(folder / f"training_log_run_{run_id}.csv", index=False)
 
 
 if __name__ == "__main__":
@@ -120,12 +121,20 @@ if __name__ == "__main__":
         default=1e-2,
         help="Learning rate for optimiser",
     )
+    parser.add_argument(
+        "--k-fold-cross-validation",
+        type=int,
+        default=1,
+        help="Number of folds for k-fold cross validation",
+    )
     args = parser.parse_args()
 
-    weights = HouseholdWeights()
-    weights.calibrate(
-        num_epochs=args.epochs,
-        validation_split=args.validation_split,
-        learning_rate=args.learning_rate,
-    )
-    weights.save()
+    for i in range(args.k_fold_cross_validation):
+        print(f"Running fold {i + 1}/{args.k_fold_cross_validation}")
+        weights = HouseholdWeights()
+        weights.calibrate(
+            num_epochs=args.epochs,
+            validation_split=args.validation_split,
+            learning_rate=args.learning_rate,
+        )
+        weights.save(run_id=i + 1)
