@@ -1,0 +1,13 @@
+description: Carbon emissions, household based consumption
+values:
+  2016-01-01: 543_500_000
+  2017-01-01: 536_920_000
+  2018-01-01: 536_460_000
+  2019-01-01: 520_700_000
+  
+metadata:
+  unit: tonnes CO2
+  reference:
+    - title: Our World In Data
+      href: https://ourworldindata.org/grapher/consumption-co2-emissions?tab=table&time=2003..latest
+     
