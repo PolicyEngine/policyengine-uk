@@ -67,7 +67,9 @@ class LossCategory:
             cls.initial_train_loss = loss.numpy()
         elif validation and cls.initial_val_loss is None:
             cls.initial_val_loss = loss.numpy()
-        initial_value = cls.initial_val_loss if validation else cls.initial_train_loss
+        initial_value = (
+            cls.initial_val_loss if validation else cls.initial_train_loss
+        )
         if initial_value == 0:
             initial_value += 1
         for entry in log:

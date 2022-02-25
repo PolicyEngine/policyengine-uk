@@ -14,7 +14,9 @@ class IncomeTaxRevenueByIncome(LossCategory):
         household_weights,
         year,
     ):
-        brackets = IncomeTaxRevenueByIncome.parameter_folder.brackets[:-3] # Last-3 brackets are impossible due to FRS non-capture
+        brackets = IncomeTaxRevenueByIncome.parameter_folder.brackets[
+            :-3
+        ]  # Last-3 brackets are impossible due to FRS non-capture
         num_thresholds = len(brackets)
         instant_str = f"{year}-01-01"
         for i in range(num_thresholds):
@@ -46,6 +48,8 @@ class IncomeTaxRevenueByIncome(LossCategory):
     def get_metric_names():
         return [
             bracket.name + "." + str(year)
-            for bracket in IncomeTaxRevenueByIncome.parameter_folder.brackets[:-3]
+            for bracket in IncomeTaxRevenueByIncome.parameter_folder.brackets[
+                :-3
+            ]
             for year in range(2019, 2023)
         ]

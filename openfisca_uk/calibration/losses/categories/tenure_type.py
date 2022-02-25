@@ -13,6 +13,14 @@ class TenureType(LossCategory):
         household_weights,
         year,
     ):
+        total_households = parameters.calibration.households(f"{year}-01-01")
+        total_tenure_metrics = sum(
+            [
+                parameter(f"{year}-01-01")
+                for parameter in TenureType.get_metrics()
+            ]
+        )
+        adjustment = total_households / total_tenure_metrics
         tenure_type = sim.calc("ons_tenure_type").values
         hh_country = sim.calc("country").values
         tenure_metrics = TenureType.parameter_folder
@@ -25,5 +33,5 @@ class TenureType(LossCategory):
                     * (tenure_type == tenure)
                     * household_weights
                 )
-                actual_population = parameter(f"{year}-01-01")
+                actual_population = parameter(f"{year}-01-01") * adjustment
                 yield parameter_name, model_population, actual_population

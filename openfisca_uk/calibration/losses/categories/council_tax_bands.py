@@ -4,7 +4,7 @@ from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
 class CouncilTaxBandHouseholds(LossCategory):
-    weight = 0.1
+    weight = 1
     label = "Council Tax Band Households"
     parameter_folder = parameters.calibration.council_tax_band_counts
 
@@ -21,12 +21,10 @@ class CouncilTaxBandHouseholds(LossCategory):
                 parameter = ct_bands.children[region].children[band]
                 parameter_name = parameter.name + "." + str(year)
                 people_in_households = (
-                    (hh_region == region)
-                    * (ct_band == band)
+                    (hh_region == region) * (ct_band == band)
                 ).values
                 model_population = tf.reduce_sum(
-                    household_weights
-                    * people_in_households
+                    household_weights * people_in_households
                 )
                 actual_population = parameter(f"{year}-01-01")
                 if people_in_households.sum() > 0:

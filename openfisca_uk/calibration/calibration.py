@@ -59,6 +59,9 @@ class HouseholdWeights:
             print(
                 f"{time_str}, train loss = {loss.numpy() / start_train_loss - 1:.4%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.4%}"
             )
+            if epoch > 0 and epoch % 50 == 0:
+                self.training_log = loss_calculator.training_log
+                self.save()
 
         self.training_log = loss_calculator.training_log
 
@@ -119,7 +122,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-
     weights = HouseholdWeights()
-    weights.calibrate(num_epochs=args.epochs, validation_split=args.validation_split, learning_rate=args.learning_rate)
+    weights.calibrate(
+        num_epochs=args.epochs,
+        validation_split=args.validation_split,
+        learning_rate=args.learning_rate,
+    )
     weights.save()

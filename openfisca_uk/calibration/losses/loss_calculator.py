@@ -2,6 +2,7 @@ from typing import List
 import numpy as np
 from openfisca_uk.calibration.losses.categories import (
     Populations,
+    RegionalPopulations,
     Households,
     TenureType,
     CouncilTaxBandHouseholds,
@@ -25,15 +26,16 @@ class LossCalculator:
             validation_split (float, optional): Percentage of metrics to use as validation. Defaults to 0.1.
         """
         self.losses = [
-            #Populations,
+            # Populations,
+            RegionalPopulations,
             Households,
             TenureType,
-            #CouncilTaxBandHouseholds,
-            #CountryLevelAggregates,
-            #UKProgramCaseloads,
-            #UKProgramAggregates,
-            #IncomeTaxPayersByBand,
-            #IncomeTaxRevenueByIncome,
+            CouncilTaxBandHouseholds,
+            CountryLevelAggregates,
+            UKProgramCaseloads,
+            UKProgramAggregates,
+            # IncomeTaxPayersByBand,
+            # IncomeTaxRevenueByIncome,
         ]
         self.validation_split = validation_split
         self.sim = sim
@@ -41,8 +43,12 @@ class LossCalculator:
         self.metrics = sum(
             [list(loss.get_metric_names()) for loss in self.losses], []
         )
+        non_population_metrics = sum(
+            [list(loss.get_metric_names()) for loss in self.losses[5:]], []
+        )
         self.validation_metrics = sample(
-            self.metrics, int(self.validation_split * len(self.metrics))
+            non_population_metrics,
+            int(self.validation_split * len(non_population_metrics)),
         )
         self.training_metrics = [
             metric
@@ -75,12 +81,16 @@ class LossCalculator:
         )
         adjusted_weights = tf.nn.relu(frs_weights + weight_changes)
         for loss_category in self.losses:
-            excluded_metrics = self.training_metrics if validation else self.validation_metrics
+            excluded_metrics = (
+                self.training_metrics
+                if validation
+                else self.validation_metrics
+            )
             loss_category_loss, loss_category_log = loss_category.compute(
                 self.sim,
                 adjusted_weights,
-                excluded_metrics=excluded_metrics,
-                validation=validation,
+                excluded_metrics,
+                validation,
             )
             loss += loss_category_loss
             self.training_log += [

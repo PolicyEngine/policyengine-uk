@@ -1,3 +1,4 @@
+from random import random
 import numpy as np
 import tensorflow as tf
 from openfisca_uk.parameters import parameters
@@ -5,7 +6,7 @@ from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
 class Populations(LossCategory):
-    weight = 0.9
+    weight = 1
     label = "Population"
     parameter_folder = parameters.calibration.age_sex_region_populations
 
