@@ -10,6 +10,7 @@
         employment_income: 20_000
   output:
     income_tax: [1_500, 1_500]
+
 - name: Basic rate increase, with one pensioner (exempt) and one working-age adult (not exempt).
   period: 2021
   input:
