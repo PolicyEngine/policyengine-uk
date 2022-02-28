@@ -54,9 +54,10 @@ class StatisticTest:
             # Not overridden - use statistics parameter
             if source == "official":
                 return parameters.calibration.children[
-                    {"aggregate": "program_aggregates", "caseload": "program_caseloads"}[
-                        self.statistic
-                    ]
+                    {
+                        "aggregate": "program_aggregates",
+                        "caseload": "program_caseloads",
+                    }[self.statistic]
                 ].children[self.variable](f"{self.year}-01-01")
             elif source == "ukmod":
                 raise ValueError(
