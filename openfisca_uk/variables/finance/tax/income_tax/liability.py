@@ -459,12 +459,30 @@ class income_tax_pre_charges(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        COMPONENTS = [
-            "earned_income_tax",
+        earned_tax = person("earned_income_tax", period)
+
+        if parameters(
+            period
+        ).contrib.ubi_center.basic_income.exempt_pensioners_from_tax_changes:
+            from openfisca_uk.parameters import (
+                parameters as baseline_parameters,
+            )
+
+            baseline_earned_income_tax = (
+                person.simulation.tax_benefit_system.variables[
+                    "earned_income_tax"
+                ].get_formula(period)(person, period, baseline_parameters)
+            )
+            is_sp_age = person("is_SP_age", period)
+            earned_tax = where(
+                is_sp_age, baseline_earned_income_tax, earned_tax
+            )
+
+        OTHER_COMPONENTS = [
             "savings_income_tax",
             "dividend_income_tax",
         ]
-        return add(person, period, COMPONENTS)
+        return earned_tax + add(person, period, OTHER_COMPONENTS)
 
 
 class is_higher_earner(Variable):
