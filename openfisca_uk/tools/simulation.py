@@ -8,6 +8,7 @@ import numpy as np
 import warnings
 from openfisca_uk.initial_setup import set_default
 from openfisca_uk.tools.parameters import backdate_parameters
+from openfisca_uk.reforms.benefit_takeup import apply_takeup_rates
 from openfisca_tools import ReformType
 from openfisca_uk_data import DATASETS, SynthFRS
 from openfisca_tools.microsimulation import (
@@ -43,9 +44,11 @@ class Microsimulation(GeneralMicrosimulation):
         reform: ReformType = (),
         dataset: type = None,
         year: int = None,
-        duplicate_records: int = 2,
+        duplicate_records: bool = False,
         adjust_weights: bool = True,
     ):
+        if adjust_weights:
+            duplicate_records = True
         if dataset is None:
             dataset = self.default_dataset
         else:
@@ -72,23 +75,24 @@ class Microsimulation(GeneralMicrosimulation):
                     )
                     dataset.download(year)
 
-        if (dataset.name == "frs_enhanced") and (duplicate_records > 1):
+        if (dataset.name == "frs_enhanced") and duplicate_records:
             data = dataset.load(year)
+            num_duplications = 2
 
             def duplicate(key, values):
                 if "_id" in key:
                     return np.concatenate(
-                        tuple([values] * duplicate_records)
+                        tuple([values] * num_duplications)
                     ) * 10 + np.repeat(
-                        list(range(1, 1 + duplicate_records)), len(values)
+                        list(range(1, 1 + num_duplications)), len(values)
                     )
                 elif "_weight" in key:
                     return (
-                        np.concatenate(tuple([values] * duplicate_records))
+                        np.concatenate(tuple([values] * num_duplications))
                         / duplicate_records
                     )
                 else:
-                    return np.concatenate(tuple([values] * duplicate_records))
+                    return np.concatenate(tuple([values] * num_duplications))
 
             class ProxyDataObject(dict):
                 def close(self):
@@ -116,6 +120,9 @@ class Microsimulation(GeneralMicrosimulation):
                 name = "frs_enhanced_duplicated"
 
             dataset = ProxyDataset
+        
+        if not adjust_weights:
+            reform = (reform, apply_takeup_rates())
 
         super().__init__(reform=reform, dataset=dataset, year=year)
 
@@ -123,7 +130,6 @@ class Microsimulation(GeneralMicrosimulation):
             ("frs_enhanced" in dataset.name)
             and adjust_weights
             and year >= 2019
-            and (duplicate_records > 1)
         ):
             weight_file = (
                 Path(__file__).parent.parent / "calibration" / "frs_weights.h5"
