@@ -2,7 +2,8 @@ description: Carbon Emissions from the Production of goods and services in the U
 values:
   2016-01-01: 423_000_000
   2017-01-01: 399_000_000
-  2018-01-01: 
+  2018-01-01: 406_000_000
+
   2019-01-01: 
   metadata:
   unit: tonnes CO2
