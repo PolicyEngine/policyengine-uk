@@ -17,7 +17,7 @@ class CB_HITC(Variable):
                 person("adjusted_net_income", period),
                 CB_HITC.phase_out_start,
             )
-            # HITC is specified as a percent of Child Benefit recollected for 
+            # HITC is specified as a percent of Child Benefit recollected for
             # every £1,000 over the phase-out threshold.
             / 1_000
             * CB_HITC.phase_out_rate

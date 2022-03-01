@@ -120,7 +120,7 @@ class Microsimulation(GeneralMicrosimulation):
                 name = "frs_enhanced_duplicated"
 
             dataset = ProxyDataset
-        
+
         if not adjust_weights:
             reform = (reform, apply_takeup_rates())
 
