@@ -4,7 +4,7 @@ child_benefit:
     - relative_caseload_error_less_than: 0.10
 council_tax_less_benefit:
   test:
-    - relative_aggregate_error_less_than: 0.10
+    - relative_aggregate_error_less_than: 0.11
 child_tax_credit:
   test:
     - relative_aggregate_error_less_than: 0.25
@@ -28,7 +28,7 @@ income_support:
 universal_credit:
   test:
     - relative_aggregate_error_less_than: 0.05
-    - relative_caseload_error_less_than: 0.05
+    - relative_caseload_error_less_than: 0.1
 income_tax:
   test:
     - relative_aggregate_error_less_than: 0.05

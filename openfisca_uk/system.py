@@ -7,6 +7,7 @@ from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 from openfisca_tools.parameters import (
     interpolate_parameters,
     uprate_parameters,
+    propagate_parameter_metadata,
 )
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +29,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         param_path = os.path.join(COUNTRY_DIR, "parameters")
         self.load_parameters(param_path)
 
+        self.parameters = propagate_parameter_metadata(self.parameters)
         self.parameters = interpolate_parameters(self.parameters)
         self.parameters = uprate_parameters(self.parameters)
         self.parameters.baseline = self.parameters.clone()
