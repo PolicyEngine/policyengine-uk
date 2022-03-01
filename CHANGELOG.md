@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.13.0] - 2022-02-28
+## [0.14.0] - 2022-02-28
 
 ### Changed
 
 - Re-weighting procedure formalised with cross-validation and logging.
+
+## [0.13.0] - 2022-02-28
+
+### Added
+
+- Pensioner exemption switch for Income Tax rate and threshold reforms.
 
 ## [0.12.4] - 2022-02-25
 

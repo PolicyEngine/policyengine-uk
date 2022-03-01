@@ -1,0 +1,5 @@
+description: Exempt individuals over State Pension age from all reforms to labour income tax rates and thresholds.
+values:
+  2010-01-01: false
+metadata:
+  label: Exempt pensioners from Income Tax reforms
