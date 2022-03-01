@@ -7,7 +7,7 @@ values:
   metadata:
   unit: tonnes CO2
   reference:
-    - title: BEIS 2019 Updated Energy & Emissions Projections
+      title: BEIS 2019 Updated Energy & Emissions Projections
       href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
 
 
