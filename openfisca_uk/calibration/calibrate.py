@@ -21,6 +21,7 @@ class HouseholdWeights:
         validation_split: float = 0.1,
         num_epochs: int = 32,
         learning_rate: float = 1e1,
+        loss_calculator: LossCalculator = None,
     ):
         """Calibrate FRS weights to administrative statistics.
 
@@ -29,8 +30,13 @@ class HouseholdWeights:
             validation_split (float, optional): The percentage of metrics to use as validation. Defaults to 0.1.
             num_epochs (int, optional): The number of epochs to run. Defaults to 256.
             learning_rate (float, optional): The learning rate for the optimiser. Defaults to 8e+1.
+            loss_calculator (LossCalculator, optional): A loss calculator to use. Defaults to None.
         """
-        self.sim = Microsimulation(adjust_weights=False, duplicate_records=2)
+        self.sim = (
+            loss_calculator.sim
+            if loss_calculator is not None
+            else Microsimulation(adjust_weights=False, duplicate_records=2)
+        )
         survey_num_households = len(self.sim.calc("household_id"))
         self.weight_changes = tf.Variable(
             np.zeros(
@@ -39,7 +45,9 @@ class HouseholdWeights:
             dtype=tf.float32,
         )
         opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-        loss_calculator = LossCalculator(self.sim, validation_split)
+        loss_calculator = loss_calculator or LossCalculator(
+            self.sim, validation_split
+        )
         start_train_loss = None
         start_val_loss = None
         start_time = time()
@@ -131,26 +139,43 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    for i in range(args.k_fold_cross_validation):
-        print(f"Running fold {i + 1}/{args.k_fold_cross_validation}")
+    if args.k_fold_cross_validation > 1:
+        sim = Microsimulation(adjust_weights=False, duplicate_records=2)
+        loss_calculators = LossCalculator.create_k_fold_cv_calculators(
+            sim, k=args.k_fold_cross_validation
+        )
+        for i in range(args.k_fold_cross_validation):
+            print(f"Running fold {i + 1}/{args.k_fold_cross_validation}")
+            weights = HouseholdWeights()
+            weights.calibrate(
+                num_epochs=args.epochs,
+                validation_split=args.validation_split,
+                learning_rate=args.learning_rate,
+                loss_calculator=loss_calculators[i],
+            )
+            weights.save(run_id=i + 1)
+        print("Combining individual fold logs")
+        logs = pd.concat(
+            [
+                pd.read_csv(
+                    REPO / "calibration" / f"training_log_run_{i + 1}.csv"
+                )
+                for i in range(args.k_fold_cross_validation)
+            ]
+        )
+        logs.sort_values(["run_id", "epoch", "category", "validation"]).to_csv(
+            REPO / "calibration" / "training_log.csv", index=False
+        )
+        for filename in glob(
+            (REPO / "calibration" / "training_log_run_*.csv").as_posix()
+        ):
+            os.remove(filename)
+    else:
         weights = HouseholdWeights()
         weights.calibrate(
             num_epochs=args.epochs,
             validation_split=args.validation_split,
             learning_rate=args.learning_rate,
         )
-        weights.save(run_id=i + 1)
-
-    print("Combining individual fold logs")
-    logs = pd.concat(
-        [
-            pd.read_csv(REPO / "calibration" / f"training_log_run_{i + 1}.csv")
-            for i in range(args.k_fold_cross_validation)
-        ]
-    )
-    logs.to_csv(REPO / "calibration" / "training_log.csv", index=False)
-    for filename in glob(
-        (REPO / "calibration" / "training_log_run_*.csv").as_posix()
-    ):
-        os.remove(filename)
+        weights.save()
     print("Calibration completed.")
