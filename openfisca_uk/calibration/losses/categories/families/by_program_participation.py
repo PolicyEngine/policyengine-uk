@@ -5,15 +5,14 @@ from typing import Iterable, List, Tuple
 from openfisca_uk.parameters import parameters
 
 
-class UKProgramCaseloads(LossCategory):
-    weight = 1
-    label = "UK-wide program caseloads"
-    parameter_folder = parameters.calibration.program_caseloads
+class FamiliesByProgramParticipation(LossCategory):
+    label = "Families by program participation"
+    parameter_folder = parameters.calibration.families.by_program_participation
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int
     ) -> Iterable[Tuple]:
-        aggregates = UKProgramCaseloads.parameter_folder
+        aggregates = FamiliesByProgramParticipation.parameter_folder
         variables = aggregates.children
         for variable in variables:
             values = sim.calc(variable, period=year).values

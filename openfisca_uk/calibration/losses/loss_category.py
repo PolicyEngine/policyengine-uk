@@ -1,10 +1,15 @@
-import tensorflow as tf
-from openfisca_uk import Microsimulation
-from typing import Callable, Iterable, List, Tuple, Type
-from functools import reduce
-from itertools import chain
-from numpy.typing import ArrayLike
 from openfisca_core.parameters import ParameterNode, Parameter
+from numpy.typing import ArrayLike
+from itertools import chain
+from functools import reduce
+from typing import Callable, Iterable, List, Tuple, Type
+from openfisca_uk import Microsimulation
+import tensorflow as tf
+import logging
+import os
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+logging.getLogger("tensorflow").disabled = True
 
 
 def weighted_squared_relative_deviation(
@@ -54,7 +59,7 @@ class LossCategory:
                 sim, household_weights[year - cls.years[0]], year
             ):
                 if name not in excluded_metrics:
-                    l = cls.comparison_loss_function(pred, actual) * cls.weight
+                    l = cls.comparison_loss_function(pred, actual)
                     log += [
                         dict(
                             name=name,
@@ -71,7 +76,7 @@ class LossCategory:
             cls.initial_val_loss = loss.numpy()
         initial_value = (
             cls.initial_val_loss if validation else cls.initial_train_loss
-        )
+        ) / cls.weight
         if initial_value == 0:
             initial_value += 1
         for entry in log:
@@ -120,6 +125,8 @@ def combine_two_loss_categories(
 
 
 def combine_loss_categories(
-    *loss_categories: Type[LossCategory],
+    *loss_categories: Type[LossCategory], weight: float = 1
 ) -> Type[LossCategory]:
-    return reduce(combine_two_loss_categories, loss_categories)
+    category = reduce(combine_two_loss_categories, loss_categories)
+    category.weight = weight or category.weight
+    return category

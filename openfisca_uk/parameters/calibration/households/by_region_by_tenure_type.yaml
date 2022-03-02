@@ -42,7 +42,7 @@ NORTHERN_IRELAND:
 metadata:
   unit: currency-GBP
   uprating:
-    parameter: calibration.households
+    parameter: calibration.households.in_total
   reference:
     - title: Dwelling stock by tenure, UK | ONS
       href: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/dwellingstockbytenureuk

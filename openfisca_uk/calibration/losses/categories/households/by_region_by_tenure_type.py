@@ -3,27 +3,30 @@ import tensorflow as tf
 from openfisca_uk.parameters import parameters
 
 
-class TenureType(LossCategory):
-    weight = 1
-    label = "Tenure type"
-    parameter_folder = parameters.calibration.tenure_type
+class HouseholdsByRegionByTenureType(LossCategory):
+    label = "Households by region and tenure type"
+    parameter_folder = (
+        parameters.calibration.households.by_region_by_tenure_type
+    )
 
     def get_loss_subcomponents(
         sim,
         household_weights,
         year,
     ):
-        total_households = parameters.calibration.households(f"{year}-01-01")
+        total_households = parameters.calibration.households.in_total(
+            f"{year}-01-01"
+        )
         total_tenure_metrics = sum(
             [
                 parameter(f"{year}-01-01")
-                for parameter in TenureType.get_metrics()
+                for parameter in HouseholdsByRegionByTenureType.get_metrics()
             ]
         )
         adjustment = total_households / total_tenure_metrics
         tenure_type = sim.calc("ons_tenure_type").values
         hh_country = sim.calc("country").values
-        tenure_metrics = TenureType.parameter_folder
+        tenure_metrics = HouseholdsByRegionByTenureType.parameter_folder
         for country in tenure_metrics.children:
             for tenure in tenure_metrics.children[country].children:
                 parameter = tenure_metrics.children[country].children[tenure]

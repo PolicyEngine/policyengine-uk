@@ -6,7 +6,9 @@ from openfisca_uk.parameters import parameters
 
 class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
     label = "Income tax revenue by income"
-    parameter_folder = parameters.calibration.budgetary_impact.of_income_tax_by_income_band
+    parameter_folder = (
+        parameters.calibration.budgetary_impact.of_income_tax_by_income_band
+    )
 
     def get_loss_subcomponents(
         sim,

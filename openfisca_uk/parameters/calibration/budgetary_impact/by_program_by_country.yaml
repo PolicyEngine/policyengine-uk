@@ -10,25 +10,25 @@ income_tax:
       2018-01-01: 169_958_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.income_tax
+        parameter: calibration.budgetary_impact.by_program.income_tax
   WALES:
     values:
       2018-01-01: 5_235_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.income_tax
+        parameter: calibration.budgetary_impact.by_program.income_tax
   SCOTLAND:
     values:
       2018-01-01: 12_991_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.income_tax
+        parameter: calibration.budgetary_impact.by_program.income_tax
   NORTHERN_IRELAND:
     values:
       2018-01-01: 2_847_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.income_tax
+        parameter: calibration.budgetary_impact.by_program.income_tax
 total_NI:
   description: National Insurance (total) by country.
   metadata:
@@ -40,22 +40,22 @@ total_NI:
       2018-01-01: 118_591_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.total_NI
+        parameter: calibration.budgetary_impact.by_program.total_NI
   WALES:
     values:
       2018-01-01: 4_787_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.total_NI
+        parameter: calibration.budgetary_impact.by_program.total_NI
   SCOTLAND:
     values:
       2018-01-01: 10_532_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.total_NI
+        parameter: calibration.budgetary_impact.by_program.total_NI
   NORTHERN_IRELAND:
     values:
       2018-01-01: 2_736_000_000
     metadata:
       uprating: 
-        parameter: calibration.program_aggregates.total_NI
+        parameter: calibration.budgetary_impact.by_program.total_NI

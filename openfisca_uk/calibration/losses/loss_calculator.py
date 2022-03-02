@@ -1,6 +1,10 @@
 from typing import List
 import numpy as np
-from openfisca_uk.calibration.losses.categories import BudgetaryImpact
+from openfisca_uk.calibration.losses.categories import (
+    BudgetaryImpact,
+    Families,
+    Households,
+)
 from random import sample
 import tensorflow as tf
 from openfisca_uk.tools.simulation import Microsimulation
@@ -16,6 +20,8 @@ class LossCalculator:
         """
         self.losses = [
             BudgetaryImpact,
+            Families,
+            Households,
         ]
         self.validation_split = validation_split
         self.sim = sim

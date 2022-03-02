@@ -30,7 +30,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.EAST_MIDLANDS
+        parameter: calibration.populations.by_region.EAST_MIDLANDS
   EAST_OF_ENGLAND:
     BETWEEN_0_10:
       values:
@@ -62,7 +62,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.EAST_OF_ENGLAND
+        parameter: calibration.populations.by_region.EAST_OF_ENGLAND
   LONDON:
     BETWEEN_0_10:
       values:
@@ -94,7 +94,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.LONDON
+        parameter: calibration.populations.by_region.LONDON
   NORTHERN_IRELAND:
     BETWEEN_0_10:
       values:
@@ -126,7 +126,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.NORTHERN_IRELAND
+        parameter: calibration.populations.by_region.NORTHERN_IRELAND
   NORTH_EAST:
     BETWEEN_0_10:
       values:
@@ -158,7 +158,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.NORTH_EAST
+        parameter: calibration.populations.by_region.NORTH_EAST
   NORTH_WEST:
     BETWEEN_0_10:
       values:
@@ -190,7 +190,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.NORTH_WEST
+        parameter: calibration.populations.by_region.NORTH_WEST
   SCOTLAND:
     BETWEEN_0_10:
       values:
@@ -222,7 +222,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.SCOTLAND
+        parameter: calibration.populations.by_region.SCOTLAND
   SOUTH_EAST:
     BETWEEN_0_10:
       values:
@@ -254,7 +254,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.SOUTH_EAST
+        parameter: calibration.populations.by_region.SOUTH_EAST
   SOUTH_WEST:
     BETWEEN_0_10:
       values:
@@ -286,7 +286,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.SOUTH_WEST
+        parameter: calibration.populations.by_region.SOUTH_WEST
   WALES:
     BETWEEN_0_10:
       values:
@@ -318,7 +318,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.WALES
+        parameter: calibration.populations.by_region.WALES
   WEST_MIDLANDS:
     BETWEEN_0_10:
       values:
@@ -350,7 +350,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.WEST_MIDLANDS
+        parameter: calibration.populations.by_region.WEST_MIDLANDS
   YORKSHIRE:
     BETWEEN_0_10:
       values:
@@ -382,7 +382,7 @@ FEMALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.YORKSHIRE
+        parameter: calibration.populations.by_region.YORKSHIRE
 MALE:
   EAST_MIDLANDS:
     BETWEEN_0_10:
@@ -415,7 +415,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.EAST_MIDLANDS
+        parameter: calibration.populations.by_region.EAST_MIDLANDS
   EAST_OF_ENGLAND:
     BETWEEN_0_10:
       values:
@@ -447,7 +447,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.EAST_OF_ENGLAND
+        parameter: calibration.populations.by_region.EAST_OF_ENGLAND
   LONDON:
     BETWEEN_0_10:
       values:
@@ -479,7 +479,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.LONDON
+        parameter: calibration.populations.by_region.LONDON
   NORTHERN_IRELAND:
     BETWEEN_0_10:
       values:
@@ -511,7 +511,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.NORTHERN_IRELAND
+        parameter: calibration.populations.by_region.NORTHERN_IRELAND
   NORTH_EAST:
     BETWEEN_0_10:
       values:
@@ -543,7 +543,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.NORTH_EAST
+        parameter: calibration.populations.by_region.NORTH_EAST
   NORTH_WEST:
     BETWEEN_0_10:
       values:
@@ -575,7 +575,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.NORTH_WEST
+        parameter: calibration.populations.by_region.NORTH_WEST
   SCOTLAND:
     BETWEEN_0_10:
       values:
@@ -607,7 +607,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.SCOTLAND
+        parameter: calibration.populations.by_region.SCOTLAND
   SOUTH_EAST:
     BETWEEN_0_10:
       values:
@@ -639,7 +639,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.SOUTH_EAST
+        parameter: calibration.populations.by_region.SOUTH_EAST
   SOUTH_WEST:
     BETWEEN_0_10:
       values:
@@ -671,7 +671,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.SOUTH_WEST
+        parameter: calibration.populations.by_region.SOUTH_WEST
   WALES:
     BETWEEN_0_10:
       values:
@@ -703,7 +703,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.WALES
+        parameter: calibration.populations.by_region.WALES
   WEST_MIDLANDS:
     BETWEEN_0_10:
       values:
@@ -735,7 +735,7 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.WEST_MIDLANDS
+        parameter: calibration.populations.by_region.WEST_MIDLANDS
   YORKSHIRE:
     BETWEEN_0_10:
       values:
@@ -767,5 +767,5 @@ MALE:
     metadata:
       propagate_metadata_to_children: true
       uprating:
-        parameter: calibration.regional_populations.YORKSHIRE
+        parameter: calibration.populations.by_region.YORKSHIRE
 

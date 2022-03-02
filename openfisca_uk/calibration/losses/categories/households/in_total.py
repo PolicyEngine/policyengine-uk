@@ -3,10 +3,9 @@ import tensorflow as tf
 from openfisca_uk.parameters import parameters
 
 
-class Households(LossCategory):
-    weight = 1
-    label = "Households"
-    parameter_folder = parameters.calibration.households
+class HouseholdsInTotal(LossCategory):
+    label = "Households in total"
+    parameter_folder = parameters.calibration.households.in_total
 
     def get_loss_subcomponents(
         sim,
@@ -14,16 +13,16 @@ class Households(LossCategory):
         year,
     ):
         model_population = tf.reduce_sum(household_weights)
-        actual_population = Households.parameter_folder(f"{year}-01-01")
-        yield Households.parameter_folder.name + "." + str(
+        actual_population = HouseholdsInTotal.parameter_folder(f"{year}-01-01")
+        yield HouseholdsInTotal.parameter_folder.name + "." + str(
             year
         ), model_population, actual_population
 
     def get_metrics():
-        return [Households.parameter_folder]
+        return [HouseholdsInTotal.parameter_folder]
 
     def get_metric_names():
         return [
-            Households.parameter_folder.name + "." + str(year)
+            HouseholdsInTotal.parameter_folder.name + "." + str(year)
             for year in range(2019, 2023)
         ]
