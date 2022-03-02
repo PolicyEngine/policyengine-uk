@@ -6,9 +6,8 @@ from openfisca_uk.parameters import parameters
 
 
 class BudgetaryImpactByProgram(LossCategory):
-    weight = 1
     label = "Budgetary impact by program"
-    parameter_folder = parameters.calibration.program_aggregates
+    parameter_folder = parameters.calibration.budgetary_impact.by_program
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int
