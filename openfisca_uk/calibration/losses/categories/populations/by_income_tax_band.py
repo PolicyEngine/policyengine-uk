@@ -4,10 +4,9 @@ import tensorflow as tf
 from openfisca_uk.parameters import parameters
 
 
-class IncomeTaxPayersByBand(LossCategory):
-    weight = 1
+class PopulationsByIncomeTaxBand(LossCategory):
     label = "Income tax payers by income"
-    parameter_folder = parameters.calibration.income_tax.taxpayers_by_band
+    parameter_folder = parameters.calibration.populations.by_income_tax_band
 
     def get_loss_subcomponents(
         sim,
@@ -28,7 +27,7 @@ class IncomeTaxPayersByBand(LossCategory):
             pays_higher_rate, "person", "household"
         )
         add_rate_payers = sim.map_to(pays_add_rate, "person", "household")
-        taxpayers = IncomeTaxPayersByBand.parameter_folder
+        taxpayers = PopulationsByIncomeTaxBand.parameter_folder
 
         for value, target in zip(
             [

@@ -4,10 +4,9 @@ from openfisca_uk.parameters import parameters
 from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
-class RegionalPopulations(LossCategory):
-    weight = 1
-    label = "Regional populations"
-    parameter_folder = parameters.calibration.regional_populations
+class PopulationsByRegion(LossCategory):
+    label = "Population by region"
+    parameter_folder = parameters.calibration.populations.by_region
 
     def get_loss_subcomponents(
         sim,
@@ -16,7 +15,7 @@ class RegionalPopulations(LossCategory):
     ):
         household_region = sim.calc("region").values
         household_population = sim.calc("people", map_to="household").values
-        regions = RegionalPopulations.parameter_folder.children
+        regions = PopulationsByRegion.parameter_folder.children
         for region in regions:
             in_region = household_region == region
             people_in_region = household_population * in_region
