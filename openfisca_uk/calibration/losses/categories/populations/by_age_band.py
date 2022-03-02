@@ -2,6 +2,7 @@ import numpy as np
 from openfisca_uk.calibration.losses.loss_category import LossCategory
 import tensorflow as tf
 from openfisca_uk.parameters import parameters
+from openfisca_core.parameters import Parameter
 
 
 class PopulationsByAgeBand(LossCategory):
@@ -13,6 +14,17 @@ class PopulationsByAgeBand(LossCategory):
         household_weights,
         year,
     ):
+        total_population = parameters.calibration.populations.in_total(
+            f"{year}-01-01"
+        )
+        total_age_bands = sum(
+            [
+                parameter(f"{year}-01-01")
+                for parameter in PopulationsByAgeBand.parameter_folder.get_descendants()
+                if isinstance(parameter, Parameter)
+            ]
+        )
+        adjustment = total_population / total_age_bands
         population = PopulationsByAgeBand.parameter_folder
         person_age = sim.calc("age", year)
         age_groups = {}
@@ -33,9 +45,12 @@ class PopulationsByAgeBand(LossCategory):
         for age_group in age_groups:
             if "BETWEEN" in age_group:
                 _, lower, upper = age_group.split("_")
-                lower, upper = float(lower), float(upper)
+                lower, upper = int(lower), int(upper)
             elif "OVER" in age_group:
-                lower, upper = float(age_group.split("_")[1]), np.inf
+                lower, upper = int(age_group.split("_")[1]), np.inf
+                if lower == 80:
+                    lower = 79 # The FRS top-codes at 79, so we'll be very slightly mismatched 
+                               # but it's better than dropping over-80 targeting altogether
             else:
                 raise ValueError(f"Unexpected test group: {age_group}")
             people_in_household = sim.map_to(
@@ -46,9 +61,11 @@ class PopulationsByAgeBand(LossCategory):
             model_population = tf.reduce_sum(
                 people_in_household * household_weights
             )
-            yield getattr(
-                PopulationsByAgeBand.parameter_folder.MALE.LONDON, age_group
-            ).name, model_population, age_groups[age_group]
+            if people_in_household.sum() > 0:
+                # If the FRS has no observations, skip the target.
+                yield getattr(
+                    PopulationsByAgeBand.parameter_folder.MALE.LONDON, age_group
+                ).name + "." + str(year), model_population, age_groups[age_group] * adjustment
 
     def get_metrics():
         return (

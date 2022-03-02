@@ -14,6 +14,16 @@ class HouseholdsByRegionByCouncilTaxBand(LossCategory):
         household_weights,
         year,
     ):
+        total_households = parameters.calibration.households.in_total(
+            f"{year}-01-01"
+        )
+        total_tenure_metrics = sum(
+            [
+                parameter(f"{year}-01-01")
+                for parameter in HouseholdsByRegionByCouncilTaxBand.get_metrics()
+            ]
+        )
+        adjustment = total_households / total_tenure_metrics
         ct_bands = HouseholdsByRegionByCouncilTaxBand.parameter_folder
         ct_band = sim.calc("council_tax_band")
         hh_region = sim.calc("region")
@@ -21,13 +31,13 @@ class HouseholdsByRegionByCouncilTaxBand(LossCategory):
             for band in ct_bands.children[region].children:
                 parameter = ct_bands.children[region].children[band]
                 parameter_name = parameter.name + "." + str(year)
-                people_in_households = (
+                household_in_condition = (
                     (hh_region == region) * (ct_band == band)
                 ).values
                 model_population = tf.reduce_sum(
-                    household_weights * people_in_households
+                    household_weights * household_in_condition
                 )
-                actual_population = parameter(f"{year}-01-01")
-                if people_in_households.sum() > 0:
+                actual_population = parameter(f"{year}-01-01") * adjustment
+                if household_in_condition.sum() > 0:
                     # If the FRS has no observations, skip the target.
                     yield parameter_name, model_population, actual_population
