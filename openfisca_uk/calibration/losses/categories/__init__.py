@@ -1,24 +1,24 @@
-from openfisca_uk.calibration.losses.categories.populations import Populations
-from openfisca_uk.calibration.losses.categories.regional_populations import (
+from openfisca_uk.calibration.losses.categories.populations.by_age_sex_region import Populations
+from openfisca_uk.calibration.losses.categories.populations.by_region import (
     RegionalPopulations,
 )
-from openfisca_uk.calibration.losses.categories.households import Households
-from openfisca_uk.calibration.losses.categories.tenure_type import TenureType
-from openfisca_uk.calibration.losses.categories.council_tax_bands import (
+from openfisca_uk.calibration.losses.categories.households.in_total import Households
+from openfisca_uk.calibration.losses.categories.households.by_tenure_type import TenureType
+from openfisca_uk.calibration.losses.categories.households.by_council_tax_band import (
     CouncilTaxBandHouseholds,
 )
-from openfisca_uk.calibration.losses.categories.country_level_aggregates import (
+from openfisca_uk.calibration.losses.categories.budgetary_impact.by_program_by_country import (
     CountryLevelAggregates,
 )
-from openfisca_uk.calibration.losses.categories.uk_program_aggregates import (
+from openfisca_uk.calibration.losses.categories.budgetary_impact.by_program import (
     UKProgramAggregates,
 )
-from openfisca_uk.calibration.losses.categories.uk_program_caseloads import (
+from openfisca_uk.calibration.losses.categories.families.by_benefit import (
     UKProgramCaseloads,
 )
-from openfisca_uk.calibration.losses.categories.income_tax_payers_by_band import (
+from openfisca_uk.calibration.losses.categories.populations.by_income_tax_band import (
     IncomeTaxPayersByBand,
 )
-from openfisca_uk.calibration.losses.categories.income_tax_revenue_by_income import (
+from openfisca_uk.calibration.losses.categories.budgetary_impact.of_income_tax_by_income_band import (
     IncomeTaxRevenueByIncome,
 )
