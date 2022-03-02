@@ -4,17 +4,16 @@ import tensorflow as tf
 from openfisca_uk.parameters import parameters
 
 
-class AgeBands(LossCategory):
-    weight = 1
-    label = "Households"
-    parameter_folder = parameters.calibration.age_sex_region_populations
+class PopulationsByAgeBand(LossCategory):
+    label = "Populations by age band"
+    parameter_folder = parameters.calibration.populations.by_age_sex_region
 
     def get_loss_subcomponents(
         sim,
         household_weights,
         year,
     ):
-        population = AgeBands.parameter_folder
+        population = PopulationsByAgeBand.parameter_folder
         person_age = sim.calc("age", year)
         age_groups = {}
         for sex in population.children:
@@ -48,15 +47,15 @@ class AgeBands(LossCategory):
                 people_in_household * household_weights
             )
             yield getattr(
-                AgeBands.parameter_folder.MALE.LONDON, age_group
+                PopulationsByAgeBand.parameter_folder.MALE.LONDON, age_group
             ).name, model_population, age_groups[age_group]
 
     def get_metrics():
-        return [AgeBands.parameter_folder.MALE.LONDON.get_descendants()]
+        return PopulationsByAgeBand.parameter_folder.MALE.LONDON.get_descendants()
 
     def get_metric_names():
         return [
-            parameter.name.name + "." + str(year)
+            parameter.name + "." + str(year)
             for year in range(2019, 2023)
-            for parameter in AgeBands.get_metrics()
+            for parameter in PopulationsByAgeBand.get_metrics()
         ]

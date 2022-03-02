@@ -5,10 +5,9 @@ from openfisca_uk.parameters import parameters
 from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
-class Populations(LossCategory):
-    weight = 1
-    label = "Population"
-    parameter_folder = parameters.calibration.age_sex_region_populations
+class PopulationsByAgeSexRegion(LossCategory):
+    label = "Population by age, sex and region"
+    parameter_folder = parameters.calibration.populations.by_age_sex_region
 
     def get_loss_subcomponents(
         sim,
@@ -18,7 +17,7 @@ class Populations(LossCategory):
         person_sex = sim.calc("gender").values
         person_age = sim.calc("age").values
         person_region = sim.calc("region", map_to="person").values
-        population = Populations.parameter_folder
+        population = PopulationsByAgeSexRegion.parameter_folder
         for sex in population.children:
             for region in population.children[sex].children:
                 for age_group in (

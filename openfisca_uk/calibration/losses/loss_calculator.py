@@ -4,6 +4,7 @@ from openfisca_uk.calibration.losses.categories import (
     BudgetaryImpact,
     Families,
     Households,
+    Populations,
 )
 from random import sample
 import tensorflow as tf
@@ -18,11 +19,7 @@ class LossCalculator:
             sim (Microsimulation): A microsimulation from which to draw demographic data.
             validation_split (float, optional): Percentage of metrics to use as validation. Defaults to 0.1.
         """
-        self.losses = [
-            BudgetaryImpact,
-            Families,
-            Households,
-        ]
+        self.losses = [BudgetaryImpact, Households, Families, Populations]
         self.validation_split = validation_split
         self.sim = sim
         self.training_log = []

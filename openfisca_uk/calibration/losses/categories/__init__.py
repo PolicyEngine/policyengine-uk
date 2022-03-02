@@ -7,3 +7,6 @@ from openfisca_uk.calibration.losses.categories.families import (
 from openfisca_uk.calibration.losses.categories.households import (
     Households,
 )
+from openfisca_uk.calibration.losses.categories.populations import (
+    Populations,
+)
