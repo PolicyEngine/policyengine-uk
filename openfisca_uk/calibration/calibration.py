@@ -1,3 +1,5 @@
+from glob import glob
+import os
 from time import time
 import tensorflow as tf
 import numpy as np
@@ -138,3 +140,17 @@ if __name__ == "__main__":
             learning_rate=args.learning_rate,
         )
         weights.save(run_id=i + 1)
+
+    print("Combining individual fold logs")
+    logs = pd.concat(
+        [
+            pd.read_csv(REPO / "calibration" / f"training_log_run_{i + 1}.csv")
+            for i in range(args.k_fold_cross_validation)
+        ]
+    )
+    logs.to_csv(REPO / "calibration" / "training_log.csv", index=False)
+    for filename in glob(
+        (REPO / "calibration" / "training_log_run_*.csv").as_posix()
+    ):
+        os.remove(filename)
+    print("Calibration completed.")

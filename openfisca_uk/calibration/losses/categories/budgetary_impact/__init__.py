@@ -15,4 +15,5 @@ BudgetaryImpact = combine_loss_categories(
     BudgetaryImpactByProgram,
     BudgetaryImpactByProgramByCountry,
     BudgetaryImpactOfIncomeTaxByIncomeBand,
+    label="Budgetary impact",
 )

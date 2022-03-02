@@ -51,7 +51,9 @@ class PopulationsByAgeBand(LossCategory):
             ).name, model_population, age_groups[age_group]
 
     def get_metrics():
-        return PopulationsByAgeBand.parameter_folder.MALE.LONDON.get_descendants()
+        return (
+            PopulationsByAgeBand.parameter_folder.MALE.LONDON.get_descendants()
+        )
 
     def get_metric_names():
         return [

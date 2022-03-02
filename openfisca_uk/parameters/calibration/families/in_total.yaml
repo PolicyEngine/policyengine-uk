@@ -1,0 +1,11 @@
+description: Number of families in the UK.
+values:
+  2019-01-01: 19_153_000
+  2020-01-01: 19_412_000
+metadata:
+  unit: family
+  uprating:
+    parameter: calibration.households.in_total
+  reference:
+    - title: Families and households | ONS | Table 1
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/datasets/familiesandhouseholdsfamiliesandhouseholds

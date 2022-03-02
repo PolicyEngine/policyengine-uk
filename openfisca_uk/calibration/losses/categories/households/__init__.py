@@ -15,4 +15,5 @@ Households = combine_loss_categories(
     HouseholdsInTotal,
     HouseholdsByRegionByCouncilTaxBand,
     HouseholdsByRegionByTenureType,
+    label="Households",
 )

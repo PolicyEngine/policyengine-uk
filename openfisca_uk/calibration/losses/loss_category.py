@@ -23,6 +23,7 @@ def weighted_squared_relative_deviation(
 class LossCategory:
     weight: float = 1
     label: str
+    category: str
     parameter_folder: ParameterNode
     years: List[int] = [2019, 2020, 2021, 2022]
     comparison_loss_function: Callable = weighted_squared_relative_deviation
@@ -66,7 +67,7 @@ class LossCategory:
                             pred=float(pred.numpy()),
                             actual=float(actual),
                             loss=float(l.numpy()),
-                            category=cls.label,
+                            category=cls.category,
                         )
                     ]
                     loss += l
@@ -102,7 +103,9 @@ class LossCategory:
 
 
 def combine_two_loss_categories(
-    cls: Type[LossCategory], other_cls: Type[LossCategory]
+    cls: Type[LossCategory],
+    other_cls: Type[LossCategory],
+    group_name: str = None,
 ) -> Type[LossCategory]:
     return type(
         f"{cls.__name__}+{other_cls.__name__}",
@@ -110,6 +113,7 @@ def combine_two_loss_categories(
         {
             "weight": cls.weight + other_cls.weight,
             "label": f"{cls.label}+{other_cls.label}",
+            "category": group_name or f"{cls.label}+{other_cls.label}",
             "get_loss_subcomponents": lambda sim, household_weights, year: chain(
                 cls.get_loss_subcomponents(sim, household_weights, year),
                 other_cls.get_loss_subcomponents(sim, household_weights, year),
@@ -125,8 +129,13 @@ def combine_two_loss_categories(
 
 
 def combine_loss_categories(
-    *loss_categories: Type[LossCategory], weight: float = 1
+    *loss_categories: Type[LossCategory], weight: float = 1, label: str = None
 ) -> Type[LossCategory]:
-    category = reduce(combine_two_loss_categories, loss_categories)
+    category = reduce(
+        lambda cat_1, cat_2: combine_two_loss_categories(
+            cat_1, cat_2, group_name=label
+        ),
+        loss_categories,
+    )
     category.weight = weight or category.weight
     return category
