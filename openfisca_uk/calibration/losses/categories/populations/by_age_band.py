@@ -38,20 +38,18 @@ class AgeBands(LossCategory):
             elif "OVER" in age_group:
                 lower, upper = float(age_group.split("_")[1]), np.inf
             else:
-                raise ValueError(
-                    f"Unexpected test group: {age_group}"
-                )
+                raise ValueError(f"Unexpected test group: {age_group}")
             people_in_household = sim.map_to(
-                (person_age >= lower)
-                * (person_age < upper)
+                (person_age >= lower) * (person_age < upper),
                 "person",
                 "household",
             )
             model_population = tf.reduce_sum(
                 people_in_household * household_weights
             )
-            yield getattr(AgeBands.parameter_folder.MALE.LONDON, age_group).name, model_population, age_groups[age_group]
-
+            yield getattr(
+                AgeBands.parameter_folder.MALE.LONDON, age_group
+            ).name, model_population, age_groups[age_group]
 
     def get_metrics():
         return [AgeBands.parameter_folder.MALE.LONDON.get_descendants()]

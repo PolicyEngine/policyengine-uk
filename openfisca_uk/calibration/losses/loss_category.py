@@ -1,6 +1,8 @@
 import tensorflow as tf
 from openfisca_uk import Microsimulation
-from typing import Callable, Iterable, List, Tuple
+from typing import Callable, Iterable, List, Tuple, Type
+from functools import reduce
+from itertools import chain
 from numpy.typing import ArrayLike
 from openfisca_core.parameters import ParameterNode, Parameter
 
@@ -92,3 +94,32 @@ class LossCategory:
         for parameter in cls.parameter_folder.get_descendants():
             if isinstance(parameter, Parameter):
                 yield from [f"{parameter.name}.{year}" for year in cls.years]
+
+
+def combine_two_loss_categories(
+    cls: Type[LossCategory], other_cls: Type[LossCategory]
+) -> Type[LossCategory]:
+    return type(
+        f"{cls.__name__}+{other_cls.__name__}",
+        (LossCategory,),
+        {
+            "weight": cls.weight + other_cls.weight,
+            "label": f"{cls.label}+{other_cls.label}",
+            "get_loss_subcomponents": lambda sim, household_weights, year: chain(
+                cls.get_loss_subcomponents(sim, household_weights, year),
+                other_cls.get_loss_subcomponents(sim, household_weights, year),
+            ),
+            "get_metrics": lambda: chain(
+                cls.get_metrics(), other_cls.get_metrics()
+            ),
+            "get_metric_names": lambda: chain(
+                cls.get_metric_names(), other_cls.get_metric_names()
+            ),
+        },
+    )
+
+
+def combine_loss_categories(
+    *loss_categories: Type[LossCategory],
+) -> Type[LossCategory]:
+    return reduce(combine_two_loss_categories, loss_categories)

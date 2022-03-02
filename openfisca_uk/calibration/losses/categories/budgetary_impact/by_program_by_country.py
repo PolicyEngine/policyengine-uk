@@ -5,7 +5,7 @@ from typing import Iterable, List, Tuple
 from openfisca_uk.parameters import parameters
 
 
-class CountryLevelAggregates(LossCategory):
+class BudgetaryImpactByProgramByCountry(LossCategory):
     weight = 1
     label = "Country-level aggregates"
     parameter_folder = parameters.calibration.country_level_aggregates
@@ -13,7 +13,7 @@ class CountryLevelAggregates(LossCategory):
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int
     ) -> Iterable[Tuple]:
-        aggregates = CountryLevelAggregates.parameter_folder
+        aggregates = BudgetaryImpactByProgramByCountry.parameter_folder
         variables = aggregates.children
         hh_country = sim.calc("country").values
         for variable in variables:

@@ -1,17 +1,6 @@
 from typing import List
 import numpy as np
-from openfisca_uk.calibration.losses.categories import (
-    Populations,
-    RegionalPopulations,
-    Households,
-    TenureType,
-    CouncilTaxBandHouseholds,
-    CountryLevelAggregates,
-    UKProgramCaseloads,
-    UKProgramAggregates,
-    IncomeTaxPayersByBand,
-    IncomeTaxRevenueByIncome,
-)
+from openfisca_uk.calibration.losses.categories import BudgetaryImpact
 from random import sample
 import tensorflow as tf
 from openfisca_uk.tools.simulation import Microsimulation
@@ -26,16 +15,7 @@ class LossCalculator:
             validation_split (float, optional): Percentage of metrics to use as validation. Defaults to 0.1.
         """
         self.losses = [
-            # Populations,
-            RegionalPopulations,
-            Households,
-            TenureType,
-            CouncilTaxBandHouseholds,
-            CountryLevelAggregates,
-            UKProgramCaseloads,
-            UKProgramAggregates,
-            # IncomeTaxPayersByBand,
-            # IncomeTaxRevenueByIncome,
+            BudgetaryImpact,
         ]
         self.validation_split = validation_split
         self.sim = sim

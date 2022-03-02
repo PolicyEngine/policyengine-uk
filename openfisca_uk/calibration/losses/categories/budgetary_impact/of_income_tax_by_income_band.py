@@ -4,7 +4,7 @@ import tensorflow as tf
 from openfisca_uk.parameters import parameters
 
 
-class IncomeTaxRevenueByIncome(LossCategory):
+class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
     weight = 1
     label = "Income tax revenue by income"
     parameter_folder = parameters.calibration.income_tax.revenue_by_income
@@ -14,9 +14,11 @@ class IncomeTaxRevenueByIncome(LossCategory):
         household_weights,
         year,
     ):
-        brackets = IncomeTaxRevenueByIncome.parameter_folder.brackets[
-            :-3
-        ]  # Last-3 brackets are impossible due to FRS non-capture
+        brackets = (
+            BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets[
+                :-3
+            ]
+        )  # Last-3 brackets are impossible due to FRS non-capture
         num_thresholds = len(brackets)
         instant_str = f"{year}-01-01"
         for i in range(num_thresholds):
@@ -43,12 +45,16 @@ class IncomeTaxRevenueByIncome(LossCategory):
                 yield brackets[i].name + "." + str(year), aggregate, target
 
     def get_metrics():
-        return IncomeTaxRevenueByIncome.parameter_folder.brackets[:-3]
+        return (
+            BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets[
+                :-3
+            ]
+        )
 
     def get_metric_names():
         return [
             bracket.name + "." + str(year)
-            for bracket in IncomeTaxRevenueByIncome.parameter_folder.brackets[
+            for bracket in BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets[
                 :-3
             ]
             for year in range(2019, 2023)
