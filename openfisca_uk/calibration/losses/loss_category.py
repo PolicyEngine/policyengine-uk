@@ -20,6 +20,7 @@ def weighted_squared_relative_deviation(
         return tf.constant(0, dtype=tf.float32)
     return ((pred / actual) - 1) ** 2 * actual
 
+
 def weighted_squared_log_relative_deviation(
     pred: tf.Tensor, actual: ArrayLike
 ) -> tf.Tensor:

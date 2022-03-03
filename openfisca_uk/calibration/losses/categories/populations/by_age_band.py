@@ -49,8 +49,8 @@ class PopulationsByAgeBand(LossCategory):
             elif "OVER" in age_group:
                 lower, upper = int(age_group.split("_")[1]), np.inf
                 if lower == 80:
-                    lower = 79 # The FRS top-codes at 79, so we'll be very slightly mismatched 
-                               # but it's better than dropping over-80 targeting altogether
+                    lower = 79  # The FRS top-codes at 79, so we'll be very slightly mismatched
+                    # but it's better than dropping over-80 targeting altogether
             else:
                 raise ValueError(f"Unexpected test group: {age_group}")
             people_in_household = sim.map_to(
@@ -64,8 +64,11 @@ class PopulationsByAgeBand(LossCategory):
             if people_in_household.sum() > 0:
                 # If the FRS has no observations, skip the target.
                 yield getattr(
-                    PopulationsByAgeBand.parameter_folder.MALE.LONDON, age_group
-                ).name + "." + str(year), model_population, age_groups[age_group] * adjustment
+                    PopulationsByAgeBand.parameter_folder.MALE.LONDON,
+                    age_group,
+                ).name + "." + str(year), model_population, age_groups[
+                    age_group
+                ] * adjustment
 
     def get_metrics():
         return (
