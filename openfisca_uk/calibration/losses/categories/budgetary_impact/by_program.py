@@ -15,13 +15,9 @@ class BudgetaryImpactByProgram(LossCategory):
         aggregates = BudgetaryImpactByProgram.parameter_folder
         variables = aggregates.children
         for variable in variables:
-            values = sim.calc(variable, period=year).values
-            entity = sim.simulation.tax_benefit_system.variables[
-                variable
-            ].entity.key
-            household_totals = sim.map_to(values, entity, "household")
+            values = sim.calc(variable, period=year, map_to="household").values
             # Calculate aggregate error
-            agg = tf.reduce_sum(household_weights * household_totals)
+            agg = tf.reduce_sum(household_weights * values)
             parameter = aggregates.children[variable]
             actual = parameter(f"{year}-01-01")
             yield parameter.name + "." + str(year), agg, actual

@@ -35,7 +35,7 @@ class HouseholdWeights:
         self.sim = (
             loss_calculator.sim
             if loss_calculator is not None
-            else Microsimulation(adjust_weights=False, duplicate_records=2)
+            else Microsimulation(adjust_weights=False, duplicate_records=True)
         )
         survey_num_households = len(self.sim.calc("household_id"))
         self.weight_changes = tf.Variable(
@@ -57,19 +57,26 @@ class HouseholdWeights:
                     self.weight_changes, validation=False, epoch=epoch
                 )
                 grads = tape.gradient(loss, self.weight_changes)
-            validation_loss = loss_calculator.compute_loss(
-                self.weight_changes, validation=True, epoch=epoch
-            )
+            if validation_split > 0:
+                validation_loss = loss_calculator.compute_loss(
+                    self.weight_changes, validation=True, epoch=epoch
+                )
+            else:
+                validation_loss = tf.constant(0, dtype=tf.float32)
             if start_train_loss is None:
                 start_train_loss = loss.numpy()
             if start_val_loss is None:
                 start_val_loss = validation_loss.numpy()
             opt.apply_gradients(zip([grads], [self.weight_changes]))
-            time_str = f"{epoch + 1}/{num_epochs} ({time() - start_time:.2f}s)"
+            seconds_elapsed = time() - start_time
+            hours = seconds_elapsed // 3600
+            minutes = (seconds_elapsed - hours * 3600) // 60
+            seconds = seconds_elapsed - hours * 3600 - minutes * 60
+            time_str = f"{epoch + 1}/{num_epochs} ({int(hours)}h {int(minutes)}m {int(seconds)}s)"
             print(
                 f"{time_str}, train loss = {loss.numpy() / start_train_loss - 1:.4%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.4%}, train + validation loss = {(loss.numpy() + validation_loss.numpy()) / (start_train_loss + start_val_loss) - 1:.4%}"
             )
-            if epoch > 0 and epoch % 50 == 0:
+            if epoch > 0 and epoch % 20 == 0:
                 self.training_log = loss_calculator.training_log
                 self.save()
 
