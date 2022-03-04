@@ -107,6 +107,13 @@ class TenureType(Enum):
     OWNED_WITH_MORTGAGE = "Owned with a mortgage"
 
 
+class ONSTenureType(Enum):
+    RENT_FROM_COUNCIL = "Rented from Council"
+    RENT_FROM_HA = "Rented from a Housing Association"
+    RENT_PRIVATELY = "Rented privately"
+    OWNER_OCCUPIED = "Owner occupied"
+
+
 class tenure_type(Variable):
     value_type = Enum
     possible_values = TenureType
@@ -114,6 +121,35 @@ class tenure_type(Variable):
     entity = Household
     label = "Tenure type of the household"
     definition_period = YEAR
+
+
+class ons_tenure_type(Variable):
+    label = "ONS tenure type"
+    documentation = "Tenure type matching ONS_produced statistical breakdowns."
+    entity = Household
+    definition_period = YEAR
+    value_type = Enum
+    possible_values = ONSTenureType
+    default_value = ONSTenureType.OWNER_OCCUPIED
+
+    def formula(household, period, parameters):
+        tenure = household("tenure_type", period)
+        return select(
+            [
+                tenure == TenureType.RENT_FROM_HA,
+                tenure == TenureType.RENT_FROM_COUNCIL,
+                tenure == TenureType.RENT_PRIVATELY,
+                tenure == TenureType.OWNED_OUTRIGHT,
+                tenure == TenureType.OWNED_WITH_MORTGAGE,
+            ],
+            [
+                ONSTenureType.RENT_FROM_HA,
+                ONSTenureType.RENT_FROM_COUNCIL,
+                ONSTenureType.RENT_PRIVATELY,
+                ONSTenureType.OWNER_OCCUPIED,
+                ONSTenureType.OWNER_OCCUPIED,
+            ],
+        )
 
 
 class is_renting(Variable):

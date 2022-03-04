@@ -1,0 +1,27 @@
+- name: No changes, initial tax computation to generate a baseline against which to test the reform.
+  period: 2021
+  input:
+    people:
+      pensioner:
+        age: 70
+        pension_income: 20_000
+      adult:
+        age: 30
+        employment_income: 20_000
+  output:
+    income_tax: [1_500, 1_500]
+
+- name: Basic rate increase, with one pensioner (exempt) and one working-age adult (not exempt).
+  period: 2021
+  input:
+    tax.income_tax.rates.uk[0].rate: 0.5
+    contrib.ubi_center.basic_income.exempt_pensioners_from_tax_changes: true
+    people:
+      pensioner:
+        age: 70
+        pension_income: 20_000
+      adult:
+        age: 30
+        employment_income: 20_000
+  output:
+    income_tax: [1_500, 3_750]

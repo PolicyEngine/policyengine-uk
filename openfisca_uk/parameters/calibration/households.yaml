@@ -1,0 +1,14 @@
+description: Number of households in the UK.
+values:
+  2014-01-01: 26_734_000
+  2015-01-01: 27_046_000
+  2016-01-01: 27_109_000
+  2017-01-01: 27_226_000
+  2018-01-01: 27_576_000
+  2019-01-01: 27_824_000
+  2020-01-01: 27_792_000
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Families and households | ONS
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/datasets/familiesandhouseholdsfamiliesandhouseholds
