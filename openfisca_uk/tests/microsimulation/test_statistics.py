@@ -53,12 +53,28 @@ class StatisticTest:
         except:
             # Not overridden - use statistics parameter
             if source == "official":
-                return parameters.calibration.children[
-                    {
-                        "aggregate": "program_aggregates",
-                        "caseload": "program_caseloads",
-                    }[self.statistic]
-                ].children[self.variable](f"{self.year}-01-01")
+                if self.statistic == "caseload":
+                    if (
+                        self.variable
+                        in parameters.calibration.populations.by_program_participation.children
+                    ):
+                        return parameters.calibration.populations.by_program_participation.children[
+                            self.variable
+                        ](
+                            f"{self.year}-01-01"
+                        )
+                    else:
+                        return parameters.calibration.families.by_program_participation.children[
+                            self.variable
+                        ](
+                            f"{self.year}-01-01"
+                        )
+                else:
+                    return parameters.calibration.budgetary_impact.by_program.children[
+                        self.variable
+                    ](
+                        f"{self.year}-01-01"
+                    )
         raise ValueError(f"Unknown statistic: {self.statistic}")
 
     @property
