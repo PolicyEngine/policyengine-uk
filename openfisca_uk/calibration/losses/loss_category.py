@@ -1,21 +1,51 @@
-import tensorflow as tf
-from openfisca_uk import Microsimulation
-from typing import Callable, Iterable, List, Tuple
-from numpy.typing import ArrayLike
+import numpy as np
 from openfisca_core.parameters import ParameterNode, Parameter
+from numpy.typing import ArrayLike
+from itertools import chain
+from functools import reduce
+from typing import Callable, Iterable, List, Tuple, Type
+from openfisca_uk import Microsimulation
+import tensorflow as tf
 
 
 def weighted_squared_relative_deviation(
     pred: tf.Tensor, actual: ArrayLike
 ) -> tf.Tensor:
+    """Computes the squared relative deviation between two tensors, weighted by the actual value.
+
+    Args:
+        pred (tf.Tensor): Predicted values.
+        actual (ArrayLike): Actual values.
+
+    Returns:
+        tf.Tensor: The weighted squared relative deviation.
+    """
     if actual == 0:
         return tf.constant(0, dtype=tf.float32)
     return ((pred / actual) - 1) ** 2 * actual
 
 
+def weighted_squared_log_relative_deviation(
+    pred: tf.Tensor, actual: ArrayLike
+) -> tf.Tensor:
+    """Computes the squared log relative deviation between two tensors, weighted by the actual value.
+
+    Args:
+        pred (tf.Tensor): Predicted values.
+        actual (ArrayLike): Actual values.
+
+    Returns:
+        tf.Tensor: The weighted squared log relative deviation.
+    """
+    if actual == 0:
+        return tf.constant(0, dtype=tf.float32)
+    return (tf.math.log(pred / actual) - 1) ** 2 * actual
+
+
 class LossCategory:
     weight: float = 1
     label: str
+    category: str
     parameter_folder: ParameterNode
     years: List[int] = [2019, 2020, 2021, 2022]
     comparison_loss_function: Callable = weighted_squared_relative_deviation
@@ -52,14 +82,14 @@ class LossCategory:
                 sim, household_weights[year - cls.years[0]], year
             ):
                 if name not in excluded_metrics:
-                    l = cls.comparison_loss_function(pred, actual) * cls.weight
+                    l = cls.comparison_loss_function(pred, actual)
                     log += [
                         dict(
                             name=name,
                             pred=float(pred.numpy()),
                             actual=float(actual),
                             loss=float(l.numpy()),
-                            category=cls.label,
+                            category=cls.category,
                         )
                     ]
                     loss += l
@@ -69,7 +99,7 @@ class LossCategory:
             cls.initial_val_loss = loss.numpy()
         initial_value = (
             cls.initial_val_loss if validation else cls.initial_train_loss
-        )
+        ) / cls.weight
         if initial_value == 0:
             initial_value += 1
         for entry in log:
@@ -92,3 +122,42 @@ class LossCategory:
         for parameter in cls.parameter_folder.get_descendants():
             if isinstance(parameter, Parameter):
                 yield from [f"{parameter.name}.{year}" for year in cls.years]
+
+
+def combine_two_loss_categories(
+    cls: Type[LossCategory],
+    other_cls: Type[LossCategory],
+    group_name: str = None,
+) -> Type[LossCategory]:
+    return type(
+        f"{cls.__name__}+{other_cls.__name__}",
+        (LossCategory,),
+        {
+            "weight": cls.weight + other_cls.weight,
+            "label": f"{cls.label}+{other_cls.label}",
+            "category": group_name or f"{cls.label}+{other_cls.label}",
+            "get_loss_subcomponents": lambda sim, household_weights, year: chain(
+                cls.get_loss_subcomponents(sim, household_weights, year),
+                other_cls.get_loss_subcomponents(sim, household_weights, year),
+            ),
+            "get_metrics": lambda: chain(
+                cls.get_metrics(), other_cls.get_metrics()
+            ),
+            "get_metric_names": lambda: chain(
+                cls.get_metric_names(), other_cls.get_metric_names()
+            ),
+        },
+    )
+
+
+def combine_loss_categories(
+    *loss_categories: Type[LossCategory], weight: float = 1, label: str = None
+) -> Type[LossCategory]:
+    category = reduce(
+        lambda cat_1, cat_2: combine_two_loss_categories(
+            cat_1, cat_2, group_name=label
+        ),
+        loss_categories,
+    )
+    category.weight = weight or category.weight
+    return category
