@@ -16,9 +16,7 @@ class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
         year,
     ):
         brackets = (
-            BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets[
-                :-3
-            ]
+            BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets
         )  # Last-3 brackets are impossible due to FRS non-capture
         num_thresholds = len(brackets)
         instant_str = f"{year}-01-01"

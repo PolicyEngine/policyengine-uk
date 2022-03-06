@@ -4,6 +4,7 @@ metadata:
     parameter: uprating.earnings
   propagate_metadata_to_children: true
   reference:
+    # Data is more recent than the URL suggests.
     - title: Survey of Personal Incomes (SPI) | National Statistics
       href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
 employment_income:

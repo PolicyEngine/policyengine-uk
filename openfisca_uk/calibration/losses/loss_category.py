@@ -6,16 +6,20 @@ from functools import reduce
 from typing import Callable, Iterable, List, Tuple, Type
 from openfisca_uk import Microsimulation
 import tensorflow as tf
-import logging
-import os
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-logging.getLogger("tensorflow").disabled = True
 
 
 def weighted_squared_relative_deviation(
     pred: tf.Tensor, actual: ArrayLike
 ) -> tf.Tensor:
+    """Computes the squared relative deviation between two tensors, weighted by the actual value.
+
+    Args:
+        pred (tf.Tensor): Predicted values.
+        actual (ArrayLike): Actual values.
+
+    Returns:
+        tf.Tensor: The weighted squared relative deviation.
+    """
     if actual == 0:
         return tf.constant(0, dtype=tf.float32)
     return ((pred / actual) - 1) ** 2 * actual
@@ -24,6 +28,15 @@ def weighted_squared_relative_deviation(
 def weighted_squared_log_relative_deviation(
     pred: tf.Tensor, actual: ArrayLike
 ) -> tf.Tensor:
+    """Computes the squared log relative deviation between two tensors, weighted by the actual value.
+
+    Args:
+        pred (tf.Tensor): Predicted values.
+        actual (ArrayLike): Actual values.
+
+    Returns:
+        tf.Tensor: The weighted squared log relative deviation.
+    """
     if actual == 0:
         return tf.constant(0, dtype=tf.float32)
     return (tf.math.log(pred / actual) - 1) ** 2 * actual

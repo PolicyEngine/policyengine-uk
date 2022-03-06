@@ -26,8 +26,17 @@ class LossCalculator:
         self.metrics = sum(
             [list(loss.get_metric_names()) for loss in self.losses], []
         )
+        TRAINING_ONLY_CATEGORIES = [
+            "Households",
+            "Populations",
+        ]
         non_population_metrics = sum(
-            [list(loss.get_metric_names()) for loss in self.losses[2:]], []
+            [
+                list(loss.get_metric_names())
+                for loss in self.losses
+                if loss.__name__ not in TRAINING_ONLY_CATEGORIES
+            ],
+            [],
         )
         self.validation_metrics = sample(
             non_population_metrics,
@@ -98,6 +107,8 @@ class LossCalculator:
         for calculator in loss_calculators:
             calculator.validation_metrics = []
         for metric_name in base_calculator.validation_metrics:
+            # For each metric, randomly select a training run in which to use
+            # it as a validation metric.
             loss_calculators[sample(range(k), 1)[0]].validation_metrics.append(
                 metric_name
             )
