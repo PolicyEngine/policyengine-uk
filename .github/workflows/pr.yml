@@ -54,8 +54,6 @@ jobs:
         run: make test
       - name: Generate documentation
         if: matrix.os == 'ubuntu-latest'
-        run: make documentation || true
+        run: make documentation
       - name: Print summary metrics
         run: python docs/summary/generate_summary.py
-      - name: Print JB failure log
-        run: cat /home/runner/work/openfisca-uk/openfisca-uk/docs/book/_build/html/reports/reweighting.log
