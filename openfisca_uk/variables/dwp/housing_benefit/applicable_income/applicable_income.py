@@ -44,26 +44,5 @@ class housing_benefit_applicable_income(Variable):
             max_childcare_amount,
             aggr(benunit, period, ["childcare_expenses"]),
         )
-        hours = aggr(benunit, period, ["weekly_hours"])
-        # Calculate single, couple, lone parent, and worker disregards.
-        single = benunit("is_single_person", period)
-        single_disregard = single * means_test.income_disregard_single
-        couple = benunit("is_couple", period)
-        couple_disregard = couple * means_test.income_disregard_couple
-        lone_parent = benunit("is_lone_parent", period)
-        lone_parent_disregard = (
-            lone_parent * means_test.income_disregard_lone_parent
-        )
-        hour_requirement = where(
-            lone_parent, WTC.min_hours.lower, means_test.worker_hours
-        )
-        worker = hours > hour_requirement
-        worker_disregard = worker * means_test.worker_income_disregard
-        weekly_disregard = (
-            single_disregard
-            + couple_disregard
-            + lone_parent_disregard
-            + worker_disregard
-        )
-        disregard = weekly_disregard * WEEKS_IN_YEAR
+        disregard = benunit("hb_income_disregards", period)
         return max_(0, income - disregard - childcare_element)

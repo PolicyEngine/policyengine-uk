@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class hb_eligible_rent(Variable):
     label = "Eligible rent"
     documentation = "Rent eligible for Housing Benefit"

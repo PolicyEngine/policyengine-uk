@@ -119,6 +119,7 @@ class benefits_modelling(Variable):
     def formula(person, period, parameters):
         return person("benefits", period) - person("benefits_reported", period)
 
+
 class in_full_time_education(Variable):
     label = "In full-time education"
     documentation = "Whether this person is in full-time education."
@@ -128,9 +129,7 @@ class in_full_time_education(Variable):
 
     def formula(person, period, parameters):
         education = person("current_education", period)
-        return ~(
-            education == education.possible_values.NOT_IN_EDUCATION
-        )
+        return ~(education == education.possible_values.NOT_IN_EDUCATION)
 
 
 class is_QYP(Variable):

@@ -9,9 +9,28 @@
     benunit_rent: 88 * 52
     is_household_head: true
     BRMA: GUILDFORD
+    income_tax: 0
+    income_support: 0
+    JSA_income: 0
+    pension_credit: 0
   output:
     housing_benefit: 88 * 52 # source: entitledto.co.uk
     working_tax_credit: 2_835
+
+- name: Baseline value for the next test
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 26
+    weekly_hours: 31
+    employment_income: 4_000
+    tenure_type: RENT_FROM_COUNCIL
+    claims_legacy_benefits: true
+    benunit_rent: 88 * 52
+    is_household_head: true
+    BRMA: GUILDFORD
+  output:
+    housing_benefit: 4_081.09
 
 - name: Check phase-out rate is 65%
   period: 2022
@@ -19,11 +38,11 @@
   input:
     age: 26
     weekly_hours: 31
-    employment_income: 745.80 + 100
+    employment_income: 4_000 + 100
     tenure_type: RENT_FROM_COUNCIL
     claims_legacy_benefits: true
     benunit_rent: 88 * 52
     is_household_head: true
+    BRMA: GUILDFORD
   output:
-    housing_benefit_applicable_amount: 0
-    housing_benefit: 88 * 52 - 65
+    housing_benefit: 4_081.09 - 65

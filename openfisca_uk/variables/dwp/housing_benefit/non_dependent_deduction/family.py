@@ -8,14 +8,14 @@ class hb_non_dep_deductions(Variable):
     documentation = "The non-dependent deductions to made from this family's Housing Benefit claim."
     definition_period = YEAR
     unit = "currency-GBP"
-    reference = "https://www.legislation.gov.uk/uksi/2006/213/regulation/74/made"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/74/made"
+    )
 
     def formula(benunit, period, parameters):
-        non_dep_deductions_in_hh = benunit.max(
-            add(benunit.members.household, period, ["hb_individual_non_dep_deduction"])
-        )
-        non_dep_deductions_in_bu = add(
-            benunit, period, ["hb_individual_non_dep_deduction"]
-        )
+        person = benunit.members
+        individual_deductions = person("hb_individual_non_dep_deduction", period)
+        household_deductions = person.household.sum(individual_deductions)
+        non_dep_deductions_in_hh = benunit.max(household_deductions)
+        non_dep_deductions_in_bu = benunit.sum(individual_deductions)
         return non_dep_deductions_in_hh - non_dep_deductions_in_bu
-

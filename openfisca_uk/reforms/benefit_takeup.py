@@ -27,7 +27,7 @@ def apply_takeup_rates() -> Type[Reform]:
                 ).benefit.tax_credits.working_tax_credit.takeup
             )
 
-    class would_claim_HB(variables.would_claim_HB):
+    class would_claim_hb(variables.would_claim_hb):
         def formula(benunit, period, parameters):
             return (
                 random(benunit)
@@ -64,7 +64,7 @@ def apply_takeup_rates() -> Type[Reform]:
         def apply(self):
             self.update_variable(would_claim_CTC)
             self.update_variable(would_claim_WTC)
-            self.update_variable(would_claim_HB)
+            self.update_variable(would_claim_hb)
             self.update_variable(would_claim_IS)
             self.update_variable(would_claim_PC)
             self.update_variable(claims_legacy_benefits)

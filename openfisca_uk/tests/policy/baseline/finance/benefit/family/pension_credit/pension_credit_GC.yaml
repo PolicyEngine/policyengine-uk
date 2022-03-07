@@ -32,6 +32,9 @@
       benunit:
         adults: [p1, p2]
         would_claim_PC: true
+    households:
+      household:
+        adults: [p1, p2]
   output:
     pension_credit_GC: 270.30 * 52 - 100
 - name: Minimum Guarantee, couple over SP age, enough income to neutralise
@@ -48,5 +51,8 @@
         adults: [p1, p2]
         guarantee_credit_applicable_income: 270.30 * 52
         would_claim_PC: true
+    households:
+      household:
+        adults: [p1, p2]
   output:
     pension_credit_GC: 0

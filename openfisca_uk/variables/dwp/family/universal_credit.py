@@ -37,7 +37,7 @@ class claims_UC(Variable):
         CTC = benunit("would_claim_CTC", period) & benunit(
             "is_CTC_eligible", period
         )
-        HB = benunit("would_claim_HB", period) & benunit(
+        HB = benunit("would_claim_hb", period) & benunit(
             "housing_benefit_eligible", period
         )
         IS = benunit("would_claim_IS", period) & benunit(

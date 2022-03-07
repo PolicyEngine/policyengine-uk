@@ -19,5 +19,8 @@
       benunit:
         adults: [p1, p2]
         would_claim_PC: true
+    households:
+      household:
+        adults: [p1, p2]
   output:
     pension_credit_GC: 270.30 * 52

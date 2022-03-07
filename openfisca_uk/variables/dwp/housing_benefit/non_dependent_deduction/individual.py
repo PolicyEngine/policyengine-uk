@@ -8,7 +8,9 @@ class hb_individual_non_dep_deduction(Variable):
     documentation = "The non-dependent deduction to make from other families' Housing Benefit claims in respect of this person."
     definition_period = YEAR
     unit = "currency-GBP"
-    reference = "https://www.legislation.gov.uk/uksi/2006/213/regulation/74/made"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/74/made"
+    )
 
     def formula(person, period, parameters):
         non_dep = parameters(period).dwp.housing_benefit.non_dependent
