@@ -5,6 +5,7 @@ values:
     - DLA_SC
     - PIP_DL
     - AFCS
+    - in_full_time_education
 metadata:
   unit: list
   reference:
