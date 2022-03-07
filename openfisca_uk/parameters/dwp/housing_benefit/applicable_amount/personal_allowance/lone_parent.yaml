@@ -1,0 +1,19 @@
+description: The personal allowance for Housing Benefit for a lone parent, by age.
+brackets:
+  - threshold:
+      2021-04-01: 0
+    amount:
+      2017-04-06: 57.90
+      2021-04-01: 59.20
+  - threshold:
+      2021-04-01: 18
+    amount:
+      2017-04-06: 73.10
+      2021-04-01: 74.20
+metadata:
+  type: single_amount
+  threshold_unit: year
+  amount_unit: currency-GBP
+  reference:
+    - title: The Housing Benefit Regulations 2006 sch. 3 pt. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3

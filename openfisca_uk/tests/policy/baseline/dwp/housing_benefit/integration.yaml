@@ -1,0 +1,29 @@
+- name: Housing Benefit for a single person with small earnings
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 26
+    weekly_hours: 31
+    tenure_type: RENT_FROM_COUNCIL
+    claims_legacy_benefits: true
+    benunit_rent: 88 * 52
+    is_household_head: true
+    BRMA: GUILDFORD
+  output:
+    housing_benefit: 88 * 52 # source: entitledto.co.uk
+    working_tax_credit: 2_835
+
+- name: Check phase-out rate is 65%
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 26
+    weekly_hours: 31
+    employment_income: 745.80 + 100
+    tenure_type: RENT_FROM_COUNCIL
+    claims_legacy_benefits: true
+    benunit_rent: 88 * 52
+    is_household_head: true
+  output:
+    housing_benefit_applicable_amount: 0
+    housing_benefit: 88 * 52 - 65

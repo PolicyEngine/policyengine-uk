@@ -1,0 +1,19 @@
+description: The personal allowance for Housing Benefit for a couple, by the eldest adult age.
+brackets:
+  - threshold:
+      2021-04-01: 0
+    amount:
+      2017-04-06: 87.59
+      2021-04-01: 89.45
+  - threshold:
+      2021-04-01: 18
+    amount:
+      2017-04-06: 114.85
+      2021-04-01: 117.40
+metadata:
+  type: single_amount
+  threshold_unit: year
+  amount_unit: currency-GBP
+  reference:
+    - title: The Housing Benefit Regulations 2006 sch. 3 pt. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3
