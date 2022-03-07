@@ -1,0 +1,12 @@
+description: Programs which exempt an individual from a Housing Benefit non-dependent deduction.
+values:
+  2019-06-01:
+    - AA
+    - DLA_SC
+    - PIP_DL
+    - AFCS
+metadata:
+  unit: list
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 74
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74

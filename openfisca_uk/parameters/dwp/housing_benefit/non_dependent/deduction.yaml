@@ -1,32 +1,45 @@
-description: Housing Benefit non-dependent deduction for an individual
+description: Housing Benefit non-dependent deduction for an individual in remunerative work.
 brackets:
   - amount:
       2018-06-18: 15.25
+      2021-04-01: 15.95
     threshold:
       2018-06-18: 0.00
   - amount:
       2018-06-18: 35.00
+      2021-04-01: 36.65
     threshold:
       2018-06-18: 139.00
+      2021-04-01: 149.00
   - amount:
       2018-06-18: 48.05
+      2021-04-01: 50.30
     threshold:
       2018-06-18: 204.00
+      2021-04-01: 217.00
   - amount:
       2018-06-18: 78.65
+      2021-04-01: 82.30
     threshold:
       2018-06-18: 265.00
+      2021-04-01: 283.00
   - amount:
       2018-06-18: 89.55
+      2021-04-01: 93.70
     threshold:
       2018-06-18: 354.00
+      2021-04-01: 377.00
   - amount:
       2018-06-18: 98.30
+      2021-04-01: 102.85
     threshold:
       2018-06-18: 439.00
+      2021-04-01: 469.00
 metadata:
   type: single_amount
   period: week
   threshold_unit: currency-GBP
   amount_unit: currency-GBP
-  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=37
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 74
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74

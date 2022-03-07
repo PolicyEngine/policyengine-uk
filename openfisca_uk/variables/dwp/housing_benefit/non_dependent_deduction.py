@@ -5,18 +5,20 @@ class HB_individual_non_dep_deduction(Variable):
     value_type = float
     entity = Person
     label = "Non-dependent deduction (individual)"
+    documentation = "The non-dependent deduction to made from this individual's family's Housing Benefit claim."
     definition_period = YEAR
     unit = "currency-GBP"
+    reference = "https://www.legislation.gov.uk/uksi/2006/213/regulation/74/made"
 
     def formula(person, period, parameters):
-        not_rent_liable = person.benunit("benunit_rent", period) == 0
-        over_21 = person("age", period) >= 21
-        deduction_scale = parameters(
-            period
-        ).benefit.housing_benefit.deductions.non_dep_deduction
-        weekly_income = person("total_income", period)
-        deduction = deduction_scale.calc(weekly_income)
-        return deduction * over_21 * not_rent_liable * MONTHS_IN_YEAR
+        not_rent_liable = person.benunit("hb_eligible_rent", period) == 0
+        non_dep = parameters(period).dwp.housing_benefit.non_dependent
+        meets_age_condition = person("age", period) >= non_dep.age
+        exempt = any_(person, period, non_dep.exemptions)
+        is_non_dep = not_rent_liable & meets_age_condition & ~exempt
+        weekly_income = person("total_income", period) / WEEKS_IN_YEAR
+        deduction = non_dep.deduction.calc(weekly_income)
+        return deduction * is_non_dep * MONTHS_IN_YEAR
 
 
 class HB_non_dep_deductions(Variable):

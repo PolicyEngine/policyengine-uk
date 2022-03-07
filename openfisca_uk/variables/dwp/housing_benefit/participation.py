@@ -1,7 +1,7 @@
 from openfisca_uk.model_api import *
 
 
-class would_claim_HB(Variable):
+class would_claim_hb(Variable):
     value_type = bool
     entity = BenUnit
     label = "Would claim Housing Benefit"
@@ -14,5 +14,5 @@ class would_claim_HB(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        reported_hb = aggr(benunit, period, ["housing_benefit_reported"]) > 0
+        reported_hb = benunit("housing_benefit_reported", period) > 0
         return reported_hb | claims_all_entitled_benefits

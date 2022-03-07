@@ -1,0 +1,8 @@
+description: Age at which an individual may be considered non-dependent for Housing Benefit.
+values:
+  2015-06-01: 18
+metadata:
+  unit: year
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 74
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74
