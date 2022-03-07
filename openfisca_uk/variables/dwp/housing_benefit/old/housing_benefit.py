@@ -17,7 +17,7 @@ class housing_benefit(Variable):
         income = benunit("housing_benefit_applicable_income", period)
         withdrawal_rate = parameters(
             period
-        ).benefit.housing_benefit.means_test.withdrawal_rate
+        ).dwp.housing_benefit.means_test.withdrawal_rate
         final_amount = max_(
             0, rent - max_(0, income - applicable_amount) * withdrawal_rate
         )
@@ -44,9 +44,9 @@ class housing_benefit(Variable):
         other_capped_benefits = (
             capped_benunit_benefits + capped_personal_benefits
         )
-        amount = max_(0, amount - benunit("HB_non_dep_deductions", period))
+        amount = max_(0, amount - benunit("hb_non_dep_deductions", period))
         final_amount = min_(
-            amount * benunit("claims_HB", period),
+            amount * benunit("would_claim_hb", period),
             benunit("benefit_cap", period) - other_capped_benefits,
         )
         return max_(0, final_amount)

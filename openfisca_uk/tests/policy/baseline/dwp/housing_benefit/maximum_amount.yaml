@@ -1,0 +1,7 @@
+- name: Some rent, some deductions, capped at zero.
+  period: 2021
+  input:
+    hb_eligible_rent: 100
+    hb_non_dep_deductions: 150
+  output:
+    maximum_housing_benefit: 0

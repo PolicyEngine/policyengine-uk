@@ -1,0 +1,6 @@
+- name: Eligible rent sums benefit unit rent
+  period: 2021
+  input:
+    benunit_rent: 100
+  output:
+    hb_eligible_rent: 100

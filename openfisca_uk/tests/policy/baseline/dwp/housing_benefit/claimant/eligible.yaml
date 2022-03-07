@@ -1,0 +1,31 @@
+- name: Not renting and on UC
+  period: 2021
+  input:
+    benunit_is_renting: false
+    claims_legacy_benefits: false
+  output:
+    housing_benefit_eligible: false
+
+- name: Renting and on UC
+  period: 2021
+  input:
+    benunit_is_renting: true
+    claims_legacy_benefits: false
+  output:
+    housing_benefit_eligible: false
+
+- name: Not renting and not on UC
+  period: 2021
+  input:
+    benunit_is_renting: false
+    claims_legacy_benefits: true
+  output:
+    housing_benefit_eligible: false
+
+- name: Renting and not on UC
+  period: 2021
+  input:
+    benunit_is_renting: true
+    claims_legacy_benefits: true
+  output:
+    housing_benefit_eligible: true

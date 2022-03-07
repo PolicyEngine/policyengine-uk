@@ -10,7 +10,7 @@ class housing_benefit_applicable_income(Variable):
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
-        means_test = parameters(period).benefit.housing_benefit.means_test
+        means_test = parameters(period).dwp.housing_benefit.means_test
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",

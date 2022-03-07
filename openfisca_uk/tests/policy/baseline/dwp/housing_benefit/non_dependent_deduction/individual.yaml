@@ -1,0 +1,23 @@
+- name: Individual under 18, no deduction
+  period: 2021
+  input:
+    age: 16
+  output:
+    hb_individual_non_dep_deduction: 0
+
+- name: Individual over 18, some earnings
+  period: 2021
+  input:
+    age: 18
+    employment_income: 160 * 52
+  output:
+    hb_individual_non_dep_deduction: 1_820
+
+- name: Exempt individual with earnings
+  period: 2021
+  input:
+    age: 18
+    employment_income: 180 * 52
+    DLA_SC: true
+  output:
+    hb_individual_non_dep_deduction: 0

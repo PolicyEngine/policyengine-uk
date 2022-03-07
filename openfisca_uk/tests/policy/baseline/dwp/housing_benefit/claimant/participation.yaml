@@ -1,0 +1,6 @@
+- name: Participation when reported
+  period: 2021
+  input:
+    housing_benefit_reported: true
+  output:
+    would_claim_hb: true

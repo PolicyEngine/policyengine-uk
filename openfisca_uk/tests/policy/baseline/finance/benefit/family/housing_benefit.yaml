@@ -6,7 +6,7 @@
     weekly_hours: 31
     employment_income: 0
     tenure_type: RENT_FROM_COUNCIL
-    claims_HB: true
+    would_claim_hb: true
     claims_WTC: true
     benunit_rent: 88 * 52
     is_household_head: true
@@ -23,7 +23,7 @@
     weekly_hours: 31
     employment_income: 3801 - (3865 - 52 * (5 + 37.1))
     tenure_type: RENT_FROM_COUNCIL
-    claims_HB: true
+    would_claim_hb: true
     claims_WTC: true
     benunit_rent: 88 * 52
     is_household_head: true
@@ -41,7 +41,7 @@
     weekly_hours: 31
     employment_income: 3801 - (3865 - 52 * (5 + 37.1)) + 100
     tenure_type: RENT_FROM_COUNCIL
-    claims_HB: true
+    would_claim_hb: true
     claims_WTC: true
     benunit_rent: 88 * 52
     is_household_head: true

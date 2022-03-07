@@ -1,0 +1,17 @@
+- name: Family with non-dependents has deductions.
+  period: 2021
+  input:
+    benunits:
+      benunit_1:
+        adults: adult_1
+      benunit_2:
+        adults: adult_2
+    people:
+      adult_1:
+        age: 25
+        employment_income: 160 * 52
+      adult_2:
+        age: 25
+        employment_income: 160 * 52
+  output:
+    hb_non_dep_deductions: [0, 0]

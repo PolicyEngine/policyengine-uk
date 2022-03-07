@@ -14,5 +14,5 @@ class would_claim_hb(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        reported_hb = benunit("housing_benefit_reported", period) > 0
+        reported_hb = add(benunit, period, ["housing_benefit_reported"]) > 0
         return reported_hb | claims_all_entitled_benefits

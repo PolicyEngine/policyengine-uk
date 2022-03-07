@@ -9,7 +9,7 @@ class housing_benefit_applicable_amount(Variable):
     unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        HB = parameters(period).benefit.housing_benefit
+        HB = parameters(period).dwp.housing_benefit
         PA = HB.allowances
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
         eldest_age = benunit("eldest_adult_age", period)

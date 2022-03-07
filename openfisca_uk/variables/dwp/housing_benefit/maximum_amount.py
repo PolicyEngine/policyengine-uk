@@ -1,5 +1,4 @@
 from numpy import positive
-from openfisca_uk.api import GBP
 from openfisca_uk.model_api import *
 
 class maximum_housing_benefit(Variable):
@@ -14,4 +13,4 @@ class maximum_housing_benefit(Variable):
     def formula(benunit, period, parameters):
         eligible_rent = benunit("hb_eligible_rent", period)
         non_dep_deductions = benunit("hb_non_dep_deductions", period)
-        return positive(eligible_rent - non_dep_deductions)
+        return max_(eligible_rent - non_dep_deductions, 0)
