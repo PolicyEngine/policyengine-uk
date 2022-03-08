@@ -1,5 +1,5 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.finance.tax.income_tax.liability import TaxBand
+from openfisca_uk.variables.government.hmrc.income_tax.liability import TaxBand
 
 """
 This file calculates the allowances to which taxpayers are entitled. This follows step 3 of the Income Tax Act 2007 s. 23.
