@@ -1,5 +1,5 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.demographic.locations import LocalAuthority
+from openfisca_uk.variables.household.demographic.locations import LocalAuthority
 import pandas as pd
 
 PC = pd.read_csv(DATA_FOLDER / "geography" / "postcodes.csv")
