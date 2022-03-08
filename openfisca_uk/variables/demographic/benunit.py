@@ -43,6 +43,11 @@ class RelationType(Enum):
     SINGLE = "Single"
     COUPLE = "Couple"
 
+class ParentalType(Enum):
+    SINGLE = "Single"
+    COUPLE = "Couple"
+    LONE_PARENT = "Lone parent"
+
 
 class family_type(Variable):
     value_type = Enum
@@ -64,7 +69,6 @@ class family_type(Variable):
             FamilyType,
         )
 
-
 class relation_type(Variable):
     value_type = Enum
     entity = BenUnit
@@ -79,6 +83,26 @@ class relation_type(Variable):
             RelationType.SINGLE,
             RelationType.COUPLE,
         )
+
+class parental_type(Variable):
+    label = "Family type"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = Enum
+    possible_values = ParentalType
+
+    def formula(benunit, period, parameters):
+        num_adults = benunit.sum(benunit.members("is_adult", period))
+        num_children = benunit.sum(benunit.members("is_child", period))
+        return select([
+            (num_adults == 1) & (num_children == 0),
+            (num_adults == 1) & (num_children > 0),
+            (num_adults == 2),
+        ], [
+            ParentalType.SINGLE,
+            ParentalType.LONE_PARENT,
+            ParentalType.COUPLE,
+        ])
 
 
 class eldest_adult_age(Variable):

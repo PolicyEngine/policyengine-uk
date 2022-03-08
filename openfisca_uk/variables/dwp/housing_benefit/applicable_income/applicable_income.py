@@ -9,8 +9,6 @@ class housing_benefit_applicable_income(Variable):
     unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).benefit.tax_credits.working_tax_credit
-        means_test = parameters(period).dwp.housing_benefit.means_test
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",
@@ -35,14 +33,5 @@ class housing_benefit_applicable_income(Variable):
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         income += benefits
-        num_children = benunit.nb_persons(BenUnit.CHILD)
-        childcare_amount_1 = (num_children == 1) * WTC.elements.childcare_1
-        childcare_amount_2 = (num_children > 1) * WTC.elements.childcare_2
-        max_weekly_childcare_amount = childcare_amount_1 + childcare_amount_2
-        max_childcare_amount = max_weekly_childcare_amount * WEEKS_IN_YEAR
-        childcare_element = min_(
-            max_childcare_amount,
-            aggr(benunit, period, ["childcare_expenses"]),
-        )
-        disregard = benunit("hb_income_disregards", period)
+        disregard = benunit("hb_general_income_disregard", period)
         return max_(0, income - disregard - childcare_element)

@@ -1,0 +1,23 @@
+SINGLE:
+  description: Deduction from earned income for Housing Benefit for a single claimant.
+  values:
+    2015-06-01: 5.00
+  metadata:
+    unit: currency-GBP
+COUPLE:
+  description: Deduction from earned income for Housing Benefit for a couple claimant.
+  values:
+    2015-06-01: 10.00
+  metadata:
+    unit: currency-GBP
+LONE_PARENT:
+  description: Deduction from earned income for Housing Benefit for a lone parent.
+  values:
+    2015-06-01: 25.00
+  metadata:
+    unit: currency-GBP
+metadata:
+  propagate_metadata_to_children: true
+  reference:
+    - title: The Housing Benefit Regulations 2006 sch. 4
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4/made

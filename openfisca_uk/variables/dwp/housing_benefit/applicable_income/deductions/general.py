@@ -1,7 +1,7 @@
 from openfisca_uk.model_api import *
 
 
-class hb_income_disregards(Variable):
+class hb_general_income_disregard(Variable):
     value_type = float
     entity = BenUnit
     label = "HB income disregards"
@@ -27,10 +27,20 @@ class hb_income_disregards(Variable):
         )
         worker = hours > hour_requirement
         worker_disregard = worker * means_test.worker_income_disregard
+        num_children = benunit.nb_persons(BenUnit.CHILD)
+        childcare_amount_1 = (num_children == 1) * wtc.elements.childcare_1
+        childcare_amount_2 = (num_children > 1) * wtc.elements.childcare_2
+        max_weekly_childcare_amount = childcare_amount_1 + childcare_amount_2
+        max_childcare_amount = max_weekly_childcare_amount * WEEKS_IN_YEAR
+        childcare_element = min_(
+            max_childcare_amount,
+            aggr(benunit, period, ["childcare_expenses"]),
+        )
         weekly_disregard = (
             single_disregard
             + couple_disregard
             + lone_parent_disregard
             + worker_disregard
+            + childcare_element
         )
         return weekly_disregard * WEEKS_IN_YEAR

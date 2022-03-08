@@ -1,0 +1,10 @@
+description: Income sources which count as earned income for Housing Benefit.
+values:
+  2015-06-01:
+    - employment_income
+    - self_employment_income
+metadata:
+  unit: list
+  reference:
+    - title: The Housing Benefit Regulations 2006 s. 2
+      href: https://www.legislation.gov.uk/uksi/2006/213/part/6/crossheading/income/made
