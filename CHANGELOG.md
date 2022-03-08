@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Basic income means-test inclusion previously didn't work correctly for Housing Benefit and Pension Credit.
+- Basic income means-test inclusion previously didn't work correctly (when turned off) for Housing Benefit and Pension Credit.
 
 
 ## [0.14.2] - 2022-03-02
