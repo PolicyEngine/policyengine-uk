@@ -119,13 +119,14 @@ class housing_benefit_applicable_income(Variable):
             "pension_income",
         ]
         bi = parameters(period).contrib.ubi_center.basic_income
-        if bi.include_in_means_tests:
-            INCOME_COMPONENTS.append("basic_income")
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(benunit, period, TAX_COMPONENTS)
         income += aggr(benunit, period, ["personal_benefits"])
+        if not bi.include_in_means_tests:
+            # Basic income is already in personal benefits, deduct if needed
+            income -= add(benunit, period, ["basic_income"])
         income += add(benunit, period, ["tax_credits"])
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5

@@ -88,9 +88,10 @@ class guarantee_credit_applicable_income(Variable):
             "dividend_income",
         ]
         bi = parameters(period).contrib.ubi_center.basic_income
-        if bi.include_in_means_tests:
-            INCOME_COMPONENTS.append("basic_income")
         income = aggr(benunit, period, INCOME_COMPONENTS)
+        if not bi.include_in_means_tests:
+            # Basic income is already in personal benefits, deduct if needed
+            income -= add(benunit, period, ["basic_income"])
         tax = aggr(benunit, period, ["tax"])
         BENEFIT_COMPONENTS = [
             "child_benefit",
