@@ -27,3 +27,21 @@ metadata:
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
+
+description: Carbon dioxide emission from LULUCF
+values:
+2010-01-01: -11_000_000
+2011-01-01: -11_000_000
+2012-01-01: -11_000_000
+2013-01-01: -11_000_000
+2014-01-01: -11_000_000
+2015-01-01: -11_000_000
+2016-01-01: -11_000_000
+2017-01-01: -12_000_000
+2018-01-01: -12_000_000
+2019-01-01: -12_000_000
+metadata:
+unit: tonnes CO2
+  reference:
+    - title: BEIS 2019 Updated Energy & Emissions Projections
+href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
