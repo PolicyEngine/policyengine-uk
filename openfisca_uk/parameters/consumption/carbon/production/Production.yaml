@@ -63,3 +63,21 @@ unit: tonnes CO2
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
+
+description: Carbon dioxide emission from residential usage
+values:
+2010-01-01: 84_000_000
+2011-01-01: 67_000_000
+2012-01-01: 74_000_000
+2013-01-01: 74_000_000
+2014-01-01: 62_000_000
+2015-01-01: 64_000_000
+2016-01-01: 66_000_000
+2017-01-01: 64_000_000
+2018-01-01: 66_000_000
+2019-01-01: 64_000_000
+metadata:
+unit: tonnes CO2
+  reference:
+    - title: BEIS 2019 Updated Energy & Emissions Projections
+href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
