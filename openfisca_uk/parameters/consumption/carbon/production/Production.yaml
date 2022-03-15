@@ -9,7 +9,6 @@ metadata:
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
       href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from industry
 values:
 2010-01-01: 101_000_000
@@ -27,7 +26,6 @@ metadata:
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from LULUCF
 values:
 2010-01-01: -11_000_000
@@ -45,7 +43,6 @@ unit: tonnes CO2
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from refineries
 values:
 2010-01-01: 17_000_000
@@ -63,7 +60,6 @@ unit: tonnes CO2
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from residential usage
 values:
 2010-01-01: 84_000_000
@@ -81,7 +77,6 @@ unit: tonnes CO2
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from services
 values:
 2010-01-01: 26_000_000
@@ -99,7 +94,6 @@ unit: tonnes CO2
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from road transport
 values:
 2010-01-01: 110_000_000
@@ -117,7 +111,6 @@ unit: tonnes CO2
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from road transport
 values:
 2010-01-01: 110_000_000
@@ -135,7 +128,6 @@ unit: tonnes CO2
   reference:
     - title: BEIS 2019 Updated Energy & Emissions Projections
 href: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2021#greenhouse-gas-emissions
-
 description: Carbon dioxide emission from other transport (civil aviation,domestic cruise and landing,military aviation & shipping,railway)
 values:
 2010-01-01: 14_000_000
