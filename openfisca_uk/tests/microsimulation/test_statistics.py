@@ -53,21 +53,29 @@ class StatisticTest:
         except:
             # Not overridden - use statistics parameter
             if source == "official":
-                return parameters.calibration.children[
-                    {
-                        "aggregate": "program_aggregates",
-                        "caseload": "program_caseloads",
-                    }[self.statistic]
-                ].children[self.variable](f"{self.year}-01-01")
-            elif source == "ukmod":
-                raise ValueError(
-                    f"UKMOD values not given for {self.variable} {self.statistic} in {self.year}"
-                )
+                if self.statistic == "caseload":
+                    if (
+                        self.variable
+                        in parameters.calibration.populations.by_program_participation.children
+                    ):
+                        return parameters.calibration.populations.by_program_participation.children[
+                            self.variable
+                        ](
+                            f"{self.year}-01-01"
+                        )
+                    else:
+                        return parameters.calibration.families.by_program_participation.children[
+                            self.variable
+                        ](
+                            f"{self.year}-01-01"
+                        )
+                else:
+                    return parameters.calibration.budgetary_impact.by_program.children[
+                        self.variable
+                    ](
+                        f"{self.year}-01-01"
+                    )
         raise ValueError(f"Unknown statistic: {self.statistic}")
-
-    @property
-    def ukmod(self):
-        return self.stored_result("ukmod")
 
     @property
     def official(self):
@@ -85,16 +93,6 @@ class StatisticTest:
 
     def __repr__(self):
         return self.describe()
-
-
-class CloserThanUKMOD(StatisticTest):
-    def test(self) -> bool:
-        openfisca_uk_error = abs(self.openfisca_uk - self.official)
-        ukmod_error = abs(self.ukmod - self.official)
-        return openfisca_uk_error <= ukmod_error, locals()
-
-    def describe(self):
-        return f"OpenFisca-UK {self.variable_label} {self.statistic} at least as close to the official aggregate as UKMOD in {self.year}"
 
 
 class AbsoluteErrorLessThan(StatisticTest):
@@ -138,10 +136,6 @@ for variable in statistics:
         if isinstance(item, dict)
     }
     for statistic in ("aggregate", "caseload"):
-        if f"{statistic}_closer_than_ukmod" in test_names:
-            if statistic in statistics[variable]["ukmod"]:
-                for year in statistics[variable]["ukmod"][statistic]:
-                    tests += [CloserThanUKMOD(variable, statistic, year)]
         if f"{statistic}_error_less_than" in test_names:
             for year in range(2019, 2023):
                 tests += [

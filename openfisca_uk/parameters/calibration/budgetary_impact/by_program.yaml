@@ -1,0 +1,179 @@
+JSA_income:
+  description: Total spending on income-based JSA.
+  values:
+    2018-01-01: 1_144_000_000
+    2019-01-01: 603_000_000
+    2020-01-01: 435_000_000
+    2021-01-01: 297_000_000
+    2022-01-01: 196_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+housing_benefit:
+  description: Total spending on Housing Benefit.
+  values:
+    2018-01-01: 20_730_000_000
+    2019-01-01: 18_379_000_000
+    2020-01-01: 17_334_000_000
+    2021-01-01: 17_112_000_000
+    2022-01-01: 15_894_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+income_support:
+  description: Total spending on Income Support.
+  values:
+    2018-01-01: 1_839_000_000
+    2019-01-01: 1_376_000_000
+    2020-01-01: 1_080_000_000
+    2021-01-01: 854_000_000
+    2022-01-01: 670_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+pension_credit:
+  description: Total spending on Pension Credit.
+  values:
+    2018-01-01: 5_140_000_000
+    2019-01-01: 5_061_000_000
+    2020-01-01: 5_071_000_000
+    2021-01-01: 4_969_000_000
+    2022-01-01: 4_466_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Pension Credit
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+child_tax_credit:
+  description: Expenditure on Working Tax Credit.
+  values:
+    2018-01-01: 17_656_000_000
+    2019-01-01: 13_875_000_000
+    # HMRC does not forward-estimate revenue, only caseloads. The DWP
+    # does provide revenue estimates, but only for combined Tax Credits.
+    # We split the revenue by their fractions in 2019, the most recent
+    # HMRC estimates.
+    2020-01-01: 11_441_000_000 #  14_581_000_000 * (13_875 / (13_875 + 3_825))
+    2021-01-01: 8_088_000_000 #  10_307_000_000 * (13_875 / (13_875 + 3_825))
+    2022-01-01: 5_995_000_000 #  7_640_000_000 * (13_875 / (13_875 + 3_825))
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"
+        href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-finalised-annual-awards-supplement-on-payments-2019-to-2020
+      - title: Benefit expenditure and caseload tables 2021
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+  
+working_tax_credit:
+  description: Expenditure on Working Tax Credit.
+  values:
+    2018-01-01: 5_003_000_000
+    2019-01-01: 3_825_000_000
+    # HMRC does not forward-estimate revenue, only caseloads. The DWP
+    # does provide revenue estimates, but only for combined Tax Credits.
+    # We split the revenue by their fractions in 2019, the most recent
+    # HMRC estimates.
+    2020-01-01: 3_139_000_000 #  14_581_000_000 * (3_825 / (13_875 + 3_825))
+    2021-01-01: 2_219_000_000 #  10_307_000_000 * (3_825 / (13_875 + 3_825))
+    2022-01-01: 1_644_000_000 #  7_640_000_000 * (3_825 / (13_875 + 3_825))
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"
+        href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-finalised-annual-awards-supplement-on-payments-2019-to-2020
+
+universal_credit:
+  description: Total spending on Universal Credit.
+  values:
+    2018-01-01: 8_135_000_000
+    2019-01-01: 18_386_000_000
+    2020-01-01: 38_272_000_000
+    2021-01-01: 41_097_000_000
+    2022-01-01: 43_657_000_000
+  metadata:
+    unit: currency-GBP
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+child_benefit:
+  description: Total spending on Child Benefit.
+  values:
+    2018-01-01: 11_170_000_000
+    2019-01-01: 11_081_000_000
+    2020-01-01: 11_116_000_000
+    2021-01-01: 10_981_000_000
+    2022-01-01: 11_213_000_000
+  metadata:
+    reference:
+      - title: Benefit expenditure and caseload tables 2021
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+income_tax:
+  description: Total revenue from Income Tax.
+  values:
+    2018-01-01: 192_500_000_000
+    2019-01-01: 193_600_000_000
+    2020-01-01: 188_200_000_000
+    2021-01-01: 203_600_000_000
+    2022-01-01: 205_000_000_000
+  metadata:
+    reference:
+      - title: OBR 2021 forecast
+        href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/
+
+total_NI:
+  description: Total revenue from National Insurance.
+  values:
+    2018-01-01: 137_500_000_000
+    2019-01-01: 145_000_000_000
+    2020-01-01: 140_800_000_000
+    2021-01-01: 145_900_000_000
+    2022-01-01: 151_300_000_000
+  metadata:
+    reference:
+      - title: OBR 2021 forecast
+        href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/national-insurance-contributions-nics/
+
+council_tax_less_benefit:
+  description: Council Tax spending, minus CTB.
+  values:
+    2019-01-01: 37_500_000_000
+    2020-01-01: 38_700_000_000
+    2021-01-01: 39_900_000_000
+    2022-01-01: 41_100_000_000
+
+state_pension:
+  description: State Pension spending.
+  values:
+    2019-01-01: 98_797_000_000
+    2020-01-01: 101_475_000_000
+    2021-01-01: 104_598_000_000
+    2022-01-01: 110_098_000_000
+  metadata:
+    reference:
+      - title: Benefit expenditure and caseload tables 2021
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+
+
+ESA_income:
+  description: Income-based ESA spending.
+  values:
+    2019-01-01: 9_339_000_000
+    2020-01-01: 8_815_000_000
+    2021-01-01: 8_254_000_000
+    2022-01-01: 8_216_000_000
+  metadata:
+    reference:
+      - title: Benefit expenditure and caseload tables 2021
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
