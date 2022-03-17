@@ -1,0 +1,126 @@
+industry:
+  description: Carbon dioxide emission from industry (combustion,process,off road construction and energy supply with respect to industry)
+  values:
+    2010-01-01: 101_000_000
+    2011-01-01: 93_000_000
+    2012-01-01: 91_000_000
+    2013-01-01: 94_000_000
+    2014-01-01: 93_000_000
+    2015-01-01: 91_000_000
+    2016-01-01: 85_000_000
+    2017-01-01: 87_000_000
+    2018-01-01: 84_000_000
+    2019-01-01: 76_000_000
+  metadata:
+    unit: tonnes CO2
+    reference:
+      - title: BEIS 2019 Updated Energy & Emissions Projections
+        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+land_use:
+  description: Carbon dioxide emission from LULUCF
+  values:
+    2010-01-01: -11_000_000
+    2011-01-01: -11_000_000
+    2012-01-01: -11_000_000
+    2013-01-01: -11_000_000
+    2014-01-01: -11_000_000
+    2015-01-01: -11_000_000
+    2016-01-01: -11_000_000
+    2017-01-01: -12_000_000
+    2018-01-01: -12_000_000
+    2019-01-01: -12_000_000
+  metadata:
+    unit: tonnes CO2
+    reference:
+      - title: BEIS 2019 Updated Energy & Emissions Projections
+        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+refineries:
+  description: Carbon dioxide emission from refineries
+  values:
+    2010-01-01: 17_000_000
+    2011-01-01: 17_000_000
+    2012-01-01: 16_000_000
+    2013-01-01: 15_000_000
+    2014-01-01: 13_000_000
+    2015-01-01: 14_000_000
+    2016-01-01: 14_000_000
+    2017-01-01: 14_000_000
+    2018-01-01: 13_000_000
+    2019-01-01: 12_000_000
+  metadata:
+    unit: tonnes CO2
+    reference:
+      - title: BEIS 2019 Updated Energy & Emissions Projections
+        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+residential:
+  description: Carbon dioxide emission from residential usage
+  values:
+    2010-01-01: 84_000_000
+    2011-01-01: 67_000_000
+    2012-01-01: 74_000_000
+    2013-01-01: 74_000_000
+    2014-01-01: 62_000_000
+    2015-01-01: 64_000_000
+    2016-01-01: 66_000_000
+    2017-01-01: 64_000_000
+    2018-01-01: 66_000_000
+    2019-01-01: 64_000_000
+  metadata:
+    unit: tonnes CO2
+    reference:
+      - title: BEIS 2019 Updated Energy & Emissions Projections
+        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+services:
+  description: Carbon dioxide emission from services
+  values:
+    2010-01-01: 26_000_000
+    2011-01-01: 24_000_000
+    2012-01-01: 26_000_000
+    2013-01-01: 26_000_000
+    2014-01-01: 24_000_000
+    2015-01-01: 25_000_000
+    2016-01-01: 25_000_000
+    2017-01-01: 25_000_000
+    2018-01-01: 25_000_000
+    2019-01-01: 31_000_000
+  metadata:
+    unit: tonnes CO2
+    reference:
+      - title: BEIS 2019 Updated Energy & Emissions Projections
+        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+roads:
+  description: Carbon dioxide emission from road transport
+  values:
+    2010-01-01: 110_000_000
+    2011-01-01: 108_000_000
+    2012-01-01: 108_000_000
+    2013-01-01: 107_000_000
+    2014-01-01: 109_000_000
+    2015-01-01: 110_000_000
+    2016-01-01: 113_000_000
+    2017-01-01: 113_000_000
+    2018-01-01: 112_000_000
+    2019-01-01: 107_000_000
+  metadata:
+    unit: tonnes CO2
+    reference:
+      - title: BEIS 2019 Updated Energy & Emissions Projections
+        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+other_transport:
+  description: Carbon dioxide emission from other transport (civil aviation,domestic cruise and landing,military aviation & shipping,railway)
+  values:
+    2010-01-01: 14_000_000
+    2011-01-01: 13_000_000
+    2012-01-01: 13_000_000
+    2013-01-01: 12_000_000
+    2014-01-01: 12_000_000
+    2015-01-01: 12_000_000
+    2016-01-01: 12_000_000
+    2017-01-01: 12_000_000
+    2018-01-01: 11_000_000
+    2019-01-01: 12_000_000
+  metadata:
+    unit: tonnes CO2
+    reference:
+      - title: BEIS 2019 Updated Energy & Emissions Projections
+        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
