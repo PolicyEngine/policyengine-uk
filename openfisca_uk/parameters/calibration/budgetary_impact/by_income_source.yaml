@@ -1,0 +1,21 @@
+description: Income totals by source for UK households.
+metadata:
+  uprating:
+    parameter: uprating.earnings
+  propagate_metadata_to_children: true
+  reference:
+    # Data is more recent than the URL suggests.
+    - title: Survey of Personal Incomes (SPI) | National Statistics
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+employment_income:
+  2019-01-01: 786_000_000_000
+self_employment_income:
+  2019-01-01: 84_600_000_000
+pension_income:
+  2019-01-01: 55_500_000_000
+property_income:
+  2019-01-01: 21_500_000_000
+savings_interest_income:
+  2019-01-01: 4_290_000_000
+dividend_income:
+  2019-01-01: 63_300_000_000

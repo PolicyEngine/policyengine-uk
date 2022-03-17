@@ -1,16 +1,10 @@
 from typing import List
 import numpy as np
 from openfisca_uk.calibration.losses.categories import (
-    Populations,
-    RegionalPopulations,
+    BudgetaryImpact,
+    Families,
     Households,
-    TenureType,
-    CouncilTaxBandHouseholds,
-    CountryLevelAggregates,
-    UKProgramCaseloads,
-    UKProgramAggregates,
-    IncomeTaxPayersByBand,
-    IncomeTaxRevenueByIncome,
+    Populations,
 )
 from random import sample
 import tensorflow as tf
@@ -23,28 +17,26 @@ class LossCalculator:
 
         Args:
             sim (Microsimulation): A microsimulation from which to draw demographic data.
-            validation_split (float, optional): Percentage of metrics to use as validation. Defaults to 0.1.
+            validation_split (float, optional): Percentage of non-population metrics to use as validation. Defaults to 0.1.
         """
-        self.losses = [
-            # Populations,
-            RegionalPopulations,
-            Households,
-            TenureType,
-            CouncilTaxBandHouseholds,
-            CountryLevelAggregates,
-            UKProgramCaseloads,
-            UKProgramAggregates,
-            # IncomeTaxPayersByBand,
-            # IncomeTaxRevenueByIncome,
-        ]
+        self.losses = [Households, Populations, Families, BudgetaryImpact]
         self.validation_split = validation_split
         self.sim = sim
         self.training_log = []
         self.metrics = sum(
             [list(loss.get_metric_names()) for loss in self.losses], []
         )
+        TRAINING_ONLY_CATEGORIES = [
+            "Households",
+            "Populations",
+        ]
         non_population_metrics = sum(
-            [list(loss.get_metric_names()) for loss in self.losses[5:]], []
+            [
+                list(loss.get_metric_names())
+                for loss in self.losses
+                if loss.__name__ not in TRAINING_ONLY_CATEGORIES
+            ],
+            [],
         )
         self.validation_metrics = sample(
             non_population_metrics,
@@ -98,3 +90,26 @@ class LossCalculator:
                 for entry in loss_category_log
             ]
         return loss
+
+    @staticmethod
+    def create_k_fold_cv_calculators(sim: Microsimulation, k: int = 1) -> list:
+        """Creates a list of loss calculators for k-fold cross validation.
+
+        Args:
+            sim (Microsimulation): A microsimulation from which to draw demographic data.
+            k (int, optional): The number of folds (results in validation splits of 1 / k). Defaults to 1.
+
+        Returns:
+            List[LossCalculator]: The list of loss calculators.
+        """
+        base_calculator = LossCalculator(sim, validation_split=1)
+        loss_calculators = [LossCalculator(sim) for _ in range(k)]
+        for calculator in loss_calculators:
+            calculator.validation_metrics = []
+        for metric_name in base_calculator.validation_metrics:
+            # For each metric, randomly select a training run in which to use
+            # it as a validation metric.
+            loss_calculators[sample(range(k), 1)[0]].validation_metrics.append(
+                metric_name
+            )
+        return loss_calculators

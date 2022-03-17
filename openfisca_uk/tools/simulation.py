@@ -121,9 +121,6 @@ class Microsimulation(GeneralMicrosimulation):
 
             dataset = ProxyDataset
 
-        if not adjust_weights:
-            reform = (reform, apply_takeup_rates())
-
         super().__init__(reform=reform, dataset=dataset, year=year)
 
         if (

@@ -1,0 +1,11 @@
+description: Number of people in the UK.
+values:
+  2019-01-01: 66_800_000
+  2020-01-01: 67_100_000
+  2021-01-01: 67_400_000
+  2022-01-01: 67_600_000
+metadata:
+  unit: household
+  reference:
+    - title: National population projections (2020-based interim) | ONS | Figure 1
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2020basedinterim
