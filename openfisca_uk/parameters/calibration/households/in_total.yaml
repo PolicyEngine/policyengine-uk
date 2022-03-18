@@ -9,6 +9,9 @@ values:
   2020-01-01: 27_792_000
 metadata:
   unit: household
+  uprating:
+    parameter: self
+    from: 2016-01-01
   reference:
     - title: Families and households | ONS
       href: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/datasets/familiesandhouseholdsfamiliesandhouseholds
