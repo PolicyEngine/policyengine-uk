@@ -9,6 +9,7 @@ metadata:
   period: month
   name: UC_lcwra_element
   label: "UC disability element"
+  uprating: uprating.benefits
   unit: currency-GBP
   reference:
     - name: The Universal Credit Regulations 2013 reg. 36

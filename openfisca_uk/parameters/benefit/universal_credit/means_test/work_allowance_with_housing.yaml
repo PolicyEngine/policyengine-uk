@@ -12,6 +12,7 @@ metadata:
   name: UC_work_allowance_with_housing
   period: month
   unit: currency-GBP
+  uprating: uprating.benefits
   reference:
     name: The Universal Credit Regulations 2013
     href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22

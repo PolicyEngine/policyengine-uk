@@ -8,6 +8,7 @@ metadata:
   unit: currency-GBP
   name: UC_disabled_element
   label: "UC disabled element"
+  uprating: uprating.benefits
   reference:
     - name: The Universal Credit Regulations 2013 reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

@@ -40,3 +40,4 @@ metadata:
   name: CB_eldest
   unit: currency-GBP
   period: week
+  uprating: uprating.benefits

@@ -10,6 +10,7 @@ values:
 metadata:
   label: Universal Credit Work Allowance without housing support
   name: UC_work_allowance_without_housing
+  uprating: uprating.benefits
   period: month
   unit: currency-GBP
   reference:

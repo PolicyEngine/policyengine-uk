@@ -17,6 +17,7 @@ COUPLE:
   2021-04-06: 270.30
 metadata:
   period: week
+  uprating: uprating.benefits
   unit: currency-GBP
   reference:
     - title: The State Pension Credit Regulations 2002 reg. 6
