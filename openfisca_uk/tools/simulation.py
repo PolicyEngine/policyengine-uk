@@ -7,6 +7,8 @@ from openfisca_uk.entities import *
 import numpy as np
 import warnings
 from openfisca_uk.initial_setup import set_default
+from openfisca_uk.reforms.presets.current_date import use_current_parameters
+from openfisca_uk.reforms.presets.average_parameters import average_parameters as apply_parameter_averaging
 from openfisca_uk.tools.parameters import backdate_parameters
 from openfisca_uk.reforms.benefit_takeup import apply_takeup_rates
 from openfisca_tools import ReformType
@@ -46,6 +48,7 @@ class Microsimulation(GeneralMicrosimulation):
         year: int = None,
         duplicate_records: bool = False,
         adjust_weights: bool = True,
+        average_parameters: bool = False,
     ):
         if adjust_weights:
             duplicate_records = True
@@ -123,6 +126,8 @@ class Microsimulation(GeneralMicrosimulation):
 
         super().__init__(reform=reform, dataset=dataset, year=year)
 
+        self.simulation.tax_benefit_system.prepare_parameters()
+
         if (
             ("frs_enhanced" in dataset.name)
             and adjust_weights
@@ -146,6 +151,9 @@ class Microsimulation(GeneralMicrosimulation):
                             "household_weight", period=year, map_to="person"
                         ).values,
                     )
+        
+        if average_parameters:
+            self.simulation.tax_benefit_system.parameters = apply_parameter_averaging(self.simulation.tax_benefit_system.parameters)
 
 
 class IndividualSim(GeneralIndividualSim):

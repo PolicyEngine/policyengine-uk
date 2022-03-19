@@ -4,5 +4,5 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  uprating: uprating.benefits
+  uprating: uprating.september_cpi
   reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020

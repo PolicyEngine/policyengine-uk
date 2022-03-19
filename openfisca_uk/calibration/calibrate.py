@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 
 
 class HouseholdWeights:
-    def __init__(self, start_year: int = 2019, end_year: int = 2022):
+    def __init__(self, start_year: int = 2019, end_year: int = 2027):
         self.start_year = start_year
         self.end_year = end_year
 
@@ -46,7 +46,7 @@ class HouseholdWeights:
         )
         opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         loss_calculator = loss_calculator or LossCalculator(
-            self.sim, validation_split
+            self.sim, validation_split, start_year=self.start_year, end_year=self.end_year
         )
         start_train_loss = None
         start_val_loss = None

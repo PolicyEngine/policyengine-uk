@@ -46,7 +46,7 @@ COUPLE_OLD:
     period: month
 metadata:
   unit: currency-GBP
-  uprating: uprating.benefits
+  uprating: uprating.september_cpi
   propagate_metadata_to_children: true
   reference:
     # Values.

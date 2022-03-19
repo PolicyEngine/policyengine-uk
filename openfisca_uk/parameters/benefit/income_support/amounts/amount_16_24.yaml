@@ -4,5 +4,5 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  uprating: uprating.benefits
+  uprating: uprating.september_cpi
   reference: https://www.gov.uk/income-support/what-youll-get

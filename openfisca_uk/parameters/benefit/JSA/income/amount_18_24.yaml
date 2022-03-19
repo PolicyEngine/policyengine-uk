@@ -5,5 +5,5 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  uprating: uprating.benefits
+  uprating: uprating.september_cpi
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24

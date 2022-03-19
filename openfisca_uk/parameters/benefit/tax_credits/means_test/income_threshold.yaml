@@ -7,7 +7,7 @@ values:
 metadata:
   period: year
   unit: currency-GBP
-  uprating: uprating.benefits
+  uprating: uprating.september_cpi
   reference:
     - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
     - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

@@ -11,6 +11,7 @@ metadata:
   label: National Insurance Upper Earnings Limit
   name: NI_UEL
   unit: currency-GBP
+  uprating: uprating.september_cpi
   period: week
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

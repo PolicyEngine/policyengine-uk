@@ -4,6 +4,6 @@ values:
   2020-06-01: 74.58
 metadata:
   period: week
-  uprating: uprating.benefits
+  uprating: uprating.september_cpi
   unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
