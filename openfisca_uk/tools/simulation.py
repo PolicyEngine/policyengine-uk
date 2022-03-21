@@ -8,7 +8,9 @@ import numpy as np
 import warnings
 from openfisca_uk.initial_setup import set_default
 from openfisca_uk.reforms.presets.current_date import use_current_parameters
-from openfisca_uk.reforms.presets.average_parameters import average_parameters as apply_parameter_averaging
+from openfisca_uk.reforms.presets.average_parameters import (
+    average_parameters as apply_parameter_averaging,
+)
 from openfisca_uk.tools.parameters import backdate_parameters
 from openfisca_uk.reforms.benefit_takeup import apply_takeup_rates
 from openfisca_tools import ReformType
@@ -21,6 +23,14 @@ import yaml
 from pathlib import Path
 import h5py
 import pandas as pd
+from openfisca_tools.parameters import (
+    interpolate_parameters,
+    uprate_parameters,
+    propagate_parameter_metadata,
+)
+from openfisca_core.model_api import Reform
+from openfisca_uk.tools.tax_benefit_uprating import add_tax_benefit_uprating
+from functools import reduce
 
 
 with open(Path(__file__).parent / "datasets.yml") as f:
@@ -35,11 +45,32 @@ warnings.filterwarnings("ignore")
 np.random.seed(0)
 
 
+def chain(*funcs):
+    def f(parameters):
+        for func in funcs:
+            args = func(parameters)
+        return args
+
+    return f
+
+
+class prepare_parameters(Reform):
+    def apply(self):
+        self.modify_parameters(
+            chain(
+                add_tax_benefit_uprating,
+                propagate_parameter_metadata,
+                interpolate_parameters,
+                uprate_parameters,
+            )
+        )
+
+
 class Microsimulation(GeneralMicrosimulation):
     tax_benefit_system = CountryTaxBenefitSystem
     entities = entities
     default_dataset = DEFAULT_DATASET
-    post_reform = backdate_parameters()
+    post_reform = prepare_parameters, backdate_parameters()
 
     def __init__(
         self,
@@ -126,8 +157,6 @@ class Microsimulation(GeneralMicrosimulation):
 
         super().__init__(reform=reform, dataset=dataset, year=year)
 
-        self.simulation.tax_benefit_system.prepare_parameters()
-
         if (
             ("frs_enhanced" in dataset.name)
             and adjust_weights
@@ -151,9 +180,13 @@ class Microsimulation(GeneralMicrosimulation):
                             "household_weight", period=year, map_to="person"
                         ).values,
                     )
-        
+
         if average_parameters:
-            self.simulation.tax_benefit_system.parameters = apply_parameter_averaging(self.simulation.tax_benefit_system.parameters)
+            self.simulation.tax_benefit_system.parameters = (
+                apply_parameter_averaging(
+                    self.simulation.tax_benefit_system.parameters
+                )
+            )
 
 
 class IndividualSim(GeneralIndividualSim):
