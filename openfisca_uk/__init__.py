@@ -32,6 +32,7 @@ class AttributeDict(dict):
 BASELINE_VARIABLES = AttributeDict(
     {name: value.__class__ for name, value in system.variables.items()}
 )
+variables = BASELINE_VARIABLES
 REPO = Path(__file__).parent
 
 # Our country tax and benefit class inherits from the general TaxBenefitSystem class.
