@@ -6,7 +6,7 @@ def add_tax_benefit_uprating(parameters: ParameterNode) -> ParameterNode:
     """Adds the uprating index used to uprate most tax-benefit instruments (September CPI of the previous year)."""
     cpi = parameters.uprating.CPI
     data = {}
-    for year in range(2014, 2029):
+    for year in range(2000, 2029):
         data[f"{year + 1}-04-01"] = cpi(instant(f"{year}-09-01"))
     if not hasattr(parameters.uprating, "september_cpi"):
         parameters.uprating.add_child(

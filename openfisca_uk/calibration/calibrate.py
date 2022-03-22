@@ -126,19 +126,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs",
         type=int,
-        default=32,
+        default=400,
         help="Number of epochs to run",
     )
     parser.add_argument(
         "--validation-split",
         type=float,
-        default=0.1,
+        default=0.0,
         help="Percentage of metrics to use as validation",
     )
     parser.add_argument(
         "--learning-rate",
         type=float,
-        default=1e-2,
+        default=1e+3,
         help="Learning rate for optimiser",
     )
     parser.add_argument(

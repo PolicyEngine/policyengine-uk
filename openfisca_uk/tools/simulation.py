@@ -91,10 +91,12 @@ class Microsimulation(GeneralMicrosimulation):
             year = self.default_year or max(dataset.years)
         else:
             year = year
+        year = int(year)
 
         # Check if dataset is available
 
         if year not in dataset.years:
+            print(f"Dataset {dataset.name} does not contain year {year} (but it does contain {dataset.years}")
             download = input(
                 f"\nYear {year} not available in dataset {dataset.name}: \n\t* Download the dataset [y]\n\t* Use the synthetic FRS (and set default) [n]\n\nChoice: "
             )
