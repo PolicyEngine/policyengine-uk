@@ -1,5 +1,7 @@
 from openfisca_uk.model_api import *
 
+# The below variables follow the COICOP MECE categories.
+
 
 class food_and_non_alcoholic_beverages_consumption(Variable):
     entity = Household

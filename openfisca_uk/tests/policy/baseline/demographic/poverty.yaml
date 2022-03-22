@@ -6,6 +6,6 @@
     household_gross_income: 0
     is_household_head: true
   output:
-    poverty_gap_bhc: 204 * 52
+    poverty_gap_bhc: 205 * 52
     in_poverty_bhc: true
     in_deep_poverty_bhc: true
