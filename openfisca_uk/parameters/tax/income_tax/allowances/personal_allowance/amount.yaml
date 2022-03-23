@@ -23,5 +23,3 @@ metadata:
         max: 115.e+9
       poverty_effect:
         positive: true
-    - period: 2022
-      increases_net_income: true

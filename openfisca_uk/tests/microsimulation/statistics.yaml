@@ -27,7 +27,7 @@ income_support:
     - relative_caseload_error_less_than: 0.15
 universal_credit:
   test:
-    - relative_aggregate_error_less_than: 0.05
+    - relative_aggregate_error_less_than: 0.1
     - relative_caseload_error_less_than: 0.2
 income_tax:
   test:
