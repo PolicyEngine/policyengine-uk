@@ -40,6 +40,7 @@ setup(
         "argparse>=1.4.0",
         "inquirer>=2.7.0",
         "gif[plotly]>=3.0.0",
+        "yaml-changelog>=0.1.5",
     ],
     extras_require={
         "dev": [
