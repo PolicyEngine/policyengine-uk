@@ -188,7 +188,9 @@ class Microsimulation(GeneralMicrosimulation):
                     self.simulation.set_input(
                         "benunit_weight",
                         year,
-                        self.calc("household_weight", period=year, map_to="benunit").values,
+                        self.calc(
+                            "household_weight", period=year, map_to="benunit"
+                        ).values,
                     )
 
         if average_parameters:

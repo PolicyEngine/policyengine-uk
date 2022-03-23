@@ -19,9 +19,28 @@ class would_claim_IS(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        claims_all = benunit("claims_all_entitled_benefits", period)
         reported_is = aggr(benunit, period, ["income_support_reported"]) > 0
-        return reported_is | claims_all
+        claims_all_entitled_benefits = benunit(
+            "claims_all_entitled_benefits", period
+        )
+        baseline = benunit("baseline_has_is", period)
+        takeup_rate = parameters(period).benefit.housing_benefit.takeup
+        return select(
+            [reported_is | claims_all_entitled_benefits, ~baseline, True],
+            [
+                True,
+                random(benunit) < takeup_rate,
+                False,
+            ],
+        )
+
+
+class baseline_has_is(Variable):
+    label = "Receives Income Support (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
 
 
 class income_support_applicable_income(Variable):

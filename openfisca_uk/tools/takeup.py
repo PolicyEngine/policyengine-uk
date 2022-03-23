@@ -1,5 +1,6 @@
 from openfisca_uk import parameters
 
+
 def add_takeup_parameters():
     """
     Calculate simulation-based benefit takeup parameters and prints them.
@@ -12,7 +13,11 @@ def add_takeup_parameters():
     baseline = Microsimulation()
     full_benefit_claimants = Microsimulation()
     for year in years:
-        full_benefit_claimants.set_input("claims_all_entitled_benefits", year, [True] * len(baseline.calc("benunit_id", period=year)))
+        full_benefit_claimants.set_input(
+            "claims_all_entitled_benefits",
+            year,
+            [True] * len(baseline.calc("benunit_id", period=year)),
+        )
 
     VARIABLES = [
         "universal_credit",
@@ -33,12 +38,20 @@ def add_takeup_parameters():
     ]
 
     for variable, parameter in zip(VARIABLES, takeup_parameters):
+        parameter.values_list = []
         for year in years:
-            baseline_claimants = (baseline.calc(variable, period=year) > 0).sum()
-            maximum_claimants = (full_benefit_claimants.calc(variable, period=year) > 0).sum()
-            parameter.update(value=round(baseline_claimants / maximum_claimants, 3), period=f"year:{year}:1")
-            del parameter.values_list[0]
+            baseline_claimants = (
+                baseline.calc(variable, period=year) > 0
+            ).sum()
+            maximum_claimants = (
+                full_benefit_claimants.calc(variable, period=year) > 0
+            ).sum()
+            parameter.update(
+                value=round(baseline_claimants / maximum_claimants, 3),
+                period=f"year:{year}:1",
+            )
         print(f"{variable} benefit takeup parameter:\n\n{parameter}")
+
 
 if __name__ == "__main__":
     add_takeup_parameters()
