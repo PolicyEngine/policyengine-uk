@@ -223,7 +223,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Non-zero count: 15,208,953.50177002
 
 
-- is_imputed_to_take_up_child_benefit:
+- would_claim_child_benefit:
   - Type: bool
   - Entity: benunit
   - Description: Is imputed to take up Child Benefit
@@ -3057,7 +3057,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Non-zero count: 3,034,317.1511688232
 
 
-- claims_CTC:
+- would_claim_CTC:
   - Type: bool
   - Entity: benunit
   - Description: Whether this family is imputed to claim Child Tax Credit, based on survey response and take-up rates
@@ -3067,7 +3067,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Non-zero count: 1,870,822.0
 
 
-- claims_WTC:
+- would_claim_WTC:
   - Type: bool
   - Entity: benunit
   - Description: Whether this family is imputed to claim Working Tax Credit, based on survey response and take-up rates
@@ -3739,7 +3739,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Non-zero count: 21,037,280.0
 
 
-- claims_UC:
+- would_claim_UC:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Universal Credit

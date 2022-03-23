@@ -5,6 +5,9 @@
     people:
       p1:
         age: 26
+        income_support_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
       c1:
         age: 4
       c2:
@@ -12,10 +15,8 @@
     benunits:
       b1:
         adults: p1
-        claims_IS: true
-        claims_WTC: true
-        claims_CTC: true
         children: [c1, c2]
+        would_claim_child_benefit: true
   output:
     child_tax_credit: 6205
     child_benefit: 35 * 52
@@ -31,6 +32,9 @@
         employment_income: 60000
         weekly_hours: 6
         pension_contributions: 1000
+        income_support_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
       c1:
         age: 4
       c2:
@@ -39,9 +43,7 @@
       b1:
         adults: p1
         children: [c1, c2]
-        claims_IS: true
-        claims_WTC: true
-        claims_CTC: true
+        would_claim_child_benefit: true
   output:
     child_tax_credit: 0
     child_benefit: 35 * 52
@@ -57,6 +59,9 @@
         employment_income: 2520
         weekly_hours: 6
         pension_contributions: 400
+        income_support_reported: true
+        working_tax_credit_reported: true
+        child_tax_credit_reported: true
       c1:
         age: 4
       c2:
@@ -65,9 +70,7 @@
       b1:
         adults: p1
         children: [c1, c2]
-        claims_IS: true
-        claims_WTC: true
-        claims_CTC: true
+        would_claim_child_benefit: true
   output:
     child_tax_credit: 6205
     child_benefit: 35 * 52
