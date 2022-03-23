@@ -49,22 +49,24 @@ class claims_UC(Variable):
         JSA_income = benunit("would_claim_JSA", period) & benunit(
             "JSA_income_eligible", period
         )
-        eligible_and_would_claim_any_legacy_benefits = (
+        on_legacy_benefits = benunit("claims_legacy_benefits", period)
+        migrated_from_legacy_benefits = (
             sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
-        )
+        ) & on_legacy_benefits
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        reported_uc = aggr(benunit, period, ["universal_credit_reported"]) > 0
-        on_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return (
-            reported_uc
-            | claims_all_entitled_benefits
-            | (
-                eligible_and_would_claim_any_legacy_benefits
-                & ~on_legacy_benefits
-            )
-        )
+        current_uc_claimant = aggr(benunit, period, ["universal_credit_reported"]) > 0
+        would_claim = claims_all_entitled_benefits & ~on_legacy_benefits
+        baseline_uc = benunit("baseline_has_universal_credit", period)
+        takeup_rate = parameters(period).benefit.universal_credit.takeup
+        return select([
+            current_uc_claimant | migrated_from_legacy_benefits | would_claim,
+            ~baseline_uc,
+        ], [
+            True, # Claims Universal Credit in the baseline
+            takeup_rate, # New UC eligibility from a reform
+        ])
 
 
 class is_UC_eligible(Variable):
@@ -85,6 +87,12 @@ class universal_credit_reported(Variable):
     documentation = "Reported amount of Universal Credit"
     definition_period = YEAR
     unit = "currency-GBP"
+
+class baseline_has_universal_credit(Variable):
+    label = "Receives Universal Credit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
 
 
 class UC_maximum_amount(Variable):
