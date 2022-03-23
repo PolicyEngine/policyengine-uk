@@ -23,7 +23,7 @@ class would_claim_IS(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_has_is", period)
+        baseline = benunit("baseline_has_income_support", period)
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
             [reported_is | claims_all_entitled_benefits, ~baseline, True],
@@ -35,7 +35,7 @@ class would_claim_IS(Variable):
         )
 
 
-class baseline_has_is(Variable):
+class baseline_has_income_support(Variable):
     label = "Receives Income Support (baseline)"
     entity = BenUnit
     definition_period = YEAR
@@ -105,12 +105,12 @@ class income_support_eligible(Variable):
         has_carers = aggr(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_ESA_income = benunit("ESA_income", period) > 0
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
+        already_claiming = aggr(benunit, period, ["income_support_reported"]) > 0
         return (
             (has_carers | lone_parent_with_young_child)
             & none_SP_age
             & ~has_ESA_income
-            & claims_legacy_benefits
+            & already_claiming
         )
 
 

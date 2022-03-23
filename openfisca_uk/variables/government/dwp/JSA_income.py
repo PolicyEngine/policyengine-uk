@@ -36,13 +36,13 @@ class JSA_income_eligible(Variable):
         any_unemployed = benunit.any(unemployed_members)
         # Cannot claim Income Support.
         not_on_income_support = benunit("income_support", period) == 0
-        on_legacy_benefits = benunit("claims_legacy_benefits", period)
+        already_claiming = aggr(benunit, period, ["JSA_income_reported"]) > 0
         return (
             hours_eligible
             & all_under_SP_age
             & any_unemployed
             & not_on_income_support
-            & on_legacy_benefits
+            & already_claiming
         )
 
 

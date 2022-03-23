@@ -1,12 +1,12 @@
 description: Share of eligible Income Support recipients that participate
 values:
-  2025-01-01: 0.092
-  2024-01-01: 0.171
-  2023-01-01: 0.237
-  2022-01-01: 0.304
-  2021-01-01: 0.371
-  2020-01-01: 0.435
-  2019-01-01: 0.528
+  2025-01-01: 1.0
+  2024-01-01: 1.0
+  2023-01-01: 1.0
+  2022-01-01: 1.0
+  2021-01-01: 1.0
+  2020-01-01: 1.0
+  2019-01-01: 1.0
 metadata:
   label: Income Support take-up rate
   name: IS_takeup

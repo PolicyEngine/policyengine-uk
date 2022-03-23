@@ -85,7 +85,8 @@ class is_CTC_eligible(Variable):
     reference = "Tax Credits Act 2002 s. 8"
 
     def formula(benunit, period, parameters):
-        return benunit.any(benunit.members("is_child_for_CTC", period))
+        already_claiming = aggr(benunit, period, ["child_tax_credit_reported"]) > 0
+        return benunit.any(benunit.members("is_child_for_CTC", period)) & already_claiming
 
 
 class would_claim_CTC(Variable):
@@ -102,7 +103,7 @@ class would_claim_CTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_has_housing_benefit", period)
+        baseline = benunit("baseline_has_working_tax_credit", period)
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
             [reported_ctc | claims_all_entitled_benefits, ~baseline, True],
@@ -246,11 +247,12 @@ class is_WTC_eligible(Variable):
         meets_medium_person_hours = max_person_hours >= WTC.min_hours.lower
         meets_medium = meets_medium_total_hours & meets_medium_person_hours
         meets_higher = total_hours >= WTC.min_hours.default
+        already_claiming = aggr(benunit, period, ["working_tax_credit_reported"]) > 0
         return (
             (lower_req & meets_lower)
             | (medium_req & meets_medium)
             | (higher_req & meets_higher)
-        )
+        ) & already_claiming
 
 
 class would_claim_WTC(Variable):
@@ -269,7 +271,7 @@ class would_claim_WTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_has_housing_benefit", period)
+        baseline = benunit("baseline_has_child_tax_credit", period)
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
             [reported_wtc | claims_all_entitled_benefits, ~baseline, True],
@@ -550,7 +552,7 @@ class working_tax_credit(Variable):
         )
 
 
-class baseline_has_wtc(Variable):
+class baseline_has_working_tax_credit(Variable):
     label = "Receives Working Tax Credit (baseline)"
     entity = BenUnit
     definition_period = YEAR
@@ -558,7 +560,7 @@ class baseline_has_wtc(Variable):
     default_value = True
 
 
-class baseline_has_ctc(Variable):
+class baseline_has_child_tax_credit(Variable):
     label = "Receives Child Tax Credit (baseline)"
     entity = BenUnit
     definition_period = YEAR

@@ -6,7 +6,7 @@ import warnings
 from openfisca_uk.entities import *
 import numpy as np
 import warnings
-from openfisca_uk.initial_setup import set_default
+from openfisca_uk.initial_setup import REPO, set_default
 from openfisca_uk.reforms.presets.current_date import use_current_parameters
 from openfisca_uk.reforms.presets.average_parameters import (
     average_parameters as apply_parameter_averaging,
@@ -80,6 +80,7 @@ class Microsimulation(GeneralMicrosimulation):
         duplicate_records: bool = False,
         adjust_weights: bool = True,
         average_parameters: bool = False,
+        add_baseline_benefits: bool = True,
     ):
         if adjust_weights:
             duplicate_records = True
@@ -192,6 +193,25 @@ class Microsimulation(GeneralMicrosimulation):
                             "household_weight", period=year, map_to="benunit"
                         ).values,
                     )
+                
+
+
+            # Add baseline benefits
+
+        if add_baseline_benefits:
+            with h5py.File(REPO / "data" / "baseline_benefits.h5", "r") as f:
+                for year in list(range(2019, 2026)):
+                    for benefit in [
+                        "universal_credit",
+                        "pension_credit",
+                        "working_tax_credit",
+                        "child_tax_credit",
+                        "income_support",
+                        "housing_benefit",
+                    ]:
+                        self.simulation.set_input(
+                            f"baseline_has_{benefit}", year, np.array(f[f"{year}/{benefit}"]) > 0
+                        )
 
         if average_parameters:
             self.simulation.tax_benefit_system.parameters = (

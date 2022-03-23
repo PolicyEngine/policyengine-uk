@@ -1,12 +1,12 @@
 description: Share of eligible Pension Credit recipients that participate
 values:
-  2025-01-01: 0.645
-  2024-01-01: 0.638
-  2023-01-01: 0.634
-  2022-01-01: 0.616
-  2021-01-01: 0.63
-  2020-01-01: 0.648
-  2019-01-01: 0.637
+  2025-01-01: 0.463
+  2024-01-01: 0.4524
+  2023-01-01: 0.4483
+  2022-01-01: 0.4207
+  2021-01-01: 0.4239
+  2020-01-01: 0.4273
+  2019-01-01: 0.4261
 metadata:
   label: Pension Credit take-up rate
   name: PC_takeup

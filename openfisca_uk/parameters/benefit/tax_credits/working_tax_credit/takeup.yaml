@@ -1,12 +1,12 @@
 description: Share of eligible Working Tax Credit recipients that participate
 values:
-  2025-01-01: 0.438
-  2024-01-01: 0.482
-  2023-01-01: 0.512
-  2022-01-01: 0.541
-  2021-01-01: 0.497
-  2020-01-01: 0.597
-  2019-01-01: 0.644
+  2025-01-01: 1.0
+  2024-01-01: 1.0
+  2023-01-01: 1.0
+  2022-01-01: 1.0
+  2021-01-01: 1.0
+  2020-01-01: 1.0
+  2019-01-01: 1.0
 metadata:
   label: Working Tax Credit take-up rate
   name: WTC_takeup

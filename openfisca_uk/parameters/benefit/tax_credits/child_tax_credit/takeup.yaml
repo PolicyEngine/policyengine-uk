@@ -1,12 +1,12 @@
 description: Share of eligible Child Tax Credit recipients that participate
 values:
-  2025-01-01: 0.514
-  2024-01-01: 0.538
-  2023-01-01: 0.567
-  2022-01-01: 0.601
-  2021-01-01: 0.623
-  2020-01-01: 0.686
-  2019-01-01: 0.745
+  2025-01-01: 1.0
+  2024-01-01: 1.0
+  2023-01-01: 1.0
+  2022-01-01: 1.0
+  2021-01-01: 1.0
+  2020-01-01: 1.0
+  2019-01-01: 1.0
 metadata:
   label: Child Tax Credit take-up rate
   unit: /1

@@ -16,9 +16,9 @@ class housing_benefit_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        social = benunit.any(benunit.members("in_social_housing", period))
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return claims_legacy_benefits & (
+        social = benunit.any(benunit.members("in_social_housing", period))      
+        already_claiming = aggr(benunit, period, ["housing_benefit_reported"]) > 0
+        return already_claiming & (
             social | benunit("LHA_eligible", period)
         )
 
