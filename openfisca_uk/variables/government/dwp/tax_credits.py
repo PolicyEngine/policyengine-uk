@@ -85,8 +85,13 @@ class is_CTC_eligible(Variable):
     reference = "Tax Credits Act 2002 s. 8"
 
     def formula(benunit, period, parameters):
-        already_claiming = aggr(benunit, period, ["child_tax_credit_reported"]) > 0
-        return benunit.any(benunit.members("is_child_for_CTC", period)) & already_claiming
+        already_claiming = (
+            aggr(benunit, period, ["child_tax_credit_reported"]) > 0
+        )
+        return (
+            benunit.any(benunit.members("is_child_for_CTC", period))
+            & already_claiming
+        )
 
 
 class would_claim_CTC(Variable):
@@ -247,7 +252,9 @@ class is_WTC_eligible(Variable):
         meets_medium_person_hours = max_person_hours >= WTC.min_hours.lower
         meets_medium = meets_medium_total_hours & meets_medium_person_hours
         meets_higher = total_hours >= WTC.min_hours.default
-        already_claiming = aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+        already_claiming = (
+            aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+        )
         return (
             (lower_req & meets_lower)
             | (medium_req & meets_medium)

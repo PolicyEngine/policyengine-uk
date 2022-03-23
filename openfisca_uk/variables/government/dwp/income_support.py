@@ -105,7 +105,9 @@ class income_support_eligible(Variable):
         has_carers = aggr(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_ESA_income = benunit("ESA_income", period) > 0
-        already_claiming = aggr(benunit, period, ["income_support_reported"]) > 0
+        already_claiming = (
+            aggr(benunit, period, ["income_support_reported"]) > 0
+        )
         return (
             (has_carers | lone_parent_with_young_child)
             & none_SP_age

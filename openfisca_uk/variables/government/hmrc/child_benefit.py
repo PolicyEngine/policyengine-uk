@@ -9,6 +9,7 @@ class child_benefit_reported(Variable):
     value_type = float
     unit = "currency-GBP"
 
+
 class baseline_has_child_benefit(Variable):
     label = "Receives Child Benefit (baseline)"
     entity = BenUnit
@@ -28,7 +29,9 @@ class would_claim_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         claims_benefits = benunit("claims_all_entitled_benefits", period)
-        already_claiming = aggr(benunit, period, ["child_benefit_reported"]) > 0
+        already_claiming = (
+            aggr(benunit, period, ["child_benefit_reported"]) > 0
+        )
         takeup_rate = parameters(period).hmrc.child_benefit.takeup
         baseline_cb = benunit("baseline_has_child_benefit", period)
         return select(

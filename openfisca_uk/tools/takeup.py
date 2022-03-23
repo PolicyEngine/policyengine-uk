@@ -55,7 +55,9 @@ def add_takeup_parameters():
                 full_benefit_claimants.calc(variable, period=year) > 0
             ).sum()
             takeup_rate = round(baseline_claimants / maximum_claimants, 4)
-            print(f"\t{year}: {baseline_claimants/1e6:.2f}m / {maximum_claimants/1e6:.2f}m = {takeup_rate:.1%}")
+            print(
+                f"\t{year}: {baseline_claimants/1e6:.2f}m / {maximum_claimants/1e6:.2f}m = {takeup_rate:.1%}"
+            )
             parameter.update(
                 value=takeup_rate,
                 period=f"year:{year}:1",
@@ -65,6 +67,7 @@ def add_takeup_parameters():
     for parameter in takeup_parameters:
         print(f"\t{parameter.name}: \n{parameter}\n\n")
 
+
 def generate_baseline_benefit_variables():
     baseline = Microsimulation(add_baseline_benefits=False)
     filepath = REPO / "data" / "baseline_benefits.h5"
@@ -72,7 +75,10 @@ def generate_baseline_benefit_variables():
     with h5py.File(filepath, "w") as f:
         for year in YEARS:
             for benefit in BENEFITS:
-                f[f"{year}/{benefit}"] = baseline.calc(benefit, period=year).values
+                f[f"{year}/{benefit}"] = baseline.calc(
+                    benefit, period=year
+                ).values
+
 
 if __name__ == "__main__":
     generate_baseline_benefit_variables()

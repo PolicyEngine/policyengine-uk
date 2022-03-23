@@ -193,8 +193,6 @@ class Microsimulation(GeneralMicrosimulation):
                             "household_weight", period=year, map_to="benunit"
                         ).values,
                     )
-                
-
 
             # Add baseline benefits
 
@@ -210,7 +208,9 @@ class Microsimulation(GeneralMicrosimulation):
                         "housing_benefit",
                     ]:
                         self.simulation.set_input(
-                            f"baseline_has_{benefit}", year, np.array(f[f"{year}/{benefit}"]) > 0
+                            f"baseline_has_{benefit}",
+                            year,
+                            np.array(f[f"{year}/{benefit}"]) > 0,
                         )
 
         if average_parameters:
