@@ -1,4 +1,4 @@
-description: Share of eligible Income Support recipients that participate
+description: Share of eligible Income Support recipients that participate. By definition, this is 100%, because only current claimants are eligible (no new claims).
 values:
   2025-01-01: 1.0
   2024-01-01: 1.0
