@@ -41,7 +41,7 @@ jobs:
       - name: Install libyaml
         run: pip3 uninstall pyyaml && pip3 install pyyaml --no-cache-dir
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud
         with:
           project_id: uk-policy-engine
           service_account_key: ${{ secrets.POLICYENGINE_UK_DATA_READ }}
