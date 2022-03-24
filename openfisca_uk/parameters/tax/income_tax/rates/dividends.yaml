@@ -1,18 +1,45 @@
 description: Dividend income tax scale (thresholds are from the main Income Tax scale)
 brackets:
   - rate:
-      2015-06-01: 0.075
-      2022-04-01: 0.0875
+      metadata:
+        label: Dividends basic rate
+        unit: /1
+      values:
+        2015-06-01: 0.075
+        2022-04-01:
+          value: 0.0875
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
       2015-06-01: 0
   - rate:
-      2015-06-01: 0.325
-      2022-04-01: 0.3375
+      metadata:
+        label: Dividends higher rate
+        unit: /1
+      values:
+        2015-06-01: 0.325
+        2022-04-01:
+          value: 0.3375
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
       2015-06-01: 37_500
   - rate:
-      2015-06-01: 0.381
-      2022-04-01: 0.3935
+      metadata:
+        label: Dividends additional rate
+        unit: /1
+      values:
+        2015-06-01: 0.381
+        2022-04-01:
+          value: 0.3935
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
       2015-06-01: 150_000
 metadata:

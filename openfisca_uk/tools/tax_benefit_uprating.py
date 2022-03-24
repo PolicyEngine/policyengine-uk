@@ -10,6 +10,18 @@ def add_tax_benefit_uprating(parameters: ParameterNode) -> ParameterNode:
         data[f"{year + 1}-04-01"] = cpi(instant(f"{year}-09-01"))
     if not hasattr(parameters.uprating, "september_cpi"):
         parameters.uprating.add_child(
-            "september_cpi", Parameter("september_cpi", data=data)
+            "september_cpi", Parameter("uprating.september_cpi", data={
+                "values": data,
+            })
+        )
+    
+    data = {}
+    for year in range(2000, 2029):
+        data[f"{year}-01-01"] = cpi(instant(f"{year}-01-01"))
+    if not hasattr(parameters.uprating, "january_cpi"):
+        parameters.uprating.add_child(
+            "january_cpi", Parameter("uprating.january_cpi", data={
+                "values": data,
+            })
         )
     return parameters

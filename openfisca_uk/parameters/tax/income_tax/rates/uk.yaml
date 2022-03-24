@@ -4,6 +4,13 @@ brackets:
       description: The basic rate is the first of three tax brackets on all income, after allowances are deducted
       values:
         2015-06-01: 0.2
+        2024-04-01:
+          value: 0.19
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+
       metadata:
         label: Basic rate
         name: basic_rate
