@@ -1,7 +1,7 @@
 from random import random
 import numpy as np
 import tensorflow as tf
-from openfisca_uk.parameters import parameters
+from openfisca_uk import parameters
 from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 

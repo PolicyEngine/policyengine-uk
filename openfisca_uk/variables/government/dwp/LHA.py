@@ -2,7 +2,7 @@ from openfisca_uk.model_api import *
 
 
 class LHA_eligible(Variable):
-    value_type = float
+    value_type = bool
     entity = BenUnit
     label = "Eligibility for Local Housing Allowance"
     documentation = (

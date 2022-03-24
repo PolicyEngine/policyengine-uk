@@ -22,6 +22,7 @@ values:
 metadata:
   period: year
   unit: currency-GBP
+  uprating: uprating.september_cpi
   reference:
     title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
     href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2

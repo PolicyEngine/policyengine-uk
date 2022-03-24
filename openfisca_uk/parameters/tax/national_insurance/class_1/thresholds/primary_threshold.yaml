@@ -7,11 +7,18 @@ values:
   2019-04-06: 166
   2020-04-06: 183
   2021-04-06: 184
+  2022-07-01: 
+    value: 241.73
+    metadata:
+      reference:
+        - title: Spring Statement 2022
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1062486/Spring_Statement_2022_Web_Accessible.pdf
 metadata:
-  label: National Insurance Primary Threshold
+  label: NI Primary Threshold
   name: NI_PT
   unit: currency-GBP
+  uprating: uprating.september_cpi
   period: week
   reference:
-    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
-    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+    - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

@@ -43,3 +43,4 @@ metadata:
   name: CB_additional
   period: week
   unit: currency-GBP
+  uprating: uprating.september_cpi

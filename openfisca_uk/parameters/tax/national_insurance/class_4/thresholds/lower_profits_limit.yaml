@@ -6,11 +6,19 @@ values:
   2019-04-06: 8_632
   2020-04-06: 9_500
   2021-04-06: 9_568
+  2022-04-01:
+    value: 12_570
+    metadata:
+      reference:
+        - title: Autumn Budget and Spending Review 2022
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+
 metadata:
   label: National Insurance Lower Profits Limit
   name: NI_LPL
   unit: currency-GBP
   period: year
+  uprating: uprating.september_cpi
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
     - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
