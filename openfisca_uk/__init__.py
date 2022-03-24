@@ -20,7 +20,7 @@ from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
 system = prepare_parameters(CountryTaxBenefitSystem())
-parameters = system.parameters
+parameters = BASELINE_PARAMETERS = system.parameters
 
 
 class AttributeDict(dict):
