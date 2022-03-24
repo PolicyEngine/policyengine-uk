@@ -344,3 +344,7 @@
   changes:
     fixed:
     - Pull request merge action didn't correctly update the repo.
+- bump: patch
+  changes:
+    fixed:
+    - Bugs related to uprating parameters.
