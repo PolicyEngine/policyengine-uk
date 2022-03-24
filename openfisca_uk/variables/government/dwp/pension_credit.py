@@ -9,6 +9,14 @@ class pension_credit_reported(Variable):
     unit = "currency-GBP"
 
 
+class baseline_has_pension_credit(Variable):
+    label = "Receives Pension Credit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
+
+
 class would_claim_PC(Variable):
     value_type = bool
     entity = BenUnit
@@ -21,16 +29,6 @@ class would_claim_PC(Variable):
     def formula(benunit, period, parameters):
         reported_pc = aggr(benunit, period, ["pension_credit_reported"]) > 0
         return reported_pc | benunit("claims_all_entitled_benefits", period)
-
-
-class claims_PC(Variable):
-    value_type = bool
-    entity = BenUnit
-    label = "Whether this family is imputed to claim Pension Credit"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        return benunit("would_claim_PC", period)
 
 
 class pension_credit_eligible(Variable):
@@ -65,7 +63,7 @@ class pension_credit_MG(Variable):
         return (
             applicable_amount
             * benunit("pension_credit_eligible", period)
-            * benunit("claims_PC", period)
+            * benunit("would_claim_PC", period)
         )
 
 
@@ -113,11 +111,7 @@ class pension_credit_GC(Variable):
     def formula(benunit, period, parameters):
         income = benunit("guarantee_credit_applicable_income", period)
         amount = max_(0, benunit("pension_credit_MG", period) - income)
-        return (
-            benunit("pension_credit_eligible", period)
-            * benunit("claims_PC", period)
-            * amount
-        )
+        return benunit("pension_credit_eligible", period) * amount
 
 
 class savings_credit_applicable_income(Variable):
@@ -177,11 +171,7 @@ class pension_credit_SC(Variable):
         )
         amount_B = max_(income - appropriate_amount, 0) * SC.withdrawal_rate
         amount = max_(amount_A - amount_B, 0)
-        return (
-            amount
-            * benunit("pension_credit_eligible", period)
-            * benunit("claims_PC", period)
-        )
+        return amount * benunit("pension_credit_eligible", period)
 
 
 class pension_credit(Variable):
@@ -193,4 +183,6 @@ class pension_credit(Variable):
 
     def formula(benunit, period, parameters):
         COMPONENTS = ["pension_credit_GC", "pension_credit_SC"]
-        return add(benunit, period, COMPONENTS)
+        return add(benunit, period, COMPONENTS) * benunit(
+            "would_claim_PC", period
+        )

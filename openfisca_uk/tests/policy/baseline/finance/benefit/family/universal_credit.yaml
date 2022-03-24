@@ -11,7 +11,7 @@
     benunits:
       benunit:
         adults: person
-        claims_UC: true
+        would_claim_UC: true
     households:
       household:
         adults: person
@@ -34,7 +34,7 @@
     benunits:
       benunit:
         adults: person
-        claims_UC: true
+        would_claim_UC: true
         benunit_rent: 10000
     households:
       household:
@@ -60,12 +60,12 @@
         childcare_expenses: 200 * 12
     benunits:
       benunit_1:
-        claims_UC: true
+        would_claim_UC: true
         adults: person_1
         children: child
         benunit_rent: 10000
       benunit_2:
-        claims_UC: false
+        would_claim_UC: false
         adults: person_2
     households:
       household:
@@ -94,12 +94,12 @@
         childcare_expenses: 200 * 12
     benunits:
       benunit_1:
-        claims_UC: true
+        would_claim_UC: true
         adults: person_1
         children: child
         benunit_rent: 12500
       benunit_2:
-        claims_UC: false
+        would_claim_UC: false
         adults: person_2
     households:
       household:

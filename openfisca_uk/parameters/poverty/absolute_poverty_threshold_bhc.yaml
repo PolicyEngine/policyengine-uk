@@ -8,4 +8,4 @@ metadata:
     title: Households Below Average income, 2010/11
     href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/200720/full_hbai12.pdf#page=35
   uprating:
-    parameter: uprating.CPI
+    parameter: uprating.september_cpi

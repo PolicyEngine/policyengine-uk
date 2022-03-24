@@ -11,6 +11,7 @@ metadata:
   label: National Insurance Primary Threshold
   name: NI_PT
   unit: currency-GBP
+  uprating: uprating.september_cpi
   period: week
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

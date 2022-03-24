@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="OpenFisca-UK",
-    version="0.14.4",
+    version="0.15.0",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
     classifiers=[
@@ -40,6 +40,7 @@ setup(
         "argparse>=1.4.0",
         "inquirer>=2.7.0",
         "gif[plotly]>=3.0.0",
+        "yaml-changelog>=0.1.5",
     ],
     extras_require={
         "dev": [

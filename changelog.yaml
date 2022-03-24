@@ -1,0 +1,341 @@
+- changes:
+    added:
+    - Income Tax and National Insurance.
+    - All benefits are at least taken from survey reporting (can be switched on-off).
+    - Child Benefit is modelled, others such as Income Support, JSA (both types),
+      Tax Credits can be simulated/reformed but require more reviewing in how to account
+      for discrepancies caused by take-up rates.
+    - Four budget-neutral UBI reforms are implemented.
+    - 15 test cases (unit and integration) testing benefits and taxes.
+    - Simulation helper tools.
+  date: 2020-11-08 00:00:00
+  version: 0.1.0
+- bump: minor
+  changes:
+    changed:
+    - Time periods now appropriate, using an implementation of WEEK for most benefits.
+    - MTRs handled properly and include a breakdown.
+    - Simulation tools are improved and included in a class.
+  date: 2020-12-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Improved documentation of parameters.
+    - Tests now occur in 2021 to ensure FY20-21 parameters are used.
+    fixed:
+    - Bug in CB-HITC that caused overestimation.
+  date: 2021-04-19 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Jupyter-Book documentation.
+    - More detailed disability variables.
+    fixed:
+    - IndividualSim reform handling.
+  date: 2021-04-20 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - MicroDataFrame and MicroSeries returned by default.
+    fixed:
+    - Bugs.
+  date: 2021-04-21 00:00:00
+- bump: minor
+  changes:
+    added:
+    - New interface for microsimulation.
+    - Sources in tax logic.
+    - Tests.
+    changed:
+    - Microdata now generated and loaded in-model.
+    - Variable time periods made more consistent.
+    - Derivative calculations made more efficient and have more options.
+  date: 2021-07-04 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Tests for variable naming conventions.
+    - Postcode lookup optional features available.
+    - LHA rates for all BRMA areas added.
+    changed:
+    - OpenFisca-UK now runs from the official OpenFisca-Core.
+  date: 2021-07-05 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Minor update
+  date: 2021-07-05 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Minor update
+  date: 2021-07-05 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Minor update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Units for some variables.
+    changed:
+    - Code refactoring.
+  date: 2021-12-23 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Historical Working Tax Credit parameters since 2002 (previously since 2016).
+    - Legislative references for Working Tax Credit parameters.
+    changed:
+    - Working Tax Credit child care parameters represent the maximum amount, prior
+      to the share covered.
+    fixed:
+    - Apply Working Tax Credit old-age provision to 60-year-olds.
+    - Qualify people working 30 hours for the Working Tax Credit.
+    - Point AFCS to AFCS_reported instead of AA_reported.
+    - Fix units on some variables.
+  date: 2021-12-27 00:00:00
+- bump: patch
+  changes:
+    removed:
+    - Benefit unit- and household-level saved random numbers for take-up.
+  date: 2021-12-29 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Minimum tax credit benefit amount.
+  date: 2021-12-29 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Microsimulation tests and YAML data for Child Benefit, Tax Credits and Council
+      Tax.
+    - Documentation page for Tax Credits.
+    - Simplified dataset usage to enhanced FRS only.
+  date: 2021-12-29 00:00:02
+- bump: patch
+  changes:
+    added:
+    - Metadata for the Dividend, Property and Trading Allowances.
+  date: 2022-01-07 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Parameter representing the Child Tax Credit's child limit.
+    changed:
+    - Renamed parameter representing Universal Credit's child limit.
+  date: 2022-01-07 00:00:01
+- bump: patch
+  changes:
+    changed:
+    - Label metadata for tax variables.
+  date: 2022-01-08 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Removes the `u` prefix from all variable label strings.
+  date: 2022-01-08 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Sure Start Maternity Grant (reported).
+    changed:
+    - Education benefits summed in a formula.
+    fixed:
+    - Some maternity benefits (SSMG, SMP) and WFA not included in benefits.
+  date: 2022-01-12 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - OpenFisca-UK-Data version increased to 0.7.0.
+  date: 2022-01-14 00:00:00
+- bump: patch
+  changes:
+    added:
+    - When datasets are not available, a prompt is displayed to download them or use
+      synthetic data.
+    - CLI interface trigger changed from `openfisca-uk-setup` to `openfisca-uk` and
+      default years updated.
+  date: 2022-01-16 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Stocks/flows metadata for PolicyEngine-facing variables.
+  date: 2022-01-17 00:00:00
+- bump: patch
+  changes:
+    fixed:
+    - Household gross income calculated directly from household benefits and market
+      income.
+    - Savings allowance was previously set to zero erroneously for households in Scotland
+      at the starter or intermediate bands.
+  date: 2022-01-17 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Metadata (period, unit, name, label) for all Universal Credit parameters.
+  date: 2022-01-18 00:00:00
+- bump: patch
+  changes:
+    fixed:
+    - Baseline HBAI-excluded income variable now uses the Synthetic FRS when the enhanced
+      FRS is not available.
+  date: 2022-01-22 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Unit test for benefit unit rent.
+    changed:
+    - OpenFisca-Tools dependency patch increased.
+  date: 2022-01-22 00:00:01
+- bump: minor
+  changes:
+    added:
+    - Re-weighting routine for the Family Resources Survey, matching aggregates, participation
+      and populations.
+  date: 2022-02-04 00:00:00
+- bump: minor
+  changes:
+    added:
+    - The Energy Bills Rebate scheme.
+  date: 2022-02-06 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - OpenFisca-Tools bumped to v0.3
+  date: 2022-02-14 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Basic income parameters and logic.
+  date: 2022-02-14 00:00:01
+- bump: patch
+  changes:
+    changed:
+    - Set basic income phaseout threshold default to 0.
+  date: 2022-02-14 00:00:02
+- bump: patch
+  changes:
+    added:
+    - Historical carbon emissions parameter.
+  date: 2022-02-25 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Pensioner exemption switch for Income Tax rate and threshold reforms.
+  date: 2022-02-28 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Re-weighting procedure formalised with cross-validation and logging.
+  date: 2022-02-28 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Added a production-based carbon emissions parameter.
+  date: 2022-03-04 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Re-weighting procedure improved with consolidated categories and added income
+      source targeting.
+  date: 2022-03-04 00:00:01
+- bump: patch
+  changes:
+    fixed:
+    - Basic income means-test inclusion previously didn't work correctly (when turned
+      off) for Housing Benefit and Pension Credit.
+  date: 2022-03-08 00:00:00
+- bump: patch
+  changes: {}
+  date: 2022-03-08 00:00:01
+- bump: minor
+  changes:
+    added:
+    - 'Forecasting to 2027: new and improved household weights.'
+  date: 2022-03-23 00:00:00
+- bump: minor
+  changes:
+    added:
+    - 'Forecasting to 2027: new and improved household weights.'

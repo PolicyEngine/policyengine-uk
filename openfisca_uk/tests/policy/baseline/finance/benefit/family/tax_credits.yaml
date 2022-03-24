@@ -38,8 +38,8 @@
   input:
     age: 35
     weekly_hours: 40
-    claims_WTC: true
-    claims_CTC: true
+    working_tax_credit_reported: true
+    child_tax_credit_reported: true
   output:
     is_WTC_eligible: true
     is_CTC_eligible: false
@@ -49,8 +49,8 @@
   input:
     age: 35
     weekly_hours: 8
-    claims_WTC: true
-    claims_CTC: true
+    working_tax_credit_reported: true
+    child_tax_credit_reported: true
   output:
     is_WTC_eligible: false
     is_CTC_eligible: false
@@ -59,15 +59,15 @@
   absolute_error_margin: 100
   input:
     people:
-      adult1: {}
+      adult1:
+        child_tax_credit_reported: true
+        working_tax_credit_reported: true
       child1:
         age: 4
       child2:
         age: 6
     benunits:
       benunit1:
-        claims_CTC: true
-        claims_WTC: true
         adults: ["adult1"]
         children: ["child1", "child2"]
   output:
@@ -78,7 +78,9 @@
   absolute_error_margin: 100
   input:
     people:
-      adult1: {}
+      adult1:
+        child_tax_credit_reported: true
+        working_tax_credit_reported: true
       child1:
         age: 1
       child2:
@@ -87,8 +89,6 @@
         age: 1
     benunits:
       benunit1:
-        claims_CTC: true
-        claims_WTC: true
         adults: ["adult1"]
         children: ["child1", "child2", "child3"]
   output:
@@ -100,8 +100,8 @@
     employment_income: 0
     weekly_hours: 40
     age: 26
-    claims_WTC: true
-    claims_CTC: true
+    working_tax_credit_reported: true
+    child_tax_credit_reported: true
   output:
     is_WTC_eligible: true
     WTC_basic_element: 2060
@@ -118,6 +118,7 @@
   input:
     age: 60
     weekly_hours: 16
+    working_tax_credit_reported: true
   output:
     is_WTC_eligible: true
 - name: 59-year-old needs to meet the default hours requirement (30)
@@ -133,7 +134,7 @@
   absolute_error_margin: 0
   input:
     is_WTC_eligible: true
-    claims_WTC: true
+    working_tax_credit_reported: true
     weekly_hours: 29
   output:
     WTC_worker_element: 0
@@ -142,7 +143,7 @@
   absolute_error_margin: 0
   input:
     is_WTC_eligible: true
-    claims_WTC: true
+    working_tax_credit_reported: true
     weekly_hours: 30
   output:
     WTC_worker_element: 830

@@ -12,14 +12,26 @@ from openfisca_uk.tools.simulation import Microsimulation
 
 
 class LossCalculator:
-    def __init__(self, sim: Microsimulation, validation_split: float = 0.1):
+    def __init__(
+        self,
+        sim: Microsimulation,
+        validation_split: float = 0.1,
+        start_year: int = 2019,
+        end_year: int = 2022,
+    ):
         """A loss calculator with persistent validation separation.
 
         Args:
             sim (Microsimulation): A microsimulation from which to draw demographic data.
             validation_split (float, optional): Percentage of non-population metrics to use as validation. Defaults to 0.1.
+            start_year (int, optional): The first year to use in the loss calculation. Defaults to 2019.
+            end_year (int, optional): The last year to use in the loss calculation. Defaults to 2022.
         """
         self.losses = [Households, Populations, Families, BudgetaryImpact]
+        for loss_category in self.losses:
+            loss_category.years = list(range(start_year, end_year + 1))
+        self.start_year = start_year
+        self.end_year = end_year
         self.validation_split = validation_split
         self.sim = sim
         self.training_log = []
@@ -68,7 +80,7 @@ class LossCalculator:
         frs_weights = np.array(
             [
                 self.sim.calc("household_weight", year).values
-                for year in range(2019, 2023)
+                for year in range(self.start_year, self.end_year + 1)
             ]
         )
         adjusted_weights = tf.nn.relu(frs_weights + weight_changes)

@@ -2,20 +2,11 @@
   period: 2021
   input:
     claims_all_entitled_benefits: true
-    is_imputed_to_take_up_child_benefit: false
   output:
     would_claim_child_benefit: true
 - name: Non-take-up imputed
   period: 2021
   input:
     claims_all_entitled_benefits: false
-    is_imputed_to_take_up_child_benefit: false
   output:
     would_claim_child_benefit: false
-- name: Take-up imputed
-  period: 2021
-  input:
-    claims_all_entitled_benefits: false
-    is_imputed_to_take_up_child_benefit: true
-  output:
-    would_claim_child_benefit: true

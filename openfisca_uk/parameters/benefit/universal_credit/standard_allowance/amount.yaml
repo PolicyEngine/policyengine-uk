@@ -46,6 +46,8 @@ COUPLE_OLD:
     period: month
 metadata:
   unit: currency-GBP
+  uprating: uprating.september_cpi
+  propagate_metadata_to_children: true
   reference:
     # Values.
     - https://www.legislation.gov.uk/uksi/2013/376/regulation/36

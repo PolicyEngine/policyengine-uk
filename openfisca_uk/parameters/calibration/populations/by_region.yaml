@@ -7,7 +7,9 @@ metadata:
       href: https://statswales.gov.wales/catalogue/population-and-migration/population/estimates/nationallevelpopulationestimates-by-year-age-ukcountry
     - title: ONS National Population Projections (2018-based)
       href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2018based
-
+  interpolation:
+    interval: year
+  propagate_metadata_to_children: true
 NORTH_EAST:
   values:
     2018-01-01: 2_657_909

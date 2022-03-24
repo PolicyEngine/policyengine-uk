@@ -1,0 +1,14 @@
+description: Share of eligible Child Benefit recipients that participate
+values:
+  2025-01-01: 0.7588
+  2024-01-01: 0.7616
+  2023-01-01: 0.7625
+  2022-01-01: 0.764
+  2021-01-01: 0.7639
+  2020-01-01: 0.771
+  2019-01-01: 0.7768
+  2010-01-01: 0.7768
+metadata:
+  label: Child Benefit take-up rate
+  name: CB_takeup
+  unit: /1

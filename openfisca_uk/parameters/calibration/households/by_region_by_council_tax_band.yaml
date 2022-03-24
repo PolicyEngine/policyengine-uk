@@ -1,3 +1,6 @@
+metadata:
+  uprating:
+    parameter: calibration.households.in_total
 EAST_MIDLANDS:
   A:
     values:

@@ -5,14 +5,48 @@ on:
 jobs:
   Lint:
     runs-on: ubuntu-latest
+    if: |
+      (github.repository == 'PolicyEngine/openfisca-uk')
+      && (github.event.head_commit.message == 'Update OpenFisca-UK')
     steps:
       - uses: actions/checkout@v2
       - name: Check formatting
         uses: "lgeiger/black-action@master"
         with:
           args: ". -l 79 --check"
+  versioning:
+    name: Update versioning
+    if: |
+      (github.repository == 'PolicyEngine/openfisca-uk')
+      && !(github.event.head_commit.message == 'Update OpenFisca-UK')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.POLICYENGINE_GITHUB }}
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Build changelog
+        run: pip install yaml-changelog && make changelog
+      - name: Preview changelog update
+        run: ".github/get-changelog-diff.sh"
+      - name: Update changelog
+        uses: EndBug/add-and-commit@v8
+        with:
+          add: "."
+          committer_name: Github Actions[bot]
+          author_name: Github Actions[bot]
+          message: Update PolicyEngine
   Test:
     runs-on: ${{ matrix.os }}
+    if: |
+      (github.repository == 'PolicyEngine/openfisca-uk')
+      && (github.event.head_commit.message == 'Update OpenFisca-UK')
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -28,7 +62,7 @@ jobs:
       - name: Install libyaml
         run: pip3 uninstall pyyaml && pip3 install pyyaml --no-cache-dir
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           project_id: uk-policy-engine
           service_account_key: ${{ secrets.POLICYENGINE_UK_DATA_READ }}
@@ -50,7 +84,9 @@ jobs:
           BRANCH: gh-pages  # The branch the action should deploy to.
           FOLDER: docs/book/_build/html  # The folder the action should deploy.
   Publish:
-    if: github.repository == 'PolicyEngine/openfisca-uk'
+    if: |
+      (github.repository == 'PolicyEngine/openfisca-uk')
+      && (github.event.head_commit.message == 'Update OpenFisca-UK')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo

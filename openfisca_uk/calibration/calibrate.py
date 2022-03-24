@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 
 
 class HouseholdWeights:
-    def __init__(self, start_year: int = 2019, end_year: int = 2022):
+    def __init__(self, start_year: int = 2019, end_year: int = 2027):
         self.start_year = start_year
         self.end_year = end_year
 
@@ -46,7 +46,10 @@ class HouseholdWeights:
         )
         opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         loss_calculator = loss_calculator or LossCalculator(
-            self.sim, validation_split
+            self.sim,
+            validation_split,
+            start_year=self.start_year,
+            end_year=self.end_year,
         )
         start_train_loss = None
         start_val_loss = None
@@ -123,19 +126,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs",
         type=int,
-        default=32,
+        default=200,
         help="Number of epochs to run",
     )
     parser.add_argument(
         "--validation-split",
         type=float,
-        default=0.1,
+        default=0.0,
         help="Percentage of metrics to use as validation",
     )
     parser.add_argument(
         "--learning-rate",
         type=float,
-        default=1e-2,
+        default=1e3,
         help="Learning rate for optimiser",
     )
     parser.add_argument(

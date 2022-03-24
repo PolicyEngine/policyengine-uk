@@ -15,11 +15,11 @@ working_tax_credit:
     - relative_caseload_error_less_than: 0.40
 housing_benefit:
   test:
-    - relative_aggregate_error_less_than: 0.25
+    - relative_aggregate_error_less_than: 0.3
     - relative_caseload_error_less_than: 0.15
 JSA_income:
   test:
-    - relative_aggregate_error_less_than: 0.2
+    - relative_aggregate_error_less_than: 1.1
     - relative_caseload_error_less_than: 0.2
 income_support:
   test:
@@ -27,11 +27,11 @@ income_support:
     - relative_caseload_error_less_than: 0.15
 universal_credit:
   test:
-    - relative_aggregate_error_less_than: 0.05
-    - relative_caseload_error_less_than: 0.1
+    - relative_aggregate_error_less_than: 0.1
+    - relative_caseload_error_less_than: 0.2
 income_tax:
   test:
-    - relative_aggregate_error_less_than: 0.125
+    - relative_aggregate_error_less_than: 0.15
     - relative_caseload_error_less_than: 0.125
 total_NI:
   test:

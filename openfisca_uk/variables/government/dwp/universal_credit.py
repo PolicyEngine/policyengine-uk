@@ -21,7 +21,7 @@ class legacy_benefits(Variable):
         return add(benunit, period, BENEFITS)
 
 
-class claims_UC(Variable):
+class would_claim_UC(Variable):
     value_type = bool
     entity = BenUnit
     label = "Would claim Universal Credit"
@@ -49,21 +49,35 @@ class claims_UC(Variable):
         JSA_income = benunit("would_claim_JSA", period) & benunit(
             "JSA_income_eligible", period
         )
-        eligible_and_would_claim_any_legacy_benefits = (
+        on_legacy_benefits = benunit("claims_legacy_benefits", period)
+        would_have_claimed_legacy_benefits = (
             sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
         )
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        reported_uc = aggr(benunit, period, ["universal_credit_reported"]) > 0
-        on_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return (
-            reported_uc
-            | claims_all_entitled_benefits
-            | (
-                eligible_and_would_claim_any_legacy_benefits
-                & ~on_legacy_benefits
-            )
+        current_uc_claimant = (
+            aggr(benunit, period, ["universal_credit_reported"]) > 0
+        )
+        would_make_new_claim = (
+            claims_all_entitled_benefits & ~on_legacy_benefits
+        )
+        baseline_uc = benunit("baseline_has_universal_credit", period)
+        takeup_rate = parameters(period).benefit.universal_credit.takeup
+        return select(
+            [
+                current_uc_claimant
+                | (~on_legacy_benefits & would_have_claimed_legacy_benefits)
+                | would_make_new_claim,
+                ~baseline_uc,
+                True,
+            ],
+            [
+                True,  # Claims Universal Credit in the baseline
+                random(benunit)
+                < takeup_rate,  # New UC eligibility from a reform
+                False,  # Always non-claimant
+            ],
         )
 
 
@@ -85,6 +99,14 @@ class universal_credit_reported(Variable):
     documentation = "Reported amount of Universal Credit"
     definition_period = YEAR
     unit = "currency-GBP"
+
+
+class baseline_has_universal_credit(Variable):
+    label = "Receives Universal Credit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
 
 
 class UC_maximum_amount(Variable):
@@ -588,7 +610,7 @@ class universal_credit(Variable):
         )
         return (
             amount
-            * benunit("claims_UC", period)
+            * benunit("would_claim_UC", period)
             * benunit("is_UC_eligible", period)
         )
 

@@ -3,5 +3,6 @@ values:
   2015-06-01: 74.35
 metadata:
   period: week
+  uprating: uprating.september_cpi
   unit: currency-GBP
   reference: https://www.gov.uk/income-support/what-youll-get

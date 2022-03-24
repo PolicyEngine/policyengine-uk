@@ -6,6 +6,7 @@ values:
   2021-04-06: 16_480
 metadata:
   period: year
+  uprating: uprating.september_cpi
   unit: currency-GBP
   reference:
     - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
