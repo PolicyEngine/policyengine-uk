@@ -81,6 +81,7 @@ class Microsimulation(GeneralMicrosimulation):
         adjust_weights: bool = True,
         average_parameters: bool = False,
         add_baseline_benefits: bool = True,
+        post_reform: ReformType = None,
     ):
         if adjust_weights:
             duplicate_records = True
@@ -88,6 +89,8 @@ class Microsimulation(GeneralMicrosimulation):
             dataset = self.default_dataset
         else:
             dataset = dataset
+        if post_reform is not None:
+            self.post_reform = post_reform
         if year is None:
             year = self.default_year or max(dataset.years)
         else:
