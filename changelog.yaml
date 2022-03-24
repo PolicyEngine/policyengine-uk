@@ -339,6 +339,7 @@
   changes:
     added:
     - 'Forecasting to 2027: new and improved household weights.'
+  date: 2022-03-24 00:22:00
 - bump: patch
   changes:
     fixed:
