@@ -339,3 +339,7 @@
   changes:
     added:
     - 'Forecasting to 2027: new and improved household weights.'
+- bump: patch
+  changes:
+    fixed:
+    - Pull request merge action didn't correctly update the repo.
