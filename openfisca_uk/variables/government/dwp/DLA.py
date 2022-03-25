@@ -11,7 +11,7 @@ class DLA(Variable):
     def formula(person, period, parameters):
         return add(person, period, ["DLA_M", "DLA_SC"])
 
-
+@uprated(by="september_cpi")
 class DLA_M(Variable):
     value_type = float
     entity = Person
@@ -22,7 +22,7 @@ class DLA_M(Variable):
     def formula(person, period, parameters):
         return person("DLA_M_reported", period)
 
-
+@uprated(by="september_cpi")
 class DLA_SC(Variable):
     value_type = float
     entity = Person

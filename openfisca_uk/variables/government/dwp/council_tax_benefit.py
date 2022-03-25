@@ -9,7 +9,7 @@ class council_tax_benefit_reported(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
 
-
+@uprated(by="september_cpi")
 class council_tax_benefit(Variable):
     value_type = float
     entity = BenUnit

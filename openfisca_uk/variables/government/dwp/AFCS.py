@@ -1,6 +1,6 @@
 from openfisca_uk.model_api import *
 
-
+@uprated(by="september_cpi")
 class AFCS(Variable):
     value_type = float
     entity = Person

@@ -11,7 +11,7 @@ class PIP(Variable):
     def formula(person, period, parameters):
         return add(person, period, ["PIP_M", "PIP_DL"])
 
-
+@uprated(by="september_cpi")
 class PIP_DL(Variable):
     value_type = float
     entity = Person
@@ -22,7 +22,7 @@ class PIP_DL(Variable):
     def formula(person, period, parameters):
         return person("PIP_DL_reported", period)
 
-
+@uprated(by="september_cpi")
 class PIP_M(Variable):
     value_type = float
     entity = Person
