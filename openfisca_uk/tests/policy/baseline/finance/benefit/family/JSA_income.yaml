@@ -24,7 +24,7 @@
     JSA_income_applicable_amount: 59 * 52
 - name: JSA income-based, higher age amount
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 30
   input:
     age: 26
     weekly_hours: 1
