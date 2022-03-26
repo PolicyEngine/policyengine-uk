@@ -10,7 +10,6 @@ class receives_carers_allowance(Variable):
     def formula(person, period, parameters):
         return person("carers_allowance", period) > 0
 
-@uprated(by="september_cpi")
 class carers_allowance(Variable):
     value_type = float
     entity = Person
@@ -19,7 +18,9 @@ class carers_allowance(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return person("carers_allowance_reported", period)
+        receives_ca = person("carers_allowance_reported", period) > 0
+        rate = parameters(period).dwp.carers_allowance.rate
+        return receives_ca * rate * WEEKS_IN_YEAR
 
 
 class carers_allowance_reported(Variable):

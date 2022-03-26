@@ -49,7 +49,7 @@ class is_severely_disabled_for_benefits(Variable):
             - THRESHOLD_SAFETY_GAP
         )
         paragraph_4 = (
-            person("PIP_DL", period)
+            person("pip_dl", period)
             >= benefit.PIP.daily_living.higher * WEEKS_IN_YEAR
             - THRESHOLD_SAFETY_GAP
         )

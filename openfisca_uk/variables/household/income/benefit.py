@@ -274,8 +274,8 @@ class personal_benefits_reported(Variable):
             "IIDB",
             "incapacity_benefit",
             "JSA_contrib",
-            "PIP_M",
-            "PIP_DL",
+            "pip_m",
+            "pip_dl",
             "SDA",
             "state_pension",
         ]
