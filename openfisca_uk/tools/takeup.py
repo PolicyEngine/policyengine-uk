@@ -68,18 +68,19 @@ def add_takeup_parameters():
         print(f"\t{parameter.name}: \n{parameter}\n\n")
 
 
-def generate_baseline_benefit_variables():
+def generate_baseline_variables():
     baseline = Microsimulation(add_baseline_benefits=False)
-    filepath = REPO / "data" / "baseline_benefits.h5"
-    os.remove(filepath)
+    filepath = REPO / "data" / "baseline_variables.h5"
+    if filepath.exists():
+        os.remove(filepath)
     with h5py.File(filepath, "w") as f:
         for year in YEARS:
-            for benefit in BENEFITS:
+            for benefit in BENEFITS + ["hbai_excluded_income"]:
                 f[f"{year}/{benefit}"] = baseline.calc(
                     benefit, period=year
                 ).values
 
 
 if __name__ == "__main__":
-    generate_baseline_benefit_variables()
+    generate_baseline_variables()
     add_takeup_parameters()

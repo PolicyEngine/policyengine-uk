@@ -116,6 +116,8 @@ class baseline_hbai_excluded_income(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
+        if not parameters(period).poverty.exclude_non_hbai_income:
+            return 0
         # Establish if currently running a microsimulation
         if len(household.nb_persons()) > 1_000:
             from openfisca_uk import Microsimulation
