@@ -7,6 +7,7 @@ values:
   2020-04-06: 512
   2021-04-12: 515
   2021-11-24: 557
+  2022-04-06: 573
 metadata:
   label: Universal Credit Work Allowance without housing support
   name: UC_work_allowance_without_housing
