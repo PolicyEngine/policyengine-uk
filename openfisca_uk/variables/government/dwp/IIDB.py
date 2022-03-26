@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 @uprated(by="september_cpi")
 class IIDB(Variable):
     value_type = float

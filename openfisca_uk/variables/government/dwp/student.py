@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 @uprated(by="september_cpi")
 class student_loans(Variable):
     value_type = float
@@ -7,6 +8,7 @@ class student_loans(Variable):
     label = "Student loans"
     definition_period = YEAR
     unit = "currency-GBP"
+
 
 @uprated(by="september_cpi")
 class adult_ema(Variable):
@@ -17,6 +19,7 @@ class adult_ema(Variable):
     value_type = float
     unit = "currency-GBP"
 
+
 @uprated(by="september_cpi")
 class child_ema(Variable):
     label = "Child EMA"
@@ -25,6 +28,7 @@ class child_ema(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 @uprated(by="september_cpi")
 class access_fund(Variable):
@@ -35,6 +39,7 @@ class access_fund(Variable):
     value_type = float
     unit = "currency-GBP"
 
+
 @uprated(by="september_cpi")
 class education_grants(Variable):
     label = "Education grants"
@@ -43,6 +48,7 @@ class education_grants(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 class student_payments(Variable):
     value_type = float

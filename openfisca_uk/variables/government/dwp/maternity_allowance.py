@@ -8,6 +8,7 @@ class maternity_allowance_reported(Variable):
     definition_period = YEAR
     unit = "currency-GBP"
 
+
 @uprated(by="september_cpi")
 class maternity_allowance(Variable):
     label = "Maternity Allowance"

@@ -224,6 +224,7 @@ class household_net_income(Variable):
         tax = household("household_tax", period)
         return gross_income - tax
 
+
 class real_household_net_income(Variable):
     label = "Real household net income"
     documentation = "Disposable income in January 2015 prices"
@@ -233,7 +234,9 @@ class real_household_net_income(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        cpi = lambda period: parameters(period).uprating.CPI
+        def cpi(period):
+            return parameters(period).uprating.CPI
+
         multiplier = cpi("2015-01-01") / cpi(period)
         return household("household_net_income", period) * multiplier
 

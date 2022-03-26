@@ -44,6 +44,7 @@ class claims_ESA_income(Variable):
         claims_legacy_benefits = benunit("claims_legacy_benefits", period)
         return would_claim & claims_legacy_benefits
 
+
 @uprated(by="september_cpi")
 class ESA_income(Variable):
     value_type = float

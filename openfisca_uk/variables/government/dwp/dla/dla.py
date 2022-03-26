@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class dla(Variable):
     label = "Disability Living Allowance"
     entity = Person

@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class LowerOrHigher(Enum):
     LOWER = "Lower"
     HIGHER = "Higher"

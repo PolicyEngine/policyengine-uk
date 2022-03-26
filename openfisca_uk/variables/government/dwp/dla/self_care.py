@@ -1,5 +1,8 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.misc.categories.lower_middle_or_higher import LowerMiddleOrHigher
+from openfisca_uk.variables.misc.categories.lower_middle_or_higher import (
+    LowerMiddleOrHigher,
+)
+
 
 class DLA_SC_reported(Variable):
     value_type = float
@@ -7,6 +10,7 @@ class DLA_SC_reported(Variable):
     label = "DLA (self-care) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"
+
 
 class dla_sc_category(Variable):
     label = "DLA (Self-care) category"
@@ -19,18 +23,24 @@ class dla_sc_category(Variable):
     def formula(person, period, parameters):
         dla_sc = parameters(period).dwp.dla.self_care
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
-        reported_weekly_dla_sc = person("DLA_SC_reported", period) / WEEKS_IN_YEAR
-        return select([
-            reported_weekly_dla_sc >= dla_sc.higher * (1 - SAFETY_MARGIN),
-            reported_weekly_dla_sc >= dla_sc.middle * (1 - SAFETY_MARGIN),
-            reported_weekly_dla_sc >= dla_sc.lower * (1 - SAFETY_MARGIN),
-            True,
-        ], [
-            LowerMiddleOrHigher.HIGHER,
-            LowerMiddleOrHigher.MIDDLE,
-            LowerMiddleOrHigher.LOWER,
-            LowerMiddleOrHigher.NONE,
-        ])
+        reported_weekly_dla_sc = (
+            person("DLA_SC_reported", period) / WEEKS_IN_YEAR
+        )
+        return select(
+            [
+                reported_weekly_dla_sc >= dla_sc.higher * (1 - SAFETY_MARGIN),
+                reported_weekly_dla_sc >= dla_sc.middle * (1 - SAFETY_MARGIN),
+                reported_weekly_dla_sc >= dla_sc.lower * (1 - SAFETY_MARGIN),
+                True,
+            ],
+            [
+                LowerMiddleOrHigher.HIGHER,
+                LowerMiddleOrHigher.MIDDLE,
+                LowerMiddleOrHigher.LOWER,
+                LowerMiddleOrHigher.NONE,
+            ],
+        )
+
 
 class dla_sc(Variable):
     label = "DLA (self-care)"
@@ -42,17 +52,23 @@ class dla_sc(Variable):
     def formula(person, period, parameters):
         dla_sc = parameters(period).dwp.dla.self_care
         category = person("dla_sc_category", period)
-        return select([
-            category == LowerMiddleOrHigher.HIGHER,
-            category == LowerMiddleOrHigher.MIDDLE,
-            category == LowerMiddleOrHigher.LOWER,
-            category == LowerMiddleOrHigher.NONE,
-        ], [
-            dla_sc.higher,
-            dla_sc.middle,
-            dla_sc.lower,
-            0,
-        ]) * WEEKS_IN_YEAR
+        return (
+            select(
+                [
+                    category == LowerMiddleOrHigher.HIGHER,
+                    category == LowerMiddleOrHigher.MIDDLE,
+                    category == LowerMiddleOrHigher.LOWER,
+                    category == LowerMiddleOrHigher.NONE,
+                ],
+                [
+                    dla_sc.higher,
+                    dla_sc.middle,
+                    dla_sc.lower,
+                    0,
+                ],
+            )
+            * WEEKS_IN_YEAR
+        )
 
 
 class dla_sc_middle_plus(Variable):
@@ -62,4 +78,7 @@ class dla_sc_middle_plus(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return is_in(person("dla_sc_category", period), [LowerMiddleOrHigher.MIDDLE, LowerMiddleOrHigher.HIGHER])
+        return is_in(
+            person("dla_sc_category", period),
+            [LowerMiddleOrHigher.MIDDLE, LowerMiddleOrHigher.HIGHER],
+        )

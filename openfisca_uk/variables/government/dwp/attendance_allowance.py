@@ -1,5 +1,7 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.misc.categories.lower_or_higher import LowerOrHigher
+from openfisca_uk.variables.misc.categories.lower_or_higher import (
+    LowerOrHigher,
+)
 
 
 class attendance_allowance(Variable):
@@ -12,15 +14,21 @@ class attendance_allowance(Variable):
     def formula(person, period, parameters):
         aa = parameters(period).dwp.attendance_allowance
         category = person("aa_category", period)
-        return select([
-            category == LowerOrHigher.HIGHER,
-            category == LowerOrHigher.LOWER,
-            category == LowerOrHigher.NONE,
-        ], [
-            aa.higher,
-            aa.lower,
-            0,
-        ]) * WEEKS_IN_YEAR
+        return (
+            select(
+                [
+                    category == LowerOrHigher.HIGHER,
+                    category == LowerOrHigher.LOWER,
+                    category == LowerOrHigher.NONE,
+                ],
+                [
+                    aa.higher,
+                    aa.lower,
+                    0,
+                ],
+            )
+            * WEEKS_IN_YEAR
+        )
 
 
 class AA_reported(Variable):
@@ -29,6 +37,7 @@ class AA_reported(Variable):
     label = "Attendance Allowance (reported)"
     definition_period = YEAR
     unit = "currency-GBP"
+
 
 class aa_category(Variable):
     label = "Attendance Allowance category"
@@ -42,12 +51,15 @@ class aa_category(Variable):
         aa = parameters(period).dwp.attendance_allowance
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_aa = person("AA_reported", period) / WEEKS_IN_YEAR
-        return select([
-            reported_weekly_aa >= aa.higher * (1 - SAFETY_MARGIN),
-            reported_weekly_aa >= aa.lower * (1 - SAFETY_MARGIN),
-            True,
-        ], [
-            LowerOrHigher.HIGHER,
-            LowerOrHigher.LOWER,
-            LowerOrHigher.NONE,
-        ])
+        return select(
+            [
+                reported_weekly_aa >= aa.higher * (1 - SAFETY_MARGIN),
+                reported_weekly_aa >= aa.lower * (1 - SAFETY_MARGIN),
+                True,
+            ],
+            [
+                LowerOrHigher.HIGHER,
+                LowerOrHigher.LOWER,
+                LowerOrHigher.NONE,
+            ],
+        )

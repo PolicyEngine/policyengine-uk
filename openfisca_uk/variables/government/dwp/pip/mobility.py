@@ -1,12 +1,14 @@
 from openfisca_uk.model_api import *
 from openfisca_uk.variables.government.dwp.pip.pip import PIPCategory
 
+
 class PIP_M_reported(Variable):
     value_type = float
     entity = Person
     label = "Disability Living Allowance (mobility) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"
+
 
 class pip_m_category(Variable):
     label = "PIP (mobility) category"
@@ -19,16 +21,22 @@ class pip_m_category(Variable):
     def formula(person, period, parameters):
         pip_m = parameters(period).dwp.pip.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
-        reported_weekly_pip_m = person("PIP_M_reported", period) / WEEKS_IN_YEAR
-        return select([
-            reported_weekly_pip_m >= pip_m.enhanced * (1 - SAFETY_MARGIN),
-            reported_weekly_pip_m >= pip_m.standard * (1 - SAFETY_MARGIN),
-            True,
-        ], [
-            PIPCategory.ENHANCED,
-            PIPCategory.STANDARD,
-            PIPCategory.NONE,
-        ])
+        reported_weekly_pip_m = (
+            person("PIP_M_reported", period) / WEEKS_IN_YEAR
+        )
+        return select(
+            [
+                reported_weekly_pip_m >= pip_m.enhanced * (1 - SAFETY_MARGIN),
+                reported_weekly_pip_m >= pip_m.standard * (1 - SAFETY_MARGIN),
+                True,
+            ],
+            [
+                PIPCategory.ENHANCED,
+                PIPCategory.STANDARD,
+                PIPCategory.NONE,
+            ],
+        )
+
 
 class pip_m(Variable):
     label = "PIP (mobility)"
@@ -40,12 +48,18 @@ class pip_m(Variable):
     def formula(person, period, parameters):
         pip_m = parameters(period).dwp.pip.mobility
         category = person("pip_m_category", period)
-        return select([
-            category == PIPCategory.ENHANCED,
-            category == PIPCategory.STANDARD,
-            category == PIPCategory.NONE,
-        ], [
-            pip_m.enhanced,
-            pip_m.standard,
-            0,
-        ]) * WEEKS_IN_YEAR
+        return (
+            select(
+                [
+                    category == PIPCategory.ENHANCED,
+                    category == PIPCategory.STANDARD,
+                    category == PIPCategory.NONE,
+                ],
+                [
+                    pip_m.enhanced,
+                    pip_m.standard,
+                    0,
+                ],
+            )
+            * WEEKS_IN_YEAR
+        )

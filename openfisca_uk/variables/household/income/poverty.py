@@ -14,6 +14,7 @@ class in_poverty_bhc(Variable):
         income = household("equiv_hbai_household_net_income", period)
         return income < household("poverty_threshold_bhc", period)
 
+
 class poverty_threshold_bhc(Variable):
     label = "Poverty threshold (BHC)"
     entity = Household
@@ -22,7 +23,10 @@ class poverty_threshold_bhc(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        return parameters(period).poverty.absolute_poverty_threshold_bhc * WEEKS_IN_YEAR
+        return (
+            parameters(period).poverty.absolute_poverty_threshold_bhc
+            * WEEKS_IN_YEAR
+        )
 
 
 class in_poverty_ahc(Variable):
