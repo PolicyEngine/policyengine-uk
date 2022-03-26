@@ -4,7 +4,7 @@ from openfisca_uk.variables.misc.categories.lower_middle_or_higher import LowerM
 class DLA_SC_reported(Variable):
     value_type = float
     entity = Person
-    label = "Disability Living Allowance (self-care) (reported)"
+    label = "DLA (self-care) (reported)"
     definition_period = YEAR
     unit = "currency-GBP"
 

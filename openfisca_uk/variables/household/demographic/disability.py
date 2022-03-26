@@ -12,8 +12,7 @@ class is_disabled_for_benefits(Variable):
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
             "dla",
-            "PIP_M",
-            "PIP_DL",
+            "pip",
         ]
         return add(person, period, QUALIFYING_BENEFITS) > 0
 
