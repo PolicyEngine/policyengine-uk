@@ -1,7 +1,11 @@
 description: Personal allowance for Housing Benefit for a couple, both aged under 18
 values:
   2015-06-01: 87.50
+  2021-04-01: 89.45
+  2022-04-06: 92.20
 metadata:
+  name: hb_couple_u18
+  label: HB personal allowance (couple, under 18)
   period: week
   unit: currency-GBP
   uprating: uprating.september_cpi

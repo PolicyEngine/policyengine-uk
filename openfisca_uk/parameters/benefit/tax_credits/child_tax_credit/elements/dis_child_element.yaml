@@ -13,9 +13,12 @@ values:
     value: 3415
   2021-04-06:
     value: 3435
+  2022-04-01: 3_545
 metadata:
   period: year
   unit: currency-GBP
+  name: ctc_dis_child
+  label: "CTC disabled child element"
   uprating: uprating.september_cpi
   reference:
     - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance,

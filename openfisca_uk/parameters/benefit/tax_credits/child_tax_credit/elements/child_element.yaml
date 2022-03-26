@@ -7,8 +7,11 @@ values:
     value: 2830
   2021-04-06:
     value: 2845
+  2022-04-01: 2_935
 metadata:
   period: year
+  name: ctc_child
+  label: "CTC child element"
   unit: currency-GBP
   uprating: uprating.september_cpi
   reference:

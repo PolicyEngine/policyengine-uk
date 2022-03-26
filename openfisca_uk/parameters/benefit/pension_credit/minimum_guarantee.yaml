@@ -19,6 +19,8 @@ COUPLE:
   2022-04-01: 278.70
 metadata:
   period: week
+  name: pc_min_guarantee
+  label: PC minimum guarantee
   uprating: uprating.september_cpi
   unit: currency-GBP
   reference:
