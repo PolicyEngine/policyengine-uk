@@ -1,7 +1,0 @@
-description: Weekly Carer's Allowance amount
-values:
-  2015-06-01: 67.25
-metadata:
-  period: week
-  unit: currency-GBP
-  reference: https://www.gov.uk/carers-allowance
