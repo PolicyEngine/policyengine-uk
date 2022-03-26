@@ -232,7 +232,7 @@ class personal_benefits(Variable):
 
     def formula(person, period, parameters):
         BENEFITS = [
-            "AA",
+            "attendance_allowance",
             "AFCS",
             "BSP",
             "carers_allowance",

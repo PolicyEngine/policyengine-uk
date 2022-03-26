@@ -318,7 +318,7 @@ class UC_non_dep_deduction_exempt(Variable):
             (person.benunit("pension_credit", period) > 0)
             | person("DLA_SC_middle_plus", period)
             | (person("PIP_DL", period) > 0)
-            | (person("AA", period) > 0)
+            | (person("attendance_allowance", period) > 0)
             | person("receives_carers_allowance", period)
         )
 
