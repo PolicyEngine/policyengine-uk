@@ -25,7 +25,7 @@
     benefits_premiums: 4
 - name: Weekly hours
   period: 2020
-  absolute_error_margin: 0
+  absolute_error_margin: 1
   input:
     hours_worked: 52
   output:
@@ -47,6 +47,6 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    AA: 1
+    attendance_allowance: 1
   output:
     personal_benefits: 1

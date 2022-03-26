@@ -12,7 +12,7 @@
     JSA_income: 0
 - name: JSA income-based, basic amount
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 10
   input:
     age: 18
     weekly_hours: 5

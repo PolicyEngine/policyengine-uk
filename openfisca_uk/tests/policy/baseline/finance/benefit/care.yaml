@@ -1,6 +1,6 @@
 - name: Carer from CA
   period: 2020
-  absolute_error_margin: 0
+  absolute_error_margin: 30
   input:
     carers_allowance: 1 * 52
   output:
