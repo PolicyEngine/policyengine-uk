@@ -11,8 +11,7 @@ class is_disabled_for_benefits(Variable):
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
-            "DLA_M",
-            "DLA_SC",
+            "dla",
             "PIP_M",
             "PIP_DL",
         ]
@@ -29,7 +28,7 @@ class is_enhanced_disabled_for_benefits(Variable):
         DLA_requirement = (
             parameters(period).benefit.DLA.self_care.highest * WEEKS_IN_YEAR
         )
-        return person("DLA_SC", period) >= DLA_requirement
+        return person("dla_sc", period) >= DLA_requirement
 
 
 class is_severely_disabled_for_benefits(Variable):
@@ -46,7 +45,7 @@ class is_severely_disabled_for_benefits(Variable):
         benefit = parameters(period).benefit
         THRESHOLD_SAFETY_GAP = 10 * WEEKS_IN_YEAR
         paragraph_3 = (
-            person("DLA_SC", period)
+            person("dla_sc", period)
             >= benefit.DLA.self_care.highest * WEEKS_IN_YEAR
             - THRESHOLD_SAFETY_GAP
         )

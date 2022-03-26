@@ -12,7 +12,6 @@ from openfisca_uk.reforms.presets.average_parameters import (
     average_parameters as apply_parameter_averaging,
 )
 from openfisca_uk.tools.parameters import backdate_parameters
-from openfisca_uk.reforms.benefit_takeup import apply_takeup_rates
 from openfisca_tools import ReformType
 from openfisca_uk_data import DATASETS, SynthFRS
 from openfisca_tools.microsimulation import (
