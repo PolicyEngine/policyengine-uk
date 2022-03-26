@@ -15,6 +15,12 @@ def add_tax_benefit_uprating(parameters: ParameterNode) -> ParameterNode:
                 "uprating.september_cpi",
                 data={
                     "values": data,
+                    "metadata": {
+                        "label": "Tax-benefit CPI",
+                        "unit": "/1",
+                        "name": "tax_benefit_cpi",
+                        "description": "CPI of the previous september (percentage of June 2015 levels). This uprates some (not all) tax-benefit parameters automatically."
+                    }
                 },
             ),
         )
