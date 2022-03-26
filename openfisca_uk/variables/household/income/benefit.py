@@ -274,9 +274,9 @@ class personal_benefits_reported(Variable):
             "IIDB",
             "incapacity_benefit",
             "JSA_contrib",
-            "pip_m",
-            "pip_dl",
-            "sda",
+            "PIP_M",
+            "PIP_DL",
+            "SDA",
             "state_pension",
         ]
         return add(person, period, [i + "_reported" for i in BENEFITS])
