@@ -1,0 +1,18 @@
+description: Maximum Severe Disablement Allowance rate.
+values:
+  2015-04-01: 85.80
+  2016-04-01: 85.80
+  2017-04-01: 86.65
+  2018-04-01: 89.25
+  2019-04-01: 91.40
+  2020-04-01: 92.95
+  2021-04-01: 93.40
+  2022-04-01: 96.30
+metadata:
+  period: week
+  unit: currency-GBP
+  name: sda_maximum
+  label: Severe Disablement Allowance
+  reference: 
+    - title: Benefits Uprating 2022/23
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

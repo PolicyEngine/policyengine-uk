@@ -242,7 +242,7 @@ class personal_benefits(Variable):
             "incapacity_benefit",
             "JSA_contrib",
             "pip",
-            "SDA",
+            "sda",
             "state_pension",
             "student_payments",
             "student_loans",
@@ -276,7 +276,7 @@ class personal_benefits_reported(Variable):
             "JSA_contrib",
             "pip_m",
             "pip_dl",
-            "SDA",
+            "sda",
             "state_pension",
         ]
         return add(person, period, [i + "_reported" for i in BENEFITS])

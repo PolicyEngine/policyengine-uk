@@ -1,7 +1,6 @@
 from openfisca_uk.model_api import *
 
-@uprated(by="september_cpi")
-class SDA(Variable):
+class sda(Variable):
     value_type = float
     entity = Person
     label = "Severe Disablement Allowance"
@@ -9,7 +8,12 @@ class SDA(Variable):
     unit = "currency-GBP"
 
     def formula(person, period, parameters):
-        return person("SDA_reported", period)
+        reported = person("SDA_reported", period) > 0
+        # SDA recipients receive a basic rate, and potentially
+        # an age-related addition. We assume they receive the highest
+        # age-related addition.
+        rate = parameters(period).dwp.sda.maximum
+        return reported * rate * WEEKS_IN_YEAR
 
 
 class SDA_reported(Variable):
