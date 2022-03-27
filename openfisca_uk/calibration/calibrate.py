@@ -126,7 +126,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs",
         type=int,
-        default=200,
+        default=300,
         help="Number of epochs to run",
     )
     parser.add_argument(
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--learning-rate",
         type=float,
-        default=1e3,
+        default=2e3,
         help="Learning rate for optimiser",
     )
     parser.add_argument(
