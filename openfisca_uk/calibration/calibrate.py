@@ -150,7 +150,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.k_fold_cross_validation > 1:
-        sim = Microsimulation(average_parameters=True, adjust_weights=False, duplicate_records=2)
+        sim = Microsimulation(
+            average_parameters=True, adjust_weights=False, duplicate_records=2
+        )
         loss_calculators = LossCalculator.create_k_fold_cv_calculators(
             sim, k=args.k_fold_cross_validation
         )
