@@ -126,7 +126,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs",
         type=int,
-        default=300,
+        default=500,
         help="Number of epochs to run",
     )
     parser.add_argument(
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.k_fold_cross_validation > 1:
-        sim = Microsimulation(adjust_weights=False, duplicate_records=2)
+        sim = Microsimulation(average_parameters=True, adjust_weights=False, duplicate_records=2)
         loss_calculators = LossCalculator.create_k_fold_cv_calculators(
             sim, k=args.k_fold_cross_validation
         )
