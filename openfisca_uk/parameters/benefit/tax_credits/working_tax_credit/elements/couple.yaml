@@ -19,9 +19,12 @@ values:
   2020-03-25: 2_010
   2020-04-06: 2_045
   2021-04-06: 2_060
+  2022-04-01: 2_125
 metadata:
   period: year
   unit: currency-GBP
+  name: wtc_couple
+  label: "WTC couple element"
   uprating: uprating.september_cpi
   reference:
     title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002

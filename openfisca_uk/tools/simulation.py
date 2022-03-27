@@ -12,7 +12,6 @@ from openfisca_uk.reforms.presets.average_parameters import (
     average_parameters as apply_parameter_averaging,
 )
 from openfisca_uk.tools.parameters import backdate_parameters
-from openfisca_uk.reforms.benefit_takeup import apply_takeup_rates
 from openfisca_tools import ReformType
 from openfisca_uk_data import DATASETS, SynthFRS
 from openfisca_tools.microsimulation import (
@@ -200,21 +199,29 @@ class Microsimulation(GeneralMicrosimulation):
             # Add baseline benefits
 
         if add_baseline_benefits:
-            with h5py.File(REPO / "data" / "baseline_benefits.h5", "r") as f:
-                for year in list(range(2019, 2026)):
-                    for benefit in [
-                        "universal_credit",
-                        "pension_credit",
-                        "working_tax_credit",
-                        "child_tax_credit",
-                        "income_support",
-                        "housing_benefit",
-                    ]:
-                        self.simulation.set_input(
-                            f"baseline_has_{benefit}",
-                            year,
-                            np.array(f[f"{year}/{benefit}"]) > 0,
-                        )
+            filepath = REPO / "data" / "baseline_variables.h5"
+            if filepath.exists():
+                with h5py.File(filepath, "r") as f:
+                    for year in list(range(2019, 2026)):
+                        for benefit in [
+                            "universal_credit",
+                            "pension_credit",
+                            "working_tax_credit",
+                            "child_tax_credit",
+                            "income_support",
+                            "housing_benefit",
+                        ]:
+                            self.simulation.set_input(
+                                f"baseline_has_{benefit}",
+                                year,
+                                np.array(f[f"{year}/{benefit}"]) > 0,
+                            )
+                        for variable in ["hbai_excluded_income"]:
+                            self.simulation.set_input(
+                                f"baseline_{variable}",
+                                year,
+                                np.array(f[f"{year}/{variable}"]),
+                            )
 
         if average_parameters:
             self.simulation.tax_benefit_system.parameters = (

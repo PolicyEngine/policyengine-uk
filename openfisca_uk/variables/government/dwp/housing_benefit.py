@@ -242,7 +242,7 @@ class housing_benefit(Variable):
             "JSA_contrib",
             "incapacity_benefit",
             "ESA_contrib",
-            "SDA",
+            "sda",
         ]
         capped_personal_benefits = aggr(
             benunit, period, CAPPED_PERSONAL_BENEFITS

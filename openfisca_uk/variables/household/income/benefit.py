@@ -232,19 +232,17 @@ class personal_benefits(Variable):
 
     def formula(person, period, parameters):
         BENEFITS = [
-            "AA",
+            "attendance_allowance",
             "AFCS",
             "BSP",
             "carers_allowance",
-            "DLA_M",
-            "DLA_SC",
+            "dla",
             "ESA_contrib",
             "IIDB",
             "incapacity_benefit",
             "JSA_contrib",
-            "PIP_M",
-            "PIP_DL",
-            "SDA",
+            "pip",
+            "sda",
             "state_pension",
             "student_payments",
             "student_loans",

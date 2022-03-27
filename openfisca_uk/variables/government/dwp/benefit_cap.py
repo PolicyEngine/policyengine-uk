@@ -43,8 +43,7 @@ class is_benefit_cap_exempt(Variable):
     def formula(benunit, period, parameters):
         QUAL_PERSONAL_BENEFITS = [
             "carers_allowance",
-            "DLA_SC",
-            "DLA_M",
+            "dla",
             "ESA_contrib",
         ]
         QUAL_BENUNIT_BENEFITS = ["working_tax_credit", "ESA_income"]

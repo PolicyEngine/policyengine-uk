@@ -128,7 +128,7 @@ class savings_credit_applicable_income(Variable):
             "incapacity_benefit",
             "JSA_contrib",
             "ESA_contrib",
-            "SDA",
+            "sda",
             "maintenance_income",
         ]
         exempted_personal_benefits = aggr(

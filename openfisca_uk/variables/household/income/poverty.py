@@ -12,8 +12,21 @@ class in_poverty_bhc(Variable):
 
     def formula(household, period, parameters):
         income = household("equiv_hbai_household_net_income", period)
-        threshold = parameters(period).poverty.absolute_poverty_threshold_bhc
-        return income < (threshold * WEEKS_IN_YEAR)
+        return income < household("poverty_threshold_bhc", period)
+
+
+class poverty_threshold_bhc(Variable):
+    label = "Poverty threshold (BHC)"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        return (
+            parameters(period).poverty.absolute_poverty_threshold_bhc
+            * WEEKS_IN_YEAR
+        )
 
 
 class in_poverty_ahc(Variable):
@@ -107,6 +120,8 @@ class baseline_hbai_excluded_income(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
+        if not parameters(period).poverty.exclude_non_hbai_income:
+            return 0
         # Establish if currently running a microsimulation
         if len(household.nb_persons()) > 1_000:
             from openfisca_uk import Microsimulation

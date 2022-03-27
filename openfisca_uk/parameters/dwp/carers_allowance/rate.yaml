@@ -1,0 +1,18 @@
+description: "Carer's Allowance rate"
+values:
+  2015-04-01: 62.10
+  2016-04-01: 62.10
+  2017-04-01: 62.70
+  2018-04-01: 64.60
+  2019-04-01: 66.15
+  2020-04-01: 67.25
+  2021-04-01: 67.60
+  2022-04-01: 69.70
+metadata:
+  period: week
+  unit: currency-GBP
+  name: carers_allowance_rate
+  label: "Carer's Allowance rate"
+  reference: 
+    - title: Benefits Uprating 2022/23
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

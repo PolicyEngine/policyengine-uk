@@ -1,0 +1,18 @@
+description: Upper Attendance Allowance amount.
+values:
+  2015-04-01: 82.30
+  2016-04-01: 82.30
+  2017-04-01: 83.10
+  2018-04-01: 85.60
+  2019-04-01: 87.65
+  2020-04-01: 89.15
+  2021-04-01: 89.60
+  2022-04-01: 92.40
+metadata:
+  period: week
+  unit: currency-GBP
+  name: aa_higher
+  label: Attendance Allowance (higher rate)
+  reference: 
+    - title: Benefits Uprating 2022/23
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

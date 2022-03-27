@@ -85,7 +85,7 @@
         weekly_hours: 25
         employment_income: 12000
         pension_contributions: 57
-        DLA_M: 62.55 * 52
+        dla_m: 62.55 * 52
         limited_capability_for_WRA: true
       person_2:
         age: 23

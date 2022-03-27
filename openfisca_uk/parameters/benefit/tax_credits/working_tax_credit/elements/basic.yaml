@@ -19,9 +19,12 @@ values:
   2020-03-25: 1_960
   2020-04-06: 3_040 # Coronavirus Act 2020, overrides 1_960 in WTC Regulations.
   2021-04-06: 2_005
+  2022-04-01: 2_070
 metadata:
   period: year
   unit: currency-GBP
+  name: wtc_basic
+  label: WTC basic element
   uprating: uprating.september_cpi
   reference:
     - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
