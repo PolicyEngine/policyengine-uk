@@ -198,7 +198,7 @@ class Microsimulation(GeneralMicrosimulation):
 
             # Add baseline benefits
 
-        if add_baseline_benefits:
+        if (dataset.name == "frs_enhanced") and add_baseline_benefits:
             filepath = REPO / "data" / "baseline_variables.h5"
             if filepath.exists():
                 with h5py.File(filepath, "r") as f:
