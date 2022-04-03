@@ -2,8 +2,6 @@
   period: 2022
   absolute_error_margin: 0
   input:
-    JSA_contrib: 1
-    ESA_contrib: 1
     state_pension: 1
     pension_income: 1
     maintenance_income: 1
@@ -16,13 +14,11 @@
     dividend_income: 1
     child_benefit: 1
   output:
-    guarantee_credit_applicable_income: 13
+    guarantee_credit_applicable_income: 11
 - name: Couple, all sources
   period: 2022
   absolute_error_margin: 0
   input:
-    JSA_contrib: 1
-    ESA_contrib: 1
     state_pension: 1
     pension_income: 1
     maintenance_income: 1
@@ -35,4 +31,4 @@
     dividend_income: 1
     child_benefit: 1
   output:
-    guarantee_credit_applicable_income: 13
+    guarantee_credit_applicable_income: 11

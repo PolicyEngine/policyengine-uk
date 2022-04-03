@@ -35,14 +35,6 @@ class would_claim_IS(Variable):
         )
 
 
-class baseline_has_income_support(Variable):
-    label = "Receives Income Support (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = bool
-    default_value = True
-
-
 class income_support_applicable_income(Variable):
     value_type = float
     entity = BenUnit
@@ -180,3 +172,21 @@ class income_support(Variable):
         amount = benunit("income_support_applicable_amount", period)
         income = benunit("income_support_applicable_income", period)
         return max_(0, amount - income)
+
+
+class baseline_income_support(Variable):
+    label = "Income Support (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
+class baseline_has_income_support(Variable):
+    label = "Receives Income Support (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
+
+    formula = baseline_is_nonzero(income_support)

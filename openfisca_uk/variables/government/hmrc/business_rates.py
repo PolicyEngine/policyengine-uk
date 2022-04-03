@@ -33,6 +33,16 @@ class business_rates(Variable):
     formula = baseline_business_rates.formula
 
 
+class change_in_business_rates(Variable):
+    label = "Change in expected business rates"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    formula = change_over_baseline(business_rates)
+
+
 class business_rates_change_incidence(Variable):
     label = "Business rates changes"
     documentation = "Total effet of policy changes to business rates"

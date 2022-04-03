@@ -6,6 +6,7 @@ from openfisca_uk import parameters
 class HouseholdsInTotal(LossCategory):
     label = "Households in total"
     parameter_folder = parameters.calibration.households.in_total
+    weight = 1 / 30
 
     def get_loss_subcomponents(
         sim,
@@ -24,5 +25,5 @@ class HouseholdsInTotal(LossCategory):
     def get_metric_names():
         return [
             HouseholdsInTotal.parameter_folder.name + "." + str(year)
-            for year in range(2019, 2023)
+            for year in range(2019, 2027)
         ]

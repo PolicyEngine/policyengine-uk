@@ -8,6 +8,7 @@ class HouseholdsByRegionByTenureType(LossCategory):
     parameter_folder = (
         parameters.calibration.households.by_region_by_tenure_type
     )
+    weight = 1 / 30
 
     def get_loss_subcomponents(
         sim,

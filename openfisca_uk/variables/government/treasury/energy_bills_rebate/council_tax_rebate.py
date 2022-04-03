@@ -25,4 +25,4 @@ class ebr_council_tax_rebate(Variable):
             ),
             axis=0,
         )
-        return eligible * min_(ct_amount, ctr.amount)
+        return eligible * ctr.amount
