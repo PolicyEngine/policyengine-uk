@@ -85,8 +85,10 @@ class Microsimulation(GeneralMicrosimulation):
     ):
         if dataset is None:
             dataset = self.default_dataset
-        else:
-            dataset = dataset
+        elif dataset == SynthFRS:
+            # Check we have the latest synthetic dataset
+            if len(dataset.years) == 0:
+                SynthFRS.download(2019)
         if post_reform is not None:
             self.post_reform = post_reform
         if year is None:
