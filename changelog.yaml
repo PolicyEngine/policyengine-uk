@@ -359,7 +359,8 @@
     changed:
     - Added calibration make.
   date: 2022-03-27 14:13:20
-- bump: patch
+- bump: minor
   changes:
     fixed:
     - Synthetic FRS now successfully loads.
+    - Incorporates better calibration and imputations.
