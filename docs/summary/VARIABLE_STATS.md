@@ -197,20 +197,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: HBAI-excluded income (baseline)
-  - Mean: 462.0
-  - Median: 138.5
-  - Stddev: 2,316.0
-  - Non-zero count: 22,477,960.783508748
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 
 
 - hbai_excluded_income:
   - Type: float
   - Entity: household
   - Description: HBAI-excluded income
-  - Mean: 462.0
-  - Median: 138.5
-  - Stddev: 2,316.0
-  - Non-zero count: 22,477,960.783508748
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 
 
 - hbai_excluded_income_change:
@@ -230,7 +230,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 1,270,570.8680429459
+  - Non-zero count: 1,273,112.8127450943
 
 
 - in_deep_poverty_bhc:
@@ -240,7 +240,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 672,407.3644609451
+  - Non-zero count: 672,449.0207452774
 
 
 - in_poverty_ahc:
@@ -250,7 +250,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 4,113,378.345558405
+  - Non-zero count: 4,125,252.500572443
 
 
 - in_poverty_bhc:
@@ -260,27 +260,27 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 3,703,846.062365532
+  - Non-zero count: 3,714,607.8954343796
 
 
 - poverty_gap_ahc:
   - Type: float
   - Entity: household
   - Description: Positive financial gap between net household income and the poverty line, after housing costs
-  - Mean: 773.3
+  - Mean: 774.9
   - Median: 0.0
-  - Stddev: 1,739.1
-  - Non-zero count: 4,113,378.345558405
+  - Stddev: 1,742.3
+  - Non-zero count: 4,125,252.500572443
 
 
 - poverty_gap_bhc:
   - Type: float
   - Entity: household
   - Description: Positive financial gap between net household income and the poverty line
-  - Mean: 550.5
+  - Mean: 552.3
   - Median: 0.0
-  - Stddev: 1,426.8
-  - Non-zero count: 3,703,846.062365532
+  - Stddev: 1,431.0
+  - Non-zero count: 3,714,607.8954343796
 
 
 - poverty_line_ahc:
@@ -353,30 +353,30 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Equivalised household net income (HBAI)
-  - Mean: 36,284.7
-  - Median: 29,731.3
-  - Stddev: 35,263.5
-  - Non-zero count: 28,334,185.658794373
+  - Mean: 36,243.4
+  - Median: 29,707.5
+  - Stddev: 35,203.7
+  - Non-zero count: 28,333,661.788921326
 
 
 - equiv_hbai_household_net_income_ahc:
   - Type: float
   - Entity: household
   - Description: Equivalised household net income, after housing costs (HBAI)
-  - Mean: 34,303.0
-  - Median: 28,119.2
-  - Stddev: 37,159.2
-  - Non-zero count: 28,111,110.977283448
+  - Mean: 34,260.1
+  - Median: 28,066.7
+  - Stddev: 37,095.5
+  - Non-zero count: 28,107,144.182849854
 
 
 - equiv_household_net_income:
   - Type: float
   - Entity: household
   - Description: Equivalised household net income
-  - Mean: 36,745.4
-  - Median: 30,175.4
-  - Stddev: 36,004.0
-  - Non-zero count: 28,336,998.976909608
+  - Mean: 36,243.4
+  - Median: 29,707.5
+  - Stddev: 35,203.7
+  - Non-zero count: 28,333,661.788921326
 
 
 - gross_income:
@@ -393,20 +393,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Household net income (HBAI definition)
-  - Mean: 39,522.0
-  - Median: 30,980.2
-  - Stddev: 41,484.2
-  - Non-zero count: 28,334,185.658794373
+  - Mean: 39,480.5
+  - Median: 30,916.8
+  - Stddev: 41,417.1
+  - Non-zero count: 28,333,661.788921326
 
 
 - hbai_household_net_income_ahc:
   - Type: float
   - Entity: household
   - Description: Household net income, after housing costs
-  - Mean: 36,857.2
-  - Median: 28,312.5
-  - Stddev: 41,680.4
-  - Non-zero count: 28,111,110.977283448
+  - Mean: 36,815.7
+  - Median: 28,248.8
+  - Stddev: 41,612.0
+  - Non-zero count: 28,107,144.182849854
 
 
 - hours_worked:
@@ -443,10 +443,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Household net income
-  - Mean: 39,984.0
-  - Median: 31,500.6
-  - Stddev: 42,294.0
-  - Non-zero count: 28,336,998.976909608
+  - Mean: 39,480.5
+  - Median: 30,916.8
+  - Stddev: 41,417.1
+  - Non-zero count: 28,333,661.788921326
 
 
 - in_work:
@@ -549,10 +549,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Real household net income
-  - Mean: 36,289.2
-  - Median: 28,589.8
-  - Stddev: 38,385.9
-  - Non-zero count: 28,336,998.976909608
+  - Mean: 35,832.2
+  - Median: 28,059.9
+  - Stddev: 37,589.9
+  - Non-zero count: 28,333,661.788921326
 
 
 - sublet_income:
@@ -579,9 +579,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Corporate tax incidence
-  - Mean: -462.0
-  - Median: -138.5
-  - Stddev: 2,316.0
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
   - Non-zero count: 0.0
 
 
@@ -3617,9 +3617,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Stamp Duty (corporations, baseline)
-  - Mean: 151.7
-  - Median: 45.5
-  - Stddev: 760.5
+  - Mean: 110.2
+  - Median: 33.0
+  - Stddev: 552.5
   - Non-zero count: 22,477,960.783508748
 
 
@@ -3627,9 +3627,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Stamp Duty (expected, baseline)
-  - Mean: 320.7
-  - Median: 67.4
-  - Stddev: 1,493.5
+  - Mean: 279.2
+  - Median: 49.8
+  - Stddev: 1,372.2
   - Non-zero count: 22,929,836.933825463
 
 
@@ -3637,9 +3637,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Change in expected Stamp Duty
-  - Mean: -41.5
-  - Median: -12.4
-  - Stddev: 207.9
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
   - Non-zero count: 0.0
 
 
@@ -3657,9 +3657,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Change in corporate Stamp Duty (expected)
-  - Mean: -41.5
-  - Median: -12.4
-  - Stddev: 207.9
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
   - Non-zero count: 0.0
 
 
@@ -3827,9 +3827,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Baseline business rates incidence
-  - Mean: 1,538.0
-  - Median: 460.9
-  - Stddev: 7,709.8
+  - Mean: 1,117.4
+  - Median: 334.9
+  - Stddev: 5,601.1
   - Non-zero count: 22,477,960.783508748
 
 
@@ -3847,9 +3847,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Business rates changes
-  - Mean: -420.5
-  - Median: -126.0
-  - Stddev: 2,108.0
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
   - Non-zero count: 0.0
 
 
@@ -3857,9 +3857,9 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Change in expected business rates
-  - Mean: -420.5
-  - Median: -126.0
-  - Stddev: 2,108.0
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
   - Non-zero count: 0.0
 
 
@@ -3877,10 +3877,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Taxes
-  - Mean: 10,364.5
-  - Median: 4,462.0
-  - Stddev: 22,117.1
-  - Non-zero count: 27,759,065.80802223
+  - Mean: 10,868.0
+  - Median: 5,094.4
+  - Stddev: 22,718.7
+  - Non-zero count: 28,043,450.784573525
 
 
 - tax:
