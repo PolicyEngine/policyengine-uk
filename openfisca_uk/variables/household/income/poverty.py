@@ -152,10 +152,7 @@ class hbai_excluded_income(Variable):
 
     def formula(household, period, parameters):
         VARIABLES = [
-            "expected_sdlt",
-            "expected_ltt",
-            "expected_lbtt",
-            "business_rates",
+            "corporate_tax_incidence",
         ]
         return -add(household, period, VARIABLES)
 

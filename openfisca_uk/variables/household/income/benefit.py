@@ -317,3 +317,15 @@ class claims_legacy_benefits(Variable):
     label = "Claims legacy benefits"
     documentation = "Whether this family is currently receiving legacy benefits (overrides UC claimant status)"
     definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        BENEFITS = [
+            "child_tax_credit",
+            "working_tax_credit",
+            "housing_benefit",
+            "ESA_income",
+            "income_support",
+            "JSA_income",
+        ]
+
+        return add(benunit, period, BENEFITS) > 0

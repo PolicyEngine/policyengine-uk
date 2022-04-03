@@ -9,6 +9,7 @@ class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
     parameter_folder = (
         parameters.calibration.budgetary_impact.of_income_tax_by_income_band
     )
+    weight = 1 / 30
 
     def get_loss_subcomponents(
         sim,
@@ -44,17 +45,11 @@ class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
                 yield brackets[i].name + "." + str(year), aggregate, target
 
     def get_metrics():
-        return (
-            BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets[
-                :-3
-            ]
-        )
+        return BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets
 
     def get_metric_names():
         return [
             bracket.name + "." + str(year)
-            for bracket in BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets[
-                :-3
-            ]
-            for year in range(2019, 2023)
+            for bracket in BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets
+            for year in range(2019, 2027)
         ]

@@ -1,0 +1,11 @@
+description: Extra payment per child for Pension Credit
+values:
+  2018-04-01: 53.34
+  2019-04-01: 53.34
+  2020-04-01: 54.32
+  2021-04-01: 54.60
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: The State Pension Credit Regulations 2002
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA/2020-04-06

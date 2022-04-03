@@ -166,7 +166,7 @@ class is_renting(Variable):
             tenures.RENT_FROM_COUNCIL,
             tenures.RENT_PRIVATELY,
         ]
-        return np.isin(tenure, RENT_TENURES)
+        return is_in(tenure, RENT_TENURES)
 
 
 class AccommodationType(Enum):

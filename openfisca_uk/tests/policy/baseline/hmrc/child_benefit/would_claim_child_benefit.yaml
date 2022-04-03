@@ -4,9 +4,3 @@
     claims_all_entitled_benefits: true
   output:
     would_claim_child_benefit: true
-- name: Non-take-up imputed
-  period: 2021
-  input:
-    claims_all_entitled_benefits: false
-  output:
-    would_claim_child_benefit: false
