@@ -7,50 +7,50 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Total benefits
-  - Mean: 3,393.2
+  - Mean: 3,434.3
   - Median: 0.0
-  - Stddev: 6,773.8
-  - Non-zero count: 23,675,632.63911438
+  - Stddev: 5,210.2
+  - Non-zero count: 26,102,296.57203296
 
 
 - benefits_modelling:
   - Type: float
   - Entity: person
   - Description: Difference between reported and simulated benefits for this person
-  - Mean: 609.2
+  - Mean: 557.9
   - Median: 0.0
-  - Stddev: 3,945.1
-  - Non-zero count: 11,969,883.281951904
+  - Stddev: 3,350.1
+  - Non-zero count: 13,834,298.32628858
 
 
 - benefits_premiums:
   - Type: float
   - Entity: benunit
   - Description: Value of premiums for disability and carer status
-  - Mean: 370.7
+  - Mean: 441.5
   - Median: 0.0
-  - Stddev: 1,605.5
-  - Non-zero count: 2,482,052.3710803986
+  - Stddev: 1,680.9
+  - Non-zero count: 2,816,139.986817181
 
 
 - benefits_reported:
   - Type: float
   - Entity: person
   - Description: Total simulated
-  - Mean: 2,784.0
+  - Mean: 2,876.5
   - Median: 0.0
-  - Stddev: 5,231.5
-  - Non-zero count: 21,923,201.132217407
+  - Stddev: 5,234.8
+  - Non-zero count: 22,615,303.661769897
 
 
 - benunit_weekly_hours:
   - Type: float
   - Entity: benunit
   - Description: Average weekly hours worked by adults in the benefit unit
-  - Mean: 33.2
-  - Median: 36.0
+  - Mean: 32.5
+  - Median: 35.0
   - Stddev: 31.4
-  - Non-zero count: 18,168,681.777121544
+  - Non-zero count: 17,650,955.508020252
 
 
 - claims_all_entitled_benefits:
@@ -67,40 +67,40 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: bool
   - Entity: benunit
   - Description: Claims legacy benefits
-  - Mean: 0.5
-  - Median: 1.0
-  - Stddev: 0.5
-  - Non-zero count: 14,644,653.826180458
+  - Mean: 0.2
+  - Median: 0.0
+  - Stddev: 0.2
+  - Non-zero count: 4,462,032.563521385
 
 
 - family_benefits:
   - Type: float
   - Entity: person
   - Description: Total simulated family benefits for this person
-  - Mean: 1,339.6
+  - Mean: 1,235.7
   - Median: 0.0
-  - Stddev: 4,983.2
-  - Non-zero count: 13,369,573.442932129
+  - Stddev: 2,655.3
+  - Non-zero count: 14,805,501.560266048
 
 
 - family_benefits_reported:
   - Type: float
   - Entity: person
   - Description: Total reported family benefits for this person
-  - Mean: 959.0
+  - Mean: 982.5
   - Median: 0.0
-  - Stddev: 3,105.0
-  - Non-zero count: 12,582,321.062561035
+  - Stddev: 3,102.1
+  - Non-zero count: 11,473,490.068819553
 
 
 - household_benefits:
   - Type: float
   - Entity: household
   - Description: Benefits
-  - Mean: 7,789.8
-  - Median: 4,128.0
-  - Stddev: 10,102.6
-  - Non-zero count: 19,411,050.363998413
+  - Mean: 8,206.2
+  - Median: 6,448.5
+  - Stddev: 8,237.4
+  - Non-zero count: 20,008,046.027900666
 
 
 - is_QYP:
@@ -110,7 +110,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 10,038,771.41885376
+  - Non-zero count: 10,180,480.351083279
 
 
 - is_child_or_QYP:
@@ -120,17 +120,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 13,997,365.380493164
+  - Non-zero count: 13,726,878.757801533
 
 
 - is_couple:
   - Type: bool
   - Entity: benunit
   - Description: Whether this benefit unit contains a joint couple claimant for benefits
-  - Mean: 0.5
+  - Mean: 0.6
   - Median: 1.0
   - Stddev: 0.5
-  - Non-zero count: 15,177,202.64338398
+  - Non-zero count: 15,771,229.128755808
 
 
 - is_lone_parent:
@@ -140,17 +140,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 1,825,871.2057886124
+  - Non-zero count: 1,893,758.86311841
 
 
 - is_single:
   - Type: bool
   - Entity: benunit
   - Description: Whether this benefit unit contains a single claimant for benefits
-  - Mean: 0.5
+  - Mean: 0.4
   - Median: 0.0
   - Stddev: 0.5
-  - Non-zero count: 13,734,762.460568428
+  - Non-zero count: 12,626,632.112122
 
 
 - is_single_person:
@@ -160,57 +160,57 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.4
   - Median: 0.0
   - Stddev: 0.5
-  - Non-zero count: 12,371,247.97512722
+  - Non-zero count: 11,153,412.077039897
 
 
 - other_benefits:
   - Type: float
   - Entity: person
   - Description: Income from benefits not modelled or detailed in the model
-  - Mean: -609.2
+  - Mean: -557.9
   - Median: 0.0
-  - Stddev: 3,945.1
-  - Non-zero count: 6,889,008.992279053
+  - Stddev: 3,350.1
+  - Non-zero count: 7,079,685.93421343
 
 
 - personal_benefits:
   - Type: float
   - Entity: person
   - Description: Value of personal, non-means-tested benefits
-  - Mean: 2,053.6
+  - Mean: 2,198.6
   - Median: 0.0
-  - Stddev: 4,294.6
-  - Non-zero count: 15,539,219.055160522
+  - Stddev: 4,319.2
+  - Non-zero count: 17,055,616.66657594
 
 
 - personal_benefits_reported:
   - Type: float
   - Entity: person
   - Description: Value of personal, non-means-tested benefits
-  - Mean: 1,825.0
+  - Mean: 1,893.9
   - Median: 0.0
-  - Stddev: 4,032.6
-  - Non-zero count: 13,950,635.109207153
+  - Stddev: 4,034.6
+  - Non-zero count: 15,101,576.829185039
 
 
 - baseline_hbai_excluded_income:
   - Type: float
   - Entity: household
   - Description: HBAI-excluded income (baseline)
-  - Mean: -1,355.8
-  - Median: -202.4
-  - Stddev: 3,512.1
-  - Non-zero count: 0.0
+  - Mean: 462.0
+  - Median: 138.5
+  - Stddev: 2,316.0
+  - Non-zero count: 22,477,960.783508748
 
 
 - hbai_excluded_income:
   - Type: float
   - Entity: household
   - Description: HBAI-excluded income
-  - Mean: -1,355.8
-  - Median: -202.4
-  - Stddev: 3,512.1
-  - Non-zero count: 0.0
+  - Mean: 462.0
+  - Median: 138.5
+  - Stddev: 2,316.0
+  - Non-zero count: 22,477,960.783508748
 
 
 - hbai_excluded_income_change:
@@ -229,8 +229,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Whether the household is in deep absolute poverty (below half the poverty line), after housing costs
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.2
-  - Non-zero count: 1,169,352.2942810059
+  - Stddev: 0.1
+  - Non-zero count: 1,270,570.8680429459
 
 
 - in_deep_poverty_bhc:
@@ -239,8 +239,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Whether the household is in deep absolute poverty (below half the poverty line), before housing costs
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.2
-  - Non-zero count: 703,707.49609375
+  - Stddev: 0.1
+  - Non-zero count: 672,407.3644609451
 
 
 - in_poverty_ahc:
@@ -250,7 +250,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 3,716,771.0956115723
+  - Non-zero count: 4,113,378.345558405
 
 
 - in_poverty_bhc:
@@ -260,47 +260,57 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 4,164,309.609161377
+  - Non-zero count: 3,703,846.062365532
 
 
 - poverty_gap_ahc:
   - Type: float
   - Entity: household
   - Description: Positive financial gap between net household income and the poverty line, after housing costs
-  - Mean: 647.5
+  - Mean: 773.3
   - Median: 0.0
-  - Stddev: 2,113.9
-  - Non-zero count: 3,716,771.0956115723
+  - Stddev: 1,739.1
+  - Non-zero count: 4,113,378.345558405
 
 
 - poverty_gap_bhc:
   - Type: float
   - Entity: household
   - Description: Positive financial gap between net household income and the poverty line
-  - Mean: 573.8
+  - Mean: 550.5
   - Median: 0.0
-  - Stddev: 1,905.5
-  - Non-zero count: 4,164,309.609161377
+  - Stddev: 1,426.8
+  - Non-zero count: 3,703,846.062365532
 
 
 - poverty_line_ahc:
   - Type: float
   - Entity: household
   - Description: The poverty line for the household, after housing costs
-  - Mean: 14,253.1
-  - Median: 13,876.2
-  - Stddev: 5,719.5
-  - Non-zero count: 28,911,965.107925415
+  - Mean: 14,696.5
+  - Median: 13,786.6
+  - Stddev: 5,683.2
+  - Non-zero count: 28,397,861.239144295
 
 
 - poverty_line_bhc:
   - Type: float
   - Entity: household
   - Description: The poverty line for the household, before housing costs
-  - Mean: 16,817.8
-  - Median: 16,195.3
-  - Stddev: 5,552.8
-  - Non-zero count: 28,911,965.107925415
+  - Mean: 17,204.2
+  - Median: 16,090.7
+  - Stddev: 5,517.9
+  - Non-zero count: 28,397,861.239144295
+
+
+- poverty_threshold_bhc:
+  - Type: float
+  - Entity: household
+  - Description: Poverty threshold (BHC)
+  - Mean: 16,090.7
+  - Median: 16,090.7
+  - Stddev: 5.2
+  - Non-zero count: 28,397,861.239144295
 
 
 - base_net_income:
@@ -317,20 +327,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Income from savings or dividends
-  - Mean: 1,008.9
+  - Mean: 1,034.1
   - Median: 0.0
-  - Stddev: 2,145.3
-  - Non-zero count: 22,839,082.694641113
+  - Stddev: 25,269.0
+  - Non-zero count: 22,945,289.76787603
 
 
 - earned_income:
   - Type: float
   - Entity: person
   - Description: Total earned income
-  - Mean: 15,480.3
-  - Median: 5,720.0
-  - Stddev: 26,078.0
-  - Non-zero count: 37,898,471.16407776
+  - Mean: 16,334.0
+  - Median: 7,240.3
+  - Stddev: 28,487.5
+  - Non-zero count: 40,145,173.373889714
 
 
 - employment_status:
@@ -343,100 +353,100 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Equivalised household net income (HBAI)
-  - Mean: 34,003.9
-  - Median: 28,781.3
-  - Stddev: 21,605.7
-  - Non-zero count: 28,753,396.73851013
+  - Mean: 36,284.7
+  - Median: 29,731.3
+  - Stddev: 35,263.5
+  - Non-zero count: 28,334,185.658794373
 
 
 - equiv_hbai_household_net_income_ahc:
   - Type: float
   - Entity: household
   - Description: Equivalised household net income, after housing costs (HBAI)
-  - Mean: 32,123.2
-  - Median: 26,911.4
-  - Stddev: 22,372.0
-  - Non-zero count: 28,573,718.14390564
+  - Mean: 34,303.0
+  - Median: 28,119.2
+  - Stddev: 37,159.2
+  - Non-zero count: 28,111,110.977283448
 
 
 - equiv_household_net_income:
   - Type: float
   - Entity: household
   - Description: Equivalised household net income
-  - Mean: 32,682.8
-  - Median: 27,715.8
-  - Stddev: 20,679.2
-  - Non-zero count: 28,694,706.610458374
+  - Mean: 36,745.4
+  - Median: 30,175.4
+  - Stddev: 36,004.0
+  - Non-zero count: 28,336,998.976909608
 
 
 - gross_income:
   - Type: float
   - Entity: person
   - Description: Gross income, including benefits
-  - Mean: 20,386.5
-  - Median: 14,567.8
-  - Stddev: 26,177.1
-  - Non-zero count: 48,739,245.00135803
+  - Mean: 21,226.0
+  - Median: 15,049.4
+  - Stddev: 39,392.8
+  - Non-zero count: 51,287,033.864952475
 
 
 - hbai_household_net_income:
   - Type: float
   - Entity: household
   - Description: Household net income (HBAI definition)
-  - Mean: 36,564.5
-  - Median: 29,598.2
-  - Stddev: 27,090.1
-  - Non-zero count: 28,753,396.73851013
+  - Mean: 39,522.0
+  - Median: 30,980.2
+  - Stddev: 41,484.2
+  - Non-zero count: 28,334,185.658794373
 
 
 - hbai_household_net_income_ahc:
   - Type: float
   - Entity: household
   - Description: Household net income, after housing costs
-  - Mean: 34,032.9
-  - Median: 26,723.2
-  - Stddev: 27,311.3
-  - Non-zero count: 28,573,718.14390564
+  - Mean: 36,857.2
+  - Median: 28,312.5
+  - Stddev: 41,680.4
+  - Non-zero count: 28,111,110.977283448
 
 
 - hours_worked:
   - Type: float
   - Entity: person
   - Description: Total amount of hours worked by this person
-  - Mean: 898.7
+  - Mean: 872.9
   - Median: 0.0
-  - Stddev: 1,034.5
-  - Non-zero count: 31,891,557.02645874
+  - Stddev: 1,034.4
+  - Non-zero count: 31,879,392.475227475
 
 
 - household_gross_income:
   - Type: float
   - Entity: household
   - Description: Household gross income
-  - Mean: 46,412.3
-  - Median: 34,374.9
-  - Stddev: 41,432.6
-  - Non-zero count: 28,813,841.707504272
+  - Mean: 50,348.4
+  - Median: 35,992.4
+  - Stddev: 63,028.2
+  - Non-zero count: 28,366,532.112438172
 
 
 - household_market_income:
   - Type: float
   - Entity: household
   - Description: Household market income
-  - Mean: 38,622.5
-  - Median: 26,637.7
-  - Stddev: 44,457.9
-  - Non-zero count: 24,231,909.82344055
+  - Mean: 42,142.3
+  - Median: 28,289.0
+  - Stddev: 64,438.0
+  - Non-zero count: 25,114,470.42472765
 
 
 - household_net_income:
   - Type: float
   - Entity: household
   - Description: Household net income
-  - Mean: 35,208.7
-  - Median: 28,575.0
-  - Stddev: 26,235.2
-  - Non-zero count: 28,694,706.610458374
+  - Mean: 39,984.0
+  - Median: 31,500.6
+  - Stddev: 42,294.0
+  - Non-zero count: 28,336,998.976909608
 
 
 - in_work:
@@ -446,7 +456,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.5
   - Median: 0.0
   - Stddev: 0.5
-  - Non-zero count: 31,892,454.255218506
+  - Non-zero count: 33,312,417.816262633
 
 
 - is_apprentice:
@@ -463,30 +473,30 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Lump sum income
-  - Mean: 83.5
+  - Mean: 75.6
   - Median: -1.0
-  - Stddev: 1,944.1
-  - Non-zero count: 252,695.38507080078
+  - Stddev: 1,943.8
+  - Non-zero count: 242,468.1622543335
 
 
 - maintenance_income:
   - Type: float
   - Entity: person
   - Description: Maintenance payments
-  - Mean: 36.3
+  - Mean: 35.7
   - Median: 0.0
-  - Stddev: 515.9
-  - Non-zero count: 744,174.6753845215
+  - Stddev: 515.4
+  - Non-zero count: 746,752.8058598042
 
 
 - market_income:
   - Type: float
   - Entity: person
   - Description: Market income
-  - Mean: 16,993.3
-  - Median: 7,259.2
-  - Stddev: 26,574.0
-  - Non-zero count: 40,784,862.36000061
+  - Mean: 17,791.6
+  - Median: 8,076.6
+  - Stddev: 39,495.8
+  - Non-zero count: 44,749,600.26081374
 
 
 - minimum_wage:
@@ -496,7 +506,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 7.7
   - Median: 8.7
   - Stddev: 1.7
-  - Non-zero count: 65,711,194.14491272
+  - Non-zero count: 67,264,792.51037088
 
 
 - minimum_wage_category:
@@ -509,30 +519,40 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Income from other sources
-  - Mean: 60.9
+  - Mean: 43.1
   - Median: 0.0
-  - Stddev: 828.2
-  - Non-zero count: 872,490.9592895508
+  - Stddev: 827.8
+  - Non-zero count: 776,042.7286429405
 
 
 - net_income:
   - Type: float
   - Entity: person
   - Description: Net income
-  - Mean: 16,687.1
-  - Median: 14,066.8
-  - Stddev: 17,747.5
-  - Non-zero count: 48,739,245.00135803
+  - Mean: 17,246.3
+  - Median: 14,543.0
+  - Stddev: 25,593.0
+  - Non-zero count: 51,287,033.864952475
 
 
 - private_transfer_income:
   - Type: float
   - Entity: person
   - Description: Private transfers
-  - Mean: 86.6
+  - Mean: 104.9
   - Median: 0.0
-  - Stddev: 1,219.7
-  - Non-zero count: 801,082.5107116699
+  - Stddev: 1,218.4
+  - Non-zero count: 1,108,639.6627731323
+
+
+- real_household_net_income:
+  - Type: float
+  - Entity: household
+  - Description: Real household net income
+  - Mean: 36,289.2
+  - Median: 28,589.8
+  - Stddev: 38,385.9
+  - Non-zero count: 28,336,998.976909608
 
 
 - sublet_income:
@@ -549,19 +569,19 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Weekly hours
-  - Mean: 17.3
+  - Mean: 16.8
   - Median: 0.0
   - Stddev: 19.9
-  - Non-zero count: 31,891,557.02645874
+  - Non-zero count: 31,879,392.475227475
 
 
 - corporate_tax_incidence:
   - Type: float
   - Entity: household
   - Description: Corporate tax incidence
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
+  - Mean: -462.0
+  - Median: -138.5
+  - Stddev: 2,316.0
   - Non-zero count: 0.0
 
 
@@ -569,10 +589,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Corporate wealth
-  - Mean: 141,773.5
-  - Median: 17,706.4
-  - Stddev: 379,696.8
-  - Non-zero count: 19,754,560.831863403
+  - Mean: 266,942.6
+  - Median: 80,000.0
+  - Stddev: 1,338,243.2
+  - Non-zero count: 22,477,960.783508748
 
 
 - shareholding:
@@ -582,237 +602,257 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
-  - Non-zero count: 19,754,560.831863403
+  - Non-zero count: 22,477,960.783508748
 
 
 - main_residence_value:
   - Type: float
   - Entity: household
   - Description: Main residence value
-  - Mean: 186,403.4
-  - Median: 135,000.0
-  - Stddev: 241,917.5
-  - Non-zero count: 18,513,761.279571533
+  - Mean: 203,553.2
+  - Median: 139,000.0
+  - Stddev: 320,394.2
+  - Non-zero count: 17,893,101.434858263
 
 
 - non_residential_property_value:
   - Type: float
   - Entity: household
   - Description: Non-residential property value
-  - Mean: 2,034.4
+  - Mean: 9,022.6
   - Median: 0.0
-  - Stddev: 34,377.7
-  - Non-zero count: 217,408.7152709961
+  - Stddev: 107,380.9
+  - Non-zero count: 1,029,535.9482631683
 
 
 - other_residential_property_value:
   - Type: float
   - Entity: household
   - Description: Other residence value
-  - Mean: 10,694.2
+  - Mean: 28,768.5
   - Median: 0.0
-  - Stddev: 64,683.9
-  - Non-zero count: 1,429,464.1913757324
+  - Stddev: 165,007.5
+  - Non-zero count: 3,343,844.0210351944
 
 
 - property_wealth:
   - Type: float
   - Entity: household
   - Description: Property wealth
-  - Mean: 220,761.2
-  - Median: 139,999.0
-  - Stddev: 322,277.5
-  - Non-zero count: 18,899,320.63571167
+  - Mean: 267,288.0
+  - Median: 165,000.0
+  - Stddev: 469,924.2
+  - Non-zero count: 19,126,878.09858316
 
 
 - residential_property_value:
   - Type: float
   - Entity: household
   - Description: Residential property value
-  - Mean: 197,097.6
-  - Median: 135,000.0
-  - Stddev: 262,398.8
-  - Non-zero count: 18,630,739.037139893
+  - Mean: 232,321.7
+  - Median: 150,000.0
+  - Stddev: 393,889.8
+  - Non-zero count: 18,510,922.947545946
 
 
 - corporate_land_value:
   - Type: float
   - Entity: household
   - Description: Land value
-  - Mean: 60,799.0
-  - Median: 7,593.3
-  - Stddev: 162,834.6
-  - Non-zero count: 19,754,560.831863403
+  - Mean: 61,899.7
+  - Median: 18,550.7
+  - Stddev: 310,294.8
+  - Non-zero count: 22,477,960.783508748
 
 
 - household_land_value:
   - Type: float
   - Entity: household
   - Description: Land value
-  - Mean: 149,043.4
-  - Median: 94,518.1
-  - Stddev: 217,597.2
-  - Non-zero count: 18,899,320.63571167
+  - Mean: 162,083.8
+  - Median: 94,154.3
+  - Stddev: 342,696.0
+  - Non-zero count: 19,331,470.053551614
 
 
 - land_value:
   - Type: float
   - Entity: household
   - Description: Land value
-  - Mean: 209,842.4
-  - Median: 124,899.8
-  - Stddev: 313,357.5
-  - Non-zero count: 23,591,220.93309021
+  - Mean: 223,983.5
+  - Median: 130,640.0
+  - Stddev: 500,850.7
+  - Non-zero count: 24,871,013.163288802
 
 
 - owned_land:
   - Type: float
   - Entity: household
   - Description: Owned land
-  - Mean: 0.0
+  - Mean: 10,342.2
   - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Stddev: 146,538.5
+  - Non-zero count: 1,468,068.7545609474
 
 
 - carbon_consumption:
   - Type: float
   - Entity: household
   - Description: Carbon consumption
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 19.2
+  - Median: 14.3
+  - Stddev: 19.9
+  - Non-zero count: 28,388,804.893868417
 
 
 - alcohol_and_tobacco_consumption:
   - Type: float
   - Entity: household
   - Description: Alcohol and tobacco
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 764.1
+  - Median: 227.5
+  - Stddev: 1,407.4
+  - Non-zero count: 17,520,739.283840626
 
 
 - clothing_and_footwear_consumption:
   - Type: float
   - Entity: household
   - Description: Clothing and footwear
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 1,467.8
+  - Median: 487.6
+  - Stddev: 3,286.3
+  - Non-zero count: 19,007,326.063055634
 
 
 - communication_consumption:
   - Type: float
   - Entity: household
   - Description: Communication
-  - Mean: 0.0
+  - Mean: 763.0
+  - Median: 408.2
+  - Stddev: 2,094.6
+  - Non-zero count: 23,328,315.47642654
+
+
+- diesel_spending:
+  - Type: float
+  - Entity: household
+  - Description: Diesel spending
+  - Mean: 603.1
   - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Stddev: 1,236.7
+  - Non-zero count: 8,920,278.795108736
 
 
 - education_consumption:
   - Type: float
   - Entity: household
   - Description: Education
-  - Mean: 0.0
+  - Mean: 566.3
   - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Stddev: 5,247.3
+  - Non-zero count: 2,770,251.853920698
 
 
 - food_and_non_alcoholic_beverages_consumption:
   - Type: float
   - Entity: household
   - Description: Food and alcoholic beverages
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 3,449.3
+  - Median: 2,946.9
+  - Stddev: 2,363.7
+  - Non-zero count: 28,191,694.207987756
 
 
 - health_consumption:
   - Type: float
   - Entity: household
   - Description: Health
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 530.3
+  - Median: 49.9
+  - Stddev: 2,216.7
+  - Non-zero count: 17,275,971.053601086
 
 
 - household_furnishings_consumption:
   - Type: float
   - Entity: household
   - Description: Household furnishings
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 2,561.5
+  - Median: 753.7
+  - Stddev: 6,007.2
+  - Non-zero count: 27,072,779.806850404
 
 
 - housing_water_and_electricity_consumption:
   - Type: float
   - Entity: household
   - Description: Housing, water and electricity
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 4,914.5
+  - Median: 2,556.0
+  - Stddev: 7,340.3
+  - Non-zero count: 28,336,069.32198426
 
 
 - miscellaneous_consumption:
   - Type: float
   - Entity: household
   - Description: Miscellaneous
-  - Mean: 0.0
+  - Mean: 3,447.7
+  - Median: 1,698.3
+  - Stddev: 6,712.9
+  - Non-zero count: 27,978,087.467287034
+
+
+- petrol_spending:
+  - Type: float
+  - Entity: household
+  - Description: Petrol spending
+  - Mean: 829.7
   - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Stddev: 1,238.7
+  - Non-zero count: 14,094,198.226631463
 
 
 - recreation_consumption:
   - Type: float
   - Entity: household
   - Description: Recreation
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 5,247.9
+  - Median: 2,128.6
+  - Stddev: 9,953.6
+  - Non-zero count: 28,173,828.129013985
 
 
 - restaurants_and_hotels_consumption:
   - Type: float
   - Entity: household
   - Description: Restaurants and hotels
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 3,512.4
+  - Median: 1,972.7
+  - Stddev: 5,023.1
+  - Non-zero count: 25,306,853.751206845
 
 
 - transport_consumption:
   - Type: float
   - Entity: household
   - Description: Transport
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Mean: 5,970.6
+  - Median: 3,081.3
+  - Stddev: 10,693.1
+  - Non-zero count: 25,547,521.62643358
 
 
 - additional_residential_property_purchased:
   - Type: float
   - Entity: household
   - Description: Residential property bought (additional)
-  - Mean: 10,694.2
+  - Mean: 28,768.5
   - Median: 0.0
-  - Stddev: 64,683.9
-  - Non-zero count: 1,429,464.1913757324
+  - Stddev: 165,007.5
+  - Non-zero count: 3,343,844.0210351944
 
 
 - cumulative_non_residential_rent:
@@ -839,10 +879,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Residential property bought (main)
-  - Mean: 186,403.4
-  - Median: 135,000.0
-  - Stddev: 241,917.5
-  - Non-zero count: 18,513,761.279571533
+  - Mean: 203,553.2
+  - Median: 139,000.0
+  - Stddev: 320,394.2
+  - Non-zero count: 17,893,101.434858263
 
 
 - main_residential_property_purchased_is_first_home:
@@ -852,17 +892,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 5,398,008.286743164
+  - Non-zero count: 5,534,812.5801950395
 
 
 - non_residential_property_purchased:
   - Type: float
   - Entity: household
   - Description: Non-residential property bought
-  - Mean: 2,034.4
+  - Mean: 9,022.6
   - Median: 0.0
-  - Stddev: 34,377.7
-  - Non-zero count: 217,408.7152709961
+  - Stddev: 107,380.9
+  - Non-zero count: 1,029,535.9482631683
 
 
 - non_residential_rent:
@@ -882,7 +922,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.0
   - Median: 1.0
   - Stddev: 0.0
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - property_sale_rate:
@@ -891,48 +931,48 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Residential property sale rate
   - Mean: 0.1
   - Median: 0.1
-  - Stddev: 0.0
-  - Non-zero count: 2.0
+  - Stddev: nan
+  - Non-zero count: 1.0
 
 
 - rent:
   - Type: float
   - Entity: household
   - Description: Rent
-  - Mean: 2,531.6
+  - Mean: 2,664.8
   - Median: -52.0
-  - Stddev: 4,221.4
-  - Non-zero count: 10,218,780.624267578
+  - Stddev: 4,220.5
+  - Non-zero count: 10,216,378.29003644
 
 
 - benunit_rent:
   - Type: float
   - Entity: benunit
   - Description: Rent
-  - Mean: 2,306.3
+  - Mean: 2,301.4
   - Median: -52.0
-  - Stddev: 3,968.6
-  - Non-zero count: 9,514,608.44004631
+  - Stddev: 3,969.4
+  - Non-zero count: 9,253,730.809152842
 
 
 - childcare_expenses:
   - Type: float
   - Entity: person
   - Description: Cost of childcare
-  - Mean: 102.8
+  - Mean: 104.4
   - Median: 0.0
-  - Stddev: 881.8
-  - Non-zero count: 2,594,939.3011169434
+  - Stddev: 882.9
+  - Non-zero count: 2,425,796.8594563007
 
 
 - council_tax:
   - Type: float
   - Entity: household
   - Description: Council Tax
-  - Mean: 1,439.9
-  - Median: 1,386.7
+  - Mean: 1,441.4
+  - Median: 1,406.8
   - Stddev: 751.4
-  - Non-zero count: 27,767,170.35961914
+  - Non-zero count: 27,305,731.43427512
 
 
 - council_tax_band:
@@ -945,10 +985,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Council Tax (less CTB)
-  - Mean: 1,296.1
-  - Median: 1,334.0
+  - Mean: 1,308.1
+  - Median: 1,367.4
   - Stddev: 859.0
-  - Non-zero count: 25,813,108.92807007
+  - Non-zero count: 25,518,166.014158934
 
 
 - employer_pension_contributions:
@@ -965,40 +1005,40 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Gross rent for the family
-  - Mean: 2,306.3
+  - Mean: 2,301.4
   - Median: -52.0
-  - Stddev: 3,968.6
-  - Non-zero count: 9,514,608.44004631
+  - Stddev: 3,969.4
+  - Non-zero count: 9,253,730.809152842
 
 
 - housing_costs:
   - Type: float
   - Entity: household
   - Description: Total housing costs
-  - Mean: 2,531.6
+  - Mean: 2,664.8
   - Median: -52.0
-  - Stddev: 4,221.4
-  - Non-zero count: 10,218,780.624267578
+  - Stddev: 4,220.5
+  - Non-zero count: 10,216,378.29003644
 
 
 - housing_service_charges:
   - Type: float
   - Entity: household
   - Description: Housing service charges
-  - Mean: 72.3
+  - Mean: 64.3
   - Median: 0.0
-  - Stddev: 339.3
-  - Non-zero count: 2,822,922.3428344727
+  - Stddev: 339.2
+  - Non-zero count: 2,499,741.7501295805
 
 
 - maintenance_expenses:
   - Type: float
   - Entity: person
   - Description: Maintenance expenses
-  - Mean: 36.6
+  - Mean: 37.4
   - Median: 0.0
-  - Stddev: 621.9
-  - Non-zero count: 689,313.8066711426
+  - Stddev: 621.4
+  - Non-zero count: 700,398.3895874023
 
 
 - mortgage:
@@ -1015,60 +1055,60 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Mortgage payments
-  - Mean: 2,349.0
+  - Mean: 2,204.1
   - Median: 0.0
-  - Stddev: 5,618.7
-  - Non-zero count: 8,529,131.011413574
+  - Stddev: 5,619.7
+  - Non-zero count: 8,078,999.959984779
 
 
 - mortgage_interest_repayment:
   - Type: float
   - Entity: household
   - Description: Total mortgage payments
-  - Mean: 896.1
+  - Mean: 848.6
   - Median: -52.0
   - Stddev: 2,093.5
-  - Non-zero count: 8,504,181.418762207
+  - Non-zero count: 8,054,139.729485512
 
 
 - occupational_pension_contributions:
   - Type: float
   - Entity: person
   - Description: Occupational pension contributions
-  - Mean: 430.7
+  - Mean: 440.1
   - Median: 0.0
-  - Stddev: 1,299.7
-  - Non-zero count: 18,102,600.12069702
+  - Stddev: 1,295.3
+  - Non-zero count: 17,835,212.906062603
 
 
 - personal_rent:
   - Type: float
   - Entity: person
   - Description: Rent liable
-  - Mean: 1,113.9
+  - Mean: 1,125.0
   - Median: 0.0
-  - Stddev: 3,035.7
-  - Non-zero count: 10,218,780.624267578
+  - Stddev: 3,036.2
+  - Non-zero count: 10,216,378.29003644
 
 
 - private_pension_contributions:
   - Type: float
   - Entity: person
   - Description: Private pension contributions
-  - Mean: 30.4
+  - Mean: 28.4
   - Median: 0.0
-  - Stddev: 172.5
-  - Non-zero count: 2,159,188.5717163086
+  - Stddev: 172.6
+  - Non-zero count: 2,079,886.1911296844
 
 
 - water_and_sewerage_charges:
   - Type: float
   - Entity: household
   - Description: Water and sewerage charges
-  - Mean: 372.3
+  - Mean: 376.4
   - Median: 358.8
-  - Stddev: 252.8
-  - Non-zero count: 27,506,041.062927246
+  - Stddev: 252.7
+  - Non-zero count: 27,066,932.850072354
 
 
 - weekly_childcare_expenses:
@@ -1077,8 +1117,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Average cost of childcare
   - Mean: 2.0
   - Median: 0.0
-  - Stddev: 17.0
-  - Non-zero count: 2,594,939.3011169434
+  - Stddev: 16.9
+  - Non-zero count: 2,425,796.8594563007
 
 
 - weekly_rent:
@@ -1107,10 +1147,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: int
   - Entity: person
   - Description: Age
-  - Mean: 38.9
-  - Median: 38.0
+  - Mean: 39.1
+  - Median: 39.0
   - Stddev: 23.6
-  - Non-zero count: 64,872,721.58442688
+  - Non-zero count: 66,552,191.223160416
 
 
 - age_18_64:
@@ -1120,7 +1160,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.6
   - Median: 1.0
   - Stddev: 0.5
-  - Non-zero count: 38,845,169.27163696
+  - Non-zero count: 40,508,916.38011539
 
 
 - age_over_64:
@@ -1130,7 +1170,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 11,737,070.02268982
+  - Non-zero count: 11,895,993.80668667
 
 
 - age_under_18:
@@ -1140,27 +1180,27 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 15,128,954.850585938
+  - Non-zero count: 14,859,882.323568821
 
 
 - birth_year:
   - Type: int
   - Entity: person
   - Description: The birth year of the person
-  - Mean: 1,982.1
-  - Median: 1,983.0
+  - Mean: 1,981.9
+  - Median: 1,982.0
   - Stddev: 23.6
-  - Non-zero count: 65,711,194.14491272
+  - Non-zero count: 67,264,792.51037088
 
 
 - child_index:
   - Type: int
   - Entity: person
   - Description: Child reference number
-  - Mean: 77.3
+  - Mean: 78.3
   - Median: 100.0
   - Stddev: 41.2
-  - Non-zero count: 65,711,194.14491272
+  - Non-zero count: 67,264,792.51037088
 
 
 - current_education:
@@ -1205,10 +1245,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: bool
   - Entity: person
   - Description: Whether this person lives in social housing
-  - Mean: 0.1
+  - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 9,767,996.920379639
+  - Non-zero count: 10,650,856.014761686
 
 
 - is_WA_adult:
@@ -1218,7 +1258,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.6
   - Median: 1.0
   - Stddev: 0.5
-  - Non-zero count: 39,468,537.69869995
+  - Non-zero count: 41,367,538.42520833
 
 
 - is_adult:
@@ -1228,7 +1268,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.8
   - Median: 1.0
   - Stddev: 0.4
-  - Non-zero count: 50,582,239.29432678
+  - Non-zero count: 52,404,910.18680206
 
 
 - is_benunit_eldest_child:
@@ -1238,7 +1278,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 8,473,443.216644287
+  - Non-zero count: 7,892,695.010504961
 
 
 - is_benunit_head:
@@ -1248,7 +1288,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.5
   - Median: 1.0
   - Stddev: 0.5
-  - Non-zero count: 34,964,548.49809265
+  - Non-zero count: 35,868,496.54262373
 
 
 - is_child:
@@ -1258,7 +1298,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 15,128,954.850585938
+  - Non-zero count: 14,859,882.323568821
 
 
 - is_eldest_child:
@@ -1268,7 +1308,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 9,091,382.238830566
+  - Non-zero count: 8,425,145.948216677
 
 
 - is_female:
@@ -1278,7 +1318,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.5
   - Median: 1.0
   - Stddev: 0.5
-  - Non-zero count: 33,312,546.642456055
+  - Non-zero count: 33,977,697.44652149
 
 
 - is_household_head:
@@ -1288,7 +1328,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.4
   - Median: 0.0
   - Stddev: 0.5
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - is_male:
@@ -1298,7 +1338,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.5
   - Median: 0.0
   - Stddev: 0.5
-  - Non-zero count: 32,398,647.502456665
+  - Non-zero count: 33,287,095.06384939
 
 
 - is_older_child:
@@ -1308,7 +1348,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.2
-  - Non-zero count: 3,597,864.013671875
+  - Non-zero count: 3,367,430.1794216633
 
 
 - is_young_child:
@@ -1318,7 +1358,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 11,531,090.836914062
+  - Non-zero count: 11,492,452.144147158
 
 
 - marital_status:
@@ -1334,7 +1374,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.8
   - Median: 1.0
   - Stddev: 0.4
-  - Non-zero count: 52,502,282.70765686
+  - Non-zero count: 54,250,298.13455787
 
 
 - people:
@@ -1344,57 +1384,57 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.0
   - Median: 1.0
   - Stddev: 0.0
-  - Non-zero count: 65,711,194.14491272
+  - Non-zero count: 67,264,792.51037088
 
 
 - person_id:
   - Type: int
   - Entity: person
   - Description: ID for the person
-  - Mean: 9,580,577.3
-  - Median: 9,504,121.8
-  - Stddev: 5,543,055.9
-  - Non-zero count: 65,711,194.14491272
+  - Mean: 96,218,368.2
+  - Median: 96,301,200.6
+  - Stddev: 55,430,399.4
+  - Non-zero count: 67,264,792.51037088
 
 
 - person_weight:
   - Type: float
   - Entity: person
   - Description: Weight (region-adjusted)
-  - Mean: 2,017.8
-  - Median: 1,329.3
-  - Stddev: 977.2
-  - Non-zero count: 65,711,194.14491272
+  - Mean: 2,048.9
+  - Median: 1,794.7
+  - Stddev: 801.6
+  - Non-zero count: 67,264,792.51037088
 
 
 - raw_person_weight:
   - Type: float
   - Entity: person
   - Description: Weight factor
-  - Mean: 2,192.1
-  - Median: 1,765.0
-  - Stddev: 858.6
-  - Non-zero count: 65,711,194.14491272
+  - Mean: 1,902.9
+  - Median: 1,666.0
+  - Stddev: 785.9
+  - Non-zero count: 63,515,817.15948486
 
 
 - person_benunit_id:
   - Type: float
   - Entity: person
   - Description: Person's benefit unit ID
-  - Mean: 9,580,557.2
-  - Median: 9,504,101.0
-  - Stddev: 5,543,020.5
-  - Non-zero count: 65,711,194.14491272
+  - Mean: 96,218,163.2
+  - Median: 96,301,000.0
+  - Stddev: 55,429,764.0
+  - Non-zero count: 67,264,792.51037088
 
 
 - person_household_id:
   - Type: float
   - Entity: person
   - Description: Person's household ID
-  - Mean: 9,580,444.3
-  - Median: 9,504,001.0
-  - Stddev: 5,543,019.5
-  - Non-zero count: 65,711,194.14491272
+  - Mean: 96,216,994.2
+  - Median: 96,300,004.8
+  - Stddev: 55,429,784.0
+  - Non-zero count: 67,264,792.51037088
 
 
 - role:
@@ -1419,60 +1459,60 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Equivalisation factor to account for household composition, after housing costs
-  - Mean: 1.0
+  - Mean: 1.1
   - Median: 1.0
   - Stddev: 0.4
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - household_equivalisation_bhc:
   - Type: float
   - Entity: household
   - Description: Equivalisation factor to account for household composition, before housing costs
-  - Mean: 1.0
+  - Mean: 1.1
   - Median: 1.0
   - Stddev: 0.3
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - household_id:
   - Type: int
   - Entity: household
   - Description: ID for the household
-  - Mean: 9,553,685.3
-  - Median: 9,507,001.8
-  - Stddev: 5,545,521.5
-  - Non-zero count: 28,911,965.107925415
+  - Mean: 95,969,863.2
+  - Median: 95,870,000.2
+  - Stddev: 55,454,854.1
+  - Non-zero count: 28,397,861.239144295
 
 
 - household_num_benunits:
   - Type: int
   - Entity: household
   - Description: Number of benefit units
-  - Mean: 1.2
+  - Mean: 1.3
   - Median: 1.0
   - Stddev: 0.5
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - household_num_people:
   - Type: int
   - Entity: household
   - Description: Number of people
-  - Mean: 2.3
+  - Mean: 2.4
   - Median: 2.0
   - Stddev: 1.3
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - household_weight:
   - Type: float
   - Entity: household
   - Description: Weight factor for the household
-  - Mean: 1,893.1
-  - Median: 1,295.4
-  - Stddev: 926.5
-  - Non-zero count: 28,911,965.107925415
+  - Mean: 1,955.9
+  - Median: 1,707.7
+  - Stddev: 765.1
+  - Non-zero count: 28,397,861.239144295
 
 
 - households:
@@ -1482,17 +1522,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.0
   - Median: 1.0
   - Stddev: 0.0
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - is_renting:
   - Type: bool
   - Entity: household
   - Description: Is renting
-  - Mean: 0.0
+  - Mean: 0.3
   - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 0.0
+  - Stddev: 0.4
+  - Non-zero count: 7,436,957.180482179
 
 
 - is_shared_accommodation:
@@ -1509,10 +1549,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: int
   - Entity: household
   - Description: The number of bedrooms in the house
-  - Mean: 2.7
+  - Mean: 2.8
   - Median: 3.0
   - Stddev: 1.0
-  - Non-zero count: 28,911,965.107925415
+  - Non-zero count: 28,397,861.239144295
 
 
 - ons_tenure_type:
@@ -1537,10 +1577,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: int
   - Entity: benunit
   - Description: ID for the family
-  - Mean: 9,553,793.6
-  - Median: 9,507,101.8
-  - Stddev: 5,535,726.0
-  - Non-zero count: 28,911,965.103952408
+  - Mean: 95,970,970.5
+  - Median: 95,871,000.2
+  - Stddev: 55,356,955.9
+  - Non-zero count: 28,397,861.240877807
 
 
 - benunit_is_renting:
@@ -1563,20 +1603,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Weight factor for the benefit unit
-  - Mean: 1,722.5
-  - Median: 1,174.3
-  - Stddev: 831.2
-  - Non-zero count: 28,911,965.103952408
+  - Mean: 1,716.2
+  - Median: 1,530.2
+  - Stddev: 662.5
+  - Non-zero count: 28,397,861.240877807
 
 
 - eldest_adult_age:
   - Type: float
   - Entity: benunit
   - Description: Eldest adult age
-  - Mean: 51.5
-  - Median: 52.0
+  - Mean: 50.9
+  - Median: 51.0
   - Stddev: 18.7
-  - Non-zero count: 28,911,965.103952408
+  - Non-zero count: 28,397,861.240877807
 
 
 - eldest_child_age:
@@ -1586,7 +1626,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: nan
   - Median: -inf
   - Stddev: nan
-  - Non-zero count: 7,693,233.7809352875
+  - Non-zero count: 7,199,203.3221821785
 
 
 - families:
@@ -1596,7 +1636,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.0
   - Median: 1.0
   - Stddev: 0.0
-  - Non-zero count: 28,911,965.103952408
+  - Non-zero count: 28,397,861.240877807
 
 
 - family_type:
@@ -1619,10 +1659,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: int
   - Entity: benunit
   - Description: The number of adults in the family
-  - Mean: 1.5
+  - Mean: 1.6
   - Median: 2.0
   - Stddev: 0.5
-  - Non-zero count: 28,702,626.325255394
+  - Non-zero count: 28,217,323.306823432
 
 
 - num_children:
@@ -1632,7 +1672,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.5
   - Median: 0.0
   - Stddev: 0.9
-  - Non-zero count: 8,195,191.299530983
+  - Non-zero count: 7,547,397.831964016
 
 
 - relation_type:
@@ -1645,10 +1685,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Eldest adult age
-  - Mean: 49.6
+  - Mean: 48.9
   - Median: 49.0
   - Stddev: 18.6
-  - Non-zero count: 28,911,965.103952408
+  - Non-zero count: 28,397,861.240877807
 
 
 - youngest_child_age:
@@ -1658,17 +1698,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: nan
   - Median: inf
   - Stddev: nan
-  - Non-zero count: 28,092,575.067987442
+  - Non-zero count: 27,716,369.60984105
 
 
 - state_id:
   - Type: int
   - Entity: state
   - Description: State ID
-  - Mean: 11.5
-  - Median: 11.5
-  - Stddev: 0.7
-  - Non-zero count: 2.0
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: nan
+  - Non-zero count: 1.0
 
 
 - state_weight:
@@ -1677,8 +1717,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: State weight
   - Mean: 1.0
   - Median: 1.0
-  - Stddev: 0.0
-  - Non-zero count: 2.0
+  - Stddev: nan
+  - Non-zero count: 1.0
 
 
 - benunit_has_carer:
@@ -1688,17 +1728,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 425,052.6935195923
+  - Non-zero count: 527,441.4348181486
 
 
 - carer_premium:
   - Type: float
   - Entity: benunit
   - Description: Carer premium
-  - Mean: 28.7
+  - Mean: 36.2
   - Median: 0.0
-  - Stddev: 284.0
-  - Non-zero count: 425,052.6935195923
+  - Stddev: 283.9
+  - Non-zero count: 527,441.4348181486
 
 
 - is_carer_for_benefits:
@@ -1708,7 +1748,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 513,856.8141784668
+  - Non-zero count: 657,481.827270627
 
 
 - num_carers:
@@ -1718,27 +1758,27 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 425,052.6935195923
+  - Non-zero count: 527,441.4348181486
 
 
 - disability_premium:
   - Type: float
   - Entity: benunit
   - Description: Disability premium
-  - Mean: 167.5
+  - Mean: 196.3
   - Median: 0.0
   - Stddev: 637.7
-  - Non-zero count: 2,237,391.241334915
+  - Non-zero count: 2,550,998.1684330106
 
 
 - enhanced_disability_premium:
   - Type: float
   - Entity: benunit
   - Description: Enhanced disability premium
-  - Mean: 0.2
+  - Mean: 13.7
   - Median: 0.0
-  - Stddev: 23.1
-  - Non-zero count: 4,194.042724609375
+  - Stddev: 130.7
+  - Non-zero count: 363,597.0181427002
 
 
 - is_disabled_for_benefits:
@@ -1748,7 +1788,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.2
-  - Non-zero count: 2,658,249.3999176025
+  - Non-zero count: 3,149,542.6521868706
 
 
 - is_enhanced_disabled_for_benefits:
@@ -1757,8 +1797,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Whether meets the middle disability benefit entitlement
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 4,194.042724609375
+  - Stddev: 0.1
+  - Non-zero count: 407,086.0536804199
 
 
 - is_severely_disabled_for_benefits:
@@ -1768,7 +1808,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 1,122,289.3464660645
+  - Non-zero count: 1,301,191.5867350101
 
 
 - num_disabled_adults:
@@ -1778,7 +1818,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 2,237,391.241334915
+  - Non-zero count: 2,550,998.1684330106
 
 
 - num_disabled_children:
@@ -1788,7 +1828,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
-  - Non-zero count: 10,930.395538330078
+  - Non-zero count: 14,270.757537841797
 
 
 - num_enhanced_disabled_adults:
@@ -1797,8 +1837,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Number of enhanced disabled adults
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.0
-  - Non-zero count: 4,194.042724609375
+  - Stddev: 0.1
+  - Non-zero count: 363,597.0181427002
 
 
 - num_enhanced_disabled_children:
@@ -1818,7 +1858,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.2
-  - Non-zero count: 974,969.6818599701
+  - Non-zero count: 1,069,104.8617416024
 
 
 - num_severely_disabled_children:
@@ -1828,17 +1868,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.0
-  - Non-zero count: 4,894.720642089844
+  - Non-zero count: 5,926.1011962890625
 
 
 - severe_disability_premium:
   - Type: float
   - Entity: benunit
   - Description: Severe disability premium
-  - Mean: 174.4
+  - Mean: 195.4
   - Median: 0.0
-  - Stddev: 1,041.2
-  - Non-zero count: 974,969.6818599701
+  - Stddev: 1,041.4
+  - Non-zero count: 1,069,104.8617416024
 
 
 - bi_maximum:
@@ -1905,10 +1945,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Child Tax Credit child element
-  - Mean: 1,466.5
+  - Mean: 1,407.6
   - Median: 0.0
-  - Stddev: 2,447.4
-  - Non-zero count: 7,887,433.521061897
+  - Stddev: 2,448.7
+  - Non-zero count: 7,198,026.271358013
 
 
 - CTC_disabled_child_element:
@@ -1917,28 +1957,28 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: CTC entitlement from disabled child elements
   - Mean: 0.9
   - Median: 0.0
-  - Stddev: 64.0
-  - Non-zero count: 7,915.993804931641
+  - Stddev: 45.3
+  - Non-zero count: 7,899.462677001953
 
 
 - CTC_family_element:
   - Type: float
   - Entity: benunit
   - Description: CTC entitlement in the Family Element
-  - Mean: 33.0
+  - Mean: 33.8
   - Median: 0.0
-  - Stddev: 128.6
-  - Non-zero count: 1,753,012.7880325317
+  - Stddev: 92.4
+  - Non-zero count: 1,759,607.146289587
 
 
 - CTC_maximum_rate:
   - Type: float
   - Entity: benunit
   - Description: Maximum Child Tax Credit
-  - Mean: 1,500.6
+  - Mean: 1,442.5
   - Median: 0.0
-  - Stddev: 2,518.3
-  - Non-zero count: 7,887,433.521061897
+  - Stddev: 2,482.9
+  - Non-zero count: 7,198,026.271358013
 
 
 - CTC_severely_disabled_child_element:
@@ -1947,138 +1987,158 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: CTC entitlement from severely disabled child elements
   - Mean: 0.1
   - Median: 0.0
-  - Stddev: 15.9
-  - Non-zero count: 2,626.8327026367188
+  - Stddev: 11.2
+  - Non-zero count: 2,970.5634155273438
 
 
 - WTC_basic_element:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit basic element
-  - Mean: 106.2
+  - Mean: 112.9
   - Median: 0.0
-  - Stddev: 507.0
-  - Non-zero count: 1,010,253.0668907166
+  - Stddev: 361.3
+  - Non-zero count: 1,054,266.432361126
 
 
 - WTC_childcare_element:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit childcare element
-  - Mean: 10.7
+  - Mean: 18.8
   - Median: 0.0
-  - Stddev: 283.4
-  - Non-zero count: 170,213.98989868164
+  - Stddev: 200.3
+  - Non-zero count: 213,812.44254922867
 
 
 - WTC_couple_element:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit couple element
-  - Mean: 31.5
+  - Mean: 33.9
   - Median: 0.0
-  - Stddev: 219.0
-  - Non-zero count: 445,759.3232269287
+  - Stddev: 155.6
+  - Non-zero count: 470,063.6859064102
 
 
 - WTC_disabled_element:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit disabled element
-  - Mean: 5.2
+  - Mean: 7.7
   - Median: 0.0
-  - Stddev: 138.3
-  - Non-zero count: 46,367.88262939453
+  - Stddev: 97.8
+  - Non-zero count: 68,326.06192779541
 
 
 - WTC_lone_parent_element:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit lone parent element
-  - Mean: 33.9
+  - Mean: 36.5
   - Median: 0.0
-  - Stddev: 249.3
-  - Non-zero count: 479,337.87733078003
+  - Stddev: 177.0
+  - Non-zero count: 506,962.6308693886
 
 
 - WTC_maximum_rate:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit maximum rate
-  - Mean: 206.1
+  - Mean: 229.5
   - Median: 0.0
-  - Stddev: 1,081.3
-  - Non-zero count: 1,010,253.0668907166
+  - Stddev: 769.8
+  - Non-zero count: 1,054,266.432361126
 
 
 - WTC_severely_disabled_element:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit severely disabled element
-  - Mean: 1.4
+  - Mean: 2.1
   - Median: 0.0
-  - Stddev: 53.7
-  - Non-zero count: 29,898.438507080078
+  - Stddev: 38.0
+  - Non-zero count: 42,548.05642700195
 
 
 - WTC_worker_element:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit worker element
-  - Mean: 17.2
+  - Mean: 17.5
   - Median: 0.0
-  - Stddev: 103.5
-  - Non-zero count: 601,793.8654632568
+  - Stddev: 73.5
+  - Non-zero count: 603,922.9836435318
+
+
+- baseline_child_tax_credit:
+  - Type: float
+  - Entity: benunit
+  - Description: Baseline Child Tax Credit
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 
 
 - baseline_has_child_tax_credit:
   - Type: bool
   - Entity: benunit
   - Description: Receives Child Tax Credit (baseline)
-  - Mean: 0.1
-  - Median: 0.0
-  - Stddev: 0.2
-  - Non-zero count: 1,534,632.603302002
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: 0.0
+  - Non-zero count: 28,397,861.240877807
 
 
 - baseline_has_working_tax_credit:
   - Type: bool
   - Entity: benunit
   - Description: Receives Working Tax Credit (baseline)
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: 0.0
+  - Non-zero count: 28,397,861.240877807
+
+
+- baseline_working_tax_credit:
+  - Type: float
+  - Entity: benunit
+  - Description: Baseline Working Tax Credit
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.1
-  - Non-zero count: 862,505.7742881775
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 
 
 - child_tax_credit:
   - Type: float
   - Entity: benunit
   - Description: Child Tax Credit
-  - Mean: 307.9
+  - Mean: 323.2
   - Median: 0.0
-  - Stddev: 1,411.3
-  - Non-zero count: 1,534,632.603302002
+  - Stddev: 754.2
+  - Non-zero count: 1,557,225.338057518
 
 
 - child_tax_credit_pre_minimum:
   - Type: float
   - Entity: benunit
   - Description: Child Tax Credit pre-minimum
-  - Mean: 459.6
+  - Mean: 550.8
   - Median: 0.0
-  - Stddev: 1,713.8
-  - Non-zero count: 2,577,008.7405672073
+  - Stddev: 1,237.8
+  - Non-zero count: 2,903,263.7125594616
 
 
 - child_tax_credit_reported:
   - Type: float
   - Entity: person
   - Description: Working Tax Credit
-  - Mean: 154.0
+  - Mean: 162.4
   - Median: 0.0
-  - Stddev: 1,165.8
-  - Non-zero count: 1,934,894.9606628418
+  - Stddev: 829.1
+  - Non-zero count: 1,988,947.4519594908
 
 
 - is_CTC_child_limit_exempt:
@@ -2088,7 +2148,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.9
   - Median: 1.0
   - Stddev: 0.2
-  - Non-zero count: 61,297,004.65986633
+  - Non-zero count: 63,192,648.06704584
 
 
 - is_CTC_eligible:
@@ -2098,7 +2158,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.2
-  - Non-zero count: 1,753,012.7880325317
+  - Non-zero count: 1,759,607.146289587
 
 
 - is_WTC_eligible:
@@ -2107,8 +2167,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Working Tax Credit eligibility
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.2
-  - Non-zero count: 1,010,253.0668907166
+  - Stddev: 0.1
+  - Non-zero count: 1,054,266.432361126
 
 
 - is_child_for_CTC:
@@ -2118,147 +2178,147 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 13,997,365.380493164
+  - Non-zero count: 13,726,878.757801533
 
 
 - tax_credits:
   - Type: float
   - Entity: benunit
   - Description: Tax Credits
-  - Mean: 555.0
+  - Mean: 661.6
   - Median: 0.0
-  - Stddev: 2,060.9
-  - Non-zero count: 2,716,676.070839882
+  - Stddev: 1,374.6
+  - Non-zero count: 3,049,925.46484828
 
 
 - tax_credits_applicable_income:
   - Type: float
   - Entity: benunit
   - Description: Applicable income for Tax Credits
-  - Mean: 37,237.7
-  - Median: 24,909.5
-  - Stddev: 39,775.4
-  - Non-zero count: 26,581,080.197249413
+  - Mean: 39,688.2
+  - Median: 26,397.5
+  - Stddev: 58,341.4
+  - Non-zero count: 25,527,052.704087764
 
 
 - tax_credits_reduction:
   - Type: float
   - Entity: benunit
   - Description: Reduction in Tax Credits from means-tested income
-  - Mean: 12,020.7
-  - Median: 6,939.4
-  - Stddev: 15,544.0
-  - Non-zero count: 24,801,249.844441414
+  - Mean: 13,184.3
+  - Median: 7,548.2
+  - Stddev: 23,382.1
+  - Non-zero count: 23,823,019.826592
 
 
 - working_tax_credit:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit
-  - Mean: 95.4
+  - Mean: 110.9
   - Median: 0.0
-  - Stddev: 652.0
-  - Non-zero count: 862,505.7742881775
+  - Stddev: 339.3
+  - Non-zero count: 883,315.7986822128
 
 
 - working_tax_credit_pre_minimum:
   - Type: float
   - Entity: benunit
   - Description: Working Tax Credit pre-minimum
-  - Mean: 95.4
+  - Mean: 110.9
   - Median: 0.0
-  - Stddev: 652.0
-  - Non-zero count: 862,505.7742881775
+  - Stddev: 339.3
+  - Non-zero count: 883,315.7986822128
 
 
 - working_tax_credit_reported:
   - Type: float
   - Entity: person
   - Description: Working Tax Credit
-  - Mean: 42.0
+  - Mean: 46.3
   - Median: 0.0
-  - Stddev: 440.5
-  - Non-zero count: 1,240,432.037902832
+  - Stddev: 311.5
+  - Non-zero count: 1,299,398.772114277
 
 
 - would_claim_CTC:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Child Tax Credit
-  - Mean: 1.0
-  - Median: 1.0
-  - Stddev: 0.0
-  - Non-zero count: 28,794,797.699716568
+  - Mean: 0.1
+  - Median: 0.0
+  - Stddev: 0.2
+  - Non-zero count: 1,859,829.9030225277
 
 
 - would_claim_WTC:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Working Tax Credit
-  - Mean: 1.0
-  - Median: 1.0
-  - Stddev: 0.2
-  - Non-zero count: 28,291,911.57909584
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.1
+  - Non-zero count: 1,184,146.129310131
 
 
 - BSP:
   - Type: float
   - Entity: person
   - Description: Bereavement Support Payment
-  - Mean: 16.1
+  - Mean: 10.9
   - Median: 0.0
-  - Stddev: 383.7
-  - Non-zero count: 205,800.5352783203
+  - Stddev: 383.6
+  - Non-zero count: 153,549.71931791306
 
 
 - BSP_reported:
   - Type: float
   - Entity: person
   - Description: Bereavement Support Payment (reported)
-  - Mean: 16.1
+  - Mean: 10.9
   - Median: 0.0
-  - Stddev: 383.7
-  - Non-zero count: 205,800.5352783203
+  - Stddev: 383.6
+  - Non-zero count: 153,549.71931791306
 
 
 - maternity_allowance:
   - Type: float
   - Entity: person
   - Description: Maternity Allowance
-  - Mean: 1.0
+  - Mean: 1.2
   - Median: 0.0
   - Stddev: 106.5
-  - Non-zero count: 8,943.712951660156
+  - Non-zero count: 11,387.04753112793
 
 
 - maternity_allowance_reported:
   - Type: float
   - Entity: person
   - Description: Maternity allowance
-  - Mean: 1.0
+  - Mean: 1.2
   - Median: 0.0
   - Stddev: 106.5
-  - Non-zero count: 8,943.712951660156
+  - Non-zero count: 11,387.04753112793
 
 
 - ssmg:
   - Type: float
   - Entity: person
   - Description: Sure Start Maternity Grant
-  - Mean: 9.5
+  - Mean: 9.1
   - Median: 0.0
   - Stddev: 496.2
-  - Non-zero count: 25,825.583984375
+  - Non-zero count: 24,900.334619522095
 
 
 - ssmg_reported:
   - Type: float
   - Entity: person
   - Description: Sure Start Maternity Grant (reported)
-  - Mean: 9.5
+  - Mean: 9.1
   - Median: 0.0
   - Stddev: 496.2
-  - Non-zero count: 25,825.583984375
+  - Non-zero count: 24,900.334619522095
 
 
 - benefit_cap:
@@ -2268,7 +2328,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: nan
   - Median: 13,399.9
   - Stddev: nan
-  - Non-zero count: 28,911,965.103952408
+  - Non-zero count: 28,397,861.240877807
 
 
 - is_benefit_cap_exempt:
@@ -2278,57 +2338,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 2,648,081.991306305
-
-
-- PIP:
-  - Type: float
-  - Entity: person
-  - Description: Personal Independence Payment
-  - Mean: 117.6
-  - Median: 0.0
-  - Stddev: 952.6
-  - Non-zero count: 1,472,261.7880859375
-
-
-- PIP_DL:
-  - Type: float
-  - Entity: person
-  - Description: Personal Independence Payment (Daily Living)
-  - Mean: 79.9
-  - Median: 0.0
-  - Stddev: 634.2
-  - Non-zero count: 1,404,365.5942382812
-
-
-- PIP_DL_reported:
-  - Type: float
-  - Entity: person
-  - Description: Personal Independence Payment (Daily Living) (reported)
-  - Mean: 79.9
-  - Median: 0.0
-  - Stddev: 634.2
-  - Non-zero count: 1,404,365.5942382812
-
-
-- PIP_M:
-  - Type: float
-  - Entity: person
-  - Description: Personal Independence Payment (Mobility)
-  - Mean: 37.7
-  - Median: 0.0
-  - Stddev: 373.6
-  - Non-zero count: 1,067,428.8192443848
-
-
-- PIP_M_reported:
-  - Type: float
-  - Entity: person
-  - Description: Personal Independence Payment (Mobility) (reported)
-  - Mean: 37.7
-  - Median: 0.0
-  - Stddev: 373.6
-  - Non-zero count: 1,067,428.8192443848
+  - Non-zero count: 2,836,555.840707898
 
 
 - is_SP_age:
@@ -2338,17 +2348,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 11,113,701.595626831
+  - Non-zero count: 11,037,371.76159373
 
 
 - state_pension:
   - Type: float
   - Entity: person
   - Description: State Pension
-  - Mean: 1,491.1
+  - Mean: 1,523.0
   - Median: 0.0
-  - Stddev: 3,532.6
-  - Non-zero count: 11,734,882.066818237
+  - Stddev: 3,536.3
+  - Non-zero count: 12,096,936.418187052
 
 
 - state_pension_age:
@@ -2358,17 +2368,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 66.0
   - Median: 66.0
   - Stddev: 0.0
-  - Non-zero count: 65,711,194.14491272
+  - Non-zero count: 67,264,792.51037088
 
 
 - state_pension_reported:
   - Type: float
   - Entity: person
   - Description: Reported income from the State Pension
-  - Mean: 1,491.1
+  - Mean: 1,523.0
   - Median: 0.0
-  - Stddev: 3,532.6
-  - Non-zero count: 11,734,882.066818237
+  - Stddev: 3,536.3
+  - Non-zero count: 12,096,936.418187052
 
 
 - triple_lock_uprating:
@@ -2378,77 +2388,43 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.0
   - Median: 1.0
   - Stddev: 0.0
-  - Non-zero count: 65,711,194.14491272
+  - Non-zero count: 67,264,792.51037088
 
 
-- DLA:
+- AA_reported:
   - Type: float
   - Entity: person
-  - Description: Disability Living Allowance
-  - Mean: 86.6
+  - Description: Attendance Allowance (reported)
+  - Mean: 45.5
   - Median: 0.0
-  - Stddev: 770.4
-  - Non-zero count: 1,192,372.5951080322
+  - Stddev: 486.3
+  - Non-zero count: 777,882.9158256352
 
 
-- DLA_M:
+- aa_category:
+  - Type: Categorical
+  - Entity: person
+  - Description: Attendance Allowance category
+
+
+- attendance_allowance:
   - Type: float
   - Entity: person
-  - Description: Disability Living Allowance (mobility component)
-  - Mean: 33.8
+  - Description: Attendance Allowance
+  - Mean: 46.3
   - Median: 0.0
-  - Stddev: 350.5
-  - Non-zero count: 866,501.6745758057
-
-
-- DLA_M_reported:
-  - Type: float
-  - Entity: person
-  - Description: Disability Living Allowance (mobility component) (reported)
-  - Mean: 33.8
-  - Median: 0.0
-  - Stddev: 350.5
-  - Non-zero count: 866,501.6745758057
-
-
-- DLA_SC:
-  - Type: float
-  - Entity: person
-  - Description: Disability Living Allowance (self-care)
-  - Mean: 52.8
-  - Median: 0.0
-  - Stddev: 490.4
-  - Non-zero count: 1,054,241.2776031494
-
-
-- DLA_SC_middle_plus:
-  - Type: bool
-  - Entity: person
-  - Description: Receives at least DLA (self-care) middle rate
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.1
-  - Non-zero count: 1,054,241.2776031494
-
-
-- DLA_SC_reported:
-  - Type: float
-  - Entity: person
-  - Description: Disability Living Allowance (self-care) (reported)
-  - Mean: 52.8
-  - Median: 0.0
-  - Stddev: 490.4
-  - Non-zero count: 1,054,241.2776031494
+  - Stddev: 494.5
+  - Non-zero count: 777,882.9158256352
 
 
 - BRMA_LHA_rate:
   - Type: float
   - Entity: benunit
   - Description: LHA rate
-  - Mean: 8,694.2
+  - Mean: 8,798.0
   - Median: 7,778.7
-  - Stddev: 2,320.1
-  - Non-zero count: 28,911,965.103952408
+  - Stddev: 2,319.8
+  - Non-zero count: 28,397,861.240877807
 
 
 - LHA_allowed_bedrooms:
@@ -2458,17 +2434,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.6
   - Median: 1.0
   - Stddev: 1.1
-  - Non-zero count: 28,911,965.103952408
+  - Non-zero count: 28,397,861.240877807
 
 
 - LHA_cap:
   - Type: float
   - Entity: benunit
   - Description: Applicable amount for LHA
-  - Mean: 1,898.8
+  - Mean: 1,913.3
   - Median: -52.0
-  - Stddev: 2,912.0
-  - Non-zero count: 9,514,608.44004631
+  - Stddev: 2,912.4
+  - Non-zero count: 9,253,730.809152842
 
 
 - LHA_category:
@@ -2491,20 +2467,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: ESA (contribution-based)
-  - Mean: 17.2
+  - Mean: 31.4
   - Median: 0.0
-  - Stddev: 513.4
-  - Non-zero count: 184,647.60177612305
+  - Stddev: 513.2
+  - Non-zero count: 336,487.64014816284
 
 
 - ESA_contrib_reported:
   - Type: float
   - Entity: person
   - Description: Employment and Support Allowance (contribution-based) (reported)
-  - Mean: 17.2
+  - Mean: 31.4
   - Median: 0.0
-  - Stddev: 513.4
-  - Non-zero count: 184,647.60177612305
+  - Stddev: 513.2
+  - Non-zero count: 336,487.64014816284
 
 
 - incapacity_benefit:
@@ -2531,20 +2507,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Carer's Allowance
-  - Mean: 26.6
+  - Mean: 34.2
   - Median: 0.0
-  - Stddev: 366.3
-  - Non-zero count: 513,856.8141784668
+  - Stddev: 373.5
+  - Non-zero count: 657,481.827270627
 
 
 - carers_allowance_reported:
   - Type: float
   - Entity: person
   - Description: Carer's Allowance (reported)
-  - Mean: 26.6
+  - Mean: 33.5
   - Median: 0.0
-  - Stddev: 366.3
-  - Non-zero count: 513,856.8141784668
+  - Stddev: 366.5
+  - Non-zero count: 657,481.827270627
 
 
 - receives_carers_allowance:
@@ -2554,87 +2530,67 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 513,856.8141784668
+  - Non-zero count: 657,481.827270627
 
 
 - IIDB:
   - Type: float
   - Entity: person
   - Description: Industrial Injuries Disablement Benefit
-  - Mean: 6.7
+  - Mean: 7.5
   - Median: 0.0
-  - Stddev: 206.8
-  - Non-zero count: 128,894.39431762695
+  - Stddev: 206.7
+  - Non-zero count: 153,170.4757398367
 
 
 - IIDB_reported:
   - Type: float
   - Entity: person
   - Description: Industrial Injuries Disablement Benefit (reported)
-  - Mean: 6.7
+  - Mean: 7.5
   - Median: 0.0
-  - Stddev: 206.8
-  - Non-zero count: 128,894.39431762695
-
-
-- SDA:
-  - Type: float
-  - Entity: person
-  - Description: Severe Disablement Allowance
-  - Mean: 1.4
-  - Median: 0.0
-  - Stddev: 77.1
-  - Non-zero count: 22,961.987182617188
-
-
-- SDA_reported:
-  - Type: float
-  - Entity: person
-  - Description: Severe Disablement Allowance (reported)
-  - Mean: 1.4
-  - Median: 0.0
-  - Stddev: 77.1
-  - Non-zero count: 22,961.987182617188
+  - Stddev: 206.7
+  - Non-zero count: 153,170.4757398367
 
 
 - council_tax_benefit:
   - Type: float
   - Entity: benunit
   - Description: Council Tax Benefit
-  - Mean: 136.7
+  - Mean: 123.4
   - Median: 0.0
   - Stddev: 292.0
-  - Non-zero count: 4,563,659.769268036
+  - Non-zero count: 4,198,763.867655069
 
 
 - council_tax_benefit_reported:
   - Type: float
   - Entity: person
   - Description: Council Tax Benefit (reported)
-  - Mean: 63.3
+  - Mean: 56.3
   - Median: 0.0
   - Stddev: 217.0
-  - Non-zero count: 4,778,407.078491211
+  - Non-zero count: 4,491,651.035011321
 
 
 - HB_individual_non_dep_deduction:
   - Type: float
   - Entity: person
   - Description: Non-dependent deduction (individual)
-  - Mean: 73.1
+  - Mean: 86.3
   - Median: 0.0
-  - Stddev: 261.1
-  - Non-zero count: 4,083,687.2286987305
+  - Stddev: 279.1
+  - Non-zero count: 5,857,850.438636571
 
 
 - HB_non_dep_deductions:
   - Type: float
   - Entity: benunit
   - Description: Non-dependent deductions
-  - Mean: 93.5
+  - Mean: 123.6
   - Median: 0.0
-  - Stddev: 548.8
-  - Non-zero count: 1,898,113.700422287
+  - Stddev: 601.8
+  - Non-zero count: 2,720,212.195229292
 
 
 - baseline_has_housing_benefit:
@@ -2643,38 +2599,48 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Receives Housing Benefit (baseline)
   - Mean: 0.1
   - Median: 0.0
-  - Stddev: 0.2
-  - Non-zero count: 2,825,368.330728531
+  - Stddev: 0.1
+  - Non-zero count: 2,737,012.8899612427
+
+
+- baseline_housing_benefit:
+  - Type: float
+  - Entity: benunit
+  - Description: Housing Benefit (baseline)
+  - Mean: 394.8
+  - Median: 0.0
+  - Stddev: 575.7
+  - Non-zero count: 2,737,012.8899612427
 
 
 - housing_benefit:
   - Type: float
   - Entity: benunit
   - Description: Housing Benefit
-  - Mean: 442.7
+  - Mean: 394.5
   - Median: 0.0
-  - Stddev: 1,088.5
-  - Non-zero count: 2,825,368.330728531
+  - Stddev: 575.3
+  - Non-zero count: 2,737,012.8899612427
 
 
 - housing_benefit_applicable_amount:
   - Type: float
   - Entity: benunit
   - Description: Applicable amount for Housing Benefit
-  - Mean: 1,071.8
+  - Mean: 944.7
   - Median: 0.0
-  - Stddev: 2,759.7
-  - Non-zero count: 3,102,018.3853855133
+  - Stddev: 1,901.4
+  - Non-zero count: 3,023,521.7643461227
 
 
 - housing_benefit_applicable_income:
   - Type: float
   - Entity: benunit
   - Description: Relevant income for Housing Benefit means test
-  - Mean: 27,270.8
-  - Median: 21,568.1
-  - Stddev: 23,844.4
-  - Non-zero count: 27,940,661.475087166
+  - Mean: 29,473.7
+  - Median: 23,201.3
+  - Stddev: 27,813.6
+  - Non-zero count: 27,301,702.82139772
 
 
 - housing_benefit_eligible:
@@ -2683,18 +2649,18 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Whether eligible for Housing Benefit
   - Mean: 0.1
   - Median: 0.0
-  - Stddev: 0.3
-  - Non-zero count: 3,102,018.3853855133
+  - Stddev: 0.2
+  - Non-zero count: 3,023,521.7643461227
 
 
 - housing_benefit_reported:
   - Type: float
   - Entity: person
   - Description: Housing Benefit (reported amount)
-  - Mean: 292.6
+  - Mean: 275.2
   - Median: 0.0
-  - Stddev: 1,103.3
-  - Non-zero count: 4,005,052.6485595703
+  - Stddev: 789.9
+  - Non-zero count: 3,886,512.796108246
 
 
 - would_claim_HB:
@@ -2704,67 +2670,87 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.0
   - Median: 1.0
   - Stddev: 0.0
-  - Non-zero count: 28,911,965.103952408
+  - Non-zero count: 28,397,861.240877807
 
 
 - access_fund:
   - Type: float
   - Entity: person
   - Description: Access Fund
-  - Mean: 2.5
+  - Mean: 3.6
   - Median: 0.0
-  - Stddev: 261.5
-  - Non-zero count: 26,448.863525390625
+  - Stddev: 271.7
+  - Non-zero count: 34,120.01580810547
 
 
 - adult_ema:
   - Type: float
   - Entity: person
   - Description: Adult EMA
-  - Mean: 4.0
+  - Mean: 4.8
   - Median: 0.0
-  - Stddev: 143.3
-  - Non-zero count: 52,834.82293701172
+  - Stddev: 149.0
+  - Non-zero count: 64,688.19387817383
 
 
 - child_ema:
   - Type: float
   - Entity: person
   - Description: Child EMA
-  - Mean: 0.5
+  - Mean: 1.1
   - Median: 0.0
-  - Stddev: 52.5
-  - Non-zero count: 28,678.328735351562
+  - Stddev: 54.6
+  - Non-zero count: 52,551.04342651367
 
 
 - education_grants:
   - Type: float
   - Entity: person
   - Description: Education grants
-  - Mean: 28.7
+  - Mean: 37.0
   - Median: 0.0
-  - Stddev: 630.1
-  - Non-zero count: 370,778.5451660156
+  - Stddev: 655.1
+  - Non-zero count: 454,621.24590301514
 
 
 - student_loans:
   - Type: float
   - Entity: person
   - Description: Student loans
-  - Mean: 155.6
+  - Mean: 221.8
   - Median: 0.0
-  - Stddev: 1,334.3
-  - Non-zero count: 1,054,817.5879516602
+  - Stddev: 1,386.3
+  - Non-zero count: 1,403,067.5680217743
 
 
 - student_payments:
   - Type: float
   - Entity: person
   - Description: Student payments
-  - Mean: 35.7
+  - Mean: 46.5
   - Median: 0.0
-  - Stddev: 710.7
-  - Non-zero count: 466,926.89154052734
+  - Stddev: 737.9
+  - Non-zero count: 575,886.8082809448
+
+
+- SDA_reported:
+  - Type: float
+  - Entity: person
+  - Description: Severe Disablement Allowance (reported)
+  - Mean: 0.9
+  - Median: 0.0
+  - Stddev: 77.1
+  - Non-zero count: 14,535.661651611328
+
+
+- sda:
+  - Type: float
+  - Entity: person
+  - Description: Severe Disablement Allowance
+  - Mean: 1.0
+  - Median: 0.0
+  - Stddev: 83.7
+  - Non-zero count: 14,535.661651611328
 
 
 - AFCS:
@@ -2774,7 +2760,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 4.0
   - Median: 0.0
   - Stddev: 192.3
-  - Non-zero count: 49,525.937255859375
+  - Non-zero count: 53,684.06995010376
 
 
 - AFCS_reported:
@@ -2784,47 +2770,47 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 4.0
   - Median: 0.0
   - Stddev: 192.3
-  - Non-zero count: 49,525.937255859375
+  - Non-zero count: 53,684.06995010376
 
 
 - JSA:
   - Type: float
   - Entity: benunit
   - Description: Amount of Jobseeker's Allowance for this family
-  - Mean: 12.3
+  - Mean: 15.7
   - Median: 0.0
-  - Stddev: 240.3
-  - Non-zero count: 81,561.10483837128
+  - Stddev: 153.1
+  - Non-zero count: 107,224.60419464111
 
 
 - JSA_income:
   - Type: float
   - Entity: benunit
   - Description: JSA (income-based)
-  - Mean: 9.6
+  - Mean: 12.4
   - Median: 0.0
-  - Stddev: 213.8
-  - Non-zero count: 60,995.03647899628
+  - Stddev: 106.4
+  - Non-zero count: 82,225.57688140869
 
 
 - JSA_income_applicable_amount:
   - Type: float
   - Entity: benunit
   - Description: Maximum amount of JSA (income-based)
-  - Mean: 10.0
+  - Mean: 13.0
   - Median: 0.0
-  - Stddev: 224.0
-  - Non-zero count: 61,994.21592235565
+  - Stddev: 158.1
+  - Non-zero count: 83,890.6621017456
 
 
 - JSA_income_applicable_income:
   - Type: float
   - Entity: benunit
   - Description: Relevant income for JSA (income-based) means test
-  - Mean: 26,591.0
-  - Median: 20,506.3
-  - Stddev: 25,322.0
-  - Non-zero count: 26,564,647.90506649
+  - Mean: 28,560.9
+  - Median: 22,283.6
+  - Stddev: 28,577.7
+  - Non-zero count: 25,559,170.808781892
 
 
 - JSA_income_eligible:
@@ -2833,18 +2819,18 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Eligibility for income-based JSA
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.1
-  - Non-zero count: 61,994.21592235565
+  - Stddev: 0.0
+  - Non-zero count: 83,890.6621017456
 
 
 - JSA_income_reported:
   - Type: float
   - Entity: person
   - Description: JSA (income-based) (reported amount)
-  - Mean: 10.2
+  - Mean: 15.0
   - Median: 0.0
-  - Stddev: 243.0
-  - Non-zero count: 173,689.5987548828
+  - Stddev: 171.8
+  - Non-zero count: 255,211.42880249023
 
 
 - would_claim_JSA:
@@ -2854,37 +2840,37 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 147,721.1253118515
+  - Non-zero count: 195,114.3953514099
 
 
 - JSA_contrib:
   - Type: float
   - Entity: person
   - Description: JSA (contribution-based)
-  - Mean: 1.5
+  - Mean: 1.7
   - Median: 0.0
   - Stddev: 79.9
-  - Non-zero count: 25,874.857788085938
+  - Non-zero count: 29,697.706817626953
 
 
 - JSA_contrib_reported:
   - Type: float
   - Entity: person
   - Description: Job Seeker's Allowance (contribution-based) (reported)
-  - Mean: 1.5
+  - Mean: 1.7
   - Median: 0.0
   - Stddev: 79.9
-  - Non-zero count: 25,874.857788085938
+  - Non-zero count: 29,697.706817626953
 
 
 - ESA_income:
   - Type: float
   - Entity: benunit
   - Description: ESA (income-based)
-  - Mean: 109.3
+  - Mean: 98.8
   - Median: 0.0
-  - Stddev: 1,024.6
-  - Non-zero count: 410,155.6478366852
+  - Stddev: 727.4
+  - Non-zero count: 413,014.81997299194
 
 
 - ESA_income_eligible:
@@ -2894,17 +2880,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 410,155.6478366852
+  - Non-zero count: 413,014.81997299194
 
 
 - ESA_income_reported:
   - Type: float
   - Entity: person
   - Description: ESA (income-based) (reported amount)
-  - Mean: 55.1
+  - Mean: 51.5
   - Median: 0.0
-  - Stddev: 739.9
-  - Non-zero count: 493,232.3385620117
+  - Stddev: 523.9
+  - Non-zero count: 528,425.8446960449
 
 
 - claims_ESA_income:
@@ -2914,7 +2900,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 228,979.21827983856
+  - Non-zero count: 413,014.81997299194
 
 
 - would_claim_ESA_income:
@@ -2924,37 +2910,37 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 410,155.6478366852
+  - Non-zero count: 413,014.81997299194
 
 
 - winter_fuel_allowance:
   - Type: float
   - Entity: household
   - Description: Winter Fuel Allowance
-  - Mean: 77.8
+  - Mean: 71.4
   - Median: 0.0
   - Stddev: 111.1
-  - Non-zero count: 9,618,035.123428345
+  - Non-zero count: 9,051,658.09612152
 
 
 - winter_fuel_allowance_reported:
   - Type: float
   - Entity: person
   - Description: Winter fuel allowance
-  - Mean: 34.2
+  - Mean: 30.1
   - Median: 0.0
   - Stddev: 74.7
-  - Non-zero count: 11,839,624.808700562
+  - Non-zero count: 12,202,686.117177755
 
 
 - UC_LCWRA_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit limited capability for work-related-activity element
-  - Mean: 338.7
+  - Mean: 394.8
   - Median: 0.0
-  - Stddev: 1,291.7
-  - Non-zero count: 2,267,402.9735736847
+  - Stddev: 1,291.2
+  - Non-zero count: 2,586,254.827071011
 
 
 - UC_MIF_applies:
@@ -2964,47 +2950,47 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.2
-  - Non-zero count: 3,956,053.0205993652
+  - Non-zero count: 4,840,140.619937897
 
 
 - UC_MIF_capped_earned_income:
   - Type: float
   - Entity: person
   - Description: Universal Credit gross earned income (incl. MIF)
-  - Mean: 14,866.2
+  - Mean: 15,020.3
   - Median: 0.0
-  - Stddev: 25,921.2
-  - Non-zero count: 31,964,718.531829834
+  - Stddev: 27,099.4
+  - Non-zero count: 33,290,615.656076342
 
 
 - UC_carer_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit carer element
-  - Mean: 28.7
+  - Mean: 36.3
   - Median: 0.0
-  - Stddev: 284.8
-  - Non-zero count: 425,052.6935195923
+  - Stddev: 284.9
+  - Non-zero count: 527,441.4348181486
 
 
 - UC_child_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit child element
-  - Mean: 1,425.1
+  - Mean: 1,404.8
   - Median: 0.0
-  - Stddev: 2,429.8
-  - Non-zero count: 8,195,191.299530983
+  - Stddev: 2,429.5
+  - Non-zero count: 7,547,397.831964016
 
 
 - UC_childcare_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit childcare element
-  - Mean: 160.2
+  - Mean: 177.9
   - Median: 0.0
-  - Stddev: 1,029.8
-  - Non-zero count: 1,562,650.7014160156
+  - Stddev: 1,040.4
+  - Non-zero count: 1,489,546.2673780918
 
 
 - UC_childcare_work_condition:
@@ -3013,8 +2999,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Meets Universal Credit childcare work condition
   - Mean: 0.5
   - Median: 1.0
-  - Stddev: 0.5
-  - Non-zero count: 14,827,491.465907097
+  - Stddev: 0.4
+  - Non-zero count: 15,071,619.939631462
 
 
 - UC_claimant_type:
@@ -3027,110 +3013,110 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Universal Credit disability elements
-  - Mean: 344.4
+  - Mean: 401.0
   - Median: 0.0
-  - Stddev: 1,329.8
-  - Non-zero count: 2,267,402.9735736847
+  - Stddev: 1,330.2
+  - Non-zero count: 2,586,254.827071011
 
 
 - UC_earned_income:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit earned income (after disregards and tax)
-  - Mean: 19,994.0
-  - Median: 14,931.7
-  - Stddev: 24,905.2
-  - Non-zero count: 18,258,056.937083244
+  - Mean: 20,658.0
+  - Median: 13,993.9
+  - Stddev: 27,405.1
+  - Non-zero count: 17,866,218.720789343
 
 
 - UC_housing_costs_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit housing costs element
-  - Mean: 1,323.4
+  - Mean: 1,327.1
   - Median: 0.0
-  - Stddev: 2,752.5
-  - Non-zero count: 6,530,781.848247528
+  - Stddev: 2,752.7
+  - Non-zero count: 6,389,015.868989706
 
 
 - UC_income_reduction:
   - Type: float
   - Entity: benunit
   - Description: Reduction from income for Universal Credit
-  - Mean: 16,847.3
-  - Median: 12,366.5
-  - Stddev: 17,716.5
-  - Non-zero count: 24,840,103.265452385
+  - Mean: 18,954.8
+  - Median: 12,943.3
+  - Stddev: 41,243.1
+  - Non-zero count: 24,494,166.791476995
 
 
 - UC_individual_child_element:
   - Type: float
   - Entity: person
   - Description: Universal Credit child element
-  - Mean: 677.6
+  - Mean: 642.5
   - Median: 0.0
-  - Stddev: 1,273.1
-  - Non-zero count: 14,373,663.184753418
+  - Stddev: 1,274.0
+  - Non-zero count: 13,971,232.706328869
 
 
 - UC_individual_disabled_child_element:
   - Type: float
   - Entity: person
   - Description: Universal Credit disabled child element
-  - Mean: 1.2
+  - Mean: 1.3
   - Median: 0.0
   - Stddev: 44.9
-  - Non-zero count: 50,662.7158203125
+  - Non-zero count: 57,048.73114013672
 
 
 - UC_individual_non_dep_deduction:
   - Type: float
   - Entity: person
   - Description: Universal Credit non-dependent deduction (individual)
-  - Mean: 62.3
+  - Mean: 72.8
   - Median: 0.0
-  - Stddev: 216.5
-  - Non-zero count: 4,518,180.7966918945
+  - Stddev: 215.5
+  - Non-zero count: 5,404,805.651796579
 
 
 - UC_individual_severely_disabled_child_element:
   - Type: float
   - Entity: person
   - Description: Universal Credit severely disabled child element
-  - Mean: 2.3
+  - Mean: 2.2
   - Median: 0.0
   - Stddev: 103.2
-  - Non-zero count: 31,814.554321289062
+  - Non-zero count: 30,780.743911743164
 
 
 - UC_maximum_amount:
   - Type: float
   - Entity: benunit
   - Description: Maximum Universal Credit amount
-  - Mean: 9,319.3
+  - Mean: 9,449.8
   - Median: 7,159.0
-  - Stddev: 4,882.7
-  - Non-zero count: 28,911,965.103952408
+  - Stddev: 4,890.9
+  - Non-zero count: 28,397,162.862116516
 
 
 - UC_maximum_childcare:
   - Type: float
   - Entity: benunit
   - Description: Maximum Universal Credit childcare element
-  - Mean: 8,609.1
+  - Mean: 8,624.5
   - Median: 7,756.2
-  - Stddev: 1,884.9
-  - Non-zero count: 28,911,965.103952408
+  - Stddev: 1,885.5
+  - Non-zero count: 28,397,861.240877807
 
 
 - UC_minimum_income_floor:
   - Type: float
   - Entity: person
   - Description: Minimum Income Floor
-  - Mean: 13,941.4
+  - Mean: 13,983.5
   - Median: 15,870.4
-  - Stddev: 3,172.6
-  - Non-zero count: 65,711,194.14491272
+  - Stddev: 3,171.8
+  - Non-zero count: 67,264,792.51037088
 
 
 - UC_non_dep_deduction_exempt:
@@ -3140,67 +3126,77 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 5,110,329.042739868
+  - Non-zero count: 5,198,356.300641686
 
 
 - UC_non_dep_deductions:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit non-dependent deductions
-  - Mean: 80.7
+  - Mean: 104.8
   - Median: 0.0
-  - Stddev: 477.4
-  - Non-zero count: 2,068,074.2258930206
+  - Stddev: 475.5
+  - Non-zero count: 2,527,386.6029536724
 
 
 - UC_standard_allowance:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit standard allowance
-  - Mean: 6,037.5
+  - Mean: 6,102.5
   - Median: 7,159.0
-  - Stddev: 1,189.6
-  - Non-zero count: 28,911,965.103952408
+  - Stddev: 1,189.4
+  - Non-zero count: 28,397,861.240877807
 
 
 - UC_unearned_income:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit unearned income
-  - Mean: 4,251.0
-  - Median: 11.7
-  - Stddev: 11,298.5
-  - Non-zero count: 16,688,561.452951431
+  - Mean: 5,940.3
+  - Median: 13.0
+  - Stddev: 39,388.1
+  - Non-zero count: 16,480,688.161676675
 
 
 - UC_work_allowance:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit work allowance
-  - Mean: 1,903.9
+  - Mean: 1,823.7
   - Median: 0.0
-  - Stddev: 2,593.3
-  - Non-zero count: 10,043,024.447314262
+  - Stddev: 2,593.5
+  - Non-zero count: 9,646,083.40521413
 
 
 - baseline_has_universal_credit:
   - Type: bool
   - Entity: benunit
   - Description: Receives Universal Credit (baseline)
-  - Mean: 0.1
+  - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.3
-  - Non-zero count: 1,582,372.8899273872
+  - Stddev: 0.2
+  - Non-zero count: 1,015,134.9827990532
+
+
+- baseline_universal_credit:
+  - Type: float
+  - Entity: benunit
+  - Description: Universal Credit (baseline)
+  - Mean: 434.5
+  - Median: 0.0
+  - Stddev: 2,396.9
+  - Non-zero count: 1,015,134.9827990532
 
 
 - is_UC_eligible:
   - Type: bool
   - Entity: benunit
   - Description: Universal Credit eligible
-  - Mean: 0.7
+  - Mean: 0.8
   - Median: 1.0
   - Stddev: 0.4
-  - Non-zero count: 20,984,509.948332787
+  - Non-zero count: 21,525,487.50300905
 
 
 - is_UC_work_allowance_eligible:
@@ -3210,7 +3206,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.3
   - Median: 0.0
   - Stddev: 0.5
-  - Non-zero count: 10,043,024.447314262
+  - Non-zero count: 9,646,083.40521413
 
 
 - is_child_born_before_child_limit:
@@ -3220,7 +3216,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 10,714,765.36553955
+  - Non-zero count: 10,787,737.880243778
 
 
 - is_in_startup_period:
@@ -3237,10 +3233,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Legacy benefits
-  - Mean: 995.5
+  - Mean: 975.8
   - Median: 0.0
-  - Stddev: 2,616.6
-  - Non-zero count: 4,477,391.585942268
+  - Stddev: 1,498.6
+  - Non-zero count: 4,462,032.563521385
 
 
 - limited_capability_for_WRA:
@@ -3250,7 +3246,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.2
-  - Non-zero count: 2,658,249.3999176025
+  - Non-zero count: 3,149,542.6521868706
 
 
 - num_UC_eligible_children:
@@ -3260,37 +3256,37 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.5
   - Median: 0.0
   - Stddev: 0.8
-  - Non-zero count: 8,195,191.299530983
+  - Non-zero count: 7,547,397.831964016
 
 
 - universal_credit:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit
-  - Mean: 1,184.7
+  - Mean: 952.7
   - Median: 0.0
-  - Stddev: 4,226.8
-  - Non-zero count: 3,662,837.157816887
+  - Stddev: 2,801.1
+  - Non-zero count: 3,069,014.7228623927
 
 
 - universal_credit_reported:
   - Type: float
   - Entity: person
   - Description: Universal Credit (reported)
-  - Mean: 99.0
+  - Mean: 187.7
   - Median: 0.0
-  - Stddev: 1,446.9
-  - Non-zero count: 707,350.4859619141
+  - Stddev: 2,212.7
+  - Non-zero count: 1,317,979.20964849
 
 
 - would_claim_UC:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Universal Credit
-  - Mean: 0.8
+  - Mean: 0.7
   - Median: 1.0
   - Stddev: 0.4
-  - Non-zero count: 23,849,804.518263817
+  - Non-zero count: 19,936,292.687026426
 
 
 - baseline_has_pension_credit:
@@ -3299,98 +3295,108 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Receives Pension Credit (baseline)
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.1
-  - Non-zero count: 1,375,212.783203125
+  - Stddev: 0.2
+  - Non-zero count: 1,297,274.160601616
+
+
+- baseline_pension_credit:
+  - Type: float
+  - Entity: benunit
+  - Description: Pension Credit (baseline)
+  - Mean: 99.1
+  - Median: 0.0
+  - Stddev: 668.9
+  - Non-zero count: 1,297,274.160601616
 
 
 - guarantee_credit_applicable_income:
   - Type: float
   - Entity: benunit
   - Description: Applicable income for Pension Credit
-  - Mean: 31,826.1
-  - Median: 24,518.2
-  - Stddev: 25,827.9
-  - Non-zero count: 28,212,126.6044178
+  - Mean: 32,575.0
+  - Median: 24,818.0
+  - Stddev: 38,901.7
+  - Non-zero count: 27,169,979.48920539
 
 
 - pension_credit:
   - Type: float
   - Entity: benunit
   - Description: Pension Credit
-  - Mean: 100.0
+  - Mean: 99.1
   - Median: 0.0
-  - Stddev: 389.2
-  - Non-zero count: 1,375,212.783203125
+  - Stddev: 668.9
+  - Non-zero count: 1,297,274.160601616
 
 
 - pension_credit_GC:
   - Type: float
   - Entity: benunit
   - Description: Pension Credit (Guarantee Credit) amount
-  - Mean: 81.2
+  - Mean: 72.3
   - Median: 0.0
-  - Stddev: 365.6
-  - Non-zero count: 857,662.5760192871
+  - Stddev: 622.8
+  - Non-zero count: 773,565.8661546707
 
 
 - pension_credit_MG:
   - Type: float
   - Entity: benunit
   - Description: Pension Credit (Minimum Guarantee) amount per week
-  - Mean: 792.4
+  - Mean: 2,644.5
   - Median: 0.0
-  - Stddev: 1,990.2
-  - Non-zero count: 2,281,603.9191627502
+  - Stddev: 4,948.0
+  - Non-zero count: 6,762,443.147800893
 
 
 - pension_credit_SC:
   - Type: float
   - Entity: benunit
   - Description: Pension Credit (Savings Credit) amount per week
-  - Mean: 18.8
+  - Mean: 26.8
   - Median: 0.0
-  - Stddev: 109.5
-  - Non-zero count: 770,012.0218200684
+  - Stddev: 187.3
+  - Non-zero count: 882,421.6132144928
 
 
 - pension_credit_eligible:
   - Type: bool
   - Entity: benunit
   - Description: Eligible for Pension Credit
-  - Mean: 0.3
+  - Mean: 0.2
   - Median: 0.0
   - Stddev: 0.4
-  - Non-zero count: 7,778,616.014831543
+  - Non-zero count: 6,762,443.147800893
 
 
 - pension_credit_reported:
   - Type: float
   - Entity: person
   - Description: Reported amount of Pension Credit
-  - Mean: 117.5
+  - Mean: 64.3
   - Median: 0.0
   - Stddev: 578.8
-  - Non-zero count: 2,499,233.1461486816
+  - Non-zero count: 1,393,219.148532182
 
 
 - savings_credit_applicable_income:
   - Type: float
   - Entity: benunit
   - Description: Applicable income for Savings Credit
-  - Mean: 31,610.9
-  - Median: 23,999.7
-  - Stddev: 25,888.8
-  - Non-zero count: 28,186,003.524827957
+  - Mean: 32,350.2
+  - Median: 24,299.2
+  - Stddev: 38,906.1
+  - Non-zero count: 27,011,068.83937171
 
 
 - would_claim_PC:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Pension Credit
-  - Mean: 0.1
-  - Median: 0.0
-  - Stddev: 0.2
-  - Non-zero count: 2,335,138.277267456
+  - Mean: 1.0
+  - Median: 1.0
+  - Stddev: 0.0
+  - Non-zero count: 28,397,861.240877807
 
 
 - baseline_has_income_support:
@@ -3399,38 +3405,48 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Receives Income Support (baseline)
   - Mean: 0.0
   - Median: 0.0
-  - Stddev: 0.1
-  - Non-zero count: 187,855.24718475342
+  - Stddev: 0.0
+  - Non-zero count: 192,295.07543563843
+
+
+- baseline_income_support:
+  - Type: float
+  - Entity: benunit
+  - Description: Income Support (baseline)
+  - Mean: 36.1
+  - Median: 0.0
+  - Stddev: 304.9
+  - Non-zero count: 192,295.07543563843
 
 
 - income_support:
   - Type: float
   - Entity: benunit
   - Description: Income Support
-  - Mean: 30.6
+  - Mean: 36.1
   - Median: 0.0
-  - Stddev: 609.6
-  - Non-zero count: 187,855.24718475342
+  - Stddev: 304.9
+  - Non-zero count: 192,295.07543563843
 
 
 - income_support_applicable_amount:
   - Type: float
   - Entity: benunit
   - Description: Applicable amount of Income Support
-  - Mean: 39.7
+  - Mean: 50.7
   - Median: 0.0
-  - Stddev: 798.9
-  - Non-zero count: 194,128.29320526123
+  - Stddev: 575.6
+  - Non-zero count: 201,977.7630865574
 
 
 - income_support_applicable_income:
   - Type: float
   - Entity: benunit
   - Description: Relevant income for Income Support means test
-  - Mean: 26,591.0
-  - Median: 20,506.3
-  - Stddev: 25,322.0
-  - Non-zero count: 26,564,647.90506649
+  - Mean: 28,560.9
+  - Median: 22,283.6
+  - Stddev: 28,577.7
+  - Non-zero count: 25,559,170.808781892
 
 
 - income_support_eligible:
@@ -3440,17 +3456,17 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.1
-  - Non-zero count: 194,128.29320526123
+  - Non-zero count: 201,977.7630865574
 
 
 - income_support_reported:
   - Type: float
   - Entity: person
   - Description: Income Support (reported amount)
-  - Mean: 16.3
+  - Mean: 22.9
   - Median: 0.0
-  - Stddev: 382.1
-  - Non-zero count: 292,528.08474731445
+  - Stddev: 270.2
+  - Non-zero count: 387,696.76667392254
 
 
 - would_claim_IS:
@@ -3460,56 +3476,190 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 1.0
   - Median: 1.0
   - Stddev: 0.0
-  - Non-zero count: 28,911,965.103952408
+  - Non-zero count: 28,397,861.240877807
 
 
-- AA:
+- DLA_M_reported:
   - Type: float
   - Entity: person
-  - Description: Attendance Allowance
-  - Mean: 56.1
+  - Description: DLA (mobility) (reported)
+  - Mean: 33.7
   - Median: 0.0
-  - Stddev: 486.0
-  - Non-zero count: 941,657.3074951172
+  - Stddev: 350.5
+  - Non-zero count: 883,352.1029307842
 
 
-- AA_reported:
+- dla_m:
   - Type: float
   - Entity: person
-  - Description: Attendance Allowance (reported)
-  - Mean: 56.1
+  - Description: DLA (mobility)
+  - Mean: 33.0
   - Median: 0.0
-  - Stddev: 486.0
-  - Non-zero count: 941,657.3074951172
+  - Stddev: 341.1
+  - Non-zero count: 883,352.1029307842
+
+
+- dla_m_category:
+  - Type: Categorical
+  - Entity: person
+  - Description: DLA (mobility) category
+
+
+- dla:
+  - Type: float
+  - Entity: person
+  - Description: Disability Living Allowance
+  - Mean: 84.8
+  - Median: 0.0
+  - Stddev: 763.2
+  - Non-zero count: 1,218,320.366149664
+
+
+- DLA_SC_reported:
+  - Type: float
+  - Entity: person
+  - Description: DLA (self-care) (reported)
+  - Mean: 51.3
+  - Median: 0.0
+  - Stddev: 490.4
+  - Non-zero count: 1,079,949.4091126919
+
+
+- dla_sc:
+  - Type: float
+  - Entity: person
+  - Description: DLA (self-care)
+  - Mean: 51.8
+  - Median: 0.0
+  - Stddev: 491.9
+  - Non-zero count: 1,079,949.4091126919
+
+
+- dla_sc_category:
+  - Type: Categorical
+  - Entity: person
+  - Description: DLA (Self-care) category
+
+
+- dla_sc_middle_plus:
+  - Type: bool
+  - Entity: person
+  - Description: Receives at least middle-rate DLA (self-care)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.1
+  - Non-zero count: 818,004.742408514
+
+
+- PIP_M_reported:
+  - Type: float
+  - Entity: person
+  - Description: Disability Living Allowance (mobility) (reported)
+  - Mean: 48.4
+  - Median: 0.0
+  - Stddev: 373.5
+  - Non-zero count: 1,394,095.6614701748
+
+
+- pip_m:
+  - Type: float
+  - Entity: person
+  - Description: PIP (mobility)
+  - Mean: 47.6
+  - Median: 0.0
+  - Stddev: 364.5
+  - Non-zero count: 1,394,095.6614701748
+
+
+- pip_m_category:
+  - Type: Categorical
+  - Entity: person
+  - Description: PIP (mobility) category
+
+
+- PIP_DL_reported:
+  - Type: float
+  - Entity: person
+  - Description: PIP (self-care) (reported)
+  - Mean: 102.2
+  - Median: 0.0
+  - Stddev: 634.4
+  - Non-zero count: 1,834,963.5632741451
+
+
+- pip_dl:
+  - Type: float
+  - Entity: person
+  - Description: PIP (daily living)
+  - Mean: 103.9
+  - Median: 0.0
+  - Stddev: 644.8
+  - Non-zero count: 1,834,963.5632741451
+
+
+- pip_dl_category:
+  - Type: Categorical
+  - Entity: person
+  - Description: PIP (daily living) category
+
+
+- pip:
+  - Type: float
+  - Entity: person
+  - Description: Personal Independence Payment
+  - Mean: 151.6
+  - Median: 0.0
+  - Stddev: 956.9
+  - Non-zero count: 1,936,265.709193945
 
 
 - baseline_corporate_sdlt:
   - Type: float
   - Entity: household
   - Description: Stamp Duty (corporations, baseline)
-  - Mean: 108.3
-  - Median: 13.5
-  - Stddev: 290.0
-  - Non-zero count: 19,754,560.831863403
+  - Mean: 151.7
+  - Median: 45.5
+  - Stddev: 760.5
+  - Non-zero count: 22,477,960.783508748
+
+
+- baseline_expected_sdlt:
+  - Type: float
+  - Entity: household
+  - Description: Stamp Duty (expected, baseline)
+  - Mean: 320.7
+  - Median: 67.4
+  - Stddev: 1,493.5
+  - Non-zero count: 22,929,836.933825463
+
+
+- change_in_expected_sdlt:
+  - Type: float
+  - Entity: household
+  - Description: Change in expected Stamp Duty
+  - Mean: -41.5
+  - Median: -12.4
+  - Stddev: 207.9
+  - Non-zero count: 0.0
 
 
 - corporate_sdlt:
   - Type: float
   - Entity: household
   - Description: Stamp Duty (corporations)
-  - Mean: 108.3
-  - Median: 13.5
-  - Stddev: 290.0
-  - Non-zero count: 19,754,560.831863403
+  - Mean: 110.2
+  - Median: 33.0
+  - Stddev: 552.5
+  - Non-zero count: 22,477,960.783508748
 
 
 - corporate_sdlt_change_incidence:
   - Type: float
   - Entity: household
-  - Description: Corporate Stamp Duty
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
+  - Description: Change in corporate Stamp Duty (expected)
+  - Mean: -41.5
+  - Median: -12.4
+  - Stddev: 207.9
   - Non-zero count: 0.0
 
 
@@ -3517,10 +3667,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Stamp Duty (expected)
-  - Mean: 221.6
-  - Median: 18.6
-  - Stddev: 791.0
-  - Non-zero count: 20,117,734.807052612
+  - Mean: 279.2
+  - Median: 49.8
+  - Stddev: 1,372.2
+  - Non-zero count: 22,929,836.933825463
 
 
 - sdlt_liable:
@@ -3530,7 +3680,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.9
   - Median: 1.0
   - Stddev: 0.4
-  - Non-zero count: 24,912,723.681655884
+  - Non-zero count: 24,472,760.19221741
 
 
 - sdlt_on_non_residential_property_rent:
@@ -3547,10 +3697,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Stamp Duty on non-residential property
-  - Mean: 48.5
+  - Mean: 215.2
   - Median: 0.0
-  - Stddev: 1,251.2
-  - Non-zero count: 130,279.23223876953
+  - Stddev: 4,582.5
+  - Non-zero count: 461,386.8996887207
 
 
 - sdlt_on_rent:
@@ -3577,119 +3727,139 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: Stamp Duty on residential property
-  - Mean: 2,253.7
+  - Mean: 3,420.7
   - Median: 0.0
-  - Stddev: 13,658.0
-  - Non-zero count: 3,472,284.089782715
+  - Stddev: 23,716.4
+  - Non-zero count: 5,606,281.097785413
 
 
 - sdlt_on_transactions:
   - Type: float
   - Entity: household
   - Description: SDLT on property transactions
-  - Mean: 2,302.2
+  - Mean: 3,635.9
   - Median: 0.0
-  - Stddev: 13,803.2
-  - Non-zero count: 3,523,950.799102783
+  - Stddev: 25,618.3
+  - Non-zero count: 5,750,546.514373243
 
 
 - stamp_duty_land_tax:
   - Type: float
   - Entity: household
   - Description: Stamp Duty Land Tax
-  - Mean: 2,098.7
+  - Mean: 3,129.1
   - Median: 0.0
-  - Stddev: 12,676.5
-  - Non-zero count: 3,105,894.013671875
+  - Stddev: 21,755.9
+  - Non-zero count: 5,042,688.924752653
+
+
+- baseline_child_benefit:
+  - Type: float
+  - Entity: benunit
+  - Description: Child Benefit (baseline)
+  - Mean: 337.4
+  - Median: 0.0
+  - Stddev: 701.4
+  - Non-zero count: 5,646,358.365300655
 
 
 - baseline_has_child_benefit:
   - Type: bool
   - Entity: benunit
   - Description: Receives Child Benefit (baseline)
-  - Mean: 1.0
-  - Median: 1.0
-  - Stddev: 0.0
-  - Non-zero count: 28,911,965.103952408
+  - Mean: 0.2
+  - Median: 0.0
+  - Stddev: 0.4
+  - Non-zero count: 5,646,358.365300655
 
 
 - child_benefit:
   - Type: float
   - Entity: benunit
   - Description: Child Benefit
-  - Mean: 360.7
+  - Mean: 399.3
   - Median: 0.0
-  - Stddev: 701.3
-  - Non-zero count: 6,551,450.8882808685
+  - Stddev: 741.8
+  - Non-zero count: 6,760,093.540275097
 
 
 - child_benefit_less_tax_charge:
   - Type: float
   - Entity: benunit
   - Description: Child Benefit (less tax charge)
-  - Mean: 323.2
+  - Mean: 338.4
   - Median: 0.0
-  - Stddev: 681.7
-  - Non-zero count: 6,038,458.9831905365
+  - Stddev: 668.0
+  - Non-zero count: 5,891,930.477615356
 
 
 - child_benefit_reported:
   - Type: float
   - Entity: person
   - Description: Child Benefit (reported amount)
-  - Mean: 172.2
+  - Mean: 157.1
   - Median: 0.0
-  - Stddev: 537.8
-  - Non-zero count: 7,158,474.705871582
+  - Stddev: 538.0
+  - Non-zero count: 6,342,756.282146692
 
 
 - child_benefit_respective_amount:
   - Type: float
   - Entity: person
   - Description: Child Benefit (respective amount)
-  - Mean: 198.5
+  - Mean: 187.4
   - Median: 0.0
-  - Stddev: 388.0
-  - Non-zero count: 13,997,365.380493164
+  - Stddev: 387.9
+  - Non-zero count: 13,726,878.757801533
 
 
 - would_claim_child_benefit:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Child Benefit
-  - Mean: 0.2
-  - Median: 0.0
+  - Mean: 0.8
+  - Median: 1.0
   - Stddev: 0.4
-  - Non-zero count: 6,737,631.404943466
+  - Non-zero count: 22,746,695.668193504
 
 
 - baseline_business_rates:
   - Type: float
   - Entity: household
   - Description: Baseline business rates incidence
-  - Mean: 1,097.6
-  - Median: 137.1
-  - Stddev: 2,939.6
-  - Non-zero count: 19,754,560.831863403
+  - Mean: 1,538.0
+  - Median: 460.9
+  - Stddev: 7,709.8
+  - Non-zero count: 22,477,960.783508748
 
 
 - business_rates:
   - Type: float
   - Entity: household
   - Description: Business rates incidence
-  - Mean: 1,097.6
-  - Median: 137.1
-  - Stddev: 2,939.6
-  - Non-zero count: 19,754,560.831863403
+  - Mean: 1,117.4
+  - Median: 334.9
+  - Stddev: 5,601.1
+  - Non-zero count: 22,477,960.783508748
 
 
 - business_rates_change_incidence:
   - Type: float
   - Entity: household
   - Description: Business rates changes
-  - Mean: 0.0
-  - Median: 0.0
-  - Stddev: 0.0
+  - Mean: -420.5
+  - Median: -126.0
+  - Stddev: 2,108.0
+  - Non-zero count: 0.0
+
+
+- change_in_business_rates:
+  - Type: float
+  - Entity: household
+  - Description: Change in expected business rates
+  - Mean: -420.5
+  - Median: -126.0
+  - Stddev: 2,108.0
   - Non-zero count: 0.0
 
 
@@ -3697,40 +3867,40 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: benunit
   - Description: Benefit unit tax paid
-  - Mean: 7,558.9
-  - Median: 2,622.9
-  - Stddev: 14,004.0
-  - Non-zero count: 20,503,912.60080242
+  - Mean: 8,372.9
+  - Median: 2,747.5
+  - Stddev: 20,846.0
+  - Non-zero count: 20,540,461.740595132
 
 
 - household_tax:
   - Type: float
   - Entity: household
   - Description: Taxes
-  - Mean: 11,203.6
-  - Median: 6,025.5
-  - Stddev: 16,701.2
-  - Non-zero count: 28,668,210.452468872
+  - Mean: 10,364.5
+  - Median: 4,462.0
+  - Stddev: 22,117.1
+  - Non-zero count: 27,759,065.80802223
 
 
 - tax:
   - Type: float
   - Entity: person
   - Description: Taxes
-  - Mean: 3,699.3
-  - Median: 0.0
-  - Stddev: 9,388.3
-  - Non-zero count: 32,707,441.207763672
+  - Mean: 3,979.7
+  - Median: 36.3
+  - Stddev: 14,485.9
+  - Non-zero count: 33,900,473.27087703
 
 
 - tax_modelling:
   - Type: float
   - Entity: person
   - Description: Difference between reported and imputed tax liabilities
-  - Mean: 3,699.3
-  - Median: 0.0
-  - Stddev: 9,388.3
-  - Non-zero count: 32,707,441.207763672
+  - Mean: 3,979.7
+  - Median: 36.3
+  - Stddev: 14,485.9
+  - Non-zero count: 33,900,473.27087703
 
 
 - tax_reported:
@@ -3747,20 +3917,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Class 2 Contributions for National Insurance for the year
-  - Mean: 6.9
+  - Mean: 8.9
   - Median: 0.0
-  - Stddev: 33.8
-  - Non-zero count: 2,844,367.298522949
+  - Stddev: 27.9
+  - Non-zero count: 3,761,919.590400696
 
 
 - weekly_NI_class_2:
   - Type: float
   - Entity: person
   - Description: Class 2 Contributions for National Insurance
-  - Mean: 6.9
+  - Mean: 8.9
   - Median: 0.0
-  - Stddev: 33.8
-  - Non-zero count: 2,844,367.298522949
+  - Stddev: 27.9
+  - Non-zero count: 3,761,919.590400696
 
 
 - NI_exempt:
@@ -3770,237 +3940,237 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.4
   - Median: 0.0
   - Stddev: 0.5
-  - Non-zero count: 24,322,613.03288269
+  - Non-zero count: 24,051,866.137406737
 
 
 - employee_NI_class_1:
   - Type: float
   - Entity: person
   - Description: Employee Class 1 Contributions for National Insurance
-  - Mean: 902.7
+  - Mean: 865.4
   - Median: 0.0
-  - Stddev: 1,563.6
-  - Non-zero count: 24,426,694.505371094
+  - Stddev: 1,870.9
+  - Non-zero count: 23,986,094.23448944
 
 
 - employer_NI:
   - Type: float
   - Entity: person
   - Description: Employer contributions to National Insurance
-  - Mean: 1,313.3
+  - Mean: 1,218.4
   - Median: 0.0
-  - Stddev: 2,917.4
-  - Non-zero count: 25,013,201.098114014
+  - Stddev: 2,752.3
+  - Non-zero count: 24,625,182.471592426
 
 
 - employer_NI_class_1:
   - Type: float
   - Entity: person
   - Description: Employer Class 1 Contributions for National Insurance
-  - Mean: 1,313.3
+  - Mean: 1,218.4
   - Median: 0.0
-  - Stddev: 2,917.4
-  - Non-zero count: 25,013,201.098114014
+  - Stddev: 2,752.3
+  - Non-zero count: 24,625,182.471592426
 
 
 - total_NI:
   - Type: float
   - Entity: person
   - Description: National Insurance (total)
-  - Mean: 2,272.1
+  - Mean: 2,175.9
   - Median: 0.0
-  - Stddev: 4,365.8
-  - Non-zero count: 27,637,681.229278564
+  - Stddev: 4,549.1
+  - Non-zero count: 28,009,967.668461323
 
 
 - NI_class_4:
   - Type: float
   - Entity: person
   - Description: Class 4 Contributions for National Insurance for the year
-  - Mean: 59.5
+  - Mean: 98.7
   - Median: 0.0
-  - Stddev: 487.7
-  - Non-zero count: 2,453,660.691101074
+  - Stddev: 474.4
+  - Non-zero count: 3,362,498.9424438477
 
 
 - employee_NI:
   - Type: float
   - Entity: person
   - Description: Employee-side National Insurance
-  - Mean: 902.7
+  - Mean: 865.4
   - Median: 0.0
-  - Stddev: 1,563.6
-  - Non-zero count: 24,426,694.505371094
+  - Stddev: 1,870.9
+  - Non-zero count: 23,986,094.23448944
 
 
 - national_insurance:
   - Type: float
   - Entity: person
   - Description: National Insurance
-  - Mean: 958.9
+  - Mean: 957.5
   - Median: 0.0
-  - Stddev: 1,602.0
-  - Non-zero count: 26,790,469.823547363
+  - Stddev: 1,906.0
+  - Non-zero count: 26,948,974.48196113
 
 
 - self_employed_NI:
   - Type: float
   - Entity: person
   - Description: Self-employed National Insurance
-  - Mean: 66.3
+  - Mean: 107.5
   - Median: 0.0
-  - Stddev: 510.7
-  - Non-zero count: 2,844,367.298522949
+  - Stddev: 490.1
+  - Non-zero count: 3,761,919.590400696
 
 
 - add_rate_earned_income:
   - Type: float
   - Entity: person
   - Description: Earned income (non-savings, non-dividend) at the additional rate
-  - Mean: 615.9
+  - Mean: 843.7
   - Median: 0.0
-  - Stddev: 8,396.0
-  - Non-zero count: 444,526.3962402344
+  - Stddev: 13,906.2
+  - Non-zero count: 365,909.9068775177
 
 
 - add_rate_earned_income_tax:
   - Type: float
   - Entity: person
   - Description: Income tax on earned income at the additional rate
-  - Mean: 277.2
+  - Mean: 379.6
   - Median: 0.0
-  - Stddev: 3,775.5
-  - Non-zero count: 444,526.3962402344
+  - Stddev: 6,257.8
+  - Non-zero count: 365,909.9068775177
 
 
 - add_rate_savings_income:
   - Type: float
   - Entity: person
   - Description: Savings income at the higher rate
-  - Mean: 0.1
+  - Mean: 1.1
   - Median: 0.0
-  - Stddev: 21.4
-  - Non-zero count: 3,928.903564453125
+  - Stddev: 117.4
+  - Non-zero count: 12,389.363739013672
 
 
 - basic_rate_earned_income:
   - Type: float
   - Entity: person
   - Description: Earned income (non-savings, non-dividend) at the basic rate
-  - Mean: 7,052.5
+  - Mean: 7,528.9
   - Median: 0.0
-  - Stddev: 11,526.0
-  - Non-zero count: 29,230,887.313293457
+  - Stddev: 14,146.3
+  - Non-zero count: 30,929,141.469164997
 
 
 - basic_rate_earned_income_tax:
   - Type: float
   - Entity: person
   - Description: Income tax on earned income at the basic rate
-  - Mean: 1,410.5
+  - Mean: 1,505.8
   - Median: 0.0
-  - Stddev: 2,305.9
-  - Non-zero count: 29,230,887.313293457
+  - Stddev: 2,830.2
+  - Non-zero count: 30,929,141.469164997
 
 
 - basic_rate_savings_income:
   - Type: float
   - Entity: person
   - Description: Savings income at the basic rate
-  - Mean: 7.2
+  - Mean: 10.1
   - Median: 0.0
-  - Stddev: 404.9
-  - Non-zero count: 72,558.6669921875
+  - Stddev: 370.7
+  - Non-zero count: 101,976.0888967514
 
 
 - basic_rate_savings_income_pre_starter:
   - Type: float
   - Entity: person
   - Description: Savings income which would otherwise be taxed at the basic rate, without the starter rate
-  - Mean: 12.6
+  - Mean: 16.3
   - Median: 0.0
-  - Stddev: 419.5
-  - Non-zero count: 499,596.4690551758
+  - Stddev: 396.2
+  - Non-zero count: 581,368.1643883586
 
 
 - dividend_income_tax:
   - Type: float
   - Entity: person
   - Description: Income tax on dividend income
-  - Mean: 180.0
+  - Mean: 294.2
   - Median: 0.0
-  - Stddev: 463.2
-  - Non-zero count: 2,369,618.8528442383
+  - Stddev: 9,031.6
+  - Non-zero count: 1,075,263.3718540072
 
 
 - earned_income_tax:
   - Type: float
   - Entity: person
   - Description: Income tax on earned income
-  - Mean: 2,541.9
+  - Mean: 2,696.6
   - Median: 0.0
-  - Stddev: 8,148.3
-  - Non-zero count: 29,230,887.313293457
+  - Stddev: 9,624.1
+  - Non-zero count: 30,929,141.469164997
 
 
 - earned_taxable_income:
   - Type: float
   - Entity: person
   - Description: Non-savings, non-dividend income for Income Tax
-  - Mean: 9,787.2
+  - Mean: 10,379.3
   - Median: 0.0
-  - Stddev: 23,434.8
-  - Non-zero count: 29,230,887.313293457
+  - Stddev: 26,749.8
+  - Non-zero count: 30,929,141.469164997
 
 
 - higher_rate_earned_income:
   - Type: float
   - Entity: person
   - Description: Earned income (non-savings, non-dividend) at the higher rate
-  - Mean: 2,118.8
+  - Mean: 2,006.8
   - Median: 0.0
-  - Stddev: 11,068.1
-  - Non-zero count: 3,774,146.2572631836
+  - Stddev: 10,448.9
+  - Non-zero count: 4,169,390.9870408773
 
 
 - higher_rate_earned_income_tax:
   - Type: float
   - Entity: person
   - Description: Income tax on earned income at the higher rate
-  - Mean: 847.5
+  - Mean: 802.7
   - Median: 0.0
-  - Stddev: 4,426.2
-  - Non-zero count: 3,774,146.2572631836
+  - Stddev: 4,175.6
+  - Non-zero count: 4,169,390.9870408773
 
 
 - higher_rate_savings_income:
   - Type: float
   - Entity: person
   - Description: Savings income at the higher rate
-  - Mean: 0.2
+  - Mean: 5.7
   - Median: 0.0
-  - Stddev: 210.4
-  - Non-zero count: 4,768.873046875
+  - Stddev: 533.6
+  - Non-zero count: 34,939.62949371338
 
 
 - income_tax:
   - Type: float
   - Entity: person
   - Description: Income Tax
-  - Mean: 2,740.5
+  - Mean: 3,022.2
   - Median: 0.0
-  - Stddev: 8,256.9
-  - Non-zero count: 30,142,934.106140137
+  - Stddev: 13,708.8
+  - Non-zero count: 31,220,284.843987614
 
 
 - income_tax_pre_charges:
   - Type: float
   - Entity: person
   - Description: Income Tax before any tax charges
-  - Mean: 2,723.5
+  - Mean: 2,995.6
   - Median: 0.0
-  - Stddev: 8,229.7
-  - Non-zero count: 30,142,934.106140137
+  - Stddev: 13,647.7
+  - Non-zero count: 31,220,284.843987614
 
 
 - is_higher_earner:
@@ -4010,7 +4180,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.5
   - Median: 1.0
   - Stddev: 0.5
-  - Non-zero count: 34,964,548.49809265
+  - Non-zero count: 35,868,496.54262373
 
 
 - pays_scottish_income_tax:
@@ -4020,27 +4190,27 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 5,342,256.117919922
+  - Non-zero count: 5,448,210.185401231
 
 
 - savings_income_tax:
   - Type: float
   - Entity: person
   - Description: Income tax on savings income
-  - Mean: 1.6
+  - Mean: 4.8
   - Median: 0.0
-  - Stddev: 129.7
-  - Non-zero count: 78,597.95288085938
+  - Stddev: 237.3
+  - Non-zero count: 135,085.1318883896
 
 
 - savings_starter_rate_income:
   - Type: float
   - Entity: person
   - Description: Savings income which is tax-free under the starter rate
-  - Mean: 4,990.8
+  - Mean: 4,988.6
   - Median: 5,000.0
-  - Stddev: 191.2
-  - Non-zero count: 65,670,184.60084534
+  - Stddev: 224.6
+  - Non-zero count: 67,213,914.48050275
 
 
 - tax_band:
@@ -4053,30 +4223,30 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Dividend income which is taxed
-  - Mean: 847.8
+  - Mean: 889.7
   - Median: 0.0
-  - Stddev: 1,814.4
-  - Non-zero count: 2,369,618.8528442383
+  - Stddev: 25,027.8
+  - Non-zero count: 1,075,263.3718540072
 
 
 - taxed_income:
   - Type: float
   - Entity: person
   - Description: Income which is taxed
-  - Mean: 10,642.5
+  - Mean: 11,286.0
   - Median: 0.0
-  - Stddev: 23,679.2
-  - Non-zero count: 30,142,934.106140137
+  - Stddev: 37,808.5
+  - Non-zero count: 31,220,284.843987614
 
 
 - taxed_savings_income:
   - Type: float
   - Entity: person
   - Description: Savings income which advances the person's income tax schedule
-  - Mean: 7.5
+  - Mean: 17.0
   - Median: 0.0
-  - Stddev: 497.4
-  - Non-zero count: 78,597.95288085938
+  - Stddev: 683.3
+  - Non-zero count: 135,085.1318883896
 
 
 - ISA_interest_income:
@@ -4093,30 +4263,30 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Statutory Maternity Pay
-  - Mean: 20.0
+  - Mean: 17.1
   - Median: 0.0
-  - Stddev: 378.5
-  - Non-zero count: 176,821.06112670898
+  - Stddev: 378.3
+  - Non-zero count: 156,780.16932678223
 
 
 - SSP:
   - Type: float
   - Entity: person
   - Description: Statutory Sick Pay
-  - Mean: 6.8
+  - Mean: 6.6
   - Median: 0.0
   - Stddev: 170.3
-  - Non-zero count: 119,723.27923583984
+  - Non-zero count: 114,633.70306777954
 
 
 - adjusted_net_income:
   - Type: float
   - Entity: person
   - Description: Taxable income after tax reliefs and before allowances
-  - Mean: 18,025.5
-  - Median: 10,682.4
-  - Stddev: 25,692.2
-  - Non-zero count: 47,208,113.33821106
+  - Mean: 18,719.3
+  - Median: 10,977.1
+  - Stddev: 39,130.8
+  - Non-zero count: 47,084,931.8050541
 
 
 - capital_allowances:
@@ -4143,10 +4313,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Employment benefits
-  - Mean: 26.8
+  - Mean: 23.6
   - Median: 0.0
-  - Stddev: 417.2
-  - Non-zero count: 295,496.8730773926
+  - Stddev: 416.8
+  - Non-zero count: 270,763.1310005188
 
 
 - employment_deductions:
@@ -4183,120 +4353,120 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Amount contributed to registered pension schemes paid by the individual (not the employer)
-  - Mean: 461.1
+  - Mean: 468.5
   - Median: 0.0
-  - Stddev: 1,319.8
-  - Non-zero count: 19,481,368.55682373
+  - Stddev: 1,316.4
+  - Non-zero count: 19,160,993.824376583
 
 
 - pension_contributions_relief:
   - Type: float
   - Entity: person
   - Description: Reduction in taxable income from pension contributions
-  - Mean: 1,731.6
+  - Mean: 1,778.5
   - Median: 0.0
-  - Stddev: 2,065.8
-  - Non-zero count: 31,217,685.64199829
+  - Stddev: 1,984.6
+  - Non-zero count: 32,471,976.140040636
 
 
 - tax_free_savings_income:
   - Type: float
   - Entity: person
   - Description: Income from savings in tax-free accounts
-  - Mean: 28.9
+  - Mean: 38.4
   - Median: 0.0
   - Stddev: 380.0
-  - Non-zero count: 8,746,712.427490234
+  - Non-zero count: 9,138,072.882008255
 
 
 - taxable_dividend_income:
   - Type: float
   - Entity: person
   - Description: Amount of dividend income that is taxable
-  - Mean: 931.7
+  - Mean: 934.2
   - Median: 0.0
-  - Stddev: 1,944.9
-  - Non-zero count: 4,892,996.383728027
+  - Stddev: 25,148.2
+  - Non-zero count: 3,875,087.8333299756
 
 
 - taxable_employment_income:
   - Type: float
   - Entity: person
   - Description: Net taxable earnings
-  - Mean: 12,685.4
+  - Mean: 11,949.9
   - Median: 0.0
-  - Stddev: 22,898.1
-  - Non-zero count: 32,657,585.70352173
+  - Stddev: 22,073.0
+  - Non-zero count: 28,440,295.539568335
 
 
 - taxable_miscellaneous_income:
   - Type: float
   - Entity: person
   - Description: Amount of miscellaneous income that is taxable
-  - Mean: 60.9
+  - Mean: 43.1
   - Median: 0.0
-  - Stddev: 828.2
-  - Non-zero count: 872,490.9592895508
+  - Stddev: 827.8
+  - Non-zero count: 776,042.7286429405
 
 
 - taxable_pension_income:
   - Type: float
   - Entity: person
   - Description: Amount of pension income that is taxable
-  - Mean: 944.4
+  - Mean: 1,599.1
   - Median: 0.0
-  - Stddev: 6,889.5
-  - Non-zero count: 7,776,879.277694702
+  - Stddev: 11,358.6
+  - Non-zero count: 9,673,347.920187503
 
 
 - taxable_property_income:
   - Type: float
   - Entity: person
   - Description: Amount of property income that is taxable
-  - Mean: 424.7
+  - Mean: 247.2
   - Median: 0.0
-  - Stddev: 2,039.8
-  - Non-zero count: 2,272,576.3924865723
+  - Stddev: 4,612.8
+  - Non-zero count: 1,818,570.1874465942
 
 
 - taxable_savings_interest_income:
   - Type: float
   - Entity: person
   - Description: Amount of savings interest which is taxable
-  - Mean: 48.3
+  - Mean: 63.7
   - Median: 0.0
-  - Stddev: 590.1
-  - Non-zero count: 21,673,531.91357422
+  - Stddev: 819.7
+  - Non-zero count: 21,827,581.052438498
 
 
 - taxable_self_employment_income:
   - Type: float
   - Entity: person
   - Description: Amount of trading income that is taxable
-  - Mean: 1,393.5
+  - Mean: 2,291.9
   - Median: 0.0
-  - Stddev: 11,744.1
-  - Non-zero count: 3,788,382.600982666
+  - Stddev: 15,509.3
+  - Non-zero count: 4,667,139.055475235
 
 
 - taxable_social_security_income:
   - Type: float
   - Entity: person
   - Description: Amount of social security income that is taxable
-  - Mean: 1,536.4
+  - Mean: 1,590.2
   - Median: 0.0
-  - Stddev: 3,555.8
-  - Non-zero count: 12,423,800.287582397
+  - Stddev: 3,559.4
+  - Non-zero count: 13,084,914.958741218
 
 
 - total_income:
   - Type: float
   - Entity: person
   - Description: Taxable income after tax reliefs and before allowances
-  - Mean: 18,443.4
-  - Median: 10,698.3
-  - Stddev: 26,420.0
-  - Non-zero count: 45,109,936.690719604
+  - Mean: 19,278.7
+  - Median: 11,222.6
+  - Stddev: 39,487.2
+  - Non-zero count: 47,082,068.23002663
 
 
 - trading_loss:
@@ -4313,80 +4483,80 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Income from dividends
-  - Mean: 931.7
+  - Mean: 934.2
   - Median: 0.0
-  - Stddev: 1,944.9
-  - Non-zero count: 4,892,996.383728027
+  - Stddev: 25,148.2
+  - Non-zero count: 3,875,087.8333299756
 
 
 - employment_income:
   - Type: float
   - Entity: person
   - Description: Employment income
-  - Mean: 13,106.4
+  - Mean: 12,380.3
   - Median: 0.0
-  - Stddev: 23,698.4
-  - Non-zero count: 27,630,920.47998047
+  - Stddev: 22,675.2
+  - Non-zero count: 28,378,743.579607397
 
 
 - pension_income:
   - Type: float
   - Entity: person
   - Description: Pension income
-  - Mean: 944.4
+  - Mean: 1,599.1
   - Median: 0.0
-  - Stddev: 6,889.5
-  - Non-zero count: 7,776,879.277694702
+  - Stddev: 11,358.6
+  - Non-zero count: 9,673,347.920187503
 
 
 - property_income:
   - Type: float
   - Entity: person
   - Description: Rental income
-  - Mean: 356.9
-  - Median: -108.1
-  - Stddev: 2,138.6
-  - Non-zero count: 2,696,198.9169006348
+  - Mean: 277.3
+  - Median: 0.0
+  - Stddev: 4,723.6
+  - Non-zero count: 2,278,491.874025345
 
 
 - savings_interest_income:
   - Type: float
   - Entity: person
   - Description: Savings interest income
-  - Mean: 77.2
+  - Mean: 99.8
   - Median: 0.0
-  - Stddev: 758.1
-  - Non-zero count: 21,673,531.91357422
+  - Stddev: 889.6
+  - Non-zero count: 21,972,671.19196868
 
 
 - self_employment_income:
   - Type: float
   - Entity: person
   - Description: Self-employment income
-  - Mean: 1,429.4
+  - Mean: 2,354.7
   - Median: 0.0
-  - Stddev: 11,885.6
-  - Non-zero count: 3,956,053.0205993652
+  - Stddev: 15,583.1
+  - Non-zero count: 4,840,140.619937897
 
 
 - social_security_income:
   - Type: float
   - Entity: person
   - Description: Income from social security for tax purposes
-  - Mean: 1,536.4
+  - Mean: 1,590.2
   - Median: 0.0
-  - Stddev: 3,555.8
-  - Non-zero count: 12,423,800.287582397
+  - Stddev: 3,559.4
+  - Non-zero count: 13,084,914.958741218
 
 
 - marriage_allowance:
   - Type: float
   - Entity: person
   - Description: Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)
-  - Mean: 152.6
+  - Mean: 158.6
   - Median: 0.0
-  - Stddev: 422.9
-  - Non-zero count: 8,356,366.312438965
+  - Stddev: 324.8
+  - Non-zero count: 8,928,127.752281904
 
 
 - meets_marriage_allowance_income_conditions:
@@ -4395,38 +4565,38 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Meets Marriage Allowance income conditions
   - Mean: 0.9
   - Median: 1.0
-  - Stddev: 0.2
-  - Non-zero count: 61,300,958.98890686
+  - Stddev: 0.3
+  - Non-zero count: 62,755,126.595044285
 
 
 - partners_unused_personal_allowance:
   - Type: float
   - Entity: person
   - Description: Partner's unused personal allowance
-  - Mean: -101.9
+  - Mean: 130.3
   - Median: 0.0
-  - Stddev: 5,831.3
-  - Non-zero count: 13,143,191.803192139
+  - Stddev: 5,190.1
+  - Non-zero count: 14,171,922.907224894
 
 
 - unused_personal_allowance:
   - Type: float
   - Entity: person
   - Description: Unused personal allowance
-  - Mean: 5,064.0
-  - Median: 1,817.6
-  - Stddev: 5,641.9
-  - Non-zero count: 35,367,320.4433136
+  - Mean: 5,058.2
+  - Median: 1,522.9
+  - Stddev: 5,179.2
+  - Non-zero count: 35,769,363.162572384
 
 
 - allowances:
   - Type: float
   - Entity: person
   - Description: Allowances applicable to adjusted net income
-  - Mean: 12,332.1
+  - Mean: 12,348.3
   - Median: 12,500.0
-  - Stddev: 1,156.3
-  - Non-zero count: 65,021,615.58522034
+  - Stddev: 1,331.5
+  - Non-zero count: 66,618,468.934628636
 
 
 - blind_persons_allowance:
@@ -4465,8 +4635,8 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Dividend allowance for the person
   - Mean: 2,000.0
   - Median: 2,000.0
-  - Stddev: 0.0
-  - Non-zero count: 65,711,194.14491272
+  - Stddev: 3.6
+  - Non-zero count: 67,264,792.51037088
 
 
 - gift_aid:
@@ -4513,20 +4683,20 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: person
   - Description: Annual Allowance for pension contributions
-  - Mean: 39,912.2
+  - Mean: 39,903.6
   - Median: 40,000.0
-  - Stddev: 1,290.1
-  - Non-zero count: 65,711,194.14491272
+  - Stddev: 1,639.8
+  - Non-zero count: 67,264,792.51037088
 
 
 - personal_allowance:
   - Type: float
   - Entity: person
   - Description: Personal Allowance for the year
-  - Mean: 12,332.1
+  - Mean: 12,348.3
   - Median: 12,500.0
-  - Stddev: 1,156.3
-  - Non-zero count: 65,021,615.58522034
+  - Stddev: 1,331.5
+  - Non-zero count: 66,618,468.934628636
 
 
 - property_allowance:
@@ -4535,28 +4705,28 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Property Allowance for the year
   - Mean: 1,000.0
   - Median: 1,000.0
-  - Stddev: 0.0
-  - Non-zero count: 65,711,194.14491272
+  - Stddev: 1.8
+  - Non-zero count: 67,264,792.51037088
 
 
 - property_allowance_deduction:
   - Type: float
   - Entity: person
   - Description: Deduction applied by the property allowance
-  - Mean: -67.9
-  - Median: -108.1
-  - Stddev: 180.0
-  - Non-zero count: 2,696,198.9169006348
+  - Mean: 30.1
+  - Median: 0.0
+  - Stddev: 243.9
+  - Non-zero count: 2,278,491.874025345
 
 
 - savings_allowance:
   - Type: float
   - Entity: person
   - Description: Savings Allowance for the year
-  - Mean: 963.0
+  - Mean: 963.1
   - Median: 1,000.0
-  - Stddev: 136.4
-  - Non-zero count: 65,255,126.31361389
+  - Stddev: 182.7
+  - Non-zero count: 66,815,424.74154058
 
 
 - trading_allowance:
@@ -4565,48 +4735,68 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Description: Trading Allowance for the year
   - Mean: 1,000.0
   - Median: 1,000.0
-  - Stddev: 0.0
-  - Non-zero count: 65,711,194.14491272
+  - Stddev: 1.8
+  - Non-zero count: 67,264,792.51037088
 
 
 - trading_allowance_deduction:
   - Type: float
   - Entity: person
   - Description: Deduction applied by the trading allowance
-  - Mean: 35.9
+  - Mean: 62.8
   - Median: 0.0
-  - Stddev: 615.9
-  - Non-zero count: 3,956,053.0205993652
+  - Stddev: 463.6
+  - Non-zero count: 4,840,140.619937897
 
 
 - CB_HITC:
   - Type: float
   - Entity: person
   - Description: Child Benefit High-Income Tax Charge
-  - Mean: 17.0
+  - Mean: 26.5
   - Median: 0.0
-  - Stddev: 125.4
-  - Non-zero count: 903,990.2489013672
+  - Stddev: 237.6
+  - Non-zero count: 1,303,853.2542846203
+
+
+- baseline_expected_lbtt:
+  - Type: float
+  - Entity: household
+  - Description: LBTT (expected, baseline)
+  - Mean: 41.2
+  - Median: 0.0
+  - Stddev: 802.1
+  - Non-zero count: 882,193.1728057861
+
+
+- change_in_expected_lbtt:
+  - Type: float
+  - Entity: household
+  - Description: Change in LBTT (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 
 
 - expected_lbtt:
   - Type: float
   - Entity: household
   - Description: Land and Buildings Transaction Tax (expected)
-  - Mean: 30.3
+  - Mean: 41.2
   - Median: 0.0
-  - Stddev: 460.9
-  - Non-zero count: 680,928.8559875488
+  - Stddev: 802.1
+  - Non-zero count: 882,193.1728057861
 
 
 - land_and_buildings_transaction_tax:
   - Type: float
   - Entity: household
   - Description: Land and Buildings Transaction Tax
-  - Mean: 561.1
+  - Mean: 763.6
   - Median: 0.0
-  - Stddev: 8,539.0
-  - Non-zero count: 680,928.8559875488
+  - Stddev: 14,846.3
+  - Non-zero count: 882,193.1728057861
 
 
 - lbtt_liable:
@@ -4616,7 +4806,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.1
   - Median: 0.0
   - Stddev: 0.3
-  - Non-zero count: 2,589,934.305847168
+  - Non-zero count: 2,542,730.671045691
 
 
 - lbtt_on_non_residential_property_rent:
@@ -4633,10 +4823,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: LBTT on non-residential property transactions
-  - Mean: 45.0
+  - Mean: 201.7
   - Median: 0.0
-  - Stddev: 1,215.4
-  - Non-zero count: 130,279.23223876953
+  - Stddev: 4,522.6
+  - Non-zero count: 461,386.8996887207
 
 
 - lbtt_on_rent:
@@ -4663,40 +4853,60 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: LBTT on residential property
-  - Mean: 6,411.7
+  - Mean: 9,178.1
   - Median: 0.0
-  - Stddev: 21,318.9
-  - Non-zero count: 8,142,352.621520996
+  - Stddev: 37,342.9
+  - Non-zero count: 10,169,151.219789147
 
 
 - lbtt_on_transactions:
   - Type: float
   - Entity: household
   - Description: LBTT on property transactions
-  - Mean: 6,456.8
+  - Mean: 9,379.8
   - Median: 0.0
-  - Stddev: 21,473.6
-  - Non-zero count: 8,160,351.338562012
+  - Stddev: 38,869.8
+  - Non-zero count: 10,219,727.032533288
+
+
+- baseline_expected_ltt:
+  - Type: float
+  - Entity: household
+  - Description: Land Transaction Tax (baseline, expected)
+  - Mean: 22.4
+  - Median: 0.0
+  - Stddev: 653.6
+  - Non-zero count: 474,508.85575294495
+
+
+- change_in_expected_ltt:
+  - Type: float
+  - Entity: household
+  - Description: Change in LTT (expected)
+  - Mean: 0.0
+  - Median: 0.0
+  - Stddev: 0.0
+  - Non-zero count: 0.0
 
 
 - expected_ltt:
   - Type: float
   - Entity: household
   - Description: Land Transaction Tax (expected)
-  - Mean: 6.4
+  - Mean: 22.4
   - Median: 0.0
-  - Stddev: 186.4
-  - Non-zero count: 305,387.84814453125
+  - Stddev: 653.6
+  - Non-zero count: 474,508.85575294495
 
 
 - land_transaction_tax:
   - Type: float
   - Entity: household
   - Description: Land Transaction Tax
-  - Mean: 118.6
+  - Mean: 414.1
   - Median: 0.0
-  - Stddev: 3,453.7
-  - Non-zero count: 305,387.84814453125
+  - Stddev: 12,100.3
+  - Non-zero count: 474,508.85575294495
 
 
 - ltt_liable:
@@ -4706,7 +4916,7 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Mean: 0.0
   - Median: 0.0
   - Stddev: 0.2
-  - Non-zero count: 1,409,307.1204223633
+  - Non-zero count: 1,382,370.375881195
 
 
 - ltt_on_non_residential_property_rent:
@@ -4723,10 +4933,10 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: LTT on non-residential property transactions
-  - Mean: 1.6
+  - Mean: 40.4
   - Median: 0.0
-  - Stddev: 124.4
-  - Non-zero count: 5,667.17626953125
+  - Stddev: 2,077.1
+  - Non-zero count: 18,037.269622802734
 
 
 - ltt_on_rent:
@@ -4753,18 +4963,18 @@ All statistics generated from the uprated (to 2020) 2019-20 Family Resources Sur
   - Type: float
   - Entity: household
   - Description: LTT on residential property
-  - Mean: 5,073.2
+  - Mean: 7,397.9
   - Median: 0.0
-  - Stddev: 18,137.6
-  - Non-zero count: 8,142,352.621520996
+  - Stddev: 31,943.9
+  - Non-zero count: 10,169,151.219789147
 
 
 - ltt_on_transactions:
   - Type: float
   - Entity: household
   - Description: LTT on property transactions
-  - Mean: 5,074.8
+  - Mean: 7,438.2
   - Median: 0.0
-  - Stddev: 18,137.9
-  - Non-zero count: 8,146,348.040710449
+  - Stddev: 32,451.5
+  - Non-zero count: 10,171,420.830628991
 
