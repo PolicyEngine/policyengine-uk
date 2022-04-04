@@ -123,19 +123,3 @@ class miscellaneous_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-
-
-class petrol_spending(Variable):
-    label = "Petrol spending"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"
-
-
-class diesel_spending(Variable):
-    label = "Diesel spending"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"

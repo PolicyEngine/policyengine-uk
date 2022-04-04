@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class total_wealth(Variable):
     label = "Total wealth"
     entity = Household
