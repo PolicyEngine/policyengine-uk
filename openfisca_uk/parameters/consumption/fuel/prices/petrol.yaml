@@ -1,4 +1,4 @@
-description: Average price of unleaded petrol per litre.
+description: Average price of unleaded petrol per litre, including fuel duty.
 values:
   2012-06-01: 1.3492
   2014-09-15: 1.2918
