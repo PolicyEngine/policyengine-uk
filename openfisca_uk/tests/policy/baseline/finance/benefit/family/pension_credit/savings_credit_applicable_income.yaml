@@ -2,8 +2,6 @@
   period: 2022
   absolute_error_margin: 0
   input:
-    JSA_contrib: 1
-    ESA_contrib: 1
     state_pension: 1
     pension_income: 1
     maintenance_income: 1
@@ -21,8 +19,6 @@
   period: 2022
   absolute_error_margin: 0
   input:
-    JSA_contrib: 1
-    ESA_contrib: 1
     state_pension: 1
     pension_income: 1
     maintenance_income: 1

@@ -10,14 +10,6 @@ class child_benefit_reported(Variable):
     unit = "currency-GBP"
 
 
-class baseline_has_child_benefit(Variable):
-    label = "Receives Child Benefit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = bool
-    default_value = True
-
-
 class would_claim_child_benefit(Variable):
     label = "Would claim Child Benefit"
     documentation = (
@@ -102,3 +94,21 @@ class child_benefit_less_tax_charge(Variable):
         benefit = benunit("child_benefit", period)
         charge = benunit.sum(benunit.members("CB_HITC", period))
         return benefit - charge
+
+
+class baseline_child_benefit(Variable):
+    label = "Child Benefit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
+class baseline_has_child_benefit(Variable):
+    label = "Receives Child Benefit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
+
+    formula = baseline_is_nonzero(child_benefit)

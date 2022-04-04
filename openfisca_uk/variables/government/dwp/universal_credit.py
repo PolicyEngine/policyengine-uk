@@ -31,45 +31,20 @@ class would_claim_UC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        WTC = benunit("would_claim_WTC", period) & benunit(
-            "is_WTC_eligible", period
-        )
-        CTC = benunit("would_claim_CTC", period) & benunit(
-            "is_CTC_eligible", period
-        )
-        HB = benunit("would_claim_HB", period) & benunit(
-            "housing_benefit_eligible", period
-        )
-        IS = benunit("would_claim_IS", period) & benunit(
-            "income_support_eligible", period
-        )
-        ESA_income = benunit("would_claim_ESA_income", period) & benunit(
-            "ESA_income_eligible", period
-        )
-        JSA_income = benunit("would_claim_JSA", period) & benunit(
-            "JSA_income_eligible", period
-        )
         on_legacy_benefits = benunit("claims_legacy_benefits", period)
-        would_have_claimed_legacy_benefits = (
-            sum([WTC, CTC, HB, IS, ESA_income, JSA_income]) > 0
-        )
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
         current_uc_claimant = (
             aggr(benunit, period, ["universal_credit_reported"]) > 0
         )
-        would_make_new_claim = (
-            claims_all_entitled_benefits & ~on_legacy_benefits
-        )
         baseline_uc = benunit("baseline_has_universal_credit", period)
         takeup_rate = parameters(period).benefit.universal_credit.takeup
         return select(
             [
                 current_uc_claimant
-                | (~on_legacy_benefits & would_have_claimed_legacy_benefits)
-                | would_make_new_claim,
-                ~baseline_uc,
+                | (claims_all_entitled_benefits & ~on_legacy_benefits),
+                (~baseline_uc & ~on_legacy_benefits),
                 True,
             ],
             [
@@ -99,14 +74,6 @@ class universal_credit_reported(Variable):
     documentation = "Reported amount of Universal Credit"
     definition_period = YEAR
     unit = "currency-GBP"
-
-
-class baseline_has_universal_credit(Variable):
-    label = "Receives Universal Credit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = bool
-    default_value = True
 
 
 class UC_maximum_amount(Variable):
@@ -316,9 +283,9 @@ class UC_non_dep_deduction_exempt(Variable):
     def formula(person, period, parameters):
         return (
             (person.benunit("pension_credit", period) > 0)
-            | person("DLA_SC_middle_plus", period)
-            | (person("PIP_DL", period) > 0)
-            | (person("AA", period) > 0)
+            | person("dla_sc_middle_plus", period)
+            | (person("pip_dl", period) > 0)
+            | (person("attendance_allowance", period) > 0)
             | person("receives_carers_allowance", period)
         )
 
@@ -683,3 +650,21 @@ class UC_MIF_capped_earned_income(Variable):
             -inf,
         )
         return max_(personal_gross_earned_income, floor)
+
+
+class baseline_universal_credit(Variable):
+    label = "Universal Credit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
+class baseline_has_universal_credit(Variable):
+    label = "Receives Universal Credit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
+
+    formula = baseline_is_nonzero(universal_credit)

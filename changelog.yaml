@@ -350,3 +350,18 @@
     fixed:
     - Bugs related to uprating parameters.
   date: 2022-03-24 03:05:39
+- bump: minor
+  changes:
+    added:
+    - Tax and benefit changes announced in the 2022 Spring Statement.
+    - Inflation and real disposable income.
+    - Parameters for PIP, DLA, SDA, AA and Carer's Allowance.
+    changed:
+    - Added calibration make.
+  date: 2022-03-27 14:13:20
+- bump: minor
+  changes:
+    fixed:
+    - Synthetic FRS now successfully loads.
+    - Incorporates better calibration and imputations.
+  date: 2022-04-03 19:28:24

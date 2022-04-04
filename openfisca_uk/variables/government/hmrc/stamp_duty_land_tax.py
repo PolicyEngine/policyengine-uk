@@ -168,17 +168,13 @@ class corporate_sdlt(Variable):
 
 
 class corporate_sdlt_change_incidence(Variable):
-    label = "Corporate Stamp Duty"
-    documentation = "Total incidence of changes to corporate Stamp duty"
+    label = "Change in corporate Stamp Duty (expected)"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
 
-    def formula(household, period):
-        return household("corporate_sdlt", period) - household(
-            "baseline_corporate_sdlt", period
-        )
+    formula = change_over_baseline(corporate_sdlt)
 
 
 class stamp_duty_land_tax(Variable):
@@ -214,3 +210,21 @@ class expected_sdlt(Variable):
             household.state("property_sale_rate", period)
             * household("stamp_duty_land_tax", period)
         ) + household("corporate_sdlt", period)
+
+
+class baseline_expected_sdlt(Variable):
+    label = "Stamp Duty (expected, baseline)"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
+class change_in_expected_sdlt(Variable):
+    label = "Change in expected Stamp Duty"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    formula = change_over_baseline(expected_sdlt)

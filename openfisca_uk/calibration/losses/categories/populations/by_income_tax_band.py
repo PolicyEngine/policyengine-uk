@@ -7,6 +7,7 @@ from openfisca_uk import parameters
 class PopulationsByIncomeTaxBand(LossCategory):
     label = "Income tax payers by income"
     parameter_folder = parameters.calibration.populations.by_income_tax_band
+    weight = 1 / 30
 
     def get_loss_subcomponents(
         sim,

@@ -559,6 +559,22 @@ class working_tax_credit(Variable):
         )
 
 
+class baseline_working_tax_credit(Variable):
+    label = "Baseline Working Tax Credit"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
+class baseline_child_tax_credit(Variable):
+    label = "Baseline Child Tax Credit"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
 class baseline_has_working_tax_credit(Variable):
     label = "Receives Working Tax Credit (baseline)"
     entity = BenUnit

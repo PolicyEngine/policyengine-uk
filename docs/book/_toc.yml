@@ -6,6 +6,7 @@ parts:
       - file: model/child_benefit
       - file: model/tax_credits
       - file: model/stamp_duty
+      - file: model/data
       - file: model/validation
       - file: model/reweighting
   - caption: Usage

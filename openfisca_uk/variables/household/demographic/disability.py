@@ -11,10 +11,8 @@ class is_disabled_for_benefits(Variable):
 
     def formula(person, period, parameters):
         QUALIFYING_BENEFITS = [
-            "DLA_M",
-            "DLA_SC",
-            "PIP_M",
-            "PIP_DL",
+            "dla",
+            "pip",
         ]
         return add(person, period, QUALIFYING_BENEFITS) > 0
 
@@ -27,9 +25,9 @@ class is_enhanced_disabled_for_benefits(Variable):
 
     def formula(person, period, parameters):
         DLA_requirement = (
-            parameters(period).benefit.DLA.self_care.highest * WEEKS_IN_YEAR
+            parameters(period).dwp.dla.self_care.higher * WEEKS_IN_YEAR
         )
-        return person("DLA_SC", period) >= DLA_requirement
+        return person("dla_sc", period) >= DLA_requirement
 
 
 class is_severely_disabled_for_benefits(Variable):
@@ -43,16 +41,16 @@ class is_severely_disabled_for_benefits(Variable):
     reference = "Child Tax Credit Regulations 2002 s. 8"
 
     def formula(person, period, parameters):
-        benefit = parameters(period).benefit
+        benefit = parameters(period).dwp
         THRESHOLD_SAFETY_GAP = 10 * WEEKS_IN_YEAR
         paragraph_3 = (
-            person("DLA_SC", period)
-            >= benefit.DLA.self_care.highest * WEEKS_IN_YEAR
+            person("dla_sc", period)
+            >= benefit.dla.self_care.higher * WEEKS_IN_YEAR
             - THRESHOLD_SAFETY_GAP
         )
         paragraph_4 = (
-            person("PIP_DL", period)
-            >= benefit.PIP.daily_living.higher * WEEKS_IN_YEAR
+            person("pip_dl", period)
+            >= benefit.pip.daily_living.enhanced * WEEKS_IN_YEAR
             - THRESHOLD_SAFETY_GAP
         )
         paragraph_5 = person("AFCS", period) > 0

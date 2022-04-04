@@ -8,6 +8,7 @@ from openfisca_core.parameters import Parameter
 class PopulationsByAgeBand(LossCategory):
     label = "Populations by age band"
     parameter_folder = parameters.calibration.populations.by_age_sex_region
+    weight = 1 / 30
 
     def get_loss_subcomponents(
         sim,
@@ -48,9 +49,6 @@ class PopulationsByAgeBand(LossCategory):
                 lower, upper = int(lower), int(upper)
             elif "OVER" in age_group:
                 lower, upper = int(age_group.split("_")[1]), np.inf
-                if lower == 80:
-                    lower = 79  # The FRS top-codes at 79, so we'll be very slightly mismatched
-                    # but it's better than dropping over-80 targeting altogether
             else:
                 raise ValueError(f"Unexpected test group: {age_group}")
             people_in_household = sim.map_to(
@@ -78,6 +76,6 @@ class PopulationsByAgeBand(LossCategory):
     def get_metric_names():
         return [
             parameter.name + "." + str(year)
-            for year in range(2019, 2023)
+            for year in range(2019, 2027)
             for parameter in PopulationsByAgeBand.get_metrics()
         ]

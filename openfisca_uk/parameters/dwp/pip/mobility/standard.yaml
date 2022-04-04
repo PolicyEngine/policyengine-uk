@@ -1,0 +1,18 @@
+description: Standard rate for Personal Independence Payment (mobility component).
+values:
+  2015-04-01: 21.80
+  2016-04-01: 21.80
+  2017-04-01: 22.00
+  2018-04-01: 22.65
+  2019-04-01: 23.20
+  2020-04-01: 23.60
+  2021-04-01: 23.70
+  2022-04-01: 24.45
+metadata:
+  period: week
+  unit: currency-GBP
+  name: dla_m_standard
+  label: DLA (mobility) (standard rate)
+  reference: 
+    - title: Benefits Uprating 2022/23
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

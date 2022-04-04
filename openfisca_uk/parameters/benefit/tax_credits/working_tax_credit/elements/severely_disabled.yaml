@@ -19,9 +19,12 @@ values:
   2020-03-25: 1_365
   2020-04-06: 1_390
   2021-04-06: 1_400
+  2022-04-06: 1_445
 metadata:
   period: year
   unit: currency-GBP
+  name: wtc_severe_dis
+  label: "WTC severe disability element"
   uprating: uprating.september_cpi
   reference:
     title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002

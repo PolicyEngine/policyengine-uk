@@ -49,14 +49,6 @@ class would_claim_HB(Variable):
         )
 
 
-class baseline_has_housing_benefit(Variable):
-    label = "Receives Housing Benefit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = bool
-    default_value = True
-
-
 class housing_benefit_applicable_amount(Variable):
     value_type = float
     entity = BenUnit
@@ -242,7 +234,7 @@ class housing_benefit(Variable):
             "JSA_contrib",
             "incapacity_benefit",
             "ESA_contrib",
-            "SDA",
+            "sda",
         ]
         capped_personal_benefits = aggr(
             benunit, period, CAPPED_PERSONAL_BENEFITS
@@ -260,3 +252,21 @@ class housing_benefit(Variable):
             benunit("benefit_cap", period) - other_capped_benefits,
         )
         return max_(0, final_amount)
+
+
+class baseline_housing_benefit(Variable):
+    label = "Housing Benefit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
+class baseline_has_housing_benefit(Variable):
+    label = "Receives Housing Benefit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
+
+    formula = baseline_is_nonzero(housing_benefit)

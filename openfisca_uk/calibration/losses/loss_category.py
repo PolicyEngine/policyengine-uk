@@ -20,9 +20,7 @@ def weighted_squared_relative_deviation(
     Returns:
         tf.Tensor: The weighted squared relative deviation.
     """
-    if actual == 0:
-        return tf.constant(0, dtype=tf.float32)
-    return ((pred / actual) - 1) ** 2 * actual
+    return (pred - actual) ** 2
 
 
 def weighted_squared_log_relative_deviation(
@@ -47,7 +45,7 @@ class LossCategory:
     label: str
     category: str
     parameter_folder: ParameterNode
-    years: List[int] = [2019, 2020, 2021, 2022]
+    years: List[int] = list(range(2019, 2027))
     comparison_loss_function: Callable = weighted_squared_relative_deviation
     initial_train_loss: float = None
     initial_val_loss: float = None
@@ -129,7 +127,7 @@ def combine_two_loss_categories(
     other_cls: Type[LossCategory],
     group_name: str = None,
 ) -> Type[LossCategory]:
-    return type(
+    combined = type(
         f"{cls.__name__}+{other_cls.__name__}",
         (LossCategory,),
         {
@@ -149,10 +147,29 @@ def combine_two_loss_categories(
         },
     )
 
+    @classmethod
+    def combined_compute(new_class, *args, **kwargs):
+        l_1, d_1 = cls.compute(*args, **kwargs)
+        l_2, d_2 = other_cls.compute(*args, **kwargs)
+        return l_1 + l_2, d_1 + d_2
+
+    combined.compute = combined_compute
+    return combined
+
 
 def combine_loss_categories(
-    *loss_categories: Type[LossCategory], weight: float = 1, label: str = None
+    *loss_categories: Type[LossCategory],
+    weight: float = None,
+    label: str = None,
 ) -> Type[LossCategory]:
+    total_subcategory_weight = sum(
+        [category.weight for category in loss_categories]
+    )
+    weight = weight or total_subcategory_weight
+    for category in loss_categories:
+        if not hasattr(category, "category"):
+            category.category = label
+        category.weight *= weight / total_subcategory_weight
     category = reduce(
         lambda cat_1, cat_2: combine_two_loss_categories(
             cat_1, cat_2, group_name=label

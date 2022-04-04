@@ -11,8 +11,8 @@ from openfisca_uk.reforms.presets.current_date import use_current_parameters
 from openfisca_uk.reforms.presets.average_parameters import (
     average_parameters as apply_parameter_averaging,
 )
+from openfisca_uk.tools.baseline_variables import generate_baseline_variables
 from openfisca_uk.tools.parameters import backdate_parameters
-from openfisca_uk.reforms.benefit_takeup import apply_takeup_rates
 from openfisca_tools import ReformType
 from openfisca_uk_data import DATASETS, SynthFRS
 from openfisca_tools.microsimulation import (
@@ -31,6 +31,7 @@ from openfisca_tools.parameters import (
 from openfisca_core.model_api import Reform
 from openfisca_uk.tools.tax_benefit_uprating import add_tax_benefit_uprating
 from functools import reduce
+from openfisca_core.memory_config import MemoryConfig
 
 
 with open(Path(__file__).parent / "datasets.yml") as f:
@@ -77,18 +78,17 @@ class Microsimulation(GeneralMicrosimulation):
         reform: ReformType = (),
         dataset: type = None,
         year: int = None,
-        duplicate_records: bool = False,
         adjust_weights: bool = True,
         average_parameters: bool = False,
-        add_baseline_benefits: bool = True,
+        add_baseline_values: bool = True,
         post_reform: ReformType = None,
     ):
-        if adjust_weights:
-            duplicate_records = True
         if dataset is None:
             dataset = self.default_dataset
-        else:
-            dataset = dataset
+        elif dataset == SynthFRS:
+            # Check we have the latest synthetic dataset
+            if len(dataset.years) == 0:
+                SynthFRS.download(2019)
         if post_reform is not None:
             self.post_reform = post_reform
         if year is None:
@@ -116,52 +116,6 @@ class Microsimulation(GeneralMicrosimulation):
                         f"Year {year} synthetic FRS not stored, downloading..."
                     )
                     dataset.download(year)
-
-        if (dataset.name == "frs_enhanced") and duplicate_records:
-            data = dataset.load(year)
-            num_duplications = 2
-
-            def duplicate(key, values):
-                if "_id" in key:
-                    return np.concatenate(
-                        tuple([values] * num_duplications)
-                    ) * 10 + np.repeat(
-                        list(range(1, 1 + num_duplications)), len(values)
-                    )
-                elif "_weight" in key:
-                    return (
-                        np.concatenate(tuple([values] * num_duplications))
-                        / duplicate_records
-                    )
-                else:
-                    return np.concatenate(tuple([values] * num_duplications))
-
-            class ProxyDataObject(dict):
-                def close(self):
-                    return None
-
-            df = ProxyDataObject(
-                {
-                    key: duplicate(key, dataset.load(year, key))
-                    for key in data.keys()
-                }
-            )
-
-            df["claims_legacy_benefits"] = np.repeat(
-                [True, False], len(df["benunit_id"]) / 2
-            )
-
-            class ProxyDataset:
-                def load(year):
-                    return df
-
-                def close():
-                    return None
-
-                years = dataset.years
-                name = "frs_enhanced_duplicated"
-
-            dataset = ProxyDataset
 
         super().__init__(reform=reform, dataset=dataset, year=year)
 
@@ -197,23 +151,24 @@ class Microsimulation(GeneralMicrosimulation):
                         ).values,
                     )
 
-            # Add baseline benefits
+        # Add baseline variables
 
-        if add_baseline_benefits:
-            with h5py.File(REPO / "data" / "baseline_benefits.h5", "r") as f:
-                for year in list(range(2019, 2026)):
-                    for benefit in [
-                        "universal_credit",
-                        "pension_credit",
-                        "working_tax_credit",
-                        "child_tax_credit",
-                        "income_support",
-                        "housing_benefit",
-                    ]:
+        if add_baseline_values:
+
+            filepath = REPO / "data" / "baseline_variables.h5"
+            if not filepath.exists():
+                logging.warning(
+                    "Baseline variables file not found. Generating..."
+                )
+                generate_baseline_variables()
+
+            with h5py.File(filepath, "r") as f:
+                for year in f.keys():
+                    for variable in f[year].keys():
                         self.simulation.set_input(
-                            f"baseline_has_{benefit}",
+                            variable,
                             year,
-                            np.array(f[f"{year}/{benefit}"]) > 0,
+                            np.array(f[f"{year}/{variable}"]),
                         )
 
         if average_parameters:
@@ -222,6 +177,8 @@ class Microsimulation(GeneralMicrosimulation):
                     self.simulation.tax_benefit_system.parameters
                 )
             )
+
+        self.simulation.memory_config = MemoryConfig(max_memory_occupation=0)
 
 
 class IndividualSim(GeneralIndividualSim):

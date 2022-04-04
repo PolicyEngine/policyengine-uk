@@ -8,6 +8,7 @@ class HouseholdsByRegionByCouncilTaxBand(LossCategory):
     parameter_folder = (
         parameters.calibration.households.by_region_by_council_tax_band
     )
+    weight = 1 / 30
 
     def get_loss_subcomponents(
         sim,

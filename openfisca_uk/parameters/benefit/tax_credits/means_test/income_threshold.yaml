@@ -4,8 +4,11 @@ values:
   # NB: EUROMOD reports 6_555 for 2020. This is the gov.uk value.
   2020-04-06: 6_530
   2021-04-06: 6_565
+  2022-04-01: 6_770
 metadata:
   period: year
+  name: tc_income_threshold
+  label: "Tax Credits income threshold"
   unit: currency-GBP
   uprating: uprating.september_cpi
   reference:
