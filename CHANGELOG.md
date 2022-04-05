@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.2] - 2022-04-05 14:23:50
+
+### Added
+
+- Carbon tax model page added.
+
 ## [0.19.1] - 2022-04-05 12:28:40
 
 ### Fixed
@@ -455,6 +461,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.19.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.19.1...0.19.2
 [0.19.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.19.0...0.19.1
 [0.19.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.18.0...0.19.0
 [0.18.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.17.0...0.18.0
