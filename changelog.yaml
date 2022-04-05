@@ -365,3 +365,7 @@
     - Synthetic FRS now successfully loads.
     - Incorporates better calibration and imputations.
   date: 2022-04-03 19:28:24
+- bump: patch
+  changes:
+    fixed:
+    - Spring Statement Class 4 NI change correctly follows 2022/23 adjustment.
