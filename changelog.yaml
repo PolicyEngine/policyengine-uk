@@ -370,3 +370,7 @@
     added:
     - Total wealth variable.
   date: 2022-04-05 09:41:35
+- bump: patch
+  changes:
+    fixed:
+    - Spring Statement Class 4 NI change correctly follows 2022/23 adjustment.
