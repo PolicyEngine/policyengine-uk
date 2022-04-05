@@ -369,3 +369,7 @@
   changes:
     added:
     - Total wealth variable.
+- bump: patch
+  changes:
+    fixed:
+    - Class 4 NI LPL threshold was incorrect (change does not occur until July 2022).
