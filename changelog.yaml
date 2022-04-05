@@ -365,3 +365,7 @@
     - Synthetic FRS now successfully loads.
     - Incorporates better calibration and imputations.
   date: 2022-04-03 19:28:24
+- bump: minor
+  changes:
+    added:
+    - Total wealth variable.
