@@ -3,7 +3,11 @@
 import os
 from openfisca_uk import entities
 from openfisca_uk.system import CountryTaxBenefitSystem
-from openfisca_uk.tools.simulation import IndividualSim, Microsimulation
+from openfisca_uk.tools.simulation import (
+    IndividualSim,
+    Microsimulation,
+    prepare_parameters,
+)
 from openfisca_uk.reforms.presets.modelling import (
     reported_tax,
     reported_benefits,
@@ -15,7 +19,8 @@ from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
-BASELINE_PARAMETERS = CountryTaxBenefitSystem().parameters
+system = prepare_parameters(CountryTaxBenefitSystem())
+parameters = BASELINE_PARAMETERS = system.parameters
 
 
 class AttributeDict(dict):
@@ -25,11 +30,9 @@ class AttributeDict(dict):
 
 
 BASELINE_VARIABLES = AttributeDict(
-    {
-        name: value.__class__
-        for name, value in CountryTaxBenefitSystem().variables.items()
-    }
+    {name: value.__class__ for name, value in system.variables.items()}
 )
+variables = BASELINE_VARIABLES
 REPO = Path(__file__).parent
 
 # Our country tax and benefit class inherits from the general TaxBenefitSystem class.

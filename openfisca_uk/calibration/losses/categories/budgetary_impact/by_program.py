@@ -2,12 +2,13 @@ from openfisca_uk.calibration.losses.loss_category import LossCategory
 import tensorflow as tf
 from openfisca_uk import Microsimulation
 from typing import Iterable, List, Tuple
-from openfisca_uk.parameters import parameters
+from openfisca_uk import parameters
 
 
 class BudgetaryImpactByProgram(LossCategory):
     label = "Budgetary impact by program"
     parameter_folder = parameters.calibration.budgetary_impact.by_program
+    weight = 1 / 3
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int

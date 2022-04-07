@@ -60,7 +60,9 @@ class benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return add(person, period, ["personal_benefits", "family_benefits"])
+        uprating = parameters(period).benefit.additional_uprating
+        total = add(person, period, ["personal_benefits", "family_benefits"])
+        return total * (1 + uprating)
 
 
 class household_benefits(Variable):
@@ -230,19 +232,17 @@ class personal_benefits(Variable):
 
     def formula(person, period, parameters):
         BENEFITS = [
-            "AA",
+            "attendance_allowance",
             "AFCS",
             "BSP",
             "carers_allowance",
-            "DLA_M",
-            "DLA_SC",
+            "dla",
             "ESA_contrib",
             "IIDB",
             "incapacity_benefit",
             "JSA_contrib",
-            "PIP_M",
-            "PIP_DL",
-            "SDA",
+            "pip",
+            "sda",
             "state_pension",
             "student_payments",
             "student_loans",
@@ -317,3 +317,15 @@ class claims_legacy_benefits(Variable):
     label = "Claims legacy benefits"
     documentation = "Whether this family is currently receiving legacy benefits (overrides UC claimant status)"
     definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        BENEFITS = [
+            "child_tax_credit",
+            "working_tax_credit",
+            "housing_benefit",
+            "ESA_income",
+            "income_support",
+            "JSA_income",
+        ]
+
+        return add(benunit, period, BENEFITS) > 0

@@ -11,7 +11,7 @@
     benunits:
       benunit:
         adults: person
-        claims_UC: true
+        would_claim_UC: true
     households:
       household:
         adults: person
@@ -34,7 +34,7 @@
     benunits:
       benunit:
         adults: person
-        claims_UC: true
+        would_claim_UC: true
         benunit_rent: 10000
     households:
       household:
@@ -60,12 +60,12 @@
         childcare_expenses: 200 * 12
     benunits:
       benunit_1:
-        claims_UC: true
+        would_claim_UC: true
         adults: person_1
         children: child
         benunit_rent: 10000
       benunit_2:
-        claims_UC: false
+        would_claim_UC: false
         adults: person_2
     households:
       household:
@@ -85,7 +85,7 @@
         weekly_hours: 25
         employment_income: 12000
         pension_contributions: 57
-        DLA_M: 62.55 * 52
+        dla_m: 62.55 * 52
         limited_capability_for_WRA: true
       person_2:
         age: 23
@@ -94,12 +94,12 @@
         childcare_expenses: 200 * 12
     benunits:
       benunit_1:
-        claims_UC: true
+        would_claim_UC: true
         adults: person_1
         children: child
         benunit_rent: 12500
       benunit_2:
-        claims_UC: false
+        would_claim_UC: false
         adults: person_2
     households:
       household:

@@ -7,11 +7,13 @@ values:
   2018-04-06: 11_850
   2019-04-06: 12_500
   2021-04-06: 12_570
+  2025-04-06: 12_570
 metadata:
   period: year
   name: personal_allowance
   label: Personal allowance
   unit: currency-GBP
+  uprating: uprating.september_cpi
   reference: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances
   tests:
     - period: 2021
@@ -21,5 +23,3 @@ metadata:
         max: 115.e+9
       poverty_effect:
         positive: true
-    - period: 2022
-      increases_net_income: true

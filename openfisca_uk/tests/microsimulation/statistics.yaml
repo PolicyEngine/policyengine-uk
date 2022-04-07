@@ -1,6 +1,6 @@
 child_benefit:
   test:
-    - relative_aggregate_error_less_than: 0.10
+    - absolute_aggregate_error_less_than: 1.3e+9
     - relative_caseload_error_less_than: 0.10
 council_tax_less_benefit:
   test:
@@ -11,27 +11,27 @@ child_tax_credit:
     - relative_caseload_error_less_than: 0.25
 working_tax_credit:
   test:
-    - relative_aggregate_error_less_than: 0.45
+    - absolute_aggregate_error_less_than: 1.5e+9
     - relative_caseload_error_less_than: 0.40
 housing_benefit:
   test:
-    - relative_aggregate_error_less_than: 0.25
+    - absolute_aggregate_error_less_than: 6.e+9
     - relative_caseload_error_less_than: 0.15
 JSA_income:
   test:
-    - relative_aggregate_error_less_than: 0.2
-    - relative_caseload_error_less_than: 0.2
+    - relative_aggregate_error_less_than: 1.1
+    - absolute_caseload_error_less_than: 0.2e+9
 income_support:
   test:
-    - relative_aggregate_error_less_than: 0.15
+    - absolute_aggregate_error_less_than: 0.4e+9
     - relative_caseload_error_less_than: 0.15
 universal_credit:
   test:
-    - relative_aggregate_error_less_than: 0.05
-    - relative_caseload_error_less_than: 0.1
+    - absolute_aggregate_error_less_than: 0.1
+    - relative_caseload_error_less_than: 0.2
 income_tax:
   test:
-    - relative_aggregate_error_less_than: 0.125
+    - absolute_aggregate_error_less_than: 10.0e+9
     - relative_caseload_error_less_than: 0.125
 total_NI:
   test:

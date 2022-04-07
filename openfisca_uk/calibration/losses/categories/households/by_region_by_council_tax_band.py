@@ -1,5 +1,5 @@
 import tensorflow as tf
-from openfisca_uk.parameters import parameters
+from openfisca_uk import parameters
 from openfisca_uk.calibration.losses.loss_category import LossCategory
 
 
@@ -8,6 +8,7 @@ class HouseholdsByRegionByCouncilTaxBand(LossCategory):
     parameter_folder = (
         parameters.calibration.households.by_region_by_council_tax_band
     )
+    weight = 1 / 30
 
     def get_loss_subcomponents(
         sim,

@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 
 
 class HouseholdWeights:
-    def __init__(self, start_year: int = 2019, end_year: int = 2022):
+    def __init__(self, start_year: int = 2019, end_year: int = 2027):
         self.start_year = start_year
         self.end_year = end_year
 
@@ -35,18 +35,21 @@ class HouseholdWeights:
         self.sim = (
             loss_calculator.sim
             if loss_calculator is not None
-            else Microsimulation(adjust_weights=False, duplicate_records=True)
+            else Microsimulation(adjust_weights=False)
         )
         survey_num_households = len(self.sim.calc("household_id"))
         self.weight_changes = tf.Variable(
-            np.zeros(
+            np.ones(
                 (self.end_year + 1 - self.start_year, survey_num_households)
             ),
             dtype=tf.float32,
         )
         opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         loss_calculator = loss_calculator or LossCalculator(
-            self.sim, validation_split
+            self.sim,
+            validation_split,
+            start_year=self.start_year,
+            end_year=self.end_year,
         )
         start_train_loss = None
         start_val_loss = None
@@ -76,16 +79,14 @@ class HouseholdWeights:
             print(
                 f"{time_str}, train loss = {loss.numpy() / start_train_loss - 1:.4%}, validation_loss = {validation_loss.numpy() / start_val_loss - 1:.4%}, train + validation loss = {(loss.numpy() + validation_loss.numpy()) / (start_train_loss + start_val_loss) - 1:.4%}"
             )
-            if epoch > 0 and epoch % 20 == 0:
+            if epoch > 0 and epoch % 2 == 0:
                 self.training_log = loss_calculator.training_log
                 self.save()
 
         self.training_log = loss_calculator.training_log
 
     def get_microsimulation(self):
-        sim_reweighted = Microsimulation(
-            adjust_weights=False, duplicate_records=2
-        )
+        sim_reweighted = Microsimulation(adjust_weights=False)
         for year in range(self.start_year, self.end_year + 1):
             new_weights = np.maximum(
                 0,
@@ -113,6 +114,7 @@ class HouseholdWeights:
                 )
 
         log = pd.DataFrame(self.training_log)
+        assert len(log[log.name.str.contains("2023")]) > 0
         log["run_id"] = run_id
         log.to_csv(folder / f"training_log_run_{run_id}.csv", index=False)
 
@@ -123,19 +125,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs",
         type=int,
-        default=32,
+        default=500,
         help="Number of epochs to run",
     )
     parser.add_argument(
         "--validation-split",
         type=float,
-        default=0.1,
+        default=0.0,
         help="Percentage of metrics to use as validation",
     )
     parser.add_argument(
         "--learning-rate",
         type=float,
-        default=1e-2,
+        default=1e3,
         help="Learning rate for optimiser",
     )
     parser.add_argument(
@@ -147,7 +149,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.k_fold_cross_validation > 1:
-        sim = Microsimulation(adjust_weights=False, duplicate_records=2)
+        sim = Microsimulation(average_parameters=True, adjust_weights=False)
         loss_calculators = LossCalculator.create_k_fold_cv_calculators(
             sim, k=args.k_fold_cross_validation
         )

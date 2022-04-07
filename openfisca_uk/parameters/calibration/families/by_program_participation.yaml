@@ -6,6 +6,10 @@ JSA_income:
     2020-01-01: 97_000
     2021-01-01: 67_000
     2022-01-01: 44_000
+    2023-01-01: 5_000
+    2024-01-01: 0
+    2025-01-01: 0
+    2026-01-01: 0
   metadata:
     unit: benefit unit
     reference:
@@ -20,6 +24,10 @@ housing_benefit:
     2020-01-01: 3_028_000
     2021-01-01: 2_923_000
     2022-01-01: 2_708_000
+    2023-01-01: 2_459_000
+    2024-01-01: 2_114_000
+    2025-01-01: 1_726_000
+    2026-01-01: 1_388_000
   metadata:
     unit: benefit unit
     reference:
@@ -34,6 +42,10 @@ income_support:
     2020-01-01: 273_000
     2021-01-01: 210_000
     2022-01-01: 157_000
+    2023-01-01: 116_000
+    2024-01-01: 76_000
+    2025-01-01: 34_000
+    2026-01-01: 3_000
   metadata:
     unit: benefit unit
     reference:
@@ -48,6 +60,10 @@ pension_credit:
     2020-01-01: 1_480_000
     2021-01-01: 1_479_000
     2022-01-01: 1_406_000
+    2023-01-01: 1_341_000
+    2024-01-01: 1_284_000
+    2025-01-01: 1_233_000
+    2026-01-01: 1_194_000
   metadata:
     unit: benefit unit
     reference:
@@ -63,6 +79,7 @@ child_tax_credit:
     2021-01-01: 1_686_000
   metadata:
     unit: benefit unit
+    uprating: self
     reference:
       - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
         href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021
@@ -76,6 +93,7 @@ working_tax_credit:
     2021-01-01: 1_044_000
   metadata:
     unit: benefit unit
+    uprating: self
     reference:
       - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
         href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021
@@ -88,6 +106,10 @@ universal_credit:
     2020-01-01: 4_052_000
     2021-01-01: 4_267_000
     2022-01-01: 4_649_000
+    2023-01-01: 5_048_000
+    2024-01-01: 5_605_000
+    2025-01-01: 6_285_000
+    2026-01-01: 6_912_000
   metadata:
     unit: benefit unit
     reference:
@@ -102,6 +124,7 @@ child_benefit:
     2020-01-01: 7_210_595
   metadata:
     unit: benefit unit
+    uprating: self
     reference:
       - title: "Child Benefit Statistics: Annual Releast, August 2020"
         href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020
@@ -113,6 +136,10 @@ ESA_income:
     2020-01-01: 961_000
     2021-01-01: 395_000
     2022-01-01: 373_000
+    2023-01-01: 344_000
+    2024-01-01: 264_000
+    2025-01-01: 132_000
+    2026-01-01: 26_000
   metadata:
     reference:
       - title: Benefit expenditure and caseload tables 2021

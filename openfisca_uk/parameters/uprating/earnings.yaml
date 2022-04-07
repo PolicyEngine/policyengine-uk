@@ -12,6 +12,13 @@ values:
   2022-01-01: 184.08
   2023-01-01: 189.61
   2024-01-01: 195.48
+  # OBR projections
+  2025-01-01: 201.15 # 195.48 * 1.029
+  2026-01-01: 208.18 # 201.15 * 1.035
 metadata:
   unit: currency-GBP
-  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109
+  reference: 
+    - title: UKMOD earnings uprating factor
+      href: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109
+    - title: OBR average earnings projections
+      href: https://obr.uk/forecasts-in-depth/the-economy-forecast/labour-market/#averageearnings

@@ -1,6 +1,7 @@
 from openfisca_uk.model_api import *
 
 
+@uprated(by="september_cpi")
 class BSP(Variable):
     value_type = float
     entity = Person

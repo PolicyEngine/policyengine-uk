@@ -2,12 +2,13 @@ from openfisca_uk.calibration.losses.loss_category import LossCategory
 import tensorflow as tf
 from openfisca_uk import Microsimulation
 from typing import Iterable, List, Tuple
-from openfisca_uk.parameters import parameters
+from openfisca_uk import parameters
 
 
 class FamiliesByProgramParticipation(LossCategory):
     label = "Families by program participation"
     parameter_folder = parameters.calibration.families.by_program_participation
+    weight = 1 / 3
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int
@@ -15,6 +16,7 @@ class FamiliesByProgramParticipation(LossCategory):
         aggregates = FamiliesByProgramParticipation.parameter_folder
         variables = aggregates.children
         for variable in variables:
+            # Also includes person-level variables
             values = sim.calc(variable, period=year).values
             entity = sim.simulation.tax_benefit_system.variables[
                 variable

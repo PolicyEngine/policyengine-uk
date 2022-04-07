@@ -1,3 +1,6 @@
+metadata:
+  propagate_metadata_to_children: true
+  uprating: uprating.september_cpi
 ASHFORD:
   A:
     description: LHA rate for Ashford homes in category CAT A

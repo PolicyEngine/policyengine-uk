@@ -10,18 +10,6 @@ class child_benefit_reported(Variable):
     unit = "currency-GBP"
 
 
-class is_imputed_to_take_up_child_benefit(Variable):
-    label = "Is imputed to take up Child Benefit"
-    documentation = "Based on a random number and the take-up rate"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = bool
-
-    def formula(benunit, period, parameters):
-        takeup_rate = parameters(period).hmrc.child_benefit.takeup_rate
-        return random(benunit) <= takeup_rate
-
-
 class would_claim_child_benefit(Variable):
     label = "Would claim Child Benefit"
     documentation = (
@@ -33,8 +21,24 @@ class would_claim_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         claims_benefits = benunit("claims_all_entitled_benefits", period)
-        imputed_takeup = benunit("is_imputed_to_take_up_child_benefit", period)
-        return claims_benefits | imputed_takeup
+        already_claiming = (
+            aggr(benunit, period, ["child_benefit_reported"]) > 0
+        )
+        takeup_rate = parameters(period).hmrc.child_benefit.takeup
+        baseline_cb = benunit("baseline_has_child_benefit", period)
+        return select(
+            [
+                already_claiming | claims_benefits,
+                ~baseline_cb,
+                True,
+            ],
+            [
+                True,  # Claims Child Benefit in the baseline
+                random(benunit)
+                < takeup_rate,  # New CB eligibility from a reform
+                False,  # Always non-claimant
+            ],
+        )
 
 
 class child_benefit_respective_amount(Variable):
@@ -90,3 +94,21 @@ class child_benefit_less_tax_charge(Variable):
         benefit = benunit("child_benefit", period)
         charge = benunit.sum(benunit.members("CB_HITC", period))
         return benefit - charge
+
+
+class baseline_child_benefit(Variable):
+    label = "Child Benefit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+
+class baseline_has_child_benefit(Variable):
+    label = "Receives Child Benefit (baseline)"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    default_value = True
+
+    formula = baseline_is_nonzero(child_benefit)
