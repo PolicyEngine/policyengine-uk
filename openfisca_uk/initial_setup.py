@@ -1,4 +1,4 @@
-from openfisca_uk_data import FRSEnhanced, SynthFRS, DATASETS
+from openfisca_uk.microdata import FRSEnhanced, SynthFRS, DATASETS
 from pathlib import Path
 import inquirer
 import yaml

@@ -1,6 +1,6 @@
 from openfisca_uk import Microsimulation
 import pytest
-from openfisca_uk_data import FRSEnhanced
+from openfisca_uk.microdata import FRSEnhanced
 
 YEARS = range(2019, 2022)
 

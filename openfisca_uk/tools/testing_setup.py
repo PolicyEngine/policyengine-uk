@@ -1,4 +1,4 @@
-from openfisca_uk_data import FRSEnhanced
+from openfisca_uk.microdata import FRSEnhanced
 from openfisca_uk.initial_setup import set_default
 
 FRSEnhanced.download(2018)

@@ -1,4 +1,4 @@
-from openfisca_uk_data import FRSEnhanced
+from openfisca_uk.microdata import FRSEnhanced
 from openfisca_uk import Microsimulation
 from openfisca_tools.testing import generate_tests
 

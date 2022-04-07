@@ -21,6 +21,7 @@ test:
 	openfisca test -c openfisca_uk openfisca_uk/tests/policy/reforms/with_postcode_features -r openfisca_uk.config.postcode_lookup.with_postcode_features
 	pytest openfisca_uk/tests/code_health -vv
 	pytest openfisca_uk/tests/microsimulation/ -vv
+	pytest openfisca_uk/microdata/tests -vv
 
 serve:
 	openfisca serve --country-package openfisca_uk

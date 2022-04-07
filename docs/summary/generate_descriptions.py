@@ -1,8 +1,8 @@
-from openfisca_uk_data.datasets.frs.frs_enhanced.frs_enhanced import (
+from openfisca_uk.microdata.datasets.frs.frs_enhanced.frs_enhanced import (
     FRSEnhanced,
 )
 from openfisca_uk import Microsimulation
-from openfisca_uk_data import FRSEnhanced
+from openfisca_uk.microdata import FRSEnhanced
 from tqdm import tqdm
 
 sim = Microsimulation(dataset=FRSEnhanced, year=2019)

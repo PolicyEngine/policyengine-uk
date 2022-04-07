@@ -2,7 +2,7 @@ from typing import Union
 import yaml
 from pathlib import Path
 from openfisca_uk import Microsimulation
-from openfisca_uk_data import FRSEnhanced
+from openfisca_uk.microdata import FRSEnhanced
 import pytest
 
 with open(Path(__file__).parent / "statistics.yaml") as f:
