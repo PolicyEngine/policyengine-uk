@@ -380,3 +380,7 @@
     added:
     - Carbon tax model page added.
   date: 2022-04-05 14:23:50
+- bump: patch
+  changes:
+    added:
+    - Carbon emissions (production-based) by industry.
