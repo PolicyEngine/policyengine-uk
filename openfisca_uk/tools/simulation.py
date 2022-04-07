@@ -153,7 +153,7 @@ class Microsimulation(GeneralMicrosimulation):
 
         # Add baseline variables
 
-        if add_baseline_values:
+        if "frs_enhanced" in dataset.name and add_baseline_values:
 
             filepath = REPO / "data" / "baseline_variables.h5"
             if not filepath.exists():

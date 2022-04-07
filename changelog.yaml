@@ -382,5 +382,9 @@
   date: 2022-04-05 14:23:50
 - bump: patch
   changes:
+    fixed:
+    - A bug preventing the Synthetic FRS from loading.
+  date: 2022-04-07 09:51:58
+- bump: patch
     added:
     - Carbon emissions (production-based) by industry.
