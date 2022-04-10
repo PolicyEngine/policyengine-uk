@@ -17,6 +17,8 @@ from pathlib import Path
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 
+from openfisca_uk.data import FRS, RawFRS
+
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
 system = prepare_parameters(CountryTaxBenefitSystem())

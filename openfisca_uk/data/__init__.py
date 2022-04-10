@@ -1,1 +1,1 @@
-from openfisca_uk.data.datasets import RawFRS
+from openfisca_uk.data.datasets import RawFRS, FRS
