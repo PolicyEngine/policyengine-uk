@@ -54,6 +54,7 @@ setup(
         "console_scripts": [
             "openfisca-uk-setup=openfisca_uk.initial_setup:main",
             "openfisca-uk=openfisca_uk.tools.cli:main",
+            "openfisca-uk-data=openfisca_uk.data.cli:cli",
         ],
     },
     packages=find_packages(),

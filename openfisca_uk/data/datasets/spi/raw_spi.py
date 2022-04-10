@@ -1,18 +1,18 @@
 import shutil
 from openfisca_tools.data import PrivateDataset
 import pandas as pd
-from path import Path
+from pathlib import Path
 from tqdm import tqdm
 from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
 
 
 class RawSPI(PrivateDataset):
-    name = "spi"
-    label = "SPI"
+    name = "raw_spi"
+    label = "Raw SPI"
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
 
     filename_by_year = {
-        2019: "some_url",
+        2018: "raw_spi_2018.h5",
     }
 
     def generate(self, year: int, ukds_tab_zipfile: str):
@@ -53,3 +53,5 @@ class RawSPI(PrivateDataset):
         tmp_folder = self.folder_path / "tmp"
         if tmp_folder.exists():
             shutil.rmtree(tmp_folder)
+
+RawSPI = RawSPI()
