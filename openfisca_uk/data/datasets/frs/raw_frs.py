@@ -11,6 +11,7 @@ class RawFRS(PrivateDataset):
     name = "raw_frs"
     label = "Raw FRS"
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    is_openfisca_compatible = False
 
     filename_by_year = {
         2019: "raw_frs_2019.h5",

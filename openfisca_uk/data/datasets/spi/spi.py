@@ -14,7 +14,7 @@ where = np.where
 class SPI(PrivateDataset):
     name = "spi"
     label = "SPI"
-    model = "openfisca_uk"
+    is_openfisca_compatible = True
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
 
     def generate(self, year: int) -> None:

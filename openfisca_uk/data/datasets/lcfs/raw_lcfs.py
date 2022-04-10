@@ -11,6 +11,7 @@ class RawLCFS(PrivateDataset):
     name = "raw_lcfs"
     label = "Raw LCFS"
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    is_openfisca_compatible = False
 
     filename_by_year = {
         2019: "raw_lcfs_2019.h5",

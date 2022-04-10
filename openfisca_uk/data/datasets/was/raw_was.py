@@ -12,6 +12,7 @@ class RawWAS(PrivateDataset):
     name = "raw_was"
     label = "Raw WAS"
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    is_openfisca_compatible = False
 
     filename_by_year = {
         2019: "raw_was_2019.h5",

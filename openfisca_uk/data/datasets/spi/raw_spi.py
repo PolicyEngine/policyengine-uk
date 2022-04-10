@@ -10,6 +10,7 @@ class RawSPI(PrivateDataset):
     name = "raw_spi"
     label = "Raw SPI"
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    is_openfisca_compatible = False
 
     filename_by_year = {
         2018: "raw_spi_2018.h5",
