@@ -1,1 +1,9 @@
-from openfisca_uk.data.datasets import RawFRS, RawLCFS, RawWAS, RawSPI, FRS, SPI, EnhancedFRS
+from openfisca_uk.data.datasets import (
+    RawFRS,
+    RawLCFS,
+    RawWAS,
+    RawSPI,
+    FRS,
+    SPI,
+    EnhancedFRS,
+)

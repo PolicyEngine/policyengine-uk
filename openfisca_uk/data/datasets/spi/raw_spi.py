@@ -55,4 +55,5 @@ class RawSPI(PrivateDataset):
         if tmp_folder.exists():
             shutil.rmtree(tmp_folder)
 
+
 RawSPI = RawSPI()

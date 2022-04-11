@@ -70,7 +70,7 @@ def impute_wealth(year: int, dataset: type = FRS) -> pd.Series:
         y_train=was[IMPUTE_COLS],
         x_new=frs[TRAIN_COLS],
         verbose=True,
-        n_estimators=3, # For debugging
+        n_estimators=3,  # For debugging
     )
 
 

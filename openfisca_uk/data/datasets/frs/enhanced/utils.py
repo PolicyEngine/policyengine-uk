@@ -58,7 +58,9 @@ def clone_and_replace_half(
     file.close()
 
 
-def add_variables(dataset: Dataset, year: int, variables: Dict[str, ArrayLike]):
+def add_variables(
+    dataset: Dataset, year: int, variables: Dict[str, ArrayLike]
+):
     data = dataset.load(year)
     previous_data = {}
     for variable in data.keys():

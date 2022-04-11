@@ -36,6 +36,7 @@ class SPI(PrivateDataset):
         # Generate OpenFisca-UK variables and save
         spi.close()
 
+
 SPI = SPI()
 
 

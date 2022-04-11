@@ -66,4 +66,5 @@ class RawWAS(PrivateDataset):
         if tmp_folder.exists():
             shutil.rmtree(tmp_folder)
 
+
 RawWAS = RawWAS()

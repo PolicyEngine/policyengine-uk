@@ -1,18 +1,30 @@
 import logging
 import numpy as np
 from openfisca_tools.data import PrivateDataset, Dataset
-from openfisca_uk.data.datasets.frs.enhanced.lcfs_imputation import impute_consumption
+from openfisca_uk.data.datasets.frs.enhanced.lcfs_imputation import (
+    impute_consumption,
+)
 
 from openfisca_uk.repo import REPO
-from openfisca_uk.data.datasets.frs.enhanced.uc_transition import migrate_to_universal_credit
-from openfisca_uk.data.datasets.frs.enhanced.was_imputation import impute_wealth
+from openfisca_uk.data.datasets.frs.enhanced.uc_transition import (
+    migrate_to_universal_credit,
+)
+from openfisca_uk.data.datasets.frs.enhanced.was_imputation import (
+    impute_wealth,
+)
 from openfisca_uk.data.datasets.frs.frs import FRS
 import h5py
-from openfisca_uk.data.datasets.frs.enhanced.spi_imputation import impute_incomes
-from openfisca_uk.data.datasets.frs.enhanced.utils import add_variables, clone_and_replace_half
+from openfisca_uk.data.datasets.frs.enhanced.spi_imputation import (
+    impute_incomes,
+)
+from openfisca_uk.data.datasets.frs.enhanced.utils import (
+    add_variables,
+    clone_and_replace_half,
+)
 from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
 from openfisca_uk.tools.baseline_variables import generate_baseline_variables
 from time import time
+
 
 class EnhancedFRS(PrivateDataset):
     name = "enhanced_frs"
@@ -49,7 +61,10 @@ class EnhancedFRS(PrivateDataset):
         clone_and_replace_half(
             self,
             year,
-            {f"{field}/{year}": pred_income[field] for field in pred_income.columns},
+            {
+                f"{field}/{year}": pred_income[field]
+                for field in pred_income.columns
+            },
             weighting=0,
         )
 
@@ -61,6 +76,7 @@ class EnhancedFRS(PrivateDataset):
         logging.info(f"4 / 7 | Calibrating FRS weights")
 
         from openfisca_uk.calibration.calibrate import HouseholdWeights
+
         # Import TensorFlow-using modules here to avoid unnecessary loading of
         # TensorFlow.
 
@@ -75,9 +91,15 @@ class EnhancedFRS(PrivateDataset):
             dataset=self,
         )
 
-        self.save(year, f"frs_household_weight/{year}", self.load(year, f"household_weight/{year}"))
+        self.save(
+            year,
+            f"frs_household_weight/{year}",
+            self.load(year, f"household_weight/{year}"),
+        )
         for period in range(2019, 2027):
-            self.save(year, f"household_weight/{period}", weights.get_weights(period))
+            self.save(
+                year, f"household_weight/{period}", weights.get_weights(period)
+            )
 
         logging.info(f"5 / 7 | Imputing consumption from the LCFS")
 
@@ -97,20 +119,30 @@ class EnhancedFRS(PrivateDataset):
         add_variables(
             self,
             year,
-            {f"{field}/{year}": pred_wealth[field] for field in pred_wealth.columns},
+            {
+                f"{field}/{year}": pred_wealth[field]
+                for field in pred_wealth.columns
+            },
         )
 
         logging.info(f"7 / 7 | Pre-entering default simulation variables")
 
         generate_baseline_variables()
 
-        with h5py.File(REPO / "data" / "baseline_variables.h5", mode="r") as baseline_variables:
+        with h5py.File(
+            REPO / "data" / "baseline_variables.h5", mode="r"
+        ) as baseline_variables:
             for variable in baseline_variables.keys():
                 for period in baseline_variables[variable].keys():
-                    self.save(year, f"{variable}/{period}", baseline_variables[variable][period][...])
+                    self.save(
+                        year,
+                        f"{variable}/{period}",
+                        baseline_variables[variable][period][...],
+                    )
 
-        logging.info(f"Finished generating FRSEnhanced for year {year} in {time() - start_time} seconds")
+        logging.info(
+            f"Finished generating FRSEnhanced for year {year} in {time() - start_time} seconds"
+        )
 
 
-        
 EnhancedFRS = EnhancedFRS()

@@ -17,7 +17,15 @@ from pathlib import Path
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 
-from openfisca_uk.data import FRS, RawFRS, SPI, RawSPI, RawLCFS, RawWAS, EnhancedFRS
+from openfisca_uk.data import (
+    FRS,
+    RawFRS,
+    SPI,
+    RawSPI,
+    RawLCFS,
+    RawWAS,
+    EnhancedFRS,
+)
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
