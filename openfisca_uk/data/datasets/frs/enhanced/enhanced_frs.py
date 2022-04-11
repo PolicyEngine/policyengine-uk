@@ -1,20 +1,21 @@
 import logging
 import numpy as np
 from openfisca_tools.data import PrivateDataset, Dataset
-from openfisca_uk.data.datasets.frs.enhanced.lcfs_imputation import (
+from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.lcfs_imputation import (
     impute_consumption,
 )
+from openfisca_uk.data.datasets.frs.enhanced.stages.extension.extended_frs import ExtendedFRS
 
 from openfisca_uk.repo import REPO
-from openfisca_uk.data.datasets.frs.enhanced.uc_transition import (
+from openfisca_uk.data.datasets.frs.enhanced.stages.extension.uc_transition import (
     migrate_to_universal_credit,
 )
-from openfisca_uk.data.datasets.frs.enhanced.was_imputation import (
+from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.was_imputation import (
     impute_wealth,
 )
 from openfisca_uk.data.datasets.frs.frs import FRS
 import h5py
-from openfisca_uk.data.datasets.frs.enhanced.spi_imputation import (
+from openfisca_uk.data.datasets.frs.enhanced.stages.extension.spi_imputation import (
     impute_incomes,
 )
 from openfisca_uk.data.datasets.frs.enhanced.utils import (
@@ -44,16 +45,16 @@ class EnhancedFRS(PrivateDataset):
         start_time = time()
 
         logging.info(f"Generating FRSEnhanced for year {year}")
-        logging.info(f"1 / 7 | Generating default FRS")
-        FRS.generate(year)
 
-        frs = FRS.load(year)
-        frs_enhanced = h5py.File(self.file(year), mode="w")
-        for key in frs.keys():
-            frs_enhanced[f"{key}/{year}"] = frs[key][...]
-        frs_enhanced[f"in_original_frs/{year}"] = np.ones(frs[key].shape[0])
-        frs.close()
-        frs_enhanced.close()
+        if year in SPIEnhancedFRS.years:
+            logging.info(f"Using pre-generated SPI-enhanced FRS for year {year}")
+
+            spi_enhanced_frs = SPIEnhancedFRS.load(year)
+            frs_enhanced = h5py.File(self.file(year), mode="w")
+            for key in frs.keys():
+                frs_enhanced[f"{key}/{year}"] = frs[key][...]
+            frs.close()
+            frs_enhanced.close()
 
         logging.info(f"2 / 7 | Imputing incomes from the SPI")
 
@@ -87,7 +88,7 @@ class EnhancedFRS(PrivateDataset):
         weights.calibrate(
             num_epochs=200,
             validation_split=0,
-            learning_rate=1e3,
+            learning_rate=1e-2,
             dataset=self,
         )
 

@@ -1,5 +1,6 @@
 import logging
 from openfisca_uk import CountryTaxBenefitSystem
+from openfisca_uk.data.datasets.frs.enhanced.enhanced_frs import EnhancedFRS
 from openfisca_uk.entities import entities
 import numpy as np
 import warnings
@@ -76,7 +77,7 @@ class Microsimulation(GeneralMicrosimulation):
     def __init__(
         self,
         reform: ReformType = (),
-        dataset: type = None,
+        dataset: type = EnhancedFRS,
         year: int = None,
         adjust_weights: bool = False,
         average_parameters: bool = False,

@@ -24,7 +24,7 @@ from openfisca_uk.data import (
     RawSPI,
     RawLCFS,
     RawWAS,
-    EnhancedFRS,
+    ExtendedFRS,
 )
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))

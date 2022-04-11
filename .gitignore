@@ -43,4 +43,4 @@ openfisca_uk/calibration/*.h5
 
 # Microdata
 
-openfisca_uk/data/**/*.h5
+**/*.h5

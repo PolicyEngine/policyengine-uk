@@ -10,9 +10,6 @@ brackets:
         2018-01-01: 11_850
         2019-01-01: 12_500
         2021-01-01: 12_570
-      metadata:
-        uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
     amount: 
       values:
         2018-01-01: 1_180_000_000

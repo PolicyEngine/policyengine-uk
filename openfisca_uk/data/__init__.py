@@ -5,5 +5,5 @@ from openfisca_uk.data.datasets import (
     RawSPI,
     FRS,
     SPI,
-    EnhancedFRS,
+    ExtendedFRS,
 )
