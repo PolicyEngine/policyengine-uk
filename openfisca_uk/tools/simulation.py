@@ -78,7 +78,7 @@ class Microsimulation(GeneralMicrosimulation):
         reform: ReformType = (),
         dataset: type = None,
         year: int = None,
-        adjust_weights: bool = True,
+        adjust_weights: bool = False,
         average_parameters: bool = False,
         add_baseline_values: bool = True,
         post_reform: ReformType = None,
@@ -150,26 +150,6 @@ class Microsimulation(GeneralMicrosimulation):
                             "household_weight", period=year, map_to="benunit"
                         ).values,
                     )
-
-        # Add baseline variables
-
-        if "frs_enhanced" in dataset.name and add_baseline_values:
-
-            filepath = REPO / "data" / "baseline_variables.h5"
-            if not filepath.exists():
-                logging.warning(
-                    "Baseline variables file not found. Generating..."
-                )
-                generate_baseline_variables()
-
-            with h5py.File(filepath, "r") as f:
-                for year in f.keys():
-                    for variable in f[year].keys():
-                        self.simulation.set_input(
-                            variable,
-                            year,
-                            np.array(f[f"{year}/{variable}"]),
-                        )
 
         if average_parameters:
             self.simulation.tax_benefit_system.parameters = (

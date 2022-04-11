@@ -3,12 +3,15 @@ import os
 from time import time
 import tensorflow as tf
 import numpy as np
-from openfisca_uk import Microsimulation, REPO
+from openfisca_uk.data.datasets.frs.frs import FRS
+from openfisca_uk.tools.simulation import Microsimulation
+from openfisca_uk.repo import REPO
 from openfisca_uk.calibration.losses import LossCalculator
 from pathlib import Path
 import h5py
 import pandas as pd
 from argparse import ArgumentParser
+from openfisca_tools.data import Dataset
 
 
 class HouseholdWeights:
@@ -22,6 +25,7 @@ class HouseholdWeights:
         num_epochs: int = 32,
         learning_rate: float = 1e1,
         loss_calculator: LossCalculator = None,
+        dataset: Dataset = FRS,
     ):
         """Calibrate FRS weights to administrative statistics.
 
@@ -31,11 +35,12 @@ class HouseholdWeights:
             num_epochs (int, optional): The number of epochs to run. Defaults to 256.
             learning_rate (float, optional): The learning rate for the optimiser. Defaults to 8e+1.
             loss_calculator (LossCalculator, optional): A loss calculator to use. Defaults to None.
+            dataset (Dataset, optional): The dataset to use. Defaults to FRS.
         """
         self.sim = (
             loss_calculator.sim
             if loss_calculator is not None
-            else Microsimulation(adjust_weights=False)
+            else Microsimulation(dataset=dataset, adjust_weights=False)
         )
         survey_num_households = len(self.sim.calc("household_id"))
         self.weight_changes = tf.Variable(
@@ -84,6 +89,13 @@ class HouseholdWeights:
                 self.save()
 
         self.training_log = loss_calculator.training_log
+
+    def get_weights(self, year: int):
+        return np.maximum(
+            0,
+            self.sim.calc("household_weight", period=year).values
+            + self.weight_changes[year - self.start_year],
+        )
 
     def get_microsimulation(self):
         sim_reweighted = Microsimulation(adjust_weights=False)

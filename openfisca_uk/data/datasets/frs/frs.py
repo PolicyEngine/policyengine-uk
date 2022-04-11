@@ -148,10 +148,6 @@ def add_id_variables(
     frs["household_id"] = person.household_id.sort_values().unique()
 
     # Add grossing weights
-    frs["raw_person_weight"] = pd.Series(
-        household.GROSS4[person.household_id].values, index=person.index
-    )
-    frs["benunit_weight"] = benunit.GROSS4
     frs["household_weight"] = household.GROSS4
 
 

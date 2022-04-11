@@ -96,7 +96,7 @@ def generate_baseline_variables():
         for year in YEARS:
             for variable in variables:
                 f.create_dataset(
-                    f"{year}/baseline_{variable.name}",
+                    f"baseline_{variable.name}/{year}",
                     data=baseline.calc(variable.name, period=year),
                 )
 
