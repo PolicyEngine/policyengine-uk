@@ -41,7 +41,7 @@ class ExtendedFRS(PrivateDataset):
         frs.close()
         frs_enhanced.close()
 
-        """logging.info("Imputing incomes from the SPI")
+        logging.info("Imputing incomes from the SPI")
 
         pred_income = impute_incomes(year=year)
         clone_and_replace_half(
@@ -56,7 +56,7 @@ class ExtendedFRS(PrivateDataset):
                 f"spi_imputed/{year}": [True] * NUM_HOUSEHOLDS,
             },
             weighting=0,
-        )"""
+        )
 
         logging.info("Migrating to universal credit")
         
@@ -66,8 +66,8 @@ class ExtendedFRS(PrivateDataset):
             year, 
             {
                 **uc_migrated,
-                f"in_original_frs/{year}": [False] * NUM_HOUSEHOLDS,
-                f"uc_migrated/{year}": [True] * NUM_HOUSEHOLDS,
+                f"in_original_frs/{year}": [False] * NUM_HOUSEHOLDS * 2,
+                f"uc_migrated/{year}": [True] * NUM_HOUSEHOLDS * 2,
             }, 
             weighting=0,
         )

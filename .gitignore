@@ -44,3 +44,4 @@ openfisca_uk/calibration/*.h5
 # Microdata
 
 **/*.h5
+**/*.csv
