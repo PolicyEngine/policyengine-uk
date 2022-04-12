@@ -8,4 +8,5 @@ from openfisca_uk.data.datasets import (
     ExtendedFRS,
     CalibratedFRS,
     LCFS,
+    WAS,
 )

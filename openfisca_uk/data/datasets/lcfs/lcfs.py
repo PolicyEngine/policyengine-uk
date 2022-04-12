@@ -71,8 +71,8 @@ class LCFS(PrivateDataset):
     is_openfisca_compatible = True
 
     def generate(self, year: int):
-        if year in LCFS.years:
-            LCFS.remove(year)
+        if year in self.years:
+            self.remove(year)
         # Load raw FRS tables
         year = int(year)
 
@@ -81,14 +81,14 @@ class LCFS(PrivateDataset):
 
         if year > max(RawLCFS.years):
             logging.warn("Uprating a previous version of the LCFS.")
-            if len(LCFS.years) == 0:
-                LCFS.generate(max(RawLCFS.years))
-            if len(LCFS.years) > 0:
-                lcfs_year = max(LCFS.years)
+            if len(self.years) == 0:
+                self.generate(max(RawLCFS.years))
+            if len(self.years) > 0:
+                lcfs_year = max(self.years)
                 from openfisca_uk import Microsimulation
-                sim = Microsimulation(dataset=LCFS, year=max(LCFS.years))
-                lcfs = h5py.File(LCFS.file(year), mode="w")
-                for variable in LCFS.keys(lcfs_year):
+                sim = Microsimulation(dataset=self, year=max(self.years))
+                lcfs = h5py.File(self.file(year), mode="w")
+                for variable in self.keys(lcfs_year):
                     lcfs[variable] = sim.calc(variable).values
                 lcfs.close()
                 return

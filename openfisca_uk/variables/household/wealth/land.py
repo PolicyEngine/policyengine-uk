@@ -1,6 +1,7 @@
 from openfisca_uk.model_api import *
 
 
+@uprated(by="wealth.national_balance_sheet.household.land")
 class owned_land(Variable):
     entity = Household
     label = "Owned land"

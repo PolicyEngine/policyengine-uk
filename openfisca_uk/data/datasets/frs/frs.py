@@ -23,8 +23,8 @@ class FRS(PrivateDataset):
     }
 
     def generate(self, year: int):
-        if year in FRS.years:
-            FRS.remove(year)
+        if year in self.years:
+            self.remove(year)
         # Load raw FRS tables
         year = int(year)
 
@@ -33,20 +33,20 @@ class FRS(PrivateDataset):
 
         if year > max(RawFRS.years):
             logging.warn("Uprating a previous version of the FRS.")
-            if len(FRS.years) == 0:
-                FRS.generate(max(RawFRS.years))
+            if len(self.years) == 0:
+                self.generate(max(RawFRS.years))
             if len(FRS.years) > 0:
-                frs_year = max(FRS.years)
+                frs_year = max(self.years)
                 from openfisca_uk import Microsimulation
-                sim = Microsimulation(dataset=FRS, year=max(FRS.years))
-                frs = h5py.File(FRS.file(year), mode="w")
-                for variable in FRS.keys(frs_year):
+                sim = Microsimulation(dataset=self, year=max(self.years))
+                frs = h5py.File(self.file(year), mode="w")
+                for variable in self.keys(frs_year):
                     frs[variable] = sim.calc(variable).values
                 frs.close()
                 return
 
         raw_frs_files = RawFRS.load(year)
-        frs = h5py.File(FRS.file(year), mode="w")
+        frs = h5py.File(self.file(year), mode="w")
         logging.info("Generating FRS dataset for year {}".format(year))
         logging.info("Loading FRS tables")
         TABLES = (
