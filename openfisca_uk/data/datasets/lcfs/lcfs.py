@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple
 import pandas as pd
 from openfisca_tools.data import Dataset, PrivateDataset
@@ -70,6 +71,27 @@ class LCFS(PrivateDataset):
     is_openfisca_compatible = True
 
     def generate(self, year: int):
+        if year in LCFS.years:
+            LCFS.remove(year)
+        # Load raw FRS tables
+        year = int(year)
+
+        if len(RawLCFS.years) == 0:
+            raise FileNotFoundError("Raw LCFS not found. Please run `openfisca-uk data lcfs generate [year]` first.")
+
+        if year > max(RawLCFS.years):
+            logging.warn("Uprating a previous version of the LCFS.")
+            if len(LCFS.years) == 0:
+                LCFS.generate(max(RawLCFS.years))
+            if len(LCFS.years) > 0:
+                lcfs_year = max(LCFS.years)
+                from openfisca_uk import Microsimulation
+                sim = Microsimulation(dataset=LCFS, year=max(LCFS.years))
+                lcfs = h5py.File(LCFS.file(year), mode="w")
+                for variable in LCFS.keys(lcfs_year):
+                    lcfs[variable] = sim.calc(variable).values
+                lcfs.close()
+                return
         households = RawLCFS.load(2019, "lcfs_2019_dvhh_ukanon")
         people = RawLCFS.load(2019, "lcfs_2019_dvper_ukanon201920")
         spending = households[list(CATEGORY_NAMES.keys())].unstack().reset_index()
