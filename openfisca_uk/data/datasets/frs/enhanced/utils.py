@@ -43,7 +43,7 @@ def clone_and_replace_half(
                     previous_data[field] * weighting,
                 ]
             )
-        elif "state_" in field:
+        elif field in ("state_id", "state_weight"):
             values = previous_data[field]
         elif field in mapping:
             assert len(previous_data[field]) == len(mapping[field]), f"Lengths don't match for {field}: {len(previous_data[field])} != {len(mapping[field])}"
