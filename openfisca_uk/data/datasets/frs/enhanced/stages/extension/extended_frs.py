@@ -34,10 +34,10 @@ class ExtendedFRS(PrivateDataset):
         frs_enhanced = h5py.File(self.file(year), mode="w")
         for key in frs.keys():
             frs_enhanced[f"{key}/{year}"] = frs[key][...]
-        NUM_HOUSEHOLDS = frs_enhanced[f"household_id/{year}"][...].shape[0]
-        frs_enhanced[f"in_original_frs/{year}"] = [True] * NUM_HOUSEHOLDS
-        frs_enhanced[f"spi_imputed/{year}"] = [False] * NUM_HOUSEHOLDS
-        frs_enhanced[f"uc_migrated/{year}"] = [False] * NUM_HOUSEHOLDS
+        HOUSEHOLD_COUNT = frs_enhanced[f"household_id/{year}"][...].shape[0]
+        frs_enhanced[f"in_original_frs/{year}"] = [True] * HOUSEHOLD_COUNT
+        frs_enhanced[f"spi_imputed/{year}"] = [False] * HOUSEHOLD_COUNT
+        frs_enhanced[f"uc_migrated/{year}"] = [False] * HOUSEHOLD_COUNT
         frs.close()
         frs_enhanced.close()
 
@@ -52,8 +52,8 @@ class ExtendedFRS(PrivateDataset):
                     f"{field}/{year}": pred_income[field]
                     for field in pred_income.columns
                 },
-                f"in_original_frs/{year}": [False] * NUM_HOUSEHOLDS,
-                f"spi_imputed/{year}": [True] * NUM_HOUSEHOLDS,
+                f"in_original_frs/{year}": [False] * HOUSEHOLD_COUNT,
+                f"spi_imputed/{year}": [True] * HOUSEHOLD_COUNT,
             },
             weighting=0,
         )
@@ -66,8 +66,8 @@ class ExtendedFRS(PrivateDataset):
             year, 
             {
                 **uc_migrated,
-                f"in_original_frs/{year}": [False] * NUM_HOUSEHOLDS * 2,
-                f"uc_migrated/{year}": [True] * NUM_HOUSEHOLDS * 2,
+                f"in_original_frs/{year}": [False] * HOUSEHOLD_COUNT * 2,
+                f"uc_migrated/{year}": [True] * HOUSEHOLD_COUNT * 2,
             }, 
             weighting=0,
         )

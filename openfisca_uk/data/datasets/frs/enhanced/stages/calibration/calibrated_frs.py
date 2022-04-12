@@ -31,12 +31,12 @@ class CalibratedFRS(PrivateDataset):
 
         weights = HouseholdWeights(
             start_year=2022,
-            end_year=2025,
+            end_year=2027,
         )
         weights.calibrate(
             validation_split=0,
-            num_epochs=500,
-            learning_rate=1e1,
+            num_epochs=650,
+            learning_rate=1e2,
             dataset=self,
         )
 

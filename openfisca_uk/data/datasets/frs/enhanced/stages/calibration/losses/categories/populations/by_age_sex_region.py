@@ -9,7 +9,6 @@ class PopulationsByAgeSexRegion(LossCategory):
     label = "Population by age, sex and region"
     parameter_folder = parameters.calibration.populations.by_age_sex_region
     weight = 1/12
-    cache = {}
 
     def get_loss_subcomponents(
         sim,

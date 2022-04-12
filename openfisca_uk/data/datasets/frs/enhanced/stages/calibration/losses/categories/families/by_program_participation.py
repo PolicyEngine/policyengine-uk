@@ -8,7 +8,7 @@ from openfisca_uk.parameters import parameters
 class FamiliesByProgramParticipation(LossCategory):
     label = "Families by program participation"
     parameter_folder = parameters.calibration.families.by_program_participation
-    weight = 3/10
+    weight = 1
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int

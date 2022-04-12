@@ -8,7 +8,7 @@ from openfisca_uk.parameters import parameters
 class BudgetaryImpactByProgram(LossCategory):
     label = "Budgetary impact by program"
     parameter_folder = parameters.calibration.budgetary_impact.by_program
-    weight = 3/10
+    weight = 1
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int
