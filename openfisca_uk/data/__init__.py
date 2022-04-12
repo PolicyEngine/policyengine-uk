@@ -7,4 +7,5 @@ from openfisca_uk.data.datasets import (
     SPI,
     ExtendedFRS,
     CalibratedFRS,
+    LCFS,
 )
