@@ -35,6 +35,16 @@ class pension_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
 
+class total_pension_income(Variable):
+    label = "Total pension income"
+    documentation = "Private, personal and State Pension income"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    formula = sum_of_variables(["pension_income", "state_pension"])
+
 
 class social_security_income(Variable):
     value_type = float
