@@ -9,7 +9,7 @@ class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
     parameter_folder = (
         parameters.calibration.budgetary_impact.of_income_tax_by_income_band
     )
-    weight = 1 / 30
+    weight = 1/12
 
     def get_loss_subcomponents(
         sim,

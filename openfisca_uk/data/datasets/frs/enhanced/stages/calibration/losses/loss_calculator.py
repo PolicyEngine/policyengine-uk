@@ -1,6 +1,6 @@
 from typing import List
 import numpy as np
-from openfisca_uk.calibration.losses.categories import (
+from ..losses.categories import (
     BudgetaryImpact,
     Families,
     Households,

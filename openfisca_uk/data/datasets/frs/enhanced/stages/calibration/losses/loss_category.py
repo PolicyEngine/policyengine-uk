@@ -49,6 +49,8 @@ class LossCategory:
     comparison_loss_function: Callable = weighted_squared_relative_deviation
     initial_train_loss: float = None
     initial_val_loss: float = None
+    cache = {}
+    use_cache = False
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int
@@ -79,6 +81,7 @@ class LossCategory:
             for name, pred, actual in cls.get_loss_subcomponents(
                 sim, household_weights[year - cls.years[0]], year
             ):
+
                 if name not in excluded_metrics:
                     l = cls.comparison_loss_function(pred, actual)
                     log += [

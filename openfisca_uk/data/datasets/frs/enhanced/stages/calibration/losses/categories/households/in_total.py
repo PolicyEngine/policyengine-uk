@@ -7,7 +7,7 @@ from openfisca_uk.parameters import parameters
 class HouseholdsInTotal(LossCategory):
     label = "Households in total"
     parameter_folder = parameters.calibration.households.in_total
-    weight = 1 / 30
+    weight = 1.12
 
     def get_loss_subcomponents(
         sim,

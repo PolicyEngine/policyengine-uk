@@ -10,7 +10,7 @@ class BudgetaryImpactByProgramByCountry(LossCategory):
     parameter_folder = (
         parameters.calibration.budgetary_impact.by_program_by_country
     )
-    weight = 1 / 30
+    weight = 1/12
 
     def get_loss_subcomponents(
         sim: Microsimulation, household_weights: tf.Tensor, year: int

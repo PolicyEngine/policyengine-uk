@@ -9,7 +9,7 @@ class HouseholdsByRegionByCouncilTaxBand(LossCategory):
     parameter_folder = (
         parameters.calibration.households.by_region_by_council_tax_band
     )
-    weight = 1 / 30
+    weight = 1/12
 
     def get_loss_subcomponents(
         sim,
@@ -40,6 +40,4 @@ class HouseholdsByRegionByCouncilTaxBand(LossCategory):
                     household_weights * household_in_condition
                 )
                 actual_population = parameter(f"{year}-01-01") * adjustment
-                if household_in_condition.sum() > 0:
-                    # If the FRS has no observations, skip the target.
-                    yield parameter_name, model_population, actual_population
+                yield parameter_name, model_population, actual_population

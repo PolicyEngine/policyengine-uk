@@ -1,6 +1,5 @@
-from .by_age_band import (
-    PopulationsByAgeBand,
-)
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.categories.populations.by_age_band import PopulationsByAgeBand
+from .by_age_sex_region import PopulationsByAgeSexRegion
 from .by_income_tax_band import (
     PopulationsByIncomeTaxBand,
 )
@@ -16,7 +15,6 @@ from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_cate
 Populations = combine_loss_categories(
     PopulationsByAgeBand,
     PopulationsByIncomeTaxBand,
-    PopulationsByRegion,
     PopulationsInTotal,
     label="Populations",
 )

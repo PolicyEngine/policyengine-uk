@@ -23,7 +23,7 @@ class CalibratedFRS(PrivateDataset):
         calibrated_frs = h5py.File(self.file(year), mode="w")
         for variable in extended_frs.keys():
             for period in extended_frs[variable].keys():
-                calibrated_frs[f"{variable}/{period}"] = calibrated_frs[variable][period][...]
+                calibrated_frs[f"{variable}/{period}"] = extended_frs[variable][period][...]
         extended_frs.close()
         calibrated_frs.close()
         
@@ -35,12 +35,11 @@ class CalibratedFRS(PrivateDataset):
         )
         weights.calibrate(
             validation_split=0,
-            num_epochs=250,
-            learning_rate=1e0,
+            num_epochs=500,
+            learning_rate=1e1,
             dataset=self,
         )
 
-        for period in range(weights.start_year, weights.end_year):
-            self.save(year, f"household_weight/{period}", weights.get_weights(period))
+        weights.save()
         
 CalibratedFRS = CalibratedFRS()
