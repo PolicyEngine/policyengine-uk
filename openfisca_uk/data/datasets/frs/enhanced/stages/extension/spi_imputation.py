@@ -59,4 +59,5 @@ def impute_incomes(dataset: Dataset = FRS, year: int = 2019) -> MicroDataFrame:
         y_train=spi_df[IMPUTATIONS],
         x_new=frs_df,
         verbose=True,
+        n_estimators=3
     )

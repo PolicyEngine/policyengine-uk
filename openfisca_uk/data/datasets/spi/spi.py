@@ -1,3 +1,4 @@
+import logging
 from openfisca_uk.data.datasets.spi.raw_spi import RawSPI
 import pandas as pd
 from pandas import DataFrame
@@ -23,6 +24,28 @@ class SPI(PrivateDataset):
         Args:
             year (int): The year to generate for (uses the raw SPI from this year).
         """
+
+        if year in self.years:
+            self.remove(year)
+        # Load raw FRS tables
+        year = int(year)
+
+        if len(RawSPI.years) == 0:
+            raise FileNotFoundError("Raw SPI not found. Please run `openfisca-uk data raw_spi generate [year]` first.")
+
+        if year > max(RawSPI.years):
+            logging.warn("Uprating a previous version of the SPI.")
+            if len(self.years) == 0:
+                self.generate(max(RawSPI.years))
+            if len(self.years) > 0:
+                frs_year = max(self.years)
+                from openfisca_uk import Microsimulation
+                sim = Microsimulation(dataset=self, year=max(self.years))
+                frs = h5py.File(self.file(year), mode="w")
+                for variable in self.keys(frs_year):
+                    frs[variable] = sim.calc(variable).values
+                frs.close()
+                return
 
         main = RawSPI.load(year, "main").fillna(0)
         spi = h5py.File(self.file(year), mode="w")

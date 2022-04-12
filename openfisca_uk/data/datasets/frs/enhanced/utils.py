@@ -32,25 +32,26 @@ def clone_and_replace_half(
     data.close()
     file = h5py.File(target_dataset.file(year), "w")
     for field in previous_data:
-        if "_id" in field and "state" not in field:
-            values = np.concatenate(
-                [previous_data[field] * 10, previous_data[field] * 10 + 1]
+        if "_id" in field and not "state" in field:
+            values = np.array(
+                list(previous_data[field] * 10) + [x * 10 + 1 for x in previous_data[field]]
             )
-        elif "_weight" in field and "state" not in field:
+        elif "_weight" in field and not "state" in field:
             values = np.concatenate(
                 [
                     previous_data[field] * (1 - weighting),
                     previous_data[field] * weighting,
                 ]
             )
+        elif "state_" in field:
+            values = previous_data[field]
         elif field in mapping:
+            assert len(previous_data[field]) == len(mapping[field]), f"Lengths don't match for {field}: {len(previous_data[field])} != {len(mapping[field])}"
             values = np.concatenate([previous_data[field], mapping[field]])
-        elif len(previous_data[field]) > 1:
+        else:
             values = np.concatenate(
                 [previous_data[field], previous_data[field]]
             )
-        else:
-            values = previous_data[field]
         try:
             file[field] = values
         except TypeError:
