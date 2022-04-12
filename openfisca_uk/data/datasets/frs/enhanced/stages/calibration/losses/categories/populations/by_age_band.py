@@ -9,7 +9,7 @@ from openfisca_core.parameters import Parameter
 class PopulationsByAgeBand(LossCategory):
     label = "Populations by age band"
     parameter_folder = parameters.calibration.populations.by_age_sex_region
-    weight = 1 / 30
+    weight = 1 / 20
 
     def get_loss_subcomponents(
         sim,

@@ -45,7 +45,7 @@ class LossCategory:
     label: str
     category: str
     parameter_folder: ParameterNode
-    years: List[int] = list(range(2019, 2027))
+    years: List[int] = list(range(2022, 2025))
     comparison_loss_function: Callable = weighted_squared_relative_deviation
     initial_train_loss: float = None
     initial_val_loss: float = None

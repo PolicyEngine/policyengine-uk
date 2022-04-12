@@ -56,8 +56,6 @@ def impute_wealth(year: int, dataset: type = FRS) -> pd.Series:
         pd.Series: The predicted wealth values.
     """
 
-    was = load_and_process_was()
-
     from openfisca_uk import Microsimulation
 
     sim = Microsimulation(

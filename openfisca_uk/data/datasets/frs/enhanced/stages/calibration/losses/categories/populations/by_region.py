@@ -7,7 +7,7 @@ from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_cate
 class PopulationsByRegion(LossCategory):
     label = "Population by region"
     parameter_folder = parameters.calibration.populations.by_region
-    weight = 1 / 30
+    weight = 1 / 20
 
     def get_loss_subcomponents(
         sim,

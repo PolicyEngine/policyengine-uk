@@ -30,8 +30,8 @@ class CalibratedFRS(PrivateDataset):
         from .calibrate import HouseholdWeights
 
         weights = HouseholdWeights(
-            start_year=2019,
-            end_year=2027,
+            start_year=2022,
+            end_year=2025,
         )
         weights.calibrate(
             validation_split=0,

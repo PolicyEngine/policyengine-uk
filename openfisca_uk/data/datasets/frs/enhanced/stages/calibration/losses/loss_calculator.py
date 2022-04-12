@@ -16,16 +16,16 @@ class LossCalculator:
         self,
         sim: Microsimulation,
         validation_split: float = 0.1,
-        start_year: int = 2019,
-        end_year: int = 2026,
+        start_year: int = 2022,
+        end_year: int = 2025,
     ):
         """A loss calculator with persistent validation separation.
 
         Args:
             sim (Microsimulation): A microsimulation from which to draw demographic data.
             validation_split (float, optional): Percentage of non-population metrics to use as validation. Defaults to 0.1.
-            start_year (int, optional): The first year to use in the loss calculation. Defaults to 2019.
-            end_year (int, optional): The last year to use in the loss calculation. Defaults to 2027.
+            start_year (int, optional): The first year to use in the loss calculation. Defaults to 2022.
+            end_year (int, optional): The last year to use in the loss calculation. Defaults to 2025.
         """
         self.losses = [Households, Populations, Families, BudgetaryImpact]
         for loss_category in self.losses:
