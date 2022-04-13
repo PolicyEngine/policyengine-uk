@@ -3,12 +3,16 @@ import os
 from time import time
 import tensorflow as tf
 import numpy as np
-from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.calibrated_frs import CalibratedFRS
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.calibrated_frs import (
+    CalibratedFRS,
+)
 from openfisca_uk.data.datasets.frs.frs import FRS
 from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
 from openfisca_uk.tools.simulation import Microsimulation
 from openfisca_uk.repo import REPO
-from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses import LossCalculator
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses import (
+    LossCalculator,
+)
 from pathlib import Path
 import h5py
 import pandas as pd
@@ -114,12 +118,18 @@ class HouseholdWeights:
             )
         return sim_reweighted
 
-    def save(self, folder: Path = OPENFISCA_UK_MICRODATA_FOLDER, run_id: str = 1):
+    def save(
+        self, folder: Path = OPENFISCA_UK_MICRODATA_FOLDER, run_id: str = 1
+    ):
         if isinstance(folder, str):
             folder = Path(folder)
 
         for period in range(self.start_year, self.end_year + 1):
-            CalibratedFRS.save(self.start_year, f"household_weight/{period}", self.get_weights(period))
+            CalibratedFRS.save(
+                self.start_year,
+                f"household_weight/{period}",
+                self.get_weights(period),
+            )
 
         log = pd.DataFrame(self.training_log)
         assert len(log[log.name.str.contains("2023")]) > 0

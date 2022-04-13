@@ -4,6 +4,7 @@ from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
 from ..extension import ExtendedFRS
 import h5py
 
+
 class CalibratedFRS(PrivateDataset):
     name = "calibrated_frs"
     label = "Calibrated FRS"
@@ -13,7 +14,9 @@ class CalibratedFRS(PrivateDataset):
 
     def generate(self, year: int):
         if year not in ExtendedFRS.years:
-            ok = input(f"Extended FRS not found for year {year}. Generate it? (y/n)")
+            ok = input(
+                f"Extended FRS not found for year {year}. Generate it? (y/n)"
+            )
             if ok == "y":
                 ExtendedFRS.generate(year)
 
@@ -23,10 +26,12 @@ class CalibratedFRS(PrivateDataset):
         calibrated_frs = h5py.File(self.file(year), mode="w")
         for variable in extended_frs.keys():
             for period in extended_frs[variable].keys():
-                calibrated_frs[f"{variable}/{period}"] = extended_frs[variable][period][...]
+                calibrated_frs[f"{variable}/{period}"] = extended_frs[
+                    variable
+                ][period][...]
         extended_frs.close()
         calibrated_frs.close()
-        
+
         from .calibrate import HouseholdWeights
 
         weights = HouseholdWeights(
@@ -41,5 +46,6 @@ class CalibratedFRS(PrivateDataset):
         )
 
         weights.save()
-        
+
+
 CalibratedFRS = CalibratedFRS()

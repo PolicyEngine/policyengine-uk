@@ -1,5 +1,7 @@
 import numpy as np
-from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import LossCategory
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import (
+    LossCategory,
+)
 import tensorflow as tf
 from openfisca_uk.parameters import parameters
 
@@ -9,7 +11,7 @@ class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
     parameter_folder = (
         parameters.calibration.budgetary_impact.of_income_tax_by_income_band
     )
-    weight = 1/20
+    weight = 1 / 20
 
     def get_loss_subcomponents(
         sim,

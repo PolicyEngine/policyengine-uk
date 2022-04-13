@@ -1,6 +1,8 @@
 import numpy as np
 
-from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import LossCategory
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import (
+    LossCategory,
+)
 import tensorflow as tf
 from openfisca_uk.parameters import parameters
 from openfisca_core.parameters import Parameter
@@ -50,12 +52,12 @@ class PopulationsByAgeBand(LossCategory):
                 age_group,
             ).name + "." + str(year), model_population, population.children[
                 age_group
-            ](f"{year}-01-01") * adjustment
+            ](
+                f"{year}-01-01"
+            ) * adjustment
 
     def get_metrics():
-        return (
-            PopulationsByAgeBand.parameter_folder.get_descendants()
-        )
+        return PopulationsByAgeBand.parameter_folder.get_descendants()
 
     def get_metric_names():
         return [

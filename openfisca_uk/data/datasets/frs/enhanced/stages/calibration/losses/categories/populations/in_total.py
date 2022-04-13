@@ -1,4 +1,6 @@
-from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import LossCategory
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import (
+    LossCategory,
+)
 import tensorflow as tf
 from openfisca_uk.parameters import parameters
 
@@ -6,7 +8,7 @@ from openfisca_uk.parameters import parameters
 class PopulationsInTotal(LossCategory):
     label = "UK population"
     parameter_folder = parameters.calibration.populations.in_total
-    weight = 1/20
+    weight = 1 / 20
 
     def get_loss_subcomponents(
         sim,

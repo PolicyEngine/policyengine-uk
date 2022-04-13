@@ -85,16 +85,22 @@ class Microsimulation(GeneralMicrosimulation):
         post_reform: ReformType = None,
     ):
         if len(dataset.years) == 0:
-            logging.warn(f"You are trying to run a microsimulation using the dataset: {dataset.label}, but no years of that dataset could be found. Attempting to download it.")
+            logging.warn(
+                f"You are trying to run a microsimulation using the dataset: {dataset.label}, but no years of that dataset could be found. Attempting to download it."
+            )
             try:
                 dataset.download(year)
             except Exception as e:
-                logging.warn(f"Encountered an error when attempting to download the {dataset.label} (this is likely because your account could not be authenticated, if it is not a public dataset). Attempting to download the Synthetic FRS.")
+                logging.warn(
+                    f"Encountered an error when attempting to download the {dataset.label} (this is likely because your account could not be authenticated, if it is not a public dataset). Attempting to download the Synthetic FRS."
+                )
                 try:
                     SynthFRS.download(year)
                     dataset = SynthFRS
                 except Exception as e:
-                    logging.warn(f"Encountered an error when attempting to download the synthetic FRS dataset: {e}")
+                    logging.warn(
+                        f"Encountered an error when attempting to download the synthetic FRS dataset: {e}"
+                    )
                     raise e
         if post_reform is not None:
             self.post_reform = post_reform

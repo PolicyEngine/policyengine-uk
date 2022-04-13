@@ -62,6 +62,7 @@ REGIONS = {
     12: "NORTHERN_IRELAND",
 }
 
+
 class LCFS(PrivateDataset):
     name = "lcfs"
     label = "LCFS"
@@ -77,7 +78,9 @@ class LCFS(PrivateDataset):
         year = int(year)
 
         if len(RawLCFS.years) == 0:
-            raise FileNotFoundError("Raw LCFS not found. Please run `openfisca-uk data lcfs generate [year]` first.")
+            raise FileNotFoundError(
+                "Raw LCFS not found. Please run `openfisca-uk data lcfs generate [year]` first."
+            )
 
         if year > max(RawLCFS.years):
             logging.warn("Uprating a previous version of the LCFS.")
@@ -86,6 +89,7 @@ class LCFS(PrivateDataset):
             if len(self.years) > 0:
                 lcfs_year = max(self.years)
                 from openfisca_uk import Microsimulation
+
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 lcfs = h5py.File(self.file(year), mode="w")
                 for variable in self.keys(lcfs_year):
@@ -94,7 +98,9 @@ class LCFS(PrivateDataset):
                 return
         households = RawLCFS.load(2019, "lcfs_2019_dvhh_ukanon")
         people = RawLCFS.load(2019, "lcfs_2019_dvper_ukanon201920")
-        spending = households[list(CATEGORY_NAMES.keys())].unstack().reset_index()
+        spending = (
+            households[list(CATEGORY_NAMES.keys())].unstack().reset_index()
+        )
         spending.columns = "category", "household", "spending"
         spending["household"] = households.case[spending.household].values
         households = households.set_index("case")
@@ -102,7 +108,9 @@ class LCFS(PrivateDataset):
             name_to_variable_name
         )
         spending.spending *= 52
-        spending["weight"] = households.weighta[spending.household].values * 100
+        spending["weight"] = (
+            households.weighta[spending.household].values * 100
+        )
         spending = pd.DataFrame(spending)
 
         for category in spending.category.unique():
@@ -111,16 +119,18 @@ class LCFS(PrivateDataset):
             ) * spending.spending
 
         lcf_df = (
-            pd.DataFrame(spending[["household", "weight"] + CATEGORY_VARIABLES])
+            pd.DataFrame(
+                spending[["household", "weight"] + CATEGORY_VARIABLES]
+            )
             .groupby("household")
             .sum()
         )
 
         # Add in LCFS variables that also appear in the FRS-based microsimulation model
 
-        lcf_household_vars = households[list(HOUSEHOLD_LCF_RENAMES.keys())].rename(
-            columns=HOUSEHOLD_LCF_RENAMES
-        )
+        lcf_household_vars = households[
+            list(HOUSEHOLD_LCF_RENAMES.keys())
+        ].rename(columns=HOUSEHOLD_LCF_RENAMES)
         lcf_person_vars = (
             people[list(PERSON_LCF_RENAMES) + ["case"]]
             .rename(columns=PERSON_LCF_RENAMES)
@@ -141,12 +151,16 @@ class LCFS(PrivateDataset):
         for variable in PERSON_LCF_RENAMES.values():
             lcf_with_demographics[variable] *= 52
 
-        lcf_with_demographics.region = lcf_with_demographics.region.map(REGIONS)
+        lcf_with_demographics.region = lcf_with_demographics.region.map(
+            REGIONS
+        )
         lcfs = lcf_with_demographics.sort_index()
 
         lcfs = lcfs.rename(columns=dict(weight="household_weight"))
 
-        entity_index = lcfs.index.values # One-person households for simplicity for now
+        entity_index = (
+            lcfs.index.values
+        )  # One-person households for simplicity for now
 
         with h5py.File(self.file(year), mode="w") as f:
             for entity_id_var in [
@@ -157,7 +171,7 @@ class LCFS(PrivateDataset):
                 "person_household_id",
             ]:
                 f[entity_id_var] = entity_index
-            
+
             f["person_benunit_role"] = ["adult"] * len(entity_index)
             f["person_household_role"] = ["adult"] * len(entity_index)
             f["person_state_id"] = [1] * len(entity_index)
@@ -165,5 +179,6 @@ class LCFS(PrivateDataset):
 
             for variable in lcfs.columns:
                 f[variable] = lcfs[variable].values
-        
+
+
 LCFS = LCFS()

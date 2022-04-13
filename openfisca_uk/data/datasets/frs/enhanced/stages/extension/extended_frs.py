@@ -9,7 +9,9 @@ from openfisca_uk.data.datasets.frs.enhanced.stages.extension.spi_imputation imp
 from openfisca_uk.data.datasets.frs.enhanced.utils import (
     clone_and_replace_half,
 )
-from openfisca_uk.data.datasets.frs.enhanced.stages.extension.uc_transition import migrate_to_universal_credit
+from openfisca_uk.data.datasets.frs.enhanced.stages.extension.uc_transition import (
+    migrate_to_universal_credit,
+)
 from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
 from time import time
 
@@ -59,19 +61,20 @@ class ExtendedFRS(PrivateDataset):
         )
 
         logging.info("Migrating to universal credit")
-        
+
         uc_migrated = migrate_to_universal_credit(self, year)
         clone_and_replace_half(
-            self, 
-            year, 
+            self,
+            year,
             {
                 **uc_migrated,
                 f"in_original_frs/{year}": [False] * HOUSEHOLD_COUNT * 2,
                 f"uc_migrated/{year}": [True] * HOUSEHOLD_COUNT * 2,
-            }, 
+            },
             weighting=0,
         )
 
         logging.info("Finished generating SPI-enhanced FRS.")
+
 
 ExtendedFRS = ExtendedFRS()

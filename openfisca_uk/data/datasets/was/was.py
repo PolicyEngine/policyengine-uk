@@ -65,6 +65,7 @@ VARIABLES = [
 
 RENAMES = {key.lower(): value for key, value in RENAMES.items()}
 
+
 class WAS(PrivateDataset):
     name = "was"
     label = "WAS"
@@ -80,7 +81,9 @@ class WAS(PrivateDataset):
         year = int(year)
 
         if len(RawWAS.years) == 0:
-            raise FileNotFoundError("Raw WAS not found. Please run `openfisca-uk data was generate [year]` first.")
+            raise FileNotFoundError(
+                "Raw WAS not found. Please run `openfisca-uk data was generate [year]` first."
+            )
 
         if year > max(RawWAS.years):
             logging.warn("Uprating a previous version of the WAS.")
@@ -89,6 +92,7 @@ class WAS(PrivateDataset):
             if len(self.years) > 0:
                 lcfs_year = max(self.years)
                 from openfisca_uk import Microsimulation
+
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 lcfs = h5py.File(self.file(year), mode="w")
                 for variable in self.keys(lcfs_year):
@@ -96,9 +100,10 @@ class WAS(PrivateDataset):
                 lcfs.close()
                 return
 
-        assert year == 2019, "Currently, only the 2019 WAS is supported (table name changes not yet implemented)"
+        assert (
+            year == 2019
+        ), "Currently, only the 2019 WAS is supported (table name changes not yet implemented)"
         # The 2019 year is actually over the two-year period from 2018 to 2020, but is usually referred to as 2019.
-        
 
         # TODO: Handle different WAS releases
 
@@ -144,7 +149,9 @@ class WAS(PrivateDataset):
             ]
         ].sum(axis=1)
 
-        entity_index = was.index.values # One-person households for simplicity for now
+        entity_index = (
+            was.index.values
+        )  # One-person households for simplicity for now
 
         with h5py.File(self.file(year), mode="w") as f:
             for entity_id_var in [
@@ -155,7 +162,7 @@ class WAS(PrivateDataset):
                 "person_household_id",
             ]:
                 f[entity_id_var] = entity_index
-            
+
             f["person_benunit_role"] = ["adult"] * len(entity_index)
             f["person_household_role"] = ["adult"] * len(entity_index)
             f["person_state_id"] = [1] * len(entity_index)
@@ -163,5 +170,6 @@ class WAS(PrivateDataset):
 
             for variable in VARIABLES + ["household_weight"]:
                 f[variable] = was[variable].values
+
 
 WAS = WAS()

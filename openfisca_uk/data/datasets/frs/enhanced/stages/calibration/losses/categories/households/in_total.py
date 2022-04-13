@@ -1,5 +1,6 @@
-
-from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import LossCategory
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import (
+    LossCategory,
+)
 import tensorflow as tf
 from openfisca_uk.parameters import parameters
 

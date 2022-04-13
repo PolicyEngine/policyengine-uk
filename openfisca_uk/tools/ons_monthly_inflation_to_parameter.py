@@ -3,13 +3,20 @@ import calendar
 
 # Download ONS monthly inflation by COICOP category from https://www.ons.gov.uk/filter-outputs/7bd1b688-29f5-47c4-9f0d-c43a22708d12
 
-df = pd.read_csv("~/Downloads/cpih01-time-series-v20-filtered-2022-04-12T12-30-35Z.csv")
+df = pd.read_csv(
+    "~/Downloads/cpih01-time-series-v20-filtered-2022-04-12T12-30-35Z.csv"
+)
 
-month_to_code = {month: index for index, month in enumerate(calendar.month_abbr) if month}
+month_to_code = {
+    month: index for index, month in enumerate(calendar.month_abbr) if month
+}
 
 df["month_code"] = df["mmm-yy"].apply(lambda x: month_to_code[x.split("-")[0]])
 df["year"] = df["mmm-yy"].apply(lambda x: x.split("-")[1]).astype(int)
-df["date_str"] = [f"{2000 + year if year < 30 else 1900 + year}-{month:02}-01" for month, year in zip(df.month_code, df.year)]
+df["date_str"] = [
+    f"{2000 + year if year < 30 else 1900 + year}-{month:02}-01"
+    for month, year in zip(df.month_code, df.year)
+]
 
 CATEGORY_RENAMES = {
     1: "food_and_non_alcoholic_beverages",
@@ -26,7 +33,9 @@ CATEGORY_RENAMES = {
     12: "miscellaneous",
 }
 
-df["category"] = df.Aggregate.apply(lambda x: CATEGORY_RENAMES[int(x.split(" ")[0])])
+df["category"] = df.Aggregate.apply(
+    lambda x: CATEGORY_RENAMES[int(x.split(" ")[0])]
+)
 
 df["value"] = df.v4_0
 

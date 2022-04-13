@@ -2,7 +2,10 @@ from openfisca_uk.model_api import *
 
 # The below variables follow the COICOP MECE categories.
 
-@uprated(by="uprating.monthly_cpi_by_category.food_and_non_alcoholic_beverages")
+
+@uprated(
+    by="uprating.monthly_cpi_by_category.food_and_non_alcoholic_beverages"
+)
 class food_and_non_alcoholic_beverages_consumption(Variable):
     entity = Household
     label = "Food and alcoholic beverages"
@@ -11,6 +14,7 @@ class food_and_non_alcoholic_beverages_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
+
 
 @uprated(by="uprating.monthly_cpi_by_category.alcohol_and_tobacco")
 class alcohol_and_tobacco_consumption(Variable):
@@ -22,6 +26,7 @@ class alcohol_and_tobacco_consumption(Variable):
     value_type = float
     quantity_type = FLOW
 
+
 @uprated(by="uprating.monthly_cpi_by_category.clothing_and_footwear")
 class clothing_and_footwear_consumption(Variable):
     entity = Household
@@ -31,6 +36,7 @@ class clothing_and_footwear_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
+
 
 @uprated(by="uprating.monthly_cpi_by_category.housing_water_and_electricity")
 class housing_water_and_electricity_consumption(Variable):
@@ -54,6 +60,7 @@ class household_furnishings_consumption(Variable):
     value_type = float
     quantity_type = FLOW
 
+
 @uprated(by="uprating.monthly_cpi_by_category.health")
 class health_consumption(Variable):
     entity = Household
@@ -63,6 +70,7 @@ class health_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
+
 
 @uprated(by="uprating.monthly_cpi_by_category.transport")
 class transport_consumption(Variable):
@@ -74,6 +82,7 @@ class transport_consumption(Variable):
     value_type = float
     quantity_type = FLOW
 
+
 @uprated(by="uprating.monthly_cpi_by_category.communication")
 class communication_consumption(Variable):
     entity = Household
@@ -83,6 +92,7 @@ class communication_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
+
 
 @uprated(by="uprating.monthly_cpi_by_category.recreation")
 class recreation_consumption(Variable):
@@ -94,6 +104,7 @@ class recreation_consumption(Variable):
     value_type = float
     quantity_type = FLOW
 
+
 @uprated(by="uprating.monthly_cpi_by_category.education")
 class education_consumption(Variable):
     entity = Household
@@ -103,6 +114,7 @@ class education_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
+
 
 @uprated(by="uprating.monthly_cpi_by_category.restaurants_and_hotels")
 class restaurants_and_hotels_consumption(Variable):
@@ -114,6 +126,7 @@ class restaurants_and_hotels_consumption(Variable):
     value_type = float
     quantity_type = FLOW
 
+
 @uprated(by="uprating.monthly_cpi_by_category.miscellaneous")
 class miscellaneous_consumption(Variable):
     entity = Household
@@ -124,6 +137,7 @@ class miscellaneous_consumption(Variable):
     value_type = float
     quantity_type = FLOW
 
+
 @uprated(by="uprating.monthly_cpi_by_category.transport")
 class petrol_spending(Variable):
     label = "Petrol spending"
@@ -131,6 +145,7 @@ class petrol_spending(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 @uprated(by="uprating.monthly_cpi_by_category.transport")
 class diesel_spending(Variable):

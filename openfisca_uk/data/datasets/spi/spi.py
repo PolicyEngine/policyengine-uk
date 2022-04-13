@@ -31,7 +31,9 @@ class SPI(PrivateDataset):
         year = int(year)
 
         if len(RawSPI.years) == 0:
-            raise FileNotFoundError("Raw SPI not found. Please run `openfisca-uk data raw_spi generate [year]` first.")
+            raise FileNotFoundError(
+                "Raw SPI not found. Please run `openfisca-uk data raw_spi generate [year]` first."
+            )
 
         if year > max(RawSPI.years):
             logging.warn("Uprating a previous version of the SPI.")
@@ -40,6 +42,7 @@ class SPI(PrivateDataset):
             if len(self.years) > 0:
                 frs_year = max(self.years)
                 from openfisca_uk import Microsimulation
+
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 frs = h5py.File(self.file(year), mode="w")
                 for variable in self.keys(frs_year):

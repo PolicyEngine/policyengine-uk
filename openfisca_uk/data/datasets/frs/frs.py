@@ -29,7 +29,9 @@ class FRS(PrivateDataset):
         year = int(year)
 
         if len(RawFRS.years) == 0:
-            raise FileNotFoundError("Raw FRS not found. Please run `openfisca-uk data raw_frs generate [year]` first.")
+            raise FileNotFoundError(
+                "Raw FRS not found. Please run `openfisca-uk data raw_frs generate [year]` first."
+            )
 
         if year > max(RawFRS.years):
             logging.warn("Uprating a previous version of the FRS.")
@@ -38,6 +40,7 @@ class FRS(PrivateDataset):
             if len(FRS.years) > 0:
                 frs_year = max(self.years)
                 from openfisca_uk import Microsimulation
+
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 frs = h5py.File(self.file(year), mode="w")
                 for variable in self.keys(frs_year):

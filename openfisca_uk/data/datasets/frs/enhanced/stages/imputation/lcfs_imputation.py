@@ -48,6 +48,7 @@ REGIONS = {
     12: "NORTHERN_IRELAND",
 }
 
+
 def impute_consumption(year: int, dataset: type = FRS) -> pd.Series:
     """Impute consumption by fitting a random forest model.
 
@@ -61,18 +62,12 @@ def impute_consumption(year: int, dataset: type = FRS) -> pd.Series:
 
     from openfisca_uk import Microsimulation
 
-    sender = Microsimulation(
-        dataset=LCFS,
-        year=year,
-    ).df(
+    sender = Microsimulation(dataset=LCFS, year=year,).df(
         PREDICTOR_VARIABLES + IMPUTE_VARIABLES,
         map_to="household",
     )
 
-    receiver = Microsimulation(
-        dataset=dataset,
-        year=year,
-    ).df(
+    receiver = Microsimulation(dataset=dataset, year=year,).df(
         PREDICTOR_VARIABLES,
         map_to="household",
     )
@@ -90,4 +85,3 @@ def impute_consumption(year: int, dataset: type = FRS) -> pd.Series:
         x_new=receiver,
         verbose=True,
     )
-

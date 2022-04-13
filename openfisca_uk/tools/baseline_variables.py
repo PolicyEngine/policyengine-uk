@@ -2,7 +2,9 @@ import logging
 from openfisca_core.variables import Variable
 from typing import Callable, Type
 import h5py
-from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import EnhancedFRS
+from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
+    EnhancedFRS,
+)
 from openfisca_uk.repo import REPO
 
 

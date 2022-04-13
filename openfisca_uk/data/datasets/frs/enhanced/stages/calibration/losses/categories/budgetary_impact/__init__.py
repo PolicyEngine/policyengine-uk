@@ -10,7 +10,9 @@ from .by_program_by_country import (
 from .of_income_tax_by_income_band import (
     BudgetaryImpactOfIncomeTaxByIncomeBand,
 )
-from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import combine_loss_categories
+from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_category import (
+    combine_loss_categories,
+)
 
 
 BudgetaryImpact = combine_loss_categories(

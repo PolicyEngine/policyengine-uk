@@ -6,6 +6,7 @@ import h5py
 from openfisca_uk.data.datasets.frs.frs import FRS
 from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
 
+
 class SynthFRS(PublicDataset):
     name = "synth_frs"
     label = "Synthetic FRS"
@@ -19,7 +20,7 @@ class SynthFRS(PublicDataset):
         if year not in FRS.years:
             logging.warn(f"FRS for {year} not found: generating.")
             FRS.generate(year)
-        
+
         ID_COLS = (
             "person_id",
             "person_benunit_id",
@@ -57,5 +58,6 @@ class SynthFRS(PublicDataset):
                     f[variable] = anonymise(data[variable], variable).astype(
                         "S"
                     )
+
 
 SynthFRS = SynthFRS()

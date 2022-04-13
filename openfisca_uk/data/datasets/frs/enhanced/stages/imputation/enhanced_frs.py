@@ -6,6 +6,7 @@ import h5py
 from .lcfs_imputation import impute_consumption
 from .was_imputation import impute_wealth
 
+
 class EnhancedFRS(PrivateDataset):
     name = "enhanced_frs"
     label = "Enhanced FRS"
@@ -14,7 +15,9 @@ class EnhancedFRS(PrivateDataset):
 
     def generate(self, year: int):
         if year not in CalibratedFRS.years:
-            ok = input(f"Calibrated FRS not found for year {year}. Generate it? (y/n)")
+            ok = input(
+                f"Calibrated FRS not found for year {year}. Generate it? (y/n)"
+            )
             if ok == "y":
                 CalibratedFRS.generate(year)
 
@@ -24,7 +27,9 @@ class EnhancedFRS(PrivateDataset):
         enhanced_frs = h5py.File(self.file(year), mode="w")
         for variable in calibrated_frs.keys():
             for period in calibrated_frs[variable].keys():
-                enhanced_frs[f"{variable}/{period}"] = calibrated_frs[variable][period][...]
+                enhanced_frs[f"{variable}/{period}"] = calibrated_frs[
+                    variable
+                ][period][...]
         calibrated_frs.close()
         enhanced_frs.close()
 
@@ -48,11 +53,15 @@ class EnhancedFRS(PrivateDataset):
             },
         )
         from ..baseline_variables import generate_baseline_variables
+
         # Import here to avoid circular dependency
         generate_baseline_variables(year)
 
-        from ..remove_zero_weight_households import remove_zero_weight_households
+        from ..remove_zero_weight_households import (
+            remove_zero_weight_households,
+        )
 
         remove_zero_weight_households(self, year)
+
 
 EnhancedFRS = EnhancedFRS()

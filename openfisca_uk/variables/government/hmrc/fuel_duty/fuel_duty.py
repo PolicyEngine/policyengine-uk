@@ -14,12 +14,14 @@ class fuel_duty(Variable):
         diesel_litres = household("diesel_litres", period)
         return fd.petrol_and_diesel * (petrol_litres + diesel_litres)
 
+
 class baseline_fuel_duty(Variable):
     label = "Baseline fuel duty (cars only)"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 class change_in_fuel_duty(Variable):
     label = "Change in fuel duty"

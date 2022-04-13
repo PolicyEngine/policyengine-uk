@@ -35,6 +35,7 @@ class pension_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
 
+
 class total_pension_income(Variable):
     label = "Total pension income"
     documentation = "Private, personal and State Pension income"

@@ -34,7 +34,8 @@ def clone_and_replace_half(
     for field in previous_data:
         if "_id" in field and not "state" in field:
             values = np.array(
-                list(previous_data[field] * 10) + [x * 10 + 1 for x in previous_data[field]]
+                list(previous_data[field] * 10)
+                + [x * 10 + 1 for x in previous_data[field]]
             )
         elif "_weight" in field and not "state" in field:
             values = np.concatenate(
@@ -46,7 +47,9 @@ def clone_and_replace_half(
         elif field in ("state_id", "state_weight"):
             values = previous_data[field]
         elif field in mapping:
-            assert len(previous_data[field]) == len(mapping[field]), f"Lengths don't match for {field}: {len(previous_data[field])} != {len(mapping[field])}"
+            assert len(previous_data[field]) == len(
+                mapping[field]
+            ), f"Lengths don't match for {field}: {len(previous_data[field])} != {len(mapping[field])}"
             values = np.concatenate([previous_data[field], mapping[field]])
         else:
             values = np.concatenate(
