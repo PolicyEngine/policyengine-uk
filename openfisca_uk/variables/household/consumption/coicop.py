@@ -1,5 +1,7 @@
 from openfisca_uk.model_api import *
 
+# The below variables follow the COICOP MECE categories.
+
 @uprated(by="uprating.monthly_cpi_by_category.food_and_non_alcoholic_beverages")
 class food_and_non_alcoholic_beverages_consumption(Variable):
     entity = Household

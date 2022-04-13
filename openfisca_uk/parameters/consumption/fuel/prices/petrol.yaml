@@ -1,0 +1,16 @@
+description: Average price of unleaded petrol per litre, including fuel duty.
+values:
+  2012-06-01: 1.3492
+  2014-09-15: 1.2918
+  2017-05-01: 1.2023
+  2020-05-14: 1.0669
+  2022-01-01: 1.4910
+  2022-03-22: 1.6703
+metadata:
+  unit: currency-GBP
+  label: Price of unleaded petrol per litre
+  reference:
+    - title: RAC latest average
+      href: https://www.rac.co.uk/drive/advice/fuel-watch/
+    - title: RAC Foundation historical averages
+      href: https://www.racfoundation.org/data/uk-pump-prices-over-time
