@@ -11,7 +11,9 @@ class SynthFRS(PublicDataset):
     name = "synth_frs"
     label = "Synthetic FRS"
     is_openfisca_compatible = True
-
+    url_by_year = {
+        2022: "https://github.com/PolicyEngine/openfisca-uk/releases/download/synth-frs-v1/synth_frs_2022.h5",
+    }
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
 
     format = Dataset.ARRAYS
