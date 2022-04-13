@@ -51,4 +51,8 @@ class EnhancedFRS(PrivateDataset):
         # Import here to avoid circular dependency
         generate_baseline_variables(year)
 
+        from ..remove_zero_weight_households import remove_zero_weight_households
+
+        remove_zero_weight_households(self, year)
+
 EnhancedFRS = EnhancedFRS()
