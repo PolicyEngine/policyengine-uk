@@ -15,7 +15,7 @@ from openfisca_uk.reforms.presets.average_parameters import (
 from openfisca_uk.tools.baseline_variables import generate_baseline_variables
 from openfisca_uk.tools.parameters import backdate_parameters
 from openfisca_tools import ReformType
-from openfisca_uk_data import DATASETS, SynthFRS
+from openfisca_uk.data import DATASETS, SynthFRS
 from openfisca_tools.microsimulation import (
     Microsimulation as GeneralMicrosimulation,
 )

@@ -1,5 +1,5 @@
 from openfisca_uk import Microsimulation
-from openfisca_uk_data import FRSEnhanced
+from openfisca_uk.data import FRSEnhanced
 import pytest
 from itertools import product
 

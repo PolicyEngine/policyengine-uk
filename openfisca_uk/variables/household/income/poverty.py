@@ -1,4 +1,4 @@
-from openfisca_uk_data.datasets import FRSEnhanced, SynthFRS
+from openfisca_uk.data.datasets import FRSEnhanced, SynthFRS
 from openfisca_uk.model_api import *
 
 

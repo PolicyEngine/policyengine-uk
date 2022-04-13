@@ -11,6 +11,7 @@ from openfisca_uk.data.datasets import (
     LCFS,
     WAS,
     SynthFRS,
+    DATASETS,
 )
 
 FRSEnhanced = EnhancedFRS

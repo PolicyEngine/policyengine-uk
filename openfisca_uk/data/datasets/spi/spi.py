@@ -78,7 +78,7 @@ def extend_spi_main_table(main: DataFrame) -> DataFrame:
     """
 
     from openfisca_uk import Microsimulation
-    from openfisca_uk_data import FRS
+    from openfisca_uk.data import FRS
 
     sim = Microsimulation(dataset=FRS)
 
