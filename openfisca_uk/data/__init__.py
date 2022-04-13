@@ -10,4 +10,7 @@ from openfisca_uk.data.datasets import (
     EnhancedFRS,
     LCFS,
     WAS,
+    SynthFRS,
 )
+
+FRSEnhanced = EnhancedFRS
