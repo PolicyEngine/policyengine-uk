@@ -12,7 +12,7 @@ test-setup:
 	python openfisca_uk/tools/testing_setup.py
 
 format:
-	autopep8 -r .
+	autopep8 -r . --in-place
 	black . -l 79
 
 test:

@@ -2,13 +2,16 @@ from typing import Union
 import yaml
 from pathlib import Path
 from openfisca_uk import Microsimulation
-from openfisca_uk_data import FRSEnhanced
 import pytest
+
+from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
+    EnhancedFRS,
+)
 
 with open(Path(__file__).parent / "statistics.yaml") as f:
     statistics = yaml.load(f, Loader=yaml.SafeLoader)
 
-sim = Microsimulation(dataset=FRSEnhanced, year=2019)
+sim = Microsimulation(dataset=EnhancedFRS, year=2022)
 variables = sim.simulation.tax_benefit_system.variables
 parameters = sim.simulation.tax_benefit_system.parameters
 
@@ -137,7 +140,7 @@ for variable in statistics:
     }
     for statistic in ("aggregate", "caseload"):
         if f"{statistic}_error_less_than" in test_names:
-            for year in range(2019, 2023):
+            for year in range(2022, 2023):
                 tests += [
                     AbsoluteErrorLessThan(
                         variable,
@@ -149,7 +152,7 @@ for variable in statistics:
                     )
                 ]
         if f"relative_{statistic}_error_less_than" in test_names:
-            for year in range(2019, 2023):
+            for year in range(2022, 2023):
                 tests += [
                     RelativeErrorLessThan(
                         variable,
