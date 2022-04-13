@@ -1,4 +1,3 @@
-import logging
 from openfisca_core.variables import Variable
 from typing import Callable, Type
 import h5py
@@ -43,14 +42,17 @@ def change_over_baseline(variable: Type[Variable]) -> Callable:
     return formula
 
 
-def generate_baseline_variables():
+def generate_baseline_variables(year: int):
     """
     Save baseline values of variables to a H5 dataset.
+
+    Args:
+        year (int): The year of the EnhancedFRS to input the results in.
     """
 
     from openfisca_uk import Microsimulation
 
-    YEARS = list(range(2022, 2026))
+    YEARS = list(range(year, 2026))
     baseline = Microsimulation(add_baseline_values=False)
 
     variable_metadata = baseline.simulation.tax_benefit_system.variables
@@ -90,7 +92,7 @@ def generate_baseline_variables():
     print(f"Found {len(variables)} variables to store baseline values for:")
     print("\n* " + "\n* ".join([variable.label for variable in variables]))
 
-    with h5py.File(EnhancedFRS.file(2022), "w") as f:
+    with h5py.File(EnhancedFRS.file(year), "w") as f:
         for year in YEARS:
             for variable in variables:
                 f.create_dataset(
@@ -100,4 +102,4 @@ def generate_baseline_variables():
 
 
 if __name__ == "__main__":
-    generate_baseline_variables()
+    generate_baseline_variables(2022)

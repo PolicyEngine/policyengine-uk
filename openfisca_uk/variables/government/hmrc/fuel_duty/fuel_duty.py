@@ -2,7 +2,7 @@ from openfisca_uk.model_api import *
 
 
 class fuel_duty(Variable):
-    label = "Fuel duty"
+    label = "Fuel duty (cars only)"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -13,3 +13,19 @@ class fuel_duty(Variable):
         petrol_litres = household("petrol_litres", period)
         diesel_litres = household("diesel_litres", period)
         return fd.petrol_and_diesel * (petrol_litres + diesel_litres)
+
+class baseline_fuel_duty(Variable):
+    label = "Baseline fuel duty (cars only)"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+class change_in_fuel_duty(Variable):
+    label = "Change in fuel duty"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    formula = change_over_baseline(fuel_duty)
