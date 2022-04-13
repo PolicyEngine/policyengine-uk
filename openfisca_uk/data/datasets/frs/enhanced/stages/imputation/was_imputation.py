@@ -27,10 +27,11 @@ PREDICTOR_VARIABLES = [
     "pension_income",
     "employment_income",
     "self_employment_income",
-    "investment_income",
+    "capital_income",
     "num_bedrooms",
     "council_tax",
     "is_renting",
+    "region",
 ]
 
 IMPUTE_VARIABLES = [
@@ -55,13 +56,6 @@ def impute_wealth(year: int, dataset: type = FRS) -> pd.Series:
     Returns:
         pd.Series: The predicted wealth values.
     """
-
-    from openfisca_uk import Microsimulation
-
-    sim = Microsimulation(
-        dataset=dataset,
-        year=year,
-    )
 
     from openfisca_uk import Microsimulation
 

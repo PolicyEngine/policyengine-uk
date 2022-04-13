@@ -1,6 +1,6 @@
 import logging
 from openfisca_uk import CountryTaxBenefitSystem
-from openfisca_uk.data.datasets.frs.enhanced.enhanced_frs import EnhancedFRS
+from openfisca_uk.data import EnhancedFRS
 from openfisca_uk.entities import entities
 import numpy as np
 import warnings
@@ -78,18 +78,24 @@ class Microsimulation(GeneralMicrosimulation):
         self,
         reform: ReformType = (),
         dataset: type = EnhancedFRS,
-        year: int = None,
+        year: int = 2022,
         adjust_weights: bool = False,
         average_parameters: bool = False,
         add_baseline_values: bool = True,
         post_reform: ReformType = None,
     ):
-        if dataset is None:
-            dataset = self.default_dataset
-        elif dataset == SynthFRS:
-            # Check we have the latest synthetic dataset
-            if len(dataset.years) == 0:
-                SynthFRS.download(2019)
+        if len(dataset.years) == 0:
+            logging.warn(f"You are trying to run a microsimulation using the dataset: {dataset.label}, but no years of that dataset could be found. Attempting to download it.")
+            try:
+                dataset.download(year)
+            except Exception as e:
+                logging.warn(f"Encountered an error when attempting to download the {dataset.label} (this is likely because your account could not be authenticated, if it is not a public dataset). Attempting to download the Synthetic FRS.")
+                try:
+                    SynthFRS.download(year)
+                    dataset = SynthFRS
+                except Exception as e:
+                    logging.warn(f"Encountered an error when attempting to download the synthetic FRS dataset: {e}")
+                    raise e
         if post_reform is not None:
             self.post_reform = post_reform
         if year is None:

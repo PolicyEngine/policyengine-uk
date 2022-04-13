@@ -1,1 +1,1 @@
-from .stages import ExtendedFRS, CalibratedFRS
+from .stages import ExtendedFRS, CalibratedFRS, EnhancedFRS

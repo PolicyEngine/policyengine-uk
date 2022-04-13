@@ -47,3 +47,5 @@ class EnhancedFRS(PrivateDataset):
                 for field in pred_wealth.columns
             },
         )
+
+EnhancedFRS = EnhancedFRS()

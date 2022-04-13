@@ -1,15 +1,6 @@
 from openfisca_uk.model_api import *
 
 
-class petrol_spending(Variable):
-    label = "Petrol spending"
-    documentation = "Spending on petrol"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"
-
-
 class petrol_litres(Variable):
     label = "Petrol volume"
     documentation = "Total litres of petrol bought"
@@ -24,9 +15,9 @@ class petrol_litres(Variable):
         )
 
 
-class diesel_spending(Variable):
-    label = "Diesel spending"
-    documentation = "Spending on diesel"
+class diesel_litres(Variable):
+    label = "Diesel volume"
+    documentation = "Total litres of diesel bought"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -36,15 +27,6 @@ class diesel_spending(Variable):
         return household("diesel_spending", period) / household(
             "diesel_price", period
         )
-
-
-class diesel_litres(Variable):
-    label = "Diesel volume"
-    documentation = "Total litres of diesel bought"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"
 
 
 class petrol_price(Variable):
