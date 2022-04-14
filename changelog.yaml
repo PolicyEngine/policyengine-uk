@@ -409,3 +409,7 @@
   changes:
     fixed:
     - Failed imports of reform tools.
+- bump: patch
+  changes:
+    fixed:
+    - MANIFEST.in file re-added (caused previous two issues).
