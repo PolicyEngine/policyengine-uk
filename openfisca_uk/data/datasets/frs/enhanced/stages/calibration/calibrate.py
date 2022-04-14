@@ -21,7 +21,7 @@ from openfisca_tools.data import Dataset
 
 
 class HouseholdWeights:
-    def __init__(self, start_year: int = 2019, end_year: int = 2027):
+    def __init__(self, start_year: int = 2022, end_year: int = 2027):
         self.start_year = start_year
         self.end_year = end_year
 

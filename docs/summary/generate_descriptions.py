@@ -1,19 +1,16 @@
-from openfisca_uk.data.datasets.frs.frs_enhanced.frs_enhanced import (
-    FRSEnhanced,
-)
+from openfisca_uk.data import EnhancedFRS
 from openfisca_uk import Microsimulation
-from openfisca_uk.data import FRSEnhanced
 from tqdm import tqdm
 
-sim = Microsimulation(dataset=FRSEnhanced, year=2019)
+sim = Microsimulation(dataset=EnhancedFRS, year=2022)
 
-text = "# OpenFisca-UK Variable Statistics\n\nAll statistics generated from the uprated (to 2020) 2019-20 Family Resources Survey, with simulation turned on.\n\n"
+text = "# OpenFisca-UK Variable Statistics\n\nAll statistics generated from the uprated (to 2022) 2019-20 Family Resources Survey, with simulation turned on.\n\n"
 
 for name, var in tqdm(
     sim.simulation.tax_benefit_system.variables.items(),
     desc="Generating descriptions",
 ):
-    values = sim.calc(name, 2021)
+    values = sim.calc(name, 2022)
     if var.value_type in (float, bool, int):
         text += f"\n- {name}:\n  - Type: {var.value_type.__name__}\n  - Entity: {var.entity.key}\n  - Description: {var.label}\n  - Mean: {round(values.mean(), 1):,}\n  - Median: {round(values.median(), 1):,}\n  - Stddev: {round(values.std(), 1):,}\n  - Non-zero count: {(values > 0).sum():,}\n\n"
     else:

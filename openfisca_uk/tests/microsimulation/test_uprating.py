@@ -1,5 +1,5 @@
 from openfisca_uk import Microsimulation
-from openfisca_uk.data import FRSEnhanced
+from openfisca_uk.data import EnhancedFRS
 import pytest
 from itertools import product
 
@@ -13,14 +13,14 @@ UPRATED_VARIABLES = (
     "dividend_income",
 )
 
-sim = Microsimulation(dataset=FRSEnhanced, year=2019)
+sim = Microsimulation(dataset=EnhancedFRS, year=2022)
 
 
 @pytest.mark.parametrize(
-    "variable,year", product(UPRATED_VARIABLES, range(2020, 2022))
+    "variable,year", product(UPRATED_VARIABLES, range(2022, 2024))
 )
 def test_uprating(variable: str, year: int):
     assert any(
         sim.calc(variable, period=year).values
-        != sim.calc(variable, period=2019).values
+        != sim.calc(variable, period=2022).values
     )

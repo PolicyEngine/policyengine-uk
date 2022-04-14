@@ -14,4 +14,4 @@ from openfisca_uk.data.datasets import (
     DATASETS,
 )
 
-FRSEnhanced = EnhancedFRS
+EnhancedFRS = EnhancedFRS

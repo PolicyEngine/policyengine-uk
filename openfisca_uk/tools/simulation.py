@@ -135,7 +135,7 @@ class Microsimulation(GeneralMicrosimulation):
         if (
             ("frs_enhanced" in dataset.name)
             and adjust_weights
-            and year >= 2019
+            and year >= 2022
         ):
             weight_file = (
                 Path(__file__).parent.parent / "calibration" / "frs_weights.h5"

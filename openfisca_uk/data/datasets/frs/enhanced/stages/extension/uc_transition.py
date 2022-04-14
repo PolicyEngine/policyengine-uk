@@ -14,14 +14,14 @@ LEGACY_BENEFITS = [
 
 
 def migrate_to_universal_credit(
-    dataset: Dataset = FRS, year: int = 2019
+    dataset: Dataset = FRS, year: int = 2022
 ) -> Dict[str, ArrayLike]:
     """Converts legacy benefit claimants to Universal Credit claimants by switching
     reported amounts.
 
     Args:
         dataset (type, optional): The dataset to use. Defaults to FRS.
-        year (int, optional): The year to use. Defaults to 2019.
+        year (int, optional): The year to use. Defaults to 2022.
 
     Returns:
         Dict[str, ArrayLike]: Variables with replaced values.

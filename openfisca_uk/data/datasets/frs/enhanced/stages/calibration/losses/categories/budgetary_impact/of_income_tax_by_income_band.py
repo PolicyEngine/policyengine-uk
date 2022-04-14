@@ -53,5 +53,5 @@ class BudgetaryImpactOfIncomeTaxByIncomeBand(LossCategory):
         return [
             bracket.name + "." + str(year)
             for bracket in BudgetaryImpactOfIncomeTaxByIncomeBand.parameter_folder.brackets
-            for year in range(2019, 2027)
+            for year in range(2022, 2027)
         ]

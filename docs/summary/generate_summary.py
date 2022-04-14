@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from openfisca_uk import Microsimulation
-from openfisca_uk.data import FRSEnhanced
+from openfisca_uk.data import EnhancedFRS
 import yaml
 import subprocess
 
@@ -17,7 +17,7 @@ def main(args):
     with open("docs/summary/summary.yaml", "r") as f:
         previous_results = yaml.safe_load(f)
 
-    sim = Microsimulation(dataset=FRSEnhanced, year=2019)
+    sim = Microsimulation(dataset=EnhancedFRS, year=2022)
     year = 2022
 
     results = {

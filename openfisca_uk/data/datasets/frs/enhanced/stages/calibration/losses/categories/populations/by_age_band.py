@@ -62,6 +62,6 @@ class PopulationsByAgeBand(LossCategory):
     def get_metric_names():
         return [
             parameter.name + "." + str(year)
-            for year in range(2019, 2027)
+            for year in range(2022, 2027)
             for parameter in PopulationsByAgeBand.get_metrics()
         ]

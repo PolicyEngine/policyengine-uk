@@ -27,5 +27,5 @@ class HouseholdsInTotal(LossCategory):
     def get_metric_names():
         return [
             HouseholdsInTotal.parameter_folder.name + "." + str(year)
-            for year in range(2019, 2027)
+            for year in range(2022, 2027)
         ]

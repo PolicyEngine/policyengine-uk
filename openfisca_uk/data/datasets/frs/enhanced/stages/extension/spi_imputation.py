@@ -22,7 +22,7 @@ IMPUTATIONS = [
 ]
 
 
-def impute_incomes(dataset: Dataset = FRS, year: int = 2019) -> MicroDataFrame:
+def impute_incomes(dataset: Dataset = FRS, year: int = 2022) -> MicroDataFrame:
     """Imputation of high incomes from the SPI.
 
     Args:
