@@ -410,3 +410,7 @@
     fixed:
     - Failed imports of reform tools.
   date: 2022-04-14 12:48:06
+- bump: patch
+  changes:
+    fixed:
+    - MANIFEST.in file re-added (caused previous two issues).
