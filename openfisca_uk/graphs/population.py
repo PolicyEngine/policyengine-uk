@@ -44,7 +44,7 @@ def distributional_chart(
     level: str = "person",
     reform_names: List[str] = None,
     bucket: str = "decile",
-    aggregation: str = "mean",
+    aggregation: str = "sum",
     compare_groups: bool = "true",
     relative: bool = False,
     currency: str = "£",
