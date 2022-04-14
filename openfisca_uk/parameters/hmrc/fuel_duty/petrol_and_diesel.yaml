@@ -1,0 +1,17 @@
+description: Fuel duty rate per litre of petrol and diesel.
+values:
+  2010-04-01: 0.5719
+  2010-10-01: 0.5819
+  2011-01-01: 0.5895
+  2011-03-23: 0.5795
+  2012-01-01: 0.6097
+  2013-04-01: 0.5795
+  2021-01-01: 0.5795
+  2022-03-23: 0.5295
+metadata:
+  unit: currency-GBP
+  name: fuel_duty_rate
+  label: Fuel duty rate (petrol and diesel)
+  reference:
+    - title: Hydrocarbon Oil Duties Act 1979 s. 6
+      href: https://www.legislation.gov.uk/ukpga/1979/5/section/6

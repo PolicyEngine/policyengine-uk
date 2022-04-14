@@ -1,4 +1,4 @@
-from openfisca_uk_data import FRSEnhanced, SynthFRS, DATASETS
+from openfisca_uk.data import EnhancedFRS, SynthFRS, DATASETS
 from pathlib import Path
 import inquirer
 import yaml
@@ -10,7 +10,7 @@ NEWLINE = "\n"
 
 DATASET_CONFIG_FILE = Path(__file__).parent / "tools" / "datasets.yml"
 
-key_to_ds = {ds.name: ds for ds in DATASETS if ds.model == "openfisca_uk"}
+key_to_ds = {ds.name: ds for ds in DATASETS if ds.is_openfisca_compatible}
 
 
 def set_default(dataset):
@@ -33,29 +33,29 @@ def main():
         set_default(key_to_ds[args.set_default])
         print("Just setting default dataset, skipping questions.")
     else:
-        USE_FRS_2019 = "Use the enhanced 2019 FRS"
+        USE_FRS_2022 = "Use the enhanced 2022 FRS"
         USE_SYNTHETIC = "Just use the synthetic FRS"
         CUSTOM = "Use a specific dataset"
         setup_question = inquirer.List(
             "setup_mode",
             message="How would you like to set up OpenFisca-UK's default dataset?",
-            choices=[USE_FRS_2019, USE_SYNTHETIC, CUSTOM],
+            choices=[USE_FRS_2022, USE_SYNTHETIC, CUSTOM],
         )
         setup_mode = inquirer.prompt([setup_question])["setup_mode"]
         if setup_mode == USE_SYNTHETIC:
             if len(SynthFRS.years) == 0:
                 print("Couldn't find the synthetic dataset, downloading.")
-                SynthFRS.download(2019)
+                SynthFRS.download(2022)
             else:
                 print(
                     f"You currently have the synthetic FRS dataset for: {', '.join(map(str, SynthFRS.years))}."
                 )
             set_default(SynthFRS)
-        elif setup_mode == USE_FRS_2019:
-            if 2019 not in FRSEnhanced.years:
-                print("Couldn't find the enhanced 2019 dataset, downloading.")
-                FRSEnhanced.download(2019)
-            set_default(FRSEnhanced)
+        elif setup_mode == USE_FRS_2022:
+            if 2022 not in EnhancedFRS.years:
+                print("Couldn't find the enhanced 2022 dataset, downloading.")
+                EnhancedFRS.download(2022)
+            set_default(EnhancedFRS)
         elif setup_mode == CUSTOM:
             dataset_question = inquirer.List(
                 "default_dataset",
@@ -63,7 +63,7 @@ def main():
                 choices=list(
                     map(
                         lambda x: x.name,
-                        filter(lambda x: x.model == "openfisca_uk", DATASETS),
+                        filter(lambda x: x.is_openfisca_compatible, DATASETS),
                     )
                 ),
             )

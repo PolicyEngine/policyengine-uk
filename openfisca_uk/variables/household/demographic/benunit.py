@@ -23,6 +23,9 @@ class benunit_weight(Variable):
     label = "Weight factor for the benefit unit"
     definition_period = YEAR
 
+    def formula(benunit, period, parameters):
+        return benunit.max(benunit.members("person_weight", period))
+
 
 class is_married(Variable):
     value_type = bool

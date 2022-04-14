@@ -52,7 +52,8 @@ brackets:
         name: add_rate
         unit: /1
         tests:
-          - decreases_net_income: true
+          - period: 2022
+            decreases_net_income: true
     threshold:
       description: The lower threshold for the additional rate
       values:

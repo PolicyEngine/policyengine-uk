@@ -1,5 +1,6 @@
 import logging
 from openfisca_uk import CountryTaxBenefitSystem
+from openfisca_uk.data import EnhancedFRS
 from openfisca_uk.entities import entities
 import numpy as np
 import warnings
@@ -14,7 +15,7 @@ from openfisca_uk.reforms.presets.average_parameters import (
 from openfisca_uk.tools.baseline_variables import generate_baseline_variables
 from openfisca_uk.tools.parameters import backdate_parameters
 from openfisca_tools import ReformType
-from openfisca_uk_data import DATASETS, SynthFRS
+from openfisca_uk.data import DATASETS, SynthFRS
 from openfisca_tools.microsimulation import (
     Microsimulation as GeneralMicrosimulation,
 )
@@ -31,7 +32,6 @@ from openfisca_tools.parameters import (
 from openfisca_core.model_api import Reform
 from openfisca_uk.tools.tax_benefit_uprating import add_tax_benefit_uprating
 from functools import reduce
-from openfisca_core.memory_config import MemoryConfig
 
 
 with open(Path(__file__).parent / "datasets.yml") as f:
@@ -76,19 +76,31 @@ class Microsimulation(GeneralMicrosimulation):
     def __init__(
         self,
         reform: ReformType = (),
-        dataset: type = None,
-        year: int = None,
-        adjust_weights: bool = True,
+        dataset: type = EnhancedFRS,
+        year: int = 2022,
+        adjust_weights: bool = False,
         average_parameters: bool = False,
         add_baseline_values: bool = True,
         post_reform: ReformType = None,
     ):
-        if dataset is None:
-            dataset = self.default_dataset
-        elif dataset == SynthFRS:
-            # Check we have the latest synthetic dataset
-            if len(dataset.years) == 0:
-                SynthFRS.download(2019)
+        if len(dataset.years) == 0:
+            logging.warn(
+                f"You are trying to run a microsimulation using the dataset: {dataset.label}, but no years of that dataset could be found. Attempting to download it."
+            )
+            try:
+                dataset.download(year)
+            except Exception as e:
+                logging.warn(
+                    f"Encountered an error when attempting to download the {dataset.label} (this is likely because your account could not be authenticated, if it is not a public dataset). Attempting to download the Synthetic FRS."
+                )
+                try:
+                    SynthFRS.download(year)
+                    dataset = SynthFRS
+                except Exception as e:
+                    logging.warn(
+                        f"Encountered an error when attempting to download the synthetic FRS dataset: {e}"
+                    )
+                    raise e
         if post_reform is not None:
             self.post_reform = post_reform
         if year is None:
@@ -122,7 +134,7 @@ class Microsimulation(GeneralMicrosimulation):
         if (
             ("frs_enhanced" in dataset.name)
             and adjust_weights
-            and year >= 2019
+            and year >= 2022
         ):
             weight_file = (
                 Path(__file__).parent.parent / "calibration" / "frs_weights.h5"
@@ -151,34 +163,12 @@ class Microsimulation(GeneralMicrosimulation):
                         ).values,
                     )
 
-        # Add baseline variables
-
-        if "frs_enhanced" in dataset.name and add_baseline_values:
-
-            filepath = REPO / "data" / "baseline_variables.h5"
-            if not filepath.exists():
-                logging.warning(
-                    "Baseline variables file not found. Generating..."
-                )
-                generate_baseline_variables()
-
-            with h5py.File(filepath, "r") as f:
-                for year in f.keys():
-                    for variable in f[year].keys():
-                        self.simulation.set_input(
-                            variable,
-                            year,
-                            np.array(f[f"{year}/{variable}"]),
-                        )
-
         if average_parameters:
             self.simulation.tax_benefit_system.parameters = (
                 apply_parameter_averaging(
                     self.simulation.tax_benefit_system.parameters
                 )
             )
-
-        self.simulation.memory_config = MemoryConfig(max_memory_occupation=0)
 
 
 class IndividualSim(GeneralIndividualSim):

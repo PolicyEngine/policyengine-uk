@@ -48,12 +48,14 @@ setup(
             "flake8 >=3.5.0,<3.8.0",
             "flake8-print",
             "pycodestyle >=2.3.0,<2.6.0",  # To avoid incompatibility with flake
+            "tensorflow",
         ]
     },
     entry_points={
         "console_scripts": [
             "openfisca-uk-setup=openfisca_uk.initial_setup:main",
             "openfisca-uk=openfisca_uk.tools.cli:main",
+            "openfisca-uk-data=openfisca_uk.data.cli:cli",
         ],
     },
     packages=find_packages(),

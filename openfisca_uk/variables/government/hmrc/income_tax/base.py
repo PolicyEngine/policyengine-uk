@@ -12,7 +12,7 @@ https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-st
 """
 
 
-@uprated(by="earnings")
+@uprated(by="uprating.earnings")
 class employment_income(Variable):
     value_type = float
     entity = Person
@@ -24,7 +24,7 @@ class employment_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="earnings")
+@uprated(by="uprating.earnings")
 class pension_income(Variable):
     value_type = float
     entity = Person
@@ -34,6 +34,17 @@ class pension_income(Variable):
     unit = "currency-GBP"
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
+
+
+class total_pension_income(Variable):
+    label = "Total pension income"
+    documentation = "Private, personal and State Pension income"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    formula = sum_of_variables(["pension_income", "state_pension"])
 
 
 class social_security_income(Variable):
@@ -55,7 +66,7 @@ class social_security_income(Variable):
         return add(person, period, COMPONENTS, options=[ADD])
 
 
-@uprated(by="earnings")
+@uprated(by="uprating.earnings")
 class self_employment_income(Variable):
     value_type = float
     entity = Person
@@ -67,7 +78,7 @@ class self_employment_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="earnings")
+@uprated(by="uprating.earnings")
 class property_income(Variable):
     value_type = float
     entity = Person
@@ -79,7 +90,7 @@ class property_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="earnings")
+@uprated(by="uprating.earnings")
 class savings_interest_income(Variable):
     value_type = float
     entity = Person
@@ -91,7 +102,7 @@ class savings_interest_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="earnings")
+@uprated(by="uprating.earnings")
 class dividend_income(Variable):
     value_type = float
     entity = Person

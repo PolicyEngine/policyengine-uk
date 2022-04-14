@@ -1,0 +1,16 @@
+description: Average price of diesel per litre.
+values:
+  2012-06-01: 1.4052
+  2014-09-15: 1.3339
+  2017-05-01: 1.2225
+  2020-05-14: 1.1186
+  2022-01-01: 1.4559
+  2022-03-22: 1.7897
+metadata:
+  unit: currency-GBP
+  label: Price of diesel per litre
+  reference:
+    - title: RAC
+      href: https://www.rac.co.uk/drive/advice/fuel-watch/
+    - title: RAC Foundation historical averages
+      href: https://www.racfoundation.org/data/uk-pump-prices-over-time

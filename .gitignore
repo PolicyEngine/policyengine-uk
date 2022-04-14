@@ -40,3 +40,8 @@ openfisca_uk/tools/datasets.yml
 openfisca_uk/calibration/*.csv
 openfisca_uk/calibration/*.yaml
 openfisca_uk/calibration/*.h5
+
+# Microdata
+
+**/*.h5
+**/*.csv

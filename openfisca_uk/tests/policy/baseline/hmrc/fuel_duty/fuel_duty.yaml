@@ -1,0 +1,8 @@
+- name: No fuel spending, no fuel duty.
+  period: 2022
+  absolute_error_margin: 5
+  input:
+    petrol_spending: 1_200
+  output:
+    petrol_litres: 805
+    fuel_duty: 470

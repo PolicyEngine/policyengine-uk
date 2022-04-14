@@ -5,57 +5,21 @@ metadata:
   propagate_metadata_to_children: true
   reference:
     # Data is more recent than the URL suggests.
-    - title: Survey of Personal Incomes (SPI) | National Statistics
+    - title: Profit, employment and pension income | National Statistics
       href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+    - title: Property, interest, dividend and other income | National Statistics
+      href: https://www.gov.uk/government/statistics/investment-income-2010-to-2011
 employment_income:
-  2019-01-01: 786_000_000_000
+  2019-01-01: 814_000_000_000
 self_employment_income:
-  2019-01-01: 84_600_000_000
-pension_income:
-  2019-01-01: 55_500_000_000
+  2019-01-01: 87_400_000_000
+total_pension_income:
+  2019-01-01: 157_000_000_000 # 102bn (State Pension*) + 55bn (other pensions*)
+  # *There is some mixture between these two because the SPI assigns lump sums 
+  # to State Pension only if they can be separately identified.
 property_income:
-  2019-01-01: 21_500_000_000
+  2019-01-01: 23_400_000_000
 savings_interest_income:
-  2019-01-01: 4_290_000_000
+  2019-01-01: 4_980_000_000
 dividend_income:
-  2019-01-01: 63_300_000_000
-owned_land:
-  2016-01-01: 63_004_871_508
-property_wealth:
-  2016-01-01: 6_226_118_732_981
-corporate_wealth:
-  2016-01-01: 4_886_196_339_597
-main_residence_value:
-  2016-01-01: 5_281_024_252_316
-other_residential_property_value:
-  2016-01-01: 261_527_903_151
-non_residential_property_value:
-  2016-01-01: 58_260_345_753
-food_and_non_alcoholic_beverages_consumption:
-  2019-01-01: 91_835_237_711
-alcohol_and_tobacco_consumption:
-  2019-01-01: 18_721_325_651
-clothing_and_footwear_consumption:
-  2019-01-01: 33_239_735_422
-housing_water_and_electricity_consumption:
-  2019-01-01: 119_960_311_256
-household_furnishings_consumption:
-  2019-01-01: 52_762_188_165
-health_consumption:
-  2019-01-01: 11_858_497_124
-transport_consumption:
-  2019-01-01: 117_943_525_263
-communication_consumption:
-  2019-01-01: 16_195_932_073
-recreation_consumption:
-  2019-01-01: 107_163_092_434
-education_consumption:
-  2019-01-01: 6_542_285_569
-restaurants_and_hotels_consumption:
-  2019-01-01: 75_108_487_801
-miscellaneous_consumption:
-  2019-01-01: 65_791_957_705
-petrol_spending:
-  2019-01-01: 19_577_297_560
-diesel_spending:
-  2019-01-01: 12_422_974_624
+  2019-01-01: 65_200_000_000

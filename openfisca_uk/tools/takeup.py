@@ -14,7 +14,7 @@ BENEFITS = [
     "JSA_income",
 ]
 
-YEARS = list(range(2019, 2026))
+YEARS = list(range(2022, 2026))
 
 
 def add_takeup_parameters():
