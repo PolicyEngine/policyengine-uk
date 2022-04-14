@@ -74,7 +74,11 @@ class ExtendedFRS(PrivateDataset):
             weighting=0,
         )
 
-        self.save(year, f"original_weight/{year}", self.load(year, f"household_weight/{year}"))
+        self.save(
+            year,
+            f"original_weight/{year}",
+            self.load(year, f"household_weight/{year}"),
+        )
 
         logging.info("Finished generating SPI-enhanced FRS.")
 
