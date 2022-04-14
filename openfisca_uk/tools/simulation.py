@@ -32,7 +32,6 @@ from openfisca_tools.parameters import (
 from openfisca_core.model_api import Reform
 from openfisca_uk.tools.tax_benefit_uprating import add_tax_benefit_uprating
 from functools import reduce
-from openfisca_core.memory_config import MemoryConfig
 
 
 with open(Path(__file__).parent / "datasets.yml") as f:
@@ -170,8 +169,6 @@ class Microsimulation(GeneralMicrosimulation):
                     self.simulation.tax_benefit_system.parameters
                 )
             )
-
-        self.simulation.memory_config = MemoryConfig(max_memory_occupation=0)
 
 
 class IndividualSim(GeneralIndividualSim):

@@ -16,7 +16,7 @@ metadata:
   uprating: uprating.september_cpi
   reference: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances
   tests:
-    - period: 2021
+    - period: 2022
       value: 0
       revenue:
         min: 95.e+9

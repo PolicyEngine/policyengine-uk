@@ -17,7 +17,7 @@ sim = Microsimulation(dataset=EnhancedFRS, year=2022)
 
 
 @pytest.mark.parametrize(
-    "variable,year", product(UPRATED_VARIABLES, range(2022, 2024))
+    "variable,year", product(UPRATED_VARIABLES, range(2023, 2026))
 )
 def test_uprating(variable: str, year: int):
     assert any(
