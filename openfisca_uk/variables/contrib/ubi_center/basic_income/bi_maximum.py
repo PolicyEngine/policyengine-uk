@@ -16,7 +16,11 @@ class bi_maximum(Variable):
         return (
             select(
                 [is_child_for_bi, is_wa_for_bi, is_senior_for_bi],
-                [bi.amount.by_age.child, bi.amount.by_age.working_age, bi.amount.by_age.senior],
+                [
+                    bi.amount.by_age.child,
+                    bi.amount.by_age.working_age,
+                    bi.amount.by_age.senior,
+                ],
             )
             * WEEKS_IN_YEAR
         )
