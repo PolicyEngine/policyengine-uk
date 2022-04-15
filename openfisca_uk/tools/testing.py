@@ -197,7 +197,7 @@ class YamlItem(pytest.Item):
             self.test.get("extensions", []),
         )
         for reform in inline_reforms:
-            self.tax_benefit_system = reform(self.tax_benefit_system)
+            self.tax_benefit_system = reform.apply(self.tax_benefit_system)
         verbose = self.options.get("verbose")
         performance_graph = self.options.get("performance_graph")
         performance_tables = self.options.get("performance_tables")

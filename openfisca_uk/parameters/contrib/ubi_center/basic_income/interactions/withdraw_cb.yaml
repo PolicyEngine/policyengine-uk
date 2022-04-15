@@ -3,5 +3,5 @@ values:
   2010-01-01: false
 metadata:
   unit: bool
-  label: Withdraw Child Benefit from BI recipients
+  label: Withdraw Child Benefit from basic income recipients
   name: bi_withdraw_cb

@@ -42,7 +42,7 @@ class tax_credits_applicable_income(Variable):
             "miscellaneous_income",
         ]
         bi = parameters(period).contrib.ubi_center.basic_income
-        if bi.include_in_means_tests:
+        if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
         income += aggr(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]

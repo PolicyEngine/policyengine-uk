@@ -641,7 +641,7 @@ class UC_MIF_capped_earned_income(Variable):
             "miscellaneous_income",
         ]
         bi = parameters(period).contrib.ubi_center.basic_income
-        if bi.include_in_means_tests:
+        if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
         personal_gross_earned_income = add(person, period, INCOME_COMPONENTS)
         floor = where(

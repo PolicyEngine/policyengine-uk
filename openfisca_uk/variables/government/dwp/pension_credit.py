@@ -93,7 +93,7 @@ class guarantee_credit_applicable_income(Variable):
         ]
         bi = parameters(period).contrib.ubi_center.basic_income
         income = aggr(benunit, period, INCOME_COMPONENTS)
-        if not bi.include_in_means_tests:
+        if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
             income -= add(benunit, period, ["basic_income"])
         tax = aggr(benunit, period, ["tax"])
