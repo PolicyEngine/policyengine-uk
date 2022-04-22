@@ -77,7 +77,7 @@ def impute_wealth(year: int, dataset: type = FRS) -> pd.Series:
     )
 
     return si.rf_impute(
-        x_train=sender.drop(IMPUTE_VARIABLES, axis=1),
+        x_train=sender[PREDICTOR_VARIABLES],
         y_train=sender[IMPUTE_VARIABLES],
         x_new=receiver,
         verbose=True,
