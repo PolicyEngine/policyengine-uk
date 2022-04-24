@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class minimum_guarantee(Variable):
     label = "Minimum Guarantee"
     documentation = "The Minimum Guarantee informs the Pension Credit Guarantee Credit amount. Pensioners usually have their annual income increased to this amount by Pension Credit."
@@ -9,7 +10,9 @@ class minimum_guarantee(Variable):
     unit = "currency-GBP"
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6"
 
-    formula = sum_of_variables([
-        "standard_minimum_guarantee",
-        "additional_minimum_guarantee",
-    ])
+    formula = sum_of_variables(
+        [
+            "standard_minimum_guarantee",
+            "additional_minimum_guarantee",
+        ]
+    )

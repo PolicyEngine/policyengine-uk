@@ -1,5 +1,8 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.government.dwp.pension_credit.pension_credit import pension_credit
+from openfisca_uk.variables.government.dwp.pension_credit.pension_credit import (
+    pension_credit,
+)
+
 
 class baseline_pension_credit(Variable):
     label = "Pension Credit (baseline)"
@@ -7,6 +10,7 @@ class baseline_pension_credit(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
+
 
 class baseline_has_pension_credit(Variable):
     label = "Receives Pension Credit (baseline)"
@@ -16,6 +20,7 @@ class baseline_has_pension_credit(Variable):
     default_value = True
 
     formula = baseline_is_nonzero(pension_credit)
+
 
 class would_claim_pc(Variable):
     label = "Would claim Pension Credit"

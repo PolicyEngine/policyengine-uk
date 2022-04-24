@@ -66,6 +66,7 @@ class pip_dl(Variable):
             * WEEKS_IN_YEAR
         )
 
+
 class receives_enhanced_pip_dl(Variable):
     label = "Receives enhanced PIP (daily living)"
     entity = Person

@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class additional_minimum_guarantee(Variable):
     label = "Additional Minimum Guarantee"
     entity = BenUnit

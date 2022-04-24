@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class guarantee_credit_eligible(Variable):
     label = "Guarantee Credit eligible"
     entity = BenUnit

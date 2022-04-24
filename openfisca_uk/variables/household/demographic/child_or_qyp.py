@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class num_children_and_qyp(Variable):
     label = "Children and qualifying young people"
     documentation = "The number of children and qualifying young people (young adults in education) in the family"

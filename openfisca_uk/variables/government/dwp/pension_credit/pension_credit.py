@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class pension_credit(Variable):
     label = "Pension Credit"
     entity = BenUnit

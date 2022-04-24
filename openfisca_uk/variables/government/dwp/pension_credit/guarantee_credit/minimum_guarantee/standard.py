@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class standard_minimum_guarantee(Variable):
     label = "Standard Minimum Guarantee"
     entity = BenUnit
@@ -13,4 +14,3 @@ class standard_minimum_guarantee(Variable):
         pc = parameters(period).dwp.pension_credit
         weekly_rate = pc.guarantee_credit.minimum_guarantee[relation_type]
         return weekly_rate * WEEKS_IN_YEAR
-

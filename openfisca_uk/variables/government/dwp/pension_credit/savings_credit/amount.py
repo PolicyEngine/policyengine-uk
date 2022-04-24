@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class savings_credit(Variable):
     label = "Savings Credit"
     entity = BenUnit
@@ -16,8 +17,12 @@ class savings_credit(Variable):
         minimum_guarantee = benunit("minimum_guarantee", period)
         income_over_threshold = max_(income - threshold, 0)
         income_over_mg = max_(income - minimum_guarantee, 0)
-        maximum_savings_credit = sc.rate.phase_in * (minimum_guarantee - threshold)
-        phased_in_sc = min_(maximum_savings_credit, sc.rate.phase_in * income_over_threshold)
+        maximum_savings_credit = sc.rate.phase_in * (
+            minimum_guarantee - threshold
+        )
+        phased_in_sc = min_(
+            maximum_savings_credit, sc.rate.phase_in * income_over_threshold
+        )
         sc_reduction = sc.rate.phase_out * income_over_mg
         eligible = benunit("savings_credit_eligible", period)
         return max_(0, phased_in_sc - sc_reduction) * eligible

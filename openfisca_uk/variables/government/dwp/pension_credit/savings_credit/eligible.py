@@ -1,5 +1,6 @@
 from openfisca_uk.model_api import *
 
+
 class savings_credit_eligible(Variable):
     label = "Eligible for Savings Credit"
     entity = BenUnit
