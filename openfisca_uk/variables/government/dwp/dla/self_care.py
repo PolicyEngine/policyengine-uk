@@ -82,3 +82,13 @@ class dla_sc_middle_plus(Variable):
             person("dla_sc_category", period),
             [LowerMiddleOrHigher.MIDDLE, LowerMiddleOrHigher.HIGHER],
         )
+
+
+class receives_highest_dla_sc(Variable):
+    label = "Receives the highest DLA (self-care) category"
+    entity = Person
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(person, period, parameters):
+        return person("dla_sc_category", period) == LowerMiddleOrHigher.HIGHER

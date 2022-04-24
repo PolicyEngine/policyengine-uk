@@ -1,0 +1,11 @@
+description: Benefits which confer severe disability in children for Pension Credit.
+values:
+  2002-01-01:
+    - receives_highest_dla_sc
+    - receives_enhanced_pip_dl
+    # Not modeled: Disability Assistance for Children and Young People (Scotland) 
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: The State Pension Credit Regulations 2002 sch. 2A(9)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA
