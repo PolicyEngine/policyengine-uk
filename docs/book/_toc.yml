@@ -4,6 +4,7 @@ parts:
   - caption: Model
     chapters:
       - file: model/child_benefit
+      - file: model/pension_credit
       - file: model/stamp_duty
       - file: model/carbon_tax
       - file: model/data
