@@ -5,7 +5,7 @@ class num_children_and_qyp(Variable):
     documentation = "The number of children and qualifying young people (young adults in education) in the family"
     entity = BenUnit
     definition_period = YEAR
-    value_type = float
+    value_type = int
     unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
