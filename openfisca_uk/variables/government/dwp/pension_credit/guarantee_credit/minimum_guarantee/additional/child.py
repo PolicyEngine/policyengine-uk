@@ -27,5 +27,4 @@ class child_minimum_guarantee_addition(Variable):
             gc.child.addition + gc.child.disability.addition,
             gc.child.addition + gc.child.disability.severe.addition,
         ]) * WEEKS_IN_YEAR
-        print(per_child_amount / 52)
         return benunit.sum(per_child_amount)

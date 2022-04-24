@@ -1,6 +1,6 @@
 from openfisca_uk.model_api import *
 
-class pension_credit_guarantee_credit(Variable):
+class guarantee_credit(Variable):
     label = "Guarantee Credit"
     entity = BenUnit
     definition_period = YEAR
@@ -11,4 +11,5 @@ class pension_credit_guarantee_credit(Variable):
     def formula(benunit, period, parameters):
         income = benunit("pension_credit_income", period)
         minimum_guarantee = benunit("minimum_guarantee", period)
-        return max_(0, minimum_guarantee - income)
+        eligible = benunit("guarantee_credit_eligible", period)
+        return max_(0, minimum_guarantee - income) * eligible
