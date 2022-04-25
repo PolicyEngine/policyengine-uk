@@ -20,7 +20,7 @@ COUPLE:
 metadata:
   period: week
   name: pc_min_guarantee
-  label: PC minimum guarantee
+  label: Pension Credit minimum guarantee
   uprating: uprating.september_cpi
   unit: currency-GBP
   reference:

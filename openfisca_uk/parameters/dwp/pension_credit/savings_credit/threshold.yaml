@@ -11,7 +11,7 @@ SINGLE:
     2022-04-01: 158.47
   metadata:
     name: pc_sc_income_threshold_single
-    label: PC savings credit income threshold (single)
+    label: Pension Credit savings credit income threshold (single)
 COUPLE:
   values:
     2015-04-06: 201.80
@@ -24,7 +24,7 @@ COUPLE:
     2022-04-01: 251.17
   metadata:
     name: pc_sc_income_threshold_couple
-    label: PC savings credit income threshold (couple)
+    label: Pension Credit savings credit income threshold (couple)
 metadata:
   unit: currency-GBP
   period: week

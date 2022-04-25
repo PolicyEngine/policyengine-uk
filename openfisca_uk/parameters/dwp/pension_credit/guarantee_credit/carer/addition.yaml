@@ -7,7 +7,7 @@ metadata:
   unit: currency-GBP
   period: week
   name: pc_carer_addition
-  label: PC carer addition
+  label: Pension Credit carer addition
   uprating: uprating.september_cpi
   reference:
     - title: The Social Security Benefits Up-rating Order 2022
