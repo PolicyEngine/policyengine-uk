@@ -5,7 +5,7 @@
       person:
         is_SP_age: false
   output:
-    pension_credit_eligible: false
+    is_pension_credit_eligible: false
 
 - name: One member of a couple is pension age; eligible for Pension Credit
   period: 2022
@@ -19,4 +19,4 @@
       benunit:
         adults: [person, spouse]
   output:
-    pension_credit_eligible: true
+    is_pension_credit_eligible: true

@@ -12,5 +12,5 @@ class guarantee_credit(Variable):
     def formula(benunit, period, parameters):
         income = benunit("pension_credit_income", period)
         minimum_guarantee = benunit("minimum_guarantee", period)
-        eligible = benunit("guarantee_credit_eligible", period)
+        eligible = benunit("is_guarantee_credit_eligible", period)
         return max_(0, minimum_guarantee - income) * eligible
