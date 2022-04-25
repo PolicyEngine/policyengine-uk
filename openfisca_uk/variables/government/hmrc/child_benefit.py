@@ -7,7 +7,7 @@ class child_benefit_reported(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class would_claim_child_benefit(Variable):
@@ -47,7 +47,7 @@ class child_benefit_respective_amount(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = (
         "https://www.legislation.gov.uk/ukpga/1992/4/part/IX",
         "https://www.legislation.gov.uk/uksi/2006/965/regulation/2",
@@ -71,7 +71,7 @@ class child_benefit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period):
         entitlement = benunit.sum(
@@ -88,7 +88,7 @@ class child_benefit_less_tax_charge(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period):
         benefit = benunit("child_benefit", period)
@@ -101,7 +101,7 @@ class baseline_child_benefit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class baseline_has_child_benefit(Variable):

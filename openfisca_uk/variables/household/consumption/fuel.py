@@ -7,7 +7,7 @@ class petrol_litres(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return household("petrol_spending", period) / household(
@@ -21,7 +21,7 @@ class diesel_litres(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return household("diesel_spending", period) / household(
@@ -34,7 +34,7 @@ class petrol_price(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return parameters(period).consumption.fuel.prices.petrol
@@ -45,7 +45,7 @@ class diesel_price(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return parameters(period).consumption.fuel.prices.petrol

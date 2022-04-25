@@ -7,7 +7,7 @@ class num_children_and_qyp(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = int
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return add(benunit, period, ["is_child_or_QYP"])

@@ -6,7 +6,7 @@ class owned_land(Variable):
     entity = Household
     label = "Owned land"
     documentation = "Total value of all land-only plots owned by the household"
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
@@ -20,7 +20,7 @@ class land_value(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = STOCK
 
     def formula(household, period):
@@ -37,7 +37,7 @@ class household_land_value(Variable):
     documentation = (
         "Estimated total land value directly owned by the household"
     )
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
@@ -57,7 +57,7 @@ class corporate_land_value(Variable):
     entity = Household
     label = "Land value"
     documentation = "Estimated total land value indirectly owned by the household from corporate holdings"
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK

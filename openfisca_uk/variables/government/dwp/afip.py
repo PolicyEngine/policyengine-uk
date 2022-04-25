@@ -6,4 +6,4 @@ class armed_forces_independence_payment(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP

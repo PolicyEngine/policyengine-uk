@@ -7,7 +7,7 @@ class in_original_frs(Variable):
     documentation = "Whether this household appeared in the original FRS, or whether it has been modified."
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class uc_migrated(Variable):
@@ -16,7 +16,7 @@ class uc_migrated(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class spi_imputed(Variable):
@@ -25,4 +25,4 @@ class spi_imputed(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP

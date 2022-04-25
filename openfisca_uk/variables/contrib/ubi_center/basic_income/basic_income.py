@@ -6,7 +6,7 @@ class basic_income(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula_2021(person, period, parameters):
         bi_maximum = person("bi_maximum", period)

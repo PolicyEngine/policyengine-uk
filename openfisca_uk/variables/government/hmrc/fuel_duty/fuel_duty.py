@@ -6,7 +6,7 @@ class fuel_duty(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         fd = parameters(period).hmrc.fuel_duty
@@ -20,7 +20,7 @@ class baseline_fuel_duty(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class change_in_fuel_duty(Variable):
@@ -28,6 +28,6 @@ class change_in_fuel_duty(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = change_over_baseline(fuel_duty)

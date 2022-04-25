@@ -6,7 +6,7 @@ class standard_minimum_guarantee(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6"
 
     def formula(benunit, period, parameters):

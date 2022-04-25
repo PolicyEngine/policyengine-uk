@@ -30,7 +30,7 @@ class property_purchased(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
-    unit = "currency-GBP"
+    unit = GBP
     default_value = True
 
 
@@ -40,7 +40,7 @@ class main_residential_property_purchased(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         property_purchased = household("property_purchased", period)
@@ -54,7 +54,7 @@ class additional_residential_property_purchased(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         property_purchased = household("property_purchased", period)
@@ -70,7 +70,7 @@ class main_residential_property_purchased_is_first_home(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         residential_sd = parameters(
@@ -93,7 +93,7 @@ class cumulative_residential_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class non_residential_property_purchased(Variable):
@@ -102,7 +102,7 @@ class non_residential_property_purchased(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         property_purchased = household("property_purchased", period)
@@ -118,7 +118,7 @@ class cumulative_non_residential_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class rent(Variable):
@@ -129,7 +129,7 @@ class rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = FLOW
 
 
@@ -139,4 +139,4 @@ class non_residential_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP

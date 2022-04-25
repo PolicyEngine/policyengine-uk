@@ -7,7 +7,7 @@ class sdlt_on_residential_property_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period, parameters):
@@ -46,7 +46,7 @@ class sdlt_on_residential_property_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/schedule/5"
 
     def formula(household, period, parameters):
@@ -64,7 +64,7 @@ class sdlt_on_non_residential_property_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period, parameters):
@@ -79,7 +79,7 @@ class sdlt_on_non_residential_property_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/schedule/5"
 
     def formula(household, period, parameters):
@@ -97,7 +97,7 @@ class sdlt_on_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period):
@@ -112,7 +112,7 @@ class sdlt_on_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period):
@@ -127,7 +127,7 @@ class sdlt_liable(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         country = household("country", period)
@@ -144,7 +144,7 @@ class baseline_corporate_sdlt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         sd = parameters(period).hmrc.stamp_duty.statistics
@@ -162,7 +162,7 @@ class corporate_sdlt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = baseline_corporate_sdlt.formula
 
@@ -172,7 +172,7 @@ class corporate_sdlt_change_incidence(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = change_over_baseline(corporate_sdlt)
 
@@ -183,7 +183,7 @@ class stamp_duty_land_tax(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/part/4"
 
     def formula(household, period):
@@ -203,7 +203,7 @@ class expected_sdlt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         return (
@@ -217,7 +217,7 @@ class baseline_expected_sdlt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class change_in_expected_sdlt(Variable):
@@ -225,6 +225,6 @@ class change_in_expected_sdlt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = change_over_baseline(expected_sdlt)

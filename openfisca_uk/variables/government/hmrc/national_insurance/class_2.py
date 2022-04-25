@@ -7,7 +7,7 @@ class weekly_NI_class_2(Variable):
     label = "Class 2 Contributions for National Insurance"
     definition_period = YEAR
     reference = "Social Security and Benefits Act 1992 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         class_2 = parameters(period).tax.national_insurance.class_2
@@ -21,7 +21,7 @@ class NI_class_2(Variable):
     entity = Person
     label = "Class 2 Contributions for National Insurance for the year"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("weekly_NI_class_2", period)

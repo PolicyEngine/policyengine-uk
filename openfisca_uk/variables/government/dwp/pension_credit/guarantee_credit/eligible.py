@@ -6,7 +6,7 @@ class guarantee_credit_eligible(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         income = benunit("pension_credit_income", period)

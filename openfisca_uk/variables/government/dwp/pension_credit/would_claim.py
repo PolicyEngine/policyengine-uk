@@ -9,7 +9,7 @@ class baseline_pension_credit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class baseline_has_pension_credit(Variable):

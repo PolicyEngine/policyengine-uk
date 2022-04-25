@@ -6,7 +6,7 @@ class ESA_income_reported(Variable):
     entity = Person
     label = "ESA (income-based) (reported amount)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class would_claim_ESA_income(Variable):
@@ -52,7 +52,7 @@ class ESA_income(Variable):
     label = "ESA (income-based)"
     documentation = "Employment and Support Allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["ESA_income_reported"])

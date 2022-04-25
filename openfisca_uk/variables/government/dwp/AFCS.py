@@ -7,7 +7,7 @@ class AFCS(Variable):
     entity = Person
     label = "Armed Forces Compensation Scheme"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("AFCS_reported", period)
@@ -18,4 +18,4 @@ class AFCS_reported(Variable):
     entity = Person
     label = "Armed Forces Compensation Scheme (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP

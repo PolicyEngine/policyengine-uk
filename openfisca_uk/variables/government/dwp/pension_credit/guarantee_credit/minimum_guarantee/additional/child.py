@@ -6,7 +6,7 @@ class child_minimum_guarantee_addition(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA"
 
     def formula(benunit, period, parameters):

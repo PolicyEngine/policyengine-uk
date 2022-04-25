@@ -6,7 +6,7 @@ class income_support_reported(Variable):
     entity = Person
     label = "Income Support (reported amount)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class would_claim_IS(Variable):
@@ -40,7 +40,7 @@ class income_support_applicable_income(Variable):
     entity = BenUnit
     label = "Relevant income for Income Support means test"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefit.income_support
@@ -113,7 +113,7 @@ class income_support_applicable_amount(Variable):
     entity = BenUnit
     label = "Applicable amount of Income Support"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         IS = parameters(period).benefit.income_support
@@ -166,7 +166,7 @@ class income_support(Variable):
     entity = BenUnit
     label = "Income Support"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         amount = benunit("income_support_applicable_amount", period)
@@ -179,7 +179,7 @@ class baseline_income_support(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class baseline_has_income_support(Variable):

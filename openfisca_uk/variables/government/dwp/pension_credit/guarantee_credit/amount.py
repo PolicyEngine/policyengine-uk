@@ -6,7 +6,7 @@ class guarantee_credit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/2"
 
     def formula(benunit, period, parameters):

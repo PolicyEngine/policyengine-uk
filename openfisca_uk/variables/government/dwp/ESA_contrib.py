@@ -7,7 +7,7 @@ class ESA_contrib(Variable):
     entity = Person
     label = "ESA (contribution-based)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("ESA_contrib_reported", period)
@@ -18,4 +18,4 @@ class ESA_contrib_reported(Variable):
     entity = Person
     label = "Employment and Support Allowance (contribution-based) (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP

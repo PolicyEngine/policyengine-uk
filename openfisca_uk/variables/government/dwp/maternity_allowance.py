@@ -6,7 +6,7 @@ class maternity_allowance_reported(Variable):
     entity = Person
     label = "Maternity allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.september_cpi")
@@ -15,7 +15,7 @@ class maternity_allowance(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("maternity_allowance_reported", period)
@@ -26,7 +26,7 @@ class ssmg_reported(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class ssmg(Variable):
@@ -34,7 +34,7 @@ class ssmg(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("ssmg_reported", period)
