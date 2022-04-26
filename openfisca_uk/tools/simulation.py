@@ -174,3 +174,12 @@ class Microsimulation(GeneralMicrosimulation):
 class IndividualSim(GeneralIndividualSim):
     tax_benefit_system = CountryTaxBenefitSystem
     post_reform = backdate_parameters()
+
+    default_roles = dict(
+        benunit="adult",
+        household="adult",
+    )
+    required_entities = [
+        "benunit",
+        "household",
+    ]

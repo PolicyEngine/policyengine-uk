@@ -19,7 +19,7 @@ class employment_income(Variable):
     label = "Employment income"
     documentation = "Total income from employment"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
     quantity_type = FLOW
 
@@ -31,7 +31,7 @@ class pension_income(Variable):
     label = "Pension income"
     documentation = "Income from private or occupational pensions (not including State Pension)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
 
@@ -42,7 +42,7 @@ class total_pension_income(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = sum_of_variables(["pension_income", "state_pension"])
 
@@ -53,7 +53,7 @@ class social_security_income(Variable):
     label = "Income from social security for tax purposes"
     definition_period = YEAR
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -73,7 +73,7 @@ class self_employment_income(Variable):
     label = "Self-employment income"
     documentation = "Income from self-employment profits"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
     quantity_type = FLOW
 
@@ -86,7 +86,7 @@ class property_income(Variable):
     documentation = "Income from rental of property"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = FLOW
 
 
@@ -98,7 +98,7 @@ class savings_interest_income(Variable):
     documentation = "Income from interest on savings, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = FLOW
 
 
@@ -110,5 +110,5 @@ class dividend_income(Variable):
     documentation = "Total income from dividends, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = FLOW

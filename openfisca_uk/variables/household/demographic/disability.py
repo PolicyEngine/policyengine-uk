@@ -143,7 +143,7 @@ class disability_premium(Variable):
     label = "Disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefit.disability_premia
@@ -164,7 +164,7 @@ class severe_disability_premium(Variable):
     label = "Severe disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefit.disability_premia
@@ -185,7 +185,7 @@ class enhanced_disability_premium(Variable):
     label = "Enhanced disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         dis = parameters(period).benefit.disability_premia

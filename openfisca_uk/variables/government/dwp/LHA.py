@@ -75,7 +75,7 @@ class LHA_cap(Variable):
     label = "Applicable amount for LHA"
     documentation = "Applicable amount for Local Housing Allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
@@ -140,7 +140,7 @@ class BRMA_LHA_rate(Variable):
     label = "LHA rate"
     documentation = "Local Housing Allowance rate"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         BRMA = benunit.value_from_first_person(

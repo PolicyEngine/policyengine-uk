@@ -252,7 +252,7 @@ class state_pension(Variable):
     entity = Person
     label = "Income from the State Pension"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     documentation = "Gross State Pension payments"
 
     def formula(person, period, parameters):

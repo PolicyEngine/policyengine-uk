@@ -19,7 +19,7 @@ class employee_NI_class_1(Variable):
     label = "Employee Class 1 Contributions for National Insurance"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 8"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         class_1 = parameters(period).tax.national_insurance.class_1
@@ -43,7 +43,7 @@ class employer_NI_class_1(Variable):
     label = "Employer Class 1 Contributions for National Insurance"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 8"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         class_1 = parameters(period).tax.national_insurance.class_1
@@ -60,7 +60,7 @@ class employer_NI(Variable):
     entity = Person
     label = "Employer contributions to National Insurance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("employer_NI_class_1", period)
@@ -71,7 +71,7 @@ class total_NI(Variable):
     entity = Person
     label = "National Insurance (total)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         COMPONENTS = ["employer_NI", "national_insurance"]

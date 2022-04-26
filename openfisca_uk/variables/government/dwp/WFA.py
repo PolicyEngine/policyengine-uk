@@ -6,7 +6,7 @@ class winter_fuel_allowance_reported(Variable):
     entity = Person
     label = "Winter fuel allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.september_cpi")
@@ -15,7 +15,7 @@ class winter_fuel_allowance(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return aggr(household, period, ["winter_fuel_allowance_reported"])

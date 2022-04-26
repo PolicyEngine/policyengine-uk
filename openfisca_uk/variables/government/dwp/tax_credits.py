@@ -6,7 +6,7 @@ class working_tax_credit_reported(Variable):
     entity = Person
     label = "Working Tax Credit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class child_tax_credit_reported(Variable):
@@ -14,7 +14,7 @@ class child_tax_credit_reported(Variable):
     entity = Person
     label = "Working Tax Credit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class tax_credits_applicable_income(Variable):
@@ -22,7 +22,7 @@ class tax_credits_applicable_income(Variable):
     entity = BenUnit
     label = "Applicable income for Tax Credits"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     reference = "The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3"
 
     def formula(benunit, period, parameters):
@@ -126,7 +126,7 @@ class CTC_maximum_rate(Variable):
     label = "Maximum Child Tax Credit"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         ELEMENTS = [
@@ -144,7 +144,7 @@ class CTC_family_element(Variable):
     label = "CTC entitlement in the Family Element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         CTC = parameters(period).benefit.tax_credits.child_tax_credit
@@ -157,7 +157,7 @@ class CTC_child_element(Variable):
     label = "Child Tax Credit child element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         person = benunit.members
@@ -180,7 +180,7 @@ class CTC_disabled_child_element(Variable):
     label = "CTC entitlement from disabled child elements"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         person = benunit.members
@@ -199,7 +199,7 @@ class CTC_severely_disabled_child_element(Variable):
     label = "CTC entitlement from severely disabled child elements"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         person = benunit.members
@@ -296,7 +296,7 @@ class WTC_maximum_rate(Variable):
     label = "Working Tax Credit maximum rate"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         ELEMENTS = [
@@ -317,7 +317,7 @@ class WTC_basic_element(Variable):
     label = "Working Tax Credit basic element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -330,7 +330,7 @@ class WTC_couple_element(Variable):
     label = "Working Tax Credit couple element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -346,7 +346,7 @@ class WTC_lone_parent_element(Variable):
     label = "Working Tax Credit lone parent element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -366,7 +366,7 @@ class WTC_disabled_element(Variable):
     label = "Working Tax Credit disabled element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -393,7 +393,7 @@ class WTC_severely_disabled_element(Variable):
     label = "Working Tax Credit severely disabled element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -410,7 +410,7 @@ class WTC_worker_element(Variable):
     label = "Working Tax Credit worker element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -429,7 +429,7 @@ class WTC_childcare_element(Variable):
     label = "Working Tax Credit childcare element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -448,7 +448,7 @@ class tax_credits_reduction(Variable):
     entity = BenUnit
     label = "Reduction in Tax Credits from means-tested income"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         means_test = parameters(period).benefit.tax_credits.means_test
@@ -473,7 +473,7 @@ class working_tax_credit_pre_minimum(Variable):
         "Working Tax Credit amount before the minimum tax credit is applied"
     )
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return max_(
@@ -491,7 +491,7 @@ class child_tax_credit_pre_minimum(Variable):
         "Child Tax Credit amount before the minimum tax credit is applied"
     )
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         reduction_left = max_(
@@ -511,7 +511,7 @@ class tax_credits(Variable):
     label = "Tax Credits"
     documentation = "Value of the Tax Credits (benefits) for this family"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         amount = add(
@@ -528,7 +528,7 @@ class child_tax_credit(Variable):
     entity = BenUnit
     label = "Child Tax Credit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return where(
@@ -546,7 +546,7 @@ class working_tax_credit(Variable):
     entity = BenUnit
     label = "Working Tax Credit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return where(
@@ -564,7 +564,7 @@ class baseline_working_tax_credit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class baseline_child_tax_credit(Variable):
@@ -572,7 +572,7 @@ class baseline_child_tax_credit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class baseline_has_working_tax_credit(Variable):

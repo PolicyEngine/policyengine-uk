@@ -1,0 +1,11 @@
+description: Benefits which confer standard disability in children for Pension Credit.
+values:
+  2002-01-01:
+    - pip
+    - dla
+    # Not modeled: Disability Assistance for Children and Young People (Scotland) 
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: The State Pension Credit Regulations 2002 sch. 2A(9)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA

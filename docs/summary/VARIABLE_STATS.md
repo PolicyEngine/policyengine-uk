@@ -3487,7 +3487,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 849,915.0264129639
 
 
-- pension_credit_eligible:
+- is_pension_credit_eligible:
   - Type: bool
   - Entity: benunit
   - Description: Eligible for Pension Credit

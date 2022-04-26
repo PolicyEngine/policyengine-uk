@@ -7,7 +7,7 @@ class main_residence_value(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = STOCK
 
 
@@ -19,7 +19,7 @@ class other_residential_property_value(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = STOCK
 
 
@@ -29,7 +29,7 @@ class residential_property_value(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = STOCK
 
     def formula(household, period, parameters):
@@ -46,7 +46,7 @@ class non_residential_property_value(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = STOCK
 
 
@@ -56,7 +56,7 @@ class property_wealth(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = STOCK
 
     def formula(household, period):

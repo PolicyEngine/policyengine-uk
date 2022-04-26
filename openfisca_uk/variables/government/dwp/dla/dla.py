@@ -6,6 +6,6 @@ class dla(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = sum_of_variables(["dla_sc", "dla_m"])

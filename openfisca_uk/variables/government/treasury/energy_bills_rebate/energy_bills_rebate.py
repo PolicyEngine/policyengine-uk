@@ -7,7 +7,7 @@ class energy_bills_rebate(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return add(

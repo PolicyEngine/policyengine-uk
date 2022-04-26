@@ -5,3 +5,5 @@ from openfisca_uk.tools.baseline_variables import (
     change_over_baseline,
     baseline_is_nonzero,
 )
+
+GBP = "currency-GBP"

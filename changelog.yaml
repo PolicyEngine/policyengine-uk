@@ -420,3 +420,9 @@
     fixed:
     - Land and carbon are calculated based off UK-wide statistics, not in-model statistics.
   date: 2022-04-22 21:26:10
+- bump: minor
+  changes:
+    fixed:
+    - Pension Credit missing disability elements.
+    changed:
+    - Pension Credit code quality improvements.

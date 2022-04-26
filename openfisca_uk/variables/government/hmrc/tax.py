@@ -6,7 +6,7 @@ class tax(Variable):
     entity = Person
     label = "Taxes"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         TAXES = ["income_tax", "national_insurance"]
@@ -18,7 +18,7 @@ class household_tax(Variable):
     entity = Household
     label = "Taxes"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         personal_taxes = household.sum(household.members("tax", period))
@@ -40,7 +40,7 @@ class benunit_tax(Variable):
     entity = BenUnit
     label = "Benefit unit tax paid"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["tax"])
@@ -51,7 +51,7 @@ class tax_reported(Variable):
     entity = Person
     label = "Reported tax paid"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class tax_modelling(Variable):
@@ -59,7 +59,7 @@ class tax_modelling(Variable):
     entity = Person
     label = "Difference between reported and imputed tax liabilities"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("tax", period) - person("tax_reported", period)

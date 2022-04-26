@@ -7,7 +7,7 @@ class legacy_benefits(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         BENEFITS = [
@@ -73,7 +73,7 @@ class universal_credit_reported(Variable):
     label = "Universal Credit (reported)"
     documentation = "Reported amount of Universal Credit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class UC_maximum_amount(Variable):
@@ -81,7 +81,7 @@ class UC_maximum_amount(Variable):
     entity = BenUnit
     label = "Maximum Universal Credit amount"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period):
         ELEMENTS = [
@@ -137,7 +137,7 @@ class UC_standard_allowance(Variable):
     entity = BenUnit
     label = "Universal Credit standard allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         SA = parameters(period).benefit.universal_credit.standard_allowance
@@ -163,7 +163,7 @@ class UC_individual_child_element(Variable):
     label = "Universal Credit child element"
     documentation = "For this child, given Universal Credit eligibility"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -222,7 +222,7 @@ class UC_child_element(Variable):
     entity = BenUnit
     label = "Universal Credit child element"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["UC_individual_child_element"])
@@ -233,7 +233,7 @@ class UC_carer_element(Variable):
     entity = BenUnit
     label = "Universal Credit carer element"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -246,7 +246,7 @@ class UC_housing_costs_element(Variable):
     entity = BenUnit
     label = "Universal Credit housing costs element"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         tenure_type = benunit.value_from_first_person(
@@ -295,7 +295,7 @@ class UC_individual_non_dep_deduction(Variable):
     entity = Person
     label = "Universal Credit non-dependent deduction (individual)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         not_rent_liable = person.benunit("benunit_rent", period) == 0
@@ -312,7 +312,7 @@ class UC_non_dep_deductions(Variable):
     entity = BenUnit
     label = "Universal Credit non-dependent deductions"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         # Deductions are made for non-dependents outside the benefit unit,
@@ -348,7 +348,7 @@ class UC_LCWRA_element(Variable):
         "Universal Credit limited capability for work-related-activity element"
     )
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -364,7 +364,7 @@ class UC_individual_disabled_child_element(Variable):
     entity = Person
     label = "Universal Credit disabled child element"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -380,7 +380,7 @@ class UC_individual_severely_disabled_child_element(Variable):
     entity = Person
     label = "Universal Credit severely disabled child element"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -396,7 +396,7 @@ class UC_disability_elements(Variable):
     entity = BenUnit
     label = "Universal Credit disability elements"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period):
         PERSONAL_ELEMENTS = [
@@ -459,7 +459,7 @@ class UC_childcare_element(Variable):
     entity = BenUnit
     label = "Universal Credit childcare element"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -495,7 +495,7 @@ class UC_work_allowance(Variable):
     entity = BenUnit
     label = "Universal Credit work allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -514,7 +514,7 @@ class UC_earned_income(Variable):
     entity = BenUnit
     label = "Universal Credit earned income (after disregards and tax)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         personal_gross_earned_income = aggr(
@@ -533,7 +533,7 @@ class UC_unearned_income(Variable):
     entity = BenUnit
     label = "Universal Credit unearned income"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         SOURCES = [
@@ -551,7 +551,7 @@ class UC_income_reduction(Variable):
     entity = BenUnit
     label = "Reduction from income for Universal Credit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         UC = parameters(period).benefit.universal_credit
@@ -567,7 +567,7 @@ class universal_credit(Variable):
     entity = BenUnit
     label = "Universal Credit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         amount = max_(
@@ -614,7 +614,7 @@ class UC_minimum_income_floor(Variable):
     entity = Person
     label = "Minimum Income Floor"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     reference = ""
 
     def formula(person, period, parameters):
@@ -632,7 +632,7 @@ class UC_MIF_capped_earned_income(Variable):
         "Gross earned income for UC, with MIF applied where applicable"
     )
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         INCOME_COMPONENTS = [
@@ -657,7 +657,7 @@ class baseline_universal_credit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class baseline_has_universal_credit(Variable):

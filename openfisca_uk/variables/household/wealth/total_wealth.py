@@ -7,6 +7,6 @@ class total_wealth(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = sum_of_variables(["property_wealth", "corporate_wealth"])

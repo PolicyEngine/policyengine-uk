@@ -7,7 +7,7 @@ class lbtt_on_residential_property_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         lbtt = parameters(period).revenue_scotland.lbtt
@@ -41,7 +41,7 @@ class lbtt_on_residential_property_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         lbtt = parameters(period).revenue_scotland.lbtt
@@ -58,7 +58,7 @@ class lbtt_on_non_residential_property_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         lbtt = parameters(period).revenue_scotland.lbtt
@@ -74,7 +74,7 @@ class lbtt_on_non_residential_property_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         lbtt = parameters(period).revenue_scotland.lbtt
@@ -91,7 +91,7 @@ class lbtt_liable(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         country = household("country", period)
@@ -105,7 +105,7 @@ class lbtt_on_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         LBTTS = [
@@ -123,7 +123,7 @@ class lbtt_on_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         LBTTS = [
@@ -139,7 +139,7 @@ class land_and_buildings_transaction_tax(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         LBTTS = [
@@ -156,7 +156,7 @@ class expected_lbtt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         property_sale_rate = household.state("property_sale_rate", period)
@@ -169,7 +169,7 @@ class baseline_expected_lbtt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class change_in_expected_lbtt(Variable):
@@ -177,6 +177,6 @@ class change_in_expected_lbtt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = change_over_baseline(expected_lbtt)

@@ -1,0 +1,15 @@
+- name: Income under the minimum guarantee confers eligibility.
+  period: 2021
+  input:
+    pension_credit_income: 170
+    minimum_guarantee: 180
+  output:
+    is_guarantee_credit_eligible: true
+
+- name: Income over the minimum guarantee does not confer eligibility.
+  period: 2021
+  input:
+    pension_credit_income: 190
+    minimum_guarantee: 180
+  output:
+    is_guarantee_credit_eligible: false

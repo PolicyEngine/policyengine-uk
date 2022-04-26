@@ -7,7 +7,7 @@ class PIP_DL_reported(Variable):
     entity = Person
     label = "PIP (self-care) (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class pip_dl_category(Variable):
@@ -45,7 +45,7 @@ class pip_dl(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         pip_dl = parameters(period).dwp.pip.daily_living
@@ -65,3 +65,13 @@ class pip_dl(Variable):
             )
             * WEEKS_IN_YEAR
         )
+
+
+class receives_enhanced_pip_dl(Variable):
+    label = "Receives enhanced PIP (daily living)"
+    entity = Person
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(person, period, parameters):
+        return person("pip_dl_category", period) == PIPCategory.ENHANCED

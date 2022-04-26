@@ -10,7 +10,7 @@ class family_benefits(Variable):
     entity = Person
     label = "Total simulated family benefits for this person"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         FAMILY_BENEFITS = [
@@ -34,7 +34,7 @@ class family_benefits_reported(Variable):
     entity = Person
     label = "Total reported family benefits for this person"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         FAMILY_BENEFITS = [
@@ -56,7 +56,7 @@ class benefits(Variable):
     entity = Person
     label = "Total benefits"
     documentation = "Total state benefits"
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -70,7 +70,7 @@ class household_benefits(Variable):
     entity = Household
     label = "Benefits"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         HOUSEHOLD_BENEFITS = [
@@ -87,7 +87,7 @@ class other_benefits(Variable):
     entity = Person
     label = "Income from benefits not modelled or detailed in the model"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         reported = person("benefits_reported", period)
@@ -102,7 +102,7 @@ class benefits_reported(Variable):
     entity = Person
     label = "Total simulated"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         BENS = ["personal_benefits_reported", "family_benefits_reported"]
@@ -116,7 +116,7 @@ class benefits_modelling(Variable):
         "Difference between reported and simulated benefits for this person"
     )
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("benefits", period) - person("benefits_reported", period)
@@ -152,7 +152,7 @@ class benefits_premiums(Variable):
     entity = BenUnit
     label = "Value of premiums for disability and carer status"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         PREMIUMS = [
@@ -228,7 +228,7 @@ class personal_benefits(Variable):
     entity = Person
     label = "Value of personal, non-means-tested benefits"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         BENEFITS = [
@@ -260,7 +260,7 @@ class personal_benefits_reported(Variable):
     entity = Person
     label = "Value of personal, non-means-tested benefits"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         BENEFITS = [

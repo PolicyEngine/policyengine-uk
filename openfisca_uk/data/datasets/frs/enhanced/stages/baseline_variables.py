@@ -5,6 +5,7 @@ from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs impo
     EnhancedFRS,
 )
 from openfisca_uk.repo import REPO
+from openfisca_tools.data import Dataset
 
 
 def baseline_is_nonzero(variable: Type[Variable]) -> Callable:
@@ -44,7 +45,7 @@ def change_over_baseline(variable: Type[Variable]) -> Callable:
     return formula
 
 
-def generate_baseline_variables(year: int):
+def generate_baseline_variables(dataset: Dataset, year: int):
     """
     Save baseline values of variables to a H5 dataset.
 
@@ -55,16 +56,16 @@ def generate_baseline_variables(year: int):
     from openfisca_uk import Microsimulation
 
     YEARS = list(range(year, 2026))
-    baseline = Microsimulation(add_baseline_values=False)
+    baseline = Microsimulation(dataset=dataset, add_baseline_values=False)
 
     variable_metadata = baseline.simulation.tax_benefit_system.variables
 
     for variable in variable_metadata:
         if variable[:9] == "baseline_":
-            for year in YEARS:
+            for subyear in YEARS:
                 baseline.simulation.set_input(
                     variable,
-                    year,
+                    subyear,
                     [True]
                     * len(
                         baseline.calc(
@@ -94,14 +95,29 @@ def generate_baseline_variables(year: int):
     print(f"Found {len(variables)} variables to store baseline values for:")
     print("\n* " + "\n* ".join([variable.label for variable in variables]))
 
-    with h5py.File(EnhancedFRS.file(year), "w") as f:
-        for year in YEARS:
-            for variable in variables:
-                f.create_dataset(
-                    f"baseline_{variable.name}/{year}",
-                    data=baseline.calc(variable.name, period=year),
-                )
+    existing_dataset = {}
+    with dataset.load(year) as data:
+        for variable in data.keys():
+            existing_dataset[variable] = {}
+            for time_period in data[variable].keys():
+                existing_dataset[variable][time_period] = data[variable][
+                    time_period
+                ][...]
+
+        for variable in variables:
+            existing_dataset[f"baseline_{variable.name}"] = {}
+            for subyear in YEARS:
+                existing_dataset[f"baseline_{variable.name}"][
+                    subyear
+                ] = baseline.calc(variable.name, period=subyear).values
+
+    with h5py.File(dataset.file(year), "w") as f:
+        for variable in existing_dataset.keys():
+            for time_period in existing_dataset[variable].keys():
+                f[f"{variable}/{time_period}"] = existing_dataset[variable][
+                    time_period
+                ]
 
 
 if __name__ == "__main__":
-    generate_baseline_variables(2022)
+    generate_baseline_variables(EnhancedFRS, 2022)

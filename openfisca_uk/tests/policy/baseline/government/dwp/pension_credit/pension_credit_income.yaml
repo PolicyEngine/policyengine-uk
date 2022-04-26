@@ -1,0 +1,12 @@
+- name: All income sources are included.
+  period: 2021
+  input:
+    earned_income: 1
+    working_tax_credit: 2
+    state_pension: 4
+    pension_income: 8
+    capital_income: 16
+    ESA_contrib: 32
+    JSA_contrib: 64
+  output:
+    pension_credit_income: 127

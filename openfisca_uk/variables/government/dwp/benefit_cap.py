@@ -6,7 +6,7 @@ class benefit_cap(Variable):
     entity = BenUnit
     label = "Benefit cap for the family"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         has_children = benunit("num_children", period) > 0

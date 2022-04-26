@@ -7,7 +7,7 @@ class gross_financial_wealth(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="wealth.national_balance_sheet.household.financial_net_worth")
@@ -16,4 +16,4 @@ class net_financial_wealth(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP

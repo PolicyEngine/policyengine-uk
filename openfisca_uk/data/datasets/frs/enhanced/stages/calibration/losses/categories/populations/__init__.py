@@ -17,7 +17,7 @@ from openfisca_uk.data.datasets.frs.enhanced.stages.calibration.losses.loss_cate
 
 
 Populations = combine_loss_categories(
-    PopulationsByAgeBand,
+    PopulationsByAgeSexRegion,
     PopulationsByIncomeTaxBand,
     PopulationsInTotal,
     label="Populations",

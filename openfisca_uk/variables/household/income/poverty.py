@@ -20,7 +20,7 @@ class poverty_threshold_bhc(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return (
@@ -117,7 +117,7 @@ class baseline_hbai_excluded_income(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         if not parameters(period).poverty.exclude_non_hbai_income:
@@ -148,7 +148,7 @@ class hbai_excluded_income(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         VARIABLES = [
@@ -163,7 +163,7 @@ class hbai_excluded_income_change(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         hbai_excluded_income = household("hbai_excluded_income", period)

@@ -9,7 +9,7 @@ class attendance_allowance(Variable):
     entity = Person
     label = "Attendance Allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         aa = parameters(period).dwp.attendance_allowance
@@ -36,7 +36,7 @@ class AA_reported(Variable):
     entity = Person
     label = "Attendance Allowance (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class aa_category(Variable):

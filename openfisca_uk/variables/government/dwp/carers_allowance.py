@@ -16,7 +16,7 @@ class carers_allowance(Variable):
     entity = Person
     label = "Carer's Allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         receives_ca = person("carers_allowance_reported", period) > 0
@@ -29,4 +29,4 @@ class carers_allowance_reported(Variable):
     entity = Person
     label = "Carer's Allowance (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP

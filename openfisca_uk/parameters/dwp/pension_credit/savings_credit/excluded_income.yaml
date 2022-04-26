@@ -1,0 +1,10 @@
+description: Income sources which are deducted from Guarantee Credit income before Savings Credit calculations.
+values:
+  2002-01-01:
+    - JSA_contrib
+    - ESA_contrib
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: The State Pension Credit Regulations 2002 reg. 9
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/9
