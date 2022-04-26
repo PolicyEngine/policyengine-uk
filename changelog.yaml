@@ -422,7 +422,8 @@
   date: 2022-04-22 21:26:10
 - bump: minor
   changes:
-    fixed:
-    - Pension Credit missing disability elements.
     changed:
     - Pension Credit code quality improvements.
+    fixed:
+    - Pension Credit missing disability elements.
+  date: 2022-04-26 12:10:51
