@@ -34,8 +34,7 @@ class severe_disability_minimum_guarantee_addition(Variable):
             benunit.sum(person("carers_allowance", period)) > 0
         )
         eligible = (
-            (num_eligible_adults > 0)
-            & ~any_children_without_benefits
+            ~any_children_without_benefits
             & ~carers_allowance_received
         )
         return (
