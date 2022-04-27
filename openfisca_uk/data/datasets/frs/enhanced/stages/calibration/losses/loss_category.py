@@ -21,7 +21,7 @@ def weighted_squared_relative_deviation(
     Returns:
         tf.Tensor: The weighted squared relative deviation.
     """
-    return (pred - actual) ** 2
+    return (pred / (actual + 1) - 1) ** 2
 
 @staticmethod
 def weighted_squared_log_relative_deviation(
