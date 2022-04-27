@@ -1,6 +1,18 @@
-from .universal_credit import UniversalCredit
-from .pension_credit import PensionCredit
 from ...loss_category import LossCategory
+from .country_level_program import (
+    UniversalCredit,
+    ChildBenefit,
+    ChildTaxCredit,
+    WorkingTaxCredit,
+    PensionCredit,
+    IncomeSupport,
+    StatePension,
+    HousingBenefit,
+    ESA_income,
+    JSA_income,
+    CouncilTax,
+    TotalNI,
+)
 
 class Programs(LossCategory):
     name = "Programs"
@@ -8,7 +20,20 @@ class Programs(LossCategory):
 
     def initialise(self):
         self.subcategories = []
-        for subcategory in (UniversalCredit, PensionCredit):
+        for subcategory in (
+                UniversalCredit,
+                ChildBenefit,
+                ChildTaxCredit,
+                WorkingTaxCredit,
+                PensionCredit,
+                IncomeSupport,
+                StatePension,
+                HousingBenefit,
+                ESA_income,
+                JSA_income,
+                CouncilTax,
+                TotalNI,
+            ):
             self.subcategories.append(subcategory(
                 self.years, 
                 self.year,

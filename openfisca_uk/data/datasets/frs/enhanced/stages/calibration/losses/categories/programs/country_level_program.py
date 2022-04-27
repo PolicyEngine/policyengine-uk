@@ -21,7 +21,7 @@ class CountryLevelProgram(LossCategory):
 
         if "UNITED_KINGDOM" in parameter.budgetary_impact._children:
             self.values += [values]
-            self.targets += [parameter.budgetary_impact._children["UK"]]
+            self.targets += [parameter.budgetary_impact._children["UNITED_KINGDOM"]]
             self.names += ["budgetary_impact_UNITED_KINGDOM"]
         if "GREAT_BRITAIN" in parameter.budgetary_impact._children:
             self.values += [values * (countries != "NORTHERN_IRELAND")]
@@ -40,3 +40,51 @@ class CountryLevelProgram(LossCategory):
                 tf.reduce_sum(household_weights * values),
                 target,
             )
+
+class IncomeSupport(CountryLevelProgram):
+    variable = "income_support"
+    name = "Income Support"
+
+class PensionCredit(CountryLevelProgram):
+    variable = "pension_credit"
+    name = "Pension Credit"
+
+class WorkingTaxCredit(CountryLevelProgram):
+    variable = "working_tax_credit"
+    name = "Working Tax Credit"
+
+class ChildBenefit(CountryLevelProgram):
+    variable = "child_benefit"
+    name = "Child Benefit"
+
+class ChildTaxCredit(CountryLevelProgram):
+    variable = "child_tax_credit"
+    name = "Child Tax Credit"
+
+class UniversalCredit(CountryLevelProgram):
+    variable = "universal_credit"
+    name = "Universal Credit"
+
+class StatePension(CountryLevelProgram):
+    variable = "state_pension"
+    name = "State Pension"
+
+class TotalNI(CountryLevelProgram):
+    variable = "total_NI"
+    name = "Total NI"
+
+class JSA_income(CountryLevelProgram):
+    variable = "JSA_income"
+    name = "JSA income"
+
+class CouncilTax(CountryLevelProgram):
+    variable = "council_tax_less_benefit"
+    name = "Council Tax"
+
+class HousingBenefit(CountryLevelProgram):
+    variable = "housing_benefit"
+    name = "Housing Benefit"
+
+class ESA_income(CountryLevelProgram):
+    variable = "ESA_income"
+    name = "ESA income"

@@ -1,0 +1,35 @@
+description: Income Support spending by country.
+ENGLAND:
+  values:
+    2020-01-01: 915_000_000
+  metadata:
+    uprating: calibration.programs.income_support.budgetary_impact.GREAT_BRITAIN
+WALES:
+  values:
+    2020-01-01: 67_000_000
+  metadata:
+    uprating: calibration.programs.income_support.budgetary_impact.GREAT_BRITAIN
+SCOTLAND:
+  values:
+    2020-01-01: 98_000_000
+  metadata:
+    uprating: calibration.programs.income_support.budgetary_impact.GREAT_BRITAIN
+GREAT_BRITAIN:
+  values:
+    2018-01-01: 1_839_000_000
+    2019-01-01: 1_376_000_000
+    2020-01-01: 1_080_000_000
+    2021-01-01: 854_000_000
+    2022-01-01: 670_000_000
+    2023-01-01: 491_000_000
+    2024-01-01: 471_000_000
+    2025-01-01: 432_000_000
+    2026-01-01: 414_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Benefit expenditure and caseload tables 2021
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+    - title: Benefit expenditure and caseload tables 2021 | Benefit expenditure by country and region
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
