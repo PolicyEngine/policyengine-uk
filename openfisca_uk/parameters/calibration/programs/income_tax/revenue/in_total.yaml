@@ -1,15 +1,14 @@
-income_tax:
-  description: Total revenue from Income Tax.
-  values:
-    2018-01-01: 192_500_000_000
-    2019-01-01: 193_600_000_000
-    2020-01-01: 188_200_000_000
-    2021-01-01: 203_600_000_000
-    2022-01-01: 205_000_000_000
-    2023-01-01: 215_000_000_000
-    2024-01-01: 225_700_000_000
-    2025-01-01: 237_500_000_000
-  metadata:
-    reference:
-      - title: OBR 2021 forecast
-        href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/
+description: Total revenue from Income Tax.
+values:
+  2018-01-01: 192_500_000_000
+  2019-01-01: 193_600_000_000
+  2020-01-01: 188_200_000_000
+  2021-01-01: 203_600_000_000
+  2022-01-01: 205_000_000_000
+  2023-01-01: 215_000_000_000
+  2024-01-01: 225_700_000_000
+  2025-01-01: 237_500_000_000
+metadata:
+  reference:
+    - title: OBR 2021 forecast
+      href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/

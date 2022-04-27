@@ -5,6 +5,7 @@ from itertools import chain
 from functools import reduce
 from typing import Callable, Iterable, List, Tuple, Type
 from openfisca_uk import Microsimulation
+from openfisca_uk.parameters import parameters
 import tensorflow as tf
 
 @staticmethod
@@ -51,11 +52,12 @@ class LossCategory:
     cache = {}
     use_cache = False
 
-    def __init__(self, years: List[int], year: int, weight: float = 1, sim: Microsimulation = None):
+    def __init__(self, years: List[int], year: int, weight: float, sim: Microsimulation):
         self.years = years or self.years
         self.year = year
         self.weight = weight
         self.sim = sim
+        self.calibration_parameters = parameters.calibration(f"{self.year}-01-01")
         self.initialise()
 
     def initialise(self):
@@ -88,7 +90,7 @@ class LossCategory:
         for name, pred, actual in self.get_loss_subcomponents(
             household_weights[self.year - self.years[0]],
         ):
-
+            name += f"_{self.year}"
             if name not in excluded_metrics:
                 l = self.comparison_loss_function(pred, actual)
                 log += [

@@ -1,17 +1,16 @@
-income_support:
-  description: Total spending on Income Support.
-  values:
-    2018-01-01: 1_839_000_000
-    2019-01-01: 1_376_000_000
-    2020-01-01: 1_080_000_000
-    2021-01-01: 854_000_000
-    2022-01-01: 670_000_000
-    2023-01-01: 491_000_000
-    2024-01-01: 471_000_000
-    2025-01-01: 432_000_000
-    2026-01-01: 414_000_000
-  metadata:
-    unit: currency-GBP
-    reference:
-      - title: Benefit expenditure and caseload tables 2021 | Table 1c
-        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+description: Total spending on Income Support.
+values:
+  2018-01-01: 1_839_000_000
+  2019-01-01: 1_376_000_000
+  2020-01-01: 1_080_000_000
+  2021-01-01: 854_000_000
+  2022-01-01: 670_000_000
+  2023-01-01: 491_000_000
+  2024-01-01: 471_000_000
+  2025-01-01: 432_000_000
+  2026-01-01: 414_000_000
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Benefit expenditure and caseload tables 2021 | Table 1c
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

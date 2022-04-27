@@ -1,2 +1,2 @@
-from .universal_credit import UniversalCredit
+from .programs.programs import Programs
 from .populations import Populations

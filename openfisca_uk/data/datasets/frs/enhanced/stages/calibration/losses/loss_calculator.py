@@ -1,6 +1,6 @@
 from typing import List
 import numpy as np
-from .categories import UniversalCredit, Populations
+from .categories import Programs, Populations
 from random import sample
 import tensorflow as tf
 from openfisca_uk.tools.simulation import Microsimulation
@@ -22,12 +22,12 @@ class LossCalculator:
             start_year (int, optional): The first year to use in the loss calculation. Defaults to 2022.
             end_year (int, optional): The last year to use in the loss calculation. Defaults to 2027.
         """
-        loss_classes = [Populations]
+        loss_classes = [Programs]
         self.losses = []
         years = list(range(start_year, end_year + 1))
         for loss_category in loss_classes:
             for year in years:
-                self.losses.append(loss_category(years=years, year=year, sim=sim))
+                self.losses.append(loss_category(years=years, year=year, weight=1, sim=sim))
         self.start_year = start_year
         self.end_year = end_year
         self.validation_split = validation_split

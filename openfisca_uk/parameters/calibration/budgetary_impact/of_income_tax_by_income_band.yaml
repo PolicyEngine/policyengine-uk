@@ -18,7 +18,7 @@ brackets:
         2021-01-01: 686_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 15_000
     amount: 
@@ -29,7 +29,7 @@ brackets:
         2021-01-01: 5_660_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 20_000
     amount: 
@@ -40,7 +40,7 @@ brackets:
         2021-01-01: 20_400_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 30_000
     amount: 
@@ -51,7 +51,7 @@ brackets:
         2021-01-01: 39_100_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 50_000
     amount: 
@@ -62,7 +62,7 @@ brackets:
         2021-01-01: 46_900_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 100_000
     amount: 
@@ -73,7 +73,7 @@ brackets:
         2021-01-01: 22_700_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 150_000
     amount: 
@@ -84,7 +84,7 @@ brackets:
         2021-01-01: 11_400_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 200_000
     amount: 
@@ -95,7 +95,7 @@ brackets:
         2021-01-01: 23_100_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 500_000
     amount: 
@@ -106,7 +106,7 @@ brackets:
         2021-01-01: 10_700_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 1_000_000
     amount: 
@@ -117,7 +117,7 @@ brackets:
         2021-01-01: 7_040_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
   - threshold: 
       2018-01-01: 2_000_000
     amount:
@@ -128,4 +128,4 @@ brackets:
         2021-01-01: 11_700_000_000
       metadata:
         uprating: 
-          parameter: calibration.budgetary_impact.by_program.income_tax
+          parameter: calibration.programs.income_tax.revenue.in_total
