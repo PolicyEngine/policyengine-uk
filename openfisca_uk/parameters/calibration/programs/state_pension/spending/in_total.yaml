@@ -1,0 +1,15 @@
+state_pension:
+  description: State Pension spending.
+  values:
+    2019-01-01: 98_797_000_000
+    2020-01-01: 101_475_000_000
+    2021-01-01: 104_598_000_000
+    2022-01-01: 110_098_000_000
+    2023-01-01: 116_831_000_000
+    2024-01-01: 122_777_000_000
+    2025-01-01: 128_648_000_000
+    2026-01-01: 133_144_000_000
+  metadata:
+    reference:
+      - title: Benefit expenditure and caseload tables 2021
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

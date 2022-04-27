@@ -1,0 +1,15 @@
+total_NI:
+  description: Total revenue from National Insurance.
+  values:
+    2018-01-01: 137_500_000_000
+    2019-01-01: 145_000_000_000
+    2020-01-01: 140_800_000_000
+    2021-01-01: 145_900_000_000
+    2022-01-01: 151_300_000_000
+    2023-01-01: 157_500_000_000
+    2024-01-01: 164_600_000_000
+    2025-01-01: 172_100_000_000
+  metadata:
+    reference:
+      - title: OBR 2021 forecast
+        href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/national-insurance-contributions-nics/

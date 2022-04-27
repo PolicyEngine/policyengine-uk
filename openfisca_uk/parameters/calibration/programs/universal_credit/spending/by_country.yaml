@@ -1,0 +1,15 @@
+description: Universal Credit spending by country.
+ENGLAND:
+  2020-01-01: 33_547_000_000
+WALES:
+  2020-01-01: 1_750_000_000
+SCOTLAND:
+  2020-01-01: 2_917_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  uprating: calibration.programs.universal_credit.spending.in_total
+  propagate_metadata_to_children: true
+  reference:
+    - title: Benefit expenditure and caseload tables 2021 | Benefit expenditure by country and region
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
