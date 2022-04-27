@@ -68,3 +68,5 @@ class IncomeTax(LossCategory):
         for name, values, actual in self.comparisons:
             yield name, tf.reduce_sum(values * household_weights), actual
         
+    def get_metric_names(self) -> Iterable[str]:
+        return [x[0] for x in self.comparisons]

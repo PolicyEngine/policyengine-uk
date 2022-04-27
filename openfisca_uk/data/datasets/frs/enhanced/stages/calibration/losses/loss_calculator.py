@@ -1,6 +1,6 @@
 from typing import List
 import numpy as np
-from .categories import Programs, Populations
+from .categories import Programs, Demographics
 from random import sample
 import tensorflow as tf
 from openfisca_uk.tools.simulation import Microsimulation
@@ -22,7 +22,7 @@ class LossCalculator:
             start_year (int, optional): The first year to use in the loss calculation. Defaults to 2022.
             end_year (int, optional): The last year to use in the loss calculation. Defaults to 2027.
         """
-        loss_classes = [Programs]
+        loss_classes = [Programs, Demographics]
         self.losses = []
         years = list(range(start_year, end_year + 1))
         for loss_category in loss_classes:
@@ -37,8 +37,7 @@ class LossCalculator:
             [list(loss.get_metric_names()) for loss in self.losses], []
         )
         TRAINING_ONLY_CATEGORIES = [
-            "Households",
-            "Populations",
+            "Demographics",
         ]
         non_population_metrics = sum(
             [

@@ -24,38 +24,41 @@ class CountryLevelProgram(LossCategory):
         if "UNITED_KINGDOM" in parameter.budgetary_impact._children:
             self.values += [values]
             self.targets += [parameter.budgetary_impact._children["UNITED_KINGDOM"]]
-            self.names += ["budgetary_impact_UNITED_KINGDOM"]
+            self.names += [f"{self.variable}_budgetary_impact_UNITED_KINGDOM"]
         if "GREAT_BRITAIN" in parameter.budgetary_impact._children:
             self.values += [values * (countries != "NORTHERN_IRELAND")]
             self.targets += [parameter.budgetary_impact._children["GREAT_BRITAIN"]]
-            self.names += ["budgetary_impact_GREAT_BRITAIN"]
+            self.names += [f"{self.variable}_budgetary_impact_GREAT_BRITAIN"]
 
         for single_country in ("ENGLAND", "WALES", "SCOTLAND", "NORTHERN_IRELAND"):
             if single_country in parameter.budgetary_impact._children:
                 self.values += [values * (countries == single_country)]
                 self.targets += [parameter.budgetary_impact._children[single_country]]
-                self.names += [f"budgetary_impact_{single_country}"]
+                self.names += [f"{self.variable}_budgetary_impact_{single_country}"]
 
         # Participants
 
-        entity = self.sim.simulation.tax_benefit_system.variables[self.variable]
+        if "participants" not in parameter._children:
+            return
 
-        values = self.map_to(self.sim.calc(self.variable).values > 0, entity.key, "household")
+        entity = self.sim.simulation.tax_benefit_system.variables[self.variable].entity
+
+        values = self.sim.map_to(self.sim.calc(self.variable).values > 0, entity.key, "household")
 
         if "UNITED_KINGDOM" in parameter.participants._children:
             self.values += [values]
             self.targets += [parameter.participants._children["UNITED_KINGDOM"]]
-            self.names += ["participants_UNITED_KINGDOM"]
+            self.names += [f"{self.variable}_participants_UNITED_KINGDOM"]
         if "GREAT_BRITAIN" in parameter.participants._children:
             self.values += [values * (countries != "NORTHERN_IRELAND")]
             self.targets += [parameter.participants._children["GREAT_BRITAIN"]]
-            self.names += ["participants_GREAT_BRITAIN"]
+            self.names += [f"{self.variable}_participants_GREAT_BRITAIN"]
 
         for single_country in ("ENGLAND", "WALES", "SCOTLAND", "NORTHERN_IRELAND"):
             if single_country in parameter.participants._children:
                 self.values += [values * (countries == single_country)]
                 self.targets += [parameter.participants._children[single_country]]
-                self.names += [f"participants_{single_country}"]
+                self.names += [f"{self.variable}_participants_{single_country}"]
 
     def get_loss_subcomponents(self, household_weights: tf.Tensor) -> Iterable[Tuple]:
         for name, values, target in zip(self.names, self.values, self.targets):
@@ -64,6 +67,9 @@ class CountryLevelProgram(LossCategory):
                 tf.reduce_sum(household_weights * values),
                 target,
             )
+
+    def get_metric_names(self) -> Iterable[str]:
+        return self.names
 
 class IncomeSupport(CountryLevelProgram):
     variable = "income_support"

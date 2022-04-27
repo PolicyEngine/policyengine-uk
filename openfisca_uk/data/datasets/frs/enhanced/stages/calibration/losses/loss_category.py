@@ -23,23 +23,6 @@ def weighted_squared_relative_deviation(
     """
     return (pred / (actual + 1) - 1) ** 2
 
-@staticmethod
-def weighted_squared_log_relative_deviation(
-    pred: tf.Tensor, actual: ArrayLike
-) -> tf.Tensor:
-    """Computes the squared log relative deviation between two tensors, weighted by the actual value.
-
-    Args:
-        pred (tf.Tensor): Predicted values.
-        actual (ArrayLike): Actual values.
-
-    Returns:
-        tf.Tensor: The weighted squared log relative deviation.
-    """
-    if actual == 0:
-        return tf.constant(0, dtype=tf.float32)
-    return (tf.math.log(pred / actual) - 1) ** 2 * actual
-
 
 class LossCategory:
     weight: float = 1
@@ -90,8 +73,9 @@ class LossCategory:
         for name, pred, actual in self.get_loss_subcomponents(
             household_weights[self.year - self.years[0]],
         ):
+            non_dated_name = name
             name += f"_{self.year}"
-            if name not in excluded_metrics:
+            if non_dated_name not in excluded_metrics:
                 l = self.comparison_loss_function(pred, actual)
                 log += [
                     dict(

@@ -1,3 +1,4 @@
+from typing import Iterable
 from ...loss_category import LossCategory
 from .country_level_program import (
     UniversalCredit,
@@ -49,3 +50,6 @@ class Programs(LossCategory):
             losses += additional_loss
             log += additional_log
         return losses, log
+    
+    def get_metric_names(self) -> Iterable[str]:
+        return sum([subcategory.get_metric_names() for subcategory in self.subcategories], [])

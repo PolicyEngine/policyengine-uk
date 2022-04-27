@@ -39,7 +39,7 @@ class CalibratedFRS(PrivateDataset):
             end_year=2027,
         )
         weights.calibrate(
-            validation_split=0,
+            validation_split=0.2,
             num_epochs=650,
             learning_rate=1e2,
             dataset=self,

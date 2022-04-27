@@ -1,2 +1,2 @@
-from .programs.programs import Programs
-from .populations import Populations
+from .programs import Programs
+from .demographics import Demographics

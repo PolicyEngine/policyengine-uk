@@ -29,7 +29,7 @@ NORTHERN_IRELAND:
     2021-01-01: 4_000
 metadata:
   unit: currency-GBP
-  uprating: calibration.populations.in_total
+  uprating: calibration.demographics.populations.in_total
   propagate_metadata_to_children: true
   reference:
     - title: "Income Tax liabilities statistics: tax year 2018 to 2019 to tax year 2021 to 2022"

@@ -59,9 +59,9 @@ class StatisticTest:
                 if self.statistic == "caseload":
                     if (
                         self.variable
-                        in parameters.calibration.populations.by_program_participation.children
+                        in parameters.calibration.demographics.populations.by_program_participation.children
                     ):
-                        return parameters.calibration.populations.by_program_participation.children[
+                        return parameters.calibration.demographics.populations.by_program_participation.children[
                             self.variable
                         ](
                             f"{self.year}-01-01"
