@@ -1,0 +1,23 @@
+description: Total pension income.
+UNITED_KINGDOM:
+  2019-01-01: 157_000_000_000 # 102bn (State Pension*) + 55bn (other pensions*)
+  # *There is some mixture between these two because the SPI assigns lump sums 
+  # to State Pension only if they can be separately identified.
+ENGLAND:
+  2022-01-01: 93_600_000_000
+SCOTLAND:
+  2022-01-01: 8_660_000_000
+WALES:
+  2022-01-01: 4_360_000_000
+NORTHERN_IRELAND:
+  2022-01-01: 3_400_000_000
+metadata:
+  uprating:
+    parameter: uprating.earnings
+  propagate_metadata_to_children: true
+  reference:
+    # Data is more recent than the URL suggests.
+    - title: Profit, employment and pension income | National Statistics
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+    - title: Property, interest, dividend and other income | National Statistics
+      href: https://www.gov.uk/government/statistics/investment-income-2010-to-2011

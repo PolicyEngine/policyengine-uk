@@ -1,4 +1,6 @@
 from typing import Iterable
+
+import numpy as np
 from ...loss_category import LossCategory
 from .country_level_program import (
     UniversalCredit,
@@ -9,10 +11,16 @@ from .country_level_program import (
     IncomeSupport,
     StatePension,
     HousingBenefit,
-    ESA_income,
-    JSA_income,
+    ESAIncome,
+    JSAIncome,
     CouncilTax,
     TotalNI,
+    EmploymentIncome,
+    SelfEmploymentIncome,
+    TotalPensionIncome,
+    SavingsInterestIncome,
+    PropertyIncome,
+    DividendIncome,
 )
 
 class Programs(LossCategory):
@@ -30,15 +38,21 @@ class Programs(LossCategory):
                 IncomeSupport,
                 StatePension,
                 HousingBenefit,
-                ESA_income,
-                JSA_income,
+                ESAIncome,
+                JSAIncome,
                 CouncilTax,
                 TotalNI,
+                EmploymentIncome,
+                SelfEmploymentIncome,
+                TotalPensionIncome,
+                SavingsInterestIncome,
+                PropertyIncome,
+                DividendIncome,
             ):
             self.subcategories.append(subcategory(
                 self.years, 
                 self.year,
-                self.sim.calc(subcategory.variable, period=self.year).sum()/1e11,
+                np.log(self.sim.calc(subcategory.variable, period=self.year).sum() + np.e),
                 self.sim,
             ))
     
@@ -52,4 +66,9 @@ class Programs(LossCategory):
         return losses, log
     
     def get_metric_names(self) -> Iterable[str]:
-        return sum([subcategory.get_metric_names() for subcategory in self.subcategories], [])
+        names = sum([subcategory.get_metric_names() for subcategory in self.subcategories], [])
+        dated_names = []
+        for name in names:
+            for year in self.years:
+                dated_names.append(f"{name}.{year}")
+        return dated_names

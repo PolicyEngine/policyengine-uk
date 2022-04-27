@@ -1,0 +1,13 @@
+description: People with pension income.
+ENGLAND:
+  2022-01-01: 9_857_504
+WALES:
+  2022-01-01: 480_687
+SCOTLAND:
+  2022-01-01: 947_387
+NORTHERN_IRELAND:
+  2022-01-01: 388_849
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Survey of Personal Incomes analysis

@@ -103,7 +103,7 @@ class TotalNI(CountryLevelProgram):
     variable = "total_NI"
     name = "Total NI"
 
-class JSA_income(CountryLevelProgram):
+class JSAIncome(CountryLevelProgram):
     variable = "JSA_income"
     name = "JSA income"
 
@@ -115,6 +115,30 @@ class HousingBenefit(CountryLevelProgram):
     variable = "housing_benefit"
     name = "Housing Benefit"
 
-class ESA_income(CountryLevelProgram):
+class ESAIncome(CountryLevelProgram):
     variable = "ESA_income"
     name = "ESA income"
+
+class EmploymentIncome(CountryLevelProgram):
+    variable = "employment_income"
+    name = "Employment income"
+
+class SelfEmploymentIncome(CountryLevelProgram):
+    variable = "self_employment_income"
+    name = "Self-employment income"
+
+class TotalPensionIncome(CountryLevelProgram):
+    variable = "total_pension_income"
+    name = "Total pension income"
+
+class PropertyIncome(CountryLevelProgram):
+    variable = "property_income"
+    name = "Property income"
+
+class SavingsInterestIncome(CountryLevelProgram):
+    variable = "savings_interest_income"
+    name = "Savings interest income"
+
+class DividendIncome(CountryLevelProgram):
+    variable = "dividend_income"
+    name = "Dividend income"

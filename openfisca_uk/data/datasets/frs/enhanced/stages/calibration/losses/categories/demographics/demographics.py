@@ -23,4 +23,9 @@ class Demographics(LossCategory):
         return losses, log
 
     def get_metric_names(self) -> Iterable[str]:
-        return sum([subcategory.get_metric_names() for subcategory in self.subcategories], [])
+        names = sum([subcategory.get_metric_names() for subcategory in self.subcategories], [])
+        dated_names = []
+        for name in names:
+            for year in self.years:
+                dated_names.append(f"{name}.{year}")
+        return dated_names

@@ -73,9 +73,8 @@ class LossCategory:
         for name, pred, actual in self.get_loss_subcomponents(
             household_weights[self.year - self.years[0]],
         ):
-            non_dated_name = name
-            name += f"_{self.year}"
-            if non_dated_name not in excluded_metrics:
+            name += f".{self.year}"
+            if name not in excluded_metrics:
                 l = self.comparison_loss_function(pred, actual)
                 log += [
                     dict(
