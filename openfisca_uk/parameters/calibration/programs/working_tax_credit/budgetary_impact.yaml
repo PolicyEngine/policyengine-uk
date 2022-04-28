@@ -9,6 +9,7 @@ UNITED_KINGDOM:
     # HMRC estimates. This is implemented using the uprating parameter.
 metadata:
   unit: currency-GBP
+  propagate_metadata_to_children: true
   uprating: calibration.programs.tax_credits.budgetary_impact.UNITED_KINGDOM
   reference:
     - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"

@@ -1,8 +1,8 @@
 description: Income Tax revenue by country
 metadata:
   reference:
-    - title: HMRC SPI Analysis
-      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf#page=14
+    - title: HMRC Tax Receipts Split by country
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf
 ENGLAND:
   values:
     2018-01-01: 169_958_000_000
