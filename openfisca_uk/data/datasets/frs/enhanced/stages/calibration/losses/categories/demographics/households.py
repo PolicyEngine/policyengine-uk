@@ -26,7 +26,7 @@ class Households(LossCategory):
         
         # Region - tenure type
 
-        tenure_type = self.sim.calc("tenure_type").values
+        tenure_type = self.sim.calc("ons_tenure_type").values
 
         region_tenure_parameter = self.calibration_parameters.demographics.households.by_region_by_tenure_type
 
