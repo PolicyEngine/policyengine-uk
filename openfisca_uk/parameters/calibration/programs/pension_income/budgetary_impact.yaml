@@ -1,16 +1,12 @@
-description: Total pension income.
-UNITED_KINGDOM:
-  2019-01-01: 157_000_000_000 # 102bn (State Pension*) + 55bn (other pensions*)
-  # *There is some mixture between these two because the SPI assigns lump sums 
-  # to State Pension only if they can be separately identified.
+description: Non-state pension income.
 ENGLAND:
-  2022-01-01: 93_600_000_000
-SCOTLAND:
-  2022-01-01: 8_660_000_000
+  2019-01-01: 90_670_000_000
 WALES:
-  2022-01-01: 4_360_000_000
+  2019-01-01: 5_200_000_000
+SCOTLAND:
+  2019-01-01: 9_200_000_000
 NORTHERN_IRELAND:
-  2022-01-01: 3_400_000_000
+  2019-01-01: 2_230_000_000
 metadata:
   uprating:
     parameter: uprating.earnings

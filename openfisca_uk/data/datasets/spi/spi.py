@@ -207,6 +207,7 @@ def add_incomes(spi: h5py.File, main: DataFrame):
         person_weight="FACT",
         benunit_weight="FACT",
         household_weight="FACT",
+        state_pension="SRP",
     )
     spi["pays_scottish_income_tax"] = main.SCOT_TXP == 1
     spi["employment_income"] = main[["PAY", "EPB", "TAXTERM"]].sum(axis=1)
