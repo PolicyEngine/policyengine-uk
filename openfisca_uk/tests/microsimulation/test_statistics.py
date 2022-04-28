@@ -57,27 +57,29 @@ class StatisticTest:
             # Not overridden - use statistics parameter
             if source == "official":
                 if self.statistic == "caseload":
-                    if (
-                        self.variable
-                        in parameters.calibration.demographics.populations.by_program_participation.children
-                    ):
-                        return parameters.calibration.demographics.populations.by_program_participation.children[
-                            self.variable
-                        ](
-                            f"{self.year}-01-01"
-                        )
-                    else:
-                        return parameters.calibration.families.by_program_participation.children[
-                            self.variable
-                        ](
-                            f"{self.year}-01-01"
-                        )
+                    variable_parameter = parameters.calibration.programs.children[self.variable]
+                    try:
+                        return variable_parameter.participants.UNITED_KINGDOM(f"{self.year}-01-01")
+                    except:
+                        try:
+                            return variable_parameter.participants.GREAT_BRITAIN(f"{self.year}-01-01")
+                        except:
+                            try:
+                                return variable_parameter.participants.in_total(f"{self.year}-01-01")
+                            except:
+                                return 0
                 else:
-                    return parameters.calibration.budgetary_impact.by_program.children[
-                        self.variable
-                    ](
-                        f"{self.year}-01-01"
-                    )
+                    variable_parameter = parameters.calibration.programs.children[self.variable]
+                    try:
+                        return variable_parameter.budgetary_impact.UNITED_KINGDOM(f"{self.year}-01-01")
+                    except:
+                        try:
+                            return variable_parameter.budgetary_impact.GREAT_BRITAIN(f"{self.year}-01-01")
+                        except:
+                            try:
+                                return variable_parameter.budgetary_impact.by_country.UNITED_KINGDOM(f"{self.year}-01-01")
+                            except:
+                                return 0
         raise ValueError(f"Unknown statistic: {self.statistic}")
 
     @property
