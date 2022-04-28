@@ -45,7 +45,7 @@ class change_in_business_rates(Variable):
 
 class business_rates_change_incidence(Variable):
     label = "Business rates changes"
-    documentation = "Total effet of policy changes to business rates"
+    documentation = "Total effect of policy changes to business rates"
     entity = Household
     definition_period = YEAR
     value_type = float
