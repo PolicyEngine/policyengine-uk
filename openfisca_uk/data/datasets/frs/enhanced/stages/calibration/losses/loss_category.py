@@ -8,6 +8,7 @@ from openfisca_uk import Microsimulation
 from openfisca_uk.parameters import parameters
 import tensorflow as tf
 
+
 @staticmethod
 def weighted_squared_relative_deviation(
     pred: tf.Tensor, actual: ArrayLike
@@ -35,19 +36,23 @@ class LossCategory:
     cache = {}
     use_cache = False
 
-    def __init__(self, years: List[int], year: int, weight: float, sim: Microsimulation):
+    def __init__(
+        self, years: List[int], year: int, weight: float, sim: Microsimulation
+    ):
         self.years = years or self.years
         self.year = year
         self.weight = weight
         self.sim = sim
-        self.calibration_parameters = parameters.calibration(f"{self.year}-01-01")
+        self.calibration_parameters = parameters.calibration(
+            f"{self.year}-01-01"
+        )
         self.initialise()
 
     def initialise(self):
         pass
 
     def get_loss_subcomponents(
-        household_weights: tf.Tensor
+        household_weights: tf.Tensor,
     ) -> Iterable[Tuple]:
         """Gathers predictions used to measure weight performance.
 

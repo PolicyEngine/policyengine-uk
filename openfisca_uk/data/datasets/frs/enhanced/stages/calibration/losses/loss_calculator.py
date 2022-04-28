@@ -27,7 +27,9 @@ class LossCalculator:
         years = list(range(start_year, end_year + 1))
         for loss_category in loss_classes:
             for year in years:
-                self.losses.append(loss_category(years=years, year=year, weight=1, sim=sim))
+                self.losses.append(
+                    loss_category(years=years, year=year, weight=1, sim=sim)
+                )
         self.start_year = start_year
         self.end_year = end_year
         self.validation_split = validation_split

@@ -159,6 +159,7 @@ class council_tax(Variable):
     unit = GBP
     quantity_type = FLOW
 
+
 @uprated(by="uprating.council_tax")
 class domestic_rates(Variable):
     label = "Domestic rates"
