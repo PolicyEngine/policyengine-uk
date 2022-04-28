@@ -128,7 +128,7 @@ class SelfEmploymentIncome(CountryLevelProgram):
     name = "Self-employment income"
 
 class PensionIncome(CountryLevelProgram):
-    variable = "_pension_income"
+    variable = "pension_income"
     name = "Pension income"
 
 class PropertyIncome(CountryLevelProgram):
