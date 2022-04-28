@@ -22,6 +22,7 @@ from .country_level_program import (
     PropertyIncome,
     DividendIncome,
 )
+from .income_tax import IncomeTax
 
 class Programs(LossCategory):
     name = "Programs"
@@ -30,6 +31,7 @@ class Programs(LossCategory):
     def initialise(self):
         self.subcategories = []
         for subcategory in (
+                IncomeTax,
                 UniversalCredit,
                 ChildBenefit,
                 ChildTaxCredit,

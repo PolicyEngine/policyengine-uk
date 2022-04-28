@@ -2,10 +2,12 @@ import numpy as np
 from ...loss_category import LossCategory
 import tensorflow as tf
 from typing import Iterable, Tuple
+from openfisca_core.taxscales import SingleAmountTaxScale
 
 class IncomeTax(LossCategory):
     name = "Income Tax"
     category = "Programs"
+    variable = "income_tax"
 
     def initialise(self):
         income_tax = self.sim.calc("income_tax", period=self.year).values
@@ -23,24 +25,31 @@ class IncomeTax(LossCategory):
             self.comparisons += [(
                 f"income_tax_{country}",
                 household_income_tax * (countries == country),
-                it._children[country]
+                it.budgetary_impact.by_country._children[country]
             )]
         
-        self.comparisons += [
+        self.comparisons += [(
             "income_tax_UNITED_KINGDOM",
             household_income_tax,
-            it._children["UNITED_KINGDOM"]
-        ]
+            it.budgetary_impact.by_country._children["UNITED_KINGDOM"]
+        )]
 
         # Revenue by income band
 
-        for i in range(len(it.by_income.brackets)):
-            lower_threshold = it.by_income.brackets[i].threshold
-            upper_threshold = it.by_income.brackets[i + 1].threshold if i < len(it.by_income.brackets) - 1 else np.inf
+        scale = it.budgetary_impact.by_income
+
+        for i in range(len(scale.thresholds)):
+            lower_threshold = scale.thresholds[i]
+            upper_threshold = scale.thresholds[i + 1] if i < len(scale.thresholds) - 1 else np.inf
+
+            income_is_in_band = (total_income >= lower_threshold) * (total_income < upper_threshold)
+            household_values = self.sim.map_to(income_tax * income_is_in_band, "person", "household")
+
+            amount = scale.amounts[i]
             self.comparisons += [(
                 f"income_tax_by_income_{i}",
-                self.sim.map_to(income_tax * (total_income >= lower_threshold) * (total_income < upper_threshold), "household"),
-                it.by_income.brackets[i].amount,
+                household_values,
+                amount,
             )]
 
         # Taxpayers by country and income band
@@ -56,12 +65,14 @@ class IncomeTax(LossCategory):
             tax_band,
         ])
 
+        person_country = self.sim.calc("country", period=self.year, map_to="person").values
+
         for country in ("ENGLAND", "WALES", "NORTHERN_IRELAND", "SCOTLAND"):
             for band in ("BASIC", "HIGHER", "ADDITIONAL"):
                 self.comparisons += [(
                     f"income_tax_payers_{country}_{band}",
-                    self.sim.map_to(income_tax * (countries == country) * (tax_band == band), "household"),
-                    it.payers._children[country]._children[band],
+                    self.sim.map_to((income_tax > 0) * (person_country == country) * (tax_band == band), "person", "household"),
+                    it.participants.by_country_and_band._children[country]._children[band],
                 )]
     
     def get_loss_subcomponents(self, household_weights: tf.Tensor) -> Iterable[Tuple]:
