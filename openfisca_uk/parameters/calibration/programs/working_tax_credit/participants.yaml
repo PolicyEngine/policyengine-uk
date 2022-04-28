@@ -7,7 +7,7 @@ GREAT_BRITAIN:
     2021-01-01: 1_044_000
   metadata:
     unit: benefit unit
-    uprating: self
+    uprating: calibration.programs.tax_credits.budgetary_impact.UNITED_KINGDOM
     reference:
       - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
         href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021

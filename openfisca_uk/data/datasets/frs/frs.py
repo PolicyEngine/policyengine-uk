@@ -380,6 +380,16 @@ def add_household_variables(frs: h5py.File, household: DataFrame):
     frs["council_tax_band"] = categorical(
         household.CTBAND, 1, range(1, 10), BANDS
     )
+    # Domestic rates variables are all weeklyised, unlike Council Tax variables (despite the variable name suggesting otherwise)
+    frs["domestic_rates"] = np.select([
+        household.RTANNUAL >= 0, 
+        household.RT2REBAM >= 0,
+        True,
+    ], [
+        household.RTANNUAL,
+        household.RT2REBAM,
+        0,
+    ]) * 52
 
 
 def add_market_income(

@@ -6,16 +6,10 @@ UNITED_KINGDOM:
     # HMRC does not forward-estimate revenue, only caseloads. The DWP
     # does provide revenue estimates, but only for combined Tax Credits.
     # We split the revenue by their fractions in 2019, the most recent
-    # HMRC estimates.
-    2020-01-01: 3_139_000_000 #  14_581_000_000 * (3_825 / (13_875 + 3_825))
-    2021-01-01: 2_219_000_000 #  10_307_000_000 * (3_825 / (13_875 + 3_825))
-    2022-01-01: 1_644_000_000 #  7_640_000_000 * (3_825 / (13_875 + 3_825))
-    2023-01-01: 1_239_127_119 # 5_734_000_000 * (3_825 / (13_875 + 3_825))
-    2024-01-01: 813_622_881 # 3_765_000_000 * (3_825 / (13_875 + 3_825))
-    2025-01-01: 369_101_695 # 1_708_000_000 * (3_825 / (13_875 + 3_825))
-    2026-01-01: 65_478_814 # 303_000_000 * (3_825 / (13_875 + 3_825))
+    # HMRC estimates. This is implemented using the uprating parameter.
 metadata:
   unit: currency-GBP
+  uprating: calibration.programs.tax_credits.budgetary_impact.UNITED_KINGDOM
   reference:
     - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"
       href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-finalised-annual-awards-supplement-on-payments-2019-to-2020

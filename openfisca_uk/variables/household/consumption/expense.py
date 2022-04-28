@@ -159,6 +159,14 @@ class council_tax(Variable):
     unit = GBP
     quantity_type = FLOW
 
+@uprated(by="uprating.council_tax")
+class domestic_rates(Variable):
+    label = "Domestic rates"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
 
 class council_tax_less_benefit(Variable):
     label = "Council Tax (less CTB)"
