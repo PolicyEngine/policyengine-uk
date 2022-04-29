@@ -1,0 +1,35 @@
+description: Pension Credit spending by country.
+ENGLAND:
+  values:
+    2020-01-01: 4_361_000_000
+  metadata:
+    uprating: calibration.programs.pension_credit.budgetary_impact.GREAT_BRITAIN
+WALES:
+  values:
+    2020-01-01: 285_000_000
+  metadata:
+    uprating: calibration.programs.pension_credit.budgetary_impact.GREAT_BRITAIN
+SCOTLAND:
+  values:
+    2020-01-01: 423_000_000
+  metadata:
+    uprating: calibration.programs.pension_credit.budgetary_impact.GREAT_BRITAIN
+GREAT_BRITAIN:
+  values:
+    2018-01-01: 5_140_000_000
+    2019-01-01: 5_061_000_000
+    2020-01-01: 5_071_000_000
+    2021-01-01: 4_969_000_000
+    2022-01-01: 4_466_000_000
+    2023-01-01: 4_447_000_000
+    2024-01-01: 4_379_000_000
+    2025-01-01: 4_223_000_000
+    2026-01-01: 4_127_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Benefit expenditure and caseload tables 2021
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+    - title: Benefit expenditure and caseload tables 2021 | Benefit expenditure by country and region
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

@@ -1,0 +1,17 @@
+description: Total spending on income-based JSA by country.
+GREAT_BRITAIN:
+  values:
+    2018-01-01: 1_144_000_000
+    2019-01-01: 603_000_000
+    2020-01-01: 435_000_000
+    2021-01-01: 297_000_000
+    2022-01-01: 196_000_000
+    2023-01-01: 21_000
+    2024-01-01: 0
+    2025-01-01: 0
+    2026-01-01: 0
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Benefit expenditure and caseload tables 2021 | Table 1c
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

@@ -21,12 +21,10 @@ class shareholding(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        nbs = parameters(period).wealth.national_balance_sheet
+        wealth = parameters(period).wealth
+        nbs = wealth.national_balance_sheet
         wealth = household("corporate_wealth", period)
-        total_wealth = (wealth * household("household_weight", period)).sum()
-        total_wealth = where(
-            total_wealth > 0, total_wealth, nbs.household.financial_net_worth
-        )
+        total_wealth = nbs.household.financial_net_worth
         return wealth / total_wealth
 
 

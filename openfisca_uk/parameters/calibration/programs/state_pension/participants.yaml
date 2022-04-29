@@ -1,0 +1,21 @@
+description: Number of individuals claiming State Pension.
+GREAT_BRITAIN:
+  values:
+    2019-01-01: 12_556_000
+    2020-01-01: 12_379_000
+    2021-01-01: 12_506_000
+    2022-01-01: 12_678_000
+NORTHERN_IRELAND:
+  values:
+    2022-01-01: 304_570
+  metadata:
+    reference:
+      - title: Northern Ireland Benefits Statistics Summary | November 2021
+        href: https://www.communities-ni.gov.uk/system/files/publications/communities/benefit-statistics-summary-nov-2021.pdf
+    uprating: calibration.programs.state_pension.participants.GREAT_BRITAIN
+metadata:
+  uprating:
+    parameter: self
+  reference:
+    - title: Benefit expenditure and caseload tables 2021
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

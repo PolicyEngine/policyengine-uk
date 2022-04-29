@@ -1,0 +1,25 @@
+description: Number of families claiming Pension Credit.
+GREAT_BRITAIN:
+  values:
+    2018-01-01: 1_654_000
+    2019-01-01: 1_563_000
+    2020-01-01: 1_480_000
+    2021-01-01: 1_479_000
+    2022-01-01: 1_406_000
+    2023-01-01: 1_341_000
+    2024-01-01: 1_284_000
+    2025-01-01: 1_233_000
+    2026-01-01: 1_194_000
+NORTHERN_IRELAND:
+  values:
+    2022-01-01: 73_560
+  metadata:
+    reference:
+      - title: Northern Ireland Benefits Statistics Summary | November 2021
+        href: https://www.communities-ni.gov.uk/system/files/publications/communities/benefit-statistics-summary-nov-2021.pdf
+    uprating: calibration.programs.pension_credit.participants.GREAT_BRITAIN
+metadata:
+  unit: benefit unit
+  reference:
+    - title: Benefit expenditure and caseload tables 2021 | Pension Credit
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

@@ -1,0 +1,25 @@
+description: Number of families claiming Universal Credit.
+GREAT_BRITAIN:
+  values:
+    2018-01-01: 1_282_000
+    2019-01-01: 2_132_000
+    2020-01-01: 4_052_000
+    2021-01-01: 4_267_000
+    2022-01-01: 4_649_000
+    2023-01-01: 5_048_000
+    2024-01-01: 5_605_000
+    2025-01-01: 6_285_000
+    2026-01-01: 6_912_000
+NORTHERN_IRELAND:
+  values:
+    2022-01-01: 115_770
+  metadata:
+    reference:
+      - title: Northern Ireland Benefits Statistics Summary | November 2021
+        href: https://www.communities-ni.gov.uk/system/files/publications/communities/benefit-statistics-summary-nov-2021.pdf
+    uprating: calibration.programs.universal_credit.participants.GREAT_BRITAIN
+metadata:
+  unit: benefit unit
+  reference:
+    - title: Benefit expenditure and caseload tables 2021 | Table 1c
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

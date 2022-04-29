@@ -1,0 +1,13 @@
+description: People with dividend income.
+ENGLAND:
+  2022-01-01: 4_855_297
+WALES:
+  2022-01-01: 207_307
+SCOTLAND:
+  2022-01-01: 408_213
+NORTHERN_IRELAND:
+  2022-01-01: 140_302
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Survey of Personal Incomes

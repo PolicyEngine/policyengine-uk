@@ -1,0 +1,13 @@
+description: People with employment income.
+ENGLAND:
+  2022-01-01: 27_860_365
+WALES:
+  2022-01-01: 1_424_781
+SCOTLAND:
+  2022-01-01: 2_728_327
+NORTHERN_IRELAND:
+  2022-01-01: 762_050
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Survey of Personal Incomes

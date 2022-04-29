@@ -15,6 +15,7 @@ values:
   # OBR projections
   2025-01-01: 201.15 # 195.48 * 1.029
   2026-01-01: 208.18 # 201.15 * 1.035
+  2027-01-01: 215.46 # 208.18 * 1.035
 metadata:
   unit: currency-GBP
   reference: 

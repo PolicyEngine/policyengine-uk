@@ -1,0 +1,13 @@
+description: People with self-employment income.
+ENGLAND:
+  2022-01-01: 4_078_671
+WALES:
+  2022-01-01: 150_808
+SCOTLAND:
+  2022-01-01: 295_883
+NORTHERN_IRELAND:
+  2022-01-01: 111_367
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Survey of Personal Incomes

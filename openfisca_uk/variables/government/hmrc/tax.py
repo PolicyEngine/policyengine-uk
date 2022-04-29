@@ -29,6 +29,7 @@ class household_tax(Variable):
             "corporate_sdlt_change_incidence",
             "business_rates_change_incidence",
             "council_tax",
+            "domestic_rates",
             "change_in_fuel_duty",
         ]
         household_taxes = add(household, period, HOUSEHOLD_TAXES)

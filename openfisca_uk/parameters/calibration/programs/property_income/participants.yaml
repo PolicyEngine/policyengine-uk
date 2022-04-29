@@ -1,0 +1,13 @@
+description: People with property income.
+ENGLAND:
+  2022-01-01: 2_295_253
+WALES:
+  2022-01-01: 83_393
+SCOTLAND:
+  2022-01-01: 164_247
+NORTHERN_IRELAND:
+  2022-01-01: 62_283
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Survey of Personal Incomes

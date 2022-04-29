@@ -1,0 +1,16 @@
+description: Total spending on Child Benefit by country.
+UNITED_KINGDOM:
+  values:
+    2018-01-01: 11_170_000_000
+    2019-01-01: 11_081_000_000
+    2020-01-01: 11_116_000_000
+    2021-01-01: 10_981_000_000
+    2022-01-01: 11_213_000_000
+    2023-01-01: 11_546_000_000
+    2024-01-01: 11_626_000_000
+    2025-01-01: 11_627_000_000
+    2026-01-01: 11_602_000_000
+metadata:
+  reference:
+    - title: Benefit expenditure and caseload tables 2021
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
