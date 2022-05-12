@@ -4,9 +4,9 @@ parts:
   - caption: Model
     chapters:
       - file: model/child_benefit
-      - file: model/pension_credit
-      - file: model/stamp_duty
-      - file: model/carbon_tax
+      - file: model/pension-credit
+      - file: model/stamp-duty
+      - file: model/carbon-tax
       - file: model/data
       - file: model/validation
       - file: model/reweighting
