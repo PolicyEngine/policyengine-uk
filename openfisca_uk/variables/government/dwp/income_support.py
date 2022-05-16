@@ -51,7 +51,7 @@ class income_support_applicable_income(Variable):
             "pension_income",
         ]
         bi = parameters(period).contrib.ubi_center.basic_income
-        if bi.include_in_means_tests:
+        if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
         income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(

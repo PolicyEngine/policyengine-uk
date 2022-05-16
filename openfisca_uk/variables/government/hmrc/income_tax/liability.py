@@ -463,7 +463,7 @@ class income_tax_pre_charges(Variable):
 
         if parameters(
             period
-        ).contrib.ubi_center.basic_income.exempt_pensioners_from_tax_changes:
+        ).contrib.ubi_center.exempt_pensioners_from_tax_changes:
             from openfisca_uk.parameters import (
                 parameters as baseline_parameters,
             )
