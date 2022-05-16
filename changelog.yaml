@@ -432,3 +432,7 @@
     changed:
     - Calibration process improved with country-level targets.
   date: 2022-04-29 09:29:26
+- bump: minor
+  changes:
+    added:
+    - Household-level phase-outs for basic income.
