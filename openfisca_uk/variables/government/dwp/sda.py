@@ -6,7 +6,7 @@ class sda(Variable):
     entity = Person
     label = "Severe Disablement Allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         reported = person("SDA_reported", period) > 0
@@ -22,4 +22,4 @@ class SDA_reported(Variable):
     entity = Person
     label = "Severe Disablement Allowance (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP

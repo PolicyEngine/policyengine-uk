@@ -7,7 +7,7 @@ class ebr_energy_bills_credit(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         ebr = parameters(period).treasury.energy_bills_rebate

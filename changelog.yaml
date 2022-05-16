@@ -415,3 +415,20 @@
     fixed:
     - MANIFEST.in file re-added (caused previous two issues).
   date: 2022-04-14 13:10:26
+- bump: patch
+  changes:
+    fixed:
+    - Land and carbon are calculated based off UK-wide statistics, not in-model statistics.
+  date: 2022-04-22 21:26:10
+- bump: minor
+  changes:
+    changed:
+    - Pension Credit code quality improvements.
+    fixed:
+    - Pension Credit missing disability elements.
+  date: 2022-04-26 12:10:51
+- bump: minor
+  changes:
+    changed:
+    - Calibration process improved with country-level targets.
+  date: 2022-04-29 09:29:26

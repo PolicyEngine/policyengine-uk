@@ -132,7 +132,6 @@ class HouseholdWeights:
             )
 
         log = pd.DataFrame(self.training_log)
-        assert len(log[log.name.str.contains("2023")]) > 0
         log["run_id"] = run_id
         log.to_csv(folder / f"training_log_run_{run_id}.csv", index=False)
 

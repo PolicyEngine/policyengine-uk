@@ -73,11 +73,17 @@ def add_variables(
     data.close()
     f = h5py.File(dataset.file(year), "w")
     for field in previous_data:
+        if field in f.keys():
+            # Remove
+            del f[field]
         try:
             f[field] = previous_data[field]
         except TypeError:
             f[field] = previous_data[field].astype("S")
     for field in variables:
+        if field in f.keys():
+            # Remove
+            del f[field]
         try:
             f[field] = variables[field]
         except TypeError:

@@ -7,7 +7,7 @@ class PIP_M_reported(Variable):
     entity = Person
     label = "Disability Living Allowance (mobility) (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class pip_m_category(Variable):
@@ -43,7 +43,7 @@ class pip_m(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         pip_m = parameters(period).dwp.pip.mobility

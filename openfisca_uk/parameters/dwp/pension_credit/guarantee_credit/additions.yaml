@@ -1,0 +1,9 @@
+description: Additional elements available in Pension Credit.
+values:
+  2002-01-01:
+    - severe_disability_minimum_guarantee_addition
+    - carer_minimum_guarantee_addition
+    - child_minimum_guarantee_addition
+metadata:
+  unit: currency-GBP
+  reference: none

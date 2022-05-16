@@ -1,0 +1,26 @@
+description: Income sources included in income used to determine Guarantee Credit entitlement.
+values:
+  2002-01-01:
+    - earned_income
+    - working_tax_credit
+    - state_pension
+    - pension_income
+    # (e) prescribed social security benefits
+    # foreign social security benefits
+    # war-related pension
+    # foreign war-related pension
+    - capital_income
+    # prescribed income
+    # "prescribed" here means "specified in regulations outside of this section". This is referred to by
+    # The State Pension Credit Regulations 2002(15)(1):
+    # "For the purposes of section 15(1)(e) (income), all social security benefits are prescribed except:"
+    # after which follows a a comprehensive list of exempted benefits.
+    - ESA_contrib
+    - JSA_contrib
+metadata:
+  unit: list
+  label: Pension Credit income sources
+  name: pc_income_sources
+  reference:
+    - title: State Pension Credit Act 2002 s. 15(1)
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/15

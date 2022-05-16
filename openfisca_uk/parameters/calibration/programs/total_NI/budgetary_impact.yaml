@@ -1,0 +1,37 @@
+description: Total revenue from National Insurance by country.
+UNITED_KINGDOM:
+  values:
+    2018-01-01: 137_500_000_000
+    2019-01-01: 145_000_000_000
+    2020-01-01: 140_800_000_000
+    2021-01-01: 145_900_000_000
+    2022-01-01: 151_300_000_000
+    2023-01-01: 157_500_000_000
+    2024-01-01: 164_600_000_000
+    2025-01-01: 172_100_000_000
+ENGLAND:
+  values:
+    2018-01-01: 118_591_000_000
+  metadata:
+    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+SCOTLAND:
+  values:
+    2018-01-01: 10_532_000_000
+  metadata:
+    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+WALES:
+  values:
+    2018-01-01: 4_787_000_000
+  metadata:
+    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+NORTHERN_IRELAND:
+  values:
+    2018-01-01: 2_736_000_000
+  metadata:
+    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+metadata:
+  reference:
+    - title: HMRC Tax Receipts Split by country
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf
+    - title: OBR 2021 forecast
+      href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/national-insurance-contributions-nics/

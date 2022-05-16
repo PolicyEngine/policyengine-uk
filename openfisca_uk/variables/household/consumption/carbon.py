@@ -24,17 +24,12 @@ class carbon_consumption(Variable):
             "restaurants_and_hotels_consumption",
             "miscellaneous_consumption",
         ]
-        spending_by_sector = list(
-            map(lambda var: household(var, period), CONSUMPTION_VARIABLES)
-        )
-        household_weight = household("household_weight", period)
-        aggregate_spending_by_sector = list(
-            map(
-                lambda values: (values * household_weight).sum(),
-                spending_by_sector,
-            )
-        )
-        carbon = parameters(period).consumption.carbon
+        consumption = parameters(period).consumption
+        aggregate_spending_by_sector = [
+            consumption.total_by_category[category]
+            for category in CONSUMPTION_VARIABLES
+        ]
+        carbon = consumption.carbon
         aggregate_emissions_by_sector = [
             carbon.emissions[category.replace("_consumption", "")]
             for category in CONSUMPTION_VARIABLES
@@ -46,6 +41,9 @@ class carbon_consumption(Variable):
                 aggregate_spending_by_sector,
                 CONSUMPTION_VARIABLES,
             )
+        ]
+        spending_by_sector = [
+            household(category, period) for category in CONSUMPTION_VARIABLES
         ]
         return sum(
             [

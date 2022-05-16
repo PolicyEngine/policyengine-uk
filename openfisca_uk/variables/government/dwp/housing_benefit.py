@@ -6,7 +6,7 @@ class housing_benefit_reported(Variable):
     entity = Person
     label = "Housing Benefit (reported amount)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class housing_benefit_eligible(Variable):
@@ -54,7 +54,7 @@ class housing_benefit_applicable_amount(Variable):
     entity = BenUnit
     label = "Applicable amount for Housing Benefit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         HB = parameters(period).benefit.housing_benefit
@@ -98,7 +98,7 @@ class housing_benefit_applicable_income(Variable):
     entity = BenUnit
     label = "Relevant income for Housing Benefit means test"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).benefit.tax_credits.working_tax_credit
@@ -167,7 +167,7 @@ class HB_individual_non_dep_deduction(Variable):
     entity = Person
     label = "Non-dependent deduction (individual)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         not_rent_liable = person.benunit("benunit_rent", period) == 0
@@ -185,7 +185,7 @@ class HB_non_dep_deductions(Variable):
     entity = BenUnit
     label = "Non-dependent deductions"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         non_dep_deductions_in_hh = benunit.max(
@@ -204,7 +204,7 @@ class housing_benefit(Variable):
     entity = BenUnit
     label = "Housing Benefit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
@@ -259,7 +259,7 @@ class baseline_housing_benefit(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class baseline_has_housing_benefit(Variable):

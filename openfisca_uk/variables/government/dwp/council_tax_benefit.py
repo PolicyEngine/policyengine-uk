@@ -7,7 +7,7 @@ class council_tax_benefit_reported(Variable):
     label = "Council Tax Benefit (reported)"
     documentation = "Reported amount of Council Tax Benefit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.september_cpi")
@@ -16,7 +16,7 @@ class council_tax_benefit(Variable):
     entity = BenUnit
     label = "Council Tax Benefit"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["council_tax_benefit_reported"])

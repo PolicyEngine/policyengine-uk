@@ -6,7 +6,7 @@ class owned_land(Variable):
     entity = Household
     label = "Owned land"
     documentation = "Total value of all land-only plots owned by the household"
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
@@ -20,7 +20,7 @@ class land_value(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = STOCK
 
     def formula(household, period):
@@ -37,25 +37,18 @@ class household_land_value(Variable):
     documentation = (
         "Estimated total land value directly owned by the household"
     )
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        property_wealth = household("property_wealth", period)
-        total_property_wealth = (
-            property_wealth * household("household_weight", period)
-        ).sum()
-        land = parameters(period).wealth.land
+        wealth = parameters(period).wealth
         property_wealth_intensity = (
-            land.value.aggregate_household_land_value / total_property_wealth
+            wealth.land.value.aggregate_household_land_value
+            / wealth.property_wealth
         )
-        property_wealth_intensity = where(
-            total_property_wealth > 0,
-            property_wealth_intensity,
-            land.intensity.property_wealth,
-        )
+        property_wealth = household("property_wealth", period)
         owned_land = household("owned_land", period)
         return property_wealth * property_wealth_intensity + owned_land
 
@@ -64,23 +57,16 @@ class corporate_land_value(Variable):
     entity = Household
     label = "Land value"
     documentation = "Estimated total land value indirectly owned by the household from corporate holdings"
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
 
     def formula(household, period, parameters):
+        wealth = parameters(period).wealth
         corporate_wealth = household("corporate_wealth", period)
-        total_corporate_wealth = (
-            corporate_wealth * household("household_weight", period)
-        ).sum()
-        land = parameters(period).wealth.land
         corporate_wealth_intensity = (
-            land.value.aggregate_corporate_land_value / total_corporate_wealth
-        )
-        corporate_wealth_intensity = where(
-            total_corporate_wealth > 0,
-            corporate_wealth_intensity,
-            land.intensity.corporate_wealth,
+            wealth.land.value.aggregate_corporate_land_value
+            / wealth.corporate_wealth
         )
         return corporate_wealth * corporate_wealth_intensity

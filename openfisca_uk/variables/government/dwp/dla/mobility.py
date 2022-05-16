@@ -9,7 +9,7 @@ class DLA_M_reported(Variable):
     entity = Person
     label = "DLA (mobility) (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class dla_m_category(Variable):
@@ -45,7 +45,7 @@ class dla_m(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         dla_m = parameters(period).dwp.dla.mobility

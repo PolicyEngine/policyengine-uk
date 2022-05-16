@@ -23,7 +23,7 @@ class ltt_on_residential_property_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         ltt = parameters(period).wra.land_transaction_tax
@@ -53,7 +53,7 @@ class ltt_on_residential_property_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         ltt = parameters(period).wra.land_transaction_tax
@@ -72,7 +72,7 @@ class ltt_on_non_residential_property_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         ltt = parameters(period).wra.land_transaction_tax
@@ -87,7 +87,7 @@ class ltt_on_non_residential_property_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         ltt = parameters(period).wra.land_transaction_tax
@@ -104,7 +104,7 @@ class ltt_on_transactions(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         LTT_TRANSACTION_VARIABLES = [
@@ -120,7 +120,7 @@ class ltt_on_rent(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         LTT_RENT_VARIABLES = [
@@ -136,7 +136,7 @@ class land_transaction_tax(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         ltt_if_liable = add(
@@ -151,7 +151,7 @@ class expected_ltt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         property_sale_rate = household.state("property_sale_rate", period)
@@ -164,7 +164,7 @@ class baseline_expected_ltt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class change_in_expected_ltt(Variable):
@@ -172,6 +172,6 @@ class change_in_expected_ltt(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = change_over_baseline(expected_ltt)

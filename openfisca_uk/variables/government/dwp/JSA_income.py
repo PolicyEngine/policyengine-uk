@@ -6,7 +6,7 @@ class JSA_income_reported(Variable):
     entity = Person
     label = "JSA (income-based) (reported amount)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class JSA_income_eligible(Variable):
@@ -53,7 +53,7 @@ class JSA_income_applicable_amount(Variable):
     documentation = "Maximum amount of income-based Jobseeker's Allowance"
     definition_period = YEAR
     reference = "Jobseekers Act 1995 s. 4"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         income = parameters(period).benefit.JSA.income
@@ -95,7 +95,7 @@ class JSA_income_applicable_income(Variable):
     entity = BenUnit
     label = "Relevant income for JSA (income-based) means test"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).benefit.JSA
@@ -140,7 +140,7 @@ class JSA_income(Variable):
     entity = BenUnit
     label = "JSA (income-based)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         applicable_amount = benunit("JSA_income_applicable_amount", period)
@@ -156,7 +156,7 @@ class JSA(Variable):
     entity = BenUnit
     label = "Amount of Jobseeker's Allowance for this family"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         JSA_contrib = aggr(benunit, period, ["JSA_contrib"])

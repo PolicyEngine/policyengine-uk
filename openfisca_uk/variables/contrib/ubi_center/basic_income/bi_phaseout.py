@@ -9,7 +9,7 @@ class bi_individual_phaseout(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         income = person("total_income", period)

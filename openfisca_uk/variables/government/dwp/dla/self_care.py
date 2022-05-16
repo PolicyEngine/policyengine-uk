@@ -9,7 +9,7 @@ class DLA_SC_reported(Variable):
     entity = Person
     label = "DLA (self-care) (reported)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class dla_sc_category(Variable):
@@ -47,7 +47,7 @@ class dla_sc(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         dla_sc = parameters(period).dwp.dla.self_care
@@ -82,3 +82,13 @@ class dla_sc_middle_plus(Variable):
             person("dla_sc_category", period),
             [LowerMiddleOrHigher.MIDDLE, LowerMiddleOrHigher.HIGHER],
         )
+
+
+class receives_highest_dla_sc(Variable):
+    label = "Receives the highest DLA (self-care) category"
+    entity = Person
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(person, period, parameters):
+        return person("dla_sc_category", period) == LowerMiddleOrHigher.HIGHER

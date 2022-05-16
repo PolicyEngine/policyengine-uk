@@ -35,7 +35,7 @@ def add_takeup_parameters():
 
     takeup_parameters = [
         parameters.benefit.universal_credit.takeup,
-        parameters.benefit.pension_credit.takeup,
+        parameters.dwp.pension_credit.takeup,
         parameters.hmrc.child_benefit.takeup,
         parameters.benefit.tax_credits.working_tax_credit.takeup,
         parameters.benefit.tax_credits.child_tax_credit.takeup,

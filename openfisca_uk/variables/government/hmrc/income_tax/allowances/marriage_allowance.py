@@ -6,7 +6,7 @@ class unused_personal_allowance(Variable):
     entity = Person
     label = "Unused personal allowance"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return max_(
@@ -36,7 +36,7 @@ class partners_unused_personal_allowance(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         is_adult = person("is_adult", period)
@@ -50,7 +50,7 @@ class marriage_allowance(Variable):
     label = "Marriage Allowance for the year (a tax-reducer, rather than an allowance or tax relief)"
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         marital = person("marital_status", period)

@@ -1,0 +1,7 @@
+- name: Entitlement from benefits
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    dla_sc_category: HIGHER
+  output:
+    severe_disability_minimum_guarantee_addition: 67.29 * 52

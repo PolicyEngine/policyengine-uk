@@ -39,7 +39,7 @@ class carer_premium(Variable):
     reference = (
         "The Social Security Amendment (Carer Premium) Regulations 2002"
     )
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         carers = benunit("num_carers", period.this_year)

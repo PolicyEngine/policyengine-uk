@@ -7,7 +7,7 @@ class student_loans(Variable):
     entity = Person
     label = "Student loans"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.september_cpi")
@@ -17,7 +17,7 @@ class adult_ema(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.september_cpi")
@@ -27,7 +27,7 @@ class child_ema(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.september_cpi")
@@ -37,7 +37,7 @@ class access_fund(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.september_cpi")
@@ -47,7 +47,7 @@ class education_grants(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class student_payments(Variable):
@@ -55,7 +55,7 @@ class student_payments(Variable):
     entity = Person
     label = "Student payments"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         EDUCATION_BENEFITS = [

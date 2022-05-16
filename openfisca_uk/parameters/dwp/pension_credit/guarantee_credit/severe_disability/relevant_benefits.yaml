@@ -1,0 +1,14 @@
+description: Benefits which confer entitlement to an increase to the Pension Credit Minimum Guarantee.
+values:
+  2002-01-01:
+    - attendance_allowance
+    - dla_sc_middle_plus
+    - pip_dl
+    - armed_forces_independence_payment
+metadata:
+  unit: list
+  label: Pension Credit severe disability criteria
+  name: pc_severe_disability_criteria
+  reference:
+    - title: The State Pension Credit Regulations 2002 sch. 1 p. 1
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/1

@@ -1,0 +1,9 @@
+description: Number of families in the UK.
+values:
+  2019-01-01: 35_239_742
+metadata:
+  unit: family
+  uprating:
+    parameter: calibration.demographics.households.in_total
+  reference:
+    - title: Family Resources Survey (2019) benefit unit weight sum

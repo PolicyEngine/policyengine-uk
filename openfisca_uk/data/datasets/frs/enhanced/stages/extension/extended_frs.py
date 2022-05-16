@@ -22,6 +22,10 @@ class ExtendedFRS(PrivateDataset):
     is_openfisca_compatible = True
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
 
+    filename_by_year = {
+        2022: "extended_frs_2022.h5",
+    }
+
     data_format = Dataset.TIME_PERIOD_ARRAYS
 
     def generate(self, year: int):

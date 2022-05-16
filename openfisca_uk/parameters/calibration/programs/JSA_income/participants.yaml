@@ -1,0 +1,17 @@
+GREAT_BRITAIN:
+  description: Number of families claiming income-based JSA.
+  values:
+    2018-01-01: 274_000
+    2019-01-01: 138_000
+    2020-01-01: 97_000
+    2021-01-01: 67_000
+    2022-01-01: 44_000
+    2023-01-01: 5_000
+    2024-01-01: 0
+    2025-01-01: 0
+    2026-01-01: 0
+  metadata:
+    unit: benefit unit
+    reference:
+      - title: Benefit expenditure and caseload tables 2021 | Table 1c
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

@@ -51,7 +51,7 @@ class state_pension(Variable):
     entity = Person
     label = "State Pension"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     documentation = "Gross State Pension payments"
     quantity_type = FLOW
 
@@ -64,7 +64,7 @@ class state_pension_reported(Variable):
     entity = Person
     label = "Reported income from the State Pension"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula_2015(person, period, parameters):
         sp_ly = person("state_pension_reported", period.last_year)

@@ -6,7 +6,7 @@ class earned_income(Variable):
     entity = Person
     label = "Total earned income"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -22,7 +22,7 @@ class sublet_income(Variable):
     entity = Person
     label = "Income received from sublet agreements"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class miscellaneous_income(Variable):
@@ -30,7 +30,7 @@ class miscellaneous_income(Variable):
     entity = Person
     label = "Income from other sources"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class private_transfer_income(Variable):
@@ -38,7 +38,7 @@ class private_transfer_income(Variable):
     entity = Person
     label = "Private transfers"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class lump_sum_income(Variable):
@@ -46,7 +46,7 @@ class lump_sum_income(Variable):
     entity = Person
     label = "Lump sum income"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class market_income(Variable):
@@ -54,7 +54,7 @@ class market_income(Variable):
     entity = Person
     label = "Market income"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         INCOME_VARIABLES = [
@@ -77,7 +77,7 @@ class gross_income(Variable):
     entity = Person
     label = "Gross income, including benefits"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         COMPONENTS = [
@@ -90,10 +90,10 @@ class gross_income(Variable):
 class household_gross_income(Variable):
     value_type = float
     entity = Household
-    unit = "currency-GBP"
+    unit = GBP
     label = "Household gross income"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return add(
@@ -108,7 +108,7 @@ class net_income(Variable):
     entity = Person
     label = "Net income"
     documentation = "Market income, minus taxes, plus benefits"
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -180,7 +180,7 @@ class capital_income(Variable):
     entity = Person
     label = "Income from savings or dividends"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return add(
@@ -193,7 +193,7 @@ class maintenance_income(Variable):
     entity = Person
     label = "Maintenance payments"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class hbai_household_net_income(Variable):
@@ -201,7 +201,7 @@ class hbai_household_net_income(Variable):
     entity = Household
     label = "Household net income (HBAI definition)"
     documentation = "Disposable income for the household, following the definition used for official poverty statistics"
-    unit = "currency-GBP"
+    unit = GBP
     definition_period = YEAR
 
     def formula(household, period, parameters):
@@ -217,7 +217,7 @@ class household_net_income(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period):
         gross_income = household("household_gross_income", period)
@@ -231,7 +231,7 @@ class real_household_net_income(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         def cpi(period):
@@ -246,7 +246,7 @@ class hbai_household_net_income_ahc(Variable):
     entity = Household
     label = "Household net income, after housing costs"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         income = household("hbai_household_net_income", period)
@@ -259,7 +259,7 @@ class equiv_household_net_income(Variable):
     entity = Household
     label = "Equivalised household net income"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         income = household("household_net_income", period)
@@ -272,7 +272,7 @@ class equiv_hbai_household_net_income(Variable):
     entity = Household
     label = "Equivalised household net income (HBAI)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         income = household("hbai_household_net_income", period)
@@ -285,7 +285,7 @@ class equiv_hbai_household_net_income_ahc(Variable):
     entity = Household
     label = "Equivalised household net income, after housing costs (HBAI)"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         income = household("hbai_household_net_income_ahc", period)
@@ -298,7 +298,7 @@ class base_net_income(Variable):
     entity = Person
     label = "Existing net income for the person to use as a base in microsimulation"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class is_apprentice(Variable):
@@ -353,7 +353,7 @@ class minimum_wage(Variable):
     entity = Person
     label = "Minimum wage"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         MW = parameters(period).law.minimum_wage
@@ -366,7 +366,7 @@ class household_market_income(Variable):
     label = "Household market income"
     documentation = "Market income for the household"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return aggr(household, period, ["market_income"])

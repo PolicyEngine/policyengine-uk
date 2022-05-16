@@ -12,7 +12,7 @@ class EnhancedFRS(PrivateDataset):
     label = "Enhanced FRS"
     data_format = Dataset.TIME_PERIOD_ARRAYS
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
-    filename_by_year = {2022: "enhanced_frs_2022.h5"}
+    filename_by_year = {2022: "enhanced_frs_2022_v0_22.h5"}
 
     def generate(self, year: int):
         if year not in CalibratedFRS.years:
@@ -56,7 +56,7 @@ class EnhancedFRS(PrivateDataset):
         from ..baseline_variables import generate_baseline_variables
 
         # Import here to avoid circular dependency
-        generate_baseline_variables(year)
+        generate_baseline_variables(self, year)
 
         from ..remove_zero_weight_households import (
             remove_zero_weight_households,

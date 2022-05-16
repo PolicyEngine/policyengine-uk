@@ -6,7 +6,7 @@ class weekly_rent(Variable):
     entity = Household
     label = "Weekly average rent"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.CPI")
@@ -16,7 +16,7 @@ class benunit_rent(Variable):
     label = "Rent"
     documentation = "Gross rent that members of this family are liable for"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["personal_rent"])
@@ -28,7 +28,7 @@ class personal_rent(Variable):
     label = "Rent liable"
     documentation = "The gross rent this person is liable for"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         rent = person.household("rent", period)
@@ -41,7 +41,7 @@ class family_rent(Variable):
     entity = BenUnit
     label = "Gross rent for the family"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         personal_rent = benunit.members("personal_rent", period)
@@ -53,7 +53,7 @@ class childcare_expenses(Variable):
     entity = Person
     label = "Cost of childcare"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class private_pension_contributions(Variable):
@@ -61,7 +61,7 @@ class private_pension_contributions(Variable):
     entity = Person
     label = "Private pension contributions"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class occupational_pension_contributions(Variable):
@@ -69,7 +69,7 @@ class occupational_pension_contributions(Variable):
     entity = Person
     label = "Occupational pension contributions"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class housing_service_charges(Variable):
@@ -77,7 +77,7 @@ class housing_service_charges(Variable):
     entity = Household
     label = "Housing service charges"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class water_and_sewerage_charges(Variable):
@@ -92,7 +92,7 @@ class employer_pension_contributions(Variable):
     entity = Person
     label = "Employer pension contributions"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class weekly_childcare_expenses(Variable):
@@ -100,7 +100,7 @@ class weekly_childcare_expenses(Variable):
     entity = Person
     label = "Average cost of childcare"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         return person("childcare_expenses", period) / WEEKS_IN_YEAR
@@ -112,7 +112,7 @@ class housing_costs(Variable):
     entity = Household
     label = "Total housing costs"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         return add(household, period, ["rent", "mortgage"])
@@ -123,7 +123,7 @@ class maintenance_expenses(Variable):
     entity = Person
     label = "Maintenance expenses"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class mortgage_interest_repayment(Variable):
@@ -131,7 +131,7 @@ class mortgage_interest_repayment(Variable):
     entity = Household
     label = "Total mortgage payments"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class mortgage_capital_repayment(Variable):
@@ -139,7 +139,7 @@ class mortgage_capital_repayment(Variable):
     entity = Household
     label = "Mortgage payments"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 class mortgage(Variable):
@@ -147,7 +147,7 @@ class mortgage(Variable):
     entity = Household
     label = "Total mortgage payments"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
 
 @uprated(by="uprating.council_tax")
@@ -156,8 +156,17 @@ class council_tax(Variable):
     entity = Household
     label = "Council Tax"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
     quantity_type = FLOW
+
+
+@uprated(by="uprating.council_tax")
+class domestic_rates(Variable):
+    label = "Domestic rates"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
 
 
 class council_tax_less_benefit(Variable):
@@ -166,7 +175,7 @@ class council_tax_less_benefit(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         person = household.members
