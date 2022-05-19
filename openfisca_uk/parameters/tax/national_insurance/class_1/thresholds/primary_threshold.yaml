@@ -7,6 +7,12 @@ values:
   2019-04-06: 166
   2020-04-06: 183
   2021-04-06: 184
+  2022-04-06:
+    value: 190
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(6)
+          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/6/made#regulation-6-2-a
   2022-07-01: 
     value: 241.73
     metadata:
