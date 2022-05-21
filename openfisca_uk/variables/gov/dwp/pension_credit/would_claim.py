@@ -1,5 +1,5 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.government.dwp.pension_credit.pension_credit import (
+from openfisca_uk.variables.gov.dwp.pension_credit.pension_credit import (
     pension_credit,
 )
 
