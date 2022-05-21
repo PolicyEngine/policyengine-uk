@@ -1,17 +1,17 @@
 from openfisca_uk.model_api import *
-from openfisca_uk.variables.government.dwp.pip.pip import PIPCategory
+from openfisca_uk.variables.gov.dwp.pip.pip import PIPCategory
 
 
-class PIP_DL_reported(Variable):
+class PIP_M_reported(Variable):
     value_type = float
     entity = Person
-    label = "PIP (self-care) (reported)"
+    label = "Disability Living Allowance (mobility) (reported)"
     definition_period = YEAR
     unit = GBP
 
 
-class pip_dl_category(Variable):
-    label = "PIP (daily living) category"
+class pip_m_category(Variable):
+    label = "PIP (mobility) category"
     entity = Person
     definition_period = YEAR
     value_type = Enum
@@ -19,17 +19,15 @@ class pip_dl_category(Variable):
     default_value = PIPCategory.NONE
 
     def formula(person, period, parameters):
-        pip_dl = parameters(period).dwp.pip.daily_living
+        pip_m = parameters(period).dwp.pip.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
-        reported_weekly_pip_dl = (
-            person("PIP_DL_reported", period) / WEEKS_IN_YEAR
+        reported_weekly_pip_m = (
+            person("PIP_M_reported", period) / WEEKS_IN_YEAR
         )
         return select(
             [
-                reported_weekly_pip_dl
-                >= pip_dl.enhanced * (1 - SAFETY_MARGIN),
-                reported_weekly_pip_dl
-                >= pip_dl.standard * (1 - SAFETY_MARGIN),
+                reported_weekly_pip_m >= pip_m.enhanced * (1 - SAFETY_MARGIN),
+                reported_weekly_pip_m >= pip_m.standard * (1 - SAFETY_MARGIN),
                 True,
             ],
             [
@@ -40,16 +38,16 @@ class pip_dl_category(Variable):
         )
 
 
-class pip_dl(Variable):
-    label = "PIP (daily living)"
+class pip_m(Variable):
+    label = "PIP (mobility)"
     entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP
 
     def formula(person, period, parameters):
-        pip_dl = parameters(period).dwp.pip.daily_living
-        category = person("pip_dl_category", period)
+        pip_m = parameters(period).dwp.pip.mobility
+        category = person("pip_m_category", period)
         return (
             select(
                 [
@@ -58,20 +56,10 @@ class pip_dl(Variable):
                     category == PIPCategory.NONE,
                 ],
                 [
-                    pip_dl.enhanced,
-                    pip_dl.standard,
+                    pip_m.enhanced,
+                    pip_m.standard,
                     0,
                 ],
             )
             * WEEKS_IN_YEAR
         )
-
-
-class receives_enhanced_pip_dl(Variable):
-    label = "Receives enhanced PIP (daily living)"
-    entity = Person
-    definition_period = YEAR
-    value_type = bool
-
-    def formula(person, period, parameters):
-        return person("pip_dl_category", period) == PIPCategory.ENHANCED

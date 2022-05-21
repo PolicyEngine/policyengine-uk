@@ -86,7 +86,7 @@ class WAS(PrivateDataset):
             )
 
         if year > max(RawWAS.years):
-            logging.warn("Uprating a previous version of the WAS.")
+            logging.warning("Uprating a previous version of the WAS.")
             if len(self.years) == 0:
                 self.generate(max(RawWAS.years))
             if len(self.years) > 0:

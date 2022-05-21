@@ -3,13 +3,15 @@ root: index
 parts:
   - caption: Model
     chapters:
-      - file: model/child_benefit
-      - file: model/pension_credit
-      - file: model/stamp_duty
-      - file: model/carbon_tax
       - file: model/data
       - file: model/validation
       - file: model/reweighting
+  - caption: Programs
+    chapters:
+      - file: programs/gov/dwp/pension-credit
+      - file: programs/gov/hmrc/child-benefit
+      - file: programs/gov/hmrc/stamp-duty
+      - file: programs/contrib/ubi-center/carbon-tax
   - caption: Usage
     chapters:
       - file: usage/reforms

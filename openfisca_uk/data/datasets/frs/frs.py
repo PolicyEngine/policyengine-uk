@@ -34,7 +34,7 @@ class FRS(PrivateDataset):
             )
 
         if year > max(RawFRS.years):
-            logging.warn("Uprating a previous version of the FRS.")
+            logging.warning("Uprating a previous version of the FRS.")
             if len(self.years) == 0:
                 self.generate(max(RawFRS.years))
             if len(FRS.years) > 0:

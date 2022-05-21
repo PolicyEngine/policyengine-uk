@@ -83,7 +83,7 @@ class LCFS(PrivateDataset):
             )
 
         if year > max(RawLCFS.years):
-            logging.warn("Uprating a previous version of the LCFS.")
+            logging.warning("Uprating a previous version of the LCFS.")
             if len(self.years) == 0:
                 self.generate(max(RawLCFS.years))
             if len(self.years) > 0:

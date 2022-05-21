@@ -13,6 +13,9 @@ dist
 .spyderproject
 .vscode/settings.json
 .vscode/launch.json
+.vscode/dryrun.log
+.vscode/targets.log
+.vscode/configurationCache.log
 
 # OS stuff
 
