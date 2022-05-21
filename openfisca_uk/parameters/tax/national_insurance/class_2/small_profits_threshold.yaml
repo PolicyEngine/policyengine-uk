@@ -6,6 +6,12 @@ values:
   2019-04-06: 6_365
   2020-04-06: 6_475
   2021-04-06: 6_515
+  2022-04-06:
+    value: 6_725
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-b
 metadata:
   unit: currency-GBP
   reference:

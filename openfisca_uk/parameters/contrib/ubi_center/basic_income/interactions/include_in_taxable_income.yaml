@@ -3,5 +3,5 @@ values:
   2010-01-01: false
 metadata:
   unit: bool
-  label: Include BI in means tests
-  name: include_bi_in_means_tests
+  label: Include basic income in taxable income
+  name: include_bi_in_taxable_income

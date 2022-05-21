@@ -432,6 +432,16 @@
     changed:
       - Calibration process improved with country-level targets.
   date: 2022-04-29 09:29:26
+- bump: minor
+  changes:
+    added:
+      - Household-level phase-outs for basic income.
+  date: 2022-05-16 14:02:26
+- bump: patch
+  changes:
+    fixed:
+      - National Insurance thresholds pre-July, post-Spring Statement (inflation adjustments).
+  date: 2022-05-19 14:58:06
 - bump: patch
   changes:
     changed:

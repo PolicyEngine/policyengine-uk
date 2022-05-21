@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.1] - 2022-05-19 14:58:06
+
+### Fixed
+
+- National Insurance thresholds pre-July, post-Spring Statement (inflation adjustments).
+
+## [0.23.0] - 2022-05-16 14:02:26
+
+### Added
+
+- Household-level phase-outs for basic income.
+
 ## [0.22.0] - 2022-04-29 09:29:26
 
 ### Changed
@@ -525,6 +537,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.23.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.23.0...0.23.1
+[0.23.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.22.0...0.23.0
 [0.22.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.21.0...0.22.0
 [0.21.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.20.4...0.21.0
 [0.20.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.20.3...0.20.4

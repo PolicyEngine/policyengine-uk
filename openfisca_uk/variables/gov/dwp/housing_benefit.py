@@ -121,7 +121,7 @@ class housing_benefit_applicable_income(Variable):
         income = aggr(benunit, period, INCOME_COMPONENTS)
         tax = aggr(benunit, period, TAX_COMPONENTS)
         income += aggr(benunit, period, ["personal_benefits"])
-        if not bi.include_in_means_tests:
+        if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
             income -= add(benunit, period, ["basic_income"])
         income += add(benunit, period, ["tax_credits"])
