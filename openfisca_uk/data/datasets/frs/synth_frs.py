@@ -20,7 +20,7 @@ class SynthFRS(PublicDataset):
 
     def generate(self, year: int):
         if year not in FRS.years:
-            logging.warn(f"FRS for {year} not found: generating.")
+            logging.warning(f"FRS for {year} not found: generating.")
             FRS.generate(year)
 
         ID_COLS = (

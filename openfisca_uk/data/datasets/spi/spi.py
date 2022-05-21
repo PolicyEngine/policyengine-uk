@@ -36,7 +36,7 @@ class SPI(PrivateDataset):
             )
 
         if year > max(RawSPI.years):
-            logging.warn("Uprating a previous version of the SPI.")
+            logging.warning("Uprating a previous version of the SPI.")
             if len(self.years) == 0:
                 self.generate(max(RawSPI.years))
             if len(self.years) > 0:

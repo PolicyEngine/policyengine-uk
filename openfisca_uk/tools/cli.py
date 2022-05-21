@@ -113,7 +113,7 @@ def build_parser():
 def main():
     args = build_parser().parse_args()
     logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.WARNING,
+        level=logging.DEBUG if args.verbose else logging.warningING,
         stream=sys.stdout,
     )
 
