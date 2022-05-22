@@ -59,7 +59,7 @@ def generate_baseline_variables(dataset: Dataset, year: int):
     from openfisca_uk import Microsimulation
 
     YEARS = list(range(year, 2026))
-    baseline = Microsimulation(dataset=dataset, add_baseline_values=False)
+    baseline = Microsimulation(dataset=dataset)
 
     variable_metadata = baseline.simulation.tax_benefit_system.variables
 
