@@ -24,6 +24,8 @@ def remove_zero_weight_households(dataset: Dataset, year: int):
     variables = dataset.keys(year)
 
     for variable in variables:
+        if variable not in sim.simulation.tax_benefit_system.variables:
+            continue
         entity = sim.simulation.tax_benefit_system.variables[
             variable
         ].entity.key
