@@ -23,11 +23,15 @@ class would_claim_IS(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_income_support_eligible", period)
-        eligible = benunit("income_support_eligible", period)
+        baseline = benunit("baseline_income_support_entitlement", period) > 0
+        eligible = benunit("income_support_entitlement", period) > 0
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_is | claims_all_entitled_benefits, ~baseline & eligible, True],
+            [
+                reported_is | claims_all_entitled_benefits,
+                ~baseline & eligible,
+                True,
+            ],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -155,11 +159,21 @@ class income_support_applicable_amount(Variable):
         )
         personal_allowance = personal_allowance_weekly * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
-        return (
-            (personal_allowance + premiums)
-            * benunit("income_support_eligible", period)
-            * benunit("would_claim_IS", period)
-        )
+        return personal_allowance + premiums
+
+
+class income_support_entitlement(Variable):
+    label = "IS entitlement"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
+        amount = benunit("income_support_applicable_amount", period)
+        income = benunit("income_support_applicable_income", period)
+        eligible = benunit("income_support_eligible", period)
+        return max_(0, amount - income) * eligible
 
 
 class income_support(Variable):
@@ -170,15 +184,14 @@ class income_support(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        amount = benunit("income_support_applicable_amount", period)
-        income = benunit("income_support_applicable_income", period)
-        return max_(0, amount - income)
+        entitlement = benunit("income_support_entitlement", period)
+        would_claim = benunit("would_claim_IS", period)
+        return entitlement * would_claim
 
 
-class baseline_income_support_eligible(Variable):
+class baseline_income_support_entitlement(Variable):
     label = "Income Support eligible (baseline)"
     entity = BenUnit
     definition_period = YEAR
-    value_type = bool
+    value_type = float
     unit = GBP
-

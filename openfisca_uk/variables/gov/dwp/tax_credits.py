@@ -108,11 +108,15 @@ class would_claim_CTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_is_CTC_eligible", period)
-        eligible = benunit("is_CTC_eligible", period)
+        baseline = benunit("baseline_ctc_entitlement", period) > 0
+        eligible = benunit("ctc_entitlement", period) > 0
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_ctc | claims_all_entitled_benefits, ~baseline & eligible, True],
+            [
+                reported_ctc | claims_all_entitled_benefits,
+                ~baseline & eligible,
+                True,
+            ],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -279,11 +283,15 @@ class would_claim_WTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_is_WTC_eligible", period)
-        eligible = benunit("is_WTC_eligible", period)
+        baseline = benunit("baseline_wtc_entitlement", period) > 0
+        eligible = benunit("wtc_entitlement", period) > 0
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_wtc | claims_all_entitled_benefits, ~baseline & eligible, True],
+            [
+                reported_wtc | claims_all_entitled_benefits,
+                ~baseline & eligible,
+                True,
+            ],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -525,6 +533,21 @@ class tax_credits(Variable):
         return where(amount < min_benefit, 0, amount)
 
 
+class ctc_entitlement(Variable):
+    label = "CTC entitlement"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
+        return where(
+            benunit("tax_credits", period) > 0,
+            benunit("child_tax_credit_pre_minimum", period),
+            0,
+        ) * (benunit("is_CTC_eligible", period))
+
+
 class child_tax_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -533,14 +556,24 @@ class child_tax_credit(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
+        entitlement = benunit("ctc_entitlement", period)
+        would_claim = benunit("would_claim_CTC", period)
+        return entitlement * would_claim
+
+
+class wtc_entitlement(Variable):
+    label = "WTC entitlement"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
         return where(
             benunit("tax_credits", period) > 0,
-            benunit("child_tax_credit_pre_minimum", period),
+            benunit("working_tax_credit_pre_minimum", period),
             0,
-        ) * (
-            benunit("is_CTC_eligible", period)
-            & benunit("would_claim_CTC", period)
-        )
+        ) * (benunit("is_WTC_eligible", period))
 
 
 class working_tax_credit(Variable):
@@ -551,26 +584,20 @@ class working_tax_credit(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        return where(
-            benunit("tax_credits", period) > 0,
-            benunit("working_tax_credit_pre_minimum", period),
-            0,
-        ) * (
-            benunit("is_WTC_eligible", period)
-            & benunit("would_claim_WTC", period)
-        )
+        entitlement = benunit("wtc_entitlement", period)
+        would_claim = benunit("would_claim_WTC", period)
+        return entitlement * would_claim
 
 
-class baseline_is_WTC_eligible(Variable):
+class baseline_wtc_entitlement(Variable):
     label = "Baseline Working Tax Credit"
     entity = BenUnit
     definition_period = YEAR
-    value_type = bool
+    value_type = float
 
 
-class baseline_is_CTC_eligible(Variable):
+class baseline_ctc_entitlement(Variable):
     label = "Receives Child Tax Credit (baseline)"
     entity = BenUnit
     definition_period = YEAR
-    value_type = bool
-    default_value = True
+    value_type = float
