@@ -73,7 +73,7 @@ class child_benefit_entitlement(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     formula = sum_of_variables(["child_benefit_respective_amount"])
 
