@@ -77,6 +77,10 @@ class ExtendedFRS(PrivateDataset):
             },
             weighting=0,
         )
+        from ..baseline_variables import generate_baseline_variables
+
+        # Import here to avoid circular dependency
+        generate_baseline_variables(self, year)
 
         self.save(
             year,

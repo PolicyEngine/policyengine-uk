@@ -53,10 +53,6 @@ class EnhancedFRS(PrivateDataset):
                 for field in pred_wealth.columns
             },
         )
-        from ..baseline_variables import generate_baseline_variables
-
-        # Import here to avoid circular dependency
-        generate_baseline_variables(self, year)
 
         from ..remove_zero_weight_households import (
             remove_zero_weight_households,
