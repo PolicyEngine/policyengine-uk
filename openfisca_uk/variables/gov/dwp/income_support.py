@@ -23,10 +23,11 @@ class would_claim_IS(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_has_income_support", period)
+        baseline = benunit("baseline_income_support_eligible", period)
+        eligible = benunit("income_support_eligible", period)
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_is | claims_all_entitled_benefits, ~baseline, True],
+            [reported_is | claims_all_entitled_benefits, ~baseline & eligible, True],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -174,19 +175,10 @@ class income_support(Variable):
         return max_(0, amount - income)
 
 
-class baseline_income_support(Variable):
-    label = "Income Support (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class baseline_has_income_support(Variable):
-    label = "Receives Income Support (baseline)"
+class baseline_income_support_eligible(Variable):
+    label = "Income Support eligible (baseline)"
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
-    default_value = True
+    unit = GBP
 
-    formula = baseline_is_nonzero(income_support)

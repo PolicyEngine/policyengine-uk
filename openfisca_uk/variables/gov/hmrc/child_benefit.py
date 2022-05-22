@@ -25,11 +25,12 @@ class would_claim_child_benefit(Variable):
             aggr(benunit, period, ["child_benefit_reported"]) > 0
         )
         takeup_rate = parameters(period).hmrc.child_benefit.takeup
-        baseline_cb = benunit("baseline_has_child_benefit", period)
+        baseline_cb = benunit("baseline_is_cb_eligible", period)
+        eligible = benunit("is_cb_eligible", period)
         return select(
             [
                 already_claiming | claims_benefits,
-                ~baseline_cb,
+                ~baseline_cb & eligible,
                 True,
             ],
             [
@@ -40,6 +41,14 @@ class would_claim_child_benefit(Variable):
             ],
         )
 
+
+class is_cb_eligible(Variable):
+    label = "Child benefit eligible"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    formula = sum_of_variables(["is_child_or_QYP"])
 
 class child_benefit_respective_amount(Variable):
     label = "Child Benefit (respective amount)"
@@ -98,19 +107,10 @@ class child_benefit_less_tax_charge(Variable):
         return benefit - charge
 
 
-class baseline_child_benefit(Variable):
+class baseline_is_cb_eligible(Variable):
     label = "Child Benefit (baseline)"
     entity = BenUnit
     definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class baseline_has_child_benefit(Variable):
-    label = "Receives Child Benefit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
     value_type = bool
-    default_value = True
 
-    formula = baseline_is_nonzero(child_benefit)
+

@@ -108,10 +108,11 @@ class would_claim_CTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_has_working_tax_credit", period)
+        baseline = benunit("baseline_is_CTC_eligible", period)
+        eligible = benunit("is_CTC_eligible", period)
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_ctc | claims_all_entitled_benefits, ~baseline, True],
+            [reported_ctc | claims_all_entitled_benefits, ~baseline & eligible, True],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -278,10 +279,11 @@ class would_claim_WTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_has_child_tax_credit", period)
+        baseline = benunit("baseline_is_WTC_eligible", period)
+        eligible = benunit("is_WTC_eligible", period)
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_wtc | claims_all_entitled_benefits, ~baseline, True],
+            [reported_wtc | claims_all_entitled_benefits, ~baseline & eligible, True],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -559,31 +561,14 @@ class working_tax_credit(Variable):
         )
 
 
-class baseline_working_tax_credit(Variable):
+class baseline_is_WTC_eligible(Variable):
     label = "Baseline Working Tax Credit"
     entity = BenUnit
     definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class baseline_child_tax_credit(Variable):
-    label = "Baseline Child Tax Credit"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class baseline_has_working_tax_credit(Variable):
-    label = "Receives Working Tax Credit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
     value_type = bool
-    default_value = True
 
 
-class baseline_has_child_tax_credit(Variable):
+class baseline_is_CTC_eligible(Variable):
     label = "Receives Child Tax Credit (baseline)"
     entity = BenUnit
     definition_period = YEAR

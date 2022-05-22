@@ -37,10 +37,11 @@ class would_claim_HB(Variable):
             "claims_all_entitled_benefits", period
         )
         reported_hb = aggr(benunit, period, ["housing_benefit_reported"]) > 0
-        baseline = benunit("baseline_has_housing_benefit", period)
+        baseline = benunit("baseline_housing_benefit_eligible", period)
+        eligible = benunit("housing_benefit_eligible", period)
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_hb | claims_all_entitled_benefits, ~baseline, True],
+            [reported_hb | claims_all_entitled_benefits, ~baseline & eligible, True],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -254,19 +255,10 @@ class housing_benefit(Variable):
         return max_(0, final_amount)
 
 
-class baseline_housing_benefit(Variable):
-    label = "Housing Benefit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class baseline_has_housing_benefit(Variable):
-    label = "Receives Housing Benefit (baseline)"
+class baseline_housing_benefit_eligible(Variable):
+    label = "Housing Benefit eligible (baseline)"
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
-    default_value = True
+    unit = GBP
 
-    formula = baseline_is_nonzero(housing_benefit)

@@ -38,13 +38,14 @@ class would_claim_UC(Variable):
         current_uc_claimant = (
             aggr(benunit, period, ["universal_credit_reported"]) > 0
         )
-        baseline_uc = benunit("baseline_has_universal_credit", period)
+        baseline_uc = benunit("baseline_is_UC_eligible", period)
+        eligible = benunit("is_UC_eligible", period)
         takeup_rate = parameters(period).benefit.universal_credit.takeup
         return select(
             [
                 current_uc_claimant
                 | (claims_all_entitled_benefits & ~on_legacy_benefits),
-                (~baseline_uc & ~on_legacy_benefits),
+                (~baseline_uc & eligible & ~on_legacy_benefits),
                 True,
             ],
             [
@@ -652,19 +653,10 @@ class UC_MIF_capped_earned_income(Variable):
         return max_(personal_gross_earned_income, floor)
 
 
-class baseline_universal_credit(Variable):
-    label = "Universal Credit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class baseline_has_universal_credit(Variable):
-    label = "Receives Universal Credit (baseline)"
+class baseline_is_UC_eligible(Variable):
+    label = "Universal Credit eligible (baseline)"
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
-    default_value = True
+    unit = GBP
 
-    formula = baseline_is_nonzero(universal_credit)
