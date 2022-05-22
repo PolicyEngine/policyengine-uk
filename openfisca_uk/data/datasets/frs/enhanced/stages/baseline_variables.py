@@ -1,6 +1,9 @@
 from openfisca_core.variables import Variable
 from typing import Callable, Type
 import h5py
+from openfisca_uk.data.datasets.frs.enhanced.stages.extension.extended_frs import (
+    ExtendedFRS,
+)
 from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
     EnhancedFRS,
 )
@@ -56,42 +59,16 @@ def generate_baseline_variables(dataset: Dataset, year: int):
     from openfisca_uk import Microsimulation
 
     YEARS = list(range(year, 2026))
-    baseline = Microsimulation(dataset=dataset, add_baseline_values=False)
+    baseline = Microsimulation(dataset=dataset)
 
     variable_metadata = baseline.simulation.tax_benefit_system.variables
 
-    for variable in variable_metadata:
+    variables = []
+
+    for variable in variable_metadata.keys():
         if variable[:9] == "baseline_":
-            for subyear in YEARS:
-                baseline.simulation.set_input(
-                    variable,
-                    subyear,
-                    [True]
-                    * len(
-                        baseline.calc(
-                            variable_metadata[variable].entity.key + "_id"
-                        )
-                    ),
-                )
+            variables += [variable_metadata[variable[9:]]]
 
-    # First, find variables which need baseline storage.
-
-    variables = list(
-        filter(
-            lambda variable: hasattr(variable, "formula")
-            and variable.formula.__doc__ is not None
-            and "Baseline-requiring formula" in variable.formula.__doc__,
-            variable_metadata.values(),
-        )
-    )
-    variables = list(
-        map(
-            lambda variable: variable_metadata[
-                variable.formula.__doc__.split(" for ")[1]
-            ],
-            variables,
-        )
-    )
     print(f"Found {len(variables)} variables to store baseline values for:")
     print("\n* " + "\n* ".join([variable.label for variable in variables]))
 
@@ -120,4 +97,4 @@ def generate_baseline_variables(dataset: Dataset, year: int):
 
 
 if __name__ == "__main__":
-    generate_baseline_variables(EnhancedFRS, 2022)
+    generate_baseline_variables(ExtendedFRS, 2022)

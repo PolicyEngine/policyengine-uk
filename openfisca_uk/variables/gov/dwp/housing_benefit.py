@@ -37,10 +37,15 @@ class would_claim_HB(Variable):
             "claims_all_entitled_benefits", period
         )
         reported_hb = aggr(benunit, period, ["housing_benefit_reported"]) > 0
-        baseline = benunit("baseline_has_housing_benefit", period)
+        baseline = benunit("baseline_housing_benefit_entitlement", period) > 0
+        eligible = benunit("housing_benefit_entitlement", period) > 0
         takeup_rate = parameters(period).benefit.housing_benefit.takeup
         return select(
-            [reported_hb | claims_all_entitled_benefits, ~baseline, True],
+            [
+                reported_hb | claims_all_entitled_benefits,
+                ~baseline & eligible,
+                True,
+            ],
             [
                 True,
                 random(benunit) < takeup_rate,
@@ -199,12 +204,12 @@ class HB_non_dep_deductions(Variable):
         return non_dep_deductions_in_hh - non_dep_deductions_in_bu
 
 
-class housing_benefit(Variable):
-    value_type = float
+class housing_benefit_entitlement(Variable):
+    label = "HB entitlement"
     entity = BenUnit
-    label = "Housing Benefit"
     definition_period = YEAR
-    unit = GBP
+    value_type = float
+    unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
@@ -244,29 +249,28 @@ class housing_benefit(Variable):
         )
         amount = max_(0, amount - benunit("HB_non_dep_deductions", period))
         final_amount = min_(
-            amount
-            * (
-                benunit("housing_benefit_eligible", period)
-                & benunit("would_claim_HB", period)
-            ),
+            amount * (benunit("housing_benefit_eligible", period)),
             benunit("benefit_cap", period) - other_capped_benefits,
         )
         return max_(0, final_amount)
 
 
-class baseline_housing_benefit(Variable):
-    label = "Housing Benefit (baseline)"
+class housing_benefit(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Housing Benefit"
+    definition_period = YEAR
+    unit = GBP
+
+    def formula(benunit, period, parameters):
+        entitlement = benunit("housing_benefit_entitlement", period)
+        would_claim = benunit("would_claim_HB", period)
+        return would_claim * entitlement
+
+
+class baseline_housing_benefit_entitlement(Variable):
+    label = "Housing Benefit entitlement (baseline)"
     entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP
-
-
-class baseline_has_housing_benefit(Variable):
-    label = "Receives Housing Benefit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = bool
-    default_value = True
-
-    formula = baseline_is_nonzero(housing_benefit)

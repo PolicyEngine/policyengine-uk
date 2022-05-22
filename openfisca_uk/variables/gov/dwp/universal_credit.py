@@ -38,13 +38,16 @@ class would_claim_UC(Variable):
         current_uc_claimant = (
             aggr(benunit, period, ["universal_credit_reported"]) > 0
         )
-        baseline_uc = benunit("baseline_has_universal_credit", period)
+        baseline_uc = (
+            benunit("baseline_universal_credit_entitlement", period) > 0
+        )
+        eligible = benunit("universal_credit_entitlement", period) > 0
         takeup_rate = parameters(period).benefit.universal_credit.takeup
         return select(
             [
                 current_uc_claimant
                 | (claims_all_entitled_benefits & ~on_legacy_benefits),
-                (~baseline_uc & ~on_legacy_benefits),
+                (~baseline_uc & eligible & ~on_legacy_benefits),
                 True,
             ],
             [
@@ -562,6 +565,22 @@ class UC_income_reduction(Variable):
         return max_(0, earned_income_reduction + unearned_income_reduction)
 
 
+class universal_credit_entitlement(Variable):
+    label = "UC entitlement"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(benunit, period, parameters):
+        amount = max_(
+            0,
+            benunit("UC_maximum_amount", period)
+            - benunit("UC_income_reduction", period),
+        )
+        return amount * benunit("is_UC_eligible", period)
+
+
 class universal_credit(Variable):
     value_type = float
     entity = BenUnit
@@ -570,16 +589,9 @@ class universal_credit(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        amount = max_(
-            0,
-            benunit("UC_maximum_amount", period)
-            - benunit("UC_income_reduction", period),
-        )
-        return (
-            amount
-            * benunit("would_claim_UC", period)
-            * benunit("is_UC_eligible", period)
-        )
+        entitlement = benunit("universal_credit_entitlement", period)
+        takeup = benunit("would_claim_UC", period)
+        return takeup * entitlement
 
 
 class UC_MIF_applies(Variable):
@@ -652,19 +664,9 @@ class UC_MIF_capped_earned_income(Variable):
         return max_(personal_gross_earned_income, floor)
 
 
-class baseline_universal_credit(Variable):
-    label = "Universal Credit (baseline)"
+class baseline_universal_credit_entitlement(Variable):
+    label = "Universal Credit entitlement (baseline)"
     entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP
-
-
-class baseline_has_universal_credit(Variable):
-    label = "Receives Universal Credit (baseline)"
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = bool
-    default_value = True
-
-    formula = baseline_is_nonzero(universal_credit)
