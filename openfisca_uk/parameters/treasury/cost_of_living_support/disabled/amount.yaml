@@ -1,0 +1,8 @@
+description: Payment to households receiving disability benefits.
+values:
+  2022-01-01: 0
+metadata:
+  unit: currency-GBP
+  period: year
+  name: col_disability_payment_amount
+  label: Payment to households on disability benefits

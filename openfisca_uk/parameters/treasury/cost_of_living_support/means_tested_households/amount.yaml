@@ -4,5 +4,5 @@ values:
 metadata:
   unit: currency-GBP
   period: year
-  name: misc_benefit_payment_amount
+  name: col_benefit_payment_amount
   label: Payment to households on means-tested benefits
