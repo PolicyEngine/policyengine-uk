@@ -1,0 +1,13 @@
+description: Benefits which confer eligibility to the household payment to means-tested benefits.
+values:
+  2022-01-01:
+    - universal_credit
+    - pension_credit
+    - housing_benefit
+    - JSA_income
+    - income_support
+    - ESA_income
+metadata:
+  unit: variable
+  name: misc_benefit_payment_benefits
+  label: Qualifying benefits

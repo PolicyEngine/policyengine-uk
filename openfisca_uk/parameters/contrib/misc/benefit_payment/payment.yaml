@@ -1,0 +1,8 @@
+description: Payment to households on means-tested benefits.
+values:
+  2022-01-01: 0
+metadata:
+  unit: currency-GBP
+  period: year
+  name: misc_benefit_payment_amount
+  label: Payment to households on means-tested benefits

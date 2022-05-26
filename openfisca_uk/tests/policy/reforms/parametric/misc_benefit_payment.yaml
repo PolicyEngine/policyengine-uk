@@ -1,0 +1,8 @@
+- name: Misc benefit payment of £1k, claimed
+  period: 2022
+  input:
+    contrib.misc.benefit_payment.payment: 1_000
+    age: 25
+    market_income: 1
+  output:
+    misc_benefit_payment: 1_000
