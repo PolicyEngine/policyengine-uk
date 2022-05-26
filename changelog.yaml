@@ -458,3 +458,7 @@
     added:
     - Miscellaneous benefit payment.
   date: 2022-05-26 10:46:43
+- bump: minor
+  changes:
+    added:
+    - UK Government cost-of-living support measures.

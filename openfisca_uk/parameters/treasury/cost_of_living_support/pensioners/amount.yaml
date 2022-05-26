@@ -1,0 +1,8 @@
+description: Payment to pensioner households receiving benefits.
+values:
+  2022-01-01: 0
+metadata:
+  unit: currency-GBP
+  period: year
+  name: col_pensioner_payment_amount
+  label: Payment to pensioners
