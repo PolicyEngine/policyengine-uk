@@ -7,7 +7,12 @@ values:
     - JSA_income
     - income_support
     - ESA_income
+    - pension_credit
 metadata:
   unit: variable
   name: col_benefit_payment_benefits
   label: Qualifying benefits for support for means-tested households
+  reference:
+    - title: Cost-of-living support announcement | GOV.UK
+      href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
+
