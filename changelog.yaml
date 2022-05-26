@@ -453,3 +453,7 @@
     - Baseline variables are now generated before calibration (fixes a bug causing
       overestimation of benefit caseloads).
   date: 2022-05-22 15:27:50
+- bump: minor
+  changes:
+    added:
+    - Miscellaneous benefit payment.
