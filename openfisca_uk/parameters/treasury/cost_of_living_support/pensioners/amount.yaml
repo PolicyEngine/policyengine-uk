@@ -5,7 +5,7 @@ metadata:
   unit: currency-GBP
   period: year
   name: col_pensioner_payment_amount
-  label: Payment to pensioners
+  label: Payment to pensioner households
   reference:
     - title: Cost-of-living support announcement | GOV.UK
       href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
