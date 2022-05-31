@@ -32,13 +32,6 @@ The maintainer for OpenFisca-UK is Nikhil Woodruff - feel free to contact via [e
 
 We constructed the model by programming rules and parameters specified primarily in the [country report](https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf) created by [UKMOD](https://www.iser.essex.ac.uk/research/projects/ukmod), a microsimulation model developed by the University of Essex. We also validated against legislation, various gov.uk sites, reports from other microsimulation models, and external benefits calculators. See the [validation page](https://pslmodels.github.io/openfisca-uk/validation.html) for more information.
 
-## Disclaimer
-
-The model is currently under development. Users should be forewarned that the
-model components could change significantly. Therefore, there is NO GUARANTEE
-OF ACCURACY. THE CODE SHOULD NOT CURRENTLY BE USED FOR PUBLICATIONS, JOURNAL
-ARTICLES, OR RESEARCH PURPOSES. Essentially, you should assume the calculations are unreliable until we finish the code re-architecture and have checked the results against other existing implementations of the tax code. The package will have released versions, which will be checked against existing code prior to release.
-
 ## Citation
 
 You may cite the source of your analysis as "OpenFisca-UK release #.#.#, author's calculations."
