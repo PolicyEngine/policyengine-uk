@@ -468,7 +468,7 @@
     added:
     - Disability benefits to COL support measures.
   date: 2022-05-26 16:16:50
-- bump: minor
+- bump: patch
   changes:
     added:
     - References for some tax and UC parameters.
