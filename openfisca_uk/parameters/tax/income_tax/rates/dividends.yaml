@@ -4,6 +4,9 @@ brackets:
       metadata:
         label: Dividends basic rate
         unit: /1
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
         2015-06-01: 0.075
         2022-04-01:
@@ -13,11 +16,19 @@ brackets:
               - title: Autumn Budget and Spending Review 2022
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
-      2015-06-01: 0
+      values:
+        2015-06-01: 0
+      metadata:
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
   - rate:
       metadata:
         label: Dividends higher rate
         unit: /1
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
         2015-06-01: 0.325
         2022-04-01:
@@ -32,6 +43,9 @@ brackets:
       metadata:
         label: Dividends additional rate
         unit: /1
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
         2015-06-01: 0.381
         2022-04-01:
@@ -41,14 +55,19 @@ brackets:
               - title: Autumn Budget and Spending Review 2022
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
-      2015-06-01: 150_000
+      values:
+        2015-06-01: 150_000
+      metadata:
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
 metadata:
   period: year
   type: marginal_rate
   threshold_unit: currency-GBP
   rate_unit: /1
   reference:
-    - title: GOV.UK
-      href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+    - title: Finance Act 2022 s. 4
+      href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
     - title: Autumn Budget and Spending Review
       href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1029973/Budget_AB2021_Print.pdf#page=138
