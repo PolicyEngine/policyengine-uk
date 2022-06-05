@@ -10,15 +10,21 @@ brackets:
             reference:
               - title: Autumn Budget and Spending Review 2022
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
-
       metadata:
         label: Basic rate
         name: basic_rate
         unit: /1
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
     threshold:
       description: The starting threshold for the basic rate, after allowances.
       values:
         2015-06-05: 0
+      metadata:
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
   - rate:
       description: The higher rate is the middle tax bracket on earned income.
       values:
@@ -27,6 +33,9 @@ brackets:
         label: Higher rate
         name: higher_rate
         unit: /1
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
     threshold:
       description: The lower threshold for the higher rate of income tax (and therefore the upper threshold of the basic rate)
       values:
@@ -43,6 +52,9 @@ brackets:
         unit: currency-GBP
         period: year
         uprating: uprating.september_cpi
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
   - rate:
       description: The additional rate is the highest tax bracket, with no upper bound
       values:
@@ -51,6 +63,9 @@ brackets:
         label: Additional rate
         name: add_rate
         unit: /1
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
         tests:
           - period: 2022
             decreases_net_income: true
@@ -63,11 +78,15 @@ brackets:
         name: add_threshold
         unit: currency-GBP
         period: year
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+
 metadata:
   period: year
   type: marginal_rate
   threshold_unit: currency-GBP
   rate_unit: /1
   reference:
-    - title: GOV.UK - Historical Income Tax rates and thresholds
-      href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+    - title: Finance Act 2022 s. 2
+      href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
