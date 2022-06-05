@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Child Benefit &#8212; OpenFisca-UK documentation</title>
     
-  <link href="../../../_static/css/theme.css" rel="stylesheet">
-  <link href="../../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="../../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
@@ -39,19 +37,20 @@
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../../_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="../../../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../../../_static/sphinx-thebe.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Property Taxes" href="stamp-duty.html" />
@@ -63,7 +62,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -72,9 +85,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../../../index.html">
       
       
@@ -87,14 +101,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../index.html">
-   OpenFisca-UK
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../index.html">
+                    OpenFisca-UK
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Model
  </span>
@@ -172,109 +187,226 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-</div>
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../../_sources/programs/gov/hmrc/child-benefit.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.ipynb</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/PSLmodels/openfisca-uk"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/PSLmodels/openfisca-uk/issues/new?title=Issue%20on%20page%20%2Fprograms/gov/hmrc/child-benefit.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        <a class="edit-button" href="https://github.com/PSLmodels/openfisca-uk/edit/master/docs/book/programs/gov/hmrc/child-benefit.ipynb"><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
-    <div class="dropdown-buttons">
-        
-        <a class="binder-button" href="https://mybinder.org/v2/gh/PSLmodels/openfisca-uk/master?urlpath=tree/docs/book/programs/gov/hmrc/child-benefit.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
-                data-placement="left"><img class="binder-button-logo"
-                    src="../../../_static/images/logo_binder.svg"
-                    alt="Interact on binder">Binder</button></a>
-        
-        
-        
-        
-    </div>
-</div>
-
-        </div>
-
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
             </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<div class="menu-dropdown menu-dropdown-launch-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Launch interactive content">
+      <i class="fas fa-rocket"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://mybinder.org/v2/gh/PSLmodels/openfisca-uk/master?urlpath=tree/docs/book/programs/gov/hmrc/child-benefit.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on Binder"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../../../_static/images/logo_binder.svg">
+  </span>
+<span class="headerbtn__text-container">Binder</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/PSLmodels/openfisca-uk"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/PSLmodels/openfisca-uk/issues/new?title=Issue%20on%20page%20%2Fprograms/gov/hmrc/child-benefit.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/PSLmodels/openfisca-uk/edit/master/docs/book/programs/gov/hmrc/child-benefit.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Edit this page"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="headerbtn__text-container">suggest edit</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../../../_sources/programs/gov/hmrc/child-benefit.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.ipynb</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#legislation">
    Legislation
@@ -302,12 +434,11 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>Child Benefit</h1>
@@ -351,19 +482,20 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="child-benefit">
-<h1>Child Benefit<a class="headerlink" href="#child-benefit" title="Permalink to this headline">¶</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="child-benefit">
+<h1>Child Benefit<a class="headerlink" href="#child-benefit" title="Permalink to this headline">#</a></h1>
 <p>The Child Benefit is a universal benefit for children administered by HMRC. It is not means-tested, but HMRC does impose a tax charge (the High-Income Tax Charge) on the highest-earning parent if their income is over a threshold to recoup the benefit payment.</p>
 <p>Child Benefit parameters can be found in <code class="docutils literal notranslate"><span class="pre">openfisca_uk/parameters/hmrc/child_benefit</span></code> and logic in <code class="docutils literal notranslate"><span class="pre">openfisca_uk/variables/hmrc/child_benefit.py</span></code>.</p>
-<div class="section" id="legislation">
-<h2>Legislation<a class="headerlink" href="#legislation" title="Permalink to this headline">¶</a></h2>
+<section id="legislation">
+<h2>Legislation<a class="headerlink" href="#legislation" title="Permalink to this headline">#</a></h2>
 <p>The Child Benefit is defined primarily in <a class="reference external" href="https://www.legislation.gov.uk/ukpga/1992/4/part/IX">The Social Security Contributions and Benefits Act 1992, Part IX</a>. This defines the core of how the benefit operates, but the rates of payment are prescribed by <a class="reference external" href="https://www.legislation.gov.uk/uksi/2006/965/regulation/2">The Child Benefit (Rates) Regulations 2006 reg. 2</a>, which is amended by up-rating regulations (for example, in 2020, <a class="reference external" href="https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020</a> increased the payment levels).</p>
-</div>
-<div class="section" id="payment-levels">
-<h2>Payment levels<a class="headerlink" href="#payment-levels" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="payment-levels">
+<h2>Payment levels<a class="headerlink" href="#payment-levels" title="Permalink to this headline">#</a></h2>
 <p>Child Benefit defines a (higher) amount for the eldest or only child, and an amount for each additional child. There is no limit on the number of children covered, unlike the Child Tax Credit or the Universal Credit child element. The table below shows the rates covered by OpenFisca-UK.</p>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
@@ -411,7 +543,7 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="cell_output docutils container">
 <div class="output text_html"><style type="text/css">
 </style>
-<table id="T_30f87_">
+<table id="T_c846b_">
   <thead>
     <tr>
       <th class="blank" >&nbsp;</th>
@@ -428,100 +560,100 @@ const thebe_selector_output = ".output, .cell_output"
   </thead>
   <tbody>
     <tr>
-      <th id="T_30f87_level0_row0" class="row_heading level0 row0" rowspan="2">2007-04-09</th>
-      <th id="T_30f87_level1_row0" class="row_heading level1 row0" >Eldest</th>
-      <td id="T_30f87_row0_col0" class="data row0 col0" >£18.80</td>
-      <td id="T_30f87_row0_col1" class="data row0 col1" ><a href="https://www.legislation.gov.uk/uksi/2007/1053/article/2/made">The Child Benefit Up-rating Order 2007(2)(a)</a></td>
+      <th id="T_c846b_level0_row0" class="row_heading level0 row0" rowspan="2">2007-04-09</th>
+      <th id="T_c846b_level1_row0" class="row_heading level1 row0" >Eldest</th>
+      <td id="T_c846b_row0_col0" class="data row0 col0" >£18.80</td>
+      <td id="T_c846b_row0_col1" class="data row0 col1" ><a href="https://www.legislation.gov.uk/uksi/2007/1053/article/2/made">The Child Benefit Up-rating Order 2007(2)(a)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row1" class="row_heading level1 row1" >Additional</th>
-      <td id="T_30f87_row1_col0" class="data row1 col0" >£12.10</td>
-      <td id="T_30f87_row1_col1" class="data row1 col1" ><a href="https://www.legislation.gov.uk/uksi/2007/1053/article/2/made">The Child Benefit Up-rating Order 2007(2)(b)</a></td>
+      <th id="T_c846b_level1_row1" class="row_heading level1 row1" >Additional</th>
+      <td id="T_c846b_row1_col0" class="data row1 col0" >£12.10</td>
+      <td id="T_c846b_row1_col1" class="data row1 col1" ><a href="https://www.legislation.gov.uk/uksi/2007/1053/article/2/made">The Child Benefit Up-rating Order 2007(2)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level0_row2" class="row_heading level0 row2" rowspan="2">2009-01-05</th>
-      <th id="T_30f87_level1_row2" class="row_heading level1 row2" >Eldest</th>
-      <td id="T_30f87_row2_col0" class="data row2 col0" >£20.00</td>
-      <td id="T_30f87_row2_col1" class="data row2 col1" ><a href="https://www.legislation.gov.uk/uksi/2008/3246/regulation/3/made">The Child Benefit (Rates) (Amendment) Regulations 2008(3)(a)</a></td>
+      <th id="T_c846b_level0_row2" class="row_heading level0 row2" rowspan="2">2009-01-05</th>
+      <th id="T_c846b_level1_row2" class="row_heading level1 row2" >Eldest</th>
+      <td id="T_c846b_row2_col0" class="data row2 col0" >£20.00</td>
+      <td id="T_c846b_row2_col1" class="data row2 col1" ><a href="https://www.legislation.gov.uk/uksi/2008/3246/regulation/3/made">The Child Benefit (Rates) (Amendment) Regulations 2008(3)(a)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row3" class="row_heading level1 row3" >Additional</th>
-      <td id="T_30f87_row3_col0" class="data row3 col0" >£13.20</td>
-      <td id="T_30f87_row3_col1" class="data row3 col1" ><a href="https://www.legislation.gov.uk/uksi/2008/3246/regulation/3/made">The Child Benefit (Rates) (Amendment) Regulations 2008(3)(b)</a></td>
+      <th id="T_c846b_level1_row3" class="row_heading level1 row3" >Additional</th>
+      <td id="T_c846b_row3_col0" class="data row3 col0" >£13.20</td>
+      <td id="T_c846b_row3_col1" class="data row3 col1" ><a href="https://www.legislation.gov.uk/uksi/2008/3246/regulation/3/made">The Child Benefit (Rates) (Amendment) Regulations 2008(3)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level0_row4" class="row_heading level0 row4" rowspan="2">2010-04-12</th>
-      <th id="T_30f87_level1_row4" class="row_heading level1 row4" >Eldest</th>
-      <td id="T_30f87_row4_col0" class="data row4 col0" >£20.30</td>
-      <td id="T_30f87_row4_col1" class="data row4 col1" ><a href="https://www.legislation.gov.uk/uksi/2010/982/article/2/made">The Child Benefit Up-rating Order 2010(2)(a)</a></td>
+      <th id="T_c846b_level0_row4" class="row_heading level0 row4" rowspan="2">2010-04-12</th>
+      <th id="T_c846b_level1_row4" class="row_heading level1 row4" >Eldest</th>
+      <td id="T_c846b_row4_col0" class="data row4 col0" >£20.30</td>
+      <td id="T_c846b_row4_col1" class="data row4 col1" ><a href="https://www.legislation.gov.uk/uksi/2010/982/article/2/made">The Child Benefit Up-rating Order 2010(2)(a)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row5" class="row_heading level1 row5" >Additional</th>
-      <td id="T_30f87_row5_col0" class="data row5 col0" >£13.40</td>
-      <td id="T_30f87_row5_col1" class="data row5 col1" ><a href="https://www.legislation.gov.uk/uksi/2010/982/article/2/made">The Child Benefit Up-rating Order 2010(2)(b)</a></td>
+      <th id="T_c846b_level1_row5" class="row_heading level1 row5" >Additional</th>
+      <td id="T_c846b_row5_col0" class="data row5 col0" >£13.40</td>
+      <td id="T_c846b_row5_col1" class="data row5 col1" ><a href="https://www.legislation.gov.uk/uksi/2010/982/article/2/made">The Child Benefit Up-rating Order 2010(2)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level0_row6" class="row_heading level0 row6" rowspan="2">2014-04-07</th>
-      <th id="T_30f87_level1_row6" class="row_heading level1 row6" >Eldest</th>
-      <td id="T_30f87_row6_col0" class="data row6 col0" >£20.50</td>
-      <td id="T_30f87_row6_col1" class="data row6 col1" ><a href="https://www.legislation.gov.uk/uksi/2014/384/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2014(2)(a)</a></td>
+      <th id="T_c846b_level0_row6" class="row_heading level0 row6" rowspan="2">2014-04-07</th>
+      <th id="T_c846b_level1_row6" class="row_heading level1 row6" >Eldest</th>
+      <td id="T_c846b_row6_col0" class="data row6 col0" >£20.50</td>
+      <td id="T_c846b_row6_col1" class="data row6 col1" ><a href="https://www.legislation.gov.uk/uksi/2014/384/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2014(2)(a)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row7" class="row_heading level1 row7" >Additional</th>
-      <td id="T_30f87_row7_col0" class="data row7 col0" >£13.55</td>
-      <td id="T_30f87_row7_col1" class="data row7 col1" ><a href="https://www.legislation.gov.uk/uksi/2014/384/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2014(2)(b)</a></td>
+      <th id="T_c846b_level1_row7" class="row_heading level1 row7" >Additional</th>
+      <td id="T_c846b_row7_col0" class="data row7 col0" >£13.55</td>
+      <td id="T_c846b_row7_col1" class="data row7 col1" ><a href="https://www.legislation.gov.uk/uksi/2014/384/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2014(2)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level0_row8" class="row_heading level0 row8" rowspan="2">2015-04-06</th>
-      <th id="T_30f87_level1_row8" class="row_heading level1 row8" >Eldest</th>
-      <td id="T_30f87_row8_col0" class="data row8 col0" >£20.70</td>
-      <td id="T_30f87_row8_col1" class="data row8 col1" ><a href="https://www.legislation.gov.uk/uksi/2015/567/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2015(2)(a)</a></td>
+      <th id="T_c846b_level0_row8" class="row_heading level0 row8" rowspan="2">2015-04-06</th>
+      <th id="T_c846b_level1_row8" class="row_heading level1 row8" >Eldest</th>
+      <td id="T_c846b_row8_col0" class="data row8 col0" >£20.70</td>
+      <td id="T_c846b_row8_col1" class="data row8 col1" ><a href="https://www.legislation.gov.uk/uksi/2015/567/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2015(2)(a)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row9" class="row_heading level1 row9" >Additional</th>
-      <td id="T_30f87_row9_col0" class="data row9 col0" >£13.70</td>
-      <td id="T_30f87_row9_col1" class="data row9 col1" ><a href="https://www.legislation.gov.uk/uksi/2015/567/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2015(2)(b)</a></td>
+      <th id="T_c846b_level1_row9" class="row_heading level1 row9" >Additional</th>
+      <td id="T_c846b_row9_col0" class="data row9 col0" >£13.70</td>
+      <td id="T_c846b_row9_col1" class="data row9 col1" ><a href="https://www.legislation.gov.uk/uksi/2015/567/article/2/made">The Child Benefit and Tax Credits Up-rating Order 2015(2)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level0_row10" class="row_heading level0 row10" rowspan="2">2020-04-06</th>
-      <th id="T_30f87_level1_row10" class="row_heading level1 row10" >Eldest</th>
-      <td id="T_30f87_row10_col0" class="data row10 col0" >£21.05</td>
-      <td id="T_30f87_row10_col1" class="data row10 col1" ><a href="https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(a)</a></td>
+      <th id="T_c846b_level0_row10" class="row_heading level0 row10" rowspan="2">2020-04-06</th>
+      <th id="T_c846b_level1_row10" class="row_heading level1 row10" >Eldest</th>
+      <td id="T_c846b_row10_col0" class="data row10 col0" >£21.05</td>
+      <td id="T_c846b_row10_col1" class="data row10 col1" ><a href="https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(a)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row11" class="row_heading level1 row11" >Additional</th>
-      <td id="T_30f87_row11_col0" class="data row11 col0" >£13.95</td>
-      <td id="T_30f87_row11_col1" class="data row11 col1" ><a href="https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(b)</a></td>
+      <th id="T_c846b_level1_row11" class="row_heading level1 row11" >Additional</th>
+      <td id="T_c846b_row11_col0" class="data row11 col0" >£13.95</td>
+      <td id="T_c846b_row11_col1" class="data row11 col1" ><a href="https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level0_row12" class="row_heading level0 row12" rowspan="2">2021-04-12</th>
-      <th id="T_30f87_level1_row12" class="row_heading level1 row12" >Eldest</th>
-      <td id="T_30f87_row12_col0" class="data row12 col0" >£21.15</td>
-      <td id="T_30f87_row12_col1" class="data row12 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(a)</a></td>
+      <th id="T_c846b_level0_row12" class="row_heading level0 row12" rowspan="2">2021-04-12</th>
+      <th id="T_c846b_level1_row12" class="row_heading level1 row12" >Eldest</th>
+      <td id="T_c846b_row12_col0" class="data row12 col0" >£21.15</td>
+      <td id="T_c846b_row12_col1" class="data row12 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(a)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row13" class="row_heading level1 row13" >Additional</th>
-      <td id="T_30f87_row13_col0" class="data row13 col0" >£14.00</td>
-      <td id="T_30f87_row13_col1" class="data row13 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_c846b_level1_row13" class="row_heading level1 row13" >Additional</th>
+      <td id="T_c846b_row13_col0" class="data row13 col0" >£14.00</td>
+      <td id="T_c846b_row13_col1" class="data row13 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_30f87_level0_row14" class="row_heading level0 row14" rowspan="2">2022-04-01</th>
-      <th id="T_30f87_level1_row14" class="row_heading level1 row14" >Eldest</th>
-      <td id="T_30f87_row14_col0" class="data row14 col0" >£21.80</td>
-      <td id="T_30f87_row14_col1" class="data row14 col1" ></td>
+      <th id="T_c846b_level0_row14" class="row_heading level0 row14" rowspan="2">2022-04-01</th>
+      <th id="T_c846b_level1_row14" class="row_heading level1 row14" >Eldest</th>
+      <td id="T_c846b_row14_col0" class="data row14 col0" >£21.80</td>
+      <td id="T_c846b_row14_col1" class="data row14 col1" ></td>
     </tr>
     <tr>
-      <th id="T_30f87_level1_row15" class="row_heading level1 row15" >Additional</th>
-      <td id="T_30f87_row15_col0" class="data row15 col0" >£14.45</td>
-      <td id="T_30f87_row15_col1" class="data row15 col1" ></td>
+      <th id="T_c846b_level1_row15" class="row_heading level1 row15" >Additional</th>
+      <td id="T_c846b_row15_col0" class="data row15 col0" >£14.45</td>
+      <td id="T_c846b_row15_col1" class="data row15 col1" ></td>
     </tr>
   </tbody>
 </table>
 </div></div>
 </div>
-</div>
-<div class="section" id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">#</a></h2>
 <p>The below table shows the entitlement calculations for a family of increasing size.</p>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
@@ -602,13 +734,13 @@ const thebe_selector_output = ".output, .cell_output"
 </table>
 </div></div></div>
 </div>
-</div>
-<div class="section" id="microsimulation">
-<h2>Microsimulation<a class="headerlink" href="#microsimulation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="microsimulation">
+<h2>Microsimulation<a class="headerlink" href="#microsimulation" title="Permalink to this headline">#</a></h2>
 <p>OpenFisca-UK simulates Child Benefit as described for each family in the survey microdata, preserving reported takeup. Child Benefit has a relatively high take-up rate compared to other benefits, most recently estimated at 92%. We use the central estimates from 2006 through 2018, provided by HMRC <a class="reference external" href="https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020/child-benefit-statistics-annual-release-august-2020-main-commentary">Child Benefit Statistics: Annual Release, August 2020 Main Commentary | Table 3.1</a>, which are calculated from microsimulation and administrative data held by HMRC.</p>
-</div>
-<div class="section" id="validation">
-<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="validation">
+<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
 <p>OpenFisca-UK matches administrative statistics closely, due to the simplicity of the calculations. The Department for Work and Pensions publishes benefit expenditure and caseload tables every year: below, we use the <a class="reference external" href="https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021">2021 release</a> (the latest at the time of writing) release to compare against OpenFisca-UK. The table and graph below also show the aggregate spending estimated by UKMOD, as per the latest <a class="reference external" href="https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=129">country report</a>.</p>
 <p>The administrative spending figures include Guardian’s Allowance, whereas OpenFisca-UK and UKMOD do not. Between 2018 and 2021, the DWP replaced previous forecasts with outturn data, revising the forecast aggregate spending for 2018, 2019 and 2020 down by £119m, £250m and £455m, respectively.</p>
 <div class="cell tag_hide-input docutils container">
@@ -824,9 +956,9 @@ e.exports=function(t){return null!=t&&(n(t)||function(t){return"function"==typeo
         });
         }
         </script>
-</div><div class="output text_html"><div>                            <div id="2540e198-88db-4766-ae94-0dc55db0b4a2" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("2540e198-88db-4766-ae94-0dc55db0b4a2")) {                    Plotly.newPlot(                        "2540e198-88db-4766-ae94-0dc55db0b4a2",                        [{"hovertemplate":"variable=OpenFisca-UK Aggregate (\u00a3m)<br>Year=%{x}<br>value=%{y}<extra></extra>","legendgroup":"OpenFisca-UK Aggregate (\u00a3m)","line":{"color":"#636efa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK Aggregate (\u00a3m)","orientation":"v","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[10949,11535,11616,11618],"yaxis":"y","type":"scatter"},{"hovertemplate":"variable=Official Estimate (\u00a3m)<br>Year=%{x}<br>value=%{y}<extra></extra>","legendgroup":"Official Estimate (\u00a3m)","line":{"color":"#EF553B","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"Official Estimate (\u00a3m)","orientation":"v","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11081,11116,10981,11213],"yaxis":"y","type":"scatter"},{"hovertemplate":"variable=UKMOD Aggregate (\u00a3m)<br>Year=%{x}<br>value=%{y}<extra></extra>","legendgroup":"UKMOD Aggregate (\u00a3m)","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD Aggregate (\u00a3m)","orientation":"v","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11432,11621,11573,11668],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"},"tickvals":[2022,2023,2024,2025]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Spending (\u00a3m)"},"range":[0,15000]},"legend":{"title":{"text":""},"tracegroupgap":0},"margin":{"t":60},"title":{"text":"Child Benefit aggregate spending"}},                        {"responsive": true}                    ).then(function(){
+</div><div class="output text_html"><div>                            <div id="69774744-6787-4013-b6f3-1774f2ef5482" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("69774744-6787-4013-b6f3-1774f2ef5482")) {                    Plotly.newPlot(                        "69774744-6787-4013-b6f3-1774f2ef5482",                        [{"hovertemplate":"variable=OpenFisca-UK Aggregate (\u00a3m)<br>Year=%{x}<br>value=%{y}<extra></extra>","legendgroup":"OpenFisca-UK Aggregate (\u00a3m)","line":{"color":"#636efa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK Aggregate (\u00a3m)","orientation":"v","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[10949,11535,11616,11618],"yaxis":"y","type":"scatter"},{"hovertemplate":"variable=Official Estimate (\u00a3m)<br>Year=%{x}<br>value=%{y}<extra></extra>","legendgroup":"Official Estimate (\u00a3m)","line":{"color":"#EF553B","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"Official Estimate (\u00a3m)","orientation":"v","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11081,11116,10981,11213],"yaxis":"y","type":"scatter"},{"hovertemplate":"variable=UKMOD Aggregate (\u00a3m)<br>Year=%{x}<br>value=%{y}<extra></extra>","legendgroup":"UKMOD Aggregate (\u00a3m)","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD Aggregate (\u00a3m)","orientation":"v","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11432,11621,11573,11668],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"},"tickvals":[2022,2023,2024,2025]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Spending (\u00a3m)"},"range":[0,15000]},"legend":{"title":{"text":""},"tracegroupgap":0},"margin":{"t":60},"title":{"text":"Child Benefit aggregate spending"}},                        {"responsive": true}                    ).then(function(){
 
-var gd = document.getElementById('2540e198-88db-4766-ae94-0dc55db0b4a2');
+var gd = document.getElementById('69774744-6787-4013-b6f3-1774f2ef5482');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -850,8 +982,8 @@ if (outputEl) {{
 
                         })                };                });            </script>        </div></div></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -875,9 +1007,11 @@ if (outputEl) {{
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="../dwp/pension-credit.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -893,24 +1027,28 @@ if (outputEl) {{
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Nikhil Woodruff<br/>
+  
+      &copy; Copyright 2021.<br/>
+</p>
+        </footer>
+    </div>
     
-      By Nikhil Woodruff<br/>
-    
-        &copy; Copyright 2021.<br/>
-  </p>
-</footer>
-</main>
+</div>
 
 
       </div>
     </div>
   
-  <script src="../../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>
