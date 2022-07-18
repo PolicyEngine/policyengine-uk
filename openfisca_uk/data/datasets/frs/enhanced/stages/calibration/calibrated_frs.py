@@ -40,7 +40,7 @@ class CalibratedFRS(PrivateDataset):
         )
         weights.calibrate(
             validation_split=0,
-            num_epochs=256,
+            num_epochs=2048,
             learning_rate=1e2,
             dataset=self,
         )
