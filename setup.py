@@ -41,6 +41,7 @@ setup(
         "inquirer>=2.7.0",
         "gif[plotly]>=3.0.0",
         "yaml-changelog>=0.1.5",
+        "click>=8.0.0",
     ],
     extras_require={
         "dev": [
@@ -49,6 +50,7 @@ setup(
             "flake8-print",
             "pycodestyle >=2.3.0,<2.6.0",  # To avoid incompatibility with flake
             "tensorflow",
+            "streamlit",
         ]
     },
     entry_points={
