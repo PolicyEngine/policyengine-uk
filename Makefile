@@ -33,9 +33,14 @@ documentation: summary-stats
 	jb build docs/book -W
 
 changelog:
-	build-changelog changelog.yaml --output changelog.yaml --update-last-date --start-from 0.1.0
+	build-changelog changelog.yaml --output changelog.yaml --update-last-date --start-from 0.1.0 --append-file changelog_entry.yaml
 	build-changelog changelog.yaml --org PolicyEngine --repo openfisca-uk --output CHANGELOG.md --template .github/changelog_template.md
 	bump-version changelog.yaml setup.py
+	rm changelog_entry.yaml || true
+	touch changelog_entry.yaml
 
 calibrate:
 	python openfisca_uk/calibration/calibrate.py
+
+calibration-dashboard:
+	streamlit run openfisca_uk/data/datasets/frs/enhanced/stages/calibration/monitor.py

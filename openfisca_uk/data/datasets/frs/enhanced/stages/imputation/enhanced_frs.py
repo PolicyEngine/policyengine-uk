@@ -12,7 +12,7 @@ class EnhancedFRS(PrivateDataset):
     label = "Enhanced FRS"
     data_format = Dataset.TIME_PERIOD_ARRAYS
     folder_path = OPENFISCA_UK_MICRODATA_FOLDER
-    filename_by_year = {2022: "enhanced_frs_2022_v0_23.h5"}
+    filename_by_year = {2022: "enhanced_frs_2022_v0_26.h5"}
 
     def generate(self, year: int):
         if year not in CalibratedFRS.years:

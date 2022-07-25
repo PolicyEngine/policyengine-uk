@@ -1,0 +1,10 @@
+description: Percentage of pension contributions which are deductible from Pension Credit income.
+values:
+  2002-01-01: 0.5
+metadata:
+  unit: /1
+  name: pc_pen_con_deduction
+  label: Pension Credit pension contribution deduction
+  reference:
+    - title: Pension Credit technical guidance | GOV.UK
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1074005/pc10s-a-detailed-guide-to-pension-credit-for-advisers-april-2022.pdf
