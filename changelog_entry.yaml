@@ -1,7 +1,0 @@
-- bump: minor
-  changes:
-    fixed:
-    - A bug causing Pension Credit to under-react to increases in Income Tax.
-    added:
-    - Dashboard tool for the calibration procedure.
-    - Loss components for aggregates in demographic targets.
