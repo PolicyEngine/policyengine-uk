@@ -13,6 +13,8 @@ class Households(LossCategory):
             self.calibration_parameters.demographics.households.by_region_by_council_tax_band
         )
 
+        uk_wide = self.calibration_parameters.demographics.households.in_total
+
         self.comparisons = []
 
         ct_band = self.sim.calc("council_tax_band").values
@@ -20,18 +22,31 @@ class Households(LossCategory):
 
         # Region - CT band
 
+        total_actuals = 0
+
         for target_region in region_ct_band_parameter._children:
             for target_ct_band in region_ct_band_parameter._children[
                 target_region
             ]._children:
+                total_actuals += region_ct_band_parameter._children[
+                    target_region
+                ]._children[target_ct_band]
+        
+        region_ct_band_adjustment = uk_wide / total_actuals
+
+        for target_region in region_ct_band_parameter._children:
+            for target_ct_band in region_ct_band_parameter._children[
+                target_region
+            ]._children:
+                actual = region_ct_band_parameter._children[
+                    target_region
+                ]._children[target_ct_band]
                 self.comparisons.append(
                     (
                         f"{target_region}_{target_ct_band}",
                         (ct_band == target_ct_band)
                         & (region == target_region),
-                        region_ct_band_parameter._children[
-                            target_region
-                        ]._children[target_ct_band],
+                        actual * region_ct_band_adjustment,
                     )
                 )
 
@@ -42,7 +57,18 @@ class Households(LossCategory):
         region_tenure_parameter = (
             self.calibration_parameters.demographics.households.by_region_by_tenure_type
         )
-        country_population = 0
+        total_actuals = 0
+        for target_region in region_tenure_parameter._children:
+            regional_population = 0
+            for target_tenure_type in region_tenure_parameter._children[
+                target_region
+            ]._children:
+                total_actuals += region_tenure_parameter._children[
+                    target_region
+                ]._children[target_tenure_type]
+
+        region_tenure_adjustment = uk_wide / total_actuals
+        
         for target_region in region_tenure_parameter._children:
             regional_population = 0
             for target_tenure_type in region_tenure_parameter._children[
@@ -56,7 +82,7 @@ class Households(LossCategory):
                         f"{target_region}_{target_tenure_type}",
                         (tenure_type == target_tenure_type)
                         & (region == target_region),
-                        actual_population,
+                        actual_population * region_tenure_adjustment,
                     )
                 )
                 regional_population += actual_population
@@ -65,17 +91,15 @@ class Households(LossCategory):
                 (
                     f"households.{target_region}",
                     region == target_region,
-                    regional_population,
+                    regional_population * region_tenure_adjustment,
                 )
             ]
-
-            country_population += regional_population
 
         self.comparisons += [
             (
                 "households.UNITED_KINGDOM",
                 np.ones_like(region),
-                country_population,
+                uk_wide,
             )
         ]
 
