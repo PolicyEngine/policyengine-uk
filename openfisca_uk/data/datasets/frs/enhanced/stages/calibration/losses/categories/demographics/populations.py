@@ -22,21 +22,27 @@ class Populations(LossCategory):
         age_sex_region = (
             self.calibration_parameters.demographics.populations.by_age_sex_region
         )
+        total_population = 0
         for lower_age in list(range(0, 80, 10)) + [79]:
+            meets_age_criteria = (age >= lower_age) & (age < lower_age + 10)
+            age_population = 0
             age_string = (
                 f"BETWEEN_{lower_age}_{lower_age + 10}"
                 if lower_age < 79
                 else "OVER_80"
             )
             for target_sex in ("MALE", "FEMALE"):
+                age_sex_population = 0
                 for target_region in self.sim.calc("region").unique():
-                    meets_age_criteria = (age >= lower_age) & (
-                        age < lower_age + 10
-                    )
                     meets_all_criteria = (
                         meets_age_criteria
                         & (region == target_region)
                         & (sex == target_sex)
+                    )
+                    actual_population = (
+                        age_sex_region._children[target_sex]
+                        ._children[target_region]
+                        ._children[age_string]
                     )
                     self.comparisons += [
                         (
@@ -44,11 +50,42 @@ class Populations(LossCategory):
                             self.sim.map_to(
                                 meets_all_criteria, "person", "household"
                             ),
-                            age_sex_region._children[target_sex]
-                            ._children[target_region]
-                            ._children[age_string],
+                            actual_population,
                         )
                     ]
+                    age_sex_population += actual_population
+
+                self.comparisons += [
+                    (
+                        f"{target_sex}_{lower_age}_{lower_age + 10}",
+                        self.sim.map_to(
+                            meets_age_criteria & (sex == target_sex),
+                            "person",
+                            "household",
+                        ),
+                        age_sex_population,
+                    )
+                ]
+
+                age_population += age_sex_population
+
+            self.comparisons += [
+                (
+                    f"{lower_age}_{lower_age + 10}",
+                    self.sim.map_to(meets_age_criteria, "person", "household"),
+                    age_population,
+                )
+            ]
+
+            total_population += age_population
+
+        self.comparisons += [
+            (
+                f"people",
+                self.sim.map_to(np.ones_like(age), "person", "household"),
+                total_population,
+            )
+        ]
 
     def get_loss_subcomponents(
         self, household_weights: tf.Tensor

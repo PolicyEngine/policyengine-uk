@@ -473,3 +473,11 @@
     added:
     - References for some tax and UC parameters.
   date: 2022-06-05 20:28:29
+- bump: minor
+  changes:
+    added:
+    - Dashboard tool for the calibration procedure.
+    - Loss components for aggregates in demographic targets.
+    fixed:
+    - A bug causing Pension Credit to under-react to increases in Income Tax.
+  date: 2022-07-25 11:14:58

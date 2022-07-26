@@ -1,3 +1,4 @@
+import numpy as np
 from ...loss_category import LossCategory
 import tensorflow as tf
 from typing import Iterable, Tuple
@@ -41,21 +42,42 @@ class Households(LossCategory):
         region_tenure_parameter = (
             self.calibration_parameters.demographics.households.by_region_by_tenure_type
         )
-
+        country_population = 0
         for target_region in region_tenure_parameter._children:
+            regional_population = 0
             for target_tenure_type in region_tenure_parameter._children[
                 target_region
             ]._children:
+                actual_population = region_tenure_parameter._children[
+                    target_region
+                ]._children[target_tenure_type]
                 self.comparisons.append(
                     (
                         f"{target_region}_{target_tenure_type}",
                         (tenure_type == target_tenure_type)
                         & (region == target_region),
-                        region_tenure_parameter._children[
-                            target_region
-                        ]._children[target_tenure_type],
+                        actual_population,
                     )
                 )
+                regional_population += actual_population
+
+            self.comparisons += [
+                (
+                    f"households.{target_region}",
+                    region == target_region,
+                    regional_population,
+                )
+            ]
+
+            country_population += regional_population
+
+        self.comparisons += [
+            (
+                "households.UNITED_KINGDOM",
+                np.ones_like(region),
+                country_population,
+            )
+        ]
 
     def get_loss_subcomponents(
         self, household_weights: tf.Tensor
