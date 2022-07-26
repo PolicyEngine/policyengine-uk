@@ -1,8 +1,8 @@
 description: Percentage of households which own a TV.
 values:
-  2017-01-01: 95.36
-  2018-01-01: 95.41
-  2019-01-01: 95.44
+  2017-01-01: 0.9536
+  2018-01-01: 0.9541
+  2019-01-01: 0.9544
 metadata:
   unit: household
   reference:

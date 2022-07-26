@@ -13,5 +13,6 @@ class tv_licence(Variable):
     def formula(household, period, parameters):
         owns_tv = household("household_owns_tv", period)
         discount = household("tv_licence_discount", period)
+        would_evade = household("would_evade_tv_licence_fee", period)
         fee = parameters(period).gov.dcms.bbc.tv_licence.colour
-        return fee * owns_tv * (1 - discount)
+        return (owns_tv & ~would_evade) * fee * (1 - discount)
