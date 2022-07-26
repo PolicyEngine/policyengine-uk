@@ -31,7 +31,7 @@ class Households(LossCategory):
                 total_actuals += region_ct_band_parameter._children[
                     target_region
                 ]._children[target_ct_band]
-        
+
         region_ct_band_adjustment = uk_wide / total_actuals
 
         for target_region in region_ct_band_parameter._children:
@@ -68,7 +68,7 @@ class Households(LossCategory):
                 ]._children[target_tenure_type]
 
         region_tenure_adjustment = uk_wide / total_actuals
-        
+
         for target_region in region_tenure_parameter._children:
             regional_population = 0
             for target_tenure_type in region_tenure_parameter._children[
