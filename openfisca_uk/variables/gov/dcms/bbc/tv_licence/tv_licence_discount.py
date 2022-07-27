@@ -23,14 +23,14 @@ class tv_licence_discount(Variable):
         meets_pc_requirement = (
             tv_licence.discount.aged.must_claim_pc & claims_pc
         )
+        eligible_for_aged_discount = has_aged & meets_pc_requirement
         aged_discount = (
-            meets_pc_requirement & has_aged
-        ) * tv_licence.discount.aged.discount
+            eligible_for_aged_discount * tv_licence.discount.aged.discount
+        )
 
         # Blind discount
         is_blind = person("is_blind", period)
-        blind_discount = (
-            household.any(is_blind) * tv_licence.discount.blind.discount
-        )
+        has_blind = household.any(is_blind)
+        blind_discount = has_blind * tv_licence.discount.blind.discount
 
         return max_(aged_discount, blind_discount)

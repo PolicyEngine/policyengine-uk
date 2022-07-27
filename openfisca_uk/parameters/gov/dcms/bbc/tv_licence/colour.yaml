@@ -11,5 +11,5 @@ metadata:
   name: tv_licence_fee
   label: TV Licence fee
   reference:
-    - title: The Communications (Television Licensing) Regulations 2004 sch. 1
+    - title: The Communications (Television Licensing) Regulations 2004 sch. 1 # F4, F5
       href: https://www.legislation.gov.uk/uksi/2004/692/schedule/1
