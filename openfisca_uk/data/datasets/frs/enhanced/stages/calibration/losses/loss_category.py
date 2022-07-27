@@ -97,14 +97,15 @@ class LossCategory:
             self.initial_val_loss = loss.numpy()
         initial_value = (
             self.initial_val_loss if validation else self.initial_train_loss
-        ) / self.weight
+        )
         if initial_value == 0:
             initial_value += 1
         for entry in log:
             entry["loss"] /= initial_value
+            entry["loss"] *= self.weight
         if len(log) == 0:
             return loss, log
-        return loss / initial_value, log
+        return loss / initial_value * self.weight, log
 
     def get_metrics(self) -> List[Parameter]:
         return []

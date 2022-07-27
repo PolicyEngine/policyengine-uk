@@ -1,0 +1,10 @@
+description: Minimum age required to qualify for a TV licence discount.
+values:
+  2003-01-01: 75
+metadata:
+  unit: year
+  name: tv_licence_aged_min_age
+  label: Aged TV Licence discounted minimum age
+  reference:
+    - title: "Free and reduced fee TV Licences | TV Licensing"
+      href: https://www.tvlicensing.co.uk/reducedfee

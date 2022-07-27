@@ -1,0 +1,10 @@
+description: Percentage discount for qualifying blind licence holders.
+values:
+  2003-01-01: 0.5
+metadata:
+  unit: /1
+  name: tv_licence_blind_discount
+  label: Blin TV Licence discount
+  reference:
+    - title: "Free and reduced fee TV Licences | TV Licensing"
+      href: https://www.tvlicensing.co.uk/reducedfee

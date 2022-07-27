@@ -1,0 +1,10 @@
+description: Percentage of households which own a TV.
+values:
+  2017-01-01: 0.9536
+  2018-01-01: 0.9541
+  2019-01-01: 0.9544
+metadata:
+  unit: /1
+  reference:
+    - title: Television ownership in domestic households | closer.ac.uk
+      href: https://www.closer.ac.uk/data/television-ownership-in-domestic-households/

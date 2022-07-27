@@ -28,8 +28,10 @@ from .income_tax import IncomeTax
 class Programs(LossCategory):
     name = "Programs"
     category = "Programs"
+    weight = 2
 
     def initialise(self):
+        self.initial_value = None
         self.subcategories = []
         for subcategory in (
             IncomeTax,
@@ -73,8 +75,13 @@ class Programs(LossCategory):
             additional_loss, additional_log = subcategory.compute(
                 *args, **kwargs
             )
-            losses += additional_loss
+            losses += additional_loss * self.weight
             log += additional_log
+        if self.initial_value is None:
+            self.initial_value = losses
+        losses /= self.initial_value
+        for entry in log:
+            entry["loss"] /= self.initial_value
         return losses, log
 
     def get_metric_names(self) -> Iterable[str]:

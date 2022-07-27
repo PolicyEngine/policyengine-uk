@@ -28,7 +28,12 @@ class LossCalculator:
         for loss_category in loss_classes:
             for year in years:
                 self.losses.append(
-                    loss_category(years=years, year=year, weight=1, sim=sim)
+                    loss_category(
+                        years=years,
+                        year=year,
+                        weight=loss_category.weight,
+                        sim=sim,
+                    )
                 )
         self.start_year = start_year
         self.end_year = end_year
