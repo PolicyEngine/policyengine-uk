@@ -481,3 +481,8 @@
     fixed:
     - A bug causing Pension Credit to under-react to increases in Income Tax.
   date: 2022-07-25 11:14:58
+- bump: minor
+  changes:
+    added:
+    - TV licence fee.
+  date: 2022-07-27 10:14:59
