@@ -1,4 +1,5 @@
 from openfisca_uk.model_api import *
+from numpy import ceil
 
 
 class unused_personal_allowance(Variable):
@@ -64,4 +65,11 @@ class marriage_allowance(Variable):
         allowances = parameters(period).tax.income_tax.allowances
         capped_percentage = allowances.marriage_allowance.max
         max_amount = allowances.personal_allowance.amount * capped_percentage
-        return eligible * min_(transferable_amount, max_amount)
+        amount_if_eligible_pre_rounding = min_(transferable_amount, max_amount)
+        # Round up.
+        rounding_increment = allowances.marriage_allowance.rounding_increment
+        amount_if_eligible = (
+            ceil(amount_if_eligible_pre_rounding / rounding_increment)
+            * rounding_increment
+        )
+        return eligible * amount_if_eligible
