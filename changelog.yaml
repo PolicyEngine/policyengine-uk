@@ -486,3 +486,8 @@
     added:
     - TV licence fee.
   date: 2022-07-27 10:14:59
+- bump: patch
+  changes:
+    fixed:
+    - Round marriage allowance.
+  date: 2022-08-25 17:36:23
