@@ -1,5 +1,5 @@
 - name: No marriage or civil partner, no Marriage Allowance
-  period: 2021
+  period: 2022
   input:
     people:
       p1:
@@ -13,7 +13,7 @@
     marriage_allowance: [0, 0]
 
 - name: Conditions are met, full Marriage Allowance
-  period: 2021
+  period: 2022
   input:
     people:
       p1:
@@ -24,10 +24,10 @@
       adults: [p1, p2]
       is_married: true
   output:
-    marriage_allowance: [0, 1_250]
+    marriage_allowance: [0, 1_260]
 
 - name: Earner pays higher rate, no Marriage Allowance
-  period: 2021
+  period: 2022
   input:
     people:
       p1:
