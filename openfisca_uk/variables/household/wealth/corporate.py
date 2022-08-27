@@ -1,7 +1,9 @@
 from openfisca_uk.model_api import *
 
 
-@uprated(by="household.wealth.national_balance_sheet.household.financial_net_worth")
+@uprated(
+    by="household.wealth.national_balance_sheet.household.financial_net_worth"
+)
 class corporate_wealth(Variable):
     label = "Corporate wealth"
     documentation = "Total owned wealth in corporations"

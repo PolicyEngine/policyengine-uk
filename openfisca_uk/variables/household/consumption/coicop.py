@@ -27,7 +27,9 @@ class alcohol_and_tobacco_consumption(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="calibration.uprating.monthly_cpi_by_category.clothing_and_footwear")
+@uprated(
+    by="calibration.uprating.monthly_cpi_by_category.clothing_and_footwear"
+)
 class clothing_and_footwear_consumption(Variable):
     entity = Household
     label = "Clothing and footwear"
@@ -38,7 +40,9 @@ class clothing_and_footwear_consumption(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="calibration.uprating.monthly_cpi_by_category.housing_water_and_electricity")
+@uprated(
+    by="calibration.uprating.monthly_cpi_by_category.housing_water_and_electricity"
+)
 class housing_water_and_electricity_consumption(Variable):
     entity = Household
     label = "Housing, water and electricity"
@@ -116,7 +120,9 @@ class education_consumption(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="calibration.uprating.monthly_cpi_by_category.restaurants_and_hotels")
+@uprated(
+    by="calibration.uprating.monthly_cpi_by_category.restaurants_and_hotels"
+)
 class restaurants_and_hotels_consumption(Variable):
     entity = Household
     label = "Restaurants and hotels"

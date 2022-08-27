@@ -14,7 +14,9 @@ class personal_allowance(Variable):
     reference = "Income Tax Act 2007 s. 35"
 
     def formula(person, period, parameters):
-        PA = parameters(period).gov.hmrc.income_tax.allowances.personal_allowance
+        PA = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.personal_allowance
         ANI = person("adjusted_net_income", period)
         excess = max_(0, ANI - PA.maximum_ANI)
         reduction = excess * PA.reduction_rate
@@ -77,7 +79,9 @@ class trading_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(period).gov.hmrc.income_tax.allowances.trading_allowance
+        return parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.trading_allowance
 
 
 class trading_allowance_deduction(Variable):
@@ -104,7 +108,9 @@ class property_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(period).gov.hmrc.income_tax.allowances.property_allowance
+        return parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.property_allowance
 
 
 class property_allowance_deduction(Variable):
@@ -160,7 +166,9 @@ class dividend_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(period).gov.hmrc.income_tax.allowances.dividend_allowance
+        return parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.dividend_allowance
 
 
 class gift_aid(Variable):
