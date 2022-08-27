@@ -147,5 +147,5 @@ class BRMA_LHA_rate(Variable):
             benunit.members.household("BRMA", period).decode_to_str()
         )
         category = benunit("LHA_category", period)
-        rate = parameters(period).benefit.LHA.rates[BRMA][category]
+        rate = parameters(period).gov.dwp.LHA.rates[BRMA][category]
         return rate * WEEKS_IN_YEAR

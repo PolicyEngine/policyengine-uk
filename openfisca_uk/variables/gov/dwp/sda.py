@@ -13,7 +13,7 @@ class sda(Variable):
         # SDA recipients receive a basic rate, and potentially
         # an age-related addition. We assume they receive the highest
         # age-related addition.
-        rate = parameters(period).dwp.sda.maximum
+        rate = parameters(period).gov.dwp.sda.maximum
         return reported * rate * WEEKS_IN_YEAR
 
 

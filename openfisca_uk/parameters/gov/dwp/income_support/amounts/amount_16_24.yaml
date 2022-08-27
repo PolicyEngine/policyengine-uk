@@ -1,0 +1,8 @@
+description: Income Support applicable amount for single persons aged 18-24
+values:
+  2015-06-01: 58.90
+metadata:
+  period: week
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
+  reference: https://www.gov.uk/income-support/what-youll-get

@@ -1,0 +1,16 @@
+description: Addition to the Minimum Guarantee for each severely disabled adult.
+values:
+  2018-04-01: 64.30
+  2019-04-01: 65.85
+  2020-04-01: 66.95
+  2021-04-01: 67.30
+  2022-04-01: 69.40
+metadata:
+  unit: currency-GBP
+  period: week
+  name: pc_severe_disability_addition
+  label: Pension Credit severe disability addition
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - title: The Social Security Benefits Up-rating Order 2022
+      href: https://www.legislation.gov.uk/uksi/2022/292/article/30/made#article-30-2-c

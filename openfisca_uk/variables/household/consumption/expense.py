@@ -9,7 +9,7 @@ class weekly_rent(Variable):
     unit = GBP
 
 
-@uprated(by="uprating.CPI")
+@uprated(by="calibration.uprating.CPI")
 class benunit_rent(Variable):
     value_type = float
     entity = BenUnit
@@ -106,7 +106,7 @@ class weekly_childcare_expenses(Variable):
         return person("childcare_expenses", period) / WEEKS_IN_YEAR
 
 
-@uprated(by="uprating.CPI")
+@uprated(by="calibration.uprating.CPI")
 class housing_costs(Variable):
     value_type = float
     entity = Household
@@ -150,7 +150,7 @@ class mortgage(Variable):
     unit = GBP
 
 
-@uprated(by="uprating.council_tax")
+@uprated(by="calibration.uprating.council_tax")
 class council_tax(Variable):
     value_type = float
     entity = Household
@@ -160,7 +160,7 @@ class council_tax(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="uprating.council_tax")
+@uprated(by="calibration.uprating.council_tax")
 class domestic_rates(Variable):
     label = "Domestic rates"
     entity = Household

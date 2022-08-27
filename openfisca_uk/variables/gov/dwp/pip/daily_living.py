@@ -19,7 +19,7 @@ class pip_dl_category(Variable):
     default_value = PIPCategory.NONE
 
     def formula(person, period, parameters):
-        pip_dl = parameters(period).dwp.pip.daily_living
+        pip_dl = parameters(period).gov.dwp.pip.daily_living
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_pip_dl = (
             person("PIP_DL_reported", period) / WEEKS_IN_YEAR
@@ -48,7 +48,7 @@ class pip_dl(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        pip_dl = parameters(period).dwp.pip.daily_living
+        pip_dl = parameters(period).gov.dwp.pip.daily_living
         category = person("pip_dl_category", period)
         return (
             select(

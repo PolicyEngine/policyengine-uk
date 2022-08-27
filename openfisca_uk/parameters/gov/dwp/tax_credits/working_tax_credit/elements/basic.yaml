@@ -1,0 +1,33 @@
+description: Working Tax Credit basic element
+values:
+  2002-08-01: 1_525
+  2004-04-06: 1_570
+  2005-04-06: 1_620
+  2006-04-06: 1_665
+  2007-04-06: 1_730
+  2009-04-06: 1_890
+  2010-04-06: 1_920
+  2011-04-06: 1_920
+  2012-04-06: 1_920
+  2013-04-06: 1_920
+  2014-04-06: 1_940
+  2015-04-06: 1_960
+  2016-03-16: 1_960
+  2017-04-06: 1_960
+  2018-04-06: 1_960
+  2019-04-06: 1_960
+  2020-03-25: 1_960
+  2020-04-06: 3_040 # Coronavirus Act 2020, overrides 1_960 in WTC Regulations.
+  2021-04-06: 2_005
+  2022-04-01: 2_070
+metadata:
+  period: year
+  unit: currency-GBP
+  name: wtc_basic
+  label: WTC basic element
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
+      href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2
+    - title: Coronavirus Act 2020
+      href: https://www.legislation.gov.uk/ukpga/2020/7/part/1/crossheading/uprating-of-working-tax-credit-etc/2020-03-25

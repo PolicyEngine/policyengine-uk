@@ -12,7 +12,7 @@ class savings_credit_income(Variable):
 
     def formula(benunit, period, parameters):
         guarantee_credit_income = benunit("pension_credit_income", period)
-        pc = parameters(period).dwp.pension_credit
+        pc = parameters(period).gov.dwp.pension_credit
         excluded_income = add(
             benunit, period, pc.savings_credit.excluded_income
         )

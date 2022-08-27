@@ -1,0 +1,19 @@
+description: Universal Credit Work Allowance if household does not receive housing support.
+values:
+  # Skip 2013-2016, when the parameterization was different.
+  2016-04-11: 397
+  2018-04-09: 409
+  2019-04-08: 503
+  2020-04-06: 512
+  2021-04-12: 515
+  2021-11-24: 557
+  2022-04-06: 573
+metadata:
+  label: Universal Credit Work Allowance without housing support
+  name: UC_work_allowance_without_housing
+  uprating: calibration.uprating.september_cpi
+  period: month
+  unit: currency-GBP
+  reference:
+    name: The Universal Credit Regulations 2013
+    href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22

@@ -1,7 +1,7 @@
 from openfisca_uk.model_api import *
 
 
-@uprated(by="wealth.national_balance_sheet.household.financial_net_worth")
+@uprated(by="household.wealth.national_balance_sheet.household.financial_net_worth")
 class corporate_wealth(Variable):
     label = "Corporate wealth"
     documentation = "Total owned wealth in corporations"
@@ -21,7 +21,7 @@ class shareholding(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        wealth = parameters(period).wealth
+        wealth = parameters(period).household.wealth
         nbs = wealth.national_balance_sheet
         wealth = household("corporate_wealth", period)
         total_wealth = nbs.household.financial_net_worth

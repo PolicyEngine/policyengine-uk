@@ -10,7 +10,7 @@ class lbtt_on_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        lbtt = parameters(period).revenue_scotland.lbtt
+        lbtt = parameters(period).gov.revenue_scotland.lbtt
         # Tax on main-home purchases
         price = household("main_residential_property_purchased", period)
         residential_purchase_qualifies_as_first_buy = household(
@@ -44,7 +44,7 @@ class lbtt_on_residential_property_rent(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        lbtt = parameters(period).revenue_scotland.lbtt
+        lbtt = parameters(period).gov.revenue_scotland.lbtt
         cumulative_rent = household("cumulative_residential_rent", period)
         rent = household("rent", period)
         lbtt_cumulative_rent = lbtt.rent.calc(cumulative_rent)
@@ -61,7 +61,7 @@ class lbtt_on_non_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        lbtt = parameters(period).revenue_scotland.lbtt
+        lbtt = parameters(period).gov.revenue_scotland.lbtt
         price = household("non_residential_property_purchased", period)
         return lbtt.non_residential.calc(price)
 
@@ -77,7 +77,7 @@ class lbtt_on_non_residential_property_rent(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        lbtt = parameters(period).revenue_scotland.lbtt
+        lbtt = parameters(period).gov.revenue_scotland.lbtt
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
         lbtt_cumulative_rent = lbtt.rent.calc(cumulative_rent)

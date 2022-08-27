@@ -1,0 +1,12 @@
+description: Personal allowance for Housing Benefit for a single person under 25
+values:
+  2015-06-01: 57.90
+  2021-04-01: 59.20
+  2022-04-06: 61.05
+metadata:
+  period: week
+  unit: currency-GBP
+  name: hb_single_u25
+  label: HB personal allowance (single, under 25)
+  uprating: calibration.uprating.september_cpi
+  reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020

@@ -1,0 +1,35 @@
+description: Income threshold at which Savings Credit is eligible
+SINGLE:
+  values:
+    2015-04-06: 126.50
+    2016-04-06: 133.82
+    2017-04-06: 137.35
+    2018-04-06: 140.67
+    2019-04-06: 144.38
+    2020-04-06: 150.47
+    2021-04-06: 153.70
+    2022-04-01: 158.47
+  metadata:
+    name: pc_sc_income_threshold_single
+    label: Pension Credit savings credit income threshold (single)
+COUPLE:
+  values:
+    2015-04-06: 201.80
+    2016-04-06: 212.97
+    2017-04-06: 218.42
+    2018-04-06: 223.82
+    2019-04-06: 229.67
+    2020-04-06: 239.17
+    2021-04-06: 244.12
+    2022-04-01: 251.17
+  metadata:
+    name: pc_sc_income_threshold_couple
+    label: Pension Credit savings credit income threshold (couple)
+metadata:
+  unit: currency-GBP
+  period: week
+  uprating: calibration.uprating.september_cpi
+  propagate_metadata_to_children: true
+  reference:
+    - title: The State Pension Credit Regulations 2002 reg. 7
+      url: https://www.legislation.gov.uk/uksi/2002/1792/regulation/7/2021-04-12

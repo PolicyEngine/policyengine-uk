@@ -1,7 +1,7 @@
 from openfisca_uk.model_api import *
 
 
-@uprated(by="uprating.september_cpi")
+@uprated(by="calibration.uprating.september_cpi")
 class incapacity_benefit(Variable):
     value_type = float
     entity = Person

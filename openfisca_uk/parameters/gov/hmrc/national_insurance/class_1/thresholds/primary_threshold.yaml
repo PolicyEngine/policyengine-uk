@@ -1,0 +1,36 @@
+description: The Primary Threshold is the lower bound for the main rate of Class 1 National Insurance
+values:
+  2015-04-06: 155
+  2016-04-06: 155
+  2017-04-06: 157
+  2018-04-06: 162
+  2019-04-06: 166
+  2020-04-06: 183
+  2021-04-06: 184
+  2022-04-06:
+    value: 190
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(6)
+          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/6/made#regulation-6-2-a
+  2022-07-01: 
+    value: 241.73
+    metadata:
+      reference:
+        - title: Spring Statement 2022
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1062486/Spring_Statement_2022_Web_Accessible.pdf
+  2026-04-01: 
+    value: 241.73
+    metadata:
+      reference:
+        - title: Spring Statement 2022
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1062486/Spring_Statement_2022_Web_Accessible.pdf
+metadata:
+  label: NI Primary Threshold
+  name: NI_PT
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
+  period: week
+  reference:
+    - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

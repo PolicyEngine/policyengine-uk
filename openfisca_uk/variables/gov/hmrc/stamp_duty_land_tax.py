@@ -11,7 +11,7 @@ class sdlt_on_residential_property_transactions(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).hmrc.stamp_duty
+        stamp_duty = parameters(period).gov.hmrc.stamp_duty
         # Tax on main-home purchases
         price_limit = stamp_duty.residential.purchase.main.first.max
         price = household("main_residential_property_purchased", period)
@@ -50,7 +50,7 @@ class sdlt_on_residential_property_rent(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/schedule/5"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).hmrc.stamp_duty
+        stamp_duty = parameters(period).gov.hmrc.stamp_duty
         cumulative_rent = household("cumulative_residential_rent", period)
         rent = household("rent", period)
         return stamp_duty.residential.rent.calc(
@@ -68,7 +68,7 @@ class sdlt_on_non_residential_property_transactions(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).hmrc.stamp_duty
+        stamp_duty = parameters(period).gov.hmrc.stamp_duty
         price = household("non_residential_property_purchased", period)
         return stamp_duty.non_residential.purchase.calc(price)
 
@@ -83,7 +83,7 @@ class sdlt_on_non_residential_property_rent(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/schedule/5"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).hmrc.stamp_duty
+        stamp_duty = parameters(period).gov.hmrc.stamp_duty
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
         return stamp_duty.non_residential.rent.calc(
@@ -147,7 +147,7 @@ class baseline_corporate_sdlt(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        sd = parameters(period).hmrc.stamp_duty.statistics
+        sd = parameters(period).gov.hmrc.stamp_duty.statistics
         return household("shareholding", period) * (
             sd.residential.corporate.revenue
             + sd.non_residential.corporate.revenue

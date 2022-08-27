@@ -14,7 +14,7 @@
 - name: Basic rate increase, with one pensioner (exempt) and one working-age adult (not exempt).
   period: 2021
   input:
-    tax.income_tax.rates.uk[0].rate: 0.5
+    gov.hmrc.income_tax.rates.uk[0].rate: 0.5
     contrib.ubi_center.exempt_pensioners_from_tax_changes: true
     people:
       pensioner:

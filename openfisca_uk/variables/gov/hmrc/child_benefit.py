@@ -24,7 +24,7 @@ class would_claim_child_benefit(Variable):
         already_claiming = (
             aggr(benunit, period, ["child_benefit_reported"]) > 0
         )
-        takeup_rate = parameters(period).hmrc.child_benefit.takeup
+        takeup_rate = parameters(period).gov.hmrc.child_benefit.takeup
         baseline_cb = benunit("baseline_child_benefit_entitlement", period) > 0
         eligible = benunit("child_benefit_entitlement", period) > 0
         return select(
@@ -61,7 +61,7 @@ class child_benefit_respective_amount(Variable):
         ).contrib.ubi_center.basic_income.interactions.withdraw_cb:
             eligible &= person("basic_income", period) == 0
         is_eldest = person("is_eldest_child", period)
-        child_benefit = parameters(period).hmrc.child_benefit.amount
+        child_benefit = parameters(period).gov.hmrc.child_benefit.amount
         amount = where(
             is_eldest, child_benefit.eldest, child_benefit.additional
         )

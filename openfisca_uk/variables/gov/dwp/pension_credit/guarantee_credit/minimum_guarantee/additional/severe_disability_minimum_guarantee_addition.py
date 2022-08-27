@@ -17,7 +17,7 @@ class severe_disability_minimum_guarantee_addition(Variable):
         # 3. Nobody receives Carer's Allowance (technically 'for one of the claimants', but we assume this is true)
         severe_disability = parameters(
             period
-        ).dwp.pension_credit.guarantee_credit.severe_disability
+        ).gov.dwp.pension_credit.guarantee_credit.severe_disability
         relevant_benefits = severe_disability.relevant_benefits
         person = benunit.members
         person_receives_qualifying_benefits = (

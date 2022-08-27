@@ -1,0 +1,15 @@
+description: Weekly contributory Jobseeker's Allowance for couples
+values:
+  2015-04-01: 114.85
+  2016-04-01: 114.85
+  2017-04-01: 114.85
+  2018-04-01: 114.85
+  2019-04-01: 114.85
+  2020-04-01: 116.80
+  2021-04-01: 117.40
+  2022-04-01: 121.05
+metadata:
+  period: week
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24

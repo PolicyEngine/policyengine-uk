@@ -17,7 +17,7 @@ class would_claim_pc(Variable):
         )
         baseline = benunit("baseline_pension_credit_entitlement", period) > 0
         eligible = benunit("pension_credit_entitlement", period) > 0
-        takeup_rate = parameters(period).dwp.pension_credit.takeup
+        takeup_rate = parameters(period).gov.dwp.pension_credit.takeup
         return select(
             [
                 reported_pc | claims_all_entitled_benefits,

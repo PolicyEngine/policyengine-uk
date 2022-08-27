@@ -1,0 +1,29 @@
+description: The Lower Profits Limit is the threshold at which self-employed earners pay the main Class 4 National Insurance rate
+values:
+  2015-04-06: 8_060
+  2017-04-06: 8_164
+  2018-04-06: 8_424
+  2019-04-06: 8_632
+  2020-04-06: 9_500
+  2021-04-06: 9_568
+  2022-04-06:
+    value: 11_908
+    metadata:
+      reference:
+        - title: National Insurance Contributions (Increase of Thresholds) Act 2022
+          href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
+  2026-04-06:
+    value: 12_570
+    metadata:
+      reference:
+        - title: National Insurance Contributions (Increase of Thresholds) Act 2022
+          href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
+metadata:
+  label: National Insurance Lower Profits Limit
+  name: NI_LPL
+  unit: currency-GBP
+  period: year
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

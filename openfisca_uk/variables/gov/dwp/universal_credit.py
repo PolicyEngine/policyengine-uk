@@ -42,7 +42,7 @@ class would_claim_UC(Variable):
             benunit("baseline_universal_credit_entitlement", period) > 0
         )
         eligible = benunit("universal_credit_entitlement", period) > 0
-        takeup_rate = parameters(period).benefit.universal_credit.takeup
+        takeup_rate = parameters(period).gov.dwp.universal_credit.takeup
         return select(
             [
                 current_uc_claimant
@@ -143,7 +143,7 @@ class UC_standard_allowance(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        SA = parameters(period).benefit.universal_credit.standard_allowance
+        SA = parameters(period).gov.dwp.universal_credit.standard_allowance
         return SA.amount[benunit("UC_claimant_type", period)] * MONTHS_IN_YEAR
 
 
@@ -154,7 +154,7 @@ class is_child_born_before_child_limit(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         start_year = UC.elements.child.limit.start_year
         born_before_limit = person("birth_year", period) < start_year
         return person("is_child", period) & born_before_limit
@@ -169,7 +169,7 @@ class UC_individual_child_element(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         child_index = person("child_index", period)
         born_before_limit = person("is_child_born_before_child_limit", period)
         child_limit_applying = where(
@@ -209,7 +209,7 @@ class num_UC_eligible_children(Variable):
         )
         child_limit = parameters(
             period
-        ).benefit.universal_credit.elements.child.limit.child_count
+        ).gov.dwp.universal_credit.elements.child.limit.child_count
         spaces_left = clip(
             child_limit - children_born_before_limit, 0, child_limit
         )
@@ -239,7 +239,7 @@ class UC_carer_element(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         has_carer = benunit("benunit_has_carer", period)
         return UC.elements.carer.amount * has_carer * MONTHS_IN_YEAR
 
@@ -306,7 +306,7 @@ class UC_individual_non_dep_deduction(Variable):
         exempt = person("UC_non_dep_deduction_exempt", period)
         deduction = parameters(
             period
-        ).benefit.universal_credit.elements.housing.non_dep_deduction
+        ).gov.dwp.universal_credit.elements.housing.non_dep_deduction
         return deduction * ~exempt * over_21 * not_rent_liable * MONTHS_IN_YEAR
 
 
@@ -354,7 +354,7 @@ class UC_LCWRA_element(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         person_amounts = (
             benunit.members("limited_capability_for_WRA", period)
             * UC.elements.disabled.amount
@@ -370,7 +370,7 @@ class UC_individual_disabled_child_element(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         return (
             person("is_disabled_for_benefits", period)
             * person("is_child", period)
@@ -386,7 +386,7 @@ class UC_individual_severely_disabled_child_element(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         return (
             person("is_severely_disabled_for_benefits", period)
             * person("is_child", period)
@@ -449,7 +449,7 @@ class UC_maximum_childcare(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         children = benunit("num_UC_eligible_children", period)
         return (
             UC.elements.childcare.maximum[clip(children, 1, 2)]
@@ -465,7 +465,7 @@ class UC_childcare_element(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         eligible_childcare_expenses = aggr(
             benunit, period, ["childcare_expenses"]
         )
@@ -501,7 +501,7 @@ class UC_work_allowance(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         housing = benunit("UC_housing_costs_element", period)
         monthly_allowance = where(
             housing > 0,
@@ -557,7 +557,7 @@ class UC_income_reduction(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        UC = parameters(period).benefit.universal_credit
+        UC = parameters(period).gov.dwp.universal_credit
         earned_income_reduction = UC.means_test.reduction_rate * benunit(
             "UC_earned_income", period
         )
@@ -632,7 +632,7 @@ class UC_minimum_income_floor(Variable):
     def formula(person, period, parameters):
         expected_hours = parameters(
             period
-        ).benefit.universal_credit.work_requirements.default_expected_hours
+        ).gov.dwp.universal_credit.work_requirements.default_expected_hours
         return person("minimum_wage", period) * expected_hours * WEEKS_IN_YEAR
 
 

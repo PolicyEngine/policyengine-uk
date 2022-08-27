@@ -11,7 +11,7 @@ NORTHERN_IRELAND:
   2022-01-01: 1_400_000_000
 metadata:
   uprating:
-    parameter: uprating.earnings
+    parameter: calibration.uprating.earnings
   propagate_metadata_to_children: true
   reference:
     # Data is more recent than the URL suggests.
