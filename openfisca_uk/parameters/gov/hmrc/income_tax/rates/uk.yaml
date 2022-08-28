@@ -83,10 +83,11 @@ brackets:
             href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
 
 metadata:
-  period: year
+  threshold_period: year
   type: marginal_rate
   threshold_unit: currency-GBP
   rate_unit: /1
+  label: Income tax main rates
   reference:
     - title: Finance Act 2022 s. 2
       href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
