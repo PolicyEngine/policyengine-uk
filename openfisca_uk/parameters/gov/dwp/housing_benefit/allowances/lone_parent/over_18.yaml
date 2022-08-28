@@ -1,0 +1,12 @@
+description: Personal allowance for Housing Benefit for a lone parent aged over 18
+values:
+  2015-06-01: 73.10
+  2021-04-01: 74.70
+  2022-04-06: 77.00
+metadata:
+  period: week
+  uprating: calibration.uprating.september_cpi
+  name: hb_lone_parent_o18
+  label: HB personal allowance (lone parent, over 18)
+  unit: currency-GBP
+  reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020

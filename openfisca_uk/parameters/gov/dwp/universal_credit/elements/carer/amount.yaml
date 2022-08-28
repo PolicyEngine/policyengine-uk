@@ -1,0 +1,17 @@
+description: Carer element for Universal Credit.
+values:
+  2017-04-10: 151.89
+  2018-04-09: 156.45
+  2019-04-08: 160.20
+  2020-04-06: 162.92
+  2021-04-12: 163.73
+  2022-04-06: 168.81
+metadata:
+  period: month
+  unit: currency-GBP
+  name: UC_carer_element
+  label: "UC carer element"
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - name: The Universal Credit Regulations 2013 reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

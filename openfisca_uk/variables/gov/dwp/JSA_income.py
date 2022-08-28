@@ -18,7 +18,7 @@ class JSA_income_eligible(Variable):
 
     def formula(benunit, period, parameters):
         # Calculate work hours eligibility.
-        hours_limit = parameters(period).benefit.JSA.hours
+        hours_limit = parameters(period).gov.dwp.JSA.hours
         hours = benunit("benunit_weekly_hours", period)
         single = benunit("is_single", period)
         hours_eligible_as_single = single & (hours < hours_limit.single)
@@ -56,7 +56,7 @@ class JSA_income_applicable_amount(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        income = parameters(period).benefit.JSA.income
+        income = parameters(period).gov.dwp.JSA.income
         age = benunit("youngest_adult_age", period)
         single = benunit("is_single", period)
         couple = benunit("is_couple", period)
@@ -98,7 +98,7 @@ class JSA_income_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        JSA = parameters(period).benefit.JSA
+        JSA = parameters(period).gov.dwp.JSA
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",

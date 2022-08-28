@@ -10,7 +10,7 @@
   period: 2021
   absolute_error_margin: 1
   input:
-    hmrc.fuel_duty.petrol_and_diesel: 0.5295
+    gov.hmrc.fuel_duty.petrol_and_diesel: 0.5295
     petrol_spending: 100
     baseline_fuel_duty: 54.32
   output:

@@ -20,7 +20,7 @@ class carers_allowance(Variable):
 
     def formula(person, period, parameters):
         receives_ca = person("carers_allowance_reported", period) > 0
-        rate = parameters(period).dwp.carers_allowance.rate
+        rate = parameters(period).gov.dwp.carers_allowance.rate
         return receives_ca * rate * WEEKS_IN_YEAR
 
 

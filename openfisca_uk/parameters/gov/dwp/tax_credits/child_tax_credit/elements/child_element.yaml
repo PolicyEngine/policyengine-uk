@@ -1,0 +1,19 @@
+description: Child Tax Credit child element
+values:
+  2016-04-06:
+    value: 2780
+  2020-04-06:
+    # NB: EUROMOD reports 2840. This is the gov.uk value.
+    value: 2830
+  2021-04-06:
+    value: 2845
+  2022-04-01: 2_935
+metadata:
+  period: year
+  name: ctc_child
+  label: "CTC child element"
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
+    - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

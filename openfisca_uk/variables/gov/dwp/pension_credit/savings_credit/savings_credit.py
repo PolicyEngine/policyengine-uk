@@ -11,7 +11,7 @@ class savings_credit(Variable):
 
     def formula(benunit, period, parameters):
         income = benunit("savings_credit_income", period)
-        sc = parameters(period).dwp.pension_credit.savings_credit
+        sc = parameters(period).gov.dwp.pension_credit.savings_credit
         relation_type = benunit("relation_type", period)
         threshold = sc.threshold[relation_type] * WEEKS_IN_YEAR
         minimum_guarantee = benunit("minimum_guarantee", period)

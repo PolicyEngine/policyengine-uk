@@ -1,0 +1,12 @@
+description: Personal allowance for Housing Benefit for a lone parent over State Pension age
+values:
+  2015-06-01: 181
+  2021-04-01: 191.15
+  2022-04-06: 197.10
+metadata:
+  period: week
+  uprating: calibration.uprating.september_cpi
+  name: hb_lone_parent_pensioner
+  label: HB personal allowance (lone parent, pensioner)
+  unit: currency-GBP
+  reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020

@@ -1,0 +1,47 @@
+description: Child Benefit amount for the eldest or only child
+values:
+  2007-04-09:
+    value: 18.80
+    reference:
+      - title: The Child Benefit Up-rating Order 2007(2)(a)
+        href: https://www.legislation.gov.uk/uksi/2007/1053/article/2/made
+  2009-01-05:
+    value: 20.00
+    reference:
+      - title: The Child Benefit (Rates) (Amendment) Regulations 2008(3)(a)
+        href: https://www.legislation.gov.uk/uksi/2008/3246/regulation/3/made
+  2010-04-12:
+    value: 20.30
+    reference:
+      - title: The Child Benefit Up-rating Order 2010(2)(a)
+        href: https://www.legislation.gov.uk/uksi/2010/982/article/2/made
+  2014-04-07:
+    value: 20.50
+    reference:
+      - title: The Child Benefit and Tax Credits Up-rating Order 2014(2)(a)
+        href: https://www.legislation.gov.uk/uksi/2014/384/article/2/made
+  2015-04-06:
+    value: 20.70
+    reference:
+      - title: The Child Benefit and Tax Credits Up-rating Order 2015(2)(a)
+        href: https://www.legislation.gov.uk/uksi/2015/567/article/2/made
+  2020-04-06:
+    value: 21.05
+    reference:
+      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(a)
+        href: https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made
+  2021-04-12:
+    value: 21.15
+    reference:
+      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(a)
+        href: https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made
+  2022-04-01: 21.80
+metadata:
+  label: Child Benefit (eldest)
+  name: CB_eldest
+  unit: currency-GBP
+  period: week
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)
+      href: https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made

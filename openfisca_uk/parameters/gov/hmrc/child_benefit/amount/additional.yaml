@@ -1,0 +1,50 @@
+description: Child Benefit amount for each additional child
+values:
+  2007-04-09:
+    value: 12.10
+    # Legislation.gov.uk amends this amount to £12.55, but
+    # the amendment it references directs that it should be
+    # amended to £12.10. We use the original amendment.
+    reference:
+      - title: The Child Benefit Up-rating Order 2007(2)(b)
+        href: https://www.legislation.gov.uk/uksi/2007/1053/article/2/made
+  2009-01-05:
+    value: 13.20
+    reference:
+      - title: The Child Benefit (Rates) (Amendment) Regulations 2008(3)(b)
+        href: https://www.legislation.gov.uk/uksi/2008/3246/regulation/3/made
+  2010-04-12:
+    value: 13.40
+    reference:
+      - title: The Child Benefit Up-rating Order 2010(2)(b)
+        href: https://www.legislation.gov.uk/uksi/2010/982/article/2/made
+  2014-04-07:
+    value: 13.55
+    reference:
+      - title: The Child Benefit and Tax Credits Up-rating Order 2014(2)(b)
+        href: https://www.legislation.gov.uk/uksi/2014/384/article/2/made
+  2015-04-06:
+    value: 13.70
+    reference:
+      - title: The Child Benefit and Tax Credits Up-rating Order 2015(2)(b)
+        href: https://www.legislation.gov.uk/uksi/2015/567/article/2/made
+  2020-04-06:
+    value: 13.95
+    reference:
+      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020(5)(b)
+        href: https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made
+  2021-04-12:
+    value: 14.00
+    reference:
+      - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)
+        href: https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made
+  2022-04-01: 14.45
+metadata:
+  label: Child Benefit (additional)
+  name: CB_additional
+  period: week
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)
+      href: https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made

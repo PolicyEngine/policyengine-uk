@@ -235,7 +235,7 @@ class real_household_net_income(Variable):
 
     def formula(household, period, parameters):
         def cpi(period):
-            return parameters(period).uprating.CPI
+            return parameters(period).calibration.uprating.CPI
 
         multiplier = cpi("2015-01-01") / cpi(period)
         return household("household_net_income", period) * multiplier
@@ -356,7 +356,7 @@ class minimum_wage(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        MW = parameters(period).law.minimum_wage
+        MW = parameters(period).gov.hmrc.minimum_wage
         return MW[person("minimum_wage_category", period)]
 
 

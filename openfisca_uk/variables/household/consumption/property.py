@@ -10,8 +10,8 @@ class property_sale_rate(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).hmrc.stamp_duty.statistics
-        nbs = parameters(period).wealth.national_balance_sheet
+        stamp_duty = parameters(period).gov.hmrc.stamp_duty.statistics
+        nbs = parameters(period).household.wealth.national_balance_sheet
         total_sale_value = (
             stamp_duty.residential.household.transaction_values
             + stamp_duty.non_residential.household.transaction_values
@@ -75,7 +75,7 @@ class main_residential_property_purchased_is_first_home(Variable):
     def formula(household, period, parameters):
         residential_sd = parameters(
             period
-        ).hmrc.stamp_duty.statistics.residential.household
+        ).gov.hmrc.stamp_duty.statistics.residential.household
         age = household.sum(
             household.members("is_household_head", period)
             * household.members("age", period)

@@ -1,0 +1,15 @@
+description: Disabled child element for Universal Credit.
+values:
+  2017-04-10: 126.11
+  2020-04-06: 128.25
+  2021-04-12: 128.89
+  2022-04-06: 132.89
+metadata:
+  period: month
+  unit: currency-GBP
+  name: UC_disabled_element
+  label: "UC disabled element"
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - name: The Universal Credit Regulations 2013 reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

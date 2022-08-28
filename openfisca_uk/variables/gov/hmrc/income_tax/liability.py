@@ -50,7 +50,7 @@ class basic_rate_earned_income(Variable):
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
-        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         return clip(income, thresholds[0], thresholds[1])
 
 
@@ -63,7 +63,7 @@ class higher_rate_earned_income(Variable):
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
-        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         return clip(income, thresholds[1], thresholds[2]) - thresholds[1]
 
 
@@ -76,7 +76,7 @@ class add_rate_earned_income(Variable):
 
     def formula(person, period, parameters):
         income = person("earned_taxable_income", period)
-        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         return clip(income, thresholds[2], inf) - thresholds[2]
 
 
@@ -89,7 +89,9 @@ class basic_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("basic_rate_earned_income", period)
-        return parameters(period).tax.income_tax.rates.uk.rates[0] * amount
+        return (
+            parameters(period).gov.hmrc.income_tax.rates.uk.rates[0] * amount
+        )
 
 
 class higher_rate_earned_income_tax(Variable):
@@ -101,7 +103,9 @@ class higher_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("higher_rate_earned_income", period)
-        return parameters(period).tax.income_tax.rates.uk.rates[1] * amount
+        return (
+            parameters(period).gov.hmrc.income_tax.rates.uk.rates[1] * amount
+        )
 
 
 class add_rate_earned_income_tax(Variable):
@@ -113,7 +117,9 @@ class add_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("add_rate_earned_income", period)
-        return parameters(period).tax.income_tax.rates.uk.rates[2] * amount
+        return (
+            parameters(period).gov.hmrc.income_tax.rates.uk.rates[2] * amount
+        )
 
 
 class earned_income_tax(Variable):
@@ -125,11 +131,11 @@ class earned_income_tax(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates
         return rates.uk.calc(person("earned_taxable_income", period))
 
     def formula_2017_04_06(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
         uk_amount = rates.uk.calc(person("earned_taxable_income", period))
         scot_amount = rates.scotland.pre_starter_rate.calc(
@@ -138,7 +144,7 @@ class earned_income_tax(Variable):
         return where(scot, scot_amount, uk_amount)
 
     def formula_2018_04_06(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
         uk_amount = rates.uk.calc(person("earned_taxable_income", period))
         scot_amount = rates.scotland.post_starter_rate.calc(
@@ -179,7 +185,7 @@ class tax_band(Variable):
     def formula(person, period, parameters):
         allowances = person("allowances", period)
         ANI = person("adjusted_net_income", period)
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates
         basic = allowances + rates.uk.thresholds[0]
         higher = allowances + rates.uk.thresholds[-2]
         add = allowances + rates.uk.thresholds[-1]
@@ -191,7 +197,7 @@ class tax_band(Variable):
     def formula_2017_04_06(person, period, parameters):
         allowances = person("allowances", period)
         ANI = person("adjusted_net_income", period)
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
         income = ANI - allowances
         uk_band = select(
@@ -211,7 +217,7 @@ class tax_band(Variable):
     def formula_2018_06_01(person, period, parameters):
         allowances = person("allowances", period)
         ANI = person("adjusted_net_income", period)
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
         income = ANI - allowances
         uk_band = select(
@@ -247,7 +253,7 @@ class basic_rate_savings_income_pre_starter(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         savings_income_total = person(
             "taxable_savings_interest_income", period
         )
@@ -279,7 +285,7 @@ class savings_starter_rate_income(Variable):
         income = person("basic_rate_savings_income_pre_starter", period)
         limit = parameters(
             period
-        ).tax.income_tax.rates.savings_starter_rate.allowance
+        ).gov.hmrc.income_tax.rates.savings_starter_rate.allowance
         return max_(0, limit - income)
 
 
@@ -292,7 +298,7 @@ class basic_rate_savings_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         other_income = person("earned_taxable_income", period)
         savings_deductions = add(
             person,
@@ -324,7 +330,7 @@ class higher_rate_savings_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         other_income = person("earned_taxable_income", period)
         savings_deductions = add(
             person,
@@ -356,7 +362,7 @@ class add_rate_savings_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        thresholds = parameters(period).tax.income_tax.rates.uk.thresholds
+        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         other_income = person("earned_taxable_income", period)
         savings_deductions = add(
             person,
@@ -418,7 +424,7 @@ class savings_income_tax(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates.uk.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates.uk.rates
         basic_rate_amount = person("basic_rate_savings_income", period)
         higher_rate_amount = person("higher_rate_savings_income", period)
         add_rate_amount = person("add_rate_savings_income", period)
@@ -438,7 +444,7 @@ class dividend_income_tax(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        rates = parameters(period).tax.income_tax.rates
+        rates = parameters(period).gov.hmrc.income_tax.rates
         other_income = person("earned_taxable_income", period) + person(
             "taxed_savings_income", period
         )

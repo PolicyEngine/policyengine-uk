@@ -19,7 +19,7 @@ class pip_m_category(Variable):
     default_value = PIPCategory.NONE
 
     def formula(person, period, parameters):
-        pip_m = parameters(period).dwp.pip.mobility
+        pip_m = parameters(period).gov.dwp.pip.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_pip_m = (
             person("PIP_M_reported", period) / WEEKS_IN_YEAR
@@ -46,7 +46,7 @@ class pip_m(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        pip_m = parameters(period).dwp.pip.mobility
+        pip_m = parameters(period).gov.dwp.pip.mobility
         category = person("pip_m_category", period)
         return (
             select(

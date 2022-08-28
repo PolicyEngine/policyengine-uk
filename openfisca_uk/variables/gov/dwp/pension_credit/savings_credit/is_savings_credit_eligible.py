@@ -11,7 +11,7 @@ class is_savings_credit_eligible(Variable):
 
     def formula(benunit, period, parameters):
         income = benunit("savings_credit_income", period)
-        sc = parameters(period).dwp.pension_credit.savings_credit
+        sc = parameters(period).gov.dwp.pension_credit.savings_credit
         relation_type = benunit("relation_type", period)
         threshold = sc.threshold[relation_type]
         return income >= threshold

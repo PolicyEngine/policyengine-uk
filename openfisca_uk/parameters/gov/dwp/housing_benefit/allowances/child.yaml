@@ -1,0 +1,12 @@
+description: Personal allowance increase for a child for Housing Benefit
+values:
+  2015-06-01: 66.90
+  2021-04-01: 68.60
+  2022-04-06: 70.80
+metadata:
+  period: week
+  uprating: calibration.uprating.september_cpi
+  unit: currency-GBP
+  name: hb_child
+  label: HB child allowance
+  reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020

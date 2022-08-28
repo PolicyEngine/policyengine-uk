@@ -39,7 +39,7 @@ class would_claim_HB(Variable):
         reported_hb = aggr(benunit, period, ["housing_benefit_reported"]) > 0
         baseline = benunit("baseline_housing_benefit_entitlement", period) > 0
         eligible = benunit("housing_benefit_entitlement", period) > 0
-        takeup_rate = parameters(period).benefit.housing_benefit.takeup
+        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
         return select(
             [
                 reported_hb | claims_all_entitled_benefits,
@@ -62,7 +62,7 @@ class housing_benefit_applicable_amount(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        HB = parameters(period).benefit.housing_benefit
+        HB = parameters(period).gov.dwp.housing_benefit
         PA = HB.allowances
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
         eldest_age = benunit("eldest_adult_age", period)
@@ -106,8 +106,8 @@ class housing_benefit_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).benefit.tax_credits.working_tax_credit
-        means_test = parameters(period).benefit.housing_benefit.means_test
+        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        means_test = parameters(period).gov.dwp.housing_benefit.means_test
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",
@@ -179,7 +179,7 @@ class HB_individual_non_dep_deduction(Variable):
         over_21 = person("age", period) >= 21
         deduction_scale = parameters(
             period
-        ).benefit.housing_benefit.deductions.non_dep_deduction
+        ).gov.dwp.housing_benefit.deductions.non_dep_deduction
         weekly_income = person("total_income", period)
         deduction = deduction_scale.calc(weekly_income)
         return deduction * over_21 * not_rent_liable * MONTHS_IN_YEAR
@@ -220,7 +220,7 @@ class housing_benefit_entitlement(Variable):
         income = benunit("housing_benefit_applicable_income", period)
         withdrawal_rate = parameters(
             period
-        ).benefit.housing_benefit.means_test.withdrawal_rate
+        ).gov.dwp.housing_benefit.means_test.withdrawal_rate
         final_amount = max_(
             0, rent - max_(0, income - applicable_amount) * withdrawal_rate
         )

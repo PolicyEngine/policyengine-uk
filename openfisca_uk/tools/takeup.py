@@ -35,13 +35,13 @@ def add_takeup_parameters():
 
     takeup_parameters = [
         parameters.benefit.universal_credit.takeup,
-        parameters.dwp.pension_credit.takeup,
-        parameters.hmrc.child_benefit.takeup,
-        parameters.benefit.tax_credits.working_tax_credit.takeup,
-        parameters.benefit.tax_credits.child_tax_credit.takeup,
-        parameters.benefit.income_support.takeup,
-        parameters.benefit.housing_benefit.takeup,
-        parameters.benefit.JSA.income.takeup,
+        parameters.gov.dwp.pension_credit.takeup,
+        parameters.gov.hmrc.child_benefit.takeup,
+        parameters.gov.dwp.tax_credits.working_tax_credit.takeup,
+        parameters.gov.dwp.tax_credits.child_tax_credit.takeup,
+        parameters.gov.dwp.income_support.takeup,
+        parameters.gov.dwp.housing_benefit.takeup,
+        parameters.gov.dwp.JSA.income.takeup,
     ]
 
     for variable, parameter in zip(BENEFITS, takeup_parameters):

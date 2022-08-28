@@ -1,0 +1,17 @@
+description: Severely disabled child element of Universal Credit.
+values:
+  2017-04-10: 372.11
+  2018-04-09: 383.86
+  2019-04-08: 392.08
+  2020-04-06: 400.29
+  2021-04-12: 402.41
+  2022-04-06: 414.88
+metadata:
+  period: month
+  unit: currency-GBP
+  name: UC_severely_disabled_element
+  label: "UC severely disabled element"
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - name: The Universal Credit Regulations 2013 reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

@@ -1,0 +1,25 @@
+description: Child Tax Credit severely disabled child element
+values:
+  2016-04-06:
+    value: 1275
+  2017-04-06:
+    value: 1290
+  2018-04-06:
+    value: 1325
+  2019-04-06:
+    value: 1360
+  2020-04-06:
+    # NB: EUROMOD reports 1390. This is the gov.uk value.
+    value: 1385
+  2021-04-06:
+    value: 1390
+  2022-04-01: 1_430
+metadata:
+  period: year
+  unit: currency-GBP
+  name: ctc_severe_dis_child
+  label: "CTC severely disabled child element"
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance,
+    - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28

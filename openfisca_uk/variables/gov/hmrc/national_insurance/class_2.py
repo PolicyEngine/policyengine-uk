@@ -10,7 +10,7 @@ class weekly_NI_class_2(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        class_2 = parameters(period).tax.national_insurance.class_2
+        class_2 = parameters(period).gov.hmrc.national_insurance.class_2
         profits = person("self_employment_income", period)
         over_threshold = profits >= class_2.small_profits_threshold
         return over_threshold * class_2.flat_rate * WEEKS_IN_YEAR

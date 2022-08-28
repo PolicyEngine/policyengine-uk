@@ -37,7 +37,7 @@ class petrol_price(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        return parameters(period).consumption.fuel.prices.petrol
+        return parameters(period).household.consumption.fuel.prices.petrol
 
 
 class diesel_price(Variable):
@@ -48,4 +48,4 @@ class diesel_price(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        return parameters(period).consumption.fuel.prices.petrol
+        return parameters(period).household.consumption.fuel.prices.petrol

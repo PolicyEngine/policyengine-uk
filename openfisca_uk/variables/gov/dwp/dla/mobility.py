@@ -21,7 +21,7 @@ class dla_m_category(Variable):
     default_value = LowerOrHigher.NONE
 
     def formula(person, period, parameters):
-        dla_m = parameters(period).dwp.dla.mobility
+        dla_m = parameters(period).gov.dwp.dla.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_dla_m = (
             person("DLA_M_reported", period) / WEEKS_IN_YEAR
@@ -48,7 +48,7 @@ class dla_m(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        dla_m = parameters(period).dwp.dla.mobility
+        dla_m = parameters(period).gov.dwp.dla.mobility
         category = person("dla_m_category", period)
         return (
             select(

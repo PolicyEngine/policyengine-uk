@@ -12,7 +12,7 @@ https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-st
 """
 
 
-@uprated(by="uprating.earnings")
+@uprated(by="calibration.uprating.earnings")
 class employment_income(Variable):
     value_type = float
     entity = Person
@@ -24,7 +24,7 @@ class employment_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="uprating.earnings")
+@uprated(by="calibration.uprating.earnings")
 class pension_income(Variable):
     value_type = float
     entity = Person
@@ -66,7 +66,7 @@ class social_security_income(Variable):
         return add(person, period, COMPONENTS, options=[ADD])
 
 
-@uprated(by="uprating.earnings")
+@uprated(by="calibration.uprating.earnings")
 class self_employment_income(Variable):
     value_type = float
     entity = Person
@@ -78,7 +78,7 @@ class self_employment_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="uprating.earnings")
+@uprated(by="calibration.uprating.earnings")
 class property_income(Variable):
     value_type = float
     entity = Person
@@ -90,7 +90,7 @@ class property_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="uprating.earnings")
+@uprated(by="calibration.uprating.earnings")
 class savings_interest_income(Variable):
     value_type = float
     entity = Person
@@ -102,7 +102,7 @@ class savings_interest_income(Variable):
     quantity_type = FLOW
 
 
-@uprated(by="uprating.earnings")
+@uprated(by="calibration.uprating.earnings")
 class dividend_income(Variable):
     value_type = float
     entity = Person

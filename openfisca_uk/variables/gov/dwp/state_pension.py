@@ -9,7 +9,7 @@ class state_pension_age(Variable):
     unit = "year"
 
     def formula(person, period, parameters):
-        SP = parameters(period).benefit.state_pension
+        SP = parameters(period).gov.dwp.state_pension
         return where(person("is_male", period), SP.male_age, SP.female_age)
 
 
@@ -35,12 +35,12 @@ class triple_lock_uprating(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        uprating = parameters(period).uprating
-        uprating_ly = parameters(period.last_year).uprating
+        uprating = parameters(period).calibration.uprating
+        uprating_ly = parameters(period.last_year).calibration.uprating
         cpi_growth = uprating.CPI / uprating_ly.CPI
         earnings_growth = uprating.earnings / uprating_ly.earnings
         return max(
-            parameters(period).benefit.state_pension.triple_lock_minimum,
+            parameters(period).gov.dwp.state_pension.triple_lock_minimum,
             cpi_growth,
             earnings_growth,
         )

@@ -1,0 +1,93 @@
+description: Income Tax scale
+brackets:
+  - rate:
+      description: The basic rate is the first of three tax brackets on all income, after allowances are deducted
+      values:
+        2015-06-01: 0.2
+        2024-04-01:
+          value: 0.19
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+      metadata:
+        label: Basic rate
+        name: basic_rate
+        unit: /1
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+    threshold:
+      description: The starting threshold for the basic rate, after allowances.
+      values:
+        2015-06-05: 0
+      metadata:
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+  - rate:
+      description: The higher rate is the middle tax bracket on earned income.
+      values:
+        2015-06-05: 0.4
+      metadata:
+        label: Higher rate
+        name: higher_rate
+        unit: /1
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+    threshold:
+      description: The lower threshold for the higher rate of income tax (and therefore the upper threshold of the basic rate)
+      values:
+        2015-06-05: 32_000
+        2017-06-01: 33_500
+        2018-06-01: 34_500
+        2019-06-01: 37_500
+        2020-06-01: 37_500
+        2021-06-01: 37_700
+        2025-06-01: 37_700
+      metadata:
+        label: Higher rate threshold
+        name: higher_threshold
+        unit: currency-GBP
+        period: year
+        uprating: calibration.uprating.september_cpi
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+  - rate:
+      description: The additional rate is the highest tax bracket, with no upper bound
+      values:
+        2015-06-05: 0.45
+      metadata:
+        label: Additional rate
+        name: add_rate
+        unit: /1
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+        tests:
+          - period: 2022
+            decreases_net_income: true
+    threshold:
+      description: The lower threshold for the additional rate
+      values:
+        2015-06-05: 150_000
+      metadata:
+        label: Additional rate threshold
+        name: add_threshold
+        unit: currency-GBP
+        period: year
+        reference:
+          - title: Finance Act 2022 s. 2
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+
+metadata:
+  threshold_period: year
+  type: marginal_rate
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  label: Income tax main rates
+  reference:
+    - title: Finance Act 2022 s. 2
+      href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted

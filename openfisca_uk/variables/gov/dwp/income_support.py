@@ -25,7 +25,7 @@ class would_claim_IS(Variable):
         )
         baseline = benunit("baseline_income_support_entitlement", period) > 0
         eligible = benunit("income_support_entitlement", period) > 0
-        takeup_rate = parameters(period).benefit.housing_benefit.takeup
+        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
         return select(
             [
                 reported_is | claims_all_entitled_benefits,
@@ -48,7 +48,7 @@ class income_support_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        IS = parameters(period).benefit.income_support
+        IS = parameters(period).gov.dwp.income_support
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",
@@ -121,7 +121,7 @@ class income_support_applicable_amount(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        IS = parameters(period).benefit.income_support
+        IS = parameters(period).gov.dwp.income_support
         amounts = IS.amounts
         younger_age = benunit("youngest_adult_age", period)
         older_age = benunit("eldest_adult_age", period)

@@ -1,0 +1,19 @@
+description: Universal Credit Work Allowance if household receives housing support.
+values:
+  # Skip 2013-2016, when the parameterization was different.
+  2016-04-11: 192
+  2018-04-09: 198
+  2019-04-08: 287
+  2020-04-06: 292
+  2021-04-12: 293
+  2021-11-24: 335
+  2022-04-06: 344
+metadata:
+  label: Universal Credit Work Allowance with housing support
+  name: UC_work_allowance_with_housing
+  period: month
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
+  reference:
+    name: The Universal Credit Regulations 2013
+    href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22

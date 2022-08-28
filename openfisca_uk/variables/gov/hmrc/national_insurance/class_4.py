@@ -10,7 +10,7 @@ class NI_class_4(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        class_4 = parameters(period).tax.national_insurance.class_4
+        class_4 = parameters(period).gov.hmrc.national_insurance.class_4
         self_employment_income = person("self_employment_income", period)
         employee_NI = person("employee_NI", period)
         profits = self_employment_income - employee_NI

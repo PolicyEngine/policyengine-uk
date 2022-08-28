@@ -12,7 +12,7 @@ class child_minimum_guarantee_addition(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         is_child = person("is_child_or_QYP", period)
-        gc = parameters(period).dwp.pension_credit.guarantee_credit
+        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
         standard_disability_benefits = gc.child.disability.eligibility
         severe_disability_benefits = gc.child.disability.severe.eligibility
         is_disabled = add(person, period, standard_disability_benefits) > 0

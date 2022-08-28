@@ -22,7 +22,7 @@ class employee_NI_class_1(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        class_1 = parameters(period).tax.national_insurance.class_1
+        class_1 = parameters(period).gov.hmrc.national_insurance.class_1
         earnings = person("employment_income", period)
         main_earnings = amount_between(
             earnings,
@@ -46,7 +46,7 @@ class employer_NI_class_1(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        class_1 = parameters(period).tax.national_insurance.class_1
+        class_1 = parameters(period).gov.hmrc.national_insurance.class_1
         earnings = person("employment_income", period)
         main_earnings = amount_over(
             earnings,

@@ -1,0 +1,15 @@
+description: Income-based Jobseeker's Allowance for persons aged over 25
+values:
+  2015-04-01: 73.10
+  2016-04-01: 73.10
+  2017-04-01: 73.10
+  2018-04-01: 73.10
+  2019-04-01: 73.10
+  2020-04-01: 74.35
+  2021-04-01: 74.70
+  2022-04-01: 77.00
+metadata:
+  period: week
+  uprating: calibration.uprating.september_cpi
+  unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24

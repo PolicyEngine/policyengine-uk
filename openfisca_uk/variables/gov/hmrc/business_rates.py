@@ -12,7 +12,7 @@ class baseline_business_rates(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        br = parameters(period).hmrc.business_rates.statistics.revenue
+        br = parameters(period).gov.hmrc.business_rates.statistics.revenue
         total_revenue = (
             br.ENGLAND  # HMRC
             + br.SCOTLAND  # Revenue Scotland

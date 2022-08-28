@@ -11,7 +11,7 @@ class CB_HITC(Variable):
 
     def formula(person, period, parameters):
         CB_received = person.benunit("child_benefit", period)
-        CB_HITC = parameters(period).tax.income_tax.charges.CB_HITC
+        CB_HITC = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
         percentage = (
             amount_over(
                 person("adjusted_net_income", period),

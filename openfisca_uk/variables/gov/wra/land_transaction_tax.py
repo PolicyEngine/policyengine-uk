@@ -26,7 +26,7 @@ class ltt_on_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ltt = parameters(period).wra.land_transaction_tax
+        ltt = parameters(period).gov.wra.land_transaction_tax
         main_home_price = household(
             "main_residential_property_purchased", period
         )
@@ -56,7 +56,7 @@ class ltt_on_residential_property_rent(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ltt = parameters(period).wra.land_transaction_tax
+        ltt = parameters(period).gov.wra.land_transaction_tax
         cumulative_rent = household("cumulative_residential_rent", period)
         rent = household("rent", period)
         ltt_on_cumulative_rent = ltt.rent.calc(cumulative_rent)
@@ -75,7 +75,7 @@ class ltt_on_non_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ltt = parameters(period).wra.land_transaction_tax
+        ltt = parameters(period).gov.wra.land_transaction_tax
         price = household("non_residential_property_purchased", period)
         non_residential_purchase_tax = ltt.non_residential.calc(price)
         return household("ltt_liable", period) * non_residential_purchase_tax
@@ -90,7 +90,7 @@ class ltt_on_non_residential_property_rent(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ltt = parameters(period).wra.land_transaction_tax
+        ltt = parameters(period).gov.wra.land_transaction_tax
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
         ltt_on_cumulative_rent = ltt.rent.calc(cumulative_rent)

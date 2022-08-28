@@ -14,7 +14,9 @@ class personal_allowance(Variable):
     reference = "Income Tax Act 2007 s. 35"
 
     def formula(person, period, parameters):
-        PA = parameters(period).tax.income_tax.allowances.personal_allowance
+        PA = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.personal_allowance
         ANI = person("adjusted_net_income", period)
         excess = max_(0, ANI - PA.maximum_ANI)
         reduction = excess * PA.reduction_rate
@@ -48,7 +50,7 @@ class married_couples_allowance_deduction(Variable):
     def formula(person, period, parameters):
         rate = parameters(
             period
-        ).tax.income_tax.allowances.married_couples_allowance.deduction_rate
+        ).gov.hmrc.income_tax.allowances.married_couples_allowance.deduction_rate
         return person("married_couples_allowance", period) * rate
 
 
@@ -62,7 +64,7 @@ class pension_annual_allowance(Variable):
     def formula(person, period, parameters):
         allowance = parameters(
             period
-        ).tax.income_tax.allowances.annual_allowance
+        ).gov.hmrc.income_tax.allowances.annual_allowance
         ANI = person("adjusted_net_income", period)
         reduction = max_(0, ANI - allowance.taper) * allowance.reduction_rate
         return max_(allowance.minimum, allowance.default - reduction)
@@ -77,7 +79,9 @@ class trading_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(period).tax.income_tax.allowances.trading_allowance
+        return parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.trading_allowance
 
 
 class trading_allowance_deduction(Variable):
@@ -104,7 +108,9 @@ class property_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(period).tax.income_tax.allowances.property_allowance
+        return parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.property_allowance
 
 
 class property_allowance_deduction(Variable):
@@ -135,7 +141,7 @@ class savings_allowance(Variable):
         tax_bands = tax_band.possible_values
         amounts = parameters(
             period
-        ).tax.income_tax.allowances.personal_savings_allowance
+        ).gov.hmrc.income_tax.allowances.personal_savings_allowance
         return select(
             [
                 tax_band == tax_bands.ADDITIONAL,
@@ -160,7 +166,9 @@ class dividend_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(period).tax.income_tax.allowances.dividend_allowance
+        return parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.dividend_allowance
 
 
 class gift_aid(Variable):

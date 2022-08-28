@@ -9,7 +9,7 @@ class cost_of_living_support_payment(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        col = parameters(period).treasury.cost_of_living_support
+        col = parameters(period).gov.treasury.cost_of_living_support
         on_means_tested_benefits = (
             add(
                 household,

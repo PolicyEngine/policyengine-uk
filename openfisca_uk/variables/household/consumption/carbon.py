@@ -24,7 +24,7 @@ class carbon_consumption(Variable):
             "restaurants_and_hotels_consumption",
             "miscellaneous_consumption",
         ]
-        consumption = parameters(period).consumption
+        consumption = parameters(period).household.consumption
         aggregate_spending_by_sector = [
             consumption.total_by_category[category]
             for category in CONSUMPTION_VARIABLES

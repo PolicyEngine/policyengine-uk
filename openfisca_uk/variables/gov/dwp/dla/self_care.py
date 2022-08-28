@@ -21,7 +21,7 @@ class dla_sc_category(Variable):
     default_value = LowerMiddleOrHigher.NONE
 
     def formula(person, period, parameters):
-        dla_sc = parameters(period).dwp.dla.self_care
+        dla_sc = parameters(period).gov.dwp.dla.self_care
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_dla_sc = (
             person("DLA_SC_reported", period) / WEEKS_IN_YEAR
@@ -50,7 +50,7 @@ class dla_sc(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        dla_sc = parameters(period).dwp.dla.self_care
+        dla_sc = parameters(period).gov.dwp.dla.self_care
         category = person("dla_sc_category", period)
         return (
             select(

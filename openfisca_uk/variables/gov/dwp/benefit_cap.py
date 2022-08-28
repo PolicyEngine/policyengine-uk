@@ -14,7 +14,7 @@ class benefit_cap(Variable):
         region = benunit.value_from_first_person(household_region)
         regions = household_region.possible_values
         in_london = region == regions.LONDON
-        cap = parameters(period).benefit.benefit_cap
+        cap = parameters(period).gov.dwp.benefit_cap
         weekly_rate = select(
             [
                 has_children & in_london,

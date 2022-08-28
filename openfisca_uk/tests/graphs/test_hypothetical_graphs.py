@@ -13,7 +13,7 @@ def test_wide_form_individual_data_with_one_reform():
 def test_wide_form_individual_data_with_two_reforms():
     abolish_PA = reforms.structural.abolish("personal_allowance")
     halve_PA = reforms.parametric.set_parameter(
-        BASELINE_PARAMETERS.tax.income_tax.allowances.personal_allowance.amount,
+        BASELINE_PARAMETERS.gov.hmrc.income_tax.allowances.personal_allowance.amount,
         6250,
     )
     graphs.data.get_wide_reform_individual_data(
@@ -27,7 +27,7 @@ def test_single_reform_MTR_and_budget_plot():
     reform = reforms.structural.abolish(
         "personal_allowance"
     ), reforms.parametric.set_parameter(
-        BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
+        BASELINE_PARAMETERS.gov.dwp.universal_credit.means_test.reduction_rate,
         0.4,
     )
     budget_chart(reform)
@@ -38,13 +38,13 @@ def test_multiple_reform_MTR_and_budget_plot():
     reform_1 = reforms.structural.abolish(
         "personal_allowance"
     ), reforms.parametric.set_parameter(
-        BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
+        BASELINE_PARAMETERS.gov.dwp.universal_credit.means_test.reduction_rate,
         0.4,
     )
     reform_2 = reforms.structural.abolish(
         "personal_allowance"
     ), reforms.parametric.set_parameter(
-        BASELINE_PARAMETERS.benefit.universal_credit.means_test.reduction_rate,
+        BASELINE_PARAMETERS.gov.dwp.universal_credit.means_test.reduction_rate,
         0.1,
     )
     budget_chart([reform_1, reform_2], names=["CB=£50", "CB=£300"])

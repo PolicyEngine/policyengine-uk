@@ -1,0 +1,19 @@
+description: The Upper Earnings Limit is the upper bound for the main rate of Class 1 National Insurance
+values:
+  2015-04-06: 815
+  2016-04-06: 827
+  2017-04-06: 866
+  2018-04-06: 892
+  2019-04-06: 962
+  2020-04-06: 962
+  2021-04-06: 966.73
+  2026-04-06: 966.73
+metadata:
+  label: National Insurance Upper Earnings Limit
+  name: NI_UEL
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
+  period: week
+  reference:
+    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

@@ -25,7 +25,7 @@ class is_enhanced_disabled_for_benefits(Variable):
 
     def formula(person, period, parameters):
         DLA_requirement = (
-            parameters(period).dwp.dla.self_care.higher * WEEKS_IN_YEAR
+            parameters(period).gov.dwp.dla.self_care.higher * WEEKS_IN_YEAR
         )
         return person("dla_sc", period) >= DLA_requirement
 
@@ -41,7 +41,7 @@ class is_severely_disabled_for_benefits(Variable):
     reference = "Child Tax Credit Regulations 2002 s. 8"
 
     def formula(person, period, parameters):
-        benefit = parameters(period).dwp
+        benefit = parameters(period).gov.dwp
         THRESHOLD_SAFETY_GAP = 10 * WEEKS_IN_YEAR
         paragraph_3 = (
             person("dla_sc", period)
@@ -146,7 +146,7 @@ class disability_premium(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).benefit.disability_premia
+        dis = parameters(period).gov.dwp.disability_premia
         single = benunit("is_single", period.this_year)
         couple = benunit("is_couple", period.this_year)
         single_premium = single * dis.disability_single
@@ -167,7 +167,7 @@ class severe_disability_premium(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).benefit.disability_premia
+        dis = parameters(period).gov.dwp.disability_premia
         single = benunit("is_single", period.this_year)
         couple = benunit("is_couple", period.this_year)
         single_premium = single * dis.severe_single
@@ -188,7 +188,7 @@ class enhanced_disability_premium(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).benefit.disability_premia
+        dis = parameters(period).gov.dwp.disability_premia
         single = benunit("is_single", period.this_year)
         couple = benunit("is_couple", period.this_year)
         single_premium = single * dis.enhanced_single

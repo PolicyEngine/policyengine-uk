@@ -1,7 +1,7 @@
 from openfisca_uk.model_api import *
 
 
-@uprated(by="wealth.national_balance_sheet.household.land")
+@uprated(by="household.wealth.national_balance_sheet.household.land")
 class owned_land(Variable):
     entity = Household
     label = "Owned land"
@@ -43,7 +43,7 @@ class household_land_value(Variable):
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        wealth = parameters(period).wealth
+        wealth = parameters(period).household.wealth
         property_wealth_intensity = (
             wealth.land.value.aggregate_household_land_value
             / wealth.property_wealth
@@ -63,7 +63,7 @@ class corporate_land_value(Variable):
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        wealth = parameters(period).wealth
+        wealth = parameters(period).household.wealth
         corporate_wealth = household("corporate_wealth", period)
         corporate_wealth_intensity = (
             wealth.land.value.aggregate_corporate_land_value

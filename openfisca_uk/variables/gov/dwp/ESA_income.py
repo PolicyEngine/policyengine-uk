@@ -45,7 +45,7 @@ class claims_ESA_income(Variable):
         return would_claim & claims_legacy_benefits
 
 
-@uprated(by="uprating.september_cpi")
+@uprated(by="calibration.uprating.september_cpi")
 class ESA_income(Variable):
     value_type = float
     entity = BenUnit

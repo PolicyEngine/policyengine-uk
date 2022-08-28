@@ -10,7 +10,7 @@ class council_tax_benefit_reported(Variable):
     unit = GBP
 
 
-@uprated(by="uprating.september_cpi")
+@uprated(by="calibration.uprating.september_cpi")
 class council_tax_benefit(Variable):
     value_type = float
     entity = BenUnit

@@ -1,0 +1,15 @@
+description: Addition to the Minimum Guarantee for each claimant who is a carer.
+values:
+  2019-04-01: 36.00
+  2020-04-01: 37.50
+  2021-04-01: 37.70
+  2022-04-01: 38.85
+metadata:
+  unit: currency-GBP
+  period: week
+  name: pc_carer_addition
+  label: Pension Credit carer addition
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - title: The Social Security Benefits Up-rating Order 2022
+      href: https://www.legislation.gov.uk/uksi/2022/292/article/30/made#article-30-2-c

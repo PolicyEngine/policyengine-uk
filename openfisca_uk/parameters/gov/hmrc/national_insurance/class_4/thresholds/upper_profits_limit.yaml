@@ -1,0 +1,19 @@
+description: The Upper Profits Limit is the threshold at which self-employed earners pay the additional Class 4 National Insurance rate
+values:
+  2015-04-06: 42_386
+  2015-06-05: 43_000
+  2017-04-06: 45_000
+  2018-04-06: 46_350
+  2019-04-06: 50_000
+  2020-04-06: 50_000
+  2021-04-06: 50_270
+  2026-04-06: 50_270
+metadata:
+  label: National Insurance Upper Profits Limit
+  name: NI_UPL
+  unit: currency-GBP
+  period: year
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

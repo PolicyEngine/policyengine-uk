@@ -9,7 +9,7 @@ class fuel_duty(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        fd = parameters(period).hmrc.fuel_duty
+        fd = parameters(period).gov.hmrc.fuel_duty
         petrol_litres = household("petrol_litres", period)
         diesel_litres = household("diesel_litres", period)
         return fd.petrol_and_diesel * (petrol_litres + diesel_litres)

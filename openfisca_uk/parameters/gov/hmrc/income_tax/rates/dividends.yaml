@@ -1,0 +1,85 @@
+description: Dividend income tax scale. Dividends are taxed using this scale as if they were on top of non-dividend income.
+brackets:
+  - rate:
+      metadata:
+        label: Dividends basic rate
+        name: dividend_basic_rate
+        unit: /1
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
+      values:
+        2015-06-01: 0.075
+        2022-04-01:
+          value: 0.0875
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+    threshold:
+      values:
+        2015-06-01: 0
+      metadata:
+        name: dividend_basic_threshold
+        label: Dividends basic rate threshold
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
+  - rate:
+      metadata:
+        label: Dividends higher rate
+        name: dividend_higher_rate
+        unit: /1
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
+      values:
+        2015-06-01: 0.325
+        2022-04-01:
+          value: 0.3375
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+    threshold:
+      metadata:
+        name: dividend_higher_threshold
+        label: Dividends higher rate threshold
+      values:
+        2015-06-01: 37_500
+  - rate:
+      metadata:
+        label: Dividends additional rate
+        name: dividend_additional_rate
+        unit: /1
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
+      values:
+        2015-06-01: 0.381
+        2022-04-01:
+          value: 0.3935
+          metadata:
+            reference:
+              - title: Autumn Budget and Spending Review 2022
+                href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+    threshold:
+      values:
+        2015-06-01: 150_000
+      metadata:
+        period: year
+        name: dividend_additional_threshold
+        label: Dividends additional rate threshold
+        reference:
+          - title: Finance Act 2022 s. 4
+            href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
+metadata:
+  threshold_period: year
+  type: marginal_rate
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  reference:
+    - title: Finance Act 2022 s. 4
+      href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
+    - title: Autumn Budget and Spending Review
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1029973/Budget_AB2021_Print.pdf#page=138

@@ -1,0 +1,22 @@
+description: Lower earnings limit for National Insurance
+values:
+  2015-04-06: 112
+  2016-04-06: 112
+  2017-04-06: 113
+  2018-04-06: 116
+  2019-04-06: 118
+  2020-04-06: 120
+  2021-04-06: 120
+  2022-04-06:
+    value: 123
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(6)
+          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/6/made#regulation-6-2-a
+metadata:
+  unit: currency-GBP
+  period: week
+  uprating: calibration.uprating.september_cpi
+  reference:
+    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
