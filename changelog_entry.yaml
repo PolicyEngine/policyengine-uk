@@ -1,3 +1,0 @@
-- bump: minor
-  changes:
-  - Refactored the parameter tree into the (gov/hh/calibration/contrib)|(dept) format.

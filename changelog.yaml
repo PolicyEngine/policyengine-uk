@@ -491,3 +491,7 @@
     fixed:
     - Round marriage allowance.
   date: 2022-08-25 17:36:23
+- bump: minor
+  changes:
+  - Refactored the parameter tree into the (gov/hh/calibration/contrib)|(dept) format.
+  date: 2022-08-28 14:45:36
