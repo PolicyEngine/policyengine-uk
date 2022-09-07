@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 from openfisca_core.parameters import ParameterNode, Parameter
 from typing import Iterable, Tuple
-from openfisca_uk.parameters import parameters
+from openfisca_uk.parameter_tree import parameters
 
 
 class Populations(LossCategory):

@@ -41,7 +41,7 @@ def add_price_cap_parameters(
                             "0000-01-01": value,
                         },
                         metadata=dict(
-                            name=f"ofgem_price_cap_{name}",
+                            name=f"gov.ofgem.price_cap.{name}",
                             label=f"Ofgem energy price cap ({year} Q{quarter})",
                             unit="currency-GBP",
                             period="year",
