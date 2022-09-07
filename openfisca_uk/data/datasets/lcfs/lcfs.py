@@ -23,6 +23,7 @@ CATEGORY_NAMES = dict(
     # Specific items
     C72211="Petrol spending",
     C72212="Diesel spending",
+    P537="Domestic energy consumption",
 )
 
 name_to_variable_name = {
@@ -40,6 +41,7 @@ HOUSEHOLD_LCF_RENAMES = {
     "G018": "is_adult",
     "G019": "is_child",
     "Gorx": "region",
+    
 }
 PERSON_LCF_RENAMES = {
     "B303p": "employment_income",
@@ -161,6 +163,8 @@ class LCFS(PrivateDataset):
         entity_index = (
             lcfs.index.values
         )  # One-person households for simplicity for now
+
+        lcfs["household_weight"] = households.weighta * 1_000
 
         with h5py.File(self.file(year), mode="w") as f:
             for entity_id_var in [

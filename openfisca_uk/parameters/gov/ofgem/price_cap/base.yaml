@@ -1,0 +1,26 @@
+description: Default tariff energy price cap for Ofgem's central household (2,900kWh per annum in electricity consumption, 12,000kWh per annum for gas).
+values:
+  2018-10-01: 1_104
+  2019-04-01: 1_217
+  2019-10-01: 1_143
+  2020-04-01: 1_126
+  2020-10-01: 1_042
+  2021-04-01: 1_138
+  2021-10-01: 1_277
+  2022-04-01: 1_971
+  2022-10-01: 3_549
+  2023-01-01: 4_650
+  2023-04-01: 5_341
+  2023-07-01: 4_768
+  2023-10-01: 4_807
+metadata:
+  unit: currency-GBP
+  period: year
+  name: ofgem_price_cap
+  label: Ofgem energy price cap
+  reference:
+    - title: Energy data and research | Ofgem
+      href: https://www.ofgem.gov.uk/energy-data-and-research/data-portal/all-available-charts?keyword=price%20cap&sort=relevance
+    - title: Cornwall Insight price cap forecasts
+      href: https://www.cornwall-insight.com/cornwall-insight-release-final-predictions-for-octobers-price-cap/
+  
