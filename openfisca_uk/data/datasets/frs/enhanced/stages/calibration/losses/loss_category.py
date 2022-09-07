@@ -5,7 +5,7 @@ from itertools import chain
 from functools import reduce
 from typing import Callable, Iterable, List, Tuple, Type
 from openfisca_uk import Microsimulation
-from openfisca_uk.parameters import parameters
+from openfisca_uk.parameter_tree import parameters
 import tensorflow as tf
 
 

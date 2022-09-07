@@ -34,8 +34,8 @@ from openfisca_uk.data import (
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
-system = prepare_parameters(CountryTaxBenefitSystem())
-parameters = BASELINE_PARAMETERS = system.parameters
+system = CountryTaxBenefitSystem()
+BASELINE_PARAMETERS = system.parameters
 
 
 class AttributeDict(dict):

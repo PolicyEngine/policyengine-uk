@@ -1,0 +1,8 @@
+- name: Energy price cap freeze for the last quarter in 2022.
+  period: 2022
+  absolute_error_margin: 10
+  input:
+    gov.ofgem.price_cap.2022_q4: 1_971
+    domestic_energy_consumption: 1_000
+  output:
+    energy_price_cap_subsidy: 310

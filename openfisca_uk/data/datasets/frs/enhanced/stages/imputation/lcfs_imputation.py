@@ -21,6 +21,7 @@ IMPUTE_VARIABLES = [
     "miscellaneous_consumption",
     "petrol_spending",
     "diesel_spending",
+    "domestic_energy_consumption",
 ]
 
 PREDICTOR_VARIABLES = [
