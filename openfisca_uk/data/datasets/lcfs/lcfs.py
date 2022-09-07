@@ -41,7 +41,6 @@ HOUSEHOLD_LCF_RENAMES = {
     "G018": "is_adult",
     "G019": "is_child",
     "Gorx": "region",
-    
 }
 PERSON_LCF_RENAMES = {
     "B303p": "employment_income",

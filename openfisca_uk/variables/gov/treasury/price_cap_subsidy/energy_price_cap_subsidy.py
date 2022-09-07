@@ -16,8 +16,14 @@ class energy_price_cap_subsidy(Variable):
         # and multiply by quarterly energy consumption.
         total_subsidy = 0
         for quarter in range(1, 5):
-            price_cap = parameters(period).gov.ofgem.price_cap[f"{period.start.year}_q{quarter}"]
-            baseline_price_cap = parameters(period).baseline.gov.ofgem.price_cap[f"{period.start.year}_q{quarter}"]
-            relative_change = (price_cap - baseline_price_cap) / baseline_price_cap
+            price_cap = parameters(period).gov.ofgem.price_cap[
+                f"{period.start.year}_q{quarter}"
+            ]
+            baseline_price_cap = parameters(
+                period
+            ).baseline.gov.ofgem.price_cap[f"{period.start.year}_q{quarter}"]
+            relative_change = (
+                price_cap - baseline_price_cap
+            ) / baseline_price_cap
             total_subsidy += -relative_change * energy_consumption / 4
         return total_subsidy

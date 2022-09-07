@@ -1,6 +1,13 @@
 from openfisca_core.parameters import ParameterNode, Parameter
 
-def add_price_cap_parameters(parameters: ParameterNode, start_year: 2022, start_quarter: 4, end_year: 2023, end_quarter: 4) -> ParameterNode:
+
+def add_price_cap_parameters(
+    parameters: ParameterNode,
+    start_year: 2022,
+    start_quarter: 4,
+    end_year: 2023,
+    end_quarter: 4,
+) -> ParameterNode:
     """Add price cap parameters to the parameters tree.
 
     Args:
@@ -24,20 +31,23 @@ def add_price_cap_parameters(parameters: ParameterNode, start_year: 2022, start_
                 break
             name = f"{year}_q{quarter}"
             value = price_cap.base(f"{year}-{quarter * 3 - 2:02}-01")
-            price_cap.add_child(name, Parameter(
-                name=name,
-                data=dict(
-                    description=f"Default tariff price cap for the average household in {year} Q{quarter}.",
-                    values={
-                        "0000-01-01": value,
-                    },
-                    metadata=dict(
-                        name=f"ofgem_price_cap_{name}",
-                        label=f"Ofgem energy price cap ({year} Q{quarter})",
-                        unit="currency-GBP",
-                        period="year",
-                    )
-                )
-            ))
-    
+            price_cap.add_child(
+                name,
+                Parameter(
+                    name=name,
+                    data=dict(
+                        description=f"Default tariff price cap for the average household in {year} Q{quarter}.",
+                        values={
+                            "0000-01-01": value,
+                        },
+                        metadata=dict(
+                            name=f"ofgem_price_cap_{name}",
+                            label=f"Ofgem energy price cap ({year} Q{quarter})",
+                            unit="currency-GBP",
+                            period="year",
+                        ),
+                    ),
+                ),
+            )
+
     return parameters
