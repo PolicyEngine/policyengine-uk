@@ -77,6 +77,7 @@ class household_benefits(Variable):
             "winter_fuel_allowance",
             "energy_bills_rebate",
             "cost_of_living_support_payment",
+            "energy_price_cap_subsidy",
         ]
         personal_benefits = aggr(household, period, ["benefits"])
         household_benefits = add(household, period, HOUSEHOLD_BENEFITS)
