@@ -14,7 +14,7 @@ class energy_price_cap_subsidy(Variable):
         # For each of the four quarters in the next year, calculate the
         # relative change to the price cap against the baseline price cap,
         # and multiply by quarterly energy consumption.
-        total_subsidy = None
+        total_subsidy = 0
         q1_baseline_energy_price_cap = 0
         for quarter in range(1, 5):
             current_quarter = f"{period.start.year}_q{quarter}"
