@@ -500,3 +500,8 @@
     added:
     - Ofgem energy price cap subsidy parameters.
   date: 2022-09-07 12:15:01
+- bump: patch
+  changes:
+    added:
+    - New monthly CPI values until July.
+  date: 2022-09-11 15:04:15
