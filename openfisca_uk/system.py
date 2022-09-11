@@ -7,6 +7,7 @@ from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 from openfisca_uk.parameters.gov.ofgem.price_cap.add_price_cap_parameters import (
     add_price_cap_parameters,
 )
+from openfisca_tools.parameters import uprate_parameters
 
 COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,6 +34,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             end_year=2027,
             end_quarter=4,
         )
+
+        self.parameters = uprate_parameters(self.parameters)
 
         self.parameters.add_child("baseline", self.parameters.clone())
 
