@@ -5,4 +5,4 @@
     gov.ofgem.price_cap.2022_q4: 1_971
     domestic_energy_consumption: 1_000
   output:
-    energy_price_cap_subsidy: 310
+    energy_price_cap_subsidy: 103
