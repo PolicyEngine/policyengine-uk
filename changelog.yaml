@@ -505,3 +505,8 @@
     added:
     - New monthly CPI values until July.
   date: 2022-09-11 15:04:15
+- bump: minor
+  changes:
+    added:
+    - Energy Price Guarantee parametric reform.
+  date: 2022-09-14 19:32:06
