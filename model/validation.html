@@ -601,10 +601,10 @@ Numbers are in billions of pounds.</p>
     <span class="n">Microsimulation</span><span class="p">,</span>
     <span class="n">variables</span> <span class="k">as</span> <span class="n">default_variables</span><span class="p">,</span>
     <span class="n">REPO</span><span class="p">,</span>
-    <span class="n">parameters</span><span class="p">,</span>
     <span class="n">EnhancedFRS</span><span class="p">,</span>
     <span class="n">CalibratedFRS</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">openfisca_uk.parameter_tree</span> <span class="kn">import</span> <span class="n">parameters</span>
 <span class="kn">from</span> <span class="nn">openfisca_core.parameters</span> <span class="kn">import</span> <span class="n">ParameterNode</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
@@ -767,79 +767,79 @@ Numbers are in billions of pounds.</p>
     <tr>
       <th rowspan="4" valign="top">External</th>
       <th>2022</th>
+      <td>11.2</td>
+      <td>0.7</td>
+      <td>0.2</td>
+      <td>15.9</td>
+      <td>3.8</td>
+      <td>13.9</td>
+      <td>43.7</td>
+      <td>4.5</td>
+      <td>205.0</td>
+      <td>151.3</td>
+      <td>814.0</td>
+      <td>87.4</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>23.4</td>
+      <td>5.0</td>
+      <td>65.2</td>
     </tr>
     <tr>
       <th>2023</th>
+      <td>11.5</td>
+      <td>0.5</td>
+      <td>0.0</td>
+      <td>14.7</td>
+      <td>3.8</td>
+      <td>13.9</td>
+      <td>49.8</td>
+      <td>4.4</td>
+      <td>215.0</td>
+      <td>157.5</td>
+      <td>814.0</td>
+      <td>87.4</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>23.4</td>
+      <td>5.0</td>
+      <td>65.2</td>
     </tr>
     <tr>
       <th>2024</th>
+      <td>11.6</td>
+      <td>0.5</td>
+      <td>0.0</td>
+      <td>12.5</td>
+      <td>3.8</td>
+      <td>13.9</td>
+      <td>57.8</td>
+      <td>4.4</td>
+      <td>225.7</td>
+      <td>164.6</td>
+      <td>814.0</td>
+      <td>87.4</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>23.4</td>
+      <td>5.0</td>
+      <td>65.2</td>
     </tr>
     <tr>
       <th>2025</th>
+      <td>11.6</td>
+      <td>0.4</td>
+      <td>0.0</td>
+      <td>10.2</td>
+      <td>3.8</td>
+      <td>13.9</td>
+      <td>68.0</td>
+      <td>4.2</td>
+      <td>237.5</td>
+      <td>172.1</td>
+      <td>814.0</td>
+      <td>87.4</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>23.4</td>
+      <td>5.0</td>
+      <td>65.2</td>
     </tr>
     <tr>
       <th rowspan="4" valign="top">OpenFisca-UK</th>
@@ -1152,11 +1152,11 @@ e.exports=function(t){return null!=t&&(n(t)||function(t){return"function"==typeo
         });
         }
         </script>
-</div><div class="output text_html"><div>                            <div id="8d9e1d5f-d9f9-49c8-9319-8485f87327db" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("8d9e1d5f-d9f9-49c8-9319-8485f87327db")) {                    Plotly.newPlot(                        "8d9e1d5f-d9f9-49c8-9319-8485f87327db",                        [{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11392790014.1,11617473449.3,11637478418.3,11686240609.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11963000000.0,12331000000.0,12547000000.0,12579000000.0],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"},"tickvals":[2022,2023,2024,2025]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""},"tickprefix":"\u00a3","range":[0,20000000000.0]},"legend":{"title":{"text":"Model"},"tracegroupgap":0,"traceorder":"reversed"},"margin":{"t":60},"updatemenus":[{"buttons":[{"args":[null,{"frame":{"duration":500,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":500,"easing":"linear"}}],"label":"&#9654;","method":"animate"},{"args":[[null],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"&#9724;","method":"animate"}],"direction":"left","pad":{"r":10,"t":70},"showactive":false,"type":"buttons","x":0.1,"xanchor":"right","y":0,"yanchor":"top"}],"sliders":[{"active":0,"currentvalue":{"prefix":"Program="},"len":0.9,"pad":{"b":10,"t":60},"steps":[{"args":[["Child Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Benefit","method":"animate"},{"args":[["Child Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Tax Credit","method":"animate"},{"args":[["Employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Employment income","method":"animate"},{"args":[["Housing Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Housing Benefit","method":"animate"},{"args":[["Income Support"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Support","method":"animate"},{"args":[["Income Tax"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Tax","method":"animate"},{"args":[["Income from dividends"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income from dividends","method":"animate"},{"args":[["JSA (income-based)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"JSA (income-based)","method":"animate"},{"args":[["National Insurance (total)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"National Insurance (total)","method":"animate"},{"args":[["Pension Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension Credit","method":"animate"},{"args":[["Pension income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension income","method":"animate"},{"args":[["Rental income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Rental income","method":"animate"},{"args":[["Savings interest income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Savings interest income","method":"animate"},{"args":[["Self-employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Self-employment income","method":"animate"},{"args":[["Universal Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Universal Credit","method":"animate"},{"args":[["Working Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Working Tax Credit","method":"animate"}],"x":0.1,"xanchor":"left","y":0,"yanchor":"top"}],"width":800,"height":600,"title":{"text":"Budgetary impact forecasts"}},                        {"responsive": true}                    ).then(function(){
-                            Plotly.addFrames('8d9e1d5f-d9f9-49c8-9319-8485f87327db', [{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11392790014.1,11617473449.3,11637478418.3,11686240609.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11963000000.0,12331000000.0,12547000000.0,12579000000.0],"yaxis":"y","type":"scatter"}],"name":"Child Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[6142658498.0,4608071391.6,3010416752.8,1323722953.2],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[5382000000.0,4546000000.0,3287000000.0,1461000000.0],"yaxis":"y","type":"scatter"}],"name":"Child Tax Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[866704576568.4,896222386598.5,925221901474.2,958581487359.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[15877765018.0,14593343221.3,12591814094.7,10415981132.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[10332000000.0,9622000000.0,8476000000.0,6706000000.0],"yaxis":"y","type":"scatter"}],"name":"Housing Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[749349094.9,541532097.5,500407332.3,324129543.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income Support"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[199409624769.7,209619785523.2,220331600705.6,226826624339.2],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[161197000000.0,170626000000.0,178488000000.0,187865000000.0],"yaxis":"y","type":"scatter"}],"name":"Income Tax"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[66994891671.1,68124118527.3,70358857444.2,72685324409.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income from dividends"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[221067799.1,29906425.3,17103022.1,12170888.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"JSA (income-based)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[150208889508.6,155755696761.6,162735330825.6,170495746368.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[156016000000.0,145114000000.0,147890000000.0,151875000000.0],"yaxis":"y","type":"scatter"}],"name":"National Insurance (total)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4940361682.6,4803205365.4,4629655892.9,4452626115.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4153000000.0,4410000000.0,4491000000.0,4466000000.0],"yaxis":"y","type":"scatter"}],"name":"Pension Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[114668571386.9,117960968027.3,121647597909.6,125295621427.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Pension income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[24502583555.7,25157652889.2,25937967982.3,26774757988.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Rental income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[5220819975.5,5373102415.7,5540781740.1,5710217792.5],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Savings interest income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[95159690698.4,97799809115.2,100871849543.0,104155279672.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Self-employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[43190182731.2,48800439136.7,56295655281.9,64951010846.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[34073000000.0,39133000000.0,39133000000.0,45644000000.0],"yaxis":"y","type":"scatter"}],"name":"Universal Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1694677773.5,1269350227.4,833192515.2,381139555.2],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1573000000.0,1320000000.0,897000000.0,423000000.0],"yaxis":"y","type":"scatter"}],"name":"Working Tax Credit"}]);
+</div><div class="output text_html"><div>                            <div id="e7f94444-db9a-4e16-8e84-34f39f3403b8" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("e7f94444-db9a-4e16-8e84-34f39f3403b8")) {                    Plotly.newPlot(                        "e7f94444-db9a-4e16-8e84-34f39f3403b8",                        [{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11213000000.0,11546000000.0,11626000000.0,11627000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11392790014.1,11617473449.3,11637478418.3,11686240609.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11963000000.0,12331000000.0,12547000000.0,12579000000.0],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"},"tickvals":[2022,2023,2024,2025]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""},"tickprefix":"\u00a3","range":[0,20000000000.0]},"legend":{"title":{"text":"Model"},"tracegroupgap":0,"traceorder":"reversed"},"margin":{"t":60},"updatemenus":[{"buttons":[{"args":[null,{"frame":{"duration":500,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":500,"easing":"linear"}}],"label":"&#9654;","method":"animate"},{"args":[[null],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"&#9724;","method":"animate"}],"direction":"left","pad":{"r":10,"t":70},"showactive":false,"type":"buttons","x":0.1,"xanchor":"right","y":0,"yanchor":"top"}],"sliders":[{"active":0,"currentvalue":{"prefix":"Program="},"len":0.9,"pad":{"b":10,"t":60},"steps":[{"args":[["Child Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Benefit","method":"animate"},{"args":[["Child Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Tax Credit","method":"animate"},{"args":[["Employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Employment income","method":"animate"},{"args":[["Housing Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Housing Benefit","method":"animate"},{"args":[["Income Support"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Support","method":"animate"},{"args":[["Income Tax"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Tax","method":"animate"},{"args":[["Income from dividends"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income from dividends","method":"animate"},{"args":[["JSA (income-based)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"JSA (income-based)","method":"animate"},{"args":[["National Insurance (total)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"National Insurance (total)","method":"animate"},{"args":[["Pension Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension Credit","method":"animate"},{"args":[["Pension income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension income","method":"animate"},{"args":[["Rental income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Rental income","method":"animate"},{"args":[["Savings interest income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Savings interest income","method":"animate"},{"args":[["Self-employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Self-employment income","method":"animate"},{"args":[["Universal Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Universal Credit","method":"animate"},{"args":[["Working Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Working Tax Credit","method":"animate"}],"x":0.1,"xanchor":"left","y":0,"yanchor":"top"}],"width":800,"height":600,"title":{"text":"Budgetary impact forecasts"}},                        {"responsive": true}                    ).then(function(){
+                            Plotly.addFrames('e7f94444-db9a-4e16-8e84-34f39f3403b8', [{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11213000000.0,11546000000.0,11626000000.0,11627000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11392790014.1,11617473449.3,11637478418.3,11686240609.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11963000000.0,12331000000.0,12547000000.0,12579000000.0],"yaxis":"y","type":"scatter"}],"name":"Child Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[13875000000.0,13875000000.0,13875000000.0,13875000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[6142658498.0,4608071391.6,3010416752.8,1323722953.2],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[5382000000.0,4546000000.0,3287000000.0,1461000000.0],"yaxis":"y","type":"scatter"}],"name":"Child Tax Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[814000000000.0,814000000000.0,814000000000.0,814000000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[866704576568.4,896222386598.5,925221901474.2,958581487359.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[15894000000.0,14728000000.0,12503000000.0,10213000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[15877765018.0,14593343221.3,12591814094.7,10415981132.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[10332000000.0,9622000000.0,8476000000.0,6706000000.0],"yaxis":"y","type":"scatter"}],"name":"Housing Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[670000000.0,491000000.0,471000000.0,432000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[749349094.9,541532097.5,500407332.3,324129543.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income Support"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[205000000000.0,215000000000.0,225700000000.0,237500000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[199409624769.7,209619785523.2,220331600705.6,226826624339.2],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[161197000000.0,170626000000.0,178488000000.0,187865000000.0],"yaxis":"y","type":"scatter"}],"name":"Income Tax"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[65200000000.0,65200000000.0,65200000000.0,65200000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[66994891671.1,68124118527.3,70358857444.2,72685324409.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income from dividends"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[196000000.0,21000.0,0.0,0.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[221067799.1,29906425.3,17103022.1,12170888.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"JSA (income-based)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[151300000000.0,157500000000.0,164600000000.0,172100000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[150208889508.6,155755696761.6,162735330825.6,170495746368.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[156016000000.0,145114000000.0,147890000000.0,151875000000.0],"yaxis":"y","type":"scatter"}],"name":"National Insurance (total)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4466000000.0,4447000000.0,4379000000.0,4223000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4940361682.6,4803205365.4,4629655892.9,4452626115.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4153000000.0,4410000000.0,4491000000.0,4466000000.0],"yaxis":"y","type":"scatter"}],"name":"Pension Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[114668571386.9,117960968027.3,121647597909.6,125295621427.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Pension income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[23400000000.0,23400000000.0,23400000000.0,23400000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[24502583555.7,25157652889.2,25937967982.3,26774757988.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Rental income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4980000000.0,4980000000.0,4980000000.0,4980000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[5220819975.5,5373102415.7,5540781740.1,5710217792.5],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Savings interest income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[87400000000.0,87400000000.0,87400000000.0,87400000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[95159690698.4,97799809115.2,100871849543.0,104155279672.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Self-employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[43657000000.0,49751000000.0,57782000000.0,67959000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[43190182731.2,48800439136.7,56295655281.9,64951010846.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[34073000000.0,39133000000.0,39133000000.0,45644000000.0],"yaxis":"y","type":"scatter"}],"name":"Universal Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[3825000000.0,3825000000.0,3825000000.0,3825000000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1694677773.5,1269350227.4,833192515.2,381139555.2],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1573000000.0,1320000000.0,897000000.0,423000000.0],"yaxis":"y","type":"scatter"}],"name":"Working Tax Credit"}]);
                         }).then(function(){
 
-var gd = document.getElementById('8d9e1d5f-d9f9-49c8-9319-8485f87327db');
+var gd = document.getElementById('e7f94444-db9a-4e16-8e84-34f39f3403b8');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -1252,93 +1252,93 @@ if (outputEl) {{
     <tr>
       <th rowspan="4" valign="top">OpenFisca-UK</th>
       <th>2022</th>
+      <td>0.2</td>
+      <td>0.1</td>
+      <td>0.0</td>
+      <td>-0.0</td>
+      <td>-2.1</td>
+      <td>-7.7</td>
+      <td>-0.5</td>
+      <td>0.5</td>
+      <td>-5.6</td>
+      <td>-1.1</td>
+      <td>52.7</td>
+      <td>7.8</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>1.1</td>
+      <td>0.2</td>
+      <td>1.8</td>
     </tr>
     <tr>
       <th>2023</th>
+      <td>0.1</td>
+      <td>0.1</td>
+      <td>0.0</td>
+      <td>-0.1</td>
+      <td>-2.6</td>
+      <td>-9.3</td>
+      <td>-1.0</td>
+      <td>0.4</td>
+      <td>-5.4</td>
+      <td>-1.7</td>
+      <td>82.2</td>
+      <td>10.4</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>1.8</td>
+      <td>0.4</td>
+      <td>2.9</td>
     </tr>
     <tr>
       <th>2024</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.1</td>
+      <td>-3.0</td>
+      <td>-10.9</td>
+      <td>-1.5</td>
+      <td>0.3</td>
+      <td>-5.4</td>
+      <td>-1.9</td>
+      <td>111.2</td>
+      <td>13.5</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>2.5</td>
+      <td>0.6</td>
+      <td>5.2</td>
     </tr>
     <tr>
       <th>2025</th>
+      <td>0.1</td>
+      <td>-0.1</td>
+      <td>0.0</td>
+      <td>0.2</td>
+      <td>-3.4</td>
+      <td>-12.6</td>
+      <td>-3.0</td>
+      <td>0.2</td>
+      <td>-10.7</td>
+      <td>-1.6</td>
+      <td>144.6</td>
+      <td>16.8</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>3.4</td>
+      <td>0.7</td>
+      <td>7.5</td>
     </tr>
     <tr>
       <th rowspan="4" valign="top">UKMOD</th>
       <th>2022</th>
+      <td>0.8</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-5.6</td>
+      <td>-2.3</td>
+      <td>-8.5</td>
+      <td>-9.6</td>
+      <td>-0.3</td>
+      <td>-43.8</td>
+      <td>4.7</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1348,16 +1348,16 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2023</th>
+      <td>0.8</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-5.1</td>
+      <td>-2.5</td>
+      <td>-9.3</td>
+      <td>-10.6</td>
+      <td>-0.0</td>
+      <td>-44.4</td>
+      <td>-12.4</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1367,16 +1367,16 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2024</th>
+      <td>0.9</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-4.0</td>
+      <td>-2.9</td>
+      <td>-10.6</td>
+      <td>-18.6</td>
+      <td>0.1</td>
+      <td>-47.2</td>
+      <td>-16.7</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1386,16 +1386,16 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2025</th>
+      <td>1.0</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-3.5</td>
+      <td>-3.4</td>
+      <td>-12.4</td>
+      <td>-22.3</td>
+      <td>0.2</td>
+      <td>-49.6</td>
+      <td>-20.2</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1483,93 +1483,93 @@ if (outputEl) {{
     <tr>
       <th rowspan="4" valign="top">OpenFisca-UK</th>
       <th>2022</th>
+      <td>1.6</td>
+      <td>11.8</td>
+      <td>12.8</td>
+      <td>-0.1</td>
+      <td>-55.7</td>
+      <td>-55.7</td>
+      <td>-1.1</td>
+      <td>10.6</td>
+      <td>-2.7</td>
+      <td>-0.7</td>
+      <td>6.5</td>
+      <td>8.9</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>4.7</td>
+      <td>4.8</td>
+      <td>2.8</td>
     </tr>
     <tr>
       <th>2023</th>
+      <td>0.6</td>
+      <td>10.3</td>
+      <td>142311.5</td>
+      <td>-0.9</td>
+      <td>-66.8</td>
+      <td>-66.8</td>
+      <td>-1.9</td>
+      <td>8.0</td>
+      <td>-2.5</td>
+      <td>-1.1</td>
+      <td>10.1</td>
+      <td>11.9</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>7.5</td>
+      <td>7.9</td>
+      <td>4.5</td>
     </tr>
     <tr>
       <th>2024</th>
+      <td>0.1</td>
+      <td>6.2</td>
+      <td>inf</td>
+      <td>0.7</td>
+      <td>-78.2</td>
+      <td>-78.3</td>
+      <td>-2.6</td>
+      <td>5.7</td>
+      <td>-2.4</td>
+      <td>-1.1</td>
+      <td>13.7</td>
+      <td>15.4</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>10.8</td>
+      <td>11.3</td>
+      <td>7.9</td>
     </tr>
     <tr>
       <th>2025</th>
+      <td>0.5</td>
+      <td>-25.0</td>
+      <td>inf</td>
+      <td>2.0</td>
+      <td>-90.0</td>
+      <td>-90.5</td>
+      <td>-4.4</td>
+      <td>5.4</td>
+      <td>-4.5</td>
+      <td>-0.9</td>
+      <td>17.8</td>
+      <td>19.2</td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>14.4</td>
+      <td>14.7</td>
+      <td>11.5</td>
     </tr>
     <tr>
       <th rowspan="4" valign="top">UKMOD</th>
       <th>2022</th>
+      <td>6.7</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-35.0</td>
+      <td>-58.9</td>
+      <td>-61.2</td>
+      <td>-22.0</td>
+      <td>-7.0</td>
+      <td>-21.4</td>
+      <td>3.1</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1579,16 +1579,16 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2023</th>
+      <td>6.8</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-34.7</td>
+      <td>-65.5</td>
+      <td>-67.2</td>
+      <td>-21.3</td>
+      <td>-0.8</td>
+      <td>-20.6</td>
+      <td>-7.9</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1598,16 +1598,16 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2024</th>
+      <td>7.9</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-32.2</td>
+      <td>-76.5</td>
+      <td>-76.3</td>
+      <td>-32.3</td>
+      <td>2.6</td>
+      <td>-20.9</td>
+      <td>-10.2</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1617,16 +1617,16 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2025</th>
+      <td>8.2</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-34.3</td>
+      <td>-88.9</td>
+      <td>-89.5</td>
+      <td>-32.8</td>
+      <td>5.8</td>
+      <td>-20.9</td>
+      <td>-11.8</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1707,9 +1707,11 @@ if (outputEl) {{
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>                            <div id="56d08f98-fd7a-4bfe-8e96-825922ab95f4" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("56d08f98-fd7a-4bfe-8e96-825922ab95f4")) {                    Plotly.newPlot(                        "56d08f98-fd7a-4bfe-8e96-825922ab95f4",                        [],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Budgetary impact error"},"tickprefix":"\u00a3"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""}},"legend":{"tracegroupgap":0,"title":{"text":"Model"},"traceorder":"reversed"},"margin":{"t":60},"barmode":"group","width":800,"height":600,"title":{"text":"Budgetary impact error"}},                        {"responsive": true}                    ).then(function(){
+<div class="output text_html"><div>                            <div id="f7e275c3-5002-4ff0-8d9c-669d913f7353" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("f7e275c3-5002-4ff0-8d9c-669d913f7353")) {                    Plotly.newPlot(                        "f7e275c3-5002-4ff0-8d9c-669d913f7353",                        [{"alignmentgroup":"True","customdata":[[15.9,10.3,15.9,2022,"Housing Benefit"],[11.4,12.0,11.2,2022,"Child Benefit"],[43.2,34.1,43.7,2022,"Universal Credit"],[4.9,4.2,4.5,2022,"Pension Credit"],[150.2,156.0,151.3,2022,"National Insurance (total)"],[1.7,1.6,3.8,2022,"Working Tax Credit"],[199.4,161.2,205.0,2022,"Income Tax"],[6.1,5.4,13.9,2022,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[16234981.992,179790014.097,466817268.786,474361682.589,1091110491.3839998,2130322226.498,5590375230.341999,7732341501.998],"xaxis":"x","y":["Housing Benefit","Child Benefit","Universal Credit","Pension Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[15.9,10.3,15.9,2022,"Housing Benefit"],[11.4,12.0,11.2,2022,"Child Benefit"],[43.2,34.1,43.7,2022,"Universal Credit"],[4.9,4.2,4.5,2022,"Pension Credit"],[150.2,156.0,151.3,2022,"National Insurance (total)"],[1.7,1.6,3.8,2022,"Working Tax Credit"],[199.4,161.2,205.0,2022,"Income Tax"],[6.1,5.4,13.9,2022,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[5562000000.0,750000000.0,9584000000.0,313000000.0,4716000000.0,2252000000.0,43803000000.0,8493000000.0],"xaxis":"x","y":["Housing Benefit","Child Benefit","Universal Credit","Pension Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Budgetary impact error"},"tickprefix":"\u00a3"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""}},"legend":{"title":{"text":"Model"},"tracegroupgap":0,"traceorder":"reversed"},"margin":{"t":60},"barmode":"group","updatemenus":[{"buttons":[{"args":[null,{"frame":{"duration":500,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":500,"easing":"linear"}}],"label":"&#9654;","method":"animate"},{"args":[[null],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"&#9724;","method":"animate"}],"direction":"left","pad":{"r":10,"t":70},"showactive":false,"type":"buttons","x":0.1,"xanchor":"right","y":0,"yanchor":"top"}],"sliders":[{"active":0,"currentvalue":{"prefix":"Year="},"len":0.9,"pad":{"b":10,"t":60},"steps":[{"args":[["2022"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2022","method":"animate"},{"args":[["2023"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2023","method":"animate"},{"args":[["2024"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2024","method":"animate"},{"args":[["2025"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2025","method":"animate"}],"x":0.1,"xanchor":"left","y":0,"yanchor":"top"}],"width":800,"height":600,"title":{"text":"Budgetary impact error"}},                        {"responsive": true}                    ).then(function(){
+                            Plotly.addFrames('f7e275c3-5002-4ff0-8d9c-669d913f7353', [{"data":[{"alignmentgroup":"True","customdata":[[15.9,10.3,15.9,2022,"Housing Benefit"],[11.4,12.0,11.2,2022,"Child Benefit"],[43.2,34.1,43.7,2022,"Universal Credit"],[4.9,4.2,4.5,2022,"Pension Credit"],[150.2,156.0,151.3,2022,"National Insurance (total)"],[1.7,1.6,3.8,2022,"Working Tax Credit"],[199.4,161.2,205.0,2022,"Income Tax"],[6.1,5.4,13.9,2022,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[16234981.992,179790014.097,466817268.786,474361682.589,1091110491.3839998,2130322226.498,5590375230.341999,7732341501.998],"xaxis":"x","y":["Housing Benefit","Child Benefit","Universal Credit","Pension Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[15.9,10.3,15.9,2022,"Housing Benefit"],[11.4,12.0,11.2,2022,"Child Benefit"],[43.2,34.1,43.7,2022,"Universal Credit"],[4.9,4.2,4.5,2022,"Pension Credit"],[150.2,156.0,151.3,2022,"National Insurance (total)"],[1.7,1.6,3.8,2022,"Working Tax Credit"],[199.4,161.2,205.0,2022,"Income Tax"],[6.1,5.4,13.9,2022,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[5562000000.0,750000000.0,9584000000.0,313000000.0,4716000000.0,2252000000.0,43803000000.0,8493000000.0],"xaxis":"x","y":["Housing Benefit","Child Benefit","Universal Credit","Pension Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"}],"name":"2022"},{"data":[{"alignmentgroup":"True","customdata":[[11.6,12.3,11.5,2023,"Child Benefit"],[14.6,9.6,14.7,2023,"Housing Benefit"],[4.8,4.4,4.4,2023,"Pension Credit"],[48.8,39.1,49.8,2023,"Universal Credit"],[155.8,145.1,157.5,2023,"National Insurance (total)"],[1.3,1.3,3.8,2023,"Working Tax Credit"],[209.6,170.6,215.0,2023,"Income Tax"],[4.6,4.5,13.9,2023,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[71473449.27399999,134656778.724,356205365.42300004,950560863.3,1744303238.436,2555649772.628,5380214476.75,9266928608.394001],"xaxis":"x","y":["Child Benefit","Housing Benefit","Pension Credit","Universal Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[11.6,12.3,11.5,2023,"Child Benefit"],[14.6,9.6,14.7,2023,"Housing Benefit"],[4.8,4.4,4.4,2023,"Pension Credit"],[48.8,39.1,49.8,2023,"Universal Credit"],[155.8,145.1,157.5,2023,"National Insurance (total)"],[1.3,1.3,3.8,2023,"Working Tax Credit"],[209.6,170.6,215.0,2023,"Income Tax"],[4.6,4.5,13.9,2023,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[785000000.0,5106000000.0,37000000.0,10618000000.0,12386000000.0,2505000000.0,44374000000.0,9329000000.0],"xaxis":"x","y":["Child Benefit","Housing Benefit","Pension Credit","Universal Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"}],"name":"2023"},{"data":[{"alignmentgroup":"True","customdata":[[11.6,12.5,11.6,2024,"Child Benefit"],[12.6,8.5,12.5,2024,"Housing Benefit"],[4.6,4.5,4.4,2024,"Pension Credit"],[56.3,39.1,57.8,2024,"Universal Credit"],[162.7,147.9,164.6,2024,"National Insurance (total)"],[0.8,0.9,3.8,2024,"Working Tax Credit"],[220.3,178.5,225.7,2024,"Income Tax"],[3.0,3.3,13.9,2024,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[11478418.304000001,88814094.68100001,250655892.9,1486344718.065,1864669174.379,2991807484.754,5368399294.407001,10864583247.154],"xaxis":"x","y":["Child Benefit","Housing Benefit","Pension Credit","Universal Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[11.6,12.5,11.6,2024,"Child Benefit"],[12.6,8.5,12.5,2024,"Housing Benefit"],[4.6,4.5,4.4,2024,"Pension Credit"],[56.3,39.1,57.8,2024,"Universal Credit"],[162.7,147.9,164.6,2024,"National Insurance (total)"],[0.8,0.9,3.8,2024,"Working Tax Credit"],[220.3,178.5,225.7,2024,"Income Tax"],[3.0,3.3,13.9,2024,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[921000000.0,4027000000.0,112000000.0,18649000000.0,16710000000.0,2928000000.0,47212000000.0,10588000000.0],"xaxis":"x","y":["Child Benefit","Housing Benefit","Pension Credit","Universal Credit","National Insurance (total)","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"}],"name":"2024"},{"data":[{"alignmentgroup":"True","customdata":[[11.7,12.6,11.6,2025,"Child Benefit"],[10.4,6.7,10.2,2025,"Housing Benefit"],[4.5,4.5,4.2,2025,"Pension Credit"],[170.5,151.9,172.1,2025,"National Insurance (total)"],[65.0,45.6,68.0,2025,"Universal Credit"],[0.4,0.4,3.8,2025,"Working Tax Credit"],[226.8,187.9,237.5,2025,"Income Tax"],[1.3,1.5,13.9,2025,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[59240609.875,202981132.863,229626115.598,1604253631.199,3007989153.3890004,3443860444.751,10673375660.751,12551277046.773],"xaxis":"x","y":["Child Benefit","Housing Benefit","Pension Credit","National Insurance (total)","Universal Credit","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[11.7,12.6,11.6,2025,"Child Benefit"],[10.4,6.7,10.2,2025,"Housing Benefit"],[4.5,4.5,4.2,2025,"Pension Credit"],[170.5,151.9,172.1,2025,"National Insurance (total)"],[65.0,45.6,68.0,2025,"Universal Credit"],[0.4,0.4,3.8,2025,"Working Tax Credit"],[226.8,187.9,237.5,2025,"Income Tax"],[1.3,1.5,13.9,2025,"Child Tax Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: \u00a3%{customdata[2]}bn<br>OpenFisca-UK: \u00a3%{customdata[0]}bn<br>UKMOD: \u00a3%{customdata[1]}bn","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[952000000.0,3507000000.0,243000000.0,20225000000.0,22315000000.0,3402000000.0,49635000000.0,12414000000.0],"xaxis":"x","y":["Child Benefit","Housing Benefit","Pension Credit","National Insurance (total)","Universal Credit","Working Tax Credit","Income Tax","Child Tax Credit"],"yaxis":"y","type":"bar"}],"name":"2025"}]);
+                        }).then(function(){
 
-var gd = document.getElementById('56d08f98-fd7a-4bfe-8e96-825922ab95f4');
+var gd = document.getElementById('f7e275c3-5002-4ff0-8d9c-669d913f7353');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -1835,15 +1837,15 @@ if (outputEl) {{
     <tr>
       <th rowspan="4" valign="top">External</th>
       <th>2022</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>7.07</td>
+      <td>0.16</td>
+      <td>0.04</td>
+      <td>2.71</td>
+      <td>1.04</td>
+      <td>1.25</td>
+      <td>4.65</td>
+      <td>1.41</td>
+      <td>31.28</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1854,15 +1856,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2023</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>7.00</td>
+      <td>0.12</td>
+      <td>0.01</td>
+      <td>2.46</td>
+      <td>1.04</td>
+      <td>0.94</td>
+      <td>5.05</td>
+      <td>1.34</td>
+      <td>31.28</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1873,15 +1875,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2024</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>6.93</td>
+      <td>0.08</td>
+      <td>0.0</td>
+      <td>2.11</td>
+      <td>1.04</td>
+      <td>0.62</td>
+      <td>5.61</td>
+      <td>1.28</td>
+      <td>31.28</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1892,15 +1894,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2025</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>6.87</td>
+      <td>0.03</td>
+      <td>0.0</td>
+      <td>1.73</td>
+      <td>1.04</td>
+      <td>0.28</td>
+      <td>6.29</td>
+      <td>1.23</td>
+      <td>31.28</td>
       <td></td>
       <td></td>
       <td></td>
@@ -1957,7 +1959,7 @@ if (outputEl) {{
       <td>0.36</td>
       <td>0.56</td>
       <td>6.16</td>
-      <td>1.4</td>
+      <td>1.40</td>
       <td>33.51</td>
       <td>27.13</td>
       <td>32.12</td>
@@ -2031,7 +2033,7 @@ if (outputEl) {{
       <td></td>
       <td></td>
       <td>1.78</td>
-      <td>0.3</td>
+      <td>0.30</td>
       <td>0.64</td>
       <td>5.31</td>
       <td>1.44</td>
@@ -2083,11 +2085,11 @@ if (outputEl) {{
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>                            <div id="58215356-6d80-48cf-8875-af211acf54f6" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("58215356-6d80-48cf-8875-af211acf54f6")) {                    Plotly.newPlot(                        "58215356-6d80-48cf-8875-af211acf54f6",                        [{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7157839.9,7029670.7,6930827.8,6888168.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7116000.0,7072000.0,7022000.0,6990000.0],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"},"tickvals":[2022,2023,2024,2025]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""},"tickprefix":"","range":[0,10000000.0]},"legend":{"title":{"text":"Model"},"tracegroupgap":0,"traceorder":"reversed"},"margin":{"t":60},"updatemenus":[{"buttons":[{"args":[null,{"frame":{"duration":500,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":500,"easing":"linear"}}],"label":"&#9654;","method":"animate"},{"args":[[null],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"&#9724;","method":"animate"}],"direction":"left","pad":{"r":10,"t":70},"showactive":false,"type":"buttons","x":0.1,"xanchor":"right","y":0,"yanchor":"top"}],"sliders":[{"active":0,"currentvalue":{"prefix":"Program="},"len":0.9,"pad":{"b":10,"t":60},"steps":[{"args":[["Child Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Benefit","method":"animate"},{"args":[["Child Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Tax Credit","method":"animate"},{"args":[["Employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Employment income","method":"animate"},{"args":[["Housing Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Housing Benefit","method":"animate"},{"args":[["Income Support"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Support","method":"animate"},{"args":[["Income Tax"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Tax","method":"animate"},{"args":[["Income from dividends"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income from dividends","method":"animate"},{"args":[["JSA (income-based)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"JSA (income-based)","method":"animate"},{"args":[["National Insurance (total)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"National Insurance (total)","method":"animate"},{"args":[["Pension Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension Credit","method":"animate"},{"args":[["Pension income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension income","method":"animate"},{"args":[["Rental income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Rental income","method":"animate"},{"args":[["Savings interest income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Savings interest income","method":"animate"},{"args":[["Self-employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Self-employment income","method":"animate"},{"args":[["Universal Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Universal Credit","method":"animate"},{"args":[["Working Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Working Tax Credit","method":"animate"}],"x":0.1,"xanchor":"left","y":0,"yanchor":"top"}],"width":800,"height":600,"title":{"text":"Caseload forecasts"}},                        {"responsive": true}                    ).then(function(){
-                            Plotly.addFrames('58215356-6d80-48cf-8875-af211acf54f6', [{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7157839.9,7029670.7,6930827.8,6888168.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7116000.0,7072000.0,7022000.0,6990000.0],"yaxis":"y","type":"scatter"}],"name":"Child Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1248143.6,905727.4,562812.1,244957.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1080000.0,890000.0,643000.0,292000.0],"yaxis":"y","type":"scatter"}],"name":"Child Tax Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[32315648.1,32157285.5,32123080.3,32186795.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[2777764.9,2516062.2,2147624.6,1755599.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[2262000.0,2050000.0,1783000.0,1432000.0],"yaxis":"y","type":"scatter"}],"name":"Housing Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[172783.1,126623.3,84721.1,44383.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income Support"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[31169613.1,32370129.9,33514861.8,34752508.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[30011000.0,30583000.0,30939000.0,31466000.0],"yaxis":"y","type":"scatter"}],"name":"Income Tax"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[5437156.9,5417431.2,5408685.5,5416527.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income from dividends"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[50461.4,7650.4,4371.7,3134.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"JSA (income-based)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[26362129.4,26617537.8,27127213.0,27773680.4],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[26084000.0,26194000.0,26239000.0,26271000.0],"yaxis":"y","type":"scatter"}],"name":"National Insurance (total)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1622877.4,1520672.8,1400218.1,1313007.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1413000.0,1445000.0,1442000.0,1417000.0],"yaxis":"y","type":"scatter"}],"name":"Pension Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11398335.8,11390814.6,11392878.6,11401477.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Pension income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[2598378.5,2594890.3,2593795.7,2598877.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Rental income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[14644733.4,14659278.3,14627298.9,14651324.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Savings interest income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4632412.7,4622801.0,4623380.3,4634102.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Self-employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4945411.5,5578677.7,6162086.7,7019848.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4214000.0,4656000.0,5311000.0,6146000.0],"yaxis":"y","type":"scatter"}],"name":"Universal Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[782999.1,572773.0,360953.2,164735.5],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[540000.0,443000.0,297000.0,129000.0],"yaxis":"y","type":"scatter"}],"name":"Working Tax Credit"}]);
+<div class="output text_html"><div>                            <div id="77e84379-7325-499e-84a5-34a901cbb99d" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("77e84379-7325-499e-84a5-34a901cbb99d")) {                    Plotly.newPlot(                        "77e84379-7325-499e-84a5-34a901cbb99d",                        [{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7070781.7,7001894.9,6933679.3,6866128.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7157839.9,7029670.7,6930827.8,6888168.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7116000.0,7072000.0,7022000.0,6990000.0],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Year"},"tickvals":[2022,2023,2024,2025]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""},"tickprefix":"","range":[0,10000000.0]},"legend":{"title":{"text":"Model"},"tracegroupgap":0,"traceorder":"reversed"},"margin":{"t":60},"updatemenus":[{"buttons":[{"args":[null,{"frame":{"duration":500,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":500,"easing":"linear"}}],"label":"&#9654;","method":"animate"},{"args":[[null],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"&#9724;","method":"animate"}],"direction":"left","pad":{"r":10,"t":70},"showactive":false,"type":"buttons","x":0.1,"xanchor":"right","y":0,"yanchor":"top"}],"sliders":[{"active":0,"currentvalue":{"prefix":"Program="},"len":0.9,"pad":{"b":10,"t":60},"steps":[{"args":[["Child Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Benefit","method":"animate"},{"args":[["Child Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Child Tax Credit","method":"animate"},{"args":[["Employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Employment income","method":"animate"},{"args":[["Housing Benefit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Housing Benefit","method":"animate"},{"args":[["Income Support"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Support","method":"animate"},{"args":[["Income Tax"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income Tax","method":"animate"},{"args":[["Income from dividends"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Income from dividends","method":"animate"},{"args":[["JSA (income-based)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"JSA (income-based)","method":"animate"},{"args":[["National Insurance (total)"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"National Insurance (total)","method":"animate"},{"args":[["Pension Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension Credit","method":"animate"},{"args":[["Pension income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Pension income","method":"animate"},{"args":[["Rental income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Rental income","method":"animate"},{"args":[["Savings interest income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Savings interest income","method":"animate"},{"args":[["Self-employment income"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Self-employment income","method":"animate"},{"args":[["Universal Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Universal Credit","method":"animate"},{"args":[["Working Tax Credit"],{"frame":{"duration":0,"redraw":false},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"Working Tax Credit","method":"animate"}],"x":0.1,"xanchor":"left","y":0,"yanchor":"top"}],"width":800,"height":600,"title":{"text":"Caseload forecasts"}},                        {"responsive": true}                    ).then(function(){
+                            Plotly.addFrames('77e84379-7325-499e-84a5-34a901cbb99d', [{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7070781.7,7001894.9,6933679.3,6866128.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7157839.9,7029670.7,6930827.8,6888168.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[7116000.0,7072000.0,7022000.0,6990000.0],"yaxis":"y","type":"scatter"}],"name":"Child Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1249737.1,937957.1,615871.7,279391.5],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1248143.6,905727.4,562812.1,244957.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1080000.0,890000.0,643000.0,292000.0],"yaxis":"y","type":"scatter"}],"name":"Child Tax Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[32315648.1,32157285.5,32123080.3,32186795.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[2708000.0,2459000.0,2114000.0,1726000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[2777764.9,2516062.2,2147624.6,1755599.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[2262000.0,2050000.0,1783000.0,1432000.0],"yaxis":"y","type":"scatter"}],"name":"Housing Benefit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[157000.0,116000.0,76000.0,34000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[172783.1,126623.3,84721.1,44383.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income Support"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[31282000.0,31282000.0,31282000.0,31282000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[31169613.1,32370129.9,33514861.8,34752508.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[30011000.0,30583000.0,30939000.0,31466000.0],"yaxis":"y","type":"scatter"}],"name":"Income Tax"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[5437156.9,5417431.2,5408685.5,5416527.9],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Income from dividends"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[44000.0,5000.0,0.0,0.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[50461.4,7650.4,4371.7,3134.3],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"JSA (income-based)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[26362129.4,26617537.8,27127213.0,27773680.4],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[26084000.0,26194000.0,26239000.0,26271000.0],"yaxis":"y","type":"scatter"}],"name":"National Insurance (total)"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1406000.0,1341000.0,1284000.0,1233000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1622877.4,1520672.8,1400218.1,1313007.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1413000.0,1445000.0,1442000.0,1417000.0],"yaxis":"y","type":"scatter"}],"name":"Pension Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[11398335.8,11390814.6,11392878.6,11401477.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Pension income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[2598378.5,2594890.3,2593795.7,2598877.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Rental income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[14644733.4,14659278.3,14627298.9,14651324.8],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Savings interest income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4632412.7,4622801.0,4623380.3,4634102.7],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":["","","",""],"yaxis":"y","type":"scatter"}],"name":"Self-employment income"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4649000.0,5048000.0,5605000.0,6285000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4945411.5,5578677.7,6162086.7,7019848.6],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[4214000.0,4656000.0,5311000.0,6146000.0],"yaxis":"y","type":"scatter"}],"name":"Universal Credit"},{"data":[{"hovertemplate":"","legendgroup":"External","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"External","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[1044000.0,1044000.0,1044000.0,1044000.0],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"OpenFisca-UK","line":{"color":"blue","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"OpenFisca-UK","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[782999.1,572773.0,360953.2,164735.5],"yaxis":"y","type":"scatter"},{"hovertemplate":"","legendgroup":"UKMOD","line":{"color":"lightgrey","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"UKMOD","orientation":"h","showlegend":true,"x":[2022,2023,2024,2025],"xaxis":"x","y":[540000.0,443000.0,297000.0,129000.0],"yaxis":"y","type":"scatter"}],"name":"Working Tax Credit"}]);
                         }).then(function(){
 
-var gd = document.getElementById('58215356-6d80-48cf-8875-af211acf54f6');
+var gd = document.getElementById('77e84379-7325-499e-84a5-34a901cbb99d');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -2183,15 +2185,15 @@ if (outputEl) {{
     <tr>
       <th rowspan="4" valign="top">OpenFisca-UK</th>
       <th>2022</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>0.1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.1</td>
+      <td>-0.3</td>
+      <td>-0.0</td>
+      <td>0.3</td>
+      <td>0.2</td>
+      <td>-0.1</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2201,15 +2203,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2023</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.1</td>
+      <td>-0.5</td>
+      <td>-0.0</td>
+      <td>0.5</td>
+      <td>0.2</td>
+      <td>1.1</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2219,15 +2221,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2024</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>-0.7</td>
+      <td>-0.1</td>
+      <td>0.6</td>
+      <td>0.1</td>
+      <td>2.2</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2237,15 +2239,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2025</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>-0.9</td>
+      <td>-0.0</td>
+      <td>0.7</td>
+      <td>0.1</td>
+      <td>3.5</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2256,15 +2258,15 @@ if (outputEl) {{
     <tr>
       <th rowspan="4" valign="top">UKMOD</th>
       <th>2022</th>
+      <td>0.0</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-0.4</td>
+      <td>-0.5</td>
+      <td>-0.2</td>
+      <td>-0.4</td>
+      <td>0.0</td>
+      <td>-1.3</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2274,15 +2276,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2023</th>
+      <td>0.1</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-0.4</td>
+      <td>-0.6</td>
+      <td>-0.0</td>
+      <td>-0.4</td>
+      <td>0.1</td>
+      <td>-0.7</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2292,15 +2294,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2024</th>
+      <td>0.1</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-0.3</td>
+      <td>-0.7</td>
+      <td>0.0</td>
+      <td>-0.3</td>
+      <td>0.2</td>
+      <td>-0.3</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2310,15 +2312,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2025</th>
+      <td>0.1</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-0.3</td>
+      <td>-0.9</td>
+      <td>0.0</td>
+      <td>-0.1</td>
+      <td>0.2</td>
+      <td>0.2</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2406,15 +2408,15 @@ if (outputEl) {{
     <tr>
       <th rowspan="4" valign="top">OpenFisca-UK</th>
       <th>2022</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>1.2</td>
+      <td>10.1</td>
+      <td>14.7</td>
+      <td>2.6</td>
+      <td>-25.0</td>
+      <td>-0.1</td>
+      <td>6.4</td>
+      <td>15.4</td>
+      <td>-0.4</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2424,15 +2426,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2023</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>0.4</td>
+      <td>9.2</td>
+      <td>53.0</td>
+      <td>2.3</td>
+      <td>-45.1</td>
+      <td>-3.4</td>
+      <td>10.5</td>
+      <td>13.4</td>
+      <td>3.5</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2442,15 +2444,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2024</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-0.0</td>
+      <td>11.5</td>
+      <td>inf</td>
+      <td>1.6</td>
+      <td>-65.4</td>
+      <td>-8.6</td>
+      <td>9.9</td>
+      <td>9.1</td>
+      <td>7.1</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2460,15 +2462,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2025</th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>0.3</td>
+      <td>30.5</td>
+      <td>inf</td>
+      <td>1.7</td>
+      <td>-84.2</td>
+      <td>-12.3</td>
+      <td>11.7</td>
+      <td>6.5</td>
+      <td>11.1</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2479,15 +2481,15 @@ if (outputEl) {{
     <tr>
       <th rowspan="4" valign="top">UKMOD</th>
       <th>2022</th>
+      <td>0.6</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-16.5</td>
+      <td>-48.3</td>
+      <td>-13.6</td>
+      <td>-9.4</td>
+      <td>0.5</td>
+      <td>-4.1</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2497,15 +2499,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2023</th>
+      <td>1.0</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-16.6</td>
+      <td>-57.6</td>
+      <td>-5.1</td>
+      <td>-7.8</td>
+      <td>7.8</td>
+      <td>-2.2</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2515,15 +2517,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2024</th>
+      <td>1.3</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-15.7</td>
+      <td>-71.6</td>
+      <td>4.4</td>
+      <td>-5.2</td>
+      <td>12.3</td>
+      <td>-1.1</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2533,15 +2535,15 @@ if (outputEl) {{
     </tr>
     <tr>
       <th>2025</th>
+      <td>1.8</td>
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
+      <td>-17.0</td>
+      <td>-87.6</td>
+      <td>4.5</td>
+      <td>-2.2</td>
+      <td>14.9</td>
+      <td>0.6</td>
       <td></td>
       <td></td>
       <td></td>
@@ -2617,9 +2619,11 @@ if (outputEl) {{
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>                            <div id="edb9517a-bee9-43e6-9698-81f0da168c4d" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("edb9517a-bee9-43e6-9698-81f0da168c4d")) {                    Plotly.newPlot(                        "edb9517a-bee9-43e6-9698-81f0da168c4d",                        [],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Caseload error"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""}},"legend":{"tracegroupgap":0,"title":{"text":"Model"},"traceorder":"reversed"},"margin":{"t":60},"barmode":"group","width":800,"height":600,"title":{"text":"Caseload errors"}},                        {"responsive": true}                    ).then(function(){
+<div class="output text_html"><div>                            <div id="0c61b676-410f-46fb-9ab2-0b57b8c90e4d" class="plotly-graph-div" style="height:600px; width:800px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("0c61b676-410f-46fb-9ab2-0b57b8c90e4d")) {                    Plotly.newPlot(                        "0c61b676-410f-46fb-9ab2-0b57b8c90e4d",                        [{"alignmentgroup":"True","customdata":[[1.2,1.1,1.2,2022,"Child Tax Credit"],[2.8,2.3,2.7,2022,"Housing Benefit"],[7.2,7.1,7.1,2022,"Child Benefit"],[31.2,30.0,31.3,2022,"Income Tax"],[1.6,1.4,1.4,2022,"Pension Credit"],[0.8,0.5,1.0,2022,"Working Tax Credit"],[4.9,4.2,4.6,2022,"Universal Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[1593.483,69764.933,87058.21,112386.942,216877.421,261000.93,296411.506],"xaxis":"x","y":["Child Tax Credit","Housing Benefit","Child Benefit","Income Tax","Pension Credit","Working Tax Credit","Universal Credit"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[1.2,1.1,1.2,2022,"Child Tax Credit"],[2.8,2.3,2.7,2022,"Housing Benefit"],[7.2,7.1,7.1,2022,"Child Benefit"],[31.2,30.0,31.3,2022,"Income Tax"],[1.6,1.4,1.4,2022,"Pension Credit"],[0.8,0.5,1.0,2022,"Working Tax Credit"],[4.9,4.2,4.6,2022,"Universal Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[169737.072,446000.0,45218.345,1271000.0,7000.0,504000.0,435000.0],"xaxis":"x","y":["Child Tax Credit","Housing Benefit","Child Benefit","Income Tax","Pension Credit","Working Tax Credit","Universal Credit"],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Caseload error"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":""}},"legend":{"title":{"text":"Model"},"tracegroupgap":0,"traceorder":"reversed"},"margin":{"t":60},"barmode":"group","updatemenus":[{"buttons":[{"args":[null,{"frame":{"duration":500,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":500,"easing":"linear"}}],"label":"&#9654;","method":"animate"},{"args":[[null],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"&#9724;","method":"animate"}],"direction":"left","pad":{"r":10,"t":70},"showactive":false,"type":"buttons","x":0.1,"xanchor":"right","y":0,"yanchor":"top"}],"sliders":[{"active":0,"currentvalue":{"prefix":"Year="},"len":0.9,"pad":{"b":10,"t":60},"steps":[{"args":[["2022"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2022","method":"animate"},{"args":[["2023"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2023","method":"animate"},{"args":[["2024"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2024","method":"animate"},{"args":[["2025"],{"frame":{"duration":0,"redraw":true},"mode":"immediate","fromcurrent":true,"transition":{"duration":0,"easing":"linear"}}],"label":"2025","method":"animate"}],"x":0.1,"xanchor":"left","y":0,"yanchor":"top"}],"width":800,"height":600,"title":{"text":"Caseload errors"}},                        {"responsive": true}                    ).then(function(){
+                            Plotly.addFrames('0c61b676-410f-46fb-9ab2-0b57b8c90e4d', [{"data":[{"alignmentgroup":"True","customdata":[[1.2,1.1,1.2,2022,"Child Tax Credit"],[2.8,2.3,2.7,2022,"Housing Benefit"],[7.2,7.1,7.1,2022,"Child Benefit"],[31.2,30.0,31.3,2022,"Income Tax"],[1.6,1.4,1.4,2022,"Pension Credit"],[0.8,0.5,1.0,2022,"Working Tax Credit"],[4.9,4.2,4.6,2022,"Universal Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[1593.483,69764.933,87058.21,112386.942,216877.421,261000.93,296411.506],"xaxis":"x","y":["Child Tax Credit","Housing Benefit","Child Benefit","Income Tax","Pension Credit","Working Tax Credit","Universal Credit"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[1.2,1.1,1.2,2022,"Child Tax Credit"],[2.8,2.3,2.7,2022,"Housing Benefit"],[7.2,7.1,7.1,2022,"Child Benefit"],[31.2,30.0,31.3,2022,"Income Tax"],[1.6,1.4,1.4,2022,"Pension Credit"],[0.8,0.5,1.0,2022,"Working Tax Credit"],[4.9,4.2,4.6,2022,"Universal Credit"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[169737.072,446000.0,45218.345,1271000.0,7000.0,504000.0,435000.0],"xaxis":"x","y":["Child Tax Credit","Housing Benefit","Child Benefit","Income Tax","Pension Credit","Working Tax Credit","Universal Credit"],"yaxis":"y","type":"bar"}],"name":"2022"},{"data":[{"alignmentgroup":"True","customdata":[[7.0,7.1,7.0,2023,"Child Benefit"],[0.9,0.9,0.9,2023,"Child Tax Credit"],[2.5,2.0,2.5,2023,"Housing Benefit"],[1.5,1.4,1.3,2023,"Pension Credit"],[0.6,0.4,1.0,2023,"Working Tax Credit"],[5.6,4.7,5.0,2023,"Universal Credit"],[32.4,30.6,31.3,2023,"Income Tax"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[27775.8,32229.763,57062.242999999995,179672.753,471226.95700000005,530677.652,1088129.903],"xaxis":"x","y":["Child Benefit","Child Tax Credit","Housing Benefit","Pension Credit","Working Tax Credit","Universal Credit","Income Tax"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[7.0,7.1,7.0,2023,"Child Benefit"],[0.9,0.9,0.9,2023,"Child Tax Credit"],[2.5,2.0,2.5,2023,"Housing Benefit"],[1.5,1.4,1.3,2023,"Pension Credit"],[0.6,0.4,1.0,2023,"Working Tax Credit"],[5.6,4.7,5.0,2023,"Universal Credit"],[32.4,30.6,31.3,2023,"Income Tax"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[70105.091,47957.117,409000.0,104000.0,601000.0,392000.0,699000.0],"xaxis":"x","y":["Child Benefit","Child Tax Credit","Housing Benefit","Pension Credit","Working Tax Credit","Universal Credit","Income Tax"],"yaxis":"y","type":"bar"}],"name":"2023"},{"data":[{"alignmentgroup":"True","customdata":[[6.9,7.0,6.9,2024,"Child Benefit"],[2.1,1.8,2.1,2024,"Housing Benefit"],[0.6,0.6,0.6,2024,"Child Tax Credit"],[1.4,1.4,1.3,2024,"Pension Credit"],[6.2,5.3,5.6,2024,"Universal Credit"],[0.4,0.3,1.0,2024,"Working Tax Credit"],[33.5,30.9,31.3,2024,"Income Tax"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[2851.46,33624.554,53059.657,116218.119,557086.71,683046.819,2232861.828],"xaxis":"x","y":["Child Benefit","Housing Benefit","Child Tax Credit","Pension Credit","Universal Credit","Working Tax Credit","Income Tax"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[6.9,7.0,6.9,2024,"Child Benefit"],[2.1,1.8,2.1,2024,"Housing Benefit"],[0.6,0.6,0.6,2024,"Child Tax Credit"],[1.4,1.4,1.3,2024,"Pension Credit"],[6.2,5.3,5.6,2024,"Universal Credit"],[0.4,0.3,1.0,2024,"Working Tax Credit"],[33.5,30.9,31.3,2024,"Income Tax"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[88320.711,331000.0,27128.262000000002,158000.0,294000.0,747000.0,343000.0],"xaxis":"x","y":["Child Benefit","Housing Benefit","Child Tax Credit","Pension Credit","Universal Credit","Working Tax Credit","Income Tax"],"yaxis":"y","type":"bar"}],"name":"2024"},{"data":[{"alignmentgroup":"True","customdata":[[6.9,7.0,6.9,2025,"Child Benefit"],[1.8,1.4,1.7,2025,"Housing Benefit"],[0.2,0.3,0.3,2025,"Child Tax Credit"],[1.3,1.4,1.2,2025,"Pension Credit"],[7.0,6.1,6.3,2025,"Universal Credit"],[0.2,0.1,1.0,2025,"Working Tax Credit"],[34.8,31.5,31.3,2025,"Income Tax"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"OpenFisca-UK","marker":{"color":"blue","pattern":{"shape":""}},"name":"OpenFisca-UK","offsetgroup":"OpenFisca-UK","orientation":"h","showlegend":true,"textposition":"auto","x":[22040.453999999998,29599.682,34434.488,80007.819,734848.6429999999,879264.51,3470508.9310000003],"xaxis":"x","y":["Child Benefit","Housing Benefit","Child Tax Credit","Pension Credit","Universal Credit","Working Tax Credit","Income Tax"],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[6.9,7.0,6.9,2025,"Child Benefit"],[1.8,1.4,1.7,2025,"Housing Benefit"],[0.2,0.3,0.3,2025,"Child Tax Credit"],[1.3,1.4,1.2,2025,"Pension Credit"],[7.0,6.1,6.3,2025,"Universal Credit"],[0.2,0.1,1.0,2025,"Working Tax Credit"],[34.8,31.5,31.3,2025,"Income Tax"]],"hovertemplate":"<b>%{customdata[4]} in %{customdata[3]}</b><br>Error: %{x}<br>Official: %{customdata[2]}m<br>OpenFisca-UK: %{customdata[0]}m<br>UKMOD: %{customdata[1]}m","legendgroup":"UKMOD","marker":{"color":"lightgrey","pattern":{"shape":""}},"name":"UKMOD","offsetgroup":"UKMOD","orientation":"h","showlegend":true,"textposition":"auto","x":[123871.743,294000.0,12608.518,184000.0,139000.0,915000.0,184000.0],"xaxis":"x","y":["Child Benefit","Housing Benefit","Child Tax Credit","Pension Credit","Universal Credit","Working Tax Credit","Income Tax"],"yaxis":"y","type":"bar"}],"name":"2025"}]);
+                        }).then(function(){
 
-var gd = document.getElementById('edb9517a-bee9-43e6-9698-81f0da168c4d');
+var gd = document.getElementById('0c61b676-410f-46fb-9ab2-0b57b8c90e4d');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
