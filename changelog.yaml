@@ -510,3 +510,8 @@
     added:
     - Energy Price Guarantee parametric reform.
   date: 2022-09-14 19:32:06
+- bump: patch
+  changes:
+    fixed:
+    - Validation page.
+  date: 2022-09-15 13:40:02
