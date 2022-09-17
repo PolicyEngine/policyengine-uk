@@ -515,3 +515,8 @@
     fixed:
     - Validation page.
   date: 2022-09-15 13:40:02
+- bump: minor
+  changes:
+    added:
+    - Wealth tax.
+  date: 2022-09-17 16:24:23
