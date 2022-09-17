@@ -32,6 +32,7 @@ class household_tax(Variable):
             "domestic_rates",
             "change_in_fuel_duty",
             "tv_licence",
+            "wealth_tax",
         ]
         household_taxes = add(household, period, HOUSEHOLD_TAXES)
         return personal_taxes + household_taxes
