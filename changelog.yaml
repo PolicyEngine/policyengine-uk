@@ -520,3 +520,8 @@
     added:
     - Wealth tax.
   date: 2022-09-17 16:24:23
+- bump: minor
+  changes:
+    added:
+    - Metadata for SDLT, LTT and LBTT parameters.
+  date: 2022-09-21 11:06:49
