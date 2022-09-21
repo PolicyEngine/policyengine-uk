@@ -33,6 +33,8 @@ brackets:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
+  name: ltt_on_secondary_residences
+  label: LTT on secondary residences
   reference:
     - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018 Schedule
       href: https://www.legislation.gov.uk/wsi/2018/128/schedule

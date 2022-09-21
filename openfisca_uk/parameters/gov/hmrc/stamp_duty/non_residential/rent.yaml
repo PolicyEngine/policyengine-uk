@@ -15,6 +15,8 @@ brackets:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
+  name: sdlt_on_non_residential_cumulative_rent
+  label: Stamp Duty on non-residential cumulative rent
   reference:
     - title: Finance Act 2003 schedule 5
       href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/5

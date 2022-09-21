@@ -29,6 +29,8 @@ brackets:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
+  name: sdlt_on_secondary_residences
+  label: Stamp Duty on secondary residences
   reference:
     - title: Finance Act 2003 schedule 4ZA(1)(2)
       href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA
