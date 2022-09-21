@@ -23,6 +23,8 @@ brackets:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
+  name: sdlt_on_non_residential_property
+  label: Stamp Duty on non-residential property
   reference:
     - title: Finance Act 2003 s. 55
       href: https://www.legislation.gov.uk/ukpga/2003/14/part/4

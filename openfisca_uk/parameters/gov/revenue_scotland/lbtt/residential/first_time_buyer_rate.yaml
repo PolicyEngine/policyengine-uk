@@ -1,4 +1,4 @@
-description: Nil threshold used for first time buyers
+description: Rates applied to first-time buyers.
 brackets:
   - rate:
       2015-04-01: 0.0
@@ -27,6 +27,8 @@ brackets:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
+  name: lbtt_first_time_buyers
+  label: LBTT for first-time buyers
   reference:
     - title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands) (Scotland) Order 2015
       href: https://www.legislation.gov.uk/ssi/2015/126/schedule

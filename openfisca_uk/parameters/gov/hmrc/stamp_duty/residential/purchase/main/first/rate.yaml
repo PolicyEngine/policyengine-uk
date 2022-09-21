@@ -11,6 +11,8 @@ brackets:
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
+  name: sdlt_on_first_time_buyer_homes
+  label: Stamp Duty on first homes
   reference:
     - title: Finance Act 2003 schedule 6ZA(4)
       href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA/2018-03-15

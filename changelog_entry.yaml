@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    added:
+    - Metadata for SDLT, LTT and LBTT parameters.
