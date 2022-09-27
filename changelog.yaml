@@ -525,3 +525,8 @@
     added:
     - Metadata for SDLT, LTT and LBTT parameters.
   date: 2022-09-21 11:06:49
+- bump: minor
+  changes:
+    added:
+    - Flat basic income amount.
+  date: 2022-09-27 15:37:07
