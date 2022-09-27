@@ -16,7 +16,7 @@ format:
 	black . -l 79
 
 test:
-	openfisca test -c openfisca_uk openfisca_uk/tests/policy/baseline
+	openfisca-uk test openfisca_uk/tests/policy/baseline
 	openfisca-uk test openfisca_uk/tests/policy/reforms/parametric
 	pytest openfisca_uk/tests/code_health -vv
 	pytest openfisca_uk/tests/microsimulation/ -vv
