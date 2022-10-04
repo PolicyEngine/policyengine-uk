@@ -530,3 +530,8 @@
     added:
     - Flat basic income amount.
   date: 2022-09-27 15:37:07
+- bump: patch
+  changes:
+    fixed:
+    - UC amount for single, under-25s after the last uprating.
+  date: 2022-10-04 11:02:45
