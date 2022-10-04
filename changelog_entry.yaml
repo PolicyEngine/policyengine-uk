@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - UC amount for single, under-25s after the last uprating.
