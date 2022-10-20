@@ -1,6 +1,6 @@
-from openfisca_uk import Microsimulation
+from policyengine_uk import Microsimulation
 import pytest
-from openfisca_uk.data import EnhancedFRS
+from policyengine_uk.data import EnhancedFRS
 
 YEARS = range(2022, 2026)
 

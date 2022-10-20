@@ -3,8 +3,8 @@ import numpy as np
 from openfisca_tools.data import Dataset, PublicDataset
 import pandas as pd
 import h5py
-from openfisca_uk.data.datasets.frs.frs import FRS
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.datasets.frs.frs import FRS
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 
 
 class SynthFRS(PublicDataset):
@@ -14,7 +14,7 @@ class SynthFRS(PublicDataset):
     url_by_year = {
         2022: "https://github.com/PolicyEngine/openfisca-uk/releases/download/synth-frs-v1/synth_frs_2022.h5",
     }
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
 
     format = Dataset.ARRAYS
 

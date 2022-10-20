@@ -1,5 +1,5 @@
-from openfisca_uk.variables.household.demographic.household import TenureType
-from openfisca_uk.model_api import *
+from policyengine_uk.variables.household.demographic.household import TenureType
+from policyengine_uk.model_api import *
 
 
 class benunit_id(Variable):

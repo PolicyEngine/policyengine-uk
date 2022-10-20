@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from openfisca_uk import entities
+from policyengine_uk import entities
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
-from openfisca_uk.parameters.gov.ofgem.price_cap.add_price_cap_parameters import (
+from policyengine_uk.parameters.gov.ofgem.price_cap.add_price_cap_parameters import (
     add_price_cap_parameters,
 )
 from openfisca_tools.parameters import uprate_parameters

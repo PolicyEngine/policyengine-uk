@@ -60,7 +60,7 @@ pip --version  # should print at least 9.0.
 Install the Country Package:
 
 ```sh
-pip install openfisca_uk
+pip install policyengine_uk
 ```
 
 :tada: This OpenFisca Country Package is now installed and ready!
@@ -150,10 +150,10 @@ This endpoint returns the [Open API specification](https://www.openapis.org/) of
 
 You can test your new Web API by sending it example JSON data located in the `situation_examples` folder.
 
-Substitute your package's country name for `openfisca_uk` below:
+Substitute your package's country name for `policyengine_uk` below:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" \
-  -d @./openfisca_uk/situation_examples/couple.json \
+  -d @./policyengine_uk/situation_examples/couple.json \
   http://localhost:5000/calculate
 ```

@@ -2,10 +2,10 @@ import logging
 from openfisca_core.variables import Variable
 from typing import Callable, Type
 import h5py
-from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
+from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
     EnhancedFRS,
 )
-from openfisca_uk.repo import REPO
+from policyengine_uk.repo import REPO
 
 
 def baseline_is_nonzero(variable: Type[Variable]) -> Callable:
@@ -50,7 +50,7 @@ def generate_baseline_variables():
     Save baseline values of variables to a H5 dataset.
     """
 
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     YEARS = list(range(2022, 2026))
     baseline = Microsimulation(add_baseline_values=False)

@@ -1,21 +1,21 @@
 import logging
-from openfisca_uk import CountryTaxBenefitSystem
-from openfisca_uk.data import EnhancedFRS
-from openfisca_uk.entities import entities
+from policyengine_uk import CountryTaxBenefitSystem
+from policyengine_uk.data import EnhancedFRS
+from policyengine_uk.entities import entities
 import numpy as np
 import warnings
-from openfisca_uk.entities import *
+from policyengine_uk.entities import *
 import numpy as np
 import warnings
-from openfisca_uk.initial_setup import REPO, set_default
-from openfisca_uk.reforms.presets.current_date import use_current_parameters
-from openfisca_uk.reforms.presets.average_parameters import (
+from policyengine_uk.initial_setup import REPO, set_default
+from policyengine_uk.reforms.presets.current_date import use_current_parameters
+from policyengine_uk.reforms.presets.average_parameters import (
     average_parameters as apply_parameter_averaging,
 )
-from openfisca_uk.tools.baseline_variables import generate_baseline_variables
-from openfisca_uk.tools.parameters import backdate_parameters
+from policyengine_uk.tools.baseline_variables import generate_baseline_variables
+from policyengine_uk.tools.parameters import backdate_parameters
 from openfisca_tools import ReformType
-from openfisca_uk.data import DATASETS, SynthFRS
+from policyengine_uk.data import DATASETS, SynthFRS
 from openfisca_tools.microsimulation import (
     Microsimulation as GeneralMicrosimulation,
 )
@@ -30,7 +30,7 @@ from openfisca_tools.parameters import (
     propagate_parameter_metadata,
 )
 from openfisca_core.model_api import Reform
-from openfisca_uk.tools.tax_benefit_uprating import add_tax_benefit_uprating
+from policyengine_uk.tools.tax_benefit_uprating import add_tax_benefit_uprating
 from functools import reduce
 
 

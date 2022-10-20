@@ -1,6 +1,6 @@
 import logging
 from openfisca_tools.data import PrivateDataset, Dataset
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 from ..extension import ExtendedFRS
 import h5py
 
@@ -10,7 +10,7 @@ class CalibratedFRS(PrivateDataset):
     label = "Calibrated FRS"
     data_format = Dataset.TIME_PERIOD_ARRAYS
 
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
 
     def generate(self, year: int):
         if year not in ExtendedFRS.years:

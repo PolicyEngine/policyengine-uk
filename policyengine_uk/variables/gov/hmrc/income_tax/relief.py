@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 """
 These variables calculate the tax reliefs that a taxpayer is eligible for, following the Income Tax Act (2007) s. 23.

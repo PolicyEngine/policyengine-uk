@@ -3,7 +3,7 @@ import numpy as np
 from .categories import Programs, Demographics
 from random import sample
 import tensorflow as tf
-from openfisca_uk.tools.simulation import Microsimulation
+from policyengine_uk.tools.simulation import Microsimulation
 
 
 class LossCalculator:

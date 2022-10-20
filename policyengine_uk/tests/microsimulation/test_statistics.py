@@ -1,10 +1,10 @@
 from typing import Union
 import yaml
 from pathlib import Path
-from openfisca_uk import Microsimulation
+from policyengine_uk import Microsimulation
 import pytest
 
-from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
+from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
     EnhancedFRS,
 )
 
@@ -16,11 +16,11 @@ variables = sim.simulation.tax_benefit_system.variables
 parameters = sim.simulation.tax_benefit_system.parameters
 
 
-def get_openfisca_uk_aggregate(variable: str, year: int) -> float:
+def get_policyengine_uk_aggregate(variable: str, year: int) -> float:
     return sim.calc(variable, period=year, map_to="household").sum()
 
 
-def get_openfisca_uk_caseload(variable: str, year: int) -> float:
+def get_policyengine_uk_caseload(variable: str, year: int) -> float:
     values = sim.map_to(
         sim.calc(variable, period=year).values > 0,
         variables[variable].entity.key,
@@ -38,11 +38,11 @@ class StatisticTest:
             setattr(self, key, value)
 
     @property
-    def openfisca_uk(self):
+    def policyengine_uk(self):
         if self.statistic == "aggregate":
-            return get_openfisca_uk_aggregate(self.variable, self.year)
+            return get_policyengine_uk_aggregate(self.variable, self.year)
         elif self.statistic == "caseload":
-            return get_openfisca_uk_caseload(self.variable, self.year)
+            return get_policyengine_uk_caseload(self.variable, self.year)
         raise ValueError(f"Unknown statistic: {self.statistic}")
 
     def stored_result(self, source: str):
@@ -124,10 +124,10 @@ class StatisticTest:
 
 class AbsoluteErrorLessThan(StatisticTest):
     def test(self):
-        openfisca_uk = self.openfisca_uk
+        policyengine_uk = self.policyengine_uk
         official = self.official
-        openfisca_uk_error = abs(openfisca_uk - official)
-        return openfisca_uk_error < self.max_error, locals()
+        policyengine_uk_error = abs(policyengine_uk - official)
+        return policyengine_uk_error < self.max_error, locals()
 
     def describe(self):
         return f"OpenFisca-UK {self.variable_label} {self.statistic} error is less than {self.max_error:,} in {self.year}"
@@ -135,9 +135,9 @@ class AbsoluteErrorLessThan(StatisticTest):
 
 class RelativeErrorLessThan(StatisticTest):
     def test(self):
-        openfisca_uk = self.openfisca_uk
+        policyengine_uk = self.policyengine_uk
         official = self.official
-        absolute_error = abs(openfisca_uk - official)
+        absolute_error = abs(policyengine_uk - official)
         relative_error = absolute_error / official
         return relative_error < self.max_error, locals()
 

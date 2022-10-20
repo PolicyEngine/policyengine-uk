@@ -1,5 +1,5 @@
-from openfisca_uk.model_api import *
-from openfisca_uk.variables.household.consumption.expense import CouncilTaxBand
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.consumption.expense import CouncilTaxBand
 
 
 class ebr_council_tax_rebate(Variable):

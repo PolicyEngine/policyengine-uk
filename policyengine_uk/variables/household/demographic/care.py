@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 
 class is_carer_for_benefits(Variable):

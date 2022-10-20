@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 
 class savings_credit_income(Variable):

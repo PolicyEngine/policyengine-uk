@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 """
 The calculation of income tax is specified by the Income Tax Act 2007 s. 23

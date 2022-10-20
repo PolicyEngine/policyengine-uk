@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 
 class pension_credit_entitlement(Variable):

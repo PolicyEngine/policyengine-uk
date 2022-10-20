@@ -1,6 +1,6 @@
 from microdf.generic import MicroDataFrame
-from openfisca_uk.data.datasets.was import WAS
-from openfisca_uk.data.datasets.frs.frs import FRS
+from policyengine_uk.data.datasets.was import WAS
+from policyengine_uk.data.datasets.frs.frs import FRS
 import pandas as pd
 import microdf as mdf
 import synthimpute as si
@@ -57,7 +57,7 @@ def impute_wealth(year: int, dataset: type = FRS) -> pd.Series:
         pd.Series: The predicted wealth values.
     """
 
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     sender = Microsimulation(dataset=WAS, year=year,).df(
         PREDICTOR_VARIABLES + IMPUTE_VARIABLES,

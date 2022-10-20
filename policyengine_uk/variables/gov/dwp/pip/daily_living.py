@@ -1,5 +1,5 @@
-from openfisca_uk.model_api import *
-from openfisca_uk.variables.gov.dwp.pip.pip import PIPCategory
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 
 
 class PIP_DL_reported(Variable):

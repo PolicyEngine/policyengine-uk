@@ -1,6 +1,6 @@
 from typing import Callable, List
-from openfisca_uk.api import *
-from openfisca_uk.situation_examples.examples import single_person_UC
+from policyengine_uk.api import *
+from policyengine_uk.situation_examples.examples import single_person_UC
 import pandas as pd
 
 

@@ -3,8 +3,8 @@ from typing import Tuple
 import pandas as pd
 from openfisca_tools.data import Dataset, PrivateDataset
 import h5py
-from openfisca_uk.data.datasets.lcfs.raw_lcfs import RawLCFS
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.datasets.lcfs.raw_lcfs import RawLCFS
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 
 CATEGORY_NAMES = dict(
     # Top-level COICOP categories
@@ -68,7 +68,7 @@ class LCFS(PrivateDataset):
     name = "lcfs"
     label = "LCFS"
     data_format = Dataset.ARRAYS
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
 
     is_openfisca_compatible = True
 
@@ -89,7 +89,7 @@ class LCFS(PrivateDataset):
                 self.generate(max(RawLCFS.years))
             if len(self.years) > 0:
                 lcfs_year = max(self.years)
-                from openfisca_uk import Microsimulation
+                from policyengine_uk import Microsimulation
 
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 lcfs = h5py.File(self.file(year), mode="w")

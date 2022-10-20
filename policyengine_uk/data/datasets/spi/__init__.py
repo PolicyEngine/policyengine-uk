@@ -1,2 +1,2 @@
-from openfisca_uk.data.datasets.spi.raw_spi import RawSPI
-from openfisca_uk.data.datasets.spi.spi import SPI
+from policyengine_uk.data.datasets.spi.raw_spi import RawSPI
+from policyengine_uk.data.datasets.spi.spi import SPI

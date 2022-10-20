@@ -1,4 +1,4 @@
-from openfisca_uk.data.datasets.frs import (
+from policyengine_uk.data.datasets.frs import (
     FRS,
     RawFRS,
     ExtendedFRS,
@@ -6,9 +6,9 @@ from openfisca_uk.data.datasets.frs import (
     EnhancedFRS,
     SynthFRS,
 )
-from openfisca_uk.data.datasets.was import RawWAS, WAS
-from openfisca_uk.data.datasets.lcfs import RawLCFS, LCFS
-from openfisca_uk.data.datasets.spi import RawSPI, SPI
+from policyengine_uk.data.datasets.was import RawWAS, WAS
+from policyengine_uk.data.datasets.lcfs import RawLCFS, LCFS
+from policyengine_uk.data.datasets.spi import RawSPI, SPI
 
 DATASETS = [
     RawFRS,

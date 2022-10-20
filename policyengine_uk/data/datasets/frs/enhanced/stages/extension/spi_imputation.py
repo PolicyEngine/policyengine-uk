@@ -1,8 +1,8 @@
 from microdf import MicroDataFrame
 import synthimpute as si
 from openfisca_tools.data.dataset import Dataset
-from openfisca_uk.data.datasets.frs.frs import FRS
-from openfisca_uk.data.datasets.spi.spi import SPI
+from policyengine_uk.data.datasets.frs.frs import FRS
+from policyengine_uk.data.datasets.spi.spi import SPI
 
 PREDICTORS = [
     "age",
@@ -32,7 +32,7 @@ def impute_incomes(dataset: Dataset = FRS, year: int = 2022) -> MicroDataFrame:
     Returns:
         Dict[str, ArrayLike]: The mapping from the original dataset to the cloned dataset.
     """
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     # Most recent SPI used - if it's before the FRS year then data will be uprated
     # automatically by OpenFisca-UK

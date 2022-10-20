@@ -1,6 +1,6 @@
 from openfisca_tools.data import Dataset, PrivateDataset
-from openfisca_uk.data.datasets.frs.enhanced.utils import add_variables
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.datasets.frs.enhanced.utils import add_variables
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 from ..calibration import CalibratedFRS
 import h5py
 from .lcfs_imputation import impute_consumption
@@ -11,7 +11,7 @@ class EnhancedFRS(PrivateDataset):
     name = "enhanced_frs"
     label = "Enhanced FRS"
     data_format = Dataset.TIME_PERIOD_ARRAYS
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
     filename_by_year = {2022: "enhanced_frs_2022_v0_26.h5"}
 
     def generate(self, year: int):

@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 
 @uprated(by="household.wealth.national_balance_sheet.household.land")

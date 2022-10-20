@@ -1,10 +1,10 @@
 from ...loss_category import LossCategory
-from openfisca_uk.tools.simulation import Microsimulation
+from policyengine_uk.tools.simulation import Microsimulation
 import tensorflow as tf
 import numpy as np
 from openfisca_core.parameters import ParameterNode, Parameter
 from typing import Iterable, Tuple
-from openfisca_uk.parameter_tree import parameters
+from policyengine_uk.parameter_tree import parameters
 
 
 class Populations(LossCategory):

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-from openfisca_uk import entities
-from openfisca_uk.system import CountryTaxBenefitSystem
-from openfisca_uk.tools.simulation import (
+from policyengine_uk import entities
+from policyengine_uk.system import CountryTaxBenefitSystem
+from policyengine_uk.tools.simulation import (
     IndividualSim,
     Microsimulation,
     prepare_parameters,
 )
-from openfisca_uk.reforms.presets.modelling import (
+from policyengine_uk.reforms.presets.modelling import (
     reported_tax,
     reported_benefits,
     reported,
@@ -17,7 +17,7 @@ from pathlib import Path
 import os
 from openfisca_core.taxbenefitsystems import TaxBenefitSystem
 
-from openfisca_uk.data import (
+from policyengine_uk.data import (
     FRS,
     RawFRS,
     SPI,

@@ -1,12 +1,12 @@
 import logging
-from openfisca_uk.data.datasets.spi.raw_spi import RawSPI
+from policyengine_uk.data.datasets.spi.raw_spi import RawSPI
 import pandas as pd
 from pandas import DataFrame
 import h5py
 import numpy as np
 from openfisca_tools.data import PrivateDataset
 
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 
 max_ = np.maximum
 where = np.where
@@ -16,7 +16,7 @@ class SPI(PrivateDataset):
     name = "spi"
     label = "SPI"
     is_openfisca_compatible = True
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
 
     def generate(self, year: int) -> None:
         """Generates the SPI-based input dataset for OpenFisca-UK.
@@ -41,7 +41,7 @@ class SPI(PrivateDataset):
                 self.generate(max(RawSPI.years))
             if len(self.years) > 0:
                 frs_year = max(self.years)
-                from openfisca_uk import Microsimulation
+                from policyengine_uk import Microsimulation
 
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 frs = h5py.File(self.file(year), mode="w")
@@ -77,8 +77,8 @@ def extend_spi_main_table(main: DataFrame) -> DataFrame:
         DataFrame: The modified table.
     """
 
-    from openfisca_uk import Microsimulation
-    from openfisca_uk.data import FRS
+    from policyengine_uk import Microsimulation
+    from policyengine_uk.data import FRS
 
     sim = Microsimulation(dataset=FRS)
 

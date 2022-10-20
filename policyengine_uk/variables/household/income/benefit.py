@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 """
 This file contains variables that are commonly used in benefit eligibility calculations.

@@ -1,5 +1,5 @@
-from openfisca_uk.model_api import *
-from openfisca_uk.variables.household.demographic.locations import (
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.locations import (
     LocalAuthority,
 )
 import pandas as pd

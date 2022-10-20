@@ -1,5 +1,5 @@
 from typing import Dict
-from openfisca_uk.data.datasets.frs.frs import FRS
+from policyengine_uk.data.datasets.frs.frs import FRS
 from numpy.typing import ArrayLike
 from openfisca_tools.data.dataset import Dataset
 
@@ -26,7 +26,7 @@ def migrate_to_universal_credit(
     Returns:
         Dict[str, ArrayLike]: Variables with replaced values.
     """
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     frs = Microsimulation(
         dataset=dataset,

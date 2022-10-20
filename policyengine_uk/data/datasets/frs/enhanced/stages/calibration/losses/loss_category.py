@@ -4,8 +4,8 @@ from numpy.typing import ArrayLike
 from itertools import chain
 from functools import reduce
 from typing import Callable, Iterable, List, Tuple, Type
-from openfisca_uk import Microsimulation
-from openfisca_uk.parameter_tree import parameters
+from policyengine_uk import Microsimulation
+from policyengine_uk.parameter_tree import parameters
 import tensorflow as tf
 
 

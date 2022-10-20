@@ -1,5 +1,5 @@
-from openfisca_uk.data.datasets import EnhancedFRS, SynthFRS
-from openfisca_uk.model_api import *
+from policyengine_uk.data.datasets import EnhancedFRS, SynthFRS
+from policyengine_uk.model_api import *
 
 
 class in_poverty_bhc(Variable):
@@ -134,7 +134,7 @@ class baseline_hbai_excluded_income(Variable):
             return 0
         # Establish if currently running a microsimulation
         if len(household.nb_persons()) > 1_000:
-            from openfisca_uk import Microsimulation
+            from policyengine_uk import Microsimulation
 
             # Simulate baseline policy
             dataset = EnhancedFRS if 2022 in EnhancedFRS.years else SynthFRS

@@ -4,13 +4,13 @@ from openfisca_tools.data import PrivateDataset
 import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 
 
 class RawFRS(PrivateDataset):
     name = "raw_frs"
     label = "Raw FRS"
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
     is_openfisca_compatible = False
 
     filename_by_year = {

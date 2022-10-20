@@ -55,9 +55,9 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "openfisca-uk-setup=openfisca_uk.initial_setup:main",
-            "openfisca-uk=openfisca_uk.tools.cli:main",
-            "openfisca-uk-data=openfisca_uk.data.cli:cli",
+            "openfisca-uk-setup=policyengine_uk.initial_setup:main",
+            "openfisca-uk=policyengine_uk.tools.cli:main",
+            "openfisca-uk-data=policyengine_uk.data.cli:cli",
         ],
     },
     packages=find_packages(),

@@ -1,10 +1,10 @@
 from typing import List
 import plotly.express as px
-from openfisca_uk.api import *
+from policyengine_uk.api import *
 import pandas as pd
 from microdf import MicroSeries
 from functools import wraps
-from openfisca_uk.graphs.general import net_cost
+from policyengine_uk.graphs.general import net_cost
 
 
 def _get_group_reduction(

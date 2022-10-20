@@ -1,5 +1,5 @@
-from openfisca_uk.model_api import *
-from openfisca_uk.variables.household.demographic.household import TenureType
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.household import TenureType
 
 
 class legacy_benefits(Variable):

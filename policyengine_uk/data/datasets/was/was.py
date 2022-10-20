@@ -1,8 +1,8 @@
 import logging
 from openfisca_tools.data import Dataset, PrivateDataset
 import h5py
-from openfisca_uk.data.datasets.was.raw_was import RawWAS
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.datasets.was.raw_was import RawWAS
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 
 RENAMES = {
     "R7xshhwgt": "household_weight",
@@ -70,7 +70,7 @@ class WAS(PrivateDataset):
     name = "was"
     label = "WAS"
     data_format = Dataset.ARRAYS
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
 
     is_openfisca_compatible = True
 
@@ -91,7 +91,7 @@ class WAS(PrivateDataset):
                 self.generate(max(RawWAS.years))
             if len(self.years) > 0:
                 lcfs_year = max(self.years)
-                from openfisca_uk import Microsimulation
+                from policyengine_uk import Microsimulation
 
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 lcfs = h5py.File(self.file(year), mode="w")

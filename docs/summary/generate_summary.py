@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
-from openfisca_uk import Microsimulation
-from openfisca_uk.data import EnhancedFRS
+from policyengine_uk import Microsimulation
+from policyengine_uk.data import EnhancedFRS
 import yaml
 import subprocess
 

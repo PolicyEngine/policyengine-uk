@@ -1,6 +1,6 @@
-from openfisca_uk.graphs import mtr_chart, budget_chart
-from openfisca_uk import BASELINE_PARAMETERS
-from openfisca_uk.api import reforms, graphs, BASELINE_PARAMETERS
+from policyengine_uk.graphs import mtr_chart, budget_chart
+from policyengine_uk import BASELINE_PARAMETERS
+from policyengine_uk.api import reforms, graphs, BASELINE_PARAMETERS
 
 
 def test_wide_form_individual_data_with_one_reform():

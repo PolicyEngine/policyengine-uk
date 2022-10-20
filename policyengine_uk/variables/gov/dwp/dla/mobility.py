@@ -1,5 +1,5 @@
-from openfisca_uk.model_api import *
-from openfisca_uk.variables.misc.categories.lower_or_higher import (
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.misc.categories.lower_or_higher import (
     LowerOrHigher,
 )
 

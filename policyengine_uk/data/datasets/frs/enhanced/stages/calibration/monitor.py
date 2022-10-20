@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import time
-from openfisca_uk import REPO
+from policyengine_uk import REPO
 
 st.header("OpenFisca-UK calibration dashboard")
 st.subheader("Inspect training progress by metric and year")

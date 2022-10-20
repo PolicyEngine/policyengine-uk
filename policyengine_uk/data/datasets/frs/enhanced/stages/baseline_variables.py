@@ -1,13 +1,13 @@
 from openfisca_core.variables import Variable
 from typing import Callable, Type
 import h5py
-from openfisca_uk.data.datasets.frs.enhanced.stages.extension.extended_frs import (
+from policyengine_uk.data.datasets.frs.enhanced.stages.extension.extended_frs import (
     ExtendedFRS,
 )
-from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
+from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
     EnhancedFRS,
 )
-from openfisca_uk.repo import REPO
+from policyengine_uk.repo import REPO
 from openfisca_tools.data import Dataset
 
 
@@ -56,7 +56,7 @@ def generate_baseline_variables(dataset: Dataset, year: int):
         year (int): The year of the EnhancedFRS to input the results in.
     """
 
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     YEARS = list(range(year, 2026))
     baseline = Microsimulation(dataset=dataset)

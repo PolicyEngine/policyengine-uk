@@ -1,18 +1,18 @@
 import logging
 import numpy as np
 from openfisca_tools.data import PrivateDataset, Dataset
-from openfisca_uk.data.datasets.frs.frs import FRS
+from policyengine_uk.data.datasets.frs.frs import FRS
 import h5py
-from openfisca_uk.data.datasets.frs.enhanced.stages.extension.spi_imputation import (
+from policyengine_uk.data.datasets.frs.enhanced.stages.extension.spi_imputation import (
     impute_incomes,
 )
-from openfisca_uk.data.datasets.frs.enhanced.utils import (
+from policyengine_uk.data.datasets.frs.enhanced.utils import (
     clone_and_replace_half,
 )
-from openfisca_uk.data.datasets.frs.enhanced.stages.extension.uc_transition import (
+from policyengine_uk.data.datasets.frs.enhanced.stages.extension.uc_transition import (
     migrate_to_universal_credit,
 )
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 from time import time
 
 
@@ -20,7 +20,7 @@ class ExtendedFRS(PrivateDataset):
     name = "extended_frs"
     label = "Extended FRS"
     is_openfisca_compatible = True
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
 
     filename_by_year = {
         2022: "extended_frs_2022.h5",

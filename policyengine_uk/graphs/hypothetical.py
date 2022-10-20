@@ -1,9 +1,9 @@
 from re import I
-from openfisca_uk.situation_examples.examples import single_person_UC
+from policyengine_uk.situation_examples.examples import single_person_UC
 from typing import List
-from openfisca_uk.api import *
-from openfisca_uk.graphs.data import get_wide_reform_individual_data
-from openfisca_uk.graphs.general import (
+from policyengine_uk.api import *
+from policyengine_uk.graphs.data import get_wide_reform_individual_data
+from policyengine_uk.graphs.general import (
     formalise_column_names,
     COLORS,
 )

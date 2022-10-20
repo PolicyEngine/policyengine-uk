@@ -1,5 +1,5 @@
-from openfisca_uk.api import *
-from openfisca_uk.graphs import waterfall_chart
+from policyengine_uk.api import *
+from policyengine_uk.graphs import waterfall_chart
 
 
 def test_single_reform_waterfall_chart_runs():

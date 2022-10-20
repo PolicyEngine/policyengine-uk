@@ -403,7 +403,7 @@
 - bump: patch
   changes:
     fixed:
-    - Failed import of openfisca_uk.tools
+    - Failed import of policyengine_uk.tools
   date: 2022-04-14 12:36:43
 - bump: patch
   changes:

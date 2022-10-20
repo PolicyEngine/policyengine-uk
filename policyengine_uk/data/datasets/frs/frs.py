@@ -5,8 +5,8 @@ import logging
 import pandas as pd
 from pandas import DataFrame
 import numpy as np
-from openfisca_uk.data.datasets.frs.raw_frs import RawFRS
-from openfisca_uk.data.storage import OPENFISCA_UK_MICRODATA_FOLDER
+from policyengine_uk.data.datasets.frs.raw_frs import RawFRS
+from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 
 max_ = np.maximum
 where = np.where
@@ -15,7 +15,7 @@ where = np.where
 class FRS(PrivateDataset):
     name = "frs"
     label = "FRS"
-    folder_path = OPENFISCA_UK_MICRODATA_FOLDER
+    folder_path = policyengine_uk_MICRODATA_FOLDER
     is_openfisca_compatible = True
 
     filename_by_year = {
@@ -39,7 +39,7 @@ class FRS(PrivateDataset):
                 self.generate(max(RawFRS.years))
             if len(FRS.years) > 0:
                 frs_year = max(self.years)
-                from openfisca_uk import Microsimulation
+                from policyengine_uk import Microsimulation
 
                 sim = Microsimulation(dataset=self, year=max(self.years))
                 frs = h5py.File(self.file(year), mode="w")
@@ -288,7 +288,7 @@ def add_household_variables(frs: h5py.File, household: DataFrame):
         household (DataFrame)
     """
     # Add region
-    from openfisca_uk.variables.household.demographic.household import Region
+    from policyengine_uk.variables.household.demographic.household import Region
 
     REGIONS = [
         "NORTH_EAST",

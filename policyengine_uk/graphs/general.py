@@ -1,6 +1,6 @@
-from openfisca_uk.tools.simulation import Microsimulation
+from policyengine_uk.tools.simulation import Microsimulation
 import pandas as pd
-from openfisca_uk import BASELINE_VARIABLES
+from policyengine_uk import BASELINE_VARIABLES
 
 
 def formalise_column_names(df: pd.DataFrame) -> pd.DataFrame:

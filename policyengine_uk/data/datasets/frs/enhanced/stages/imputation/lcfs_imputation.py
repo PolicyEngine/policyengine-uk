@@ -1,8 +1,8 @@
 from typing import Tuple
 import pandas as pd
 from pathlib import Path
-from openfisca_uk.data.datasets.frs.frs import FRS
-from openfisca_uk.data.datasets.lcfs import LCFS
+from policyengine_uk.data.datasets.frs.frs import FRS
+from policyengine_uk.data.datasets.lcfs import LCFS
 from microdf import MicroDataFrame
 import synthimpute as si
 
@@ -61,7 +61,7 @@ def impute_consumption(year: int, dataset: type = FRS) -> pd.Series:
         pd.Series: The imputed consumption categories.
     """
 
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     sender = Microsimulation(dataset=LCFS, year=year,).df(
         PREDICTOR_VARIABLES + IMPUTE_VARIABLES,

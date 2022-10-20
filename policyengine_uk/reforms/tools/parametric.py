@@ -1,5 +1,5 @@
-import openfisca_uk
-from openfisca_uk.model_api import *
+import policyengine_uk
+from policyengine_uk.model_api import *
 from typing import Union
 
 

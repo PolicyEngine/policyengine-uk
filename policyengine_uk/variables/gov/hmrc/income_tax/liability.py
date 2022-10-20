@@ -1,4 +1,4 @@
-from openfisca_uk.model_api import *
+from policyengine_uk.model_api import *
 
 """
 This file calculates the overall liability for Income Tax.
@@ -470,7 +470,7 @@ class income_tax_pre_charges(Variable):
         if parameters(
             period
         ).contrib.ubi_center.exempt_pensioners_from_tax_changes:
-            from openfisca_uk.parameter_tree import (
+            from policyengine_uk.parameter_tree import (
                 parameters as baseline_parameters,
             )
 

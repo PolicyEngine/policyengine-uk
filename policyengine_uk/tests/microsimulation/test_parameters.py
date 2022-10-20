@@ -1,5 +1,5 @@
-from openfisca_uk.data import EnhancedFRS
-from openfisca_uk import Microsimulation
+from policyengine_uk.data import EnhancedFRS
+from policyengine_uk import Microsimulation
 from openfisca_tools.testing import generate_tests
 
 

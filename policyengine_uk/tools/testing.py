@@ -22,7 +22,7 @@ from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_core.errors import SituationParsingError, VariableNotFound
 from openfisca_core.scripts import build_tax_benefit_system
 
-from openfisca_uk.reforms.tools.parametric import set_parameter
+from policyengine_uk.reforms.tools.parametric import set_parameter
 
 log = logging.getLogger(__name__)
 

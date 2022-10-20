@@ -1,4 +1,4 @@
-from openfisca_uk import BASELINE_VARIABLES
+from policyengine_uk import BASELINE_VARIABLES
 from openfisca_core.model_api import Enum
 
 

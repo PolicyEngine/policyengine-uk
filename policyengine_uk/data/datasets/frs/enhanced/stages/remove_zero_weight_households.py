@@ -1,7 +1,7 @@
 from openfisca_tools.data import Dataset
 import h5py
 
-from openfisca_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
+from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
     EnhancedFRS,
 )
 
@@ -14,7 +14,7 @@ def remove_zero_weight_households(dataset: Dataset, year: int):
         year (int): The year of the dataset to edit.
     """
 
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     sim = Microsimulation(dataset=dataset, year=year)
 

@@ -6,23 +6,23 @@ install:
 	pip install -e .
 
 microdata:
-	python openfisca_uk/initial_setup.py
+	python policyengine_uk/initial_setup.py
 
 test-setup:
-	python openfisca_uk/tools/testing_setup.py
+	python policyengine_uk/tools/testing_setup.py
 
 format:
 	autopep8 -r . --in-place
 	black . -l 79
 
 test:
-	openfisca-uk test openfisca_uk/tests/policy/baseline
-	openfisca-uk test openfisca_uk/tests/policy/reforms/parametric
-	pytest openfisca_uk/tests/code_health -vv
-	pytest openfisca_uk/tests/microsimulation/ -vv
+	openfisca-uk test policyengine_uk/tests/policy/baseline
+	openfisca-uk test policyengine_uk/tests/policy/reforms/parametric
+	pytest policyengine_uk/tests/code_health -vv
+	pytest policyengine_uk/tests/microsimulation/ -vv
 
 serve:
-	openfisca serve --country-package openfisca_uk
+	openfisca serve --country-package policyengine_uk
 
 summary-stats:
 	python docs/summary/generate_descriptions.py
@@ -40,7 +40,7 @@ changelog:
 	touch changelog_entry.yaml
 
 calibrate:
-	python openfisca_uk/calibration/calibrate.py
+	python policyengine_uk/calibration/calibrate.py
 
 calibration-dashboard:
-	streamlit run openfisca_uk/data/datasets/frs/enhanced/stages/calibration/monitor.py
+	streamlit run policyengine_uk/data/datasets/frs/enhanced/stages/calibration/monitor.py

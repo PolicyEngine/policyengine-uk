@@ -2,17 +2,17 @@ import argparse
 import logging
 import os
 import sys
-from openfisca_uk.tools.testing import run_tests
+from policyengine_uk.tools.testing import run_tests
 from openfisca_core.scripts import build_tax_benefit_system
 
-OPENFISCA_UK = "openfisca_uk"
+policyengine_uk = "policyengine_uk"
 
 
 def add_tax_benefit_system_arguments(parser):
     parser.add_argument(
         "-c",
         "--country-package",
-        default=OPENFISCA_UK,
+        default=policyengine_uk,
         action="store",
         help='country package to use. If not provided, an automatic detection will be attempted by scanning the python packages installed in your environment which name contains the word "openfisca".',
     )
@@ -118,7 +118,7 @@ def main():
     )
 
     tax_benefit_system = build_tax_benefit_system(
-        OPENFISCA_UK, args.extensions, args.reforms
+        policyengine_uk, args.extensions, args.reforms
     )
 
     options = {

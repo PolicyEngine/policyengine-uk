@@ -1,6 +1,6 @@
 import os
-from openfisca_uk import REPO, parameters
-from openfisca_uk.tools.simulation import Microsimulation
+from policyengine_uk import REPO, parameters
+from policyengine_uk.tools.simulation import Microsimulation
 import h5py
 
 BENEFITS = [
@@ -22,7 +22,7 @@ def add_takeup_parameters():
     Calculate simulation-based benefit takeup parameters and prints them.
     """
 
-    from openfisca_uk import Microsimulation
+    from policyengine_uk import Microsimulation
 
     baseline = Microsimulation()
     full_benefit_claimants = Microsimulation()
