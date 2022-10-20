@@ -1,5 +1,5 @@
 import logging
-from openfisca_tools.data import Dataset, PrivateDataset
+from policyengine_core.data import Dataset, PrivateDataset
 import h5py
 from policyengine_uk.data.datasets.was.raw_was import RawWAS
 from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER

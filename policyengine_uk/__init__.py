@@ -15,7 +15,7 @@ from policyengine_uk.reforms.presets.modelling import (
 )
 from pathlib import Path
 import os
-from openfisca_core.taxbenefitsystems import TaxBenefitSystem
+from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 
 from policyengine_uk.data import (
     FRS,

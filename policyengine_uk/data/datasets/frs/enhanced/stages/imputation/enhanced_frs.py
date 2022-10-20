@@ -1,4 +1,4 @@
-from openfisca_tools.data import Dataset, PrivateDataset
+from policyengine_core.data import Dataset, PrivateDataset
 from policyengine_uk.data.datasets.frs.enhanced.utils import add_variables
 from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 from ..calibration import CalibratedFRS

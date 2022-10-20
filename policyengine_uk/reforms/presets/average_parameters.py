@@ -1,5 +1,5 @@
-from openfisca_core.parameters import ParameterNode, Parameter
-from openfisca_core.periods import instant
+from policyengine_core.parameters import ParameterNode, Parameter
+from policyengine_core.periods import instant
 
 
 def average_parameters(parameters: ParameterNode) -> ParameterNode:

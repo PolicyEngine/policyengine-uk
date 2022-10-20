@@ -14,22 +14,22 @@ from policyengine_uk.reforms.presets.average_parameters import (
 )
 from policyengine_uk.tools.baseline_variables import generate_baseline_variables
 from policyengine_uk.tools.parameters import backdate_parameters
-from openfisca_tools import ReformType
+from policyengine_core import ReformType
 from policyengine_uk.data import DATASETS, SynthFRS
-from openfisca_tools.microsimulation import (
+from policyengine_core.microsimulation import (
     Microsimulation as GeneralMicrosimulation,
 )
-from openfisca_tools.hypothetical import IndividualSim as GeneralIndividualSim
+from policyengine_core.hypothetical import IndividualSim as GeneralIndividualSim
 import yaml
 from pathlib import Path
 import h5py
 import pandas as pd
-from openfisca_tools.parameters import (
+from policyengine_core.parameters import (
     interpolate_parameters,
     uprate_parameters,
     propagate_parameter_metadata,
 )
-from openfisca_core.model_api import Reform
+from policyengine_core.model_api import Reform
 from policyengine_uk.tools.tax_benefit_uprating import add_tax_benefit_uprating
 from functools import reduce
 

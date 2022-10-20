@@ -4,7 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 import h5py
 import numpy as np
-from openfisca_tools.data import PrivateDataset
+from policyengine_core.data import PrivateDataset
 
 from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 

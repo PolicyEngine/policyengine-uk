@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from openfisca_tools.data import PrivateDataset, Dataset
+from policyengine_core.data import PrivateDataset, Dataset
 from policyengine_uk.data.datasets.frs.frs import FRS
 import h5py
 from policyengine_uk.data.datasets.frs.enhanced.stages.extension.spi_imputation import (

@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from policyengine_uk.tools.testing import run_tests
-from openfisca_core.scripts import build_tax_benefit_system
+from policyengine_core.scripts import build_tax_benefit_system
 
 policyengine_uk = "policyengine_uk"
 

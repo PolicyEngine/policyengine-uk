@@ -1,4 +1,4 @@
-from openfisca_core.variables import Variable
+from policyengine_core.variables import Variable
 from typing import Callable, Type
 import h5py
 from policyengine_uk.data.datasets.frs.enhanced.stages.extension.extended_frs import (
@@ -8,7 +8,7 @@ from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs i
     EnhancedFRS,
 )
 from policyengine_uk.repo import REPO
-from openfisca_tools.data import Dataset
+from policyengine_core.data import Dataset
 
 
 def baseline_is_nonzero(variable: Type[Variable]) -> Callable:

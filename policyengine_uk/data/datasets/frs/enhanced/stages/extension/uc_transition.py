@@ -1,7 +1,7 @@
 from typing import Dict
 from policyengine_uk.data.datasets.frs.frs import FRS
 from numpy.typing import ArrayLike
-from openfisca_tools.data.dataset import Dataset
+from policyengine_core.data.dataset import Dataset
 
 LEGACY_BENEFITS = [
     "working_tax_credit",

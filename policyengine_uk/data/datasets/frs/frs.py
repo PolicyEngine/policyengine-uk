@@ -1,5 +1,5 @@
 from typing import List
-from openfisca_tools.data import PrivateDataset
+from policyengine_core.data import PrivateDataset
 import h5py
 import logging
 import pandas as pd

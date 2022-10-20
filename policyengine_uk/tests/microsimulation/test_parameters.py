@@ -1,6 +1,6 @@
 from policyengine_uk.data import EnhancedFRS
 from policyengine_uk import Microsimulation
-from openfisca_tools.testing import generate_tests
+from policyengine_core.testing import generate_tests
 
 
 test_parameter = generate_tests(

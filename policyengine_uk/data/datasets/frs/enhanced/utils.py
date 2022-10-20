@@ -2,7 +2,7 @@ from typing import Dict
 import h5py
 from numpy.typing import ArrayLike
 import numpy as np
-from openfisca_tools.data.dataset import Dataset
+from policyengine_core.data.dataset import Dataset
 
 
 def clone_and_replace_half(

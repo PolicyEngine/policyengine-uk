@@ -1,4 +1,4 @@
-from openfisca_tools.data import openfisca_data_cli
+from policyengine_core.data import openfisca_data_cli
 from policyengine_uk.data.datasets import DATASETS
 
 

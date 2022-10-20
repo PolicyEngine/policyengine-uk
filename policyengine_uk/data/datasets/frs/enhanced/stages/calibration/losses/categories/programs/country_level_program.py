@@ -2,7 +2,7 @@ from ...loss_category import LossCategory
 from policyengine_uk.tools.simulation import Microsimulation
 import tensorflow as tf
 import numpy as np
-from openfisca_core.parameters import ParameterNode, Parameter
+from policyengine_core.parameters import ParameterNode, Parameter
 from typing import Iterable, Tuple
 from policyengine_uk.parameter_tree import parameters
 

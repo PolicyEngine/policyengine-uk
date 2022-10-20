@@ -1,5 +1,5 @@
 import numpy as np
-from openfisca_core.parameters import ParameterNode, Parameter
+from policyengine_core.parameters import ParameterNode, Parameter
 from numpy.typing import ArrayLike
 from itertools import chain
 from functools import reduce

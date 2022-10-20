@@ -1,6 +1,6 @@
 from microdf import MicroDataFrame
 import synthimpute as si
-from openfisca_tools.data.dataset import Dataset
+from policyengine_core.data.dataset import Dataset
 from policyengine_uk.data.datasets.frs.frs import FRS
 from policyengine_uk.data.datasets.spi.spi import SPI
 

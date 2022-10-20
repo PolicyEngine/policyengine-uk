@@ -1,4 +1,4 @@
-from openfisca_core.parameters import ParameterNode, Parameter
+from policyengine_core.parameters import ParameterNode, Parameter
 
 
 def add_price_cap_parameters(

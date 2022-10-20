@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from openfisca_tools.data import Dataset, PublicDataset
+from policyengine_core.data import Dataset, PublicDataset
 import pandas as pd
 import h5py
 from policyengine_uk.data.datasets.frs.frs import FRS

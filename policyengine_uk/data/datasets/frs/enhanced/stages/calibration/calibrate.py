@@ -17,7 +17,7 @@ from pathlib import Path
 import h5py
 import pandas as pd
 from argparse import ArgumentParser
-from openfisca_tools.data import Dataset
+from policyengine_core.data import Dataset
 
 
 class HouseholdWeights:

@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple
 import pandas as pd
-from openfisca_tools.data import Dataset, PrivateDataset
+from policyengine_core.data import Dataset, PrivateDataset
 import h5py
 from policyengine_uk.data.datasets.lcfs.raw_lcfs import RawLCFS
 from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER

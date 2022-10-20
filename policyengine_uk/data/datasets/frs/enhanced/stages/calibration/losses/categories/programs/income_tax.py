@@ -2,7 +2,7 @@ import numpy as np
 from ...loss_category import LossCategory
 import tensorflow as tf
 from typing import Iterable, Tuple
-from openfisca_core.taxscales import SingleAmountTaxScale
+from policyengine_core.taxscales import SingleAmountTaxScale
 
 
 class IncomeTax(LossCategory):

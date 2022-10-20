@@ -1,5 +1,5 @@
-from openfisca_core.model_api import *
-from openfisca_core.parameters.parameter_scale import ParameterScale
+from policyengine_core.model_api import *
+from policyengine_core.parameters.parameter_scale import ParameterScale
 from policyengine_uk.entities import *
 from policyengine_uk.tools.general import *
 from datetime import datetime

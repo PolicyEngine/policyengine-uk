@@ -1,5 +1,5 @@
 import logging
-from openfisca_core.variables import Variable
+from policyengine_core.variables import Variable
 from typing import Callable, Type
 import h5py
 from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (

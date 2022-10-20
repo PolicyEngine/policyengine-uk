@@ -1,6 +1,6 @@
 import re
 import shutil
-from openfisca_tools.data import PrivateDataset
+from policyengine_core.data import PrivateDataset
 import pandas as pd
 from pathlib import Path
 from tqdm import tqdm

@@ -1,5 +1,5 @@
 from policyengine_uk import BASELINE_VARIABLES
-from openfisca_core.model_api import Enum
+from policyengine_core.model_api import Enum
 
 
 def test_variable_names_match_return_types():

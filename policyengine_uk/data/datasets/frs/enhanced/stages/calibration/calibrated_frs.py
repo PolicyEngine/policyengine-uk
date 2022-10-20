@@ -1,5 +1,5 @@
 import logging
-from openfisca_tools.data import PrivateDataset, Dataset
+from policyengine_core.data import PrivateDataset, Dataset
 from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
 from ..extension import ExtendedFRS
 import h5py
