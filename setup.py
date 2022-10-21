@@ -40,6 +40,7 @@ setup(
         "gif[plotly]>=3.0.0",
         "yaml-changelog>=0.1.5",
         "click>=8.0.0",
+        "synthimpute",
     ],
     extras_require={
         "dev": [
