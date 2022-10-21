@@ -17,7 +17,7 @@ def main(args):
     with open("docs/summary/summary.yaml", "r") as f:
         previous_results = yaml.safe_load(f)
 
-    sim = Microsimulation(dataset=EnhancedFRS, year=2022)
+    sim = Microsimulation(dataset=EnhancedFRS, dataset_year=2022)
     year = 2022
 
     results = {

@@ -1,32 +1,29 @@
-# -*- coding: utf-8 -*-
-
-import os
-from policyengine_uk import entities
-import os
+from pathlib import Path
+from policyengine_uk.entities import entities
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
+from policyengine_core.simulations import (
+    Simulation as CoreSimulation,
+    Microsimulation as CoreMicrosimulation,
+    IndividualSim as CoreIndividualSim,
+)
+from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
+    EnhancedFRS,
+)
 from policyengine_uk.parameters.gov.ofgem.price_cap.add_price_cap_parameters import (
     add_price_cap_parameters,
 )
-from policyengine_core.parameters import uprate_parameters
 
-COUNTRY_DIR = os.path.dirname(os.path.abspath(__file__))
+COUNTRY_DIR = Path(__file__).parent
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
-    CURRENCY = "£"
+    parameters_dir = COUNTRY_DIR / "parameters"
+    variables_dir = COUNTRY_DIR / "variables"
+    auto_carry_over_input_variables = True
 
     def __init__(self):
-        # We initialize our tax and benefit system with the general constructor
-        super(CountryTaxBenefitSystem, self).__init__(entities.entities)
+        super().__init__(entities)
 
-        # We add to our tax and benefit system all the variables
-        self.add_variables_from_directory(
-            os.path.join(COUNTRY_DIR, "variables")
-        )
-
-        # We add to our tax and benefit system all the legislation parameters defined in the  parameters files
-        param_path = os.path.join(COUNTRY_DIR, "parameters")
-        self.load_parameters(param_path)
         self.parameters = add_price_cap_parameters(
             self.parameters,
             start_year=2019,
@@ -35,13 +32,37 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             end_quarter=4,
         )
 
-        self.parameters = uprate_parameters(self.parameters)
-
         self.parameters.add_child("baseline", self.parameters.clone())
 
-        # We define which variable, parameter and simulation example will be used in the OpenAPI specification
-        self.open_api_config = {
-            "variable_example": "JSA",
-            "parameter_example": "taxes.income_tax.income_tax",
-            "simulation_example": None,
-        }
+
+system = CountryTaxBenefitSystem()
+
+parameters = system.parameters
+variables = system.variables
+
+
+class Simulation(CoreSimulation):
+    default_tax_benefit_system = CountryTaxBenefitSystem
+    default_tax_benefit_system_instance = system
+    default_calculation_period = 2022
+    default_input_period = 2022
+
+
+class Microsimulation(CoreMicrosimulation):
+    default_tax_benefit_system = CountryTaxBenefitSystem
+    default_tax_benefit_system_instance = system
+    default_dataset = EnhancedFRS
+    default_dataset_year = 2022
+    default_calculation_period = 2022
+    default_input_period = 2022
+
+
+class IndividualSim(CoreIndividualSim):  # Deprecated
+    tax_benefit_system = CountryTaxBenefitSystem
+    entities = {entity.key: entity for entity in entities}
+    default_dataset = EnhancedFRS
+
+
+BASELINE_VARIABLES = {
+    variable.name: variable for variable in system.variables.values()
+}

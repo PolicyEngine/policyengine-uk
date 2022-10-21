@@ -4,7 +4,6 @@ from policyengine_core.model_api import *
 from policyengine_core import periods
 from policyengine_uk import (
     reforms,
-    BASELINE_PARAMETERS,
     BASELINE_VARIABLES,
     Microsimulation,
     IndividualSim,

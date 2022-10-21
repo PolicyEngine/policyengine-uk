@@ -438,8 +438,6 @@ values:
   2027-01-01: 146.57
 metadata:
   unit: currency-GBP
-  interpolation:
-    interval: month
   reference:
     - title: ONS
       href: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23

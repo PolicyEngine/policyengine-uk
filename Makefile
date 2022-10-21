@@ -5,32 +5,16 @@ all: install
 install:
 	pip install -e .
 
-microdata:
-	python policyengine_uk/initial_setup.py
-
-test-setup:
-	python policyengine_uk/tools/testing_setup.py
-
 format:
-	autopep8 -r . --in-place
 	black . -l 79
 
 test:
-	openfisca-uk test policyengine_uk/tests/policy/baseline
-	openfisca-uk test policyengine_uk/tests/policy/reforms/parametric
-	pytest policyengine_uk/tests/code_health -vv
-	pytest policyengine_uk/tests/microsimulation/ -vv
+	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
+	pytest policyengine_uk/tests/
 
-serve:
-	openfisca serve --country-package policyengine_uk
-
-summary-stats:
-	python docs/summary/generate_descriptions.py
-	python docs/summary/generate_summary.py
-
-documentation: summary-stats
+documentation:
 	jb clean docs/book
-	jb build docs/book -W
+	jb build docs/book
 
 changelog:
 	build-changelog changelog.yaml --output changelog.yaml --update-last-date --start-from 0.1.0 --append-file changelog_entry.yaml
@@ -38,9 +22,3 @@ changelog:
 	bump-version changelog.yaml setup.py
 	rm changelog_entry.yaml || true
 	touch changelog_entry.yaml
-
-calibrate:
-	python policyengine_uk/calibration/calibrate.py
-
-calibration-dashboard:
-	streamlit run policyengine_uk/data/datasets/frs/enhanced/stages/calibration/monitor.py

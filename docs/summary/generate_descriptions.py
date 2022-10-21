@@ -2,12 +2,12 @@ from policyengine_uk.data import EnhancedFRS
 from policyengine_uk import Microsimulation
 from tqdm import tqdm
 
-sim = Microsimulation(dataset=EnhancedFRS, year=2022)
+sim = Microsimulation(dataset=EnhancedFRS, dataset_year=2022)
 
 text = "# OpenFisca-UK Variable Statistics\n\nAll statistics generated from the uprated (to 2022) 2019-20 Family Resources Survey, with simulation turned on.\n\n"
 
 for name, var in tqdm(
-    sim.simulation.tax_benefit_system.variables.items(),
+    sim.tax_benefit_system.variables.items(),
     desc="Generating descriptions",
 ):
     values = sim.calc(name, 2022)

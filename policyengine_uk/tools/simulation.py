@@ -12,19 +12,21 @@ from policyengine_uk.reforms.presets.current_date import use_current_parameters
 from policyengine_uk.reforms.presets.average_parameters import (
     average_parameters as apply_parameter_averaging,
 )
-from policyengine_uk.tools.baseline_variables import generate_baseline_variables
-from policyengine_uk.tools.parameters import backdate_parameters
-from policyengine_core import ReformType
-from policyengine_uk.data import DATASETS, SynthFRS
-from policyengine_core.microsimulation import (
-    Microsimulation as GeneralMicrosimulation,
+from policyengine_uk.tools.baseline_variables import (
+    generate_baseline_variables,
 )
-from policyengine_core.hypothetical import IndividualSim as GeneralIndividualSim
+from policyengine_uk.tools.parameters import backdate_parameters
+from policyengine_core.reforms import Reform
+from policyengine_uk.data import DATASETS, SynthFRS
+from policyengine_core.simulations import (
+    Microsimulation as GeneralMicrosimulation,
+    IndividualSim as GeneralIndividualSim,
+)
 import yaml
 from pathlib import Path
 import h5py
 import pandas as pd
-from policyengine_core.parameters import (
+from policyengine_core.parameters.operations import (
     interpolate_parameters,
     uprate_parameters,
     propagate_parameter_metadata,
@@ -75,13 +77,13 @@ class Microsimulation(GeneralMicrosimulation):
 
     def __init__(
         self,
-        reform: ReformType = (),
+        reform: Reform = (),
         dataset: type = EnhancedFRS,
         year: int = 2022,
         adjust_weights: bool = False,
         average_parameters: bool = False,
         add_baseline_values: bool = True,
-        post_reform: ReformType = None,
+        post_reform: Reform = None,
     ):
         if len(dataset.years) == 0:
             logging.warning(
@@ -129,7 +131,7 @@ class Microsimulation(GeneralMicrosimulation):
                     )
                     dataset.download(year)
 
-        super().__init__(reform=reform, dataset=dataset, year=year)
+        super().__init__(reform=reform, dataset=dataset, dataset_year=year)
 
         if (
             ("frs_enhanced" in dataset.name)

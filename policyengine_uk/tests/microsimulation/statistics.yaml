@@ -24,7 +24,7 @@ JSA_income:
 income_support:
   test:
     - absolute_aggregate_error_less_than: 0.4e+9
-    - relative_caseload_error_less_than: 0.15
+    - relative_caseload_error_less_than: 0.5
 universal_credit:
   test:
     - absolute_aggregate_error_less_than: 0.1

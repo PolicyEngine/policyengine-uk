@@ -59,11 +59,9 @@ class CountryLevelProgram(LossCategory):
         if "participants" not in parameter._children:
             return
 
-        entity = self.sim.simulation.tax_benefit_system.variables[
-            self.variable
-        ].entity
+        entity = self.sim.tax_benefit_system.variables[self.variable].entity
 
-        values = self.sim.map_to(
+        values = self.sim.map_result(
             self.sim.calc(self.variable).values > 0, entity.key, "household"
         )
 

@@ -13,6 +13,7 @@ class EnhancedFRS(PrivateDataset):
     data_format = Dataset.TIME_PERIOD_ARRAYS
     folder_path = policyengine_uk_MICRODATA_FOLDER
     filename_by_year = {2022: "enhanced_frs_2022_v0_26.h5"}
+    bucket_name = "policyengine-uk-data"
 
     def generate(self, year: int):
         if year not in CalibratedFRS.years:

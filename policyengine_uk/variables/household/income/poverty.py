@@ -139,8 +139,8 @@ class baseline_hbai_excluded_income(Variable):
             # Simulate baseline policy
             dataset = EnhancedFRS if 2022 in EnhancedFRS.years else SynthFRS
             result = Microsimulation(
-                dataset=dataset, year=2022
-            ).simulation.calculate("hbai_excluded_income", period)
+                dataset=dataset, dataset_year=2022
+            ).calculate("hbai_excluded_income", period)
             # Check that the dataset/year combination is valid
             # (i.e. that the arrays are the same size)
             if len(result) == len(household.nb_persons()):

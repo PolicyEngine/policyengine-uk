@@ -58,7 +58,7 @@ class IncomeTax(LossCategory):
             income_is_in_band = (total_income >= lower_threshold) * (
                 total_income < upper_threshold
             )
-            household_values = self.sim.map_to(
+            household_values = self.sim.map_result(
                 income_tax * income_is_in_band, "person", "household"
             )
 
@@ -96,7 +96,7 @@ class IncomeTax(LossCategory):
                 self.comparisons += [
                     (
                         f"income_tax_payers_{country}_{band}",
-                        self.sim.map_to(
+                        self.sim.map_result(
                             (income_tax > 0)
                             * (person_country == country)
                             * (tax_band == band),

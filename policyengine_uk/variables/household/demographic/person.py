@@ -44,12 +44,7 @@ class age(Variable):
     documentation = "The age of the person in years"
     definition_period = YEAR
     quantity_type = STOCK
-
-    def formula(person, period, parameters):
-        ADULT_DEFAULT_AGE = 18
-        CHILD_DEFAULT_AGE = 10
-        is_adult = person.benunit.members_role == BenUnit.ADULT
-        return where(is_adult, ADULT_DEFAULT_AGE, CHILD_DEFAULT_AGE)
+    default_value = 18
 
 
 class birth_year(Variable):

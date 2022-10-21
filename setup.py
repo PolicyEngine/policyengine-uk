@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="OpenFisca-UK",
+    name="PolicyEngine-UK",
     version="0.34.1",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
@@ -31,10 +31,8 @@ setup(
         "numpy>=1.17.5",
         "pyyaml>=5.3.1",
         "pytest>=5.4.3",
-        "OpenFisca-Core>=35.4.1",
+        "PolicyEngine-Core>=1.6.0,<2",
         "microdf_python>=0.3.0",
-        "OpenFisca-UK-Data>=0.9.0",
-        "OpenFisca-Tools>=0.3.0,<1.0.0",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
         "argparse>=1.4.0",
@@ -54,11 +52,7 @@ setup(
         ]
     },
     entry_points={
-        "console_scripts": [
-            "openfisca-uk-setup=policyengine_uk.initial_setup:main",
-            "openfisca-uk=policyengine_uk.tools.cli:main",
-            "openfisca-uk-data=policyengine_uk.data.cli:cli",
-        ],
+        "console_scripts": [],
     },
     packages=find_packages(),
 )

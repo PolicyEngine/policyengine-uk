@@ -12,9 +12,3 @@ parts:
       - file: programs/gov/hmrc/child-benefit
       - file: programs/gov/hmrc/stamp-duty
       - file: programs/contrib/ubi-center/carbon-tax
-  - caption: Usage
-    chapters:
-      - file: usage/reforms
-      - file: usage/weighting
-      - file: usage/individuals
-      - file: usage/graphs

@@ -41,7 +41,9 @@ class FRS(PrivateDataset):
                 frs_year = max(self.years)
                 from policyengine_uk import Microsimulation
 
-                sim = Microsimulation(dataset=self, year=max(self.years))
+                sim = Microsimulation(
+                    dataset=self, dataset_year=max(self.years)
+                )
                 frs = h5py.File(self.file(year), mode="w")
                 for variable in self.keys(frs_year):
                     frs[variable] = sim.calc(variable).values
@@ -288,7 +290,9 @@ def add_household_variables(frs: h5py.File, household: DataFrame):
         household (DataFrame)
     """
     # Add region
-    from policyengine_uk.variables.household.demographic.household import Region
+    from policyengine_uk.variables.household.demographic.household import (
+        Region,
+    )
 
     REGIONS = [
         "NORTH_EAST",

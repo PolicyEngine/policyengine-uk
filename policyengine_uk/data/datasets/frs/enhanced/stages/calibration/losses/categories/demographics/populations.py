@@ -47,7 +47,7 @@ class Populations(LossCategory):
                     self.comparisons += [
                         (
                             f"{target_region}_{target_sex}_{lower_age}_{lower_age + 10}",
-                            self.sim.map_to(
+                            self.sim.map_result(
                                 meets_all_criteria, "person", "household"
                             ),
                             actual_population,
@@ -58,7 +58,7 @@ class Populations(LossCategory):
                 self.comparisons += [
                     (
                         f"{target_sex}_{lower_age}_{lower_age + 10}",
-                        self.sim.map_to(
+                        self.sim.map_result(
                             meets_age_criteria & (sex == target_sex),
                             "person",
                             "household",
@@ -72,7 +72,9 @@ class Populations(LossCategory):
             self.comparisons += [
                 (
                     f"{lower_age}_{lower_age + 10}",
-                    self.sim.map_to(meets_age_criteria, "person", "household"),
+                    self.sim.map_result(
+                        meets_age_criteria, "person", "household"
+                    ),
                     age_population,
                 )
             ]
@@ -82,7 +84,7 @@ class Populations(LossCategory):
         self.comparisons += [
             (
                 f"people",
-                self.sim.map_to(np.ones_like(age), "person", "household"),
+                self.sim.map_result(np.ones_like(age), "person", "household"),
                 total_population,
             )
         ]

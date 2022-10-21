@@ -11,9 +11,9 @@ from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs i
 with open(Path(__file__).parent / "statistics.yaml") as f:
     statistics = yaml.load(f, Loader=yaml.SafeLoader)
 
-sim = Microsimulation(dataset=EnhancedFRS, year=2022)
-variables = sim.simulation.tax_benefit_system.variables
-parameters = sim.simulation.tax_benefit_system.parameters
+sim = Microsimulation(dataset=EnhancedFRS, dataset_year=2022)
+variables = sim.tax_benefit_system.variables
+parameters = sim.tax_benefit_system.parameters
 
 
 def get_policyengine_uk_aggregate(variable: str, year: int) -> float:
@@ -21,7 +21,7 @@ def get_policyengine_uk_aggregate(variable: str, year: int) -> float:
 
 
 def get_policyengine_uk_caseload(variable: str, year: int) -> float:
-    values = sim.map_to(
+    values = sim.map_result(
         sim.calc(variable, period=year).values > 0,
         variables[variable].entity.key,
         "household",

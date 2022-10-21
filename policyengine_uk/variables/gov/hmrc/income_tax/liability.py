@@ -470,14 +470,13 @@ class income_tax_pre_charges(Variable):
         if parameters(
             period
         ).contrib.ubi_center.exempt_pensioners_from_tax_changes:
-            from policyengine_uk.parameter_tree import (
-                parameters as baseline_parameters,
-            )
 
             baseline_earned_income_tax = (
                 person.simulation.tax_benefit_system.variables[
                     "earned_income_tax"
-                ].get_formula(period)(person, period, baseline_parameters)
+                ].get_formula(period)(
+                    person, period, lambda p: parameters(period).baseline
+                )
             )
             is_sp_age = person("is_SP_age", period)
             earned_tax = where(

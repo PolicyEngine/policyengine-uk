@@ -16,7 +16,7 @@ def remove_zero_weight_households(dataset: Dataset, year: int):
 
     from policyengine_uk import Microsimulation
 
-    sim = Microsimulation(dataset=dataset, year=year)
+    sim = Microsimulation(dataset=dataset, dataset_year=year)
 
     # To be removed, households must have zero weight in all of these years
     YEARS = list(range(year, 2027))
@@ -24,11 +24,9 @@ def remove_zero_weight_households(dataset: Dataset, year: int):
     variables = dataset.keys(year)
 
     for variable in variables:
-        if variable not in sim.simulation.tax_benefit_system.variables:
+        if variable not in sim.tax_benefit_system.variables:
             continue
-        entity = sim.simulation.tax_benefit_system.variables[
-            variable
-        ].entity.key
+        entity = sim.tax_benefit_system.variables[variable].entity.key
         has_nonzero_weight = (
             sum(
                 [

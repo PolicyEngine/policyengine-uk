@@ -63,7 +63,7 @@ class social_security_income(Variable):
             "ESA_contrib",
             "carers_allowance",
         ]
-        return add(person, period, COMPONENTS, options=[ADD])
+        return add(person, period, COMPONENTS)
 
 
 @uprated(by="calibration.uprating.earnings")

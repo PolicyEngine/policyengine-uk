@@ -91,7 +91,9 @@ class LCFS(PrivateDataset):
                 lcfs_year = max(self.years)
                 from policyengine_uk import Microsimulation
 
-                sim = Microsimulation(dataset=self, year=max(self.years))
+                sim = Microsimulation(
+                    dataset=self, dataset_year=max(self.years)
+                )
                 lcfs = h5py.File(self.file(year), mode="w")
                 for variable in self.keys(lcfs_year):
                     lcfs[variable] = sim.calc(variable).values
