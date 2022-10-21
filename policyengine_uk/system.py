@@ -61,6 +61,7 @@ class IndividualSim(CoreIndividualSim):  # Deprecated
     tax_benefit_system = CountryTaxBenefitSystem
     entities = {entity.key: entity for entity in entities}
     default_dataset = EnhancedFRS
+    required_entities = None
 
 
 BASELINE_VARIABLES = {

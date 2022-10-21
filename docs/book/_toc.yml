@@ -8,7 +8,5 @@ parts:
       - file: model/reweighting
   - caption: Programs
     chapters:
-      - file: programs/gov/dwp/pension-credit
       - file: programs/gov/hmrc/child-benefit
-      - file: programs/gov/hmrc/stamp-duty
       - file: programs/contrib/ubi-center/carbon-tax

@@ -27,7 +27,7 @@ setup(
     ],
     install_requires=[
         "requests>=2.25.1",
-        "pandas>=1.1.4",
+        "pandas",
         "numpy>=1.17.5",
         "pyyaml>=5.3.1",
         "pytest>=5.4.3",
