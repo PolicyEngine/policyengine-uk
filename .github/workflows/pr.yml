@@ -54,8 +54,6 @@ jobs:
           export_default_credentials: true
       - name: Install package
         run: make install
-      - name: Setup tests
-        run: make test-setup
       - name: Run tests
         run: make test
       - name: Generate documentation
