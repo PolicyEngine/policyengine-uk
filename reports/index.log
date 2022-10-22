@@ -1,0 +1,93 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/jupyter_cache/executors/utils.py", line 51, in single_nb_execution
+    executenb(
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/nbclient/client.py", line 1204, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/nbclient/util.py", line 84, in wrapped
+    return just_run(coro(*args, **kwargs))
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/nbclient/util.py", line 62, in just_run
+    return loop.run_until_complete(coro)
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/asyncio/base_events.py", line 647, in run_until_complete
+    return future.result()
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/nbclient/client.py", line 663, in async_execute
+    await self.async_execute_cell(
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/nbclient/client.py", line 965, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/nbclient/client.py", line 862, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+from policyengine_uk import Microsimulation
+import pandas as pd
+
+sim = Microsimulation()
+
+df = sim.df(["national_insurance", "income_tax", "people"])
+
+summary = pd.DataFrame(
+    df.groupby(sim.calc("region", map_to="person")).sum()
+).sort_values(by="people", ascending=False)
+summary.national_insurance = summary.national_insurance.apply(
+    lambda x: round(x / 1e9, 1)
+)
+summary.income_tax = summary.income_tax.apply(lambda x: round(x / 1e9, 1))
+summary.people = summary.people.apply(lambda x: round(x / 1e6, 1))
+summary.columns = [
+    "National Insurance (£bn)",
+    "Income Tax (£bn)",
+    "Population (millions)",
+]
+summary
+------------------
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mValueError[0m                                Traceback (most recent call last)
+Cell [0;32mIn [1], line 6[0m
+[1;32m      2[0m [38;5;28;01mimport[39;00m [38;5;21;01mpandas[39;00m [38;5;28;01mas[39;00m [38;5;21;01mpd[39;00m
+[1;32m      4[0m sim [38;5;241m=[39m Microsimulation()
+[0;32m----> 6[0m df [38;5;241m=[39m [43msim[49m[38;5;241;43m.[39;49m[43mdf[49m[43m([49m[43m[[49m[38;5;124;43m"[39;49m[38;5;124;43mnational_insurance[39;49m[38;5;124;43m"[39;49m[43m,[49m[43m [49m[38;5;124;43m"[39;49m[38;5;124;43mincome_tax[39;49m[38;5;124;43m"[39;49m[43m,[49m[43m [49m[38;5;124;43m"[39;49m[38;5;124;43mpeople[39;49m[38;5;124;43m"[39;49m[43m][49m[43m)[49m
+[1;32m      8[0m summary [38;5;241m=[39m pd[38;5;241m.[39mDataFrame(
+[1;32m      9[0m     df[38;5;241m.[39mgroupby(sim[38;5;241m.[39mcalc([38;5;124m"[39m[38;5;124mregion[39m[38;5;124m"[39m, map_to[38;5;241m=[39m[38;5;124m"[39m[38;5;124mperson[39m[38;5;124m"[39m))[38;5;241m.[39msum()
+[1;32m     10[0m )[38;5;241m.[39msort_values(by[38;5;241m=[39m[38;5;124m"[39m[38;5;124mpeople[39m[38;5;124m"[39m, ascending[38;5;241m=[39m[38;5;28;01mFalse[39;00m)
+[1;32m     11[0m summary[38;5;241m.[39mnational_insurance [38;5;241m=[39m summary[38;5;241m.[39mnational_insurance[38;5;241m.[39mapply(
+[1;32m     12[0m     [38;5;28;01mlambda[39;00m x: [38;5;28mround[39m(x [38;5;241m/[39m [38;5;241m1e9[39m, [38;5;241m1[39m)
+[1;32m     13[0m )
+
+File [0;32m/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py:95[0m, in [0;36mMicrosimulation.calculate_dataframe[0;34m(self, variable_names, period, map_to, use_weights)[0m
+[1;32m     93[0m [38;5;28;01mif[39;00m [38;5;129;01mnot[39;00m use_weights:
+[1;32m     94[0m     [38;5;28;01mreturn[39;00m values
+[0;32m---> 95[0m weights [38;5;241m=[39m [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43mget_weights[49m[43m([49m[43mvariable_names[49m[43m[[49m[38;5;241;43m0[39;49m[43m][49m[43m,[49m[43m [49m[43mperiod[49m[43m)[49m
+[1;32m     96[0m [38;5;28;01mreturn[39;00m MicroDataFrame(values, weights[38;5;241m=[39mweights)
+
+File [0;32m/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py:19[0m, in [0;36mMicrosimulation.get_weights[0;34m(self, variable_name, period, map_to)[0m
+[1;32m     16[0m [38;5;28;01mdef[39;00m [38;5;21mget_weights[39m(
+[1;32m     17[0m     [38;5;28mself[39m, variable_name: [38;5;28mstr[39m, period: Period, map_to: [38;5;28mstr[39m [38;5;241m=[39m [38;5;28;01mNone[39;00m
+[1;32m     18[0m ) [38;5;241m-[39m[38;5;241m>[39m ArrayLike:
+[0;32m---> 19[0m     time_period [38;5;241m=[39m [43mget_period[49m[43m([49m[43mperiod[49m[43m)[49m
+[1;32m     20[0m     variable [38;5;241m=[39m [38;5;28mself[39m[38;5;241m.[39mtax_benefit_system[38;5;241m.[39mget_variable(variable_name)
+[1;32m     21[0m     entity_key [38;5;241m=[39m map_to [38;5;129;01mor[39;00m variable[38;5;241m.[39mentity[38;5;241m.[39mkey
+
+File [0;32m/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/policyengine_core/periods/helpers.py:154[0m, in [0;36mperiod[0;34m(value)[0m
+[1;32m    152[0m     [38;5;28;01mreturn[39;00m periods[38;5;241m.[39mPeriod((config[38;5;241m.[39mYEAR, periods[38;5;241m.[39mInstant((value, [38;5;241m1[39m, [38;5;241m1[39m)), [38;5;241m1[39m))
+[1;32m    153[0m [38;5;28;01mif[39;00m [38;5;129;01mnot[39;00m [38;5;28misinstance[39m(value, [38;5;28mstr[39m):
+[0;32m--> 154[0m     [43mraise_error[49m[43m([49m[43mvalue[49m[43m)[49m
+[1;32m    156[0m [38;5;66;03m# try to parse as a simple period[39;00m
+[1;32m    157[0m period [38;5;241m=[39m parse_simple_period(value)
+
+File [0;32m/opt/hostedtoolcache/Python/3.9.15/x64/lib/python3.9/site-packages/policyengine_core/periods/helpers.py:143[0m, in [0;36mperiod.<locals>.raise_error[0;34m(value)[0m
+[1;32m    133[0m [38;5;28;01mdef[39;00m [38;5;21mraise_error[39m(value):
+[1;32m    134[0m     message [38;5;241m=[39m os[38;5;241m.[39mlinesep[38;5;241m.[39mjoin(
+[1;32m    135[0m         [
+[1;32m    136[0m             [38;5;124m"[39m[38;5;124mExpected a period (eg. [39m[38;5;124m'[39m[38;5;124m2017[39m[38;5;124m'[39m[38;5;124m, [39m[38;5;124m'[39m[38;5;124m2017-01[39m[38;5;124m'[39m[38;5;124m, [39m[38;5;124m'[39m[38;5;124m2017-01-01[39m[38;5;124m'[39m[38;5;124m, ...); got: [39m[38;5;124m'[39m[38;5;132;01m{}[39;00m[38;5;124m'[39m[38;5;124m.[39m[38;5;124m"[39m[38;5;241m.[39mformat(
+[0;32m   (...)[0m
+[1;32m    141[0m         ]
+[1;32m    142[0m     )
+[0;32m--> 143[0m     [38;5;28;01mraise[39;00m [38;5;167;01mValueError[39;00m(message)
+
+[0;31mValueError[0m: Expected a period (eg. '2017', '2017-01', '2017-01-01', ...); got: 'None'.
+Learn more about legal period formats in OpenFisca:
+<https://openfisca.org/doc/coding-the-legislation/35_periods.html#periods-in-simulations>.
+ValueError: Expected a period (eg. '2017', '2017-01', '2017-01-01', ...); got: 'None'.
+Learn more about legal period formats in OpenFisca:
+<https://openfisca.org/doc/coding-the-legislation/35_periods.html#periods-in-simulations>.
+
