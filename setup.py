@@ -45,12 +45,20 @@ setup(
     ],
     extras_require={
         "dev": [
-            "autopep8 >=1.5",
-            "flake8 >=3.5.0,<3.8.0",
-            "flake8-print",
-            "pycodestyle >=2.3.0,<2.6.0",  # To avoid incompatibility with flake
-            "tensorflow",
-            "streamlit",
+            "black",
+            "coverage",
+            "jupyter-book",
+            "plotly",
+            "pytest",
+            "setuptools",
+            "wheel",
+            "yaml-changelog>=0.1.7",
+            "linecheck",
+            "furo<2023",
+            "markupsafe==2.0.1",
+            "sphinx>=4.5.0,<5",
+            "sphinx-argparse>=0.3.2,<1",
+            "sphinx-math-dollar>=1.2.1,<2",
         ]
     },
     entry_points={
