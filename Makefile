@@ -3,7 +3,7 @@ all: install
 	python setup.py sdist bdist_wheel
 
 install:
-	pip install -e .
+	pip install -e .[dev]
 
 format:
 	black . -l 79
