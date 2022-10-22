@@ -535,3 +535,8 @@
     fixed:
     - UC amount for single, under-25s after the last uprating.
   date: 2022-10-04 11:02:45
+- bump: minor
+  changes:
+    changed:
+    - Moved to PolicyEngine Core.
+  date: 2022-10-22 18:22:07
