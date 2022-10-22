@@ -9,6 +9,8 @@ from policyengine_uk.system import (
     IndividualSim,
     COUNTRY_DIR,
     BASELINE_VARIABLES,
+    parameters,
+    variables,
 )
 from pathlib import Path
 import os
