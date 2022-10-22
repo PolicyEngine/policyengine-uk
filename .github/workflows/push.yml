@@ -6,8 +6,8 @@ jobs:
   Lint:
     runs-on: ubuntu-latest
     if: |
-      (github.repository == 'PolicyEngine/openfisca-uk')
-      && (github.event.head_commit.message == 'Update OpenFisca-UK')
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
     steps:
       - uses: actions/checkout@v2
       - name: Check formatting
@@ -17,8 +17,8 @@ jobs:
   versioning:
     name: Update versioning
     if: |
-      (github.repository == 'PolicyEngine/openfisca-uk')
-      && !(github.event.head_commit.message == 'Update OpenFisca-UK')
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && !(github.event.head_commit.message == 'Update PolicyEngine UK')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -45,8 +45,8 @@ jobs:
   Test:
     runs-on: ${{ matrix.os }}
     if: |
-      (github.repository == 'PolicyEngine/openfisca-uk')
-      && (github.event.head_commit.message == 'Update OpenFisca-UK')
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -85,8 +85,8 @@ jobs:
           FOLDER: docs/book/_build/html  # The folder the action should deploy.
   Publish:
     if: |
-      (github.repository == 'PolicyEngine/openfisca-uk')
-      && (github.event.head_commit.message == 'Update OpenFisca-UK')
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
