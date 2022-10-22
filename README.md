@@ -2,13 +2,13 @@
 
 OpenFisca UK is [PolicyEngine](https://policyengine.org)'s microsimulation model of the UK tax-benefit system, applying the [OpenFisca](https://openfisca.org) microsimulation framework.
 
-The elements are described in different folders. All the modelling happens within the `openfisca_uk` folder.
+The elements are described in different folders. All the modelling happens within the `policyengine_uk` folder.
 
 - The rates and other system parameters are in the `parameters` folder.
 - The formulas and inputs are in the `variables` folder.
 - This country package comes also with reforms in the `reforms` folder.
 
-The files that are outside from the `openfisca_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the `docs` folder.
+The files that are outside from the `policyengine_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the `docs` folder.
 
 The model supports multiple different input datasets provided by the user, one of which is the Family Resources Survey,[^1] containing microdata on household incomes across the UK. OpenFisca UK enhances this dataset by fusing it to other surveys and reweighting it to minimize a comprehensive loss metric that measures the difference from an array of administrative totals.
 

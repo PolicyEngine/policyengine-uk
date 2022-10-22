@@ -164,7 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Failed import of openfisca_uk.tools
+- Failed import of policyengine_uk.tools
 
 ## [0.20.0] - 2022-04-14 11:46:45
 

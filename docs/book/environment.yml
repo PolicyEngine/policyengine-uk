@@ -1,4 +1,4 @@
-name: openfisca_uk
+name: policyengine_uk
 channels:
   - defaults
 dependencies:

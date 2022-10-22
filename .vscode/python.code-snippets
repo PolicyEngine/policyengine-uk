@@ -38,7 +38,7 @@
 	"OpenFisca Variable File": {
 		"prefix": "file",
 		"body": [
-			"from openfisca_uk.model_api import *",
+			"from policyengine_uk.model_api import *",
 		]
 	}
 }

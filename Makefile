@@ -3,34 +3,22 @@ all: install
 	python setup.py sdist bdist_wheel
 
 install:
-	pip install -e .
-
-microdata:
-	python openfisca_uk/initial_setup.py
-
-test-setup:
-	python openfisca_uk/tools/testing_setup.py
+	pip install -e .[dev]
 
 format:
-	autopep8 -r . --in-place
 	black . -l 79
 
 test:
-	openfisca-uk test openfisca_uk/tests/policy/baseline
-	openfisca-uk test openfisca_uk/tests/policy/reforms/parametric
-	pytest openfisca_uk/tests/code_health -vv
-	pytest openfisca_uk/tests/microsimulation/ -vv
+	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
+	pytest policyengine_uk/tests/
 
-serve:
-	openfisca serve --country-package openfisca_uk
+test-setup:
+	policyengine-core data enhanced_frs download 2022 -c policyengine_uk
 
-summary-stats:
-	python docs/summary/generate_descriptions.py
-	python docs/summary/generate_summary.py
-
-documentation: summary-stats
+documentation:
 	jb clean docs/book
-	jb build docs/book -W
+	jb build docs/book
+	python policyengine_uk/tools/add_plotly_to_book.py docs/book/_build
 
 changelog:
 	build-changelog changelog.yaml --output changelog.yaml --update-last-date --start-from 0.1.0 --append-file changelog_entry.yaml
@@ -38,9 +26,3 @@ changelog:
 	bump-version changelog.yaml setup.py
 	rm changelog_entry.yaml || true
 	touch changelog_entry.yaml
-
-calibrate:
-	python openfisca_uk/calibration/calibrate.py
-
-calibration-dashboard:
-	streamlit run openfisca_uk/data/datasets/frs/enhanced/stages/calibration/monitor.py

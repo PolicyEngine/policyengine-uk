@@ -1,1 +1,0 @@
-from openfisca_uk import BASELINE_PARAMETERS as parameters

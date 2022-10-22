@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="OpenFisca-UK",
+    name="PolicyEngine-UK",
     version="0.34.1",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
@@ -27,14 +27,12 @@ setup(
     ],
     install_requires=[
         "requests>=2.25.1",
-        "pandas>=1.1.4",
+        "pandas",
         "numpy>=1.17.5",
         "pyyaml>=5.3.1",
         "pytest>=5.4.3",
-        "OpenFisca-Core>=35.4.1",
+        "PolicyEngine-Core>=1.6.0,<2",
         "microdf_python>=0.3.0",
-        "OpenFisca-UK-Data>=0.9.0",
-        "OpenFisca-Tools>=0.3.0,<1.0.0",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
         "argparse>=1.4.0",
@@ -42,23 +40,29 @@ setup(
         "gif[plotly]>=3.0.0",
         "yaml-changelog>=0.1.5",
         "click>=8.0.0",
+        "synthimpute",
+        "google-cloud-storage",
     ],
     extras_require={
         "dev": [
-            "autopep8 >=1.5",
-            "flake8 >=3.5.0,<3.8.0",
-            "flake8-print",
-            "pycodestyle >=2.3.0,<2.6.0",  # To avoid incompatibility with flake
-            "tensorflow",
-            "streamlit",
+            "black",
+            "coverage",
+            "jupyter-book",
+            "plotly",
+            "pytest",
+            "setuptools",
+            "wheel",
+            "yaml-changelog>=0.1.7",
+            "linecheck",
+            "furo<2023",
+            "markupsafe==2.0.1",
+            "sphinx>=4.5.0,<5",
+            "sphinx-argparse>=0.3.2,<1",
+            "sphinx-math-dollar>=1.2.1,<2",
         ]
     },
     entry_points={
-        "console_scripts": [
-            "openfisca-uk-setup=openfisca_uk.initial_setup:main",
-            "openfisca-uk=openfisca_uk.tools.cli:main",
-            "openfisca-uk-data=openfisca_uk.data.cli:cli",
-        ],
+        "console_scripts": [],
     },
     packages=find_packages(),
 )
