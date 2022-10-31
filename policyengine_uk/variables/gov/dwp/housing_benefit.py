@@ -133,7 +133,7 @@ class housing_benefit_applicable_income(Variable):
         income -= tax
         income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
         income += benefits
-        num_children = benunit.nb_persons(BenUnit.CHILD)
+        num_children = add(benunit, period, ["is_child"])
         childcare_amount_1 = (num_children == 1) * WTC.elements.childcare_1
         childcare_amount_2 = (num_children > 1) * WTC.elements.childcare_2
         max_weekly_childcare_amount = childcare_amount_1 + childcare_amount_2

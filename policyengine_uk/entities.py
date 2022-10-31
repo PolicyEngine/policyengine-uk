@@ -9,9 +9,9 @@ State = build_entity(
     label="State",
     roles=[
         {
-            "key": "citizen",
-            "plural": "citizens",
-            "label": "Citizen",
+            "key": "member",
+            "plural": "members",
+            "label": "Member",
             "doc": "A person who is a citizen of a country.",
         }
     ],
@@ -24,17 +24,11 @@ Household = build_entity(
     doc="Each household may contain multiple families, or benefit units.",
     roles=[
         {
-            "key": "adult",
-            "plural": "adults",
-            "label": "Adult",
-            "doc": "The adults in the household.",
-        },
-        {
-            "key": "child",
-            "plural": "children",
-            "label": "Child",
-            "doc": "Dependent children in the household.",
-        },
+            "key": "member",
+            "plural": "members",
+            "label": "Member",
+            "doc": "A person who is a citizen of a country.",
+        }
     ],
     containing_entities=["state"],
 )
@@ -46,18 +40,11 @@ BenUnit = build_entity(
     doc="A family is also known as a benefit unit, and contains parents and dependent children.",
     roles=[
         {
-            "key": "adult",
-            "plural": "adults",
-            "label": "Adult",
-            "max": 2,
-            "doc": "The one or two adults in the benefit unit.",
-        },
-        {
-            "key": "child",
-            "plural": "children",
-            "label": "Child",
-            "doc": "Dependent children.",
-        },
+            "key": "member",
+            "plural": "members",
+            "label": "Member",
+            "doc": "A person who is a citizen of a country.",
+        }
     ],
     containing_entities=["household", "state"],
 )

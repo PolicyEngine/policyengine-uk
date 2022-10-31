@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+import warnings
 
 
 class bi_individual_phaseout(Variable):
@@ -52,6 +53,9 @@ class bi_household_phaseout(Variable):
             bi.phase_out.household.rate * income_over_threshold
         )
         capped_deduction = min_(household_bi, uncapped_deduction)
+
+        warnings.filterwarnings("ignore")
+
         percent_reduction = where(
             household_bi > 0, capped_deduction / household_bi, 0
         )

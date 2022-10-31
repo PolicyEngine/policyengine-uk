@@ -94,7 +94,8 @@ class eldest_adult_age(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.max(
-            benunit.members("age", period.this_year), role=BenUnit.ADULT
+            benunit.members("age", period.this_year)
+            * benunit.members("is_adult", period)
         )
 
 
@@ -106,7 +107,8 @@ class youngest_adult_age(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.min(
-            benunit.members("age", period.this_year), role=BenUnit.ADULT
+            benunit.members("age", period.this_year)
+            * benunit.members("is_adult", period)
         )
 
 
@@ -118,7 +120,8 @@ class eldest_child_age(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.max(
-            benunit.members("age", period.this_year), role=BenUnit.CHILD
+            benunit.members("age", period.this_year)
+            * benunit.members("is_child", period)
         )
 
 
@@ -130,7 +133,8 @@ class youngest_child_age(Variable):
 
     def formula(benunit, period, parameters):
         return benunit.min(
-            benunit.members("age", period.this_year), role=BenUnit.CHILD
+            benunit.members("age", period.this_year)
+            * benunit.members("is_child", period)
         )
 
 
