@@ -85,6 +85,7 @@ class child_benefit(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    category = BENEFIT
 
     def formula(benunit, period):
         entitlement = benunit("child_benefit_entitlement", period)

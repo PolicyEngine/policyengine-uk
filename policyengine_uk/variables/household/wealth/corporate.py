@@ -1,19 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-@uprated(
-    by="household.wealth.national_balance_sheet.household.financial_net_worth"
-)
-class corporate_wealth(Variable):
-    label = "Corporate wealth"
-    documentation = "Total owned wealth in corporations"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-    quantity_type = STOCK
-
-
 class shareholding(Variable):
     label = "Share in the corporate sector"
     documentation = "Exposure to taxes on corporations"

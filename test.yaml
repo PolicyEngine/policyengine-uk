@@ -1,0 +1,6 @@
+- name: Marginal tax rate
+  period: 2022
+  input:
+    employment_income: 100_000
+  output:
+    marginal_tax_rate: 0.6

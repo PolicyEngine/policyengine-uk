@@ -237,7 +237,7 @@ class household_equivalisation_ahc(Variable):
         )
 
 
-class household_num_people(Variable):
+class household_count_people(Variable):
     value_type = int
     entity = Household
     label = "Number of people"
@@ -246,6 +246,7 @@ class household_num_people(Variable):
 
     def formula(household, period, parameters):
         return household.nb_persons()
+
 
 
 class household_num_benunits(Variable):

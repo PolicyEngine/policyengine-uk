@@ -17,37 +17,6 @@ class earned_income(Variable):
         return add(person, period, COMPONENTS)
 
 
-class sublet_income(Variable):
-    value_type = float
-    entity = Person
-    label = "Income received from sublet agreements"
-    definition_period = YEAR
-    unit = GBP
-
-
-class miscellaneous_income(Variable):
-    value_type = float
-    entity = Person
-    label = "Income from other sources"
-    definition_period = YEAR
-    unit = GBP
-
-
-class private_transfer_income(Variable):
-    value_type = float
-    entity = Person
-    label = "Private transfers"
-    definition_period = YEAR
-    unit = GBP
-
-
-class lump_sum_income(Variable):
-    value_type = float
-    entity = Person
-    label = "Lump sum income"
-    definition_period = YEAR
-    unit = GBP
-
 
 class market_income(Variable):
     value_type = float
@@ -188,14 +157,6 @@ class capital_income(Variable):
         )
 
 
-class maintenance_income(Variable):
-    value_type = float
-    entity = Person
-    label = "Maintenance payments"
-    definition_period = YEAR
-    unit = GBP
-
-
 class hbai_household_net_income(Variable):
     value_type = float
     entity = Household
@@ -212,17 +173,14 @@ class hbai_household_net_income(Variable):
 
 
 class household_net_income(Variable):
-    label = "Household net income"
+    label = "net income"
     documentation = "Disposable income for the household"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = GBP
-
-    def formula(household, period):
-        gross_income = household("household_gross_income", period)
-        tax = household("household_tax", period)
-        return gross_income - tax
+    adds = ["household_market_income", "household_benefits"]
+    subtracts = ["household_tax"]
 
 
 class real_household_net_income(Variable):
@@ -363,10 +321,42 @@ class minimum_wage(Variable):
 class household_market_income(Variable):
     value_type = float
     entity = Household
-    label = "Household market income"
+    label = "market income"
     documentation = "Market income for the household"
     definition_period = YEAR
     unit = GBP
+    adds = [
+        "employment_income",
+        "self_employment_income",
+        "savings_interest_income",
+        "dividend_income",
+        "miscellaneous_income",
+        "property_income",
+        "pension_income",
+        "private_transfer_income",
+        "maintenance_income",
+    ]
+
+class household_income_decile(Variable):
+    label = "household income decile"
+    documentation = "Decile of household income (person-weighted)"
+    entity = Household
+    definition_period = YEAR
+    value_type = int
 
     def formula(household, period, parameters):
-        return aggr(household, period, ["market_income"])
+        income = household("household_net_income", period)
+        count_people = household("household_count_people", period)
+        household_weight = household("household_weight", period)
+        weighted_income = MicroSeries(income, weights=household_weight * count_people)
+        return weighted_income.decile_rank().values
+
+class income_decile(Variable):
+    label = "income decile"
+    documentation = "Decile of household net income. Households are sorted by disposable income, and then divided into 10 equally-populated groups."
+    entity = Person
+    definition_period = YEAR
+    value_type = int
+
+    def formula(person, period, parameters):
+        return person.household("household_income_decile", period)

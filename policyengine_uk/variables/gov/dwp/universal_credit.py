@@ -589,6 +589,7 @@ class universal_credit(Variable):
     label = "Universal Credit"
     definition_period = YEAR
     unit = GBP
+    category = BENEFIT
 
     def formula(benunit, period, parameters):
         entitlement = benunit("universal_credit_entitlement", period)

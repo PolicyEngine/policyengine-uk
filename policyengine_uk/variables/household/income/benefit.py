@@ -38,15 +38,6 @@ class family_benefits_reported(Variable):
 
     def formula(person, period, parameters):
         FAMILY_BENEFITS = [
-            "child_benefit",
-            "ESA_income",
-            "housing_benefit",
-            "income_support",
-            "JSA_income",
-            "pension_credit",
-            "universal_credit",
-            "working_tax_credit",
-            "child_tax_credit",
         ]
         return add(person, period, [i + "_reported" for i in FAMILY_BENEFITS])
 
@@ -68,20 +59,39 @@ class benefits(Variable):
 class household_benefits(Variable):
     value_type = float
     entity = Household
-    label = "Benefits"
+    label = "benefits"
     definition_period = YEAR
     unit = GBP
-
-    def formula(household, period, parameters):
-        HOUSEHOLD_BENEFITS = [
-            "winter_fuel_allowance",
-            "energy_bills_rebate",
-            "cost_of_living_support_payment",
-            "energy_price_cap_subsidy",
-        ]
-        personal_benefits = aggr(household, period, ["benefits"])
-        household_benefits = add(household, period, HOUSEHOLD_BENEFITS)
-        return personal_benefits + household_benefits
+    adds = [
+        "child_benefit",
+        "ESA_income",
+        "housing_benefit",
+        "income_support",
+        "JSA_income",
+        "pension_credit",
+        "universal_credit",
+        "working_tax_credit",
+        "child_tax_credit",
+        "attendance_allowance",
+        "AFCS",
+        "BSP",
+        "carers_allowance",
+        "dla",
+        "ESA_contrib",
+        "IIDB",
+        "incapacity_benefit",
+        "JSA_contrib",
+        "pip",
+        "sda",
+        "state_pension",
+        "student_payments",
+        "student_loans",
+        "maternity_allowance",
+        "SSP",
+        "SMP",
+        "ssmg",
+        "basic_income",
+    ]
 
 
 class other_benefits(Variable):

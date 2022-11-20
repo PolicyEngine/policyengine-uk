@@ -513,6 +513,7 @@ class income_tax(Variable):
     definition_period = YEAR
     unit = GBP
     reference = "Income Tax Act 2007 s. 23"
+    category = TAX
 
     def formula(person, period, parameters):
         tax_with_hitc = add(

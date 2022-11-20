@@ -14,6 +14,16 @@ class in_poverty_bhc(Variable):
         income = household("equiv_hbai_household_net_income", period)
         return income < household("poverty_threshold_bhc", period)
 
+class in_poverty(Variable):
+    label = "in poverty"
+    documentation = "Whether the household is in absolute poverty"
+    entity = Household
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(household, period, parameters):
+        return household("in_poverty_bhc", period)
+
 
 class poverty_threshold_bhc(Variable):
     label = "Poverty threshold (BHC)"
@@ -108,6 +118,19 @@ class poverty_gap_bhc(Variable):
     def formula(household, period, parameters):
         net_income = household("hbai_household_net_income", period)
         return max_(0, household("poverty_line_bhc", period) - net_income)
+
+class poverty_gap(Variable):
+    label = "poverty gap"
+    documentation = "The financial gap between net household income and the poverty line"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        return household("poverty_gap_bhc", period)
+
+
 
 
 class poverty_gap_ahc(Variable):
