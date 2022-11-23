@@ -23,17 +23,6 @@ class property_sale_rate(Variable):
         )
         return total_sale_value / total_value
 
-
-class property_purchased(Variable):
-    label = "All property bought this year"
-    documentation = "Whether all property wealth was bought this year"
-    entity = Household
-    definition_period = YEAR
-    value_type = bool
-    unit = GBP
-    default_value = True
-
-
 class main_residential_property_purchased(Variable):
     label = "Residential property bought (main)"
     documentation = "The price paid for the purchase of a residential property in the year, for use as a main residence. Only include the value of a single purchase."
@@ -87,14 +76,6 @@ class main_residential_property_purchased_is_first_home(Variable):
         return random(household) < percentage_claiming_ftbr
 
 
-class cumulative_residential_rent(Variable):
-    label = "Cumulative residential rent"
-    documentation = "Total rent paid over the lifetime of the residential property a tenancy is held for."
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
 
 class non_residential_property_purchased(Variable):
     label = "Non-residential property bought"
@@ -111,32 +92,14 @@ class non_residential_property_purchased(Variable):
         )
         return property_purchased * non_residential_property_value
 
-
-class cumulative_non_residential_rent(Variable):
-    label = "Cumulative non-residential rent"
-    documentation = "Total rent paid over the lifetime of the non-residential property a tenancy is held for."
-    entity = Household
-    definition_period = YEAR
+class mortgage(Variable):
     value_type = float
-    unit = GBP
-
-
-class rent(Variable):
-    label = "Rent"
-    documentation = (
-        "The total amount of rent paid by the household in the year."
-    )
     entity = Household
+    label = "total mortgage payments"
+    documentation: str = "Total amount spent on mortgage payments"
     definition_period = YEAR
-    value_type = float
     unit = GBP
-    quantity_type = FLOW
-
-
-class non_residential_rent(Variable):
-    label = "Non-residential rent"
-    documentation = "The total amount of rent paid by the household in the year for non-residential property."
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
+    adds = [
+        "mortgage_interest_repayment",
+        "mortgage_capital_repayment",
+    ]

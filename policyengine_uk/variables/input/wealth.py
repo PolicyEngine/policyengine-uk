@@ -4,7 +4,7 @@ label = "Wealth"
 description = "Wealth held by households."
 
 class corporate_wealth(Variable):
-    label = "Corporate wealth"
+    label = "corporate wealth"
     documentation = "Total owned wealth in corporations"
     entity = Household
     definition_period = YEAR
@@ -14,7 +14,7 @@ class corporate_wealth(Variable):
 
 class owned_land(Variable):
     entity = Household
-    label = "Owned land"
+    label = "owned land value"
     documentation = "Total value of all land-only plots owned by the household"
     unit = GBP
     definition_period = YEAR
@@ -23,7 +23,7 @@ class owned_land(Variable):
 
 
 class main_residence_value(Variable):
-    label = "Main residence value"
+    label = "main residence value"
     documentation = "Total value of the main residence"
     entity = Household
     definition_period = YEAR
@@ -33,7 +33,7 @@ class main_residence_value(Variable):
 
 
 class other_residential_property_value(Variable):
-    label = "Other residence value"
+    label = "other residence value"
     documentation = (
         "Total value of all residential property owned by the household"
     )
@@ -46,7 +46,7 @@ class other_residential_property_value(Variable):
 
 
 class non_residential_property_value(Variable):
-    label = "Non-residential property value"
+    label = "non-residential property value"
     documentation = (
         "Total value of all non-residential property owned by the household"
     )

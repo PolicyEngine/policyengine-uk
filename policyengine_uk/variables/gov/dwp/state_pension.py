@@ -46,19 +46,6 @@ class triple_lock_uprating(Variable):
         )
 
 
-class state_pension(Variable):
-    value_type = float
-    entity = Person
-    label = "State Pension"
-    definition_period = YEAR
-    unit = GBP
-    documentation = "Gross State Pension payments"
-    quantity_type = FLOW
-
-    def formula(person, period, parameters):
-        return person("state_pension_reported", period)
-
-
 class state_pension_reported(Variable):
     value_type = float
     entity = Person

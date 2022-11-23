@@ -7,8 +7,8 @@ description = "Financial income received by individuals."
 class employment_income(Variable):
     value_type = float
     entity = Person
-    label = "Employment income"
-    documentation = "Total income from employment"
+    label = "employment income"
+    documentation = "Total income from employment. Include wages, bonuses, tips, etc."
     definition_period = YEAR
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
@@ -19,19 +19,28 @@ class employment_income(Variable):
 class pension_income(Variable):
     value_type = float
     entity = Person
-    label = "Pension income"
-    documentation = "Income from private or occupational pensions (not including State Pension)"
+    label = "pension income"
+    documentation = "Income from private or occupational pensions (not including the State Pension)"
     definition_period = YEAR
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
 
 
+class state_pension(Variable):
+    value_type = float
+    entity = Person
+    label = "State Pension"
+    definition_period = YEAR
+    unit = GBP
+    documentation = "Gross State Pension payments"
+    quantity_type = FLOW
+
 
 class self_employment_income(Variable):
     value_type = float
     entity = Person
-    label = "Self-employment income"
+    label = "self-employment income"
     documentation = "Income from self-employment profits"
     definition_period = YEAR
     unit = GBP
@@ -42,7 +51,7 @@ class self_employment_income(Variable):
 class property_income(Variable):
     value_type = float
     entity = Person
-    label = "Rental income"
+    label = "rental income"
     documentation = "Income from rental of property"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
@@ -53,7 +62,7 @@ class property_income(Variable):
 class savings_interest_income(Variable):
     value_type = float
     entity = Person
-    label = "Savings interest income"
+    label = "savings interest income"
     documentation = "Income from interest on savings, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
@@ -64,7 +73,7 @@ class savings_interest_income(Variable):
 class dividend_income(Variable):
     value_type = float
     entity = Person
-    label = "Income from dividends"
+    label = "dividend income"
     documentation = "Total income from dividends, gross of tax"
     definition_period = YEAR
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
@@ -75,7 +84,8 @@ class dividend_income(Variable):
 class sublet_income(Variable):
     value_type = float
     entity = Person
-    label = "Income received from sublet agreements"
+    label = "sublet income"
+    documentation = "Income from subletting properties"
     definition_period = YEAR
     unit = GBP
 
@@ -83,7 +93,8 @@ class sublet_income(Variable):
 class miscellaneous_income(Variable):
     value_type = float
     entity = Person
-    label = "Income from other sources"
+    label = "miscellaneous income"
+    documentation = "Income from any other source"
     definition_period = YEAR
     unit = GBP
 
@@ -91,7 +102,8 @@ class miscellaneous_income(Variable):
 class private_transfer_income(Variable):
     value_type = float
     entity = Person
-    label = "Private transfers"
+    label = "private transfer income"
+    documentation = "Income from private transfers"
     definition_period = YEAR
     unit = GBP
 
@@ -99,7 +111,8 @@ class private_transfer_income(Variable):
 class lump_sum_income(Variable):
     value_type = float
     entity = Person
-    label = "Lump sum income"
+    label = "lump sum income"
+    documentation = "Income from lump sums"
     definition_period = YEAR
     unit = GBP
 
@@ -107,7 +120,8 @@ class lump_sum_income(Variable):
 class maintenance_income(Variable):
     value_type = float
     entity = Person
-    label = "Maintenance payments"
+    label = "maintenance payment income"
+    documentation = "Income from maintenance payments to you"
     definition_period = YEAR
     unit = GBP
 

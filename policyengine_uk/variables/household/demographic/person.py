@@ -45,17 +45,6 @@ class adult_index(Variable):
         return person.get_rank(person.household, -person("age", period), condition=person("is_adult", period)) + 1
 
 
-class age(Variable):
-    value_type = float
-    entity = Person
-    label = "Age"
-    unit = "year"
-    documentation = "The age of the person in years"
-    definition_period = YEAR
-    quantity_type = STOCK
-    default_value = 18
-
-
 class birth_year(Variable):
     value_type = int
     entity = Person
