@@ -25,4 +25,4 @@ class region(Variable):
     entity = Household
     label = "region"
     documentation = "Area of the UK"
-    definition_period = ETERNITY
+    definition_period = YEAR

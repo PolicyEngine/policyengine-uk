@@ -150,7 +150,7 @@ class marital_status(Variable):
     default_value = MaritalStatus.SINGLE
     entity = Person
     label = "Marital status"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return where(
@@ -217,14 +217,14 @@ class gender(Variable):
     default_value = Gender.MALE
     entity = Person
     label = "Gender of the person"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
 
 class is_male(Variable):
     value_type = bool
     entity = Person
     label = "Whether the person is male"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("gender", period) == Gender.MALE
@@ -234,7 +234,7 @@ class is_female(Variable):
     value_type = bool
     entity = Person
     label = "Whether the person is female"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("gender", period) == Gender.FEMALE

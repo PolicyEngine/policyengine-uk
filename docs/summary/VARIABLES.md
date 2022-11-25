@@ -19,7 +19,7 @@ Note. Benefit Units are often referred to as "families". While this is often equ
 
 Each entity type has a set of variables which can be populated. In OpenFisca-UK, all variable definitions are organised by their entity type. These are detailed with descriptive statistics in `docs\VARIABLE_STATS.md`.
 
-IMPORTANT: All variables are weeklysed. This decision has been taken because the FRS weeklyises practically all variables - this has been preserved in OpenFisca-UK in order to minimise the risk of incorrectly imputing values. However, OpenFisca itself does not provide a WEEK period for variables, so currently all variables use the ETERNITY period. This should be interpreted as a variable describing an abstract week, instead of a particular week in time. Suggestions very welcome on other approaches than this imperfect solution.
+IMPORTANT: All variables are weeklysed. This decision has been taken because the FRS weeklyises practically all variables - this has been preserved in OpenFisca-UK in order to minimise the risk of incorrectly imputing values. However, OpenFisca itself does not provide a WEEK period for variables, so currently all variables use the YEAR period. This should be interpreted as a variable describing an abstract week, instead of a particular week in time. Suggestions very welcome on other approaches than this imperfect solution.
 
 ## Obtaining datasets
 

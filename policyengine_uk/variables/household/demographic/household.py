@@ -51,7 +51,7 @@ class country(Variable):
     default_value = Country.ENGLAND
     entity = Household
     label = "Country of the UK"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(household, period, parameters):
         region = household("region", period)
@@ -161,7 +161,7 @@ class accommodation_type(Variable):
     default_value = AccommodationType.UNKNOWN
     entity = Household
     label = "Type of accommodation"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
 
 class household_equivalisation_bhc(Variable):

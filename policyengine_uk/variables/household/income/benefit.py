@@ -191,7 +191,7 @@ class is_single(Variable):
     value_type = bool
     entity = BenUnit
     label = "Whether this benefit unit contains a single claimant for benefits"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         relation_type = benunit("relation_type", period)
@@ -203,7 +203,7 @@ class is_couple(Variable):
     value_type = bool
     entity = BenUnit
     label = "Whether this benefit unit contains a joint couple claimant for benefits"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         relation_type = benunit("relation_type", period)
@@ -215,7 +215,7 @@ class is_lone_parent(Variable):
     value_type = bool
     entity = BenUnit
     label = "Whether the family is a lone parent family"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         family_type = benunit("family_type", period)
@@ -227,7 +227,7 @@ class is_single_person(Variable):
     value_type = bool
     entity = BenUnit
     label = "Whether the family is a single person"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(benunit, period, parameters):
         family_type = benunit("family_type", period)
