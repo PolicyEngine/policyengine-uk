@@ -37,8 +37,7 @@ class family_benefits_reported(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        FAMILY_BENEFITS = [
-        ]
+        FAMILY_BENEFITS = []
         return add(person, period, [i + "_reported" for i in FAMILY_BENEFITS])
 
 
@@ -60,6 +59,7 @@ class household_benefits(Variable):
     value_type = float
     entity = Household
     label = "benefits"
+    documentation = "Total value of benefits received by household"
     definition_period = YEAR
     unit = GBP
     adds = [

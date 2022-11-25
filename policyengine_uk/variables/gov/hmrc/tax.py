@@ -17,6 +17,7 @@ class household_tax(Variable):
     value_type = float
     entity = Household
     label = "taxes"
+    documentation = "Total taxes owed by the household"
     definition_period = YEAR
     unit = GBP
     adds = [

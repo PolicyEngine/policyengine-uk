@@ -17,11 +17,11 @@ class earned_income(Variable):
         return add(person, period, COMPONENTS)
 
 
-
 class market_income(Variable):
     value_type = float
     entity = Person
     label = "Market income"
+    documentation = "Income from market sources"
     definition_period = YEAR
     unit = GBP
 
@@ -174,7 +174,7 @@ class hbai_household_net_income(Variable):
 
 class household_net_income(Variable):
     label = "net income"
-    documentation = "Disposable income for the household"
+    documentation = "Household net income after taxes and benefits"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -337,6 +337,7 @@ class household_market_income(Variable):
         "maintenance_income",
     ]
 
+
 class household_income_decile(Variable):
     label = "household income decile"
     documentation = "Decile of household income (person-weighted)"
@@ -348,8 +349,11 @@ class household_income_decile(Variable):
         income = household("household_net_income", period)
         count_people = household("household_count_people", period)
         household_weight = household("household_weight", period)
-        weighted_income = MicroSeries(income, weights=household_weight * count_people)
+        weighted_income = MicroSeries(
+            income, weights=household_weight * count_people
+        )
         return weighted_income.decile_rank().values
+
 
 class income_decile(Variable):
     label = "income decile"
