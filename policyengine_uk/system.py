@@ -46,6 +46,7 @@ class Simulation(CoreSimulation):
     default_tax_benefit_system_instance = system
     default_calculation_period = 2022
     default_input_period = 2022
+    default_role = "member"
 
 
 class Microsimulation(CoreMicrosimulation):
@@ -55,6 +56,7 @@ class Microsimulation(CoreMicrosimulation):
     default_dataset_year = 2022
     default_calculation_period = 2022
     default_input_period = 2022
+    default_role = "member"
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated

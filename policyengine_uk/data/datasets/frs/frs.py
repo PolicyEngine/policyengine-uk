@@ -1,5 +1,5 @@
 from typing import List
-from policyengine_core.data import PrivateDataset
+from policyengine_core.data import PrivateDataset, Dataset
 import h5py
 import logging
 import pandas as pd
@@ -17,6 +17,7 @@ class FRS(PrivateDataset):
     label = "FRS"
     folder_path = policyengine_uk_MICRODATA_FOLDER
     is_openfisca_compatible = True
+    data_format = Dataset.ARRAYS
 
     filename_by_year = {
         2019: "frs_2019.h5",
@@ -189,6 +190,7 @@ def add_personal_variables(frs: h5py.File, person: DataFrame):
     # Age fields are AGE80 (top-coded) and AGE in the adult and child tables, respectively.
     frs["state_id"] = np.array([1])
     frs["person_state_id"] = np.array([1] * len(person))
+    frs["person_state_role"] = np.array(["member"] * len(person)).astype("S")
     frs["state_weight"] = np.array([1])
     frs["gender"] = np.where(person.SEX == 1, "MALE", "FEMALE").astype("S")
     frs["hours_worked"] = person.TOTHOURS * 52
