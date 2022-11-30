@@ -7,6 +7,6 @@
         limited_capability_for_WRA: true
     benunits:
       benunit:
-        adults: person
+        members: person
   output:
     UC_LCWRA_element: 343.63 * 12

@@ -13,6 +13,6 @@
         UC_individual_child_element: 1
     benunits:
       benunit:
-        children: [person_1, person_2, person_3, person_4]
+        members: [person_1, person_2, person_3, person_4]
   output:
     UC_child_element: 4

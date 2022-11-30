@@ -8,7 +8,7 @@
         childcare_expenses: 0
     benunits:
       benunit:
-        adults: parent
+        members: parent
         num_UC_eligible_children: 0
   output:
     UC_childcare_element: 0
@@ -22,7 +22,7 @@
         childcare_expenses: 5_000
     benunits:
       benunit:
-        adults: parent
+        members: parent
         num_UC_eligible_children: 1
   output:
     UC_childcare_element: 5_000 * 0.85
@@ -36,7 +36,7 @@
         childcare_expenses: 10_000
     benunits:
       benunit:
-        adults: parent
+        members: parent
         num_UC_eligible_children: 1
   output:
     UC_childcare_element: 646.35 * 12

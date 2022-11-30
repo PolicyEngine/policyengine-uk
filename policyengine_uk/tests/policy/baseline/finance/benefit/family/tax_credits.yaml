@@ -68,8 +68,7 @@
         age: 6
     benunits:
       benunit1:
-        adults: ["adult1"]
-        children: ["child1", "child2"]
+        members: [adult1, child1, child2]
   output:
     age: [18, 4, 6]
     CTC_maximum_rate: 6100
@@ -89,8 +88,7 @@
         age: 1
     benunits:
       benunit1:
-        adults: ["adult1"]
-        children: ["child1", "child2", "child3"]
+        members: [adult1, child1, child2, child3]
   output:
     CTC_maximum_rate: 6100
 - name: WTC for working earner with no taxable income

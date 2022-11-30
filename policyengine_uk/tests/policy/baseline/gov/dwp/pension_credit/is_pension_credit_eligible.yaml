@@ -17,6 +17,6 @@
         is_SP_age: true
     benunits:
       benunit:
-        adults: [person, spouse]
+        members: [person, spouse]
   output:
     is_pension_credit_eligible: true

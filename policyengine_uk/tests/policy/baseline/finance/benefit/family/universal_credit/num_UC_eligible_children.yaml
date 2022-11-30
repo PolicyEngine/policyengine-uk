@@ -11,6 +11,6 @@
         UC_individual_child_element: 1
     benunits:
       benunit:
-        children: [person_1, person_2, person_3]
+        members: [person_1, person_2, person_3]
   output:
     num_UC_eligible_children: 3

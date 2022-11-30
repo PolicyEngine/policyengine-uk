@@ -19,8 +19,7 @@
         age: 68
     benunits:
       benunit:
-        adults: [working_age, senior]
-        children: child
+        members: [working_age, senior, child]
   output:
     basic_income: [52, 104, 156]
     child_benefit: 1094.60
@@ -41,8 +40,7 @@
         employment_income: 150_000
     benunits:
       benunit:
-        adults: working_age
-        children: child
+        members: [working_age, child]
   output:
     basic_income: [5_200, 0]
     bi_phaseout: [0, 5_200]
@@ -60,7 +58,7 @@
         employment_income: 150_000
     benunits:
       benunit:
-        adults: adult
+        members: adult
   output:
     income_tax: 52_500 + 5_200 * 0.45
 
@@ -75,7 +73,7 @@
         age: 30
     benunits:
       benunit:
-        adults: adult
+        members: adult
   output:
     universal_credit: 4_938
 
@@ -90,6 +88,6 @@
         age: 30
     benunits:
       benunit:
-        adults: adult
+        members: adult
   output:
     universal_credit: 4_938 - 5_200 * 0.63

@@ -8,7 +8,7 @@
         UC_non_dep_deduction_exempt: false
     benunits:
       benunit:
-        adults: person
+        members: person
         benunit_rent: 0
   output:
     UC_individual_non_dep_deduction: 75.53 * 12
@@ -22,7 +22,7 @@
         UC_non_dep_deduction_exempt: true
     benunits:
       benunit:
-        adults: person
+        members: person
         benunit_rent: 0
   output:
     UC_individual_non_dep_deduction: 0
@@ -36,7 +36,7 @@
         UC_non_dep_deduction_exempt: false
     benunits:
       benunit:
-        adults: person
+        members: person
         benunit_rent: 0
   output:
     UC_individual_non_dep_deduction: 0
