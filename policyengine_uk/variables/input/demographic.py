@@ -3,6 +3,7 @@ from policyengine_uk.model_api import *
 label = "Demographic"
 description = "Demographic variables."
 
+
 class age(Variable):
     value_type = float
     entity = Person

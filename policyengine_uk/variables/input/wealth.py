@@ -3,6 +3,7 @@ from policyengine_uk.model_api import *
 label = "Wealth"
 description = "Wealth held by households."
 
+
 class corporate_wealth(Variable):
     label = "corporate wealth"
     documentation = "Total owned wealth in corporations"
@@ -11,6 +12,7 @@ class corporate_wealth(Variable):
     value_type = float
     unit = GBP
     quantity_type = STOCK
+
 
 class owned_land(Variable):
     entity = Household
@@ -42,7 +44,6 @@ class other_residential_property_value(Variable):
     value_type = float
     unit = GBP
     quantity_type = STOCK
-
 
 
 class non_residential_property_value(Variable):

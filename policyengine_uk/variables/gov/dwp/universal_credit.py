@@ -567,7 +567,13 @@ class UC_income_reduction(Variable):
         unearned_income_reduction = benunit("UC_unearned_income", period)
         maximum_UC = benunit("UC_maximum_amount", period)
         eligible = benunit("is_UC_eligible", period)
-        return min_(maximum_UC, max_(0, earned_income_reduction + unearned_income_reduction)) * eligible
+        return (
+            min_(
+                maximum_UC,
+                max_(0, earned_income_reduction + unearned_income_reduction),
+            )
+            * eligible
+        )
 
 
 class universal_credit_entitlement(Variable):

@@ -35,6 +35,7 @@ class person_weight(Variable):
     def formula(person, period, parameters):
         return person.household("household_weight", period)
 
+
 class adult_index(Variable):
     value_type = int
     entity = Person
@@ -42,7 +43,14 @@ class adult_index(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person.get_rank(person.household, -person("age", period), condition=person("is_adult", period)) + 1
+        return (
+            person.get_rank(
+                person.household,
+                -person("age", period),
+                condition=person("is_adult", period),
+            )
+            + 1
+        )
 
 
 class birth_year(Variable):

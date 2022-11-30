@@ -101,6 +101,7 @@ class eldest_adult_age(Variable):
             )
         )
 
+
 class youngest_adult_age(Variable):
     value_type = float
     entity = BenUnit

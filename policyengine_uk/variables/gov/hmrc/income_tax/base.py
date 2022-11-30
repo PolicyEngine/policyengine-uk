@@ -12,7 +12,6 @@ https://www.pruadviser.co.uk/knowledge-literature/knowledge-library/the-seven-st
 """
 
 
-
 class total_pension_income(Variable):
     label = "Total pension income"
     documentation = "Private, personal and State Pension income"

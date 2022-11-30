@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 label = "Region"
 
+
 class Region(Enum):
     UNKNOWN = "Unknown"
     NORTH_EAST = "North East"

@@ -23,6 +23,7 @@ class property_sale_rate(Variable):
         )
         return total_sale_value / total_value
 
+
 class main_residential_property_purchased(Variable):
     label = "Residential property bought (main)"
     documentation = "The price paid for the purchase of a residential property in the year, for use as a main residence. Only include the value of a single purchase."
@@ -76,7 +77,6 @@ class main_residential_property_purchased_is_first_home(Variable):
         return random(household) < percentage_claiming_ftbr
 
 
-
 class non_residential_property_purchased(Variable):
     label = "Non-residential property bought"
     documentation = "The price paid for the purchase of a non-residential property in the year. Only include the value of a single purchase."
@@ -91,6 +91,7 @@ class non_residential_property_purchased(Variable):
             "non_residential_property_value", period
         )
         return property_purchased * non_residential_property_value
+
 
 class mortgage(Variable):
     value_type = float

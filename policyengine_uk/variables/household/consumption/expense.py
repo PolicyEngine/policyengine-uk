@@ -40,7 +40,6 @@ class family_rent(Variable):
         return benunit.sum(personal_rent)
 
 
-
 class weekly_childcare_expenses(Variable):
     value_type = float
     entity = Person
@@ -79,4 +78,3 @@ class council_tax_less_benefit(Variable):
             * person("is_benunit_head", period)
         )
         return household("council_tax", period) - council_tax_benefit
-

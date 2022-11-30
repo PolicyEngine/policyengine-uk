@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.geography import Region
 
+
 class household_id(Variable):
     value_type = int
     entity = Household
@@ -71,7 +72,6 @@ class country(Variable):
                 Country.ENGLAND,
             ],
         )
-
 
 
 class TenureType(Enum):
@@ -221,7 +221,6 @@ class household_count_people(Variable):
 
     def formula(household, period, parameters):
         return household.nb_persons()
-
 
 
 class household_num_benunits(Variable):

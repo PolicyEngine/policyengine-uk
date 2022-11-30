@@ -3,6 +3,7 @@ from policyengine_uk.model_api import *
 label = "Energy"
 description = "Energy consumption."
 
+
 class domestic_energy_consumption(Variable):
     label = "Domestic energy consumption"
     documentation = "Combined gas and electric bills."

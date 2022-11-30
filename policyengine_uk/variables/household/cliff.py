@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class cliff_evaluated(Variable):
     value_type = bool
     entity = Person
@@ -12,6 +13,7 @@ class cliff_evaluated(Variable):
         adult_index_values = person("adult_index", period)
         cliff_adult_count = 2
         return adult_index_values <= cliff_adult_count
+
 
 class cliff_gap(Variable):
     value_type = float
@@ -28,24 +30,31 @@ class cliff_gap(Variable):
         adult_index_values = person("adult_index", period)
         cliff_adult_count = 2
         for adult_index in range(1, 1 + cliff_adult_count):
-            alt_simulation = simulation.get_branch(f"adult_{adult_index}_2k_pay_rise")
+            alt_simulation = simulation.get_branch(
+                f"adult_{adult_index}_2k_pay_rise"
+            )
             mask = adult_index_values == adult_index
             for variable in simulation.tax_benefit_system.variables:
                 if variable not in simulation.input_variables:
                     alt_simulation.delete_arrays(variable)
             alt_simulation.set_input(
-                "employment_income", period, 
-                person("employment_income", period)
-                + mask * DELTA,
+                "employment_income",
+                period,
+                person("employment_income", period) + mask * DELTA,
             )
             alt_person = alt_simulation.person
-            household_net_income = person.household("household_net_income", period)
+            household_net_income = person.household(
+                "household_net_income", period
+            )
             household_net_income_higher_earnings = alt_person.household(
                 "household_net_income", period
             )
-            increase = household_net_income_higher_earnings - household_net_income
+            increase = (
+                household_net_income_higher_earnings - household_net_income
+            )
             cliff_values += where(mask & (increase < 0), -increase, 0)
         return cliff_values
+
 
 class is_on_cliff(Variable):
     value_type = bool

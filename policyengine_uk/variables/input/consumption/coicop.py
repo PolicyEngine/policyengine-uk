@@ -5,6 +5,7 @@ from policyengine_uk.model_api import *
 label = "General"
 description = "General consumption categories"
 
+
 class food_and_non_alcoholic_beverages_consumption(Variable):
     entity = Household
     label = "food and alcoholic beverage consumption"
@@ -24,7 +25,10 @@ class alcohol_and_tobacco_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.alcohol_and_tobacco"
+    uprating = (
+        "calibration.uprating.monthly_cpi_by_category.alcohol_and_tobacco"
+    )
+
 
 class clothing_and_footwear_consumption(Variable):
     entity = Household
@@ -34,7 +38,9 @@ class clothing_and_footwear_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.clothing_and_footwear"
+    uprating = (
+        "calibration.uprating.monthly_cpi_by_category.clothing_and_footwear"
+    )
 
 
 class housing_water_and_electricity_consumption(Variable):
@@ -123,7 +129,9 @@ class restaurants_and_hotels_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.restaurants_and_hotels"
+    uprating = (
+        "calibration.uprating.monthly_cpi_by_category.restaurants_and_hotels"
+    )
 
 
 class miscellaneous_consumption(Variable):

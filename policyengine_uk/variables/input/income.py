@@ -8,7 +8,9 @@ class employment_income(Variable):
     value_type = float
     entity = Person
     label = "employment income"
-    documentation = "Total income from employment. Include wages, bonuses, tips, etc."
+    documentation = (
+        "Total income from employment. Include wages, bonuses, tips, etc."
+    )
     definition_period = YEAR
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
@@ -61,7 +63,9 @@ class property_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = (
+        "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
+    )
 
 
 class savings_interest_income(Variable):
@@ -85,7 +89,9 @@ class dividend_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "calibration.programs.dividend_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = (
+        "calibration.programs.dividend_income.budgetary_impact.UNITED_KINGDOM"
+    )
 
 
 class sublet_income(Variable):
@@ -95,7 +101,9 @@ class sublet_income(Variable):
     documentation = "Income from subletting properties"
     definition_period = YEAR
     unit = GBP
-    uprating = "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = (
+        "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
+    )
 
 
 class miscellaneous_income(Variable):
@@ -133,4 +141,3 @@ class maintenance_income(Variable):
     documentation = "Income from maintenance payments to you"
     definition_period = YEAR
     unit = GBP
-
