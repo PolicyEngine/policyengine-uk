@@ -22,20 +22,23 @@ class RawSPI(PrivateDataset):
 
         Args:
             year (int): The year of the FRS to generate.
-            ukds_tab_zipfile (str): The path to the TAB zip archive.
+            ukds_tab_zipfile (str): The path to the TAB zip archive, or a folder containing the TAB files.
         """
 
         folder = Path(ukds_tab_zipfile)
         year = str(year)
         if not folder.exists():
             raise FileNotFoundError("Invalid path supplied")
-        new_folder = self.folder_path / "tmp"
-        shutil.unpack_archive(folder, new_folder)
-        folder = new_folder
-        main_folder = next(folder.iterdir())
+        if folder.is_dir() and len(list(folder.glob("*.tab"))) > 0:
+            data_folder = folder
+        else:
+            new_folder = self.folder_path / "tmp"
+            shutil.unpack_archive(folder, new_folder)
+            folder = new_folder
+            main_folder = next(folder.iterdir())
+            data_folder = main_folder / "tab"
         with pd.HDFStore(RawSPI.file(year)) as file:
-            if (main_folder / "tab").exists():
-                data_folder = main_folder / "tab"
+            if data_folder.exists():
                 data_files = list(data_folder.glob("*.tab"))
                 task = tqdm(data_files, desc="Saving data tables")
                 for filepath in task:
