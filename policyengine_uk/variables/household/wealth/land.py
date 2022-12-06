@@ -1,17 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-@uprated(by="household.wealth.national_balance_sheet.household.land")
-class owned_land(Variable):
-    entity = Household
-    label = "Owned land"
-    documentation = "Total value of all land-only plots owned by the household"
-    unit = GBP
-    definition_period = YEAR
-    value_type = float
-    quantity_type = STOCK
-
-
 class land_value(Variable):
     label = "Land value"
     documentation = (

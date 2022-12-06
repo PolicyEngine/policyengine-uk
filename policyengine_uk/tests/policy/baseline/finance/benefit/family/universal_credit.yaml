@@ -10,11 +10,11 @@
         weekly_hours: 20
     benunits:
       benunit:
-        adults: person
+        members: person
         would_claim_UC: true
     households:
       household:
-        adults: person
+        members: person
         tenure_type: RENT_PRIVATELY
         rent: 10000
   output:
@@ -33,12 +33,12 @@
         weekly_hours: 20
     benunits:
       benunit:
-        adults: person
+        members: person
         would_claim_UC: true
         benunit_rent: 10000
     households:
       household:
-        adults: person
+        members: person
         tenure_type: RENT_PRIVATELY
         BRMA: GUILDFORD
   output:
@@ -61,17 +61,15 @@
     benunits:
       benunit_1:
         would_claim_UC: true
-        adults: person_1
-        children: child
+        members: [person_1, child]
         benunit_rent: 10000
       benunit_2:
         would_claim_UC: false
-        adults: person_2
+        members: person_2
     households:
       household:
         tenure_type: RENT_PRIVATELY
-        adults: [person_1, person_2]
-        children: child
+        members: [person_1, person_2, child]
         BRMA: DURHAM
   output:
     universal_credit: [10956.72, 0]
@@ -95,17 +93,15 @@
     benunits:
       benunit_1:
         would_claim_UC: true
-        adults: person_1
-        children: child
+        members: [person_1, child]
         benunit_rent: 12500
       benunit_2:
         would_claim_UC: false
-        adults: person_2
+        members: person_2
     households:
       household:
         tenure_type: RENT_PRIVATELY
-        adults: [person_1, person_2]
-        children: child
+        members: [person_1, person_2, child]
         BRMA: DURHAM
   output:
     UC_standard_allowance: [3087.96, 3087.96]

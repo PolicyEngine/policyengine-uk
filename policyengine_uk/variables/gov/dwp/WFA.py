@@ -9,7 +9,6 @@ class winter_fuel_allowance_reported(Variable):
     unit = GBP
 
 
-@uprated(by="calibration.uprating.september_cpi")
 class winter_fuel_allowance(Variable):
     label = "Winter Fuel Allowance"
     entity = Household

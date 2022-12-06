@@ -30,23 +30,25 @@ class NI_class_4(Variable):
 class employee_NI(Variable):
     value_type = float
     entity = Person
-    label = "Employee-side National Insurance"
+    label = "employee-side National Insurance"
     definition_period = YEAR
     unit = GBP
 
     def formula(person, period, parameters):
-        return person("employee_NI_class_1", period)
+        exempt = person("NI_exempt", period)
+        return person("employee_NI_class_1", period) * ~exempt
 
 
 class self_employed_NI(Variable):
     value_type = float
     entity = Person
-    label = "Self-employed National Insurance"
+    label = "self-employed National Insurance"
     definition_period = YEAR
     unit = GBP
 
     def formula(person, period, parameters):
-        return add(person, period, ("NI_class_2", "NI_class_4"))
+        exempt = person("NI_exempt", period)
+        return add(person, period, ("NI_class_2", "NI_class_4")) * ~exempt
 
 
 class national_insurance(Variable):
@@ -57,8 +59,7 @@ class national_insurance(Variable):
     definition_period = YEAR
     unit = GBP
     reference = "Social Security and Benefits Act 1992 s. 1(2)"
-
-    def formula(person, period, parameters):
-        CLASSES = ["employee_NI", "self_employed_NI"]
-        total = add(person, period, CLASSES)
-        return total * ~person("NI_exempt", period)
+    adds = [
+        "employee_NI",
+        "self_employed_NI",
+    ]

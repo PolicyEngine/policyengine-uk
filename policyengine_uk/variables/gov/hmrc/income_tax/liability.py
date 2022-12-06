@@ -513,12 +513,13 @@ class income_tax(Variable):
     definition_period = YEAR
     unit = GBP
     reference = "Income Tax Act 2007 s. 23"
-
-    def formula(person, period, parameters):
-        tax_with_hitc = add(
-            person, period, ["income_tax_pre_charges", "CB_HITC"]
-        )
-        married_deduction = person(
-            "married_couples_allowance_deduction", period
-        )
-        return max_(0, tax_with_hitc - married_deduction)
+    category = TAX
+    adds = [
+        "earned_income_tax",
+        "savings_income_tax",
+        "dividend_income_tax",
+        "CB_HITC",
+    ]
+    subtracts = [
+        "capped_mcad",
+    ]

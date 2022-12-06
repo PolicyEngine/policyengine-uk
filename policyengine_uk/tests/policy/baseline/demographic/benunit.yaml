@@ -9,8 +9,7 @@
         age: 14
     benunits:
       benunit:
-        adults: ["adult"]
-        children: ["child"]
+        members: [adult, child]
   output:
     family_type: "LONE_PARENT"
     relation_type: "SINGLE"
@@ -29,8 +28,7 @@
         age: 4
     benunits:
       benunit:
-        adults: ["adult_1", "adult_2"]
-        children: ["child_1", "child_2"]
+        members: [adult_1, adult_2, child_1, child_2]
   output:
     eldest_adult_age: 35
     youngest_adult_age: 34

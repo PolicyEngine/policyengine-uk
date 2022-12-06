@@ -17,6 +17,6 @@
         carers_allowance: 30
     benunits:
       benunit:
-        adults: [claimant, spouse]
+        members: [claimant, spouse]
   output:
     carer_minimum_guarantee_addition: 3_920

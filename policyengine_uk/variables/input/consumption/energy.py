@@ -1,7 +1,9 @@
 from policyengine_uk.model_api import *
 
+label = "Energy"
+description = "Energy consumption."
 
-@uprated(by="gov.ofgem.price_cap.base")
+
 class domestic_energy_consumption(Variable):
     label = "Domestic energy consumption"
     documentation = "Combined gas and electric bills."
@@ -9,3 +11,4 @@ class domestic_energy_consumption(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    uprating = "gov.ofgem.price_cap.base"

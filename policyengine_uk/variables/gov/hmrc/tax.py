@@ -16,26 +16,24 @@ class tax(Variable):
 class household_tax(Variable):
     value_type = float
     entity = Household
-    label = "Taxes"
+    label = "taxes"
+    documentation = "Total taxes owed by the household"
     definition_period = YEAR
     unit = GBP
-
-    def formula(household, period):
-        personal_taxes = household.sum(household.members("tax", period))
-        HOUSEHOLD_TAXES = [
-            "change_in_expected_sdlt",
-            "change_in_expected_ltt",
-            "change_in_expected_lbtt",
-            "corporate_sdlt_change_incidence",
-            "business_rates_change_incidence",
-            "council_tax",
-            "domestic_rates",
-            "change_in_fuel_duty",
-            "tv_licence",
-            "wealth_tax",
-        ]
-        household_taxes = add(household, period, HOUSEHOLD_TAXES)
-        return personal_taxes + household_taxes
+    adds = [
+        "change_in_expected_sdlt",
+        "change_in_expected_ltt",
+        "change_in_expected_lbtt",
+        "corporate_sdlt_change_incidence",
+        "business_rates_change_incidence",
+        "council_tax",
+        "domestic_rates",
+        "change_in_fuel_duty",
+        "tv_licence",
+        "wealth_tax",
+        "income_tax",
+        "national_insurance",
+    ]
 
 
 class benunit_tax(Variable):

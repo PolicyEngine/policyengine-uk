@@ -7,7 +7,7 @@
         age: 8
     benunits:
       benunit:
-        children: person_1
+        members: person_1
   output:
     UC_individual_child_element: 282.50 * 12
 - name: Single child born after limit, gets lower amount
@@ -19,7 +19,7 @@
         age: 2
     benunits:
       benunit:
-        children: person_1
+        members: person_1
   output:
     UC_individual_child_element: 237.08 * 12
 - name: Two children, one born before and one after limit
@@ -33,7 +33,7 @@
         age: 2
     benunits:
       benunit:
-        children: [person_1, person_2]
+        members: [person_1, person_2]
   output:
     UC_individual_child_element: [3390, 2844.96]
 - name: Two children, both born after limit
@@ -47,7 +47,7 @@
         age: 2
     benunits:
       benunit:
-        children: [person_1, person_2]
+        members: [person_1, person_2]
   output:
     UC_individual_child_element: [2844.96, 2844.96]
 - name: Three children, all born before limit
@@ -63,7 +63,7 @@
         age: 12
     benunits:
       benunit:
-        children: [person_1, person_2, person_3]
+        members: [person_1, person_2, person_3]
   output:
     UC_individual_child_element: [2844.96, 2844.96, 3390]
 - name: Three children, all born after limit
@@ -79,6 +79,6 @@
         age: 1
     benunits:
       benunit:
-        children: [person_1, person_2, person_3]
+        members: [person_1, person_2, person_3]
   output:
     UC_individual_child_element: [2844.96, 2844.96, 0]

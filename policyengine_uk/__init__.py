@@ -33,4 +33,4 @@ from policyengine_uk.data import (
 
 REPO = Path(__file__).parent
 
-DATASETS = [EnhancedFRS, SynthFRS, FRS]
+DATASETS = [EnhancedFRS, SynthFRS, FRS, RawFRS]

@@ -9,8 +9,7 @@
     contrib.ubi_center.basic_income.amount.by_age.working_age: 192.30 # = 10k / 52
     households:
       household:
-        adults: adult
-        children: child
+        members: [adult, child]
     people:
       adult:
         age: 18

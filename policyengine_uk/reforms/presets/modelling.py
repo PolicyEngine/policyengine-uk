@@ -22,6 +22,7 @@ class child_benefit(Variable):
     label = "Child Benefit entitlement for the family"
     definition_period = YEAR
     reference = "Social Security Contributions and Benefits Act 1992 s. 141"
+    category = BENEFIT
 
     def formula(benunit, period, parameters):
         return aggr(benunit, period, ["child_benefit_reported"])

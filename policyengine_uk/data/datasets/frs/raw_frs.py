@@ -23,7 +23,7 @@ class RawFRS(PrivateDataset):
 
         Args:
             year (int): The year of the FRS to generate.
-            ukds_tab_zipfile (str): The path to the TAB zip archive.
+            ukds_tab_zipfile (str): The path to the TAB zip archive, or a folder containing the TAB files.
         """
 
         folder = Path(ukds_tab_zipfile)
@@ -31,13 +31,15 @@ class RawFRS(PrivateDataset):
 
         if not folder.exists():
             raise FileNotFoundError("Invalid path supplied.")
+        if folder.is_dir() and len(list(folder.glob("*.tab"))) > 0:
+            tab_folder = folder
+        else:
+            new_folder = self.folder_path / "tmp"
+            shutil.unpack_archive(folder, new_folder)
+            folder = new_folder
 
-        new_folder = self.folder_path / "tmp"
-        shutil.unpack_archive(folder, new_folder)
-        folder = new_folder
-
-        main_folder = next(folder.iterdir())
-        tab_folder = main_folder / "tab"
+            main_folder = next(folder.iterdir())
+            tab_folder = main_folder / "tab"
         if tab_folder.exists():
             criterion = re.compile("[a-z]+\.tab")
             data_files = [

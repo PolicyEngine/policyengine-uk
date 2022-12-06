@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.consumption.expense import (
+from policyengine_uk.variables.input.consumption.property.maintenance import (
     CouncilTaxBand,
 )
 

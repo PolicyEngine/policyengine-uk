@@ -12,7 +12,7 @@
         child_benefit_respective_amount: 1
     benunits:
       benunit:
-        children: [p1, p2, p3, p4]
+        members: [p1, p2, p3, p4]
         would_claim_child_benefit: true
   output:
     child_benefit: 4
@@ -31,7 +31,7 @@
         child_benefit_respective_amount: 1
     benunits:
       benunit:
-        children: [p1, p2, p3, p4]
+        members: [p1, p2, p3, p4]
         would_claim_child_benefit: false
   output:
     child_benefit: 0

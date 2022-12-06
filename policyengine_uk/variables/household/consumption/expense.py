@@ -1,15 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-class weekly_rent(Variable):
-    value_type = float
-    entity = Household
-    label = "Weekly average rent"
-    definition_period = YEAR
-    unit = GBP
-
-
-@uprated(by="calibration.uprating.CPI")
 class benunit_rent(Variable):
     value_type = float
     entity = BenUnit
@@ -48,53 +39,6 @@ class family_rent(Variable):
         return benunit.sum(personal_rent)
 
 
-class childcare_expenses(Variable):
-    value_type = float
-    entity = Person
-    label = "Cost of childcare"
-    definition_period = YEAR
-    unit = GBP
-
-
-class private_pension_contributions(Variable):
-    value_type = float
-    entity = Person
-    label = "Private pension contributions"
-    definition_period = YEAR
-    unit = GBP
-
-
-class occupational_pension_contributions(Variable):
-    value_type = float
-    entity = Person
-    label = "Occupational pension contributions"
-    definition_period = YEAR
-    unit = GBP
-
-
-class housing_service_charges(Variable):
-    value_type = float
-    entity = Household
-    label = "Housing service charges"
-    definition_period = YEAR
-    unit = GBP
-
-
-class water_and_sewerage_charges(Variable):
-    value_type = float
-    entity = Household
-    label = "Water and sewerage charges"
-    definition_period = YEAR
-
-
-class employer_pension_contributions(Variable):
-    value_type = float
-    entity = Person
-    label = "Employer pension contributions"
-    definition_period = YEAR
-    unit = GBP
-
-
 class weekly_childcare_expenses(Variable):
     value_type = float
     entity = Person
@@ -106,7 +50,6 @@ class weekly_childcare_expenses(Variable):
         return person("childcare_expenses", period) / WEEKS_IN_YEAR
 
 
-@uprated(by="calibration.uprating.CPI")
 class housing_costs(Variable):
     value_type = float
     entity = Household
@@ -116,57 +59,6 @@ class housing_costs(Variable):
 
     def formula(household, period, parameters):
         return add(household, period, ["rent", "mortgage"])
-
-
-class maintenance_expenses(Variable):
-    value_type = float
-    entity = Person
-    label = "Maintenance expenses"
-    definition_period = YEAR
-    unit = GBP
-
-
-class mortgage_interest_repayment(Variable):
-    value_type = float
-    entity = Household
-    label = "Total mortgage payments"
-    definition_period = YEAR
-    unit = GBP
-
-
-class mortgage_capital_repayment(Variable):
-    value_type = float
-    entity = Household
-    label = "Mortgage payments"
-    definition_period = YEAR
-    unit = GBP
-
-
-class mortgage(Variable):
-    value_type = float
-    entity = Household
-    label = "Total mortgage payments"
-    definition_period = YEAR
-    unit = GBP
-
-
-@uprated(by="calibration.uprating.council_tax")
-class council_tax(Variable):
-    value_type = float
-    entity = Household
-    label = "Council Tax"
-    definition_period = YEAR
-    unit = GBP
-    quantity_type = FLOW
-
-
-@uprated(by="calibration.uprating.council_tax")
-class domestic_rates(Variable):
-    label = "Domestic rates"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"
 
 
 class council_tax_less_benefit(Variable):
@@ -184,24 +76,3 @@ class council_tax_less_benefit(Variable):
             * person("is_benunit_head", period)
         )
         return household("council_tax", period) - council_tax_benefit
-
-
-class CouncilTaxBand(Enum):
-    A = "A"
-    B = "B"
-    C = "C"
-    D = "D"
-    E = "E"
-    F = "F"
-    G = "G"
-    H = "H"
-    I = "I"
-
-
-class council_tax_band(Variable):
-    value_type = Enum
-    possible_values = CouncilTaxBand
-    default_value = CouncilTaxBand.D
-    entity = Household
-    label = "Council Tax Band"
-    definition_period = YEAR

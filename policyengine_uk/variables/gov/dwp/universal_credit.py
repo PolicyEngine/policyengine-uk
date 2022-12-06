@@ -84,7 +84,7 @@ class universal_credit_reported(Variable):
 class UC_maximum_amount(Variable):
     value_type = float
     entity = BenUnit
-    label = "Maximum Universal Credit amount"
+    label = "maximum Universal Credit amount"
     definition_period = YEAR
     unit = GBP
 
@@ -97,7 +97,8 @@ class UC_maximum_amount(Variable):
             "UC_housing_costs_element",
             "UC_childcare_element",
         ]
-        return add(benunit, period, ELEMENTS)
+        eligible = benunit("is_UC_eligible", period)
+        return add(benunit, period, ELEMENTS) * eligible
 
 
 class UCClaimantType(Enum):
@@ -554,7 +555,7 @@ class UC_unearned_income(Variable):
 class UC_income_reduction(Variable):
     value_type = float
     entity = BenUnit
-    label = "Reduction from income for Universal Credit"
+    label = "reduction from income for Universal Credit"
     definition_period = YEAR
     unit = GBP
 
@@ -564,7 +565,15 @@ class UC_income_reduction(Variable):
             "UC_earned_income", period
         )
         unearned_income_reduction = benunit("UC_unearned_income", period)
-        return max_(0, earned_income_reduction + unearned_income_reduction)
+        maximum_UC = benunit("UC_maximum_amount", period)
+        eligible = benunit("is_UC_eligible", period)
+        return (
+            min_(
+                maximum_UC,
+                max_(0, earned_income_reduction + unearned_income_reduction),
+            )
+            * eligible
+        )
 
 
 class universal_credit_entitlement(Variable):
@@ -573,14 +582,8 @@ class universal_credit_entitlement(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
-
-    def formula(benunit, period, parameters):
-        amount = max_(
-            0,
-            benunit("UC_maximum_amount", period)
-            - benunit("UC_income_reduction", period),
-        )
-        return amount * benunit("is_UC_eligible", period)
+    adds = ["UC_maximum_amount"]
+    subtracts = ["UC_income_reduction"]
 
 
 class universal_credit(Variable):
@@ -589,11 +592,10 @@ class universal_credit(Variable):
     label = "Universal Credit"
     definition_period = YEAR
     unit = GBP
-
-    def formula(benunit, period, parameters):
-        entitlement = benunit("universal_credit_entitlement", period)
-        takeup = benunit("would_claim_UC", period)
-        return takeup * entitlement
+    category = BENEFIT
+    adds = ["UC_maximum_amount"]
+    subtracts = ["UC_income_reduction"]
+    defined_for = "would_claim_UC"
 
 
 class UC_MIF_applies(Variable):

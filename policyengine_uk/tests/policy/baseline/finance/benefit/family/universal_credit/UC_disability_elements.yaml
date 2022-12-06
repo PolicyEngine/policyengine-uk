@@ -8,7 +8,7 @@
         UC_individual_severely_disabled_child_element: 1
     benunits:
       benunit:
-        children: person
+        members: person
         UC_LCWRA_element: 1
   output:
     UC_disability_elements: 3

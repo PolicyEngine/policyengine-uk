@@ -36,15 +36,21 @@ class person_weight(Variable):
         return person.household("household_weight", period)
 
 
-class age(Variable):
+class adult_index(Variable):
     value_type = int
     entity = Person
-    label = "Age"
-    unit = "year"
-    documentation = "The age of the person in years"
+    label = "Index of adult in household"
     definition_period = YEAR
-    quantity_type = STOCK
-    default_value = 18
+
+    def formula(person, period, parameters):
+        return (
+            person.get_rank(
+                person.household,
+                -person("age", period),
+                condition=person("is_adult", period),
+            )
+            + 1
+        )
 
 
 class birth_year(Variable):
@@ -152,7 +158,7 @@ class marital_status(Variable):
     default_value = MaritalStatus.SINGLE
     entity = Person
     label = "Marital status"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return where(
@@ -219,14 +225,14 @@ class gender(Variable):
     default_value = Gender.MALE
     entity = Person
     label = "Gender of the person"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
 
 class is_male(Variable):
     value_type = bool
     entity = Person
     label = "Whether the person is male"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("gender", period) == Gender.MALE
@@ -236,7 +242,7 @@ class is_female(Variable):
     value_type = bool
     entity = Person
     label = "Whether the person is female"
-    definition_period = ETERNITY
+    definition_period = YEAR
 
     def formula(person, period, parameters):
         return person("gender", period) == Gender.FEMALE

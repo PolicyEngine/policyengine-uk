@@ -10,7 +10,8 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    household_gross_income: 1
+    household_market_income: 1
     household_tax: 2
+    household_benefits: 0
   output:
     household_net_income: -1

@@ -9,6 +9,7 @@ class tv_licence(Variable):
     value_type = float
     unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/21/section/363"
+    category = TAX
 
     def formula(household, period, parameters):
         owns_tv = household("household_owns_tv", period)

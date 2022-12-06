@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-@uprated(by="calibration.uprating.september_cpi")
 class JSA_contrib(Variable):
     value_type = float
     entity = Person

@@ -7,7 +7,7 @@
       p2:
         employment_income: 15_000
     benunit:
-      adults: [p1, p2]
+      members: [p1, p2]
       is_married: false
   output:
     marriage_allowance: [0, 0]
@@ -21,7 +21,7 @@
       p2:
         employment_income: 15_000
     benunit:
-      adults: [p1, p2]
+      members: [p1, p2]
       is_married: true
   output:
     marriage_allowance: [0, 1_260]
@@ -35,7 +35,7 @@
       p2:
         employment_income: 51_000
     benunit:
-      adults: [p1, p2]
+      members: [p1, p2]
       is_married: true
   output:
     marriage_allowance: [0, 0]

@@ -55,7 +55,7 @@ class SPI(PrivateDataset):
         main = RawSPI.load(year, "main").fillna(0)
         spi = h5py.File(self.file(year), mode="w")
 
-        main = extend_spi_main_table(main)
+        main = extend_spi_main_table(main, year)
 
         add_id_variables(spi, main)
         add_demographics(spi, main)
@@ -68,7 +68,7 @@ class SPI(PrivateDataset):
 SPI = SPI()
 
 
-def extend_spi_main_table(main: DataFrame) -> DataFrame:
+def extend_spi_main_table(main: DataFrame, year: int) -> DataFrame:
     """Extends the main SPI table to include adults and children with
     zero income, so that the total number of people is the UK population.
 
@@ -82,7 +82,7 @@ def extend_spi_main_table(main: DataFrame) -> DataFrame:
     from policyengine_uk import Microsimulation
     from policyengine_uk.data import FRS
 
-    sim = Microsimulation(dataset=FRS)
+    sim = Microsimulation(dataset=FRS, dataset_year=year)
 
     population_in_spi_percentage = main.FACT.sum() / sim.calc("people").sum()
 

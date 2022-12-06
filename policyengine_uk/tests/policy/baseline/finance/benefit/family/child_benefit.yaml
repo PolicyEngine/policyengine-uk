@@ -9,8 +9,7 @@
         age: 42
     benunits:
       benunit:
-        adults: ["parent1", "parent2"]
-        children: []
+        members: [parent1, parent2]
   output:
     child_benefit: 0
 - name: Child Benefit with one child
@@ -26,8 +25,7 @@
         age: 15
     benunits:
       benunit:
-        adults: ["parent1", "parent2"]
-        children: ["child1"]
+        members: [parent1, parent2, child1]
   output:
     child_benefit: 1095
 - name: Child Benefit with two children, one over 16
@@ -46,7 +44,6 @@
         current_education: POST_SECONDARY
     benunits:
       benunit:
-        adults: ["parent1", "parent2"]
-        children: ["child1", "child2"]
+        members: [parent1, parent2, child1, child2]
   output:
     child_benefit: 1820

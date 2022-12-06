@@ -9,7 +9,6 @@ class maternity_allowance_reported(Variable):
     unit = GBP
 
 
-@uprated(by="calibration.uprating.september_cpi")
 class maternity_allowance(Variable):
     label = "Maternity Allowance"
     entity = Person
