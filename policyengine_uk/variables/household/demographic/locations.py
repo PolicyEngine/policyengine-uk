@@ -156,15 +156,6 @@ class BRMAName(Enum):
     YORK = "York"
 
 
-class BRMA(Variable):
-    value_type = Enum
-    possible_values = BRMAName
-    default_value = BRMAName.MAIDSTONE
-    entity = Household
-    label = "Broad Rental Market Area"
-    definition_period = YEAR
-
-
 class LocalAuthority(Enum):
     ABERDEEN_CITY = "Aberdeen City"
     ABERDEENSHIRE = "Aberdeenshire"

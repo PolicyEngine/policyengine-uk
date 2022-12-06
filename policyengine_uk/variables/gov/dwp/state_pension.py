@@ -53,6 +53,6 @@ class state_pension_reported(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula_2015(person, period, parameters):
+    def formula_2022(person, period, parameters):
         sp_ly = person("state_pension_reported", period.last_year)
         return sp_ly * person("triple_lock_uprating", period)

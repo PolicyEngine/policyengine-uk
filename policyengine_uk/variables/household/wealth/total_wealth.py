@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-@uprated(by="household.wealth.national_balance_sheet.household.net_worth")
 class total_wealth(Variable):
     label = "Total wealth"
     entity = Household

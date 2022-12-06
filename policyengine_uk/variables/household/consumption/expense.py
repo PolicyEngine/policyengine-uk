@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-@uprated(by="calibration.uprating.CPI")
 class benunit_rent(Variable):
     value_type = float
     entity = BenUnit
@@ -51,7 +50,6 @@ class weekly_childcare_expenses(Variable):
         return person("childcare_expenses", period) / WEEKS_IN_YEAR
 
 
-@uprated(by="calibration.uprating.CPI")
 class housing_costs(Variable):
     value_type = float
     entity = Household

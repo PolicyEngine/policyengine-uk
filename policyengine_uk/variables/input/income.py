@@ -39,7 +39,9 @@ class state_pension(Variable):
     unit = GBP
     documentation = "Gross State Pension payments"
     quantity_type = FLOW
-    uprating = "calibration.programs.pension_income.budgetary_impact.ENGLAND"
+
+    def formula(person, period, parameters):
+        return person("state_pension_reported", period)
 
 
 class self_employment_income(Variable):

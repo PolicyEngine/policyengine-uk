@@ -47,6 +47,7 @@ class Simulation(CoreSimulation):
     default_calculation_period = 2022
     default_input_period = 2022
     default_role = "member"
+    max_spiral_loops = 10
 
 
 class Microsimulation(CoreMicrosimulation):
@@ -57,6 +58,7 @@ class Microsimulation(CoreMicrosimulation):
     default_calculation_period = 2022
     default_input_period = 2022
     default_role = "member"
+    max_spiral_loops = 10
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated

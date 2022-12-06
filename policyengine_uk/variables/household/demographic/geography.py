@@ -17,13 +17,3 @@ class Region(Enum):
     WALES = "Wales"
     SCOTLAND = "Scotland"
     NORTHERN_IRELAND = "Northern Ireland"
-
-
-class region(Variable):
-    value_type = Enum
-    possible_values = Region
-    default_value = Region.LONDON
-    entity = Household
-    label = "region"
-    documentation = "Area of the UK"
-    definition_period = YEAR
