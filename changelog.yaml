@@ -540,3 +540,8 @@
     changed:
     - Moved to PolicyEngine Core.
   date: 2022-10-22 18:22:07
+- bump: minor
+  changes:
+    changed:
+    - Roles to 'member'.
+  date: 2022-12-06 12:00:54
