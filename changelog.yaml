@@ -550,3 +550,8 @@
     fixed:
     - PolicyEngine-Core pinned to a minor version.
   date: 2022-12-07 13:31:54
+- bump: patch
+  changes:
+    fixed:
+    - Incorporated Core fix.
+  date: 2022-12-07 13:50:34
