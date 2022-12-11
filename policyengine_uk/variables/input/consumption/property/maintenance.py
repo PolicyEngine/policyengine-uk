@@ -65,16 +65,6 @@ class council_tax(Variable):
     uprating: str = "calibration.uprating.council_tax"
 
 
-class domestic_rates(Variable):
-    label = "domestic rates"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"
-    quantity_type = FLOW
-    uprating: str = "calibration.uprating.council_tax"
-
-
 class CouncilTaxBand(Enum):
     A = "A"
     B = "B"

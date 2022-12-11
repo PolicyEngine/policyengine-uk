@@ -466,23 +466,6 @@ class income_tax_pre_charges(Variable):
 
     def formula(person, period, parameters):
         earned_tax = person("earned_income_tax", period)
-
-        if parameters(
-            period
-        ).contrib.ubi_center.exempt_pensioners_from_tax_changes:
-
-            baseline_earned_income_tax = (
-                person.simulation.tax_benefit_system.variables[
-                    "earned_income_tax"
-                ].get_formula(period)(
-                    person, period, lambda p: parameters(period).baseline
-                )
-            )
-            is_sp_age = person("is_SP_age", period)
-            earned_tax = where(
-                is_sp_age, baseline_earned_income_tax, earned_tax
-            )
-
         OTHER_COMPONENTS = [
             "savings_income_tax",
             "dividend_income_tax",
