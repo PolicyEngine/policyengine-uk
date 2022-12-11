@@ -17,9 +17,7 @@ class carbon_tax(Variable):
         total_emissions = (
             emissions * household("household_weight", period)
         ).sum()
-        consumer_incidence = (
-            carbon_tax.consumer_incidence * rate * emissions
-        )
+        consumer_incidence = carbon_tax.consumer_incidence * rate * emissions
         corporate_incidence = (
             (1 - carbon_tax.consumer_incidence)
             * rate

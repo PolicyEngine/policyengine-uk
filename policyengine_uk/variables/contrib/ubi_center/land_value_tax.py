@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class LVT(Variable):
     entity = Household
     label = "Land value tax"

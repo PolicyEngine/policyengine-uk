@@ -11,7 +11,9 @@ class domestic_rates(Variable):
     def formula(household, period, parameters):
         rates = parameters(period).gov.local_authorities.domestic_rates.rates
         local_authority = household("local_authority", period)
-        rate_defined = pd.Series(local_authority.decode_to_str()).isin(rates._children)
+        rate_defined = pd.Series(local_authority.decode_to_str()).isin(
+            rates._children
+        )
         percent = np.zeros(household.count, dtype=float)
         if any(rate_defined):
             percent[rate_defined] = rates[local_authority[rate_defined]]
