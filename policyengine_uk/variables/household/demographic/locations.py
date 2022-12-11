@@ -154,6 +154,15 @@ class BRMAName(Enum):
     WORTHING = "Worthing"
     YEOVIL = "Yeovil"
     YORK = "York"
+    # Northern Ireland
+    BELFAST = "Belfast"
+    LOUGH_NEAGH_LOWER = "Lough Neagh Lower"
+    LOUGH_NEAGH_UPPER = "Lough Neagh Upper"
+    NORTH = "North (NI)"
+    NORTH_WEST = "North West (NI)"
+    SOUTH = "South (NI)"
+    SOUTH_EAST = "South East (NI)"
+    SOUTH_WEST = "South West (NI)"
 
 
 class LocalAuthority(Enum):
