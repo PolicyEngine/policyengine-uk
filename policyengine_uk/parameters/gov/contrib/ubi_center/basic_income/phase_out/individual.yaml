@@ -1,0 +1,17 @@
+threshold:
+  description: Threshold for taxable income at which basic income is reduced.
+  values:
+    2010-01-01: 0
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Basic income individual phase-out threshold
+    name: bi_phase_out_threshold
+rate:
+  description: Percentage of income over the phase-out threshold which is deducted from basic income payments.
+  values:
+    2010-01-01: 0
+  metadata:
+    unit: /1
+    label: Basic income individual phase-out rate
+    name: bi_phase_out_rate

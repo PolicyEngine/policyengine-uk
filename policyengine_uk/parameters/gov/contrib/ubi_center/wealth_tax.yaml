@@ -1,0 +1,12 @@
+description: Annual tax on household net wealth.
+brackets:
+  - threshold:
+      0000-01-01: 0
+    rate:
+      0000-01-01: 0
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  rate_period: year
+  name: wealth_tax
+  label: Wealth tax
