@@ -9,7 +9,7 @@ class carbon_tax(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        carbon_tax = parameters(period).contrib.ubi_center.carbon_tax
+        carbon_tax = parameters(period).gov.contrib.ubi_center.carbon_tax
         rate = carbon_tax.rate
         emissions = household("carbon_consumption", period)
         # Household's share of total stocks and other corporate tax exposure.

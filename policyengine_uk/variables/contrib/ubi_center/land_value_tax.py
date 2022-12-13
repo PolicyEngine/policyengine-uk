@@ -9,7 +9,7 @@ class LVT(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        lvt = parameters(period).contrib.ubi_center.land_value_tax
+        lvt = parameters(period).gov.contrib.ubi_center.land_value_tax
         full_lvt = lvt.rate * household("land_value", period)
         household_lvt = lvt.household_rate * household(
             "household_land_value", period

@@ -87,18 +87,15 @@ class UC_maximum_amount(Variable):
     label = "maximum Universal Credit amount"
     definition_period = YEAR
     unit = GBP
-
-    def formula(benunit, period):
-        ELEMENTS = [
-            "UC_standard_allowance",
-            "UC_child_element",
-            "UC_disability_elements",
-            "UC_carer_element",
-            "UC_housing_costs_element",
-            "UC_childcare_element",
-        ]
-        eligible = benunit("is_UC_eligible", period)
-        return add(benunit, period, ELEMENTS) * eligible
+    defined_for = "is_UC_eligible"
+    adds = [
+        "UC_standard_allowance",
+        "UC_child_element",
+        "UC_disability_elements",
+        "UC_carer_element",
+        "UC_housing_costs_element",
+        "UC_childcare_element",
+    ]
 
 
 class UCClaimantType(Enum):
@@ -656,7 +653,7 @@ class UC_MIF_capped_earned_income(Variable):
             "self_employment_income",
             "miscellaneous_income",
         ]
-        bi = parameters(period).contrib.ubi_center.basic_income
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
         personal_gross_earned_income = add(person, period, INCOME_COMPONENTS)

@@ -9,7 +9,7 @@ class bi_maximum(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        bi = parameters(period).contrib.ubi_center.basic_income
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
         weekly_flat_amount = bi.amount.flat
         is_senior_for_bi = person("is_SP_age", period)
         is_child_for_bi = person("age", period) < bi.amount.adult_age
