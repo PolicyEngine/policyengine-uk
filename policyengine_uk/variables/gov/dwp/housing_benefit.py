@@ -120,7 +120,7 @@ class housing_benefit_applicable_income(Variable):
             "property_income",
             "pension_income",
         ]
-        bi = parameters(period).contrib.ubi_center.basic_income
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = aggr(benunit, period, INCOME_COMPONENTS)

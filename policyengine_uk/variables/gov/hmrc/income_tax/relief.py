@@ -336,6 +336,6 @@ class adjusted_net_income(Variable):
         ]
         if parameters(
             period
-        ).contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
+        ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
             COMPONENTS.append("basic_income")
         return max_(0, add(person, period, COMPONENTS))

@@ -58,7 +58,7 @@ class child_benefit_respective_amount(Variable):
         eligible = person("is_child_or_QYP", period)
         if parameters(
             period
-        ).contrib.ubi_center.basic_income.interactions.withdraw_cb:
+        ).gov.contrib.ubi_center.basic_income.interactions.withdraw_cb:
             eligible &= person("basic_income", period) == 0
         is_eldest = person("is_eldest_child", period)
         child_benefit = parameters(period).gov.hmrc.child_benefit.amount

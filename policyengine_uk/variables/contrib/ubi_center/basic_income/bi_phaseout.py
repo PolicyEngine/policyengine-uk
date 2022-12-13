@@ -14,7 +14,7 @@ class bi_individual_phaseout(Variable):
 
     def formula(person, period, parameters):
         income = person("total_income", period)
-        bi = parameters(period).contrib.ubi_center.basic_income
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
         max_bi = person("bi_maximum", period)
         income_over_threshold = max_(
             income - bi.phase_out.individual.threshold, 0
@@ -39,7 +39,7 @@ class bi_household_phaseout(Variable):
         income = person("total_income", period)
         household = person.household
         household_income = household.sum(income)
-        bi = parameters(period).contrib.ubi_center.basic_income
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
         remaining_bi = person("bi_maximum", period) - person(
             "bi_individual_phaseout", period
         )  # Basic income remaining after individual-level phaseouts

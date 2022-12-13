@@ -13,7 +13,7 @@ class pension_credit_income(Variable):
         pc = parameters(period).gov.dwp.pension_credit
         sources = pc.guarantee_credit.income
         total = add(benunit, period, sources)
-        bi = parameters(period).contrib.ubi_center.basic_income
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             total += add(benunit, period, ["basic_income"])
         pension_contributions = add(benunit, period, ["pension_contributions"])
