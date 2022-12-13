@@ -563,3 +563,8 @@
     - NI BRMAs
     - NI domestic rates by local authority
   date: 2022-12-11 18:29:22
+- bump: patch
+  changes:
+    added:
+    - Metadata for contrib parameters.
+  date: 2022-12-13 20:20:48
