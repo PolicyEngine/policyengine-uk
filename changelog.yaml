@@ -568,3 +568,8 @@
     added:
     - Metadata for contrib parameters.
   date: 2022-12-13 20:20:48
+- bump: patch
+  changes:
+    added:
+    - Metadata for PolicyEngine.
+  date: 2022-12-14 16:33:27
