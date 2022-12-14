@@ -3,6 +3,7 @@ from policyengine_uk.variables.household.demographic.locations import BRMAName
 from policyengine_uk.variables.household.demographic.geography import Region
 
 label = "Geography"
+index = -1
 
 
 class BRMA(Variable):

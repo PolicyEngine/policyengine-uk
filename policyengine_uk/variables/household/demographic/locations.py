@@ -554,5 +554,6 @@ class local_authority(Variable):
     possible_values = LocalAuthority
     default_value = LocalAuthority.MAIDSTONE
     entity = Household
-    label = "The Local Authority for the household"
+    label = "Local Authority"
+    documentation = "The local authority for this household (this is often the same as your Broad Rental Market Area, but may differ)."
     definition_period = YEAR
