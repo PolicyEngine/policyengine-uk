@@ -31,7 +31,7 @@ setup(
         "numpy>=1.17.5",
         "pyyaml>=5.3.1",
         "pytest>=5.4.3",
-        "PolicyEngine-Core>=1.10.17,<1.11",
+        "PolicyEngine-Core>=1.10.18,<1.11",
         "microdf_python>=0.3.0",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
