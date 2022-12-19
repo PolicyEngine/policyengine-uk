@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    added:
+      - Variable metadata for disability variables.
+      - Auto-update for the API.

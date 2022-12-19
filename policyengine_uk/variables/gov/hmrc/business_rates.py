@@ -34,7 +34,7 @@ class business_rates(Variable):
 
 
 class change_in_business_rates(Variable):
-    label = "Change in expected business rates"
+    label = "average per-year business rates"
     entity = Household
     definition_period = YEAR
     value_type = float

@@ -24,7 +24,7 @@ class baseline_fuel_duty(Variable):
 
 
 class change_in_fuel_duty(Variable):
-    label = "Change in fuel duty"
+    label = "fuel duty"
     entity = Household
     definition_period = YEAR
     value_type = float

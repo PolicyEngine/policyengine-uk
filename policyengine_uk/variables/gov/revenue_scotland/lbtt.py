@@ -173,7 +173,7 @@ class baseline_expected_lbtt(Variable):
 
 
 class change_in_expected_lbtt(Variable):
-    label = "Change in LBTT (expected)"
+    label = "average per-year LBTT"
     entity = Household
     definition_period = YEAR
     value_type = float
