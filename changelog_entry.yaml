@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    added:
+    - Token for GitHub PR filing (deployment of the API).

@@ -123,5 +123,5 @@ jobs:
         run: make install
       - name: Update API
         run: python .github/update_api.py
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
