@@ -113,6 +113,10 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.POLICYENGINE_GITHUB }}
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -123,5 +127,3 @@ jobs:
         run: make install
       - name: Update API
         run: python .github/update_api.py
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
