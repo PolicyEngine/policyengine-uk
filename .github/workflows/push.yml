@@ -117,5 +117,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Install Wheel and Pytest
+        run: pip3 install wheel setuptools pytest==5.4.3
+      - name: Install package
+        run: make install
       - name: Update API
         run: python .github/update_api.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
