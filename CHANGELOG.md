@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.5] - 2022-12-20 11:41:05
+
+### Added
+
+- ENV token for the deployment action.
+
 ## [0.37.4] - 2022-12-20 10:59:01
 
 ### Added
@@ -704,6 +710,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.37.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.4...0.37.5
 [0.37.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.3...0.37.4
 [0.37.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.2...0.37.3
 [0.37.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.1...0.37.2

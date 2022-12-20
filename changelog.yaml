@@ -584,3 +584,8 @@
     - Variable metadata for disability variables.
     - Auto-update for the API.
   date: 2022-12-20 10:59:01
+- bump: patch
+  changes:
+    added:
+    - ENV token for the deployment action.
+  date: 2022-12-20 11:41:05
