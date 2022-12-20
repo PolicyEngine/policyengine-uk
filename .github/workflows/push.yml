@@ -110,6 +110,8 @@ jobs:
       (github.repository == 'PolicyEngine/policyengine-uk')
       && (github.event.head_commit.message == 'Update PolicyEngine UK')
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
