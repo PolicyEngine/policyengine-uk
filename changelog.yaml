@@ -578,3 +578,9 @@
     changed:
     - Bumped PolicyEngine-Core.
   date: 2022-12-15 16:10:43
+- bump: patch
+  changes:
+    added:
+    - Variable metadata for disability variables.
+    - Auto-update for the API.
+  date: 2022-12-20 10:59:01

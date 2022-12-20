@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.4] - 2022-12-20 10:59:01
+
+### Added
+
+- Variable metadata for disability variables.
+- Auto-update for the API.
+
 ## [0.37.3] - 2022-12-15 16:10:43
 
 ### Changed
@@ -697,6 +704,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.37.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.3...0.37.4
 [0.37.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.2...0.37.3
 [0.37.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.1...0.37.2
 [0.37.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.0...0.37.1
