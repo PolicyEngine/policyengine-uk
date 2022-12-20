@@ -127,8 +127,6 @@ jobs:
         run: pip3 install wheel setuptools pytest==5.4.3
       - name: Install package
         run: make install
-      - name: Set up Git
-        run: git config --global user.name "Github Actions[bot]" && git config --global user.email "hello@policyengine.org"
       - name: Update API
         run: python .github/update_api.py
         env:
