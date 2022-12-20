@@ -131,3 +131,5 @@ jobs:
         run: git config --global user.name "Github Actions[bot]" && git config --global user.email "hello@policyengine.org"
       - name: Update API
         run: python .github/update_api.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
