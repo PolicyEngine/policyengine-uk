@@ -12,7 +12,6 @@ class DLA_M_reported(Variable):
     unit = GBP
 
 
-
 class dla_m(Variable):
     label = "DLA (mobility)"
     entity = Person

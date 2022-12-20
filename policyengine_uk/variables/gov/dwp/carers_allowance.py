@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-
 class carers_allowance(Variable):
     value_type = float
     entity = Person

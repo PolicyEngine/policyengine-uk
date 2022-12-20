@@ -10,7 +10,6 @@ class PIP_M_reported(Variable):
     unit = GBP
 
 
-
 class pip_m(Variable):
     label = "PIP (mobility)"
     entity = Person
