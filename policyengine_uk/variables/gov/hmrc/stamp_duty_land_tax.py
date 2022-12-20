@@ -221,7 +221,7 @@ class baseline_expected_sdlt(Variable):
 
 
 class change_in_expected_sdlt(Variable):
-    label = "Change in expected Stamp Duty"
+    label = "average per-year Stamp Duty"
     entity = Household
     definition_period = YEAR
     value_type = float

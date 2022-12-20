@@ -85,6 +85,9 @@ class UC_maximum_amount(Variable):
     value_type = float
     entity = BenUnit
     label = "maximum Universal Credit amount"
+    documentation = (
+        "This is your total entitlement, before reduction due to income."
+    )
     definition_period = YEAR
     unit = GBP
     defined_for = "is_UC_eligible"
@@ -587,6 +590,7 @@ class universal_credit(Variable):
     value_type = float
     entity = BenUnit
     label = "Universal Credit"
+    documentation = "Total entitlement to Universal Credit"
     definition_period = YEAR
     unit = GBP
     category = BENEFIT
@@ -671,3 +675,14 @@ class baseline_universal_credit_entitlement(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+
+
+class uc_has_entitlement(Variable):
+    label = "entitled to Universal Credit"
+    documentation = "Whether this family's Universal Credit entitlement is greater than zero."
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        return benunit("universal_credit", period) > 0

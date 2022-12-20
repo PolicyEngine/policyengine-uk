@@ -1,16 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-class receives_carers_allowance(Variable):
-    value_type = bool
-    entity = Person
-    label = "Receives Carer's Allowance"
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("carers_allowance", period) > 0
-
-
 class carers_allowance(Variable):
     value_type = float
     entity = Person
