@@ -9,7 +9,9 @@ def main():
     version = setup.split("version=")[1].split(",")[0].strip('"')
     # Then, clone the https://github.com/policyengine/policyengine-api repo using the GitHub CLI
     pat = os.environ["GITHUB_TOKEN"]
-    os.system(f"git clone https://nikhilwoodruff:{pat}@github.com/policyengine/policyengine-api")
+    os.system(
+        f"git clone https://nikhilwoodruff:{pat}@github.com/policyengine/policyengine-api"
+    )
     # Then, cd inside and run gcp/bump_country_package.py --country policyengine-uk --version {version}
     os.system(
         f"cd policyengine-api && python gcp/bump_country_package.py --country policyengine-uk --version {version}"
