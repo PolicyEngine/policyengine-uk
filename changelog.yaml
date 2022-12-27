@@ -594,3 +594,8 @@
     added:
     - Token for GitHub PR filing (deployment of the API).
   date: 2022-12-20 14:11:35
+- bump: minor
+  changes:
+    added:
+    - Normalised poverty and deep poverty variables.
+  date: 2022-12-27 13:53:34
