@@ -2,6 +2,87 @@ from policyengine_uk.data.datasets import EnhancedFRS, SynthFRS
 from policyengine_uk.model_api import *
 
 
+class poverty_line(Variable):
+    label = "poverty line"
+    documentation = "The line below which a household is in poverty."
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        equivalisation = household("household_equivalisation_bhc", period)
+        return (
+            parameters(period).household.poverty.absolute_poverty_threshold_bhc
+            * WEEKS_IN_YEAR
+            * equivalisation
+        )
+
+
+class deep_poverty_line(Variable):
+    label = "deep poverty line"
+    documentation = "The line below which a household is in deep poverty."
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        return household("poverty_line", period) / 2
+
+
+class poverty_gap(Variable):
+    label = "poverty gap"
+    documentation = "The financial gap between net household income and the poverty line (before housing costs)."
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        income = household("hbai_household_net_income", period)
+        line = household("poverty_line", period)
+        return max_(0, line - income)
+
+
+class deep_poverty_gap(Variable):
+    label = "deep poverty gap"
+    documentation = "The financial gap between net household income and the deep poverty line (before housing costs)."
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        income = household("hbai_household_net_income", period)
+        line = household("deep_poverty_line", period)
+        return max_(0, line - income)
+
+
+class in_poverty(Variable):
+    label = "in poverty"
+    documentation = (
+        "Whether the household is in absolute poverty (before housing costs)."
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(household, period, parameters):
+        return household("poverty_gap", period) > 0
+
+
+class in_deep_poverty(Variable):
+    label = "in deep poverty"
+    documentation = "Whether the household is in deep absolute poverty (below half the poverty line, before housing costs)."
+    entity = Household
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(household, period, parameters):
+        return household("deep_poverty_gap", period) > 0
+
+
 class in_poverty_bhc(Variable):
     value_type = bool
     entity = Household
@@ -13,17 +94,6 @@ class in_poverty_bhc(Variable):
     def formula(household, period, parameters):
         income = household("equiv_hbai_household_net_income", period)
         return income < household("poverty_threshold_bhc", period)
-
-
-class in_poverty(Variable):
-    label = "in poverty"
-    documentation = "Whether the household is in absolute poverty"
-    entity = Household
-    definition_period = YEAR
-    value_type = bool
-
-    def formula(household, period, parameters):
-        return household("in_poverty_bhc", period)
 
 
 class poverty_threshold_bhc(Variable):
@@ -119,20 +189,6 @@ class poverty_gap_bhc(Variable):
     def formula(household, period, parameters):
         net_income = household("hbai_household_net_income", period)
         return max_(0, household("poverty_line_bhc", period) - net_income)
-
-
-class poverty_gap(Variable):
-    label = "poverty gap"
-    documentation = (
-        "The financial gap between net household income and the poverty line"
-    )
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = "currency-GBP"
-
-    def formula(household, period, parameters):
-        return household("poverty_gap_bhc", period)
 
 
 class poverty_gap_ahc(Variable):
