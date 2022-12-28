@@ -599,3 +599,8 @@
     added:
     - Normalised poverty and deep poverty variables.
   date: 2022-12-27 13:53:34
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing UC housing entitlements to be too low for single people with children.
+  date: 2022-12-28 17:28:42

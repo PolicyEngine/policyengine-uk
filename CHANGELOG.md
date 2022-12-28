@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.1] - 2022-12-28 17:28:42
+
+### Fixed
+
+- Bug causing UC housing entitlements to be too low for single people with children.
+
 ## [0.38.0] - 2022-12-27 13:53:34
 
 ### Added
@@ -722,6 +728,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.38.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.0...0.38.1
 [0.38.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.6...0.38.0
 [0.37.6]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.5...0.37.6
 [0.37.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.4...0.37.5
