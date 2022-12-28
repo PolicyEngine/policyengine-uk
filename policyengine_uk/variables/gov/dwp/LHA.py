@@ -115,9 +115,11 @@ class LHA_category(Variable):
         has_children = benunit.any(person("is_child", period))
         # Households with only one adult, if under 35, can only claim shared if without children:
         # https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28
-        can_only_claim_shared = (num_adults_in_hh == 1) & (
-            eldest_adult_age_in_hh < 35
-        ) & ~has_children
+        can_only_claim_shared = (
+            (num_adults_in_hh == 1)
+            & (eldest_adult_age_in_hh < 35)
+            & ~has_children
+        )
         return select(
             [
                 is_shared | can_only_claim_shared,
