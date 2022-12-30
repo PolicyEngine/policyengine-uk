@@ -604,3 +604,8 @@
     fixed:
     - Bug causing UC housing entitlements to be too low for single people with children.
   date: 2022-12-28 17:28:42
+- bump: patch
+  changes:
+    changed:
+    - Reorganised variables in the input tree.
+  date: 2022-12-30 17:05:40
