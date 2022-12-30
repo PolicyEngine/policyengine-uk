@@ -7,6 +7,8 @@ from policyengine_uk.variables.misc.categories.lower_or_higher import (
 )
 from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 
+label = "Disability"
+
 
 class dla_sc_category(Variable):
     label = "DLA (Self-care) category"

@@ -1,5 +1,7 @@
 from policyengine_uk.model_api import *
 
+label = "Care"
+
 
 class receives_carers_allowance(Variable):
     value_type = bool

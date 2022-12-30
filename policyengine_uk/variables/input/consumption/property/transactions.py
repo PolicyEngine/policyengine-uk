@@ -31,18 +31,6 @@ class cumulative_non_residential_rent(Variable):
     unit = GBP
 
 
-class rent(Variable):
-    label = "Rent"
-    documentation = (
-        "The total amount of rent paid by the household in the year."
-    )
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-    quantity_type = FLOW
-
-
 class non_residential_rent(Variable):
     label = "Non-residential rent"
     documentation = "The total amount of rent paid by the household in the year for non-residential property."
