@@ -609,3 +609,8 @@
     changed:
     - Reorganised variables in the input tree.
   date: 2022-12-30 17:05:40
+- bump: patch
+  changes:
+    added:
+    - Missing label in inputs.
+  date: 2023-01-03 20:32:56

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.3] - 2023-01-03 20:32:56
+
+### Added
+
+- Missing label in inputs.
+
 ## [0.38.2] - 2022-12-30 17:05:40
 
 ### Changed
@@ -734,6 +740,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.38.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.2...0.38.3
 [0.38.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.1...0.38.2
 [0.38.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.0...0.38.1
 [0.38.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.37.6...0.38.0
