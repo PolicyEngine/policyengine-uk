@@ -216,46 +216,46 @@
 <p>Child Benefit defines a (higher) amount for the eldest or only child, and an amount for each additional child. There is no limit on the number of children covered, unlike the Child Tax Credit or the Universal Credit child element. The table below shows the rates covered by OpenFisca-UK.</p>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from policyengine_uk import CountryTaxBenefitSystem
-import pandas as pd
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">policyengine_uk</span> <span class="kn">import</span> <span class="n">CountryTaxBenefitSystem</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-parameters = CountryTaxBenefitSystem().parameters
-data = {
-    &quot;Date&quot;: [],
-    &quot;Name&quot;: [],
-    &quot;Value&quot;: [],
-    &quot;Reference&quot;: [],
-}
+<span class="n">parameters</span> <span class="o">=</span> <span class="n">CountryTaxBenefitSystem</span><span class="p">()</span><span class="o">.</span><span class="n">parameters</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Date&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;Name&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[],</span>
+<span class="p">}</span>
 
-for parameter in parameters.gov.hmrc.child_benefit.amount.eldest.values_list:
-    data[&quot;Date&quot;] += [parameter.instant_str]
-    data[&quot;Name&quot;] += [&quot;Eldest&quot;]
-    data[&quot;Value&quot;] += [f&quot;£{parameter.value:.2f}&quot;]
-    try:
-        data[&quot;Reference&quot;] += [
-            f&quot;&lt;a href=\&quot;{parameter.metadata[&#39;reference&#39;][0][&#39;href&#39;]}\&quot;&gt;{parameter.metadata[&#39;reference&#39;][0][&#39;title&#39;]}&lt;/a&gt;&quot;
-        ]
-    except:
-        data[&quot;Reference&quot;] += [&quot;&quot;]
-
-
-for (
-    parameter
-) in parameters.gov.hmrc.child_benefit.amount.additional.values_list:
-    data[&quot;Date&quot;] += [parameter.instant_str]
-    data[&quot;Name&quot;] += [&quot;Additional&quot;]
-    data[&quot;Value&quot;] += [f&quot;£{parameter.value:.2f}&quot;]
-    try:
-        data[&quot;Reference&quot;] += [
-            f&quot;&lt;a href=\&quot;{parameter.metadata[&#39;reference&#39;][0][&#39;href&#39;]}\&quot;&gt;{parameter.metadata[&#39;reference&#39;][0][&#39;title&#39;]}&lt;/a&gt;&quot;
-        ]
-    except:
-        data[&quot;Reference&quot;] += [&quot;&quot;]
+<span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">child_benefit</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">eldest</span><span class="o">.</span><span class="n">values_list</span><span class="p">:</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;Eldest&quot;</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;href&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
+        <span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
 
 
-pd.DataFrame(data).sort_values(&quot;Date&quot;).set_index(
-    [&quot;Date&quot;, &quot;Name&quot;]
-).style.format(lambda x: x)
+<span class="k">for</span> <span class="p">(</span>
+    <span class="n">parameter</span>
+<span class="p">)</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">child_benefit</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">additional</span><span class="o">.</span><span class="n">values_list</span><span class="p">:</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;Additional&quot;</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;href&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
+        <span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
+
+
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -376,25 +376,25 @@ pd.DataFrame(data).sort_values(&quot;Date&quot;).set_index(
 <p>The below table shows the entitlement calculations for a family of increasing size.</p>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from policyengine_uk import IndividualSim
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">policyengine_uk</span> <span class="kn">import</span> <span class="n">IndividualSim</span>
 
 
-def get_cb_for_n_children(n):
-    sim = IndividualSim(year=2022)
-    for i in range(n):
-        sim.add_person(age=10, name=str(i))
-    sim.add_benunit(children=[str(i) for i in range(n)])
-    return f&#39;£{sim.calc(&quot;child_benefit&quot;).sum():.2f}&#39;
+<span class="k">def</span> <span class="nf">get_cb_for_n_children</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">IndividualSim</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2022</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">add_person</span><span class="p">(</span><span class="n">age</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="n">sim</span><span class="o">.</span><span class="n">add_benunit</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;£</span><span class="si">{</span><span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;child_benefit&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span>
 
 
-pd.DataFrame(
-    {
-        &quot;Number of children&quot;: list(range(1, 7)),
-        &quot;Child Benefit (Annual)&quot;: list(
-            map(get_cb_for_n_children, range(1, 7))
-        ),
-    }
-).set_index(&quot;Number of children&quot;)
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;Number of children&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">)),</span>
+        <span class="s2">&quot;Child Benefit (Annual)&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">map</span><span class="p">(</span><span class="n">get_cb_for_n_children</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+<span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Number of children&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -464,36 +464,36 @@ pd.DataFrame(
 <p>The administrative spending figures include Guardian’s Allowance, whereas OpenFisca-UK and UKMOD do not. Between 2018 and 2021, the DWP replaced previous forecasts with outturn data, revising the forecast aggregate spending for 2018, 2019 and 2020 down by £119m, £250m and £455m, respectively.</p>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from policyengine_uk import Microsimulation
-from policyengine_uk.data import EnhancedFRS
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">policyengine_uk</span> <span class="kn">import</span> <span class="n">Microsimulation</span>
+<span class="kn">from</span> <span class="nn">policyengine_uk.data</span> <span class="kn">import</span> <span class="n">EnhancedFRS</span>
 
-sim_2019 = Microsimulation()
+<span class="n">sim_2019</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
 
-cb_2019_onwards = [
-    int(sim_2019.calc(&quot;child_benefit&quot;, year, map_to=&quot;household&quot;).sum() / 1e6)
-    for year in range(2022, 2026)
-]
+<span class="n">cb_2019_onwards</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="nb">int</span><span class="p">(</span><span class="n">sim_2019</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;child_benefit&quot;</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2022</span><span class="p">,</span> <span class="mi">2026</span><span class="p">)</span>
+<span class="p">]</span>
 
-aggregates = pd.DataFrame(
-    {
-        &quot;OpenFisca-UK Aggregate (£m)&quot;: cb_2019_onwards,
-        &quot;Year&quot;: list(range(2022, 2026)),
-        &quot;Official Estimate (£m)&quot;: [11_081, 11_116, 10_981, 11_213],
-        &quot;Official Estimate Type&quot;: [&quot;Outturn&quot;] * 2 + [&quot;Forecast&quot;] * 2,
-        &quot;UKMOD Aggregate (£m)&quot;: [11_432, 11_621, 11_573, 11_668],
-    }
-)
-aggregates[&quot;Absolute Error (£m)&quot;] = (
-    aggregates[&quot;Official Estimate (£m)&quot;]
-    - aggregates[&quot;OpenFisca-UK Aggregate (£m)&quot;]
-)
-aggregates[&quot;Relative Error (%)&quot;] = 100 * (
-    aggregates[&quot;OpenFisca-UK Aggregate (£m)&quot;]
-    / aggregates[&quot;Official Estimate (£m)&quot;]
-    - 1
-).round(3)
+<span class="n">aggregates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;OpenFisca-UK Aggregate (£m)&quot;</span><span class="p">:</span> <span class="n">cb_2019_onwards</span><span class="p">,</span>
+        <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2022</span><span class="p">,</span> <span class="mi">2026</span><span class="p">)),</span>
+        <span class="s2">&quot;Official Estimate (£m)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">11_081</span><span class="p">,</span> <span class="mi">11_116</span><span class="p">,</span> <span class="mi">10_981</span><span class="p">,</span> <span class="mi">11_213</span><span class="p">],</span>
+        <span class="s2">&quot;Official Estimate Type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Outturn&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Forecast&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;UKMOD Aggregate (£m)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">11_432</span><span class="p">,</span> <span class="mi">11_621</span><span class="p">,</span> <span class="mi">11_573</span><span class="p">,</span> <span class="mi">11_668</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="n">aggregates</span><span class="p">[</span><span class="s2">&quot;Absolute Error (£m)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">aggregates</span><span class="p">[</span><span class="s2">&quot;Official Estimate (£m)&quot;</span><span class="p">]</span>
+    <span class="o">-</span> <span class="n">aggregates</span><span class="p">[</span><span class="s2">&quot;OpenFisca-UK Aggregate (£m)&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">aggregates</span><span class="p">[</span><span class="s2">&quot;Relative Error (%)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span>
+    <span class="n">aggregates</span><span class="p">[</span><span class="s2">&quot;OpenFisca-UK Aggregate (£m)&quot;</span><span class="p">]</span>
+    <span class="o">/</span> <span class="n">aggregates</span><span class="p">[</span><span class="s2">&quot;Official Estimate (£m)&quot;</span><span class="p">]</span>
+    <span class="o">-</span> <span class="mi">1</span>
+<span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
-aggregates.set_index(&quot;Year&quot;)
+<span class="n">aggregates</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Year&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -576,24 +576,24 @@ aggregates.set_index(&quot;Year&quot;)
 </div>
 <div class="cell tag_hide-input docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import plotly.express as px
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
 
-px.line(
-    aggregates,
-    x=&quot;Year&quot;,
-    y=[
-        &quot;OpenFisca-UK Aggregate (£m)&quot;,
-        &quot;Official Estimate (£m)&quot;,
-        &quot;UKMOD Aggregate (£m)&quot;,
-    ],
-).update_layout(
-    template=&quot;plotly_white&quot;,
-    title=&quot;Child Benefit aggregate spending&quot;,
-    xaxis_tickvals=list(range(2022, 2026)),
-    yaxis_title=&quot;Spending (£m)&quot;,
-    legend_title=&quot;&quot;,
-    yaxis_range=(0, 15_000),
-)
+<span class="n">px</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
+    <span class="n">aggregates</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Year&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;OpenFisca-UK Aggregate (£m)&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Official Estimate (£m)&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;UKMOD Aggregate (£m)&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;plotly_white&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Child Benefit aggregate spending&quot;</span><span class="p">,</span>
+    <span class="n">xaxis_tickvals</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2022</span><span class="p">,</span> <span class="mi">2026</span><span class="p">)),</span>
+    <span class="n">yaxis_title</span><span class="o">=</span><span class="s2">&quot;Spending (£m)&quot;</span><span class="p">,</span>
+    <span class="n">legend_title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">yaxis_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15_000</span><span class="p">),</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>

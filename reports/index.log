@@ -45,7 +45,7 @@ Cell [0;32mIn[2], line 17[0m
 [1;32m     16[0m baseline [38;5;241m=[39m Microsimulation()
 [0;32m---> 17[0m reformed [38;5;241m=[39m [43mMicrosimulation[49m[43m([49m[43mreform[49m[43m)[49m
 [1;32m     18[0m revenue [38;5;241m=[39m reformed[38;5;241m.[39mcalc([38;5;124m"[39m[38;5;124mtax[39m[38;5;124m"[39m)[38;5;241m.[39msum() [38;5;241m-[39m baseline[38;5;241m.[39mcalc([38;5;124m"[39m[38;5;124mtax[39m[38;5;124m"[39m)[38;5;241m.[39msum()
-[1;32m     19[0m [38;5;124mf[39m[38;5;124m"[39m[38;5;124mRevenue: £[39m[38;5;132;01m{[39;00m[38;5;28mround[39m(revenue [38;5;241m/[39m [38;5;241m1e+9[39m, [38;5;241m1[39m)[38;5;132;01m}[39;00m[38;5;124mbn[39m[38;5;124m"[39m
+[1;32m     19[0m [38;5;124mf[39m[38;5;124m"[39m[38;5;124mRevenue: £[39m[38;5;132;01m{[39;00m[38;5;28mround[39m(revenue[38;5;250m [39m[38;5;241m/[39m[38;5;250m [39m[38;5;241m1e+9[39m,[38;5;250m [39m[38;5;241m1[39m)[38;5;132;01m}[39;00m[38;5;124mbn[39m[38;5;124m"[39m
 
 File [0;32m/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py:131[0m, in [0;36mSimulation.__init__[0;34m(self, tax_benefit_system, populations, situation, dataset, dataset_year, reform)[0m
 [1;32m    129[0m     [38;5;28mself[39m[38;5;241m.[39mdataset [38;5;241m=[39m dataset
@@ -56,7 +56,7 @@ File [0;32m/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/p
 
 File [0;32m/opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py:172[0m, in [0;36mSimulation.build_from_dataset[0;34m(self)[0m
 [1;32m    169[0m [38;5;28;01mdef[39;00m [38;5;21mbuild_from_dataset[39m([38;5;28mself[39m) [38;5;241m-[39m[38;5;241m>[39m [38;5;28;01mNone[39;00m:
-[1;32m    170[0m     [38;5;124;03m"""Build a simulation from a dataset."""[39;00m
+[1;32m    170[0m [38;5;250m    [39m[38;5;124;03m"""Build a simulation from a dataset."""[39;00m
 [1;32m    171[0m     [38;5;28mself[39m[38;5;241m.[39mbuild_from_populations(
 [0;32m--> 172[0m         [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43mtax_benefit_system[49m[38;5;241;43m.[39;49m[43minstantiate_entities[49m[43m([49m[43m)[49m
 [1;32m    173[0m     )
