@@ -614,3 +614,8 @@
     added:
     - Missing label in inputs.
   date: 2023-01-03 20:32:56
+- bump: patch
+  changes:
+    changed:
+    - PolicyEngine Core version widened.
+  date: 2023-01-03 23:39:07
