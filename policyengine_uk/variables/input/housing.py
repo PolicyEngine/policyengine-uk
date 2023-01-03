@@ -1,5 +1,7 @@
 from policyengine_uk.model_api import *
 
+label = "Housing"
+
 
 class rent(Variable):
     label = "Rent"
