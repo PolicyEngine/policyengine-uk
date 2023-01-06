@@ -27,6 +27,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         "employment_income",
         "age",
     ]
+    modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
 
     def __init__(self):
         super().__init__(entities)

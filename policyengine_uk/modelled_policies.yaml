@@ -1,0 +1,25 @@
+core:
+  modelled:
+    - Income Tax
+    - National Insurance
+    - Child Benefit
+    - Universal Credit
+    - Legacy benefits
+    - Pension Credit
+    - Stamp duties
+    - TV licence
+    - Fuel duty
+    - Council Tax
+  not_modelled:
+    - Tax-free childcare
+    - VAT
+filtered:
+  country:
+    SCOTLAND:
+      modelled:
+        - Scottish tax rates
+      not_modelled:
+        - Scottish Child Payment
+    NORTHERN_IRELAND:
+      modelled:
+        - Domestic rates
