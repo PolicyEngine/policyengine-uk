@@ -619,3 +619,8 @@
     changed:
     - PolicyEngine Core version widened.
   date: 2023-01-03 23:39:07
+- bump: patch
+  changes:
+    added:
+    - Metadata on modelled policies.
+  date: 2023-01-06 10:07:28

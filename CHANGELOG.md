@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.5] - 2023-01-06 10:07:28
+
+### Added
+
+- Metadata on modelled policies.
+
 ## [0.38.4] - 2023-01-03 23:39:07
 
 ### Changed
@@ -746,6 +752,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.38.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.4...0.38.5
 [0.38.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.3...0.38.4
 [0.38.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.2...0.38.3
 [0.38.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.1...0.38.2
