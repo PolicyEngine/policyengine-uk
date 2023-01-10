@@ -17,5 +17,4 @@ class council_tax_benefit(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["council_tax_benefit_reported"])
+    adds = ["council_tax_benefit_reported"]

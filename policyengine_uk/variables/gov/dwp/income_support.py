@@ -27,16 +27,9 @@ class would_claim_IS(Variable):
         eligible = benunit("income_support_entitlement", period) > 0
         takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
         return select(
-            [
-                reported_is | claims_all_entitled_benefits,
-                ~baseline & eligible,
-                True,
-            ],
-            [
-                True,
-                random(benunit) < takeup_rate,
-                False,
-            ],
+            [reported_is | claims_all_entitled_benefits, ~baseline & eligible],
+            [True, random(benunit) < takeup_rate],
+            default=False,
         )
 
 
@@ -167,7 +160,7 @@ class income_support_entitlement(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         amount = benunit("income_support_applicable_amount", period)
@@ -182,11 +175,8 @@ class income_support(Variable):
     label = "Income Support"
     definition_period = YEAR
     unit = GBP
-
-    def formula(benunit, period, parameters):
-        entitlement = benunit("income_support_entitlement", period)
-        would_claim = benunit("would_claim_IS", period)
-        return entitlement * would_claim
+    defined_for = "would_claim_IS"
+    adds = ["income_support_entitlement"]
 
 
 class baseline_income_support_entitlement(Variable):

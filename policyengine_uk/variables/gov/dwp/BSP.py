@@ -8,8 +8,7 @@ class BSP(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("BSP_reported", period)
+    adds = ["BSP_reported"]
 
 
 class BSP_reported(Variable):

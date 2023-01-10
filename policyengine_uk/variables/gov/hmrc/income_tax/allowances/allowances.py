@@ -59,7 +59,7 @@ class capped_mcad(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         capping_value = add(

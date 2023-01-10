@@ -6,7 +6,7 @@ class LVT(Variable):
     label = "Land value tax"
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         lvt = parameters(period).gov.contrib.ubi_center.land_value_tax

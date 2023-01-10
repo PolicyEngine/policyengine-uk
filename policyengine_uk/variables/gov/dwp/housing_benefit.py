@@ -209,7 +209,7 @@ class housing_benefit_entitlement(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)

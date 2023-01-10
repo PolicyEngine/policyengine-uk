@@ -581,7 +581,7 @@ class universal_credit_entitlement(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
     adds = ["UC_maximum_amount"]
     subtracts = ["UC_income_reduction"]
 

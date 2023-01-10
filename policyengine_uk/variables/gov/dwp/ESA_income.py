@@ -53,5 +53,4 @@ class ESA_income(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["ESA_income_reported"])
+    adds = ["ESA_income_reported"]

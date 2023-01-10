@@ -9,8 +9,7 @@ class AFCS(Variable):
     unit = GBP
     uprating = "calibration.uprating.september_cpi"
 
-    def formula(person, period, parameters):
-        return person("AFCS_reported", period)
+    adds = ["AFCS_reported"]
 
 
 class AFCS_reported(Variable):
