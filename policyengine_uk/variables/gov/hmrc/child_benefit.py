@@ -21,9 +21,7 @@ class would_claim_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         claims_benefits = benunit("claims_all_entitled_benefits", period)
-        already_claiming = (
-            aggr(benunit, period, ["child_benefit_reported"]) > 0
-        )
+        already_claiming = add(benunit, period, ["child_benefit_reported"]) > 0
         takeup_rate = parameters(period).gov.hmrc.child_benefit.takeup
         baseline_cb = benunit("baseline_child_benefit_entitlement", period) > 0
         eligible = benunit("child_benefit_entitlement", period) > 0

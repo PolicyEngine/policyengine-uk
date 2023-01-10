@@ -46,7 +46,7 @@ class benunit_tax(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["tax"])
+        return add(benunit, period, ["tax"])
 
 
 class tax_reported(Variable):

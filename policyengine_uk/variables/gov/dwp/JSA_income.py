@@ -36,7 +36,7 @@ class JSA_income_eligible(Variable):
         any_unemployed = benunit.any(unemployed_members)
         # Cannot claim Income Support.
         not_on_income_support = benunit("income_support", period) == 0
-        already_claiming = aggr(benunit, period, ["JSA_income_reported"]) > 0
+        already_claiming = add(benunit, period, ["JSA_income_reported"]) > 0
         return (
             hours_eligible
             & all_under_SP_age
@@ -107,15 +107,15 @@ class JSA_income_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
-        income = aggr(benunit, period, INCOME_COMPONENTS)
-        tax = aggr(
+        income = add(benunit, period, INCOME_COMPONENTS)
+        tax = add(
             benunit,
             period,
             ["income_tax", "national_insurance"],
         )
-        income += aggr(benunit, period, ["social_security_income"])
+        income += add(benunit, period, ["social_security_income"])
         income -= tax
-        income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
+        income -= add(benunit, period, ["pension_contributions"]) * 0.5
         # Calculate disregard.
         family_type = benunit("family_type", period)
         families = family_type.possible_values
@@ -158,6 +158,6 @@ class JSA(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        JSA_contrib = aggr(benunit, period, ["JSA_contrib"])
+        JSA_contrib = add(benunit, period, ["JSA_contrib"])
         JSA_income = benunit("JSA_income", period)
         return JSA_contrib + JSA_income

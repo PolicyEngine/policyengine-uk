@@ -33,7 +33,7 @@ class tax_credits_applicable_income(Variable):
             "dividend_income",
             "property_income",
         ]
-        income = aggr(benunit, period, STEP_1_COMPONENTS)
+        income = add(benunit, period, STEP_1_COMPONENTS)
         income = amount_over(income, TC.means_test.non_earned_disregard)
         STEP_2_COMPONENTS = [
             "employment_income",
@@ -44,7 +44,7 @@ class tax_credits_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
-        income += aggr(benunit, period, STEP_2_COMPONENTS)
+        income += add(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
         on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
         return income * ~on_exempt_benefits
@@ -86,7 +86,7 @@ class is_CTC_eligible(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["child_tax_credit_reported"]) > 0
+            add(benunit, period, ["child_tax_credit_reported"]) > 0
         )
         return (
             benunit.any(benunit.members("is_child_for_CTC", period))
@@ -104,7 +104,7 @@ class would_claim_CTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        reported_ctc = aggr(benunit, period, ["child_tax_credit_reported"]) > 0
+        reported_ctc = add(benunit, period, ["child_tax_credit_reported"]) > 0
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
@@ -258,7 +258,7 @@ class is_WTC_eligible(Variable):
         meets_medium = meets_medium_total_hours & meets_medium_person_hours
         meets_higher = total_hours >= WTC.min_hours.default
         already_claiming = (
-            aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+            add(benunit, period, ["working_tax_credit_reported"]) > 0
         )
         return (
             (lower_req & meets_lower)
@@ -278,7 +278,7 @@ class would_claim_WTC(Variable):
 
     def formula(benunit, period, parameters):
         reported_wtc = (
-            aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+            add(benunit, period, ["working_tax_credit_reported"]) > 0
         )
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
@@ -424,7 +424,7 @@ class WTC_worker_element(Variable):
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
-        hours = aggr(benunit, period, ["weekly_hours"])
+        hours = add(benunit, period, ["weekly_hours"])
         meets_hours_requirement = hours >= WTC.min_hours.default
         return (
             benunit("is_WTC_eligible", period)
@@ -447,7 +447,7 @@ class WTC_childcare_element(Variable):
         childcare_1 = (num_children == 1) * WTC.elements.childcare_1
         childcare_2 = (num_children > 1) * WTC.elements.childcare_2
         max_childcare_amount = (childcare_1 + childcare_2) * WEEKS_IN_YEAR
-        expenses = aggr(benunit, period, ["childcare_expenses"])
+        expenses = add(benunit, period, ["childcare_expenses"])
         eligible_expenses = min_(max_childcare_amount, expenses)
         childcare_element = WTC.elements.childcare_coverage * eligible_expenses
         return benunit("is_WTC_eligible", period) * childcare_element

@@ -184,7 +184,7 @@ class benunit_weekly_hours(Variable):
     unit = "hour"
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["weekly_hours"])
+        return add(benunit, period, ["weekly_hours"])
 
 
 class is_single(Variable):
@@ -306,7 +306,7 @@ class claims_all_entitled_benefits(Variable):
     def formula(benunit, period, parameters):
         # Return false we have any reported values in the simulation for benefits.
         return (
-            aggr(
+            add(
                 benunit,
                 period,
                 [

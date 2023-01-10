@@ -18,7 +18,7 @@ class housing_benefit_eligible(Variable):
     def formula(benunit, period, parameters):
         social = benunit.any(benunit.members("in_social_housing", period))
         already_claiming = (
-            aggr(benunit, period, ["housing_benefit_reported"]) > 0
+            add(benunit, period, ["housing_benefit_reported"]) > 0
         )
         return already_claiming & (social | benunit("LHA_eligible", period))
 
@@ -36,7 +36,7 @@ class would_claim_HB(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        reported_hb = aggr(benunit, period, ["housing_benefit_reported"]) > 0
+        reported_hb = add(benunit, period, ["housing_benefit_reported"]) > 0
         baseline = benunit("baseline_housing_benefit_entitlement", period) > 0
         eligible = benunit("housing_benefit_entitlement", period) > 0
         takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
@@ -123,15 +123,15 @@ class housing_benefit_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
-        income = aggr(benunit, period, INCOME_COMPONENTS)
-        tax = aggr(benunit, period, TAX_COMPONENTS)
-        income += aggr(benunit, period, ["personal_benefits"])
+        income = add(benunit, period, INCOME_COMPONENTS)
+        tax = add(benunit, period, TAX_COMPONENTS)
+        income += add(benunit, period, ["personal_benefits"])
         if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
             income -= add(benunit, period, ["basic_income"])
         income += add(benunit, period, ["tax_credits"])
         income -= tax
-        income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
+        income -= add(benunit, period, ["pension_contributions"]) * 0.5
         income += benefits
         num_children = add(benunit, period, ["is_child"])
         childcare_amount_1 = (num_children == 1) * WTC.elements.childcare_1
@@ -140,9 +140,9 @@ class housing_benefit_applicable_income(Variable):
         max_childcare_amount = max_weekly_childcare_amount * WEEKS_IN_YEAR
         childcare_element = min_(
             max_childcare_amount,
-            aggr(benunit, period, ["childcare_expenses"]),
+            add(benunit, period, ["childcare_expenses"]),
         )
-        hours = aggr(benunit, period, ["weekly_hours"])
+        hours = add(benunit, period, ["weekly_hours"])
         # Calculate single, couple, lone parent, and worker disregards.
         single = benunit("is_single_person", period)
         single_disregard = single * means_test.income_disregard_single
@@ -198,7 +198,7 @@ class HB_non_dep_deductions(Variable):
                 benunit.members("HB_individual_non_dep_deduction", period)
             )
         )
-        non_dep_deductions_in_bu = aggr(
+        non_dep_deductions_in_bu = add(
             benunit, period, ["HB_individual_non_dep_deduction"]
         )
         return non_dep_deductions_in_hh - non_dep_deductions_in_bu
@@ -241,7 +241,7 @@ class housing_benefit_entitlement(Variable):
             "ESA_contrib",
             "sda",
         ]
-        capped_personal_benefits = aggr(
+        capped_personal_benefits = add(
             benunit, period, CAPPED_PERSONAL_BENEFITS
         )
         other_capped_benefits = (

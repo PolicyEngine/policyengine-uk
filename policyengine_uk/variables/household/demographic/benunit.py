@@ -58,7 +58,7 @@ class family_type(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        two_adults = aggr(benunit, period, ["is_adult"]) == 2
+        two_adults = add(benunit, period, ["is_adult"]) == 2
         has_children = benunit.any(benunit.members("is_child", period))
         single = ~two_adults & ~has_children
         couple_no_children = two_adults & ~has_children

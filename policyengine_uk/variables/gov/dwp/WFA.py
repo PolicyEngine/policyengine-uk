@@ -17,4 +17,4 @@ class winter_fuel_allowance(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        return aggr(household, period, ["winter_fuel_allowance_reported"])
+        return add(household, period, ["winter_fuel_allowance_reported"])

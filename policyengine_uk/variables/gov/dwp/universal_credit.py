@@ -38,7 +38,7 @@ class would_claim_UC(Variable):
             "claims_all_entitled_benefits", period
         )
         current_uc_claimant = (
-            aggr(benunit, period, ["universal_credit_reported"]) > 0
+            add(benunit, period, ["universal_credit_reported"]) > 0
         )
         baseline_uc = (
             benunit("baseline_universal_credit_entitlement", period) > 0
@@ -207,7 +207,7 @@ class num_UC_eligible_children(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        children_born_before_limit = aggr(
+        children_born_before_limit = add(
             benunit, period, ["is_child_born_before_child_limit"]
         )
         child_limit = parameters(
@@ -231,7 +231,7 @@ class UC_child_element(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["UC_individual_child_element"])
+        return add(benunit, period, ["UC_individual_child_element"])
 
 
 class UC_carer_element(Variable):
@@ -409,7 +409,7 @@ class UC_disability_elements(Variable):
             "UC_individual_disabled_child_element",
             "UC_individual_severely_disabled_child_element",
         ]
-        personal_elements = aggr(benunit, period, PERSONAL_ELEMENTS)
+        personal_elements = add(benunit, period, PERSONAL_ELEMENTS)
         benunit_elements = benunit("UC_LCWRA_element", period)
         return personal_elements + benunit_elements
 
@@ -469,7 +469,7 @@ class UC_childcare_element(Variable):
 
     def formula(benunit, period, parameters):
         UC = parameters(period).gov.dwp.universal_credit
-        eligible_childcare_expenses = aggr(
+        eligible_childcare_expenses = add(
             benunit, period, ["childcare_expenses"]
         )
         covered_expenses = (
@@ -523,13 +523,13 @@ class UC_earned_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        personal_gross_earned_income = aggr(
+        personal_gross_earned_income = add(
             benunit, period, ["UC_MIF_capped_earned_income"]
         )
         benunit_disregards = add(
             benunit, period, ["UC_work_allowance", "benunit_tax"]
         )
-        person_disregards = aggr(benunit, period, ["pension_contributions"])
+        person_disregards = add(benunit, period, ["pension_contributions"])
         disregards = benunit_disregards + person_disregards
         return max_(0, personal_gross_earned_income - disregards)
 
@@ -549,7 +549,7 @@ class UC_unearned_income(Variable):
             "savings_interest_income",
             "dividend_income",
         ]
-        return aggr(benunit, period, SOURCES)
+        return add(benunit, period, SOURCES)
 
 
 class UC_income_reduction(Variable):
