@@ -8,7 +8,5 @@ class basic_income(Variable):
     value_type = float
     unit = GBP
 
-    def formula(person, period, parameters):
-        bi_maximum = person("bi_maximum", period)
-        bi_phaseout = person("bi_phaseout", period)
-        return bi_maximum - bi_phaseout
+    adds = ["bi_maximum"]
+    subtracts = ["bi_phaseout"]

@@ -8,8 +8,7 @@ class ESA_contrib(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("ESA_contrib_reported", period)
+    adds = ["ESA_contrib_reported"]
 
 
 class ESA_contrib_reported(Variable):

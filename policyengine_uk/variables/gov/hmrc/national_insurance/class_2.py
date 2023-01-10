@@ -23,5 +23,4 @@ class NI_class_2(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("weekly_NI_class_2", period)
+    adds = ["weekly_NI_class_2"]

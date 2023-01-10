@@ -21,24 +21,18 @@ class would_claim_child_benefit(Variable):
 
     def formula(benunit, period, parameters):
         claims_benefits = benunit("claims_all_entitled_benefits", period)
-        already_claiming = (
-            aggr(benunit, period, ["child_benefit_reported"]) > 0
-        )
+        already_claiming = add(benunit, period, ["child_benefit_reported"]) > 0
         takeup_rate = parameters(period).gov.hmrc.child_benefit.takeup
         baseline_cb = benunit("baseline_child_benefit_entitlement", period) > 0
         eligible = benunit("child_benefit_entitlement", period) > 0
         return select(
-            [
-                already_claiming | claims_benefits,
-                ~baseline_cb & eligible,
-                True,
-            ],
+            [already_claiming | claims_benefits, ~baseline_cb & eligible],
             [
                 True,  # Claims Child Benefit in the baseline
                 random(benunit)
                 < takeup_rate,  # New CB eligibility from a reform
-                False,  # Always non-claimant
             ],
+            default=False,  # Always non-claimant
         )
 
 
@@ -53,9 +47,10 @@ class child_benefit_respective_amount(Variable):
         "https://www.legislation.gov.uk/ukpga/1992/4/part/IX",
         "https://www.legislation.gov.uk/uksi/2006/965/regulation/2",
     )
+    defined_for = "is_child_or_QYP"
 
     def formula(person, period, parameters):
-        eligible = person("is_child_or_QYP", period)
+        eligible = True
         if parameters(
             period
         ).gov.contrib.ubi_center.basic_income.interactions.withdraw_cb:
@@ -75,7 +70,7 @@ class child_benefit_entitlement(Variable):
     value_type = float
     unit = GBP
 
-    formula = sum_of_variables(["child_benefit_respective_amount"])
+    adds = ["child_benefit_respective_amount"]
 
 
 class child_benefit(Variable):
@@ -86,11 +81,8 @@ class child_benefit(Variable):
     value_type = float
     unit = GBP
     category = BENEFIT
-
-    def formula(benunit, period):
-        entitlement = benunit("child_benefit_entitlement", period)
-        would_claim = benunit("would_claim_child_benefit", period)
-        return would_claim * entitlement
+    defined_for = "would_claim_child_benefit"
+    adds = ["child_benefit_entitlement"]
 
 
 class child_benefit_less_tax_charge(Variable):
@@ -103,10 +95,8 @@ class child_benefit_less_tax_charge(Variable):
     value_type = float
     unit = GBP
 
-    def formula(benunit, period):
-        benefit = benunit("child_benefit", period)
-        charge = benunit.sum(benunit.members("CB_HITC", period))
-        return benefit - charge
+    adds = ["child_benefit"]
+    subtracts = ["CB_HITC"]
 
 
 class baseline_child_benefit_entitlement(Variable):

@@ -52,11 +52,4 @@ class student_payments(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        EDUCATION_BENEFITS = [
-            "adult_ema",
-            "child_ema",
-            "access_fund",
-            "education_grants",
-        ]
-        return add(person, period, EDUCATION_BENEFITS)
+    adds = ["adult_ema", "child_ema", "access_fund", "education_grants"]

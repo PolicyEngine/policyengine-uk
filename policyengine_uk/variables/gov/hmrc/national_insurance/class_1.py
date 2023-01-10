@@ -62,8 +62,7 @@ class employer_NI(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("employer_NI_class_1", period)
+    adds = ["employer_NI_class_1"]
 
 
 class total_NI(Variable):
@@ -73,6 +72,4 @@ class total_NI(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        COMPONENTS = ["employer_NI", "national_insurance"]
-        return add(person, period, COMPONENTS)
+    adds = ["employer_NI", "national_insurance"]

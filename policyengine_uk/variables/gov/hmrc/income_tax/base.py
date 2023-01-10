@@ -20,7 +20,7 @@ class total_pension_income(Variable):
     value_type = float
     unit = GBP
 
-    formula = sum_of_variables(["pension_income", "state_pension"])
+    adds = ["pension_income", "state_pension"]
 
 
 class social_security_income(Variable):
@@ -31,12 +31,10 @@ class social_security_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     unit = GBP
 
-    def formula(person, period, parameters):
-        COMPONENTS = [
-            "state_pension",
-            "incapacity_benefit",
-            "JSA_contrib",
-            "ESA_contrib",
-            "carers_allowance",
-        ]
-        return add(person, period, COMPONENTS)
+    adds = [
+        "state_pension",
+        "incapacity_benefit",
+        "JSA_contrib",
+        "ESA_contrib",
+        "carers_allowance",
+    ]

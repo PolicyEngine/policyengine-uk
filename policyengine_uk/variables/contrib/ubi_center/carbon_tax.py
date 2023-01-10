@@ -6,7 +6,7 @@ class carbon_tax(Variable):
     label = "Carbon tax"
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(household, period, parameters):
         carbon_tax = parameters(period).gov.contrib.ubi_center.carbon_tax

@@ -50,7 +50,7 @@ class is_benefit_cap_exempt(Variable):
         qualifying_benunit_benefits = add(
             benunit, period, QUAL_BENUNIT_BENEFITS
         )
-        qualifying_personal_benefits = aggr(
+        qualifying_personal_benefits = add(
             benunit, period, QUAL_PERSONAL_BENEFITS
         )
         return (qualifying_personal_benefits + qualifying_benunit_benefits) > 0

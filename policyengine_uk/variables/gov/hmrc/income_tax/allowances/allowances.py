@@ -59,7 +59,7 @@ class capped_mcad(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         capping_value = add(
@@ -227,13 +227,11 @@ class allowances(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        ALLOWANCES = [
-            "personal_allowance",
-            "blind_persons_allowance",
-            "gift_aid",
-            "covenanted_payments",
-            "charitable_investment_gifts",
-            "other_deductions",
-        ]
-        return add(person, period, ALLOWANCES)
+    adds = [
+        "personal_allowance",
+        "blind_persons_allowance",
+        "gift_aid",
+        "covenanted_payments",
+        "charitable_investment_gifts",
+        "other_deductions",
+    ]

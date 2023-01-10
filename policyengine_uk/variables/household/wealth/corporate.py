@@ -27,9 +27,7 @@ class corporate_tax_incidence(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period):
-        TAXES = [
-            "corporate_sdlt_change_incidence",
-            "business_rates_change_incidence",
-        ]
-        return add(household, period, TAXES)
+    adds = [
+        "corporate_sdlt_change_incidence",
+        "business_rates_change_incidence",
+    ]

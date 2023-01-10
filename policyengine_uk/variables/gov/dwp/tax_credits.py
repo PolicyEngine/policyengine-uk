@@ -33,7 +33,7 @@ class tax_credits_applicable_income(Variable):
             "dividend_income",
             "property_income",
         ]
-        income = aggr(benunit, period, STEP_1_COMPONENTS)
+        income = add(benunit, period, STEP_1_COMPONENTS)
         income = amount_over(income, TC.means_test.non_earned_disregard)
         STEP_2_COMPONENTS = [
             "employment_income",
@@ -44,7 +44,7 @@ class tax_credits_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
-        income += aggr(benunit, period, STEP_2_COMPONENTS)
+        income += add(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
         on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
         return income * ~on_exempt_benefits
@@ -86,7 +86,7 @@ class is_CTC_eligible(Variable):
 
     def formula(benunit, period, parameters):
         already_claiming = (
-            aggr(benunit, period, ["child_tax_credit_reported"]) > 0
+            add(benunit, period, ["child_tax_credit_reported"]) > 0
         )
         return (
             benunit.any(benunit.members("is_child_for_CTC", period))
@@ -104,7 +104,7 @@ class would_claim_CTC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        reported_ctc = aggr(benunit, period, ["child_tax_credit_reported"]) > 0
+        reported_ctc = add(benunit, period, ["child_tax_credit_reported"]) > 0
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
@@ -115,13 +115,9 @@ class would_claim_CTC(Variable):
             [
                 reported_ctc | claims_all_entitled_benefits,
                 ~baseline & eligible,
-                True,
             ],
-            [
-                True,
-                random(benunit) < takeup_rate,
-                False,
-            ],
+            [True, random(benunit) < takeup_rate],
+            default=False,
         )
 
 
@@ -133,14 +129,12 @@ class CTC_maximum_rate(Variable):
     reference = "Tax Credits Act 2002 s. 9"
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        ELEMENTS = [
-            "CTC_family_element",
-            "CTC_child_element",
-            "CTC_disabled_child_element",
-            "CTC_severely_disabled_child_element",
-        ]
-        return add(benunit, period, ELEMENTS)
+    adds = [
+        "CTC_family_element",
+        "CTC_child_element",
+        "CTC_disabled_child_element",
+        "CTC_severely_disabled_child_element",
+    ]
 
 
 class CTC_family_element(Variable):
@@ -150,10 +144,12 @@ class CTC_family_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = GBP
+    defined_for = "is_CTC_eligible"
 
     def formula(benunit, period, parameters):
-        CTC = parameters(period).gov.dwp.tax_credits.child_tax_credit
-        return benunit("is_CTC_eligible", period) * CTC.elements.family_element
+        return parameters(
+            period
+        ).gov.dwp.tax_credits.child_tax_credit.elements.family_element
 
 
 class CTC_child_element(Variable):
@@ -175,8 +171,7 @@ class CTC_child_element(Variable):
         spaces_left = max_(0, child_limit - exempt_children)
         non_exempt_children = min_(spaces_left, benunit.sum(is_child_for_CTC))
         children = exempt_children + non_exempt_children
-        amount = CTC.elements.child_element * children
-        return amount
+        return CTC.elements.child_element * children
 
 
 class CTC_disabled_child_element(Variable):
@@ -205,6 +200,7 @@ class CTC_severely_disabled_child_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"
     unit = GBP
+    defined_for = "is_CTC_eligible"
 
     def formula(benunit, period, parameters):
         person = benunit.members
@@ -217,10 +213,9 @@ class CTC_severely_disabled_child_element(Variable):
         )
         severely_disabled_children = benunit.sum(is_severely_disabled_child)
         CTC = parameters(period).gov.dwp.tax_credits.child_tax_credit
-        amount = (
+        return (
             CTC.elements.severe_dis_child_element * severely_disabled_children
         )
-        return benunit("is_CTC_eligible", period) * amount
 
 
 class is_WTC_eligible(Variable):
@@ -258,7 +253,7 @@ class is_WTC_eligible(Variable):
         meets_medium = meets_medium_total_hours & meets_medium_person_hours
         meets_higher = total_hours >= WTC.min_hours.default
         already_claiming = (
-            aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+            add(benunit, period, ["working_tax_credit_reported"]) > 0
         )
         return (
             (lower_req & meets_lower)
@@ -278,7 +273,7 @@ class would_claim_WTC(Variable):
 
     def formula(benunit, period, parameters):
         reported_wtc = (
-            aggr(benunit, period, ["working_tax_credit_reported"]) > 0
+            add(benunit, period, ["working_tax_credit_reported"]) > 0
         )
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
@@ -290,13 +285,9 @@ class would_claim_WTC(Variable):
             [
                 reported_wtc | claims_all_entitled_benefits,
                 ~baseline & eligible,
-                True,
             ],
-            [
-                True,
-                random(benunit) < takeup_rate,
-                False,
-            ],
+            [True, random(benunit) < takeup_rate],
+            default=False,
         )
 
 
@@ -308,17 +299,15 @@ class WTC_maximum_rate(Variable):
     reference = "Tax Credits Act 2002 s. 11"
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        ELEMENTS = [
-            "WTC_basic_element",
-            "WTC_couple_element",
-            "WTC_lone_parent_element",
-            "WTC_disabled_element",
-            "WTC_severely_disabled_element",
-            "WTC_worker_element",
-            "WTC_childcare_element",
-        ]
-        return add(benunit, period, ELEMENTS)
+    adds = [
+        "WTC_basic_element",
+        "WTC_couple_element",
+        "WTC_lone_parent_element",
+        "WTC_disabled_element",
+        "WTC_severely_disabled_element",
+        "WTC_worker_element",
+        "WTC_childcare_element",
+    ]
 
 
 class WTC_basic_element(Variable):
@@ -328,10 +317,12 @@ class WTC_basic_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = GBP
+    defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
-        return benunit("is_WTC_eligible", period) * WTC.elements.basic
+        return parameters(
+            period
+        ).gov.dwp.tax_credits.working_tax_credit.elements.basic
 
 
 class WTC_couple_element(Variable):
@@ -341,13 +332,13 @@ class WTC_couple_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = GBP
+    defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
         relation_type = benunit("relation_type", period)
         relations = relation_type.possible_values
-        amount = (relation_type == relations.COUPLE) * WTC.elements.couple
-        return benunit("is_WTC_eligible", period) * amount
+        return (relation_type == relations.COUPLE) * WTC.elements.couple
 
 
 class WTC_lone_parent_element(Variable):
@@ -357,17 +348,14 @@ class WTC_lone_parent_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = GBP
+    defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
         family_type = benunit("family_type", period)
         families = family_type.possible_values
         lone_parent = family_type == families.LONE_PARENT
-        return (
-            benunit("is_WTC_eligible", period)
-            * lone_parent
-            * WTC.elements.lone_parent
-        )
+        return lone_parent * WTC.elements.lone_parent
 
 
 class WTC_disabled_element(Variable):
@@ -377,6 +365,7 @@ class WTC_disabled_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = GBP
+    defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
@@ -390,11 +379,7 @@ class WTC_disabled_element(Variable):
             & person("is_adult", period)
         )
         qualifies = benunit.any(person_qualifies)
-        return (
-            benunit("is_WTC_eligible", period)
-            * qualifies
-            * WTC.elements.disabled
-        )
+        return qualifies * WTC.elements.disabled
 
 
 class WTC_severely_disabled_element(Variable):
@@ -421,16 +406,13 @@ class WTC_worker_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = GBP
+    defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
-        hours = aggr(benunit, period, ["weekly_hours"])
+        hours = add(benunit, period, ["weekly_hours"])
         meets_hours_requirement = hours >= WTC.min_hours.default
-        return (
-            benunit("is_WTC_eligible", period)
-            * meets_hours_requirement
-            * WTC.elements.worker
-        )
+        return meets_hours_requirement * WTC.elements.worker
 
 
 class WTC_childcare_element(Variable):
@@ -440,6 +422,7 @@ class WTC_childcare_element(Variable):
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"
     unit = GBP
+    defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
@@ -447,10 +430,9 @@ class WTC_childcare_element(Variable):
         childcare_1 = (num_children == 1) * WTC.elements.childcare_1
         childcare_2 = (num_children > 1) * WTC.elements.childcare_2
         max_childcare_amount = (childcare_1 + childcare_2) * WEEKS_IN_YEAR
-        expenses = aggr(benunit, period, ["childcare_expenses"])
+        expenses = add(benunit, period, ["childcare_expenses"])
         eligible_expenses = min_(max_childcare_amount, expenses)
-        childcare_element = WTC.elements.childcare_coverage * eligible_expenses
-        return benunit("is_WTC_eligible", period) * childcare_element
+        return WTC.elements.childcare_coverage * eligible_expenses
 
 
 class tax_credits_reduction(Variable):
@@ -538,7 +520,7 @@ class ctc_entitlement(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         return where(
@@ -554,11 +536,8 @@ class child_tax_credit(Variable):
     label = "Child Tax Credit"
     definition_period = YEAR
     unit = GBP
-
-    def formula(benunit, period, parameters):
-        entitlement = benunit("ctc_entitlement", period)
-        would_claim = benunit("would_claim_CTC", period)
-        return entitlement * would_claim
+    defined_for = "would_claim_CTC"
+    adds = ["ctc_entitlement"]
 
 
 class wtc_entitlement(Variable):
@@ -566,14 +545,15 @@ class wtc_entitlement(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
+    defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
         return where(
             benunit("tax_credits", period) > 0,
             benunit("working_tax_credit_pre_minimum", period),
             0,
-        ) * (benunit("is_WTC_eligible", period))
+        )
 
 
 class working_tax_credit(Variable):
@@ -582,11 +562,8 @@ class working_tax_credit(Variable):
     label = "Working Tax Credit"
     definition_period = YEAR
     unit = GBP
-
-    def formula(benunit, period, parameters):
-        entitlement = benunit("wtc_entitlement", period)
-        would_claim = benunit("would_claim_WTC", period)
-        return entitlement * would_claim
+    defined_for = "would_claim_WTC"
+    adds = ["wtc_entitlement"]
 
 
 class baseline_wtc_entitlement(Variable):

@@ -100,10 +100,10 @@ class sdlt_on_transactions(Variable):
     unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
-    def formula(household, period):
-        return household(
-            "sdlt_on_residential_property_transactions", period
-        ) + household("sdlt_on_non_residential_property_transactions", period)
+    adds = [
+        "sdlt_on_residential_property_transactions",
+        "sdlt_on_non_residential_property_transactions",
+    ]
 
 
 class sdlt_on_rent(Variable):
@@ -115,10 +115,10 @@ class sdlt_on_rent(Variable):
     unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
-    def formula(household, period):
-        return household(
-            "sdlt_on_residential_property_rent", period
-        ) + household("sdlt_on_non_residential_property_rent", period)
+    adds = [
+        "sdlt_on_residential_property_rent",
+        "sdlt_on_non_residential_property_rent",
+    ]
 
 
 class sdlt_liable(Variable):
@@ -185,16 +185,11 @@ class stamp_duty_land_tax(Variable):
     value_type = float
     unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/part/4"
-
-    def formula(household, period):
-        return household("sdlt_liable", period) * add(
-            household,
-            period,
-            [
-                "sdlt_on_transactions",
-                "sdlt_on_rent",
-            ],
-        )
+    defined_for = "sdlt_liable"
+    adds = [
+        "sdlt_on_transactions",
+        "sdlt_on_rent",
+    ]
 
 
 class expected_sdlt(Variable):

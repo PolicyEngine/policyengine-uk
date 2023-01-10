@@ -16,8 +16,7 @@ class maternity_allowance(Variable):
     value_type = float
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("maternity_allowance_reported", period)
+    adds = ["maternity_allowance_reported"]
 
 
 class ssmg_reported(Variable):
@@ -35,5 +34,4 @@ class ssmg(Variable):
     value_type = float
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("ssmg_reported", period)
+    adds = ["ssmg_reported"]

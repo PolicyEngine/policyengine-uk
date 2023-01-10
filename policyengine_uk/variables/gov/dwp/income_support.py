@@ -19,7 +19,7 @@ class would_claim_IS(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        reported_is = aggr(benunit, period, ["income_support_reported"]) > 0
+        reported_is = add(benunit, period, ["income_support_reported"]) > 0
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
@@ -27,16 +27,9 @@ class would_claim_IS(Variable):
         eligible = benunit("income_support_entitlement", period) > 0
         takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
         return select(
-            [
-                reported_is | claims_all_entitled_benefits,
-                ~baseline & eligible,
-                True,
-            ],
-            [
-                True,
-                random(benunit) < takeup_rate,
-                False,
-            ],
+            [reported_is | claims_all_entitled_benefits, ~baseline & eligible],
+            [True, random(benunit) < takeup_rate],
+            default=False,
         )
 
 
@@ -58,15 +51,15 @@ class income_support_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
-        income = aggr(benunit, period, INCOME_COMPONENTS)
-        tax = aggr(
+        income = add(benunit, period, INCOME_COMPONENTS)
+        tax = add(
             benunit,
             period,
             ["income_tax", "national_insurance"],
         )
-        income += aggr(benunit, period, ["social_security_income"])
+        income += add(benunit, period, ["social_security_income"])
         income -= tax
-        income -= aggr(benunit, period, ["pension_contributions"]) * 0.5
+        income -= add(benunit, period, ["pension_contributions"]) * 0.5
         family_type = benunit("family_type", period)
         families = family_type.possible_values
         # Calculate income disregards for each family type.
@@ -99,11 +92,11 @@ class income_support_eligible(Variable):
         youngest_child_5_or_under = benunit("youngest_child_age", period) <= 5
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_with_young_child = lone_parent & youngest_child_5_or_under
-        has_carers = aggr(benunit, period, ["is_carer_for_benefits"]) > 0
+        has_carers = add(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_ESA_income = benunit("ESA_income", period) > 0
         already_claiming = (
-            aggr(benunit, period, ["income_support_reported"]) > 0
+            add(benunit, period, ["income_support_reported"]) > 0
         )
         return (
             (has_carers | lone_parent_with_young_child)
@@ -167,7 +160,7 @@ class income_support_entitlement(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
         amount = benunit("income_support_applicable_amount", period)
@@ -182,11 +175,8 @@ class income_support(Variable):
     label = "Income Support"
     definition_period = YEAR
     unit = GBP
-
-    def formula(benunit, period, parameters):
-        entitlement = benunit("income_support_entitlement", period)
-        would_claim = benunit("would_claim_IS", period)
-        return entitlement * would_claim
+    defined_for = "would_claim_IS"
+    adds = ["income_support_entitlement"]
 
 
 class baseline_income_support_entitlement(Variable):

@@ -34,8 +34,7 @@ class employment_benefits(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return add(person, period, ["SSP", "SMP"])
+    adds = ["SSP", "SMP"]
 
 
 class SMP(Variable):
@@ -62,8 +61,7 @@ class employment_deductions(Variable):
     reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 327"
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("employment_expenses", period)
+    adds = ["employment_expenses"]
 
 
 class employment_expenses(Variable):
@@ -137,8 +135,7 @@ class tax_free_savings_income(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("ISA_interest_income", period)
+    adds = ["ISA_interest_income"]
 
 
 class ISA_interest_income(Variable):
@@ -195,8 +192,7 @@ class taxable_pension_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 567"
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("pension_income", period)
+    adds = ["pension_income"]
 
 
 # Social security income
@@ -210,8 +206,7 @@ class taxable_social_security_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 658"
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("social_security_income", period)
+    adds = ["social_security_income"]
 
 
 # Trading income
@@ -289,8 +284,7 @@ class taxable_miscellaneous_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 574"
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("miscellaneous_income", period)
+    adds = ["miscellaneous_income"]
 
 
 class total_income(Variable):
@@ -301,18 +295,16 @@ class total_income(Variable):
     reference = "Income Tax Act 2007 s. 23"
     unit = GBP
 
-    def formula(person, period, parameters):
-        COMPONENTS = [
-            "employment_income",
-            "pension_income",
-            "social_security_income",
-            "self_employment_income",
-            "property_income",
-            "savings_interest_income",
-            "dividend_income",
-            "miscellaneous_income",
-        ]
-        return add(person, period, COMPONENTS)
+    adds = [
+        "employment_income",
+        "pension_income",
+        "social_security_income",
+        "self_employment_income",
+        "property_income",
+        "savings_interest_income",
+        "dividend_income",
+        "miscellaneous_income",
+    ]
 
 
 class adjusted_net_income(Variable):

@@ -16,7 +16,6 @@ class ebr_council_tax_rebate(Variable):
         ctr = parameters(
             period
         ).gov.treasury.energy_bills_rebate.council_tax_rebate
-        ct_amount = household("council_tax", period)
         ct_band = household("council_tax_band", period)
         eligible = np.any(
             np.array(

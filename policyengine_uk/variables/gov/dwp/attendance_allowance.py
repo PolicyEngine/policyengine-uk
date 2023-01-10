@@ -19,13 +19,9 @@ class attendance_allowance(Variable):
                 [
                     category == LowerOrHigher.HIGHER,
                     category == LowerOrHigher.LOWER,
-                    category == LowerOrHigher.NONE,
                 ],
-                [
-                    aa.higher,
-                    aa.lower,
-                    0,
-                ],
+                [aa.higher, aa.lower],
+                default=0,
             )
             * WEEKS_IN_YEAR
         )
@@ -55,11 +51,7 @@ class aa_category(Variable):
             [
                 reported_weekly_aa >= aa.higher * (1 - SAFETY_MARGIN),
                 reported_weekly_aa >= aa.lower * (1 - SAFETY_MARGIN),
-                True,
             ],
-            [
-                LowerOrHigher.HIGHER,
-                LowerOrHigher.LOWER,
-                LowerOrHigher.NONE,
-            ],
+            [LowerOrHigher.HIGHER, LowerOrHigher.LOWER],
+            default=LowerOrHigher.NONE,
         )

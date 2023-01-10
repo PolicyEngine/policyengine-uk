@@ -8,8 +8,7 @@ class incapacity_benefit(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("incapacity_benefit_reported", period)
+    adds = ["incapacity_benefit_reported"]
 
 
 class incapacity_benefit_reported(Variable):

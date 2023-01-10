@@ -33,7 +33,7 @@ class bi_household_phaseout(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(person, period, parameters):
         income = person("total_income", period)
@@ -67,8 +67,6 @@ class bi_phaseout(Variable):
     entity = Person
     definition_period = YEAR
     value_type = float
-    unit = "currency-GBP"
+    unit = GBP
 
-    formula = sum_of_variables(
-        ["bi_individual_phaseout", "bi_household_phaseout"]
-    )
+    adds = ["bi_individual_phaseout", "bi_household_phaseout"]

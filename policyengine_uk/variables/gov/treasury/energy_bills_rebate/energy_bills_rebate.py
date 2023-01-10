@@ -9,9 +9,4 @@ class energy_bills_rebate(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period, parameters):
-        return add(
-            household,
-            period,
-            ["ebr_council_tax_rebate", "ebr_energy_bills_credit"],
-        )
+    adds = ["ebr_council_tax_rebate", "ebr_energy_bills_credit"]

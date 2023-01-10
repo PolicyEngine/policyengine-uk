@@ -10,9 +10,4 @@ class minimum_guarantee(Variable):
     unit = GBP
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6"
 
-    formula = sum_of_variables(
-        [
-            "standard_minimum_guarantee",
-            "additional_minimum_guarantee",
-        ]
-    )
+    adds = ["standard_minimum_guarantee", "additional_minimum_guarantee"]

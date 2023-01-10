@@ -8,4 +8,4 @@ class dla(Variable):
     value_type = float
     unit = GBP
 
-    formula = sum_of_variables(["dla_sc", "dla_m"])
+    adds = ["dla_sc", "dla_m"]

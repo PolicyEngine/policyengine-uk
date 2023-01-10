@@ -8,7 +8,7 @@ class pip(Variable):
     value_type = float
     unit = GBP
 
-    formula = sum_of_variables(["pip_dl", "pip_m"])
+    adds = ["pip_dl", "pip_m"]
 
 
 class PIPCategory(Enum):

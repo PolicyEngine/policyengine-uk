@@ -8,8 +8,7 @@ class IIDB(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("IIDB_reported", period)
+    adds = ["IIDB_reported"]
 
 
 class IIDB_reported(Variable):

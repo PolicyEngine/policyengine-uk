@@ -8,8 +8,7 @@ class JSA_contrib(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("JSA_contrib_reported", period)
+    adds = ["JSA_contrib_reported"]
 
 
 class JSA_contrib_reported(Variable):

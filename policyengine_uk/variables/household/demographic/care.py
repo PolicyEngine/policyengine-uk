@@ -28,7 +28,7 @@ class num_carers(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return aggr(benunit, period, ["is_carer_for_benefits"])
+        return add(benunit, period, ["is_carer_for_benefits"])
 
 
 class carer_premium(Variable):

@@ -9,7 +9,6 @@ class property_purchased(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
-    unit = GBP
     default_value = True
 
 
