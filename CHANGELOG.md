@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.6] - 2023-01-10 17:31:54
+
+### Changed
+
+- Use `adds` and `subtracts` everywhere.
+- Replace `aggr` with `add`.
+- Apply `defined_for`.
+- Use `default` arg to `select` rather than dummy `True` condition.
+
 ## [0.38.5] - 2023-01-06 10:07:28
 
 ### Added
@@ -752,6 +761,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.38.6]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.5...0.38.6
 [0.38.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.4...0.38.5
 [0.38.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.3...0.38.4
 [0.38.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.2...0.38.3

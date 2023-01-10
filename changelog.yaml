@@ -624,3 +624,11 @@
     added:
     - Metadata on modelled policies.
   date: 2023-01-06 10:07:28
+- bump: patch
+  changes:
+    changed:
+    - Use `adds` and `subtracts` everywhere.
+    - Replace `aggr` with `add`.
+    - Apply `defined_for`.
+    - Use `default` arg to `select` rather than dummy `True` condition.
+  date: 2023-01-10 17:31:54
