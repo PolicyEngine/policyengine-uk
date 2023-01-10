@@ -75,7 +75,7 @@ class child_benefit_entitlement(Variable):
     value_type = float
     unit = GBP
 
-    formula = sum_of_variables(["child_benefit_respective_amount"])
+    adds = ["child_benefit_respective_amount"]
 
 
 class child_benefit(Variable):

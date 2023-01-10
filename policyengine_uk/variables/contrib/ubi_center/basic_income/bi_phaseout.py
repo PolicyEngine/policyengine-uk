@@ -69,6 +69,4 @@ class bi_phaseout(Variable):
     value_type = float
     unit = "currency-GBP"
 
-    formula = sum_of_variables(
-        ["bi_individual_phaseout", "bi_household_phaseout"]
-    )
+    adds = ["bi_individual_phaseout", "bi_household_phaseout"]
