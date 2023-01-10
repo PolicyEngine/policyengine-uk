@@ -32,13 +32,11 @@ class taxed_income(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        COMPONENTS = [
-            "earned_taxable_income",
-            "taxed_savings_income",
-            "taxed_dividend_income",
-        ]
-        return add(person, period, COMPONENTS)
+    adds = [
+        "earned_taxable_income",
+        "taxed_savings_income",
+        "taxed_dividend_income",
+    ]
 
 
 class basic_rate_earned_income(Variable):
@@ -190,8 +188,9 @@ class tax_band(Variable):
         higher = allowances + rates.uk.thresholds[-2]
         add = allowances + rates.uk.thresholds[-1]
         return select(
-            [ANI >= add, ANI >= higher, ANI > basic, ANI <= basic],
-            [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC, TaxBand.NONE],
+            [ANI >= add, ANI >= higher, ANI > basic],
+            [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC],
+            default=TaxBand.NONE,
         )
 
     def formula_2017_04_06(person, period, parameters):
@@ -201,16 +200,17 @@ class tax_band(Variable):
         scot = person("pays_scottish_income_tax", period)
         income = ANI - allowances
         uk_band = select(
-            [income < threshold for threshold in rates.uk.thresholds] + [True],
-            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
+            [income < threshold for threshold in rates.uk.thresholds],
+            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
+            default=TaxBand.ADDITIONAL,
         )
         scottish_band = select(
             [
                 income < threshold
                 for threshold in rates.scotland.pre_starter_rate.thresholds
-            ]
-            + [True],
-            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
+            ],
+            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
+            default=TaxBand.ADDITIONAL,
         )
         return where(scot, scottish_band, uk_band)
 
@@ -221,9 +221,9 @@ class tax_band(Variable):
         scot = person("pays_scottish_income_tax", period)
         income = ANI - allowances
         uk_band = select(
-            [income < threshold for threshold in rates.uk.thresholds[:3]]
-            + [True],
-            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER, TaxBand.ADDITIONAL],
+            [income < threshold for threshold in rates.uk.thresholds[:3]],
+            [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
+            default=TaxBand.ADDITIONAL,
         )
         scottish_band = select(
             [
@@ -231,16 +231,15 @@ class tax_band(Variable):
                 for threshold in rates.scotland.post_starter_rate.thresholds[
                     :5
                 ]
-            ]
-            + [True],
+            ],
             [
                 TaxBand.NONE,
                 TaxBand.STARTER,
                 TaxBand.BASIC,
                 TaxBand.INTERMEDIATE,
                 TaxBand.HIGHER,
-                TaxBand.ADDITIONAL,
             ],
+            default=TaxBand.ADDITIONAL,
         )
         return where(scot, scottish_band, uk_band)
 
@@ -391,13 +390,11 @@ class taxed_savings_income(Variable):
     reference = "Income Tax Act 2007 s. 11D"
     unit = GBP
 
-    def formula(person, period, parameters):
-        COMPONENTS = [
-            "basic_rate_savings_income",
-            "higher_rate_savings_income",
-            "add_rate_savings_income",
-        ]
-        return add(person, period, COMPONENTS)
+    adds = [
+        "basic_rate_savings_income",
+        "higher_rate_savings_income",
+        "add_rate_savings_income",
+    ]
 
 
 class taxed_dividend_income(Variable):
@@ -464,13 +461,11 @@ class income_tax_pre_charges(Variable):
     reference = "Income Tax Act 2007 s. 23"
     unit = GBP
 
-    def formula(person, period, parameters):
-        earned_tax = person("earned_income_tax", period)
-        OTHER_COMPONENTS = [
-            "savings_income_tax",
-            "dividend_income_tax",
-        ]
-        return earned_tax + add(person, period, OTHER_COMPONENTS)
+    adds = [
+        "earned_income_tax",
+        "savings_income_tax",
+        "dividend_income_tax",
+    ]
 
 
 class is_higher_earner(Variable):

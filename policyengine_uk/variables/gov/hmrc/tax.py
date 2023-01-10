@@ -8,9 +8,7 @@ class tax(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        TAXES = ["income_tax", "national_insurance"]
-        return add(person, period, TAXES)
+    adds = ["income_tax", "national_insurance"]
 
 
 class household_tax(Variable):
@@ -45,8 +43,7 @@ class benunit_tax(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        return add(benunit, period, ["tax"])
+    adds = ["tax"]
 
 
 class tax_reported(Variable):
@@ -64,5 +61,5 @@ class tax_modelling(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("tax", period) - person("tax_reported", period)
+    adds = ["tax"]
+    subtracts = ["tax_reported"]

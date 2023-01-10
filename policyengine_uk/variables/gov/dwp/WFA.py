@@ -16,5 +16,4 @@ class winter_fuel_allowance(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period, parameters):
-        return add(household, period, ["winter_fuel_allowance_reported"])
+    adds = ["winter_fuel_allowance_reported"]

@@ -51,7 +51,5 @@ class business_rates_change_incidence(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period):
-        business_rates = household("business_rates", period)
-        baseline_business_rates = household("baseline_business_rates", period)
-        return business_rates - baseline_business_rates
+    adds = ["business_rates"]
+    subtracts = ["baseline_business_rates"]
