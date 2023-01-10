@@ -2,3 +2,6 @@
   changes:
     changed:
       - Use `adds` and `subtracts` everywhere.
+      - Replace `aggr` with `add`.
+      - Apply `defined_for`.
+      - Use `default` arg to `select` rather than dummy `True` condition.
