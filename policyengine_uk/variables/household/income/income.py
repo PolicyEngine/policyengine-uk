@@ -151,10 +151,7 @@ class capital_income(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return add(
-            person, period, ["savings_interest_income", "dividend_income"]
-        )
+    adds = ["savings_interest_income", "dividend_income"]
 
 
 class hbai_household_net_income(Variable):
@@ -165,11 +162,8 @@ class hbai_household_net_income(Variable):
     unit = GBP
     definition_period = YEAR
 
-    def formula(household, period, parameters):
-        gross_income = household("household_gross_income", period)
-        tax = household("household_tax", period)
-        excluded_income = household("baseline_hbai_excluded_income", period)
-        return gross_income - tax - excluded_income
+    adds = ["household_gross_income"]
+    subtracts = ["household_tax", "baseline_hbai_excluded_income"]
 
 
 class household_net_income(Variable):
@@ -206,10 +200,8 @@ class hbai_household_net_income_ahc(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(household, period, parameters):
-        income = household("hbai_household_net_income", period)
-        housing_costs = household("housing_costs", period)
-        return income - housing_costs
+    adds = ["hbai_household_net_income"]
+    subtracts = ["housing_costs"]
 
 
 class equiv_household_net_income(Variable):
@@ -293,7 +285,6 @@ class minimum_wage_category(Variable):
                 (age >= 18) & (age <= 20),
                 (age >= 21) & (age <= 22),
                 (age >= 23) & (age <= 24),
-                age >= 25,
             ],
             [
                 MinimumWageCategory.APPRENTICE,
@@ -301,8 +292,8 @@ class minimum_wage_category(Variable):
                 MinimumWageCategory.BETWEEN_18_20,
                 MinimumWageCategory.BETWEEN_21_22,
                 MinimumWageCategory.BETWEEN_23_24,
-                MinimumWageCategory.OVER_24,
             ],
+            default=MinimumWageCategory.OVER_24,
         )
 
 

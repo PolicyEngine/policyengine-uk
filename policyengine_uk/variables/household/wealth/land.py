@@ -12,12 +12,7 @@ class land_value(Variable):
     unit = GBP
     quantity_type = STOCK
 
-    def formula(household, period):
-        VARIABLES = [
-            "household_land_value",
-            "corporate_land_value",
-        ]
-        return add(household, period, VARIABLES)
+    adds = ["household_land_value", "corporate_land_value"]
 
 
 class household_land_value(Variable):

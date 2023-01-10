@@ -11,22 +11,20 @@ class family_benefits(Variable):
     label = "Total simulated family benefits for this person"
     definition_period = YEAR
     unit = GBP
+    defined_for = "is_benunit_head"
 
-    def formula(person, period, parameters):
-        FAMILY_BENEFITS = [
-            "child_benefit",
-            "ESA_income",
-            "housing_benefit",
-            "income_support",
-            "JSA_income",
-            "pension_credit",
-            "universal_credit",
-            "council_tax_benefit",
-            "child_tax_credit",
-            "working_tax_credit",
-        ]
-        benefits = add(person.benunit, period, FAMILY_BENEFITS)
-        return benefits * person("is_benunit_head", period)
+    adds = [
+        "child_benefit",
+        "ESA_income",
+        "housing_benefit",
+        "income_support",
+        "JSA_income",
+        "pension_credit",
+        "universal_credit",
+        "council_tax_benefit",
+        "child_tax_credit",
+        "working_tax_credit",
+    ]
 
 
 class family_benefits_reported(Variable):
@@ -36,9 +34,7 @@ class family_benefits_reported(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        FAMILY_BENEFITS = []
-        return add(person, period, [i + "_reported" for i in FAMILY_BENEFITS])
+    # Currently no family benefits reported.
 
 
 class benefits(Variable):
@@ -101,12 +97,8 @@ class other_benefits(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        reported = person("benefits_reported", period)
-        personal_family_benefits = add(
-            person, period, ["personal_benefits", "family_benefits"]
-        )
-        return reported - personal_family_benefits
+    adds = ["benefits_reported"]
+    subtracts = ["personal_benefits", "family_benefits"]
 
 
 class benefits_reported(Variable):
@@ -116,9 +108,7 @@ class benefits_reported(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        BENS = ["personal_benefits_reported", "family_benefits_reported"]
-        return add(person, period, BENS)
+    adds = ["personal_benefits_reported", "family_benefits_reported"]
 
 
 class benefits_modelling(Variable):
@@ -130,8 +120,8 @@ class benefits_modelling(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        return person("benefits", period) - person("benefits_reported", period)
+    adds = ["benefits"]
+    subtracts = ["benefits_reported"]
 
 
 class is_QYP(Variable):
@@ -166,14 +156,12 @@ class benefits_premiums(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        PREMIUMS = [
-            "disability_premium",
-            "enhanced_disability_premium",
-            "severe_disability_premium",
-            "carer_premium",
-        ]
-        return add(benunit, period, PREMIUMS)
+    adds = [
+        "disability_premium",
+        "enhanced_disability_premium",
+        "severe_disability_premium",
+        "carer_premium",
+    ]
 
 
 class benunit_weekly_hours(Variable):
@@ -183,8 +171,7 @@ class benunit_weekly_hours(Variable):
     definition_period = YEAR
     unit = "hour"
 
-    def formula(benunit, period, parameters):
-        return add(benunit, period, ["weekly_hours"])
+    adds = ["weekly_hours"]
 
 
 class is_single(Variable):
@@ -242,29 +229,27 @@ class personal_benefits(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        BENEFITS = [
-            "attendance_allowance",
-            "AFCS",
-            "BSP",
-            "carers_allowance",
-            "dla",
-            "ESA_contrib",
-            "IIDB",
-            "incapacity_benefit",
-            "JSA_contrib",
-            "pip",
-            "sda",
-            "state_pension",
-            "student_payments",
-            "student_loans",
-            "maternity_allowance",
-            "SSP",
-            "SMP",
-            "ssmg",
-            "basic_income",
-        ]
-        return add(person, period, BENEFITS)
+    adds = [
+        "attendance_allowance",
+        "AFCS",
+        "BSP",
+        "carers_allowance",
+        "dla",
+        "ESA_contrib",
+        "IIDB",
+        "incapacity_benefit",
+        "JSA_contrib",
+        "pip",
+        "sda",
+        "state_pension",
+        "student_payments",
+        "student_loans",
+        "maternity_allowance",
+        "SSP",
+        "SMP",
+        "ssmg",
+        "basic_income",
+    ]
 
 
 class personal_benefits_reported(Variable):
@@ -274,8 +259,9 @@ class personal_benefits_reported(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        BENEFITS = [
+    adds = [
+        i + "_reported"
+        for i in [
             "AA",
             "AFCS",
             "BSP",
@@ -291,7 +277,7 @@ class personal_benefits_reported(Variable):
             "SDA",
             "state_pension",
         ]
-        return add(person, period, [i + "_reported" for i in BENEFITS])
+    ]
 
 
 class claims_all_entitled_benefits(Variable):

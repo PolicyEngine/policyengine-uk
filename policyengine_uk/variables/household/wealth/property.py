@@ -10,10 +10,7 @@ class residential_property_value(Variable):
     unit = GBP
     quantity_type = STOCK
 
-    def formula(household, period, parameters):
-        return household("main_residence_value", period) + household(
-            "other_residential_property_value", period
-        )
+    adds = ["main_residence_value", "other_residential_property_value"]
 
 
 class property_wealth(Variable):
@@ -25,9 +22,4 @@ class property_wealth(Variable):
     unit = GBP
     quantity_type = STOCK
 
-    def formula(household, period):
-        VARIABLES = [
-            "residential_property_value",
-            "non_residential_property_value",
-        ]
-        return add(household, period, VARIABLES)
+    adds = ["residential_property_value", "non_residential_property_value"]

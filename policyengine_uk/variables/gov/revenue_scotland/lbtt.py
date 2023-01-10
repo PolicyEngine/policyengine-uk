@@ -107,12 +107,10 @@ class lbtt_on_transactions(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period):
-        LBTTS = [
-            "lbtt_on_residential_property_transactions",
-            "lbtt_on_non_residential_property_transactions",
-        ]
-        return add(household, period, LBTTS)
+    adds = [
+        "lbtt_on_residential_property_transactions",
+        "lbtt_on_non_residential_property_transactions",
+    ]
 
 
 class lbtt_on_rent(Variable):
@@ -125,12 +123,10 @@ class lbtt_on_rent(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period):
-        LBTTS = [
-            "lbtt_on_residential_property_rent",
-            "lbtt_on_non_residential_property_rent",
-        ]
-        return add(household, period, LBTTS)
+    adds = [
+        "lbtt_on_residential_property_rent",
+        "lbtt_on_non_residential_property_rent",
+    ]
 
 
 class land_and_buildings_transaction_tax(Variable):

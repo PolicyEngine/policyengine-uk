@@ -84,13 +84,8 @@ class non_residential_property_purchased(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-
-    def formula(household, period):
-        property_purchased = household("property_purchased", period)
-        non_residential_property_value = household(
-            "non_residential_property_value", period
-        )
-        return property_purchased * non_residential_property_value
+    defined_for = "property_purchased"
+    adds = ["non_residential_property_value"]
 
 
 class mortgage(Variable):

@@ -62,15 +62,14 @@ class country(Variable):
                 region == Region.SCOTLAND,
                 region == Region.WALES,
                 region == Region.NORTHERN_IRELAND,
-                True,
             ],
             [
                 Country.UNKNOWN,
                 Country.SCOTLAND,
                 Country.WALES,
                 Country.NORTHERN_IRELAND,
-                Country.ENGLAND,
             ],
+            default=Country.ENGLAND,
         )
 
 

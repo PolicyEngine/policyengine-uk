@@ -9,8 +9,7 @@ class benunit_rent(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        return add(benunit, period, ["personal_rent"])
+    adds = ["personal_rent"]
 
 
 class personal_rent(Variable):
@@ -20,11 +19,8 @@ class personal_rent(Variable):
     documentation = "The gross rent this person is liable for"
     definition_period = YEAR
     unit = GBP
-
-    def formula(person, period, parameters):
-        rent = person.household("rent", period)
-        is_household_head = person("is_household_head", period)
-        return rent * is_household_head
+    defined_for = "is_household_head"
+    adds = ["rent"]
 
 
 class family_rent(Variable):
@@ -34,9 +30,7 @@ class family_rent(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(benunit, period, parameters):
-        personal_rent = benunit.members("personal_rent", period)
-        return benunit.sum(personal_rent)
+    adds = ["personal_rent"]
 
 
 class weekly_childcare_expenses(Variable):
@@ -57,8 +51,7 @@ class housing_costs(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(household, period, parameters):
-        return add(household, period, ["rent", "mortgage"])
+    adds = ["rent", "mortgage"]
 
 
 class council_tax_less_benefit(Variable):
