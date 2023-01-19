@@ -632,3 +632,8 @@
     - Apply `defined_for`.
     - Use `default` arg to `select` rather than dummy `True` condition.
   date: 2023-01-10 17:31:54
+- bump: minor
+  changes:
+    added:
+    - Monthly NI calculations.
+  date: 2023-01-19 22:59:56
