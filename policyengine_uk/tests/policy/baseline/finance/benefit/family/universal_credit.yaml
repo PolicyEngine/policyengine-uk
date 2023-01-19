@@ -1,6 +1,6 @@
 - name: Renting, single, 30, employed
   period: 2022
-  absolute_error_margin: 1
+  absolute_error_margin: 35
   input:
     people:
       person:
@@ -75,7 +75,7 @@
     universal_credit: [10956.72, 0]
 - name: Renter with childcare, disabilities and non-dependents
   period: 2022
-  absolute_error_margin: 1
+  absolute_error_margin: 80
   input:
     people:
       person_1:

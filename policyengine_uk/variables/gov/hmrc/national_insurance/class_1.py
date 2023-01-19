@@ -52,7 +52,12 @@ class employee_NI_class_1(Variable):
     definition_period = YEAR
     value_type = float
     unit = "currency-GBP"
-    adds = ["monthly_employee_NI_class_1"]
+
+    def formula(person, period, parameters):
+        total_NI = 0
+        for month in period.get_subperiods("month"):
+            total_NI += person("monthly_employee_NI_class_1", month)
+        return total_NI
 
 
 class employer_NI_class_1(Variable):
