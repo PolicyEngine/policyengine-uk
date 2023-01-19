@@ -23,18 +23,28 @@ class monthly_employee_NI_class_1(Variable):
 
     def formula(person, period, parameters):
         class_1 = parameters(period).gov.hmrc.national_insurance.class_1
-        earnings = person("employment_income", period.this_year) / MONTHS_IN_YEAR
+        earnings = (
+            person("employment_income", period.this_year) / MONTHS_IN_YEAR
+        )
         main_earnings = amount_between(
             earnings,
-            class_1.thresholds.primary_threshold * WEEKS_IN_YEAR / MONTHS_IN_YEAR,
-            class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR / MONTHS_IN_YEAR,
+            class_1.thresholds.primary_threshold
+            * WEEKS_IN_YEAR
+            / MONTHS_IN_YEAR,
+            class_1.thresholds.upper_earnings_limit
+            * WEEKS_IN_YEAR
+            / MONTHS_IN_YEAR,
         )
         add_earnings = amount_over(
-            earnings, class_1.thresholds.upper_earnings_limit * WEEKS_IN_YEAR / MONTHS_IN_YEAR
+            earnings,
+            class_1.thresholds.upper_earnings_limit
+            * WEEKS_IN_YEAR
+            / MONTHS_IN_YEAR,
         )
         main_charge = class_1.rates.employee.main * main_earnings
         add_charge = class_1.rates.employee.additional * add_earnings
         return main_charge + add_charge
+
 
 class employee_NI_class_1(Variable):
     label = "Employee NI class 1"
@@ -43,6 +53,7 @@ class employee_NI_class_1(Variable):
     value_type = float
     unit = "currency-GBP"
     adds = ["monthly_employee_NI_class_1"]
+
 
 class employer_NI_class_1(Variable):
     value_type = float
