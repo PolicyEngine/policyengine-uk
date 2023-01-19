@@ -81,6 +81,8 @@ OVER_24:
 metadata:
   unit: currency-GBP
   label: Minimum Wage
+  economy: false
+  propagate_metadata_to_children: true
   reference:
     - title: GOV.UK - National Minimum Wage
       href: https://www.gov.uk/national-minimum-wage-rates
