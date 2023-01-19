@@ -4,6 +4,7 @@ all: install
 
 install:
 	pip install -e .[dev]
+	pip install --upgrade jsonschema[format-nongpl]
 
 format:
 	black . -l 79
