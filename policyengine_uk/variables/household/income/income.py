@@ -346,6 +346,23 @@ class household_income_decile(Variable):
         return weighted_income.decile_rank().values
 
 
+class household_wealth_decile(Variable):
+    label = "household wealth decile"
+    documentation = "Decile of household wealth (person-weighted)"
+    entity = Household
+    definition_period = YEAR
+    value_type = int
+
+    def formula(household, period, parameters):
+        wealth = household("total_wealth", period)
+        count_people = household("household_count_people", period)
+        household_weight = household("household_weight", period)
+        weighted_wealth = MicroSeries(
+            wealth, weights=household_weight * count_people
+        )
+        return weighted_wealth.decile_rank().values
+
+
 class income_decile(Variable):
     label = "income decile"
     documentation = "Decile of household net income. Households are sorted by disposable income, and then divided into 10 equally-populated groups."
