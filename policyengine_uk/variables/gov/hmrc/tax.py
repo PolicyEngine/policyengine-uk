@@ -33,6 +33,7 @@ class household_tax(Variable):
         "national_insurance",
         "LVT",
         "carbon_tax",
+        "vat_change",
     ]
 
 

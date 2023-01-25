@@ -1,0 +1,15 @@
+description: The highest VAT rate, applicable to most goods and services.
+values:
+  1973-04-01: 0.1
+  1974-07-29: 0.08
+  1979-06-18: 0.15
+  1991-04-01: 0.175
+  2008-12-01: 0.15
+  2010-01-01: 0.175
+  2011-01-04: 0.2
+metadata:
+  unit: /1
+  reference:
+    - title: LexisNexis historic VAT rates
+      href: https://www.lexisnexis.co.uk/tolley/tax/guidance/historic-vat-rates
+  label: VAT standard rate
