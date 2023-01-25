@@ -5,6 +5,9 @@ from microdf import MicroDataFrame
 from synthimpute import rf_impute
 from policyengine_uk import Microsimulation
 
+CONSUMPTION_PCT_REDUCED_RATE = 0.03  # From OBR's VAT page
+CURRENT_VAT_RATE = 0.2
+
 etb = pd.read_csv(
     "~/Downloads/UKDA-8856-tab/tab/householdv2_1977-2021.tab", delimiter="\t"
 )
@@ -38,7 +41,7 @@ etb_2020_df["is_child"] = etb_2020.childs
 etb_2020_df["is_SP_age"] = etb_2020.noretd
 etb_2020_df["household_net_income"] = etb_2020.disinc * 52
 etb_2020_df["full_rate_vat_expenditure_rate"] = (
-    etb_2020.totvat * 0.97 / 0.2
+    etb_2020.totvat * (1 - CONSUMPTION_PCT_REDUCED_RATE) / CURRENT_VAT_RATE
 ) / (etb_2020.expdis - etb_2020.totvat)
 etb_2020_df = etb_2020_df[~etb_2020_df.full_rate_vat_expenditure_rate.isna()]
 etb_2020_df = MicroDataFrame(
