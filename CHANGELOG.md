@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.0] - 2023-01-25 21:14:21
+
+### Added
+
+- VAT imputation and implementation.
+
 ## [0.39.0] - 2023-01-19 22:59:56
 
 ### Added
@@ -767,6 +773,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.40.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.39.0...0.40.0
 [0.39.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.6...0.39.0
 [0.38.6]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.5...0.38.6
 [0.38.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.4...0.38.5
