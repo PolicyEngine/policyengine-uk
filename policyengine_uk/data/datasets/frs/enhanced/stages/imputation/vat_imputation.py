@@ -17,22 +17,18 @@ for col in etb_2020:
 
 sim = Microsimulation()
 
+
+INPUT_VARIABLES = ["is_adult", "is_child", "is_SP_age", "household_net_income"]
+
 frs_df = sim.calculate_dataframe(
-    [
-        "household_net_income",
-        "is_adult",
-        "is_child",
-        "is_SP_age",
-    ],
+    INPUT_VARIABLES[::-1],
     map_to="household",
 )
 
 imputed_rates = rf_impute(
     x_train=etb_2020_df.drop("full_rate_vat_expenditure_rate", axis=1),
     y_train=etb_2020_df.full_rate_vat_expenditure_rate,
-    x_new=frs_df[
-        ["is_adult", "is_child", "is_SP_age", "household_net_income"]
-    ],
+    x_new=frs_df[INPUT_VARIABLES],
 )
 
 etb_2020_df = pd.DataFrame()
