@@ -1,0 +1,9 @@
+description: A reduced rate of VAT applicable to select goods and services (domestic fuel and power).
+values:
+  1994-04-01: 0.05
+metadata:
+  unit: /1
+  reference:
+    - title: GOV.UK
+      href: https://www.gov.uk/guidance/rates-of-vat-on-different-goods-and-services#power-utilities-energy-and-energy-saving-heating
+  label: VAT reduced rate
