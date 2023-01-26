@@ -46,9 +46,7 @@ class benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        uprating = parameters(period).gov.dwp.additional_uprating
-        total = add(person, period, ["personal_benefits", "family_benefits"])
-        return total * (1 + uprating)
+        return add(person, period, ["personal_benefits", "family_benefits"])
 
 
 class household_benefits(Variable):

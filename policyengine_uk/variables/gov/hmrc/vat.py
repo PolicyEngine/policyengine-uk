@@ -14,9 +14,6 @@ class vat(Variable):
             "reduced_rate_vat_consumption", period
         )
         vat = parameters(period).gov.hmrc.vat
-        print(
-            f"Multiplying {full_rate_consumption} by {vat.standard_rate} and {reduced_rate_consumption} by {vat.reduced_rate} to get {full_rate_consumption * vat.standard_rate + reduced_rate_consumption * vat.reduced_rate}"
-        )
         return (
             full_rate_consumption * vat.standard_rate
             + reduced_rate_consumption * vat.reduced_rate
@@ -36,9 +33,6 @@ class baseline_vat(Variable):
             "reduced_rate_vat_consumption", period
         )
         vat = parameters(period).baseline.gov.hmrc.vat
-        print(
-            f"Multiplying {full_rate_consumption} by {vat.standard_rate} and {reduced_rate_consumption} by {vat.reduced_rate} to get {full_rate_consumption * vat.standard_rate + reduced_rate_consumption * vat.reduced_rate}"
-        )
         return (
             full_rate_consumption * vat.standard_rate
             + reduced_rate_consumption * vat.reduced_rate
