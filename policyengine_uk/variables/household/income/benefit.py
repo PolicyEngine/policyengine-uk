@@ -80,14 +80,27 @@ class household_benefits(Variable):
         "pip",
         "sda",
         "state_pension",
-        "student_payments",
-        "student_loans",
         "maternity_allowance",
         "SSP",
         "SMP",
         "ssmg",
         "basic_income",
     ]
+
+    def formula(household, period, parameters):
+        uprating = parameters(period).gov.contrib.benefit_uprating
+        general_benefits = add(household, period, [
+            benefit for benefit in household_benefits.adds
+            if benefit not in ["basic_income"]
+        ])
+        non_sp_benefits = add(household, period, [
+            benefit for benefit in household_benefits.adds
+            if benefit not in ["state_pension", "basic_income"]
+        ])
+        return (
+            general_benefits * (1 + uprating.all)
+            + non_sp_benefits * (1 + uprating.non_sp)
+        )
 
 
 class other_benefits(Variable):
