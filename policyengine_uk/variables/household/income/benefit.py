@@ -88,18 +88,37 @@ class household_benefits(Variable):
     ]
 
     def formula(household, period, parameters):
-        uprating = parameters(period).gov.contrib.benefit_uprating
-        general_benefits = add(household, period, [
-            benefit for benefit in household_benefits.adds
-            if benefit not in ["basic_income"]
-        ])
-        non_sp_benefits = add(household, period, [
-            benefit for benefit in household_benefits.adds
-            if benefit not in ["state_pension", "basic_income"]
-        ])
+        contrib = parameters(period).gov.contrib
+        uprating = contrib.benefit_uprating
+        benefits = household_benefits.adds
+        if contrib.abolish_council_tax:
+            benefits = [
+                benefit
+                for benefit in benefits
+                if benefit != "council_tax_benefit"
+            ]
+        general_benefits = add(
+            household,
+            period,
+            [
+                benefit
+                for benefit in benefits
+                if benefit not in ["basic_income"]
+            ],
+        )
+        non_sp_benefits = add(
+            household,
+            period,
+            [
+                benefit
+                for benefit in benefits
+                if benefit not in ["state_pension", "basic_income"]
+            ],
+        )
         return (
-            general_benefits * (1 + uprating.all)
-            + non_sp_benefits * (1 + uprating.non_sp)
+            benefits
+            + general_benefits * uprating.all
+            + non_sp_benefits * uprating.non_sp
         )
 
 
