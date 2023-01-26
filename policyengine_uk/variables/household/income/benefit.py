@@ -116,7 +116,7 @@ class household_benefits(Variable):
             ],
         )
         return (
-            benefits
+            add(household, period, benefits)
             + general_benefits * uprating.all
             + non_sp_benefits * uprating.non_sp
         )
