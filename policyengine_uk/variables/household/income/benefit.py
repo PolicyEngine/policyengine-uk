@@ -46,9 +46,7 @@ class benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        uprating = parameters(period).gov.dwp.additional_uprating
-        total = add(person, period, ["personal_benefits", "family_benefits"])
-        return total * (1 + uprating)
+        return add(person, period, ["personal_benefits", "family_benefits"])
 
 
 class household_benefits(Variable):
@@ -80,14 +78,46 @@ class household_benefits(Variable):
         "pip",
         "sda",
         "state_pension",
-        "student_payments",
-        "student_loans",
         "maternity_allowance",
         "SSP",
         "SMP",
         "ssmg",
         "basic_income",
     ]
+
+    def formula(household, period, parameters):
+        contrib = parameters(period).gov.contrib
+        uprating = contrib.benefit_uprating
+        benefits = household_benefits.adds
+        if contrib.abolish_council_tax:
+            benefits = [
+                benefit
+                for benefit in benefits
+                if benefit != "council_tax_benefit"
+            ]
+        general_benefits = add(
+            household,
+            period,
+            [
+                benefit
+                for benefit in benefits
+                if benefit not in ["basic_income"]
+            ],
+        )
+        non_sp_benefits = add(
+            household,
+            period,
+            [
+                benefit
+                for benefit in benefits
+                if benefit not in ["state_pension", "basic_income"]
+            ],
+        )
+        return (
+            add(household, period, benefits)
+            + general_benefits * uprating.all
+            + non_sp_benefits * uprating.non_sp
+        )
 
 
 class other_benefits(Variable):

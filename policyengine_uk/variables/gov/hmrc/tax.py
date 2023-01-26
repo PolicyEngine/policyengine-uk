@@ -36,6 +36,20 @@ class household_tax(Variable):
         "vat_change",
     ]
 
+    def formula(household, period, parameters):
+        if parameters(period).gov.contrib.abolish_council_tax:
+            return add(
+                household,
+                period,
+                [
+                    tax
+                    for tax in household_tax.adds
+                    if tax not in ["council_tax"]
+                ],
+            )
+        else:
+            return add(household, period, household_tax.adds)
+
 
 class benunit_tax(Variable):
     value_type = float

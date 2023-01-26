@@ -1,0 +1,6 @@
+description: Percentage by which to increase all benefits.
+values:
+  0000-01-01: 0
+metadata:
+  unit: /1
+  label: Benefit uprating

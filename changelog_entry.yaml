@@ -1,0 +1,5 @@
+- bump: minor
+  changes:
+    added:
+    - Wealth tax brackets.
+    - Intermediate benefit uprating (multiplies by a percentage).
