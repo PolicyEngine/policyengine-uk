@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.41.0] - 2023-01-26 20:09:59
+
+### Added
+
+- Wealth tax brackets.
+- Intermediate benefit uprating (multiplies by a percentage).
+
 ## [0.40.0] - 2023-01-25 21:14:21
 
 ### Added
@@ -773,6 +780,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.41.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.40.0...0.41.0
 [0.40.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.39.0...0.40.0
 [0.39.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.6...0.39.0
 [0.38.6]: https://github.com/PolicyEngine/openfisca-uk/compare/0.38.5...0.38.6

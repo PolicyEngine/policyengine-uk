@@ -642,3 +642,9 @@
     added:
     - VAT imputation and implementation.
   date: 2023-01-25 21:14:21
+- bump: minor
+  changes:
+    added:
+    - Wealth tax brackets.
+    - Intermediate benefit uprating (multiplies by a percentage).
+  date: 2023-01-26 20:09:59
