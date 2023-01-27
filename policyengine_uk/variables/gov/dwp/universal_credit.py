@@ -524,13 +524,13 @@ class UC_unearned_income(Variable):
     label = "Universal Credit unearned income"
     definition_period = YEAR
     unit = GBP
-
     adds = [
         "carers_allowance",
         "JSA_contrib",
         "pension_income",
         "savings_interest_income",
         "dividend_income",
+        "property_income",
     ]
 
 
@@ -565,10 +565,10 @@ class universal_credit_entitlement(Variable):
     subtracts = ["UC_income_reduction"]
 
 
-class universal_credit(Variable):
+class universal_credit_pre_benefit_cap(Variable):
     value_type = float
     entity = BenUnit
-    label = "Universal Credit"
+    label = "Universal Credit before benefit cap"
     documentation = "Total entitlement to Universal Credit"
     definition_period = YEAR
     unit = GBP
@@ -576,6 +576,22 @@ class universal_credit(Variable):
     adds = ["UC_maximum_amount"]
     subtracts = ["UC_income_reduction"]
     defined_for = "would_claim_UC"
+
+class universal_credit(Variable):
+    label = "Universal Credit"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+    
+    def formula(benunit, period, parameters):
+        uc_entitlement = benunit("universal_credit_pre_benefit_cap", period)
+        benefit_cap_reduction = benunit("benefit_cap_reduction", period)
+        return where(
+            uc_entitlement > 0,
+            max_(0, uc_entitlement - benefit_cap_reduction),
+            0,
+        )
 
 
 class UC_MIF_applies(Variable):

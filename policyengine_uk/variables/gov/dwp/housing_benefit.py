@@ -227,38 +227,13 @@ class housing_benefit_entitlement(Variable):
         amount = where(
             LHA, min_(final_amount, benunit("LHA_cap", period)), final_amount
         )
-        CAPPED_BENUNIT_BENEFITS = [
-            "child_benefit",
-            "child_tax_credit",
-            "JSA_income",
-            "income_support",
-            "ESA_income",
-        ]
-        capped_benunit_benefits = add(benunit, period, CAPPED_BENUNIT_BENEFITS)
-        CAPPED_PERSONAL_BENEFITS = [
-            "JSA_contrib",
-            "incapacity_benefit",
-            "ESA_contrib",
-            "sda",
-        ]
-        capped_personal_benefits = add(
-            benunit, period, CAPPED_PERSONAL_BENEFITS
-        )
-        other_capped_benefits = (
-            capped_benunit_benefits + capped_personal_benefits
-        )
-        amount = max_(0, amount - benunit("HB_non_dep_deductions", period))
-        final_amount = min_(
-            amount * (benunit("housing_benefit_eligible", period)),
-            benunit("benefit_cap", period) - other_capped_benefits,
-        )
-        return max_(0, final_amount)
+        return max_(0, amount - benunit("HB_non_dep_deductions", period))
 
 
-class housing_benefit(Variable):
+class housing_benefit_pre_benefit_cap(Variable):
     value_type = float
     entity = BenUnit
-    label = "Housing Benefit"
+    label = "Housing Benefit pre-benefit cap"
     definition_period = YEAR
     unit = GBP
 
@@ -266,6 +241,22 @@ class housing_benefit(Variable):
         entitlement = benunit("housing_benefit_entitlement", period)
         would_claim = benunit("would_claim_HB", period)
         return would_claim * entitlement
+
+class housing_benefit(Variable):
+    label = "Housing Benefit"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+    
+    def formula(benunit, period, parameters):
+        housing_benefit_entitlement = benunit("housing_benefit_pre_benefit_cap", period)
+        benefit_cap_reduction = benunit("benefit_cap_reduction", period)
+        return where(
+            housing_benefit_entitlement > 0,
+            max_(0, housing_benefit_entitlement - benefit_cap_reduction),
+            0,
+        )
 
 
 class baseline_housing_benefit_entitlement(Variable):
