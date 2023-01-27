@@ -239,8 +239,9 @@ class housing_benefit_pre_benefit_cap(Variable):
 
     def formula(benunit, period, parameters):
         entitlement = benunit("housing_benefit_entitlement", period)
+        eligible = benunit("housing_benefit_eligible", period)
         would_claim = benunit("would_claim_HB", period)
-        return would_claim * entitlement
+        return would_claim * entitlement * eligible
 
 
 class housing_benefit(Variable):
@@ -260,7 +261,6 @@ class housing_benefit(Variable):
             max_(0, housing_benefit_entitlement - benefit_cap_reduction),
             0,
         )
-
 
 class baseline_housing_benefit_entitlement(Variable):
     label = "Housing Benefit entitlement (baseline)"
