@@ -1,7 +1,0 @@
-- bump: patch
-  changes:
-    changed:
-    - MTR calculation limited to one person for speed improvement.
-    - Benefit cap implementation refactored to share code between UC and HB.
-    fixed:
-    - Property income reduces UC as unearned income.
