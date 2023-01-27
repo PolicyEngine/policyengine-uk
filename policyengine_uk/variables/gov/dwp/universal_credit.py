@@ -577,13 +577,14 @@ class universal_credit_pre_benefit_cap(Variable):
     subtracts = ["UC_income_reduction"]
     defined_for = "would_claim_UC"
 
+
 class universal_credit(Variable):
     label = "Universal Credit"
     entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP
-    
+
     def formula(benunit, period, parameters):
         uc_entitlement = benunit("universal_credit_pre_benefit_cap", period)
         benefit_cap_reduction = benunit("benefit_cap_reduction", period)

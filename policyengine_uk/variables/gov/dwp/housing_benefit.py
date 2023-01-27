@@ -242,15 +242,18 @@ class housing_benefit_pre_benefit_cap(Variable):
         would_claim = benunit("would_claim_HB", period)
         return would_claim * entitlement
 
+
 class housing_benefit(Variable):
     label = "Housing Benefit"
     entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP
-    
+
     def formula(benunit, period, parameters):
-        housing_benefit_entitlement = benunit("housing_benefit_pre_benefit_cap", period)
+        housing_benefit_entitlement = benunit(
+            "housing_benefit_pre_benefit_cap", period
+        )
         benefit_cap_reduction = benunit("benefit_cap_reduction", period)
         return where(
             housing_benefit_entitlement > 0,

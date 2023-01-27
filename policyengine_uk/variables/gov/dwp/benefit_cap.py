@@ -55,6 +55,7 @@ class is_benefit_cap_exempt(Variable):
         )
         return (qualifying_personal_benefits + qualifying_benunit_benefits) > 0
 
+
 class benefit_cap_reduction(Variable):
     label = "benefit cap reduction"
     entity = BenUnit
@@ -77,5 +78,7 @@ class benefit_cap_reduction(Variable):
             "sda",
         ]
         return max_(
-            add(benunit, period, CAPPED_BENEFITS) - benunit("benefit_cap", period), 0
+            add(benunit, period, CAPPED_BENEFITS)
+            - benunit("benefit_cap", period),
+            0,
         )
