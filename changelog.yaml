@@ -656,3 +656,8 @@
     fixed:
     - Property income reduces UC as unearned income.
   date: 2023-01-27 09:21:35
+- bump: patch
+  changes:
+    changed:
+    - VAT adjusted to hit administrative targets.
+  date: 2023-01-27 13:02:28
