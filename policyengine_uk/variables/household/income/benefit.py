@@ -350,7 +350,7 @@ class claims_legacy_benefits(Variable):
         BENEFITS = [
             "child_tax_credit",
             "working_tax_credit",
-            "housing_benefit",
+            "housing_benefit_pre_benefit_cap",
             "ESA_income",
             "income_support",
             "JSA_income",

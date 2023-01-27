@@ -54,3 +54,31 @@ class is_benefit_cap_exempt(Variable):
             benunit, period, QUAL_PERSONAL_BENEFITS
         )
         return (qualifying_personal_benefits + qualifying_benunit_benefits) > 0
+
+
+class benefit_cap_reduction(Variable):
+    label = "benefit cap reduction"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(benunit, period, parameters):
+        CAPPED_BENEFITS = [
+            "child_benefit",
+            "child_tax_credit",
+            "JSA_income",
+            "income_support",
+            "ESA_income",
+            "universal_credit_pre_benefit_cap",
+            "housing_benefit_pre_benefit_cap",
+            "JSA_contrib",
+            "incapacity_benefit",
+            "ESA_contrib",
+            "sda",
+        ]
+        return max_(
+            add(benunit, period, CAPPED_BENEFITS)
+            - benunit("benefit_cap", period),
+            0,
+        )
