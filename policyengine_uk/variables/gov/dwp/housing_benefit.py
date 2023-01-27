@@ -262,6 +262,7 @@ class housing_benefit(Variable):
             0,
         )
 
+
 class baseline_housing_benefit_entitlement(Variable):
     label = "Housing Benefit entitlement (baseline)"
     entity = BenUnit
