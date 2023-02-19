@@ -107,7 +107,7 @@ class pension_contributions_relief(Variable):
         basic_amount = parameters(
             period
         ).gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount
-        tax_relief = min_(pay, max_(basic_amount, contributions)) * under_75
+        tax_relief = min_(pay, min_(basic_amount, contributions)) * under_75
         return min_(tax_relief, person("pension_annual_allowance", period))
 
 

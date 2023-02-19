@@ -19,6 +19,7 @@ class earned_taxable_income(Variable):
             "taxable_dividend_income",
             "allowances",
             "marriage_allowance",
+            "pension_contributions_relief",
         ]
         ANI = person("adjusted_net_income", period)
         exclusions = add(person, period, EXCLUSIONS)
