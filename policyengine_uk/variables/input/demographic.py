@@ -12,4 +12,4 @@ class age(Variable):
     documentation = "Age in years"
     definition_period = YEAR
     quantity_type = STOCK
-    default_value = 18
+    default_value = 40
