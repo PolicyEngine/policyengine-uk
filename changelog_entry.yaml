@@ -1,5 +1,0 @@
-- bump: patch
-  changes:
-    added:
-    - Seasonality to EPG modelling (simple).
-    - EPG documentation updates.

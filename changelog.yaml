@@ -682,3 +682,9 @@
     fixed:
     - Energy Price Guarantee implementation.
   date: 2023-02-27 15:06:37
+- bump: patch
+  changes:
+    added:
+    - Seasonality to EPG modelling (simple).
+    - EPG documentation updates.
+  date: 2023-02-27 15:37:16
