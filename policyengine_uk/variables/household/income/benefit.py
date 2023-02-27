@@ -83,6 +83,7 @@ class household_benefits(Variable):
         "SMP",
         "ssmg",
         "basic_income",
+        "epg_subsidy",
     ]
 
     def formula(household, period, parameters):

@@ -69,8 +69,8 @@ class monthly_epg_subsidy(Variable):
         return max_(0, energy_consumption - epg_consumption_level)
 
 
-class energy_price_cap_subsidy(Variable):
-    label = "Energy price cap subsidy"
+class epg_subsidy(Variable):
+    label = "Energy price guarantee subsidy"
     documentation = "Reduction in energy bills due to offsetting the price cap and compensating energy firms."
     entity = Household
     definition_period = YEAR
