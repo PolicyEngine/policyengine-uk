@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_core.periods import Period
 
 class monthly_domestic_energy_consumption(Variable):
     label = "Monthly domestic energy consumption"
