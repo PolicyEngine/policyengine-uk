@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Energy Price Guarantee implementation.
