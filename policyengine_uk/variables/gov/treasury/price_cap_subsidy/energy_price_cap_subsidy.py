@@ -29,7 +29,8 @@ class monthly_epg_consumption_level(Variable):
         ofgem = parameters.gov.ofgem
         price_cap = ofgem.energy_price_cap(period)
         price_guarantee = ofgem.energy_price_guarantee(period)
-        discount = (price_guarantee / price_cap) - 1
+        relative_change = price_guarantee / price_cap - 1
+        discount = -relative_change
         return energy_consumption * discount
 
 
@@ -39,8 +40,8 @@ class monthly_epg_subsidy(Variable):
     definition_period = MONTH
     value_type = float
     unit = "currency-GBP"
-    adds = ["monthly_epg_consumption_level"]
-    subtracts = ["monthly_domestic_energy_consumption"]
+    adds = ["monthly_domestic_energy_consumption"]
+    subtracts = ["monthly_epg_consumption_level"]
 
 
 class energy_price_cap_subsidy(Variable):
