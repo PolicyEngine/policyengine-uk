@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Bug causing pension contributions to not be correctly deducted from taxable income.
