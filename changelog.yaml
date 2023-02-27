@@ -688,3 +688,8 @@
     - Seasonality to EPG modelling (simple).
     - EPG documentation updates.
   date: 2023-02-27 15:37:16
+- bump: patch
+  changes:
+    fixed:
+    - Properly exclude primary residence values from the CEC wealth tax.
+  date: 2023-02-27 16:01:50
