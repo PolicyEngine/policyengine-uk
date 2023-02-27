@@ -1,0 +1,20 @@
+description: Annual tax on total wealth (includes all property and corporate wealth except primary residences).
+brackets:
+  - threshold:
+      values:
+        0000-01-01: 0
+      metadata:
+        unit: currency-GBP
+        period: year
+    rate:
+      values:
+        0000-01-01: 0
+      metadata:
+        unit: /1
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  rate_period: year
+  unit: /1
+  name: non_primary_residence_wealth_tax
+  label: Wealth tax (excludes primary residences)
