@@ -9,9 +9,6 @@ from policyengine_core.simulations import (
 from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
     EnhancedFRS,
 )
-from policyengine_uk.parameters.gov.ofgem.price_cap.add_price_cap_parameters import (
-    add_price_cap_parameters,
-)
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -31,14 +28,6 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def __init__(self):
         super().__init__(entities)
-
-        self.parameters = add_price_cap_parameters(
-            self.parameters,
-            start_year=2019,
-            start_quarter=1,
-            end_year=2027,
-            end_quarter=4,
-        )
 
         self.parameters.add_child("baseline", self.parameters.clone())
 

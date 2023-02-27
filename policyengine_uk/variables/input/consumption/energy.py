@@ -11,4 +11,4 @@ class domestic_energy_consumption(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.ofgem.price_cap.base"
+    uprating = "gov.ofgem.energy_price_cap"
