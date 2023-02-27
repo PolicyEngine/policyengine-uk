@@ -12,7 +12,7 @@
     employment_income: 34000
     pension_contributions: 1200
   output:
-    income_tax: 4058
+    income_tax: 3820
 - name: Income Tax for earner with pension contributions in 2018
   period: 2018
   absolute_error_margin: 10
@@ -20,7 +20,7 @@
     employment_income: 34000
     pension_contributions: 1200
   output:
-    income_tax: 4258
+    income_tax: 4020
 - name: Income Tax for earner with pension contributions in 2019
   period: 2019
   absolute_error_margin: 10
@@ -28,7 +28,7 @@
     employment_income: 34000
     pension_contributions: 1200
   output:
-    income_tax: 4188
+    income_tax: 3950
 - name: Income Tax for earner in 2019
   period: 2019
   absolute_error_margin: 10

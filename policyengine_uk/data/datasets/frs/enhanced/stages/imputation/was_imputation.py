@@ -59,18 +59,12 @@ def impute_wealth(year: int, dataset: type = FRS) -> pd.Series:
 
     from policyengine_uk import Microsimulation
 
-    sender = Microsimulation(
-        dataset=WAS,
-        dataset_year=year,
-    ).df(
+    sender = Microsimulation(dataset=WAS, dataset_year=year,).df(
         PREDICTOR_VARIABLES + IMPUTE_VARIABLES,
         map_to="household",
     )
 
-    receiver = Microsimulation(
-        dataset=dataset,
-        dataset_year=year,
-    ).df(
+    receiver = Microsimulation(dataset=dataset, dataset_year=year,).df(
         PREDICTOR_VARIABLES,
         map_to="household",
     )
