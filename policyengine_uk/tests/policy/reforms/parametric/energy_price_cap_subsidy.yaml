@@ -6,4 +6,4 @@
     gov.ofgem.energy_price_guarantee: 2_500
     domestic_energy_consumption: 1_000
   output:
-    energy_price_cap_subsidy: 500
+    epg_subsidy: 500
