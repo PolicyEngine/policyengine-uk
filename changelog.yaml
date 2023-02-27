@@ -698,3 +698,8 @@
     fixed:
     - EPG properly included in net income.
   date: 2023-02-27 16:53:13
+- bump: patch
+  changes:
+    fixed:
+    - EPG test used the wrong variable name.
+  date: 2023-02-27 17:19:33

@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - EPG test used the wrong variable name.
