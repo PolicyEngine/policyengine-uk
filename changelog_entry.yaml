@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - EPG properly included in net income.
