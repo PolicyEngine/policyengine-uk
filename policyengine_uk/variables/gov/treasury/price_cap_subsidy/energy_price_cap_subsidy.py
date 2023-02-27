@@ -1,6 +1,49 @@
 from policyengine_uk.model_api import *
 
 
+class monthly_domestic_energy_consumption(Variable):
+    label = "Monthly domestic energy consumption"
+    entity = Household
+    definition_period = MONTH
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        return (
+            household("domestic_energy_consumption", period.this_year)
+            / MONTHS_IN_YEAR
+        )
+
+
+class monthly_epg_consumption_level(Variable):
+    label = "Monthly EPG subsidy level"
+    entity = Household
+    definition_period = MONTH
+    value_type = float
+    unit = "currency-GBP"
+
+    def formula(household, period, parameters):
+        energy_consumption = household(
+            "monthly_domestic_energy_consumption", period
+        )
+        ofgem = parameters.gov.ofgem
+        price_cap = ofgem.energy_price_cap(period)
+        price_guarantee = ofgem.energy_price_guarantee(period)
+        relative_change = price_guarantee / price_cap - 1
+        discount = -relative_change
+        return energy_consumption * discount
+
+
+class monthly_epg_subsidy(Variable):
+    label = "Monthly EPG subsidy"
+    entity = Household
+    definition_period = MONTH
+    value_type = float
+    unit = "currency-GBP"
+    adds = ["monthly_domestic_energy_consumption"]
+    subtracts = ["monthly_epg_consumption_level"]
+
+
 class energy_price_cap_subsidy(Variable):
     label = "Energy price cap subsidy"
     documentation = "Reduction in energy bills due to offsetting the price cap and compensating energy firms."
@@ -10,30 +53,9 @@ class energy_price_cap_subsidy(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        energy_consumption = household("domestic_energy_consumption", period)
-        # For each of the four quarters in the next year, calculate the
-        # relative change to the price cap against the baseline price cap,
-        # and multiply by quarterly energy consumption.
         total_subsidy = 0
-        q1_baseline_energy_price_cap = 0
-        for quarter in range(1, 5):
-            current_quarter = f"{period.start.year}_q{quarter}"
-            price_cap = parameters(period).gov.ofgem.price_cap[current_quarter]
-            baseline_price_cap = parameters(
-                period
-            ).baseline.gov.ofgem.price_cap[current_quarter]
-            if quarter == 1:
-                q1_baseline_energy_price_cap = baseline_price_cap
-            relative_change_in_cap = (
-                price_cap - baseline_price_cap
-            ) / baseline_price_cap
-            relative_change_in_energy_consumption = (
-                baseline_price_cap / q1_baseline_energy_price_cap
-            )
-            total_subsidy += (
-                -relative_change_in_cap
-                * relative_change_in_energy_consumption
-                * energy_consumption
-                / 4
+        for month in range(1, MONTHS_IN_YEAR + 1):
+            total_subsidy = total_subsidy + household(
+                "monthly_epg_subsidy", f"{period.this_year}-{month:02d}"
             )
         return total_subsidy

@@ -1,0 +1,25 @@
+description: The default tariff energy price for Ofgem's central household (2,900kWh per annum in electricity consumption, 12,000kWh per annum for gas). The Energy Price Cap subsidy reduces household energy bills by the difference between this amount and the subsity target parameter level.
+values:
+  2018-10-01: 1_186
+  2019-04-01: 1_305
+  2019-10-01: 1_227
+  2020-04-01: 1_209
+  2020-10-01: 1_121
+  2021-04-01: 1_223
+  2021-10-01: 1_370
+  2022-04-01: 2_100
+  2022-10-01: 3_764
+  2023-01-01: 4_279
+  2023-04-01: 3_280
+  2023-07-01: 2_362 # Forecast
+  2023-10-01: 2_389
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Ofgem energy price level
+  reference:
+    - title: Energy data and research | Ofgem
+      href: https://www.ofgem.gov.uk/energy-data-and-research/data-portal/all-available-charts?keyword=price%20cap&sort=relevance
+    - title: Cornwall Insight price cap forecasts
+      href: https://www.cornwall-insight.com/press/cornwall-insight-release-latest-price-cap-predictions/
+  
