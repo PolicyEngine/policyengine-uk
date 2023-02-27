@@ -677,3 +677,8 @@
     - Bug causing pension contributions to not be correctly deducted from taxable
       income.
   date: 2023-02-27 13:23:51
+- bump: patch
+  changes:
+    fixed:
+    - Energy Price Guarantee implementation.
+  date: 2023-02-27 15:06:37
