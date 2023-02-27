@@ -29,6 +29,7 @@ class household_tax(Variable):
         "change_in_fuel_duty",
         "tv_licence",
         "wealth_tax",
+        "non_primary_residence_wealth_tax",
         "income_tax",
         "national_insurance",
         "LVT",
