@@ -703,3 +703,9 @@
     fixed:
     - EPG test used the wrong variable name.
   date: 2023-02-27 17:19:33
+- bump: patch
+  changes:
+    fixed:
+    - Parameter updates for the CoL payments.
+    - Metadata for the CEC wealth tax.
+  date: 2023-03-02 11:57:32
