@@ -11,9 +11,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -221,7 +221,7 @@
 <li><p>Consumption by category from the <a class="reference external" href="https://www.ons.gov.uk/peoplepopulationandcommunity/personalandhouseholdfinances/expenditure/methodologies/livingcostsandfoodsurveytechnicalreportfinancialyearsendingmarch2018andmarch2019">Living Costs and Food Survey</a></p></li>
 </ul>
 <p>All of our imputations use the same method:</p>
-<ol>
+<ol class="arabic">
 <li><p>Start with the FRS</p></li>
 <li><p>Find a survey which has:</p>
 <p>a. Our “target” variables not in the FRS (e.g. wealth)</p>
@@ -288,7 +288,7 @@
 <section id="calibration">
 <h2>Calibration<a class="headerlink" href="#calibration" title="Permalink to this headline">#</a></h2>
 <p>We apply gradient descent to maximise the accuracy of the resulting survey microdata (after imputations). This involves:</p>
-<ol class="simple">
+<ol class="arabic simple">
 <li><p>Constructing a loss function f: (household weights) -&gt; (accuracy score, lower is better)</p></li>
 <li><p>Initialise weights to their original values</p></li>
 <li><p>Find the downwards gradient of the loss function (the amount accuracy would increase if each household weight increased)</p></li>
@@ -401,13 +401,13 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=8bf782fb4ee92b3d3646425e50f299c4e1fd152d"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
     <script src="../_static/scripts/furo.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
