@@ -84,6 +84,8 @@ class household_benefits(Variable):
         "ssmg",
         "basic_income",
         "epg_subsidy",
+        "cost_of_living_support_payment",
+        "energy_bills_rebate",
     ]
 
     def formula(household, period, parameters):
