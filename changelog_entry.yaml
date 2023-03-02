@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    fixed:
+    - Parameter updates for the CoL payments.
+    - Metadata for the CEC wealth tax.

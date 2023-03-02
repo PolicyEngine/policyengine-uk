@@ -14,5 +14,7 @@ class non_primary_residence_wealth_tax(Variable):
     def formula(household, period, parameters):
         wealth = household("total_wealth", period)
         primary_residence = household("main_residence_value", period)
-        tax = parameters(period).gov.contrib.ubi_center.wealth_tax
+        tax = parameters(
+            period
+        ).gov.contrib.cec.non_primary_residence_wealth_tax
         return tax.calc(max_(0, wealth - primary_residence))
