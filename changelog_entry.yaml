@@ -1,0 +1,7 @@
+- bump: minor
+  changes:
+    fixed:
+    - Corporate wealth for pensioners capped to ensure consistency with pension income in some cases.
+    - EBC end date is before 2023.
+    added:
+    - State Pension uprating parameter.

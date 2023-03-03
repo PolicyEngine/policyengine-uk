@@ -1,7 +1,7 @@
 description: Credit on energy bills paid to households. This is modeled as a flat transfer to households.
 values:
   2022-01-01: 200
-  2023-10-01: 0
+  2023-01-01: 0
 metadata:
   unit: currency-GBP
   period: year
