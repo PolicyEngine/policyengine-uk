@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.0] - 2023-03-03 16:23:13
+
+### Added
+
+- State Pension uprating parameter.
+
+### Fixed
+
+- Corporate wealth for pensioners capped to ensure consistency with pension income in some cases.
+- EBC end date is before 2023.
+
 ## [0.41.11] - 2023-03-02 11:57:32
 
 ### Fixed
@@ -853,6 +864,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.42.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.41.11...0.42.0
 [0.41.11]: https://github.com/PolicyEngine/openfisca-uk/compare/0.41.10...0.41.11
 [0.41.10]: https://github.com/PolicyEngine/openfisca-uk/compare/0.41.9...0.41.10
 [0.41.9]: https://github.com/PolicyEngine/openfisca-uk/compare/0.41.8...0.41.9

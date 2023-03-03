@@ -709,3 +709,12 @@
     - Parameter updates for the CoL payments.
     - Metadata for the CEC wealth tax.
   date: 2023-03-02 11:57:32
+- bump: minor
+  changes:
+    added:
+    - State Pension uprating parameter.
+    fixed:
+    - Corporate wealth for pensioners capped to ensure consistency with pension income
+      in some cases.
+    - EBC end date is before 2023.
+  date: 2023-03-03 16:23:13
