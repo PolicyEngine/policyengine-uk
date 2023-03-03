@@ -41,7 +41,12 @@ class state_pension(Variable):
     quantity_type = FLOW
 
     def formula(person, period, parameters):
-        return person("state_pension_reported", period)
+        relative_increase = parameters(
+            period
+        ).gov.contrib.cec.state_pension_increase
+        return person("state_pension_reported", period) * (
+            1 + relative_increase
+        )
 
 
 class self_employment_income(Variable):
