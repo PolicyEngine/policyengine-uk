@@ -12,7 +12,7 @@ class shareholding(Variable):
     def formula(household, period, parameters):
         wealth = parameters(period).household.wealth
         nbs = wealth.national_balance_sheet
-        wealth = household("capped_corporate_wealth", period)
+        wealth = household("corporate_wealth", period)
         total_wealth = nbs.household.financial_net_worth
         return wealth / total_wealth
 

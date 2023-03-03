@@ -48,7 +48,7 @@ class corporate_land_value(Variable):
 
     def formula(household, period, parameters):
         wealth = parameters(period).household.wealth
-        corporate_wealth = household("capped_corporate_wealth", period)
+        corporate_wealth = household("corporate_wealth", period)
         corporate_wealth_intensity = (
             wealth.land.value.aggregate_corporate_land_value
             / wealth.corporate_wealth
