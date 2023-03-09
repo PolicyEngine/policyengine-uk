@@ -9,7 +9,7 @@ class employment_income(Variable):
     entity = Person
     label = "employment income"
     documentation = (
-        "Total income from employment. Include wages, bonuses, tips, etc."
+        "Total income from employment. Include wages, bonuses, tips, etc. This should be gross of all private pension contributions."
     )
     definition_period = YEAR
     unit = GBP
