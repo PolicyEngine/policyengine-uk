@@ -19,7 +19,7 @@
         rent: 10000
   output:
     universal_credit: 0
-    income_tax: 3086
+    income_tax: (30000 - 1000 - 12570) * 0.2
     national_insurance: 2451.83
 - name: Renting, single, 30, employed with little earnings
   period: 2022
