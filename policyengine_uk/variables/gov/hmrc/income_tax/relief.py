@@ -20,9 +20,7 @@ class taxable_employment_income(Variable):
 
     def formula(person, period, parameters):
         taxable_earnings = person("employment_income", period)
-        deductions = add(
-            person, period, ["employment_deductions"]
-        )
+        deductions = add(person, period, ["employment_deductions"])
         benefits = person("employment_benefits", period)
         return max_(0, taxable_earnings + benefits - deductions)
 
