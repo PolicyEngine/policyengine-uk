@@ -1,0 +1,8 @@
+- name: £30k employment income, £3k private pension contributions
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+    private_pension_contributions: 3_000
+  output:
+    marginal_tax_rate: 0.2
