@@ -1,0 +1,11 @@
+description: Minimum age at which a child is entitled to the universal free childcare provision.
+values:
+  2008-09-01: 
+    value: 3
+    metadata:
+      reference:
+        - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2008(4)
+          href: https://www.legislation.gov.uk/uksi/2008/1724/regulation/4/made
+metadata:
+  unit: year
+  label: Universal entitlement minimum child age

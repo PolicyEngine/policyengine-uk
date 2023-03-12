@@ -1,0 +1,11 @@
+description: Maximum age at which a child is entitled to the universal free childcare provision.
+values:
+  2008-09-01: 
+    value: 4
+    metadata:
+      reference:
+        - title: Childcare Act 2006(19)
+          href: https://www.legislation.gov.uk/ukpga/2006/21/section/19
+metadata:
+  unit: year
+  label: Universal entitlement maximum child age

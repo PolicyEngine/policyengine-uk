@@ -1,0 +1,17 @@
+description: Number of hours in an eligible week for which families are eligible for free childcare.
+values:
+  2008-09-01: 
+    value: 12.5
+    metadata:
+      reference:
+        - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2008(3)
+          href: https://www.legislation.gov.uk/uksi/2008/1724/regulation/3/made
+  2010-09-01: 
+    value: 15
+    metadata:
+      reference:
+        - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2008(3)
+          href: https://www.legislation.gov.uk/uksi/2008/1724/regulation/3/made
+metadata:
+  unit: hour
+  label: Universal entitlement weekly free hours
