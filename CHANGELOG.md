@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.1] - 2023-03-14 18:22:37
+
+### Fixed
+
+- Bugs relating to private pension contributions.
+
 ## [0.42.0] - 2023-03-03 16:23:13
 
 ### Added
@@ -864,6 +870,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.42.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.42.0...0.42.1
 [0.42.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.41.11...0.42.0
 [0.41.11]: https://github.com/PolicyEngine/openfisca-uk/compare/0.41.10...0.41.11
 [0.41.10]: https://github.com/PolicyEngine/openfisca-uk/compare/0.41.9...0.41.10
