@@ -1,0 +1,37 @@
+- name: £30k self-employment income, no private pension contributions
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+  output:
+    income_tax: 3_286
+
+- name: £30k self-employment income, £3k private pension contributions
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+    private_pension_contributions: 3_000
+  output:
+    pension_contributions_relief: 3_000
+    marginal_tax_rate: 0.2
+    income_tax: 3286 - 3000 * 0.2
+
+- name: £60k self-employment income, no private pension contributions
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 60_000
+  output:
+    income_tax: 11_032
+
+- name: £60k self-employment income, £6k private pension contributions
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 60_000
+    private_pension_contributions: 6_000
+  output:
+    pension_contributions_relief: 6_000
+    marginal_tax_rate: 0.4
+    income_tax: 11032 - 6000 * 0.4

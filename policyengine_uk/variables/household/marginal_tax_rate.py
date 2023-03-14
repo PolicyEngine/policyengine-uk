@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_core.variables import Variable
 
 
 class marginal_tax_rate(Variable):
@@ -20,7 +21,13 @@ class marginal_tax_rate(Variable):
             )
             mask = adult_index_values == adult_index
             for variable in simulation.tax_benefit_system.variables:
-                if variable not in simulation.input_variables:
+                variable_data = simulation.tax_benefit_system.variables[
+                    variable
+                ]
+                if (
+                    variable not in simulation.input_variables
+                    and not variable_data.is_input_variable()
+                ):
                     alt_simulation.delete_arrays(variable)
             alt_simulation.set_input(
                 "employment_income",

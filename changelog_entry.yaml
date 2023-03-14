@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Bugs relating to private pension contributions.
