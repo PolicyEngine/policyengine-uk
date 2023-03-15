@@ -723,3 +723,8 @@
     fixed:
     - Bugs relating to private pension contributions.
   date: 2023-03-14 18:22:37
+- bump: minor
+  changes:
+    changed:
+    - Fuel duty incidence assumed to be 100% on consumers.
+  date: 2023-03-15 11:40:17
