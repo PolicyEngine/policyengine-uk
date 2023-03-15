@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    changed:
+    - Fuel duty incidence assumed to be 100% on consumers.

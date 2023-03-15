@@ -5,4 +5,4 @@
     petrol_spending: 1_200
   output:
     petrol_litres: 805
-    fuel_duty: 470
+    fuel_duty: 470 / 0.51
