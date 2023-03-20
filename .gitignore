@@ -48,5 +48,5 @@ policyengine_uk/calibration/*.h5
 
 **/*.h5
 **/*.csv
-
+**/*.pkl
 **/*.log

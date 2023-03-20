@@ -1,0 +1,14 @@
+description: Total employment income.
+UNITED_KINGDOM:
+  values:
+    2020-01-01: 827_000_000_000
+  metadata:
+    uprating:
+      parameter: calibration.uprating.earnings
+metadata:
+  reference:
+    # Data is more recent than the URL suggests.
+    - title: Profit, employment and pension income | National Statistics
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+    - title: Property, interest, dividend and other income | National Statistics
+      href: https://www.gov.uk/government/statistics/investment-income-2010-to-2011

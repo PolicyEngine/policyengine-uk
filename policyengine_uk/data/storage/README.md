@@ -1,3 +1,3 @@
-# OpenFisca-UK microdata
+# Microdata storage
 
-This folder will contain microdata files (.h5) to support OpenFisca-UK's microsimulation runs.
+This directory contains the microdata used by PolicyEngine.

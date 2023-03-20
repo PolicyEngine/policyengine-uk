@@ -1,4 +1,4 @@
-from policyengine_uk.data.datasets import EnhancedFRS, SynthFRS
+from policyengine_uk.data.datasets import EnhancedFRS
 from policyengine_uk.model_api import *
 
 
@@ -218,9 +218,9 @@ class baseline_hbai_excluded_income(Variable):
             from policyengine_uk import Microsimulation
 
             # Simulate baseline policy
-            dataset = EnhancedFRS if 2022 in EnhancedFRS.years else SynthFRS
+            dataset = EnhancedFRS
             result = Microsimulation(
-                dataset=dataset, dataset_year=2022
+                dataset=dataset,
             ).calculate("hbai_excluded_income", period)
             # Check that the dataset/year combination is valid
             # (i.e. that the arrays are the same size)

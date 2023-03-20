@@ -16,21 +16,7 @@ from pathlib import Path
 import os
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 
-from policyengine_uk.data import (
-    FRS,
-    RawFRS,
-    SPI,
-    RawSPI,
-    RawLCFS,
-    RawWAS,
-    ExtendedFRS,
-    LCFS,
-    WAS,
-    CalibratedFRS,
-    EnhancedFRS,
-    SynthFRS,
-)
+from policyengine_uk.data import DATASETS
 
 REPO = Path(__file__).parent
 
-DATASETS = [EnhancedFRS, SynthFRS, FRS, RawFRS]

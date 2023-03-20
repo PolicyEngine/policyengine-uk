@@ -41,7 +41,7 @@ setup(
         "yaml-changelog>=0.1.5",
         "click>=8.0.0",
         "synthimpute",
-        "google-cloud-storage",
+        "survey-enhance",
     ],
     extras_require={
         "dev": [

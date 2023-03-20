@@ -4,14 +4,12 @@ from pathlib import Path
 from policyengine_uk import Microsimulation
 import pytest
 
-from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
-    EnhancedFRS,
-)
+from policyengine_uk.data import EnhancedFRS
 
 with open(Path(__file__).parent / "statistics.yaml") as f:
     statistics = yaml.load(f, Loader=yaml.SafeLoader)
 
-sim = Microsimulation(dataset=EnhancedFRS, dataset_year=2022)
+sim = Microsimulation(dataset=EnhancedFRS)
 variables = sim.tax_benefit_system.variables
 parameters = sim.tax_benefit_system.parameters
 

@@ -2,6 +2,8 @@ name: Pull request
 on:
   pull_request:
     branches: [ master ]
+env:
+  enhanced_frs: ${{ secrets.ENHANCED_FRS}}
 jobs:
   Lint:
     runs-on: ubuntu-latest

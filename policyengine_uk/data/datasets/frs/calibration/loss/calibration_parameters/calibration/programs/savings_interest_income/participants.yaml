@@ -1,0 +1,13 @@
+description: People with savings interest income.
+ENGLAND:
+  2022-01-01: 12_099_721
+WALES:
+  2022-01-01: 595_218
+SCOTLAND:
+  2022-01-01: 1_152_699
+NORTHERN_IRELAND:
+  2022-01-01: 392_131
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Survey of Personal Incomes
