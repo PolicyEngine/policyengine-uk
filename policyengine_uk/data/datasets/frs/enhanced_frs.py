@@ -16,7 +16,7 @@ class ImputationExtendedFRS(Dataset):
     file_path = STORAGE_FOLDER / "imputation_extended_frs.h5"
     data_format = Dataset.ARRAYS
     input_dataset = None
-    url = "https://api.github.com/repos/PolicyEngine/non-public-microdata/releases/assets/100139282"
+    url = "https://api.github.com/repos/PolicyEngine/non-public-microdata/releases/assets/100228682"
 
     @staticmethod
     def from_dataset(
