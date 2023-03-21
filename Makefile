@@ -5,6 +5,7 @@ all: install
 install:
 	pip install -e .[dev]
 	pip install --upgrade jsonschema[format-nongpl]
+	pip uninstall policyengine-core -y || true
 	pip install git+https://github.com/policyengine/policyengine-core.git@datasets-update
 
 format:
