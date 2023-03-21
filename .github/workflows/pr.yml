@@ -51,9 +51,9 @@ jobs:
       - name: Run tests
         run: make test
         env:
-          enhanced_frs: ${{ secrets.ENHANCED_FRS}}
+          POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
       - name: Generate documentation
         if: matrix.os == 'ubuntu-latest'
         run: make documentation
         env:
-          enhanced_frs: ${{ secrets.ENHANCED_FRS}}
+          POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
