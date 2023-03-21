@@ -3,13 +3,14 @@ import yaml
 from pathlib import Path
 from policyengine_uk import Microsimulation
 import pytest
-
+import os
 from policyengine_uk.data import EnhancedFRS
 
 with open(Path(__file__).parent / "statistics.yaml") as f:
     statistics = yaml.load(f, Loader=yaml.SafeLoader)
 
 sim = Microsimulation(dataset=EnhancedFRS)
+assert "enhanced_frs" in os.environ, "Must be using enhanced FRS"
 variables = sim.tax_benefit_system.variables
 parameters = sim.tax_benefit_system.parameters
 
