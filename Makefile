@@ -5,6 +5,7 @@ all: install
 install:
 	pip install -e .[dev]
 	pip install --upgrade jsonschema[format-nongpl]
+	pip install git+https://github.com/policyengine/policyengine-core.git@datasets-update
 
 format:
 	black . -l 79
