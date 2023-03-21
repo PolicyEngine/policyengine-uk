@@ -7,6 +7,7 @@ from pathlib import Path
 
 STORAGE_FOLDER = Path(__file__).parent.parent / "storage"
 
+
 def sum_to_entity(
     values: pd.Series, foreign_key: pd.Series, primary_key
 ) -> pd.Series:

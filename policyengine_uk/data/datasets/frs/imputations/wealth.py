@@ -134,7 +134,9 @@ def generate_was_table(was: pd.DataFrame):
 
 def save_imputation_models():
     was = pd.read_csv(
-        WAS_TAB_FOLDER / "was_round_7_hhold_eul_march_2022.tab", sep="\t", low_memory=False
+        WAS_TAB_FOLDER / "was_round_7_hhold_eul_march_2022.tab",
+        sep="\t",
+        low_memory=False,
     )
     was = generate_was_table(was)
 
@@ -144,7 +146,10 @@ def save_imputation_models():
         was[PREDICTOR_VARIABLES],
         was[IMPUTE_VARIABLES],
     )
-    wealth.save(Path(__file__).parents[3] / "storage" / "imputations" / "wealth.pkl")
+    wealth.save(
+        Path(__file__).parents[3] / "storage" / "imputations" / "wealth.pkl"
+    )
+
 
 if __name__ == "__main__":
     save_imputation_models()

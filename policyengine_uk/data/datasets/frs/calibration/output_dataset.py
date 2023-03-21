@@ -23,19 +23,14 @@ class OutputDataset(Dataset):
             input_dataset = dataset
             time_period = year or dataset.time_period
             output_year = out_year
-            file_path = (
-                STORAGE_FOLDER
-                / f"output_{dataset.name}.h5"
-            )
+            file_path = STORAGE_FOLDER / f"output_{dataset.name}.h5"
 
         return OutputDatasetFromDataset
 
     def generate(self):
         from policyengine_uk import Microsimulation
 
-        sim = Microsimulation(
-            dataset=self.input_dataset
-        )
+        sim = Microsimulation(dataset=self.input_dataset)
 
         sim.default_calculation_period = self.output_year
 

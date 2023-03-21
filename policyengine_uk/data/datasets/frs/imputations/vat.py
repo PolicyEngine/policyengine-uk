@@ -27,15 +27,19 @@ def generate_etb_table(etb: pd.DataFrame):
     ) / (etb_2020.expdis - etb_2020.totvat)
     return etb_2020_df[~etb_2020_df.full_rate_vat_expenditure_rate.isna()]
 
+
 def save_imputation_models():
     vat = Imputation()
     etb = pd.read_csv(
-        ETB_TAB_FOLDER / "householdv2_1977-2021.tab", delimiter="\t", low_memory=False
+        ETB_TAB_FOLDER / "householdv2_1977-2021.tab",
+        delimiter="\t",
+        low_memory=False,
     )
     etb = generate_etb_table(etb)
     etb = etb[PREDICTORS + IMPUTATIONS]
     vat.train(etb[PREDICTORS], etb[IMPUTATIONS])
     vat.save(Path(__file__).parents[3] / "storage" / "imputations" / "vat.pkl")
+
 
 if __name__ == "__main__":
     save_imputation_models()

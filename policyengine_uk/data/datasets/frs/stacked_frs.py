@@ -10,16 +10,16 @@ class StackedFRS(Dataset):
     weighting_factors = []
 
     @staticmethod
-    def from_dataset(datasets, weight_factors, new_name, new_label, new_time_period):
+    def from_dataset(
+        datasets, weight_factors, new_name, new_label, new_time_period
+    ):
         class StackedDatasetFromDataset(StackedFRS):
             sub_datasets = datasets
             weighting_factors = weight_factors
             name = new_name
             label = new_label
             data_format = datasets[0].data_format
-            file_path = (
-                STORAGE_FOLDER / f"{new_name}.h5"
-            )
+            file_path = STORAGE_FOLDER / f"{new_name}.h5"
             time_period = new_time_period
 
         return StackedDatasetFromDataset
@@ -50,6 +50,7 @@ class StackedFRS(Dataset):
                     [dataset.load(variable) for dataset in sub_datasets]
                 )
         self.save_dataset(data)
+
 
 PooledFRS_2018_20 = StackedFRS.from_dataset(
     [FRS_2018_19, FRS_2019_20, FRS_2020_21],

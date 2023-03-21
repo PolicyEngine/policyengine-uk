@@ -98,10 +98,13 @@ def generate_lcfs_table(
         )
     return household[PREDICTOR_VARIABLES + IMPUTATIONS].dropna()
 
+
 def save_imputation_models():
     consumption = Imputation()
     lcfs_household = pd.read_csv(
-        LCFS_TAB_FOLDER / "lcfs_2020_dvhh_ukanon.tab", delimiter="\t", low_memory=False
+        LCFS_TAB_FOLDER / "lcfs_2020_dvhh_ukanon.tab",
+        delimiter="\t",
+        low_memory=False,
     )
     lcfs_person = pd.read_csv(
         LCFS_TAB_FOLDER / "lcfs_2020_dvper_ukanon202021.tab", delimiter="\t"
@@ -111,7 +114,13 @@ def save_imputation_models():
         household[PREDICTOR_VARIABLES],
         household[IMPUTATIONS],
     )
-    consumption.save(Path(__file__).parents[3] / "storage" / "imputations" / "consumption.pkl")
+    consumption.save(
+        Path(__file__).parents[3]
+        / "storage"
+        / "imputations"
+        / "consumption.pkl"
+    )
+
 
 if __name__ == "__main__":
     save_imputation_models()

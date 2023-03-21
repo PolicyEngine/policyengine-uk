@@ -80,13 +80,17 @@ IMPUTATIONS = [
     "pension_contributions",
 ]
 
+
 def save_imputation_models():
     income = Imputation()
     spi = pd.read_csv(SPI_TAB_FOLDER / "put1920uk.tab", delimiter="\t")
     spi = generate_spi_table(spi)
     spi = spi[PREDICTORS + IMPUTATIONS]
     income.train(spi[PREDICTORS], spi[IMPUTATIONS])
-    income.save(Path(__file__).parents[3] / "storage" / "imputations" / "income.pkl")
+    income.save(
+        Path(__file__).parents[3] / "storage" / "imputations" / "income.pkl"
+    )
+
 
 if __name__ == "__main__":
     save_imputation_models()

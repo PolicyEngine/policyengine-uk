@@ -18,8 +18,7 @@ class UpratedFRS(Dataset):
             input_dataset = dataset
             time_period = out_year
             file_path = (
-                STORAGE_FOLDER
-                / f"{dataset.name}_uprated_{out_year}.h5"
+                STORAGE_FOLDER / f"{dataset.name}_uprated_{out_year}.h5"
             )
 
         return UpratedFRSFromDataset

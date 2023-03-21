@@ -7,7 +7,10 @@ from typing import Type
 import pandas as pd
 from ...utils import STORAGE_FOLDER
 from ..frs import FRS_2019_20
-from ..spi_enhanced_frs import SPIEnhancedFRS_2019_20, SPIEnhancedPooledFRS_2018_20
+from ..spi_enhanced_frs import (
+    SPIEnhancedFRS_2019_20,
+    SPIEnhancedPooledFRS_2018_20,
+)
 
 
 def sum_by_household(values: pd.Series, dataset: Dataset) -> np.ndarray:
@@ -43,9 +46,7 @@ class CalibratedFRS(Dataset):
             input_dataset = dataset
             time_period = out_year or dataset.time_period
             log_dir = log_folder
-            file_path = (
-                STORAGE_FOLDER / f"{new_name}.h5"
-            )
+            file_path = STORAGE_FOLDER / f"{new_name}.h5"
             data_format = dataset.data_format
             log_verbose = verbose
 
@@ -85,9 +86,17 @@ class CalibratedFRS(Dataset):
         from policyengine_uk import Microsimulation
 
         simulation = Microsimulation(dataset=self)
-        household_has_weight = simulation.calculate("household_weight").values > 0
-        person_has_weight = simulation.calculate("household_weight", map_to="person").values > 0
-        benunit_has_weight = simulation.calculate("household_weight", map_to="benunit").values > 0
+        household_has_weight = (
+            simulation.calculate("household_weight").values > 0
+        )
+        person_has_weight = (
+            simulation.calculate("household_weight", map_to="person").values
+            > 0
+        )
+        benunit_has_weight = (
+            simulation.calculate("household_weight", map_to="benunit").values
+            > 0
+        )
 
         for variable in data.keys():
             if variable in system.variables:
@@ -99,6 +108,7 @@ class CalibratedFRS(Dataset):
                     data[variable] = data[variable][benunit_has_weight]
 
         self.save_dataset(data)
+
 
 CalibratedFRS_2019_20 = CalibratedFRS.from_dataset(
     FRS_2019_20,

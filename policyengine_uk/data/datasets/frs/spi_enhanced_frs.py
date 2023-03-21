@@ -11,9 +11,7 @@ from .frs import FRS_2019_20
 class SPIEnhancedFRS(Dataset):
     name = "spi_enhanced_frs"
     label = "SPI-Enhanced FRS"
-    file_path = (
-        STORAGE_FOLDER / "spi_enhanced_frs.h5"
-    )
+    file_path = STORAGE_FOLDER / "spi_enhanced_frs.h5"
     data_format = Dataset.ARRAYS
     input_dataset = None
 
@@ -27,9 +25,7 @@ class SPIEnhancedFRS(Dataset):
             name = new_name
             label = new_label
             input_dataset = dataset
-            file_path = (
-                STORAGE_FOLDER / f"{new_name}.h5"
-            )
+            file_path = STORAGE_FOLDER / f"{new_name}.h5"
             time_period = dataset.time_period
 
         return SPIEnhancedFRSFromDataset
@@ -69,7 +65,10 @@ class SPIEnhancedFRS(Dataset):
         ]
 
         income = Imputation.load(
-            Path(__file__).parent.parent.parent / "storage" / "imputations" / "income.pkl"
+            Path(__file__).parent.parent.parent
+            / "storage"
+            / "imputations"
+            / "income.pkl"
         )
 
         simulation = Microsimulation(
@@ -112,6 +111,7 @@ class SPIEnhancedFRS(Dataset):
                 ] = full_imputations[variable].values
 
         self.save_dataset(new_values)
+
 
 SPIEnhancedPooledFRS_2018_20 = SPIEnhancedFRS.from_dataset(
     PooledFRS_2018_20,

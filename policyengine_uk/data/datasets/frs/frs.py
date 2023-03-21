@@ -34,9 +34,7 @@ class FRS(Dataset):
             label = new_label
             raw_frs = raw_frs_type
             time_period = raw_frs_type.time_period
-            file_path = (
-                STORAGE_FOLDER / f"{new_name}.h5"
-            )
+            file_path = STORAGE_FOLDER / f"{new_name}.h5"
 
         return FRSFromRawFRS
 
@@ -102,6 +100,7 @@ class FRS(Dataset):
         )
         frs.close()
 
+
 FRS_2019_20 = FRS.from_dataset(
     RawFRS_2019_20,
     "frs_2019",
@@ -119,6 +118,7 @@ FRS_2020_21 = FRS.from_dataset(
     "frs_2020",
     "FRS 2020-21",
 )
+
 
 def sum_to_entity(
     values: pd.Series, foreign_key: pd.Series, primary_key

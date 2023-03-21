@@ -19,4 +19,3 @@ from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_uk.data import DATASETS
 
 REPO = Path(__file__).parent
-

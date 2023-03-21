@@ -31,9 +31,7 @@ class RawFRS(Dataset):
             tab_folder = folder
             name = new_name
             label = new_label
-            file_path = (
-                STORAGE_FOLDER / f"{new_name}.h5"
-            )
+            file_path = STORAGE_FOLDER / f"{new_name}.h5"
 
         return RawFRSFromFolder
 
@@ -105,6 +103,7 @@ class RawFRS(Dataset):
 
         # Save the data
         self.save_dataset(tables)
+
 
 RawFRS_2019_20 = RawFRS.from_folder(
     "/Users/nikhil/ukda/frs_2019_20", "raw_frs_2019", "FRS 2019-20"
