@@ -728,3 +728,8 @@
     changed:
     - Fuel duty incidence assumed to be 100% on consumers.
   date: 2023-03-15 11:40:17
+- bump: minor
+  changes:
+    changed:
+    - PolicyEngine Core data updates accounted for.
+  date: 2023-03-23 08:45:05
