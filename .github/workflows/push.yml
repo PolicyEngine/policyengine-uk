@@ -66,6 +66,8 @@ jobs:
       - name: Install package
         run: make install
       - name: Run tests
+        env:
+          POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
         run: make test
       - name: Generate documentation
         if: matrix.os == 'ubuntu-latest'
