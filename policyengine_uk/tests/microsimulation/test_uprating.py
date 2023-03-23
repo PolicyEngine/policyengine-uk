@@ -13,7 +13,7 @@ UPRATED_VARIABLES = (
     "dividend_income",
 )
 
-sim = Microsimulation(dataset=EnhancedFRS, dataset_year=2022)
+sim = Microsimulation(dataset=EnhancedFRS)
 
 
 @pytest.mark.parametrize(

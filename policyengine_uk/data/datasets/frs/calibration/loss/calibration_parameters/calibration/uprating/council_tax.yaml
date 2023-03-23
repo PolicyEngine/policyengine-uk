@@ -1,0 +1,15 @@
+description: Council Tax uprating
+values:
+  2018-01-01: 1_671.00
+  2019-01-01: 1_750.00
+  2020-01-01: 1_812.00
+  2021-01-01: 1_847.00
+  2021-04-01: 1_855.75
+  2021-07-01: 1_864.50
+  2021-10-01: 1_873.25
+  2022-01-01: 1_882.00
+  2023-01-01: 1_918.00
+  2024-01-01: 1_954.00
+metadata:
+  unit: currency-GBP
+  reference: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109

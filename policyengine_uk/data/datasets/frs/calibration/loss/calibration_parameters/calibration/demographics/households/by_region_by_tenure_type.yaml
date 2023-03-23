@@ -1,0 +1,49 @@
+description: Number of households in the UK, by tenure type.
+ENGLAND:
+  OWNER_OCCUPIED:
+    2019-01-01: 15_581_000
+  RENT_PRIVATELY:
+    2019-01-01: 4_725_000
+  RENT_FROM_HA:
+    2019-01-01: 2_479_000
+  RENT_FROM_COUNCIL:
+    2019-01-01: 1_587_000
+WALES:
+  OWNER_OCCUPIED:
+    2019-01-01: 996_000
+    2020-01-01: 1_003_000
+  RENT_PRIVATELY:
+    2019-01-01: 207_000
+    2020-01-01: 205_000
+  RENT_FROM_HA:
+    2019-01-01: 141_000
+    2020-01-01: 143_000
+  RENT_FROM_COUNCIL:
+    2019-01-01: 87_000
+    2020-01-01: 87_000
+SCOTLAND:
+  OWNER_OCCUPIED:
+    2018-01-01: 1_619_000
+  RENT_PRIVATELY:
+    2018-01-01: 389_000
+  RENT_FROM_HA:
+    2018-01-01: 282_000
+  RENT_FROM_COUNCIL:
+    2018-01-01: 314_000
+NORTHERN_IRELAND:
+  OWNER_OCCUPIED:
+    2014-01-01: 513_000
+  RENT_PRIVATELY:
+    2014-01-01: 130_000
+  RENT_FROM_HA:
+    2014-01-01: 33_000
+  RENT_FROM_COUNCIL:
+    2014-01-01: 91_000
+metadata:
+  unit: currency-GBP
+  uprating:
+    parameter: calibration.demographics.households.in_total
+  reference:
+    - title: Dwelling stock by tenure, UK | ONS
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/dwellingstockbytenureuk
+  propagate_metadata_to_children: true

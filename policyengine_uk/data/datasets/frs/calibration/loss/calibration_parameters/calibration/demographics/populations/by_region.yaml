@@ -1,0 +1,99 @@
+description: Population by region
+metadata:
+  reference:
+    - title: ONS population projections
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/datasets/regionsinenglandtable1
+    - title: StatsWales Population Estimates
+      href: https://statswales.gov.wales/catalogue/population-and-migration/population/estimates/nationallevelpopulationestimates-by-year-age-ukcountry
+    - title: ONS National Population Projections (2018-based)
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2018based
+  interpolation:
+    interval: year
+  propagate_metadata_to_children: true
+NORTH_EAST:
+  values:
+    2018-01-01: 2_657_909
+    2019-01-01: 2_667_130
+    2020-01-01: 2_674_568
+    2021-01-01: 2_681_149
+    2022-01-01: 2_687_238
+NORTH_WEST:
+  values:
+    2018-01-01: 7_292_093
+    2019-01-01: 7_329_535
+    2020-01-01: 7_363_337
+    2021-01-01: 7_395_093
+    2022-01-01: 7_425_161
+YORKSHIRE:
+  values:
+    2018-01-01: 5_479_615
+    2019-01-01: 5_505_362
+    2020-01-01: 5_528_103
+    2021-01-01: 5_548_941
+    2022-01-01: 5_568_636
+EAST_MIDLANDS:
+  values:
+    2018-01-01: 4_804_149
+    2019-01-01: 4_844_625
+    2020-01-01: 4_882_232
+    2021-01-01: 4_917_711
+    2022-01-01: 4_951_585
+WEST_MIDLANDS:
+  values:
+    2018-01-01: 5_900_757
+    2019-01-01: 5_945_140
+    2020-01-01: 5_985_916
+    2021-01-01: 6_024_811
+    2022-01-01: 6_062_195
+EAST_OF_ENGLAND:
+  values:
+    2018-01-01: 6_201_214
+    2019-01-01: 6_240_417
+    2020-01-01: 6_277_257
+    2021-01-01: 6_312_979
+    2022-01-01: 6_346_769
+LONDON:
+  values:
+    2018-01-01: 8_908_081
+    2019-01-01: 8_977_525
+    2020-01-01: 9_039_390
+    2021-01-01: 9_095_459
+    2022-01-01: 9_145_215
+SOUTH_EAST:
+  values:
+    2018-01-01: 9_133_625
+    2019-01-01: 9_186_741
+    2020-01-01: 9_235_982
+    2021-01-01: 9_282_330
+    2022-01-01: 9_325_970
+SOUTH_WEST:
+  values:
+    2018-01-01: 5_599_735
+    2019-01-01: 5_646_598
+    2020-01-01: 5_691_687
+    2021-01-01: 5_731_097
+    2022-01-01: 5_769_336
+NORTHERN_IRELAND:
+  values:
+    2018-07-01: 1_881_641
+    2019-07-01: 1_893_667
+    2020-07-01: 1_895_510
+    2023-07-01: 1_900_000
+    2028-07-01: 2_000_000
+    2033-07-01: 2_000_000
+SCOTLAND:
+  values:
+    2018-07-01: 5_438_100
+    2019-07-01: 5_463_300
+    2020-07-01: 5_466_000
+    2023-07-01: 5_500_000
+    2028-07-01: 5_500_000
+    2033-07-01: 5_600_000
+WALES:
+  values:
+    2018-07-01: 3_138_631
+    2019-07-01: 3_152_879
+    2020-07-01: 3_169_586
+    2023-07-01: 3_200_000
+    2028-07-01: 3_200_000
+    2033-07-01: 3_200_000

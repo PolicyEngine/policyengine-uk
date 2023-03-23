@@ -6,9 +6,7 @@ from policyengine_core.simulations import (
     Microsimulation as CoreMicrosimulation,
     IndividualSim as CoreIndividualSim,
 )
-from policyengine_uk.data.datasets.frs.enhanced.stages.imputation.enhanced_frs import (
-    EnhancedFRS,
-)
+from policyengine_uk.data import DATASETS, EnhancedFRS
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -56,6 +54,7 @@ class Microsimulation(CoreMicrosimulation):
     default_input_period = 2022
     default_role = "member"
     max_spiral_loops = 10
+    datasets = DATASETS
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated

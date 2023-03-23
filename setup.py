@@ -31,7 +31,7 @@ setup(
         "numpy>=1.17.5",
         "pyyaml>=5.3.1",
         "pytest>=5.4.3",
-        "PolicyEngine-Core>=1.11.1,<2",
+        "PolicyEngine-Core>=2,<3",
         "microdf_python>=0.3.0",
         "tqdm>=4.59.0",
         "plotly>=4.14.3",
@@ -41,7 +41,7 @@ setup(
         "yaml-changelog>=0.1.5",
         "click>=8.0.0",
         "synthimpute",
-        "google-cloud-storage",
+        "survey-enhance",
     ],
     extras_require={
         "dev": [

@@ -1,0 +1,36 @@
+description: Number of Income Tax payers by country and band.
+ENGLAND:
+  BASIC:
+    2018-01-01: 22_600_000
+  HIGHER:
+    2018-01-01: 3_520_000
+  ADDITIONAL:
+    2018-01-01: 407_000
+WALES:
+  BASIC:
+    2018-01-01: 1_260_000
+  HIGHER:
+    2018-01-01: 113_000
+  ADDITIONAL:
+    2018-01-01: 6_000
+SCOTLAND:
+  BASIC:
+    2018-01-01: 2_170_000
+  HIGHER:
+    2018-01-01: 405_000
+  ADDITIONAL:
+    2018-01-01: 20_000
+NORTHERN_IRELAND:
+  BASIC:
+    2018-01-01: 717_000
+  HIGHER:
+    2018-01-01: 60_000
+  ADDITIONAL:
+    2018-01-01: 4_000
+metadata:
+  unit: currency-GBP
+  uprating: calibration.programs.income_tax.participants.in_total
+  propagate_metadata_to_children: true
+  reference:
+    - title: "Income Tax liabilities statistics: tax year 2018 to 2019 to tax year 2021 to 2022"
+      href: https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fassets.publishing.service.gov.uk%2Fgovernment%2Fuploads%2Fsystem%2Fuploads%2Fattachment_data%2Ffile%2F1020351%2FCollated_Tables_2.1_to_2.7.ods&wdOrigin=BROWSELINK

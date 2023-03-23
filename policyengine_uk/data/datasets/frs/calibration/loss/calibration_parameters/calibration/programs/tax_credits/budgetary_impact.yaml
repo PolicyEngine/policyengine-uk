@@ -1,0 +1,16 @@
+description: Tax Credits spending.
+UNITED_KINGDOM:
+  2019-01-01: 17_243_000_000
+  2020-01-01: 14_581_000_000
+  2021-01-01: 10_307_000_000
+  2022-01-01: 7_640_000_000
+  2023-01-01: 5_734_000_000
+  2024-01-01: 3_765_000_000
+  2025-01-01: 1_708_000_000
+  2026-01-01: 303_000_000
+  2027-01-01: 0 # Assumed, in line with other legacy benefits
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: Benefit expenditure and caseload tables 2021
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

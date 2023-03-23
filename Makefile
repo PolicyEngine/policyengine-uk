@@ -13,9 +13,6 @@ test:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
 	pytest policyengine_uk/tests/
 
-test-setup:
-	policyengine-core data enhanced_frs download 2022 -c policyengine_uk
-
 documentation:
 	jb clean docs/book
 	jb build docs/book

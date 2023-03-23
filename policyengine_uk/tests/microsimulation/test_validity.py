@@ -4,7 +4,7 @@ from policyengine_uk.data import EnhancedFRS
 
 YEARS = range(2022, 2026)
 
-baseline = Microsimulation(dataset=EnhancedFRS, dataset_year=2022)
+baseline = Microsimulation(dataset=EnhancedFRS)
 
 
 @pytest.mark.parametrize("year", YEARS)

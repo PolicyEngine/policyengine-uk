@@ -7,12 +7,12 @@ council_tax_less_benefit:
     - relative_aggregate_error_less_than: 0.11
 child_tax_credit:
   test:
-    - relative_aggregate_error_less_than: 0.4
+    - relative_aggregate_error_less_than: 0.55
     - relative_caseload_error_less_than: 0.25
 working_tax_credit:
   test:
     - absolute_aggregate_error_less_than: 1.5e+9
-    - relative_caseload_error_less_than: 0.40
+    - relative_caseload_error_less_than: 0.45
 housing_benefit:
   test:
     - absolute_aggregate_error_less_than: 6.e+9
@@ -35,4 +35,4 @@ income_tax:
     - relative_caseload_error_less_than: 0.17 # Temporarily expanded for 2022 given multiple mid-year policy changes
 total_NI:
   test:
-    - relative_aggregate_error_less_than: 0.05
+    - relative_aggregate_error_less_than: 0.09

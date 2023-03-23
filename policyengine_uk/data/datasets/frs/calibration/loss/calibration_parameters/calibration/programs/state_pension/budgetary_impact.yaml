@@ -1,0 +1,35 @@
+description: State Pension spending by country.
+ENGLAND:
+  values:
+    2020-01-01: 83_329_000_000
+  metadata:
+    uprating: calibration.programs.state_pension.budgetary_impact.GREAT_BRITAIN
+WALES:
+  values:
+    2020-01-01: 5_274_000_000
+  metadata:
+    uprating: calibration.programs.state_pension.budgetary_impact.GREAT_BRITAIN
+SCOTLAND:
+  values:
+    2020-01-01: 8_546_000_000
+  metadata:
+    uprating: calibration.programs.state_pension.budgetary_impact.GREAT_BRITAIN
+GREAT_BRITAIN:
+  values:
+    2019-01-01: 98_797_000_000
+    2020-01-01: 101_475_000_000
+    2021-01-01: 104_598_000_000
+    2022-01-01: 110_098_000_000
+    2023-01-01: 116_831_000_000
+    2024-01-01: 122_777_000_000
+    2025-01-01: 128_648_000_000
+    2026-01-01: 133_144_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  propagate_metadata_to_children: true
+  reference:
+    - title: Benefit expenditure and caseload tables 2021
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+    - title: Benefit expenditure and caseload tables 2021 | Benefit expenditure by country and region
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

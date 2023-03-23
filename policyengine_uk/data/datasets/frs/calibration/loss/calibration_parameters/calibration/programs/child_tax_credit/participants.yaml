@@ -1,0 +1,13 @@
+UNITED_KINGDOM:
+  description: Number of families receiving Child Tax Credit
+  values:
+    2018-01-01: 3_434_000
+    2019-01-01: 2_835_000
+    2020-01-01: 2_125_000
+    2021-01-01: 1_686_000
+  metadata:
+    unit: benefit unit
+    uprating: calibration.programs.tax_credits.budgetary_impact.UNITED_KINGDOM
+    reference:
+      - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
+        href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021

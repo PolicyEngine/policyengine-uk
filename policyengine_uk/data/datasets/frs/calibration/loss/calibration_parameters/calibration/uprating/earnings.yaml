@@ -1,0 +1,25 @@
+description: Earnings index
+values:
+  2016-01-01: 158.79
+  2017-01-01: 162.33
+  2018-01-01: 167.15
+  2019-01-01: 172.50
+  2020-01-01: 172.85
+  2021-01-01: 179.24
+  2021-04-01: 180.45
+  2021-07-01: 181.66
+  2021-10-01: 182.87
+  2022-01-01: 184.08
+  2023-01-01: 189.61
+  2024-01-01: 195.48
+  # OBR projections
+  2025-01-01: 201.15 # 195.48 * 1.029
+  2026-01-01: 208.18 # 201.15 * 1.035
+  2027-01-01: 215.46 # 208.18 * 1.035
+metadata:
+  unit: currency-GBP
+  reference: 
+    - title: UKMOD earnings uprating factor
+      href: https://www.microsimulation.ac.uk/wp-content/uploads/2020/10/cempa7-20.pdf#page=109
+    - title: OBR average earnings projections
+      href: https://obr.uk/forecasts-in-depth/the-economy-forecast/labour-market/#averageearnings

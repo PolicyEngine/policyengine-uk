@@ -1,86 +1,118 @@
-import re
-import shutil
-from policyengine_core.data import PrivateDataset
-import pandas as pd
+from policyengine_core.data import Dataset
 from pathlib import Path
-from tqdm import tqdm
-from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
+import pandas as pd
+from pandas import DataFrame
+import warnings
+from ..utils import (
+    sum_to_entity,
+    categorical,
+    sum_from_positive_fields,
+    sum_positive_variables,
+    fill_with_mean,
+    STORAGE_FOLDER,
+)
+from typing import Dict
+import numpy as np
+from numpy import maximum as max_, where
+from typing import Type
 
 
-class RawFRS(PrivateDataset):
+class RawFRS(Dataset):
+    """A `Survey` instance for the Family Resources Survey."""
+
     name = "raw_frs"
-    label = "Raw FRS"
-    folder_path = policyengine_uk_MICRODATA_FOLDER
-    is_openfisca_compatible = False
+    label = "Family Resources Survey"
+    data_format = Dataset.TABLES
+    tab_folder = None
 
-    filename_by_year = {
-        2019: "raw_frs_2019.h5",
-    }
+    @staticmethod
+    def from_folder(folder: str, new_name: str = None, new_label: str = None):
+        class RawFRSFromFolder(RawFRS):
+            tab_folder = folder
+            name = new_name
+            label = new_label
+            file_path = STORAGE_FOLDER / f"{new_name}.h5"
 
-    def generate(self, year: int, ukds_tab_zipfile: str):
-        """Generates the raw FRS tabular dataset from the TAB zip archive
-        downloadable from the UKDS.
+        return RawFRSFromFolder
+
+    def generate(self):
+        """Generate the survey data from the original TAB files.
 
         Args:
-            year (int): The year of the FRS to generate.
-            ukds_tab_zipfile (str): The path to the TAB zip archive, or a folder containing the TAB files.
+            tab_folder (Path): The folder containing the original TAB files.
         """
 
-        folder = Path(ukds_tab_zipfile)
-        year = str(year)
+        tab_folder = self.tab_folder
 
-        if not folder.exists():
-            raise FileNotFoundError("Invalid path supplied.")
-        if folder.is_dir() and len(list(folder.glob("*.tab"))) > 0:
-            tab_folder = folder
-        else:
-            new_folder = self.folder_path / "tmp"
-            shutil.unpack_archive(folder, new_folder)
-            folder = new_folder
+        if isinstance(tab_folder, str):
+            tab_folder = Path(tab_folder)
 
-            main_folder = next(folder.iterdir())
-            tab_folder = main_folder / "tab"
-        if tab_folder.exists():
-            criterion = re.compile("[a-z]+\.tab")
-            data_files = [
-                path
-                for path in tab_folder.iterdir()
-                if criterion.match(path.name)
-            ]
-            task = tqdm(data_files, desc="Saving raw data tables")
-            with pd.HDFStore(RawFRS.file(year)) as file:
-                for filepath in task:
-                    task.set_description(
-                        f"Saving raw data tables ({filepath.name})"
-                    )
-                    table_name = filepath.name.replace(".tab", "")
-                    df = pd.read_csv(
-                        filepath, delimiter="\t", low_memory=False
-                    ).apply(pd.to_numeric, errors="coerce")
-                    df.columns = df.columns.str.upper()
-                    if "PERSON" in df.columns:
-                        df["person_id"] = (
-                            df.SERNUM * 1e2 + df.BENUNIT * 1e1 + df.PERSON
-                        ).astype(int)
-                    if "BENUNIT" in df.columns:
-                        df["benunit_id"] = (
-                            df.SERNUM * 1e2 + df.BENUNIT * 1e1
-                        ).astype(int)
-                    if "SERNUM" in df.columns:
-                        df["household_id"] = (df.SERNUM * 1e2).astype(int)
-                    if table_name in ("adult", "child"):
-                        df.set_index("person_id", inplace=True)
-                    elif table_name == "benunit":
-                        df.set_index("benunit_id", inplace=True)
-                    elif table_name == "househol":
-                        df.set_index("household_id", inplace=True)
-                    file[table_name] = df
-        else:
-            raise FileNotFoundError("Could not find the TAB files.")
+        # Load the data
+        tables = {}
+        for tab_file in tab_folder.glob("*.tab"):
+            table_name = tab_file.stem
+            if "frs" in table_name:
+                continue
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                tables[table_name] = pd.read_csv(
+                    tab_file, delimiter="\t"
+                ).apply(pd.to_numeric, errors="coerce")
 
-        tmp_folder = self.folder_path / "tmp"
-        if tmp_folder.exists():
-            shutil.rmtree(tmp_folder)
+            sernum = (
+                "sernum"
+                if "sernum" in tables[table_name].columns
+                else "SERNUM"
+            )  # FRS inconsistently users sernum/SERNUM in different years
+
+            if "PERSON" in tables[table_name].columns:
+                tables[table_name]["person_id"] = (
+                    tables[table_name][sernum] * 1e2
+                    + tables[table_name].BENUNIT * 1e1
+                    + tables[table_name].PERSON
+                ).astype(int)
+
+            if "BENUNIT" in tables[table_name].columns:
+                tables[table_name]["benunit_id"] = (
+                    tables[table_name][sernum] * 1e2
+                    + tables[table_name].BENUNIT * 1e1
+                ).astype(int)
+
+            if sernum in tables[table_name].columns:
+                tables[table_name]["household_id"] = (
+                    tables[table_name][sernum] * 1e2
+                ).astype(int)
+            if table_name in ("adult", "child"):
+                tables[table_name].set_index(
+                    "person_id", inplace=True, drop=False
+                )
+            elif table_name == "benunit":
+                tables[table_name].set_index(
+                    "benunit_id", inplace=True, drop=False
+                )
+            elif table_name == "househol":
+                tables[table_name].set_index(
+                    "household_id", inplace=True, drop=False
+                )
+        tables["benunit"] = tables["benunit"][
+            tables["benunit"].benunit_id.isin(tables["adult"].benunit_id)
+        ]
+        tables["househol"] = tables["househol"][
+            tables["househol"].household_id.isin(tables["adult"].household_id)
+        ]
+
+        # Save the data
+        self.save_dataset(tables)
 
 
-RawFRS = RawFRS()
+RawFRS_2019_20 = RawFRS.from_folder(
+    "/Users/nikhil/ukda/frs_2019_20", "raw_frs_2019", "FRS 2019-20"
+)
+
+RawFRS_2018_19 = RawFRS.from_folder(
+    "/Users/nikhil/ukda/frs_2018_19", "raw_frs_2018", "FRS 2018-19"
+)
+
+RawFRS_2020_21 = RawFRS.from_folder(
+    "/Users/nikhil/ukda/frs_2020_21", "raw_frs_2020", "FRS 2020-21"
+)

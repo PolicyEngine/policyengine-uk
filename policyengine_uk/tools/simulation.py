@@ -131,7 +131,7 @@ class Microsimulation(GeneralMicrosimulation):
                     )
                     dataset.download(year)
 
-        super().__init__(reform=reform, dataset=dataset, dataset_year=year)
+        super().__init__(reform=reform, dataset=dataset)
 
         if (
             ("frs_enhanced" in dataset.name)

@@ -1,60 +1,52 @@
-from typing import List
-from policyengine_core.data import PrivateDataset, Dataset
-import h5py
-import logging
+from policyengine_core.data import Dataset
 import pandas as pd
 from pandas import DataFrame
+from ..utils import (
+    sum_to_entity,
+    categorical,
+    sum_from_positive_fields,
+    sum_positive_variables,
+    fill_with_mean,
+    STORAGE_FOLDER,
+)
+from typing import Dict, List
 import numpy as np
-from policyengine_uk.data.datasets.frs.raw_frs import RawFRS
-from policyengine_uk.data.storage import policyengine_uk_MICRODATA_FOLDER
+from numpy import maximum as max_, where
+from typing import Type
+import h5py
+from pathlib import Path
+from .calibration.output_dataset import OutputDataset
+from .raw_frs import RawFRS_2019_20, RawFRS_2018_19, RawFRS_2020_21, RawFRS
 
-max_ = np.maximum
-where = np.where
 
-
-class FRS(PrivateDataset):
+class FRS(Dataset):
     name = "frs"
-    label = "FRS"
-    folder_path = policyengine_uk_MICRODATA_FOLDER
-    is_openfisca_compatible = True
+    label = "Family Resources Survey"
     data_format = Dataset.ARRAYS
+    raw_frs: Type[RawFRS] = None
 
-    filename_by_year = {
-        2019: "frs_2019.h5",
-    }
+    @staticmethod
+    def from_dataset(
+        raw_frs_type: Type[RawFRS], new_name: str = None, new_label: str = None
+    ):
+        class FRSFromRawFRS(FRS):
+            name = new_name
+            label = new_label
+            raw_frs = raw_frs_type
+            time_period = raw_frs_type.time_period
+            file_path = STORAGE_FOLDER / f"{new_name}.h5"
 
-    def generate(self, year: int):
-        if year in self.years:
-            self.remove(year)
-        # Load raw FRS tables
-        year = int(year)
+        return FRSFromRawFRS
 
-        if len(RawFRS.years) == 0:
+    def generate(self):
+        raw_frs_files = self.raw_frs()
+        if not raw_frs_files.file_path.exists():
             raise FileNotFoundError(
-                "Raw FRS not found. Please run `openfisca-uk data raw_frs generate [year]` first."
+                f"Raw FRS file {raw_frs_files.file_path} not found."
             )
-
-        if year > max(RawFRS.years):
-            logging.warning("Uprating a previous version of the FRS.")
-            if len(self.years) == 0:
-                self.generate(max(RawFRS.years))
-            if len(FRS.years) > 0:
-                frs_year = max(self.years)
-                from policyengine_uk import Microsimulation
-
-                sim = Microsimulation(
-                    dataset=self, dataset_year=max(self.years)
-                )
-                frs = h5py.File(self.file(year), mode="w")
-                for variable in self.keys(frs_year):
-                    frs[variable] = sim.calc(variable).values
-                frs.close()
-                return
-
-        raw_frs_files = RawFRS.load(year)
-        frs = h5py.File(self.file(year), mode="w")
-        logging.info("Generating FRS dataset for year {}".format(year))
-        logging.info("Loading FRS tables")
+        else:
+            raw_frs_files = raw_frs_files.load()
+        frs = h5py.File(self.file_path, mode="w")
         TABLES = (
             "adult",
             "child",
@@ -87,18 +79,13 @@ class FRS(PrivateDataset):
         ) = [raw_frs_files[table] for table in TABLES]
         raw_frs_files.close()
 
-        logging.info("Joining adult and child tables")
-
         person = pd.concat([adult, child]).sort_index().fillna(0)
-
-        # Generate OpenFisca-UK variables and save
-        logging.info("Generating OpenFisca-UK variables")
         add_id_variables(frs, person, benunit, household)
         add_personal_variables(frs, person)
         add_benunit_variables(frs, benunit)
         add_household_variables(frs, household)
         add_market_income(
-            frs, person, pension, job, accounts, household, oddjob, year
+            frs, person, pension, job, accounts, household, oddjob
         )
         add_benefit_income(frs, person, benefits, household)
         add_expenses(
@@ -112,10 +99,25 @@ class FRS(PrivateDataset):
             pen_prov,
         )
         frs.close()
-        logging.info("Completed FRS generation")
 
 
-FRS = FRS()
+FRS_2019_20 = FRS.from_dataset(
+    RawFRS_2019_20,
+    "frs_2019",
+    "FRS 2019-20",
+)
+
+FRS_2018_19 = FRS.from_dataset(
+    RawFRS_2018_19,
+    "frs_2018",
+    "FRS 2018-19",
+)
+
+FRS_2020_21 = FRS.from_dataset(
+    RawFRS_2020_21,
+    "frs_2020",
+    "FRS 2020-21",
+)
 
 
 def sum_to_entity(
@@ -402,7 +404,6 @@ def add_market_income(
     account: DataFrame,
     household: DataFrame,
     oddjob: DataFrame,
-    year: DataFrame,
 ):
     """Adds income variables (non-benefit).
 
@@ -414,7 +415,6 @@ def add_market_income(
         account (DataFrame)
         household (DataFrame)
         oddjob (DataFrame)
-        year (DataFrame)
     """
     frs["employment_income"] = person.INEARNS * 52
 
@@ -440,17 +440,7 @@ def add_market_income(
         pension_payment + pension_tax_paid + pension_deductions_removed
     ) * 52
 
-    # Add self-employed income (correcting one person in 2018)
-    INCORRECT_VALUES_PERSON_ID = 806911
-    seincamt = sum_to_entity(job.SEINCAMT, job.person_id, person.index)
-    frs["self_employment_income"] = (
-        np.where(
-            (year == 2018) & (person.index == INCORRECT_VALUES_PERSON_ID),
-            seincamt,
-            person.SEINCAM2,
-        )
-        * 52
-    )
+    frs["self_employment_income"] = person.SEINCAM2 * 52
 
     INVERTED_BASIC_RATE = 1.25
 
@@ -528,13 +518,7 @@ def add_market_income(
         ).fillna(0),
         0,
     )
-    use_DWP_usual_amount = (person.MNTUS2 == 2) & ~(
-        (year == 2018)
-        & (person.household_id.isin(INVERTED_USUAL_AMOUNT_HOUSEHOLDS))
-    )
-    maintenance_from_DWP = pd.Series(
-        where(use_DWP_usual_amount, person.MNTUSAM2, person.MNTAMT2)
-    )
+    maintenance_from_DWP = person.MNTAMT2
     frs["maintenance_income"] = (
         sum_positive_variables([maintenance_to_self, maintenance_from_DWP])
         * 52

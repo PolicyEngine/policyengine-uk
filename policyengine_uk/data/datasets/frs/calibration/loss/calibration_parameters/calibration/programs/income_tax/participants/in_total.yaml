@@ -1,0 +1,8 @@
+description: UK-wide taxpayers.
+values:
+  2018-01-01: 31_600_000
+  2019-01-01: 31_400_000
+  2020-01-01: 31_700_000
+  2021-01-01: 32_200_000
+metadata:
+  uprating: calibration.demographics.populations.in_total

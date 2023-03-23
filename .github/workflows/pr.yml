@@ -46,20 +46,14 @@ jobs:
         run: pip3 install wheel setuptools pytest==5.4.3
       - name: Install libyaml
         run: pip3 uninstall pyyaml && pip3 install pyyaml --no-cache-dir
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-          project_id: uk-policy-engine
-          service_account_key: ${{ secrets.POLICYENGINE_UK_DATA_READ }}
-          export_default_credentials: true
       - name: Install package
         run: make install
-      - name: Set up tests
-        run: make test-setup
       - name: Run tests
         run: make test
+        env:
+          POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
       - name: Generate documentation
         if: matrix.os == 'ubuntu-latest'
         run: make documentation
-      - name: Print summary metrics
-        run: python docs/summary/generate_summary.py
+        env:
+          POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
