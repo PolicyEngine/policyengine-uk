@@ -171,6 +171,10 @@
 <li class="toctree-l1"><a class="reference internal" href="programs/contrib/ubi-center/carbon-tax.html">Carbon taxes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programs/gov/ofgem/energy-price-guarantee.html">Energy Price Cap</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage/getting-started.html">Getting started</a></li>
+</ul>
 
 </div>
 </div>
@@ -266,75 +270,75 @@
   </thead>
   <tbody>
     <tr>
-      <th>LONDON</th>
-      <td>11.8</td>
-      <td>39.9</td>
-      <td>8.8</td>
+      <th>SOUTH_EAST</th>
+      <td>9.8</td>
+      <td>32.1</td>
+      <td>9.0</td>
     </tr>
     <tr>
-      <th>SOUTH_EAST</th>
-      <td>10.9</td>
-      <td>31.5</td>
+      <th>LONDON</th>
+      <td>11.2</td>
+      <td>40.1</td>
       <td>8.8</td>
     </tr>
     <tr>
       <th>NORTH_WEST</th>
-      <td>6.6</td>
-      <td>21.2</td>
-      <td>7.1</td>
+      <td>5.7</td>
+      <td>13.1</td>
+      <td>7.3</td>
     </tr>
     <tr>
       <th>EAST_OF_ENGLAND</th>
-      <td>6.4</td>
-      <td>28.8</td>
-      <td>6.0</td>
+      <td>5.8</td>
+      <td>15.7</td>
+      <td>6.2</td>
     </tr>
     <tr>
       <th>WEST_MIDLANDS</th>
-      <td>5.3</td>
-      <td>12.4</td>
-      <td>5.7</td>
+      <td>4.4</td>
+      <td>11.6</td>
+      <td>5.9</td>
     </tr>
     <tr>
       <th>SOUTH_WEST</th>
-      <td>5.2</td>
-      <td>15.4</td>
-      <td>5.4</td>
+      <td>4.7</td>
+      <td>18.2</td>
+      <td>5.5</td>
     </tr>
     <tr>
       <th>YORKSHIRE</th>
-      <td>4.1</td>
-      <td>10.0</td>
-      <td>5.3</td>
+      <td>3.7</td>
+      <td>8.7</td>
+      <td>5.4</td>
     </tr>
     <tr>
       <th>SCOTLAND</th>
-      <td>5.3</td>
-      <td>13.6</td>
-      <td>5.2</td>
+      <td>4.5</td>
+      <td>12.8</td>
+      <td>5.4</td>
     </tr>
     <tr>
       <th>EAST_MIDLANDS</th>
-      <td>4.1</td>
-      <td>9.6</td>
-      <td>4.7</td>
+      <td>3.6</td>
+      <td>8.7</td>
+      <td>4.8</td>
     </tr>
     <tr>
       <th>WALES</th>
-      <td>2.2</td>
-      <td>6.0</td>
-      <td>3.0</td>
+      <td>2.1</td>
+      <td>4.8</td>
+      <td>3.1</td>
     </tr>
     <tr>
       <th>NORTH_EAST</th>
-      <td>2.2</td>
-      <td>9.0</td>
+      <td>1.9</td>
+      <td>10.1</td>
       <td>2.6</td>
     </tr>
     <tr>
       <th>NORTHERN_IRELAND</th>
-      <td>1.3</td>
-      <td>3.0</td>
+      <td>1.2</td>
+      <td>2.6</td>
       <td>1.8</td>
     </tr>
   </tbody>
@@ -371,39 +375,23 @@
 </div>
 <div class="cell_output docutils container">
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">TypeError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">line</span> <span class="mi">17</span>
-<span class="g g-Whitespace">     </span><span class="mi">13</span>         <span class="bp">self</span><span class="o">.</span><span class="n">modify_parameters</span><span class="p">(</span><span class="n">change_tax_parameters</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">16</span> <span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
-<span class="ne">---&gt; </span><span class="mi">17</span> <span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">reform</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">18</span> <span class="n">revenue</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;tax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;tax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="g g-Whitespace">     </span><span class="mi">19</span> <span class="sa">f</span><span class="s2">&quot;Revenue: £</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">revenue</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e+9</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">bn&quot;</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span> <span class="nn">policyengine_uk.api</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="k">def</span> <span class="nf">change_tax_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">rates</span><span class="o">.</span><span class="n">uk</span><span class="o">.</span><span class="n">brackets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rate</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span>         <span class="n">period</span><span class="o">=</span><span class="n">periods</span><span class="o">.</span><span class="n">period</span><span class="p">(</span><span class="s2">&quot;year:2019:10&quot;</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.23</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span>     <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py:131,</span> in <span class="ni">Simulation.__init__</span><span class="nt">(self, tax_benefit_system, populations, situation, dataset, dataset_year, reform)</span>
-<span class="g g-Whitespace">    </span><span class="mi">129</span>     <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
-<span class="g g-Whitespace">    </span><span class="mi">130</span>     <span class="bp">self</span><span class="o">.</span><span class="n">dataset_year</span> <span class="o">=</span> <span class="n">dataset_year</span>
-<span class="ne">--&gt; </span><span class="mi">131</span>     <span class="bp">self</span><span class="o">.</span><span class="n">build_from_dataset</span><span class="p">()</span>
-<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="c1"># Backwards compatibility methods</span>
-<span class="g g-Whitespace">    </span><span class="mi">134</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span>
-
-<span class="nn">File /opt/hostedtoolcache/Python/3.9.16/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py:172,</span> in <span class="ni">Simulation.build_from_dataset</span><span class="nt">(self)</span>
-<span class="g g-Whitespace">    </span><span class="mi">169</span> <span class="k">def</span> <span class="nf">build_from_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">170</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;Build a simulation from a dataset.&quot;&quot;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">171</span>     <span class="bp">self</span><span class="o">.</span><span class="n">build_from_populations</span><span class="p">(</span>
-<span class="ne">--&gt; </span><span class="mi">172</span>         <span class="bp">self</span><span class="o">.</span><span class="n">tax_benefit_system</span><span class="o">.</span><span class="n">instantiate_entities</span><span class="p">()</span>
-<span class="g g-Whitespace">    </span><span class="mi">173</span>     <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">174</span>     <span class="kn">from</span> <span class="nn">policyengine_core.simulations.simulation_builder</span> <span class="kn">import</span> <span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">175</span>         <span class="n">SimulationBuilder</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">176</span>     <span class="p">)</span>  <span class="c1"># Import here to avoid circular dependency</span>
-<span class="g g-Whitespace">    </span><span class="mi">178</span>     <span class="n">builder</span> <span class="o">=</span> <span class="n">SimulationBuilder</span><span class="p">()</span>
-
-<span class="ne">TypeError</span>: instantiate_entities() missing 1 required positional argument: &#39;self&#39;
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;policyengine_uk.api&#39;
 </pre></div>
 </div>
 </div>
 </div>
 </section>
 </section>
+<div class="toctree-wrapper compound">
+</div>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
