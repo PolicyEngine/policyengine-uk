@@ -41,7 +41,6 @@ setup(
         "yaml-changelog>=0.1.5",
         "click>=8.0.0",
         "synthimpute",
-        "survey-enhance",
     ],
     extras_require={
         "dev": [
@@ -59,6 +58,7 @@ setup(
             "sphinx>=4.5.0,<5",
             "sphinx-argparse>=0.3.2,<1",
             "sphinx-math-dollar>=1.2.1,<2",
+            "survey-enhance",
         ]
     },
     entry_points={
