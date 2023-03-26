@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.2] - 2023-03-26 00:21:18
+
+### Fixed
+
+- Import errors due to survey-enhance.
+
 ## [0.44.1] - 2023-03-25 23:53:14
 
 ### Fixed
@@ -888,6 +894,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.44.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.44.1...0.44.2
 [0.44.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.44.0...0.44.1
 [0.44.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.43.0...0.44.0
 [0.43.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.42.1...0.43.0
