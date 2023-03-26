@@ -1,6 +1,4 @@
 from policyengine_core.data import Dataset
-from survey_enhance.reweight import CalibratedWeights
-from .loss import Loss, calibration_parameters
 import numpy as np
 from pathlib import Path
 from typing import Type
@@ -54,6 +52,8 @@ class CalibratedFRS(Dataset):
 
     def generate(self):
         from .output_dataset import OutputDataset
+        from survey_enhance.reweight import CalibratedWeights
+        from .loss import Loss, calibration_parameters
 
         input_dataset = OutputDataset.from_dataset(self.input_dataset)
         input_dataset = input_dataset()

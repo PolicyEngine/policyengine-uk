@@ -1,4 +1,3 @@
-from survey_enhance.impute import Imputation
 from policyengine_core.data import Dataset
 from pathlib import Path
 import numpy as np
@@ -6,7 +5,6 @@ from typing import Type
 from ..utils import STORAGE_FOLDER
 from .stacked_frs import PooledFRS_2018_20
 from .frs import FRS_2019_20
-from survey_enhance import Imputation
 from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2018_20
 
 
@@ -36,6 +34,7 @@ class ImputationExtendedFRS(Dataset):
 
     def generate(self):
         from policyengine_uk import Microsimulation
+        from survey_enhance import Imputation
 
         simulation = Microsimulation(dataset=self.input_dataset)
 
