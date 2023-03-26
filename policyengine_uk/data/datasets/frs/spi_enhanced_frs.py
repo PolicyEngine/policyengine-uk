@@ -1,4 +1,3 @@
-from survey_enhance.impute import Imputation
 from policyengine_core.data import Dataset
 from pathlib import Path
 import numpy as np
@@ -32,6 +31,7 @@ class SPIEnhancedFRS(Dataset):
 
     def generate(self):
         from policyengine_uk import Microsimulation
+        from survey_enhance.impute import Imputation
 
         frs = self.input_dataset().load()
 
