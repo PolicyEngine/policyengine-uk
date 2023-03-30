@@ -39,6 +39,7 @@ class is_married(Variable):
     def formula(benunit, period, parameters):
         return add(benunit, period, ["is_adult"]) == 2
 
+
 class FamilyType(Enum):
     SINGLE = "Single, with no children"
     COUPLE_NO_CHILDREN = "Couple, with no children"
