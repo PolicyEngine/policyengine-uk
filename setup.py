@@ -59,6 +59,7 @@ setup(
             "sphinx-argparse>=0.3.2,<1",
             "sphinx-math-dollar>=1.2.1,<2",
             "survey-enhance",
+            "pydata-sphinx-theme==0.13.1",
         ]
     },
     entry_points={
