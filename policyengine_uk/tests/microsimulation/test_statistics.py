@@ -128,7 +128,7 @@ class AbsoluteErrorLessThan(StatisticTest):
         return policyengine_uk_error < self.max_error, locals()
 
     def describe(self):
-        return f"OpenFisca-UK {self.variable_label} {self.statistic} error is less than {self.max_error:,} in {self.year}"
+        return f"PolicyEngine-UK {self.variable_label} {self.statistic} error is less than {self.max_error:,} in {self.year}"
 
 
 class RelativeErrorLessThan(StatisticTest):
@@ -140,7 +140,7 @@ class RelativeErrorLessThan(StatisticTest):
         return relative_error < self.max_error, locals()
 
     def describe(self):
-        return f"OpenFisca-UK {self.variable_label} {self.statistic} error is less than {self.max_error:.1%} in {self.year}"
+        return f"PolicyEngine-UK {self.variable_label} {self.statistic} error is less than {self.max_error:.1%} in {self.year}"
 
 
 tests = []
