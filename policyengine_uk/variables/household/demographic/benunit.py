@@ -36,6 +36,9 @@ class is_married(Variable):
     documentation = "Whether the benefit unit adults are married to each other or in a civil partnership"
     definition_period = YEAR
 
+    def formula(benunit, period, parameters):
+        return add(benunit, period, ["is_adult"]) == 2
+
 
 class FamilyType(Enum):
     SINGLE = "Single, with no children"

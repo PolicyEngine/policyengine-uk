@@ -58,7 +58,7 @@
     - Postcode lookup optional features available.
     - LHA rates for all BRMA areas added.
     changed:
-    - OpenFisca-UK now runs from the official OpenFisca-Core.
+    - PolicyEngine-UK now runs from the official OpenFisca-Core.
   date: 2021-07-05 00:00:00
 - bump: minor
   changes:
@@ -228,7 +228,7 @@
 - bump: patch
   changes:
     changed:
-    - OpenFisca-UK-Data version increased to 0.7.0.
+    - PolicyEngine-UK-Data version increased to 0.7.0.
   date: 2022-01-14 00:00:00
 - bump: patch
   changes:

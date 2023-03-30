@@ -11,7 +11,7 @@ Thanks for contributing to OpenFisca! Please remove this line, as well as, for e
 
 These changes _(remove lines which are not relevant to your contribution)_:
 
-- Impact the OpenFisca-UK public API (for instance renaming or removing a variable)
+- Impact the PolicyEngine-UK public API (for instance renaming or removing a variable)
 - Add a new feature (for instance adding a variable)
 - Fix or improve an already existing calculation.
 - Change non-functional parts of this repository (for instance editing the README)

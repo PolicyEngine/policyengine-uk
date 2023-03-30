@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Marriage Allowance previously didn't have an economic impact.

@@ -613,7 +613,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- OpenFisca-UK-Data version increased to 0.7.0.
+- PolicyEngine-UK-Data version increased to 0.7.0.
 
 ## [0.10.3] - 2022-01-12 00:00:00
 
@@ -825,7 +825,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- OpenFisca-UK now runs from the official OpenFisca-Core.
+- PolicyEngine-UK now runs from the official OpenFisca-Core.
 
 ## [0.3.0] - 2021-07-04 00:00:00
 

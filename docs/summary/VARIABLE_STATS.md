@@ -1,4 +1,4 @@
-# OpenFisca-UK Variable Statistics
+# PolicyEngine-UK Variable Statistics
 
 All statistics generated from the uprated (to 2022) 2019-20 Family Resources Survey, with simulation turned on.
 
