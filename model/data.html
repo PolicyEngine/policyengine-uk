@@ -3,7 +3,7 @@
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Validation" href="validation.html" /><link rel="prev" title="OpenFisca-UK" href="../index.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Validation" href="validation.html" /><link rel="prev" title="PolicyEngine-UK" href="../index.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
         <title>Data - PolicyEngine UK documentation</title>
@@ -210,7 +210,7 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="data">
 <h1>Data<a class="headerlink" href="#data" title="Permalink to this headline">#</a></h1>
-<p>OpenFisca-UK uses a combination of data sources to maximise the accuracy of the microsimulation model. Like most other UK tax-benefit models, we use the <a class="reference external" href="https://www.gov.uk/government/collections/family-resources-survey--2">Family Resources Survey</a> as the core dataset. The FRS is the highest-quality source of information on household structure, household incomes and benefits, but it is not enough to give a full picture of the UK household population: it does not offer sufficient information on consumption or wealth, and the information is does provide often doesn’t exactly match administrative statistics (for example, benefit and investment incomes do not gross up to match UK totals from more reliable datasets, indicating they are either under-reported or under-sampled).</p>
+<p>PolicyEngine-UK uses a combination of data sources to maximise the accuracy of the microsimulation model. Like most other UK tax-benefit models, we use the <a class="reference external" href="https://www.gov.uk/government/collections/family-resources-survey--2">Family Resources Survey</a> as the core dataset. The FRS is the highest-quality source of information on household structure, household incomes and benefits, but it is not enough to give a full picture of the UK household population: it does not offer sufficient information on consumption or wealth, and the information is does provide often doesn’t exactly match administrative statistics (for example, benefit and investment incomes do not gross up to match UK totals from more reliable datasets, indicating they are either under-reported or under-sampled).</p>
 <p>To overcome this, we apply several different techniques to enhance our Family Resources Survey-based dataset (which we term the “Enhanced FRS”). These techniques fall into two categories: <em>imputation</em> and <em>calibration</em>:</p>
 <ul class="simple">
 <li><p>Imputation involves predicting variables that are not already present in the survey: for example, predicting fuel spending for households in the FRS.</p></li>
