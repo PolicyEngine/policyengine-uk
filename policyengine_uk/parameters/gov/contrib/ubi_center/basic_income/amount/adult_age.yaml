@@ -1,7 +1,10 @@
-description: Age at which a person stops receiving the child basic income and begins receiving the adult basic income.
-values:
-  2010-01-01: 18
+description: Age at which a person stops receiving the child basic income and begins
+  receiving the adult basic income.
 metadata:
-  unit: year
+  economy: false
   label: Adult basic income threshold
   name: bi_adult_age
+  propagate_metadata_to_children: true
+  unit: year
+values:
+  2010-01-01: 18
