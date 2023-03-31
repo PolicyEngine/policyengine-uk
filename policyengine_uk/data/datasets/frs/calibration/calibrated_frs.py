@@ -23,8 +23,9 @@ def sum_by_household(values: pd.Series, dataset: Dataset) -> np.ndarray:
 class CalibratedFRS(Dataset):
     input_dataset: Type[Dataset]
     time_period: int
-    epochs: int = 256
-    learning_rate: float = 5e2
+    epochs: int = None
+    learning_rate: float = 3e2
+    min_loss: float = 0.04
     log_dir: str = "."
     time_period: str = None
     log_verbose: bool = False
@@ -81,6 +82,7 @@ class CalibratedFRS(Dataset):
                 learning_rate=self.learning_rate,
                 verbose=self.log_verbose,
                 log_dir=self.log_dir,
+                min_loss=self.min_loss,
             )
 
         data = self.input_dataset().load_dataset()
@@ -97,60 +99,19 @@ class CalibratedFRS(Dataset):
 
         self.save_dataset(new_data)
 
-        # Remove zero-weighted households
-
-        from policyengine_uk.system import system
-        from policyengine_uk import Microsimulation
-
-        simulation = Microsimulation(dataset=self)
-        # Get weight in a given year with simulation.calculate("household_weight", period=year).values > 0
-        # household has weight = household weight > 0 for every year in calibrated weights
-        household_has_weight = np.all(
-            [
-                simulation.calculate("household_weight", period=year).values
-                > 0
-                for year in calibrated_weights
-            ],
-            axis=0,
-        )
-        person_has_weight = (
-            simulation.map_result(household_has_weight, "household", "person")
-            > 0
-        )
-        benunit_has_weight = (
-            simulation.map_result(household_has_weight, "household", "benunit")
-            > 0
-        )
-
-        for variable in new_data.keys():
-            for year in new_data[variable].keys():
-                if variable in system.variables:
-                    if system.variables[variable].entity.key == "household":
-                        new_data[variable][year] = new_data[variable][year][
-                            household_has_weight
-                        ]
-                    elif system.variables[variable].entity.key == "person":
-                        new_data[variable][year] = new_data[variable][year][
-                            person_has_weight
-                        ]
-                    elif system.variables[variable].entity.key == "benunit":
-                        new_data[variable][year] = new_data[variable][year][
-                            benunit_has_weight
-                        ]
-
-        self.save_dataset(new_data)
-
 
 CalibratedFRS_2019_20 = CalibratedFRS.from_dataset(
     FRS_2019_20,
     "calibrated_frs_2019",
     "Calibrated FRS 2019-20",
+    new_num_years=1,
 )
 
 CalibratedSPIEnhancedFRS_2019_20 = CalibratedFRS.from_dataset(
     SPIEnhancedFRS_2019_20,
     "calibrated_spi_enhanced_frs_2019",
     "Calibrated SPI-enhanced FRS 2019-20",
+    new_num_years=1,
 )
 
 CalibratedSPIEnhancedPooledFRS_2018_20 = CalibratedFRS.from_dataset(
@@ -158,5 +119,6 @@ CalibratedSPIEnhancedPooledFRS_2018_20 = CalibratedFRS.from_dataset(
     "calibrated_spi_enhanced_pooled_frs_2018_20",
     "Calibrated SPI-enhanced FRS 2018-20",
     log_folder=".",
-    new_num_years=3,
+    new_num_years=5,
+    url = "release://policyengine/non-public-microdata/2023-q2-calibration/calibrated_spi_enhanced_pooled_frs_2018_20.h5"
 )

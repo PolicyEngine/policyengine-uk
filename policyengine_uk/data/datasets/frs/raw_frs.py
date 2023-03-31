@@ -112,13 +112,16 @@ class RawFRS(Dataset):
 
 
 RawFRS_2019_20 = RawFRS.from_folder(
-    "/Users/nikhil/ukda/frs_2019_20", "raw_frs_2019", "FRS 2019-20", 2019
+    "/Users/nikhil/ukda/frs_2019_20", "raw_frs_2019", "FRS 2019-20", 2019,
+    url = "release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2019.h5"
 )
 
 RawFRS_2018_19 = RawFRS.from_folder(
-    "/Users/nikhil/ukda/frs_2018_19", "raw_frs_2018", "FRS 2018-19", 2018
+    "/Users/nikhil/ukda/frs_2018_19", "raw_frs_2018", "FRS 2018-19", 2018,
+    url = "release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2018.h5"
 )
 
 RawFRS_2020_21 = RawFRS.from_folder(
-    "/Users/nikhil/ukda/frs_2020_21", "raw_frs_2020", "FRS 2020-21", 2020
+    "/Users/nikhil/ukda/frs_2020_21", "raw_frs_2020", "FRS 2020-21", 2020,
+    url = "release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2020.h5"
 )

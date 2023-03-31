@@ -21,13 +21,14 @@ class ImputationExtendedFRS(Dataset):
         new_name: str = "imputation_extended_frs",
         new_label: str = "Imputation-extended FRS",
         new_url: str = None,
+        new_time_period: int = None
     ):
         class ImputationExtendedFRSFromDataset(ImputationExtendedFRS):
             name = new_name
             label = new_label
             input_dataset = dataset
             file_path = STORAGE_FOLDER / f"{new_name}.h5"
-            time_period = dataset.time_period
+            time_period = new_time_period or dataset.time_period
             data_format = Dataset.TIME_PERIOD_ARRAYS
             url = new_url
 
@@ -52,7 +53,6 @@ class ImputationExtendedFRS(Dataset):
         for imputation_model in [wealth, vat, consumption]:
             i += 1
             predictors = imputation_model.X_columns
-            outputs = imputation_model.Y_columns
 
             X_input = simulation.calculate_dataframe(
                 predictors, map_to="household"
@@ -65,7 +65,7 @@ class ImputationExtendedFRS(Dataset):
             Y_output = imputation_model.predict(X_input, verbose=True)
 
             for output_variable in Y_output.columns:
-                data[output_variable] = Y_output[output_variable].values
+                data[output_variable] = {2022: Y_output[output_variable].values}
 
         self.save_dataset(data)
 
@@ -74,5 +74,6 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     CalibratedSPIEnhancedPooledFRS_2018_20,
     "enhanced_frs",
     "Enhanced FRS",
-    new_url="release://policyengine/non-public-microdata/enhanced-frs-2022/enhanced_frs.h5",
+    new_time_period=2023,
+    url = "release://policyengine/non-public-microdata/2023-q2-calibration/enhanced_frs.h5"
 )
