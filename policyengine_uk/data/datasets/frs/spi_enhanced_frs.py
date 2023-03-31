@@ -120,7 +120,7 @@ SPIEnhancedPooledFRS_2018_20 = SPIEnhancedFRS.from_dataset(
     PooledFRS_2018_20,
     "spi_enhanced_pooled_frs_2018_20",
     "SPI-enhanced FRS 2018-20",
-    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/spi_enhanced_pooled_frs_2018_20.h5"
+    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/spi_enhanced_pooled_frs_2018_20.h5",
 )
 
 SPIEnhancedFRS_2019_20 = SPIEnhancedFRS.from_dataset(

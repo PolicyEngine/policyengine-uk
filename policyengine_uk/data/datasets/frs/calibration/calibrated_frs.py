@@ -122,5 +122,5 @@ CalibratedSPIEnhancedPooledFRS_2018_20 = CalibratedFRS.from_dataset(
     "Calibrated SPI-enhanced FRS 2018-20",
     log_folder=".",
     new_num_years=5,
-    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/calibrated_spi_enhanced_pooled_frs_2018_20.h5"
+    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/calibrated_spi_enhanced_pooled_frs_2018_20.h5",
 )

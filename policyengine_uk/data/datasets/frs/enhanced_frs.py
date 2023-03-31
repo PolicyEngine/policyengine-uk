@@ -21,7 +21,7 @@ class ImputationExtendedFRS(Dataset):
         new_name: str = "imputation_extended_frs",
         new_label: str = "Imputation-extended FRS",
         new_url: str = None,
-        new_time_period: int = None
+        new_time_period: int = None,
     ):
         class ImputationExtendedFRSFromDataset(ImputationExtendedFRS):
             name = new_name
@@ -65,7 +65,9 @@ class ImputationExtendedFRS(Dataset):
             Y_output = imputation_model.predict(X_input, verbose=True)
 
             for output_variable in Y_output.columns:
-                data[output_variable] = {2022: Y_output[output_variable].values}
+                data[output_variable] = {
+                    2022: Y_output[output_variable].values
+                }
 
         self.save_dataset(data)
 
@@ -75,5 +77,5 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     "enhanced_frs",
     "Enhanced FRS",
     new_time_period=2023,
-    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/enhanced_frs.h5"
+    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/enhanced_frs.h5",
 )

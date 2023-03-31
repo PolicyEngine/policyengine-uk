@@ -27,7 +27,10 @@ class FRS(Dataset):
 
     @staticmethod
     def from_dataset(
-        raw_frs_type: Type[RawFRS], new_name: str = None, new_label: str = None, new_url: str = None
+        raw_frs_type: Type[RawFRS],
+        new_name: str = None,
+        new_label: str = None,
+        new_url: str = None,
     ):
         class FRSFromRawFRS(FRS):
             name = new_name
@@ -106,21 +109,21 @@ FRS_2019_20 = FRS.from_dataset(
     RawFRS_2019_20,
     "frs_2019",
     "FRS 2019-20",
-    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/frs_2019.h5"
+    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2019.h5",
 )
 
 FRS_2018_19 = FRS.from_dataset(
     RawFRS_2018_19,
     "frs_2018",
     "FRS 2018-19",
-    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/frs_2018.h5"
+    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2018.h5",
 )
 
 FRS_2020_21 = FRS.from_dataset(
     RawFRS_2020_21,
     "frs_2020",
     "FRS 2020-21",
-    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/frs_2020.h5"
+    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2020.h5",
 )
 
 
