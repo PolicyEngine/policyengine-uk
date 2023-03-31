@@ -12,7 +12,7 @@ class StackedFRS(Dataset):
 
     @staticmethod
     def from_dataset(
-        datasets, weight_factors, new_name, new_label, new_time_period
+        datasets, weight_factors, new_name, new_label, new_time_period, new_url=None
     ):
         class StackedDatasetFromDataset(StackedFRS):
             sub_datasets = datasets
@@ -22,6 +22,7 @@ class StackedFRS(Dataset):
             data_format = datasets[0].data_format
             file_path = STORAGE_FOLDER / f"{new_name}.h5"
             time_period = new_time_period
+            url = new_url
 
         return StackedDatasetFromDataset
 
@@ -63,5 +64,5 @@ PooledFRS_2018_20 = StackedFRS.from_dataset(
     "pooled_frs_2018_20",
     "FRS 2018-20",
     2022,
-    url = "release://policyengine/non-public-microdata/2023-q2-calibration/pooled_frs_2018_20.h5"
+    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/pooled_frs_2018_20.h5"
 )

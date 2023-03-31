@@ -41,6 +41,7 @@ class CalibratedFRS(Dataset):
         new_num_years: int = 1,
         log_folder: str = None,
         verbose: bool = True,
+        new_url: str = None,
     ):
         class CalibratedFRSFromDataset(CalibratedFRS):
             name = new_name
@@ -51,6 +52,7 @@ class CalibratedFRS(Dataset):
             file_path = STORAGE_FOLDER / f"{new_name}.h5"
             log_verbose = verbose
             num_years = new_num_years
+            url = new_url
 
         return CalibratedFRSFromDataset
 
@@ -120,5 +122,5 @@ CalibratedSPIEnhancedPooledFRS_2018_20 = CalibratedFRS.from_dataset(
     "Calibrated SPI-enhanced FRS 2018-20",
     log_folder=".",
     new_num_years=5,
-    url = "release://policyengine/non-public-microdata/2023-q2-calibration/calibrated_spi_enhanced_pooled_frs_2018_20.h5"
+    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/calibrated_spi_enhanced_pooled_frs_2018_20.h5"
 )

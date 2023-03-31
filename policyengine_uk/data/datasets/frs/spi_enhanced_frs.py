@@ -20,6 +20,7 @@ class SPIEnhancedFRS(Dataset):
         dataset: Type[Dataset],
         new_name: str = "spi_enhanced_frs",
         new_label: str = "SPI-Enhanced FRS",
+        new_url: str = None,
     ):
         class SPIEnhancedFRSFromDataset(SPIEnhancedFRS):
             name = new_name
@@ -27,6 +28,7 @@ class SPIEnhancedFRS(Dataset):
             input_dataset = dataset
             file_path = STORAGE_FOLDER / f"{new_name}.h5"
             time_period = dataset.time_period
+            url = new_url
 
         return SPIEnhancedFRSFromDataset
 
@@ -118,7 +120,7 @@ SPIEnhancedPooledFRS_2018_20 = SPIEnhancedFRS.from_dataset(
     PooledFRS_2018_20,
     "spi_enhanced_pooled_frs_2018_20",
     "SPI-enhanced FRS 2018-20",
-    url = "release://policyengine/non-public-microdata/2023-q2-calibration/spi_enhanced_pooled_frs_2018_20.h5"
+    new_url = "release://policyengine/non-public-microdata/2023-q2-calibration/spi_enhanced_pooled_frs_2018_20.h5"
 )
 
 SPIEnhancedFRS_2019_20 = SPIEnhancedFRS.from_dataset(
