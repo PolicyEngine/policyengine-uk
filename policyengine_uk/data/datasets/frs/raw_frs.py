@@ -26,12 +26,18 @@ class RawFRS(Dataset):
     tab_folder = None
 
     @staticmethod
-    def from_folder(folder: str, new_name: str = None, new_label: str = None):
+    def from_folder(
+        folder: str,
+        new_name: str = None,
+        new_label: str = None,
+        new_time_period: int = None,
+    ):
         class RawFRSFromFolder(RawFRS):
             tab_folder = folder
             name = new_name
             label = new_label
             file_path = STORAGE_FOLDER / f"{new_name}.h5"
+            time_period = new_time_period
 
         return RawFRSFromFolder
 
@@ -106,13 +112,13 @@ class RawFRS(Dataset):
 
 
 RawFRS_2019_20 = RawFRS.from_folder(
-    "/Users/nikhil/ukda/frs_2019_20", "raw_frs_2019", "FRS 2019-20"
+    "/Users/nikhil/ukda/frs_2019_20", "raw_frs_2019", "FRS 2019-20", 2019
 )
 
 RawFRS_2018_19 = RawFRS.from_folder(
-    "/Users/nikhil/ukda/frs_2018_19", "raw_frs_2018", "FRS 2018-19"
+    "/Users/nikhil/ukda/frs_2018_19", "raw_frs_2018", "FRS 2018-19", 2018
 )
 
 RawFRS_2020_21 = RawFRS.from_folder(
-    "/Users/nikhil/ukda/frs_2020_21", "raw_frs_2020", "FRS 2020-21"
+    "/Users/nikhil/ukda/frs_2020_21", "raw_frs_2020", "FRS 2020-21", 2020
 )

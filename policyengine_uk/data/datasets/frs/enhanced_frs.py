@@ -12,15 +12,15 @@ class ImputationExtendedFRS(Dataset):
     name = "imputation_extended_frs"
     label = "Imputation-extended FRS"
     file_path = STORAGE_FOLDER / "imputation_extended_frs.h5"
-    data_format = Dataset.ARRAYS
+    data_format = Dataset.TIME_PERIOD_ARRAYS
     input_dataset = None
-    url = "https://api.github.com/repos/PolicyEngine/non-public-microdata/releases/assets/100228682"
 
     @staticmethod
     def from_dataset(
         dataset: Type[Dataset],
         new_name: str = "imputation_extended_frs",
         new_label: str = "Imputation-extended FRS",
+        new_url: str = None,
     ):
         class ImputationExtendedFRSFromDataset(ImputationExtendedFRS):
             name = new_name
@@ -28,7 +28,8 @@ class ImputationExtendedFRS(Dataset):
             input_dataset = dataset
             file_path = STORAGE_FOLDER / f"{new_name}.h5"
             time_period = dataset.time_period
-            data_format = Dataset.ARRAYS
+            data_format = Dataset.TIME_PERIOD_ARRAYS
+            url = new_url
 
         return ImputationExtendedFRSFromDataset
 
@@ -73,4 +74,5 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     CalibratedSPIEnhancedPooledFRS_2018_20,
     "enhanced_frs",
     "Enhanced FRS",
+    new_url="release://policyengine/non-public-microdata/enhanced-frs-2022/enhanced_frs.h5",
 )

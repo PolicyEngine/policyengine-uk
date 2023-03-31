@@ -176,12 +176,15 @@ class CountryLevelProgram(LossCategory):
                         single_country
                     ]
 
-        if self.weight is None or self.weight == 0:
+        if self.weight is None:
             raise ValueError(
                 f"I tried to ensure that {self.variable} is weighted by its budgetary impact, but I couldn't find a budgetary impact for it."
             )
 
-        self.weight /= 1e9
+        if self.weight == 0:
+            self.weight = 1
+        else:
+            self.weight = np.log(self.weight)
 
         init_kwargs = {
             "dataset": self.dataset,
@@ -421,7 +424,7 @@ class IncomeTaxParticipants(LossCategory):
 
 class IncomeTax(LossCategory):
     static_dataset = True
-    weight = 200
+    weight = np.log(200e9)
 
     subcategories = [
         IncomeTaxBudgetaryImpact,

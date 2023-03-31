@@ -5,6 +5,7 @@ from typing import Type
 from ..utils import STORAGE_FOLDER
 from .stacked_frs import PooledFRS_2018_20
 from .frs import FRS_2019_20
+from .uprated_frs import UpratedFRS
 
 
 class SPIEnhancedFRS(Dataset):
@@ -120,7 +121,7 @@ SPIEnhancedPooledFRS_2018_20 = SPIEnhancedFRS.from_dataset(
 )
 
 SPIEnhancedFRS_2019_20 = SPIEnhancedFRS.from_dataset(
-    FRS_2019_20,
+    UpratedFRS.from_dataset(FRS_2019_20),
     "spi_enhanced_frs_2019",
     "SPI-enhanced FRS 2019-20",
 )
