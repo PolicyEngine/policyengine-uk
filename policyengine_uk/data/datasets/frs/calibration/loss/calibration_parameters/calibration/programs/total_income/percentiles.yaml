@@ -3,9 +3,6 @@ metadata:
   reference:
     - title: Survey of Personal Incomes
       href: https://www.gov.uk/government/statistics/percentile-points-from-1-to-99-for-total-income-before-and-after-tax
-  uprating:
-    parameter: calibration.uprating.earnings
-  propagate_metadata_to_children: true
 1:
   2019-01-01: 12_800
 2:

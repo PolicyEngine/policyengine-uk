@@ -1,5 +1,10 @@
 description: Roll-out rate of Universal Credit
-values: # Interpolated quarterly
+metadata:
+  economy: false
+  propagate_metadata_to_children: true
+  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=54
+  unit: /1
+values:
   2010-01-01: 0
   2018-01-01: 0.2
   2018-04-01: 0.25
@@ -26,6 +31,3 @@ values: # Interpolated quarterly
   2023-07-01: 1
   2023-10-01: 1
   2024-01-01: 1
-metadata:
-  unit: /1
-  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=54

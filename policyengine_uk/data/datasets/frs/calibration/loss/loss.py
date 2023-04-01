@@ -4,7 +4,11 @@ from .categories.country_level_programs import (
     country_level_programs,
 )
 from survey_enhance.reweight import LossCategory
-from policyengine_core.parameters import ParameterNode, uprate_parameters
+from policyengine_core.parameters import (
+    ParameterNode,
+    uprate_parameters,
+    propagate_parameter_metadata,
+)
 from pathlib import Path
 
 
@@ -30,4 +34,6 @@ calibration_parameters = ParameterNode(
     name="calibration",
 )
 
-calibration_parameters = uprate_parameters(calibration_parameters).calibration
+calibration_parameters = uprate_parameters(
+    propagate_parameter_metadata(calibration_parameters)
+).calibration

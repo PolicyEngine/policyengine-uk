@@ -3,6 +3,7 @@ import numpy as np
 from pathlib import Path
 from ..utils import STORAGE_FOLDER
 from .frs import FRS_2018_19, FRS_2019_20, FRS_2020_21
+from .uprated_frs import UpratedFRS
 
 
 class StackedFRS(Dataset):
@@ -11,7 +12,12 @@ class StackedFRS(Dataset):
 
     @staticmethod
     def from_dataset(
-        datasets, weight_factors, new_name, new_label, new_time_period
+        datasets,
+        weight_factors,
+        new_name,
+        new_label,
+        new_time_period,
+        new_url=None,
     ):
         class StackedDatasetFromDataset(StackedFRS):
             sub_datasets = datasets
@@ -21,6 +27,7 @@ class StackedFRS(Dataset):
             data_format = datasets[0].data_format
             file_path = STORAGE_FOLDER / f"{new_name}.h5"
             time_period = new_time_period
+            url = new_url
 
         return StackedDatasetFromDataset
 
@@ -53,9 +60,14 @@ class StackedFRS(Dataset):
 
 
 PooledFRS_2018_20 = StackedFRS.from_dataset(
-    [FRS_2018_19, FRS_2019_20, FRS_2020_21],
+    [
+        UpratedFRS.from_dataset(FRS_2018_19),
+        UpratedFRS.from_dataset(FRS_2019_20),
+        UpratedFRS.from_dataset(FRS_2020_21),
+    ],
     [0.0, 1.0, 0.0],
     "pooled_frs_2018_20",
     "FRS 2018-20",
-    2019,
+    2022,
+    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/pooled_frs_2018_20.h5",
 )

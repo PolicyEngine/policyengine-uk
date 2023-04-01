@@ -1,42 +1,44 @@
-description: Annual tax on total wealth (includes all property and corporate wealth).
 brackets:
-  - threshold:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: currency-GBP
-        period: year
-    rate:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: /1
-  - threshold:
-      values:
-        0000-01-01: 1_000_000
-      metadata:
-        unit: currency-GBP
-        period: year
-    rate:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: /1
-  - threshold:
-      values:
-        0000-01-01: 10_000_000
-      metadata:
-        unit: currency-GBP
-        period: year
-    rate:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: /1
+- rate:
+    metadata:
+      unit: /1
+    values:
+      2000-01-01: 0
+  threshold:
+    metadata:
+      period: year
+      unit: currency-GBP
+    values:
+      2000-01-01: 0
+- rate:
+    metadata:
+      unit: /1
+    values:
+      2000-01-01: 0
+  threshold:
+    metadata:
+      period: year
+      unit: currency-GBP
+    values:
+      2000-01-01: 1000000
+- rate:
+    metadata:
+      unit: /1
+    values:
+      2000-01-01: 0
+  threshold:
+    metadata:
+      period: year
+      unit: currency-GBP
+    values:
+      2000-01-01: 10000000
+description: Annual tax on total wealth (includes all property and corporate wealth).
 metadata:
-  threshold_unit: currency-GBP
-  rate_unit: /1
-  rate_period: year
-  unit: /1
-  name: wealth_tax
+  economy: false
   label: Wealth tax
+  name: wealth_tax
+  propagate_metadata_to_children: true
+  rate_period: year
+  rate_unit: /1
+  threshold_unit: currency-GBP
+  unit: /1

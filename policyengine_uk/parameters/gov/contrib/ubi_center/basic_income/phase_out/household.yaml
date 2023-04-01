@@ -1,16 +1,21 @@
-threshold:
-  description: Threshold for household taxable income, after which any remaining basic income (after individual phase-outs) is reduced.
-  values:
-    2010-01-01: 0
-  metadata:
-    unit: currency-GBP
-    period: year
-    label: Basic income household phase-out threshold
+metadata:
+  economy: false
+  propagate_metadata_to_children: true
 rate:
-  description: Rate at which any remaining basic income (after individual phase-outs) is reduced over the household income threshold.
+  description: Rate at which any remaining basic income (after individual phase-outs)
+    is reduced over the household income threshold.
+  metadata:
+    label: Basic income household phase-out rate
+    period: year
+    unit: currency-GBP
   values:
     2010-01-01: 0
+threshold:
+  description: Threshold for household taxable income, after which any remaining basic
+    income (after individual phase-outs) is reduced.
   metadata:
-    unit: currency-GBP
+    label: Basic income household phase-out threshold
     period: year
-    label: Basic income household phase-out rate
+    unit: currency-GBP
+  values:
+    2010-01-01: 0
