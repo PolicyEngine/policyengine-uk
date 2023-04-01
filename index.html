@@ -271,74 +271,74 @@
   <tbody>
     <tr>
       <th>SOUTH_EAST</th>
-      <td>9.8</td>
-      <td>32.1</td>
-      <td>9.0</td>
+      <td>10.1</td>
+      <td>38.3</td>
+      <td>9.1</td>
     </tr>
     <tr>
       <th>LONDON</th>
-      <td>11.2</td>
-      <td>40.1</td>
-      <td>8.8</td>
+      <td>11.6</td>
+      <td>43.4</td>
+      <td>9.0</td>
     </tr>
     <tr>
       <th>NORTH_WEST</th>
-      <td>5.7</td>
-      <td>13.1</td>
-      <td>7.3</td>
+      <td>6.2</td>
+      <td>17.5</td>
+      <td>7.2</td>
     </tr>
     <tr>
       <th>EAST_OF_ENGLAND</th>
-      <td>5.8</td>
-      <td>15.7</td>
-      <td>6.2</td>
+      <td>6.0</td>
+      <td>19.7</td>
+      <td>6.1</td>
     </tr>
     <tr>
       <th>WEST_MIDLANDS</th>
-      <td>4.4</td>
-      <td>11.6</td>
-      <td>5.9</td>
+      <td>5.2</td>
+      <td>19.2</td>
+      <td>5.8</td>
     </tr>
     <tr>
       <th>SOUTH_WEST</th>
-      <td>4.7</td>
-      <td>18.2</td>
+      <td>4.6</td>
+      <td>17.9</td>
       <td>5.5</td>
     </tr>
     <tr>
       <th>YORKSHIRE</th>
-      <td>3.7</td>
-      <td>8.7</td>
+      <td>4.1</td>
+      <td>11.8</td>
       <td>5.4</td>
     </tr>
     <tr>
       <th>SCOTLAND</th>
-      <td>4.5</td>
-      <td>12.8</td>
-      <td>5.4</td>
+      <td>4.8</td>
+      <td>15.3</td>
+      <td>5.3</td>
     </tr>
     <tr>
       <th>EAST_MIDLANDS</th>
-      <td>3.6</td>
-      <td>8.7</td>
+      <td>3.5</td>
+      <td>11.5</td>
       <td>4.8</td>
     </tr>
     <tr>
       <th>WALES</th>
-      <td>2.1</td>
-      <td>4.8</td>
-      <td>3.1</td>
+      <td>2.2</td>
+      <td>6.1</td>
+      <td>3.0</td>
     </tr>
     <tr>
       <th>NORTH_EAST</th>
-      <td>1.9</td>
-      <td>10.1</td>
+      <td>2.1</td>
+      <td>5.1</td>
       <td>2.6</td>
     </tr>
     <tr>
       <th>NORTHERN_IRELAND</th>
       <td>1.2</td>
-      <td>2.6</td>
+      <td>3.4</td>
       <td>1.8</td>
     </tr>
   </tbody>
@@ -351,7 +351,7 @@
 <p>Below is an example of simulating the effects of a reform (namely, increasing the basic rate of income tax from 20% to 23%).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">policyengine_uk.api</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">policyengine_uk.model_api</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 <span class="k">def</span> <span class="nf">change_tax_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
@@ -367,23 +367,14 @@
 
 
 <span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
-<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">reform</span><span class="p">)</span>
+<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">reform</span><span class="o">=</span><span class="n">reform</span><span class="p">)</span>
 <span class="n">revenue</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;tax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;tax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 <span class="sa">f</span><span class="s2">&quot;Revenue: £</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">revenue</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e+9</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">bn&quot;</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span> <span class="nn">policyengine_uk.api</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="k">def</span> <span class="nf">change_tax_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
-<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">rates</span><span class="o">.</span><span class="n">uk</span><span class="o">.</span><span class="n">brackets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rate</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-<span class="g g-Whitespace">      </span><span class="mi">6</span>         <span class="n">period</span><span class="o">=</span><span class="n">periods</span><span class="o">.</span><span class="n">period</span><span class="p">(</span><span class="s2">&quot;year:2019:10&quot;</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.23</span>
-<span class="g g-Whitespace">      </span><span class="mi">7</span>     <span class="p">)</span>
-
-<span class="ne">ModuleNotFoundError</span>: No module named &#39;policyengine_uk.api&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;Revenue: £15.5bn&#39;
 </pre></div>
 </div>
 </div>

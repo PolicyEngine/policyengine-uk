@@ -235,7 +235,7 @@
 <li><p>Apply the trained model to predict target variables from the source variables in the FRS</p></li>
 </ol>
 <p>This process is illustrated below:</p>
-<img src="imputation.png" alt="drawing" width="600"/>
+<img src="https://github.com/PolicyEngine/policyengine-uk/raw/master/docs/book/model/imputation.png" alt="drawing" width="600"/>
 <section id="income">
 <h3>Income<a class="headerlink" href="#income" title="Permalink to this headline">#</a></h3>
 <p>The Family Resources Survey is known to under-sample high incomes in particular. This fundamentally limits the accuracy of microsimulation models which use it, even with re-weighting: around 10% of Income Tax revenue comes from individuals with over £1m in total income, who do not appear in the FRS. We train our random forest model on to predict the distribution of a range of income variables (listed below) from demographic variables:</p>
