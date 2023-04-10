@@ -67,6 +67,7 @@ class marriage_allowance(Variable):
             "partners_unused_personal_allowance", period
         )
         allowances = parameters(period).gov.hmrc.income_tax.allowances
+        takeup_rate = allowances.marriage_allowance.takeup_rate
         capped_percentage = allowances.marriage_allowance.max
         max_amount = allowances.personal_allowance.amount * capped_percentage
         amount_if_eligible_pre_rounding = min_(transferable_amount, max_amount)
@@ -76,4 +77,4 @@ class marriage_allowance(Variable):
             ceil(amount_if_eligible_pre_rounding / rounding_increment)
             * rounding_increment
         )
-        return eligible * amount_if_eligible
+        return eligible * amount_if_eligible * (random(person) < takeup_rate)

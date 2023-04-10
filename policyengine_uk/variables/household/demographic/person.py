@@ -105,7 +105,6 @@ class child_index(Variable):
             person.get_rank(
                 person.benunit,
                 -person("age", period),
-                condition=person("is_child", period),
             )
             + 1
         )
@@ -123,7 +122,9 @@ class is_eldest_child(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        return person("child_index", period) == 1
+        index = person("child_index", period)
+        lowest_index = person.benunit.min(index)
+        return index == lowest_index
 
 
 class is_benunit_eldest_child(Variable):
@@ -186,6 +187,31 @@ class current_education(Variable):
     entity = Person
     label = "Current education"
     definition_period = YEAR
+
+    def formula(person, period, parameters):
+        age = person("age", period)
+        return np.select(
+            [
+                age < 4,
+                (age >= 4) & (age < 7),
+                (age >= 7) & (age < 11),
+                (age >= 11) & (age < 14),
+                (age >= 14) & (age < 16),
+                (age >= 16) & (age < 18),
+                (age >= 18) & (age < 20),
+                age >= 20,
+            ],
+            [
+                EducationType.PRE_PRIMARY,
+                EducationType.NOT_COMPLETED_PRIMARY,
+                EducationType.PRIMARY,
+                EducationType.LOWER_SECONDARY,
+                EducationType.UPPER_SECONDARY,
+                EducationType.POST_SECONDARY,
+                EducationType.TERTIARY,
+                EducationType.NOT_IN_EDUCATION,
+            ],
+        )
 
 
 class highest_education(Variable):

@@ -1,9 +1,6 @@
 description: Withdraw Child Benefit payments from basic income recipients.
 metadata:
-  economy: false
   label: Withdraw Child Benefit from basic income recipients
-  name: bi_withdraw_cb
-  propagate_metadata_to_children: true
   unit: bool
 values:
   2010-01-01: false

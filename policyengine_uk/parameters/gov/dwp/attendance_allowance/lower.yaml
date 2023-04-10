@@ -8,6 +8,7 @@ values:
   2020-04-01: 59.70
   2021-04-01: 60.00
   2022-04-01: 61.85
+  2023-04-01: 68.10
 metadata:
   period: week
   unit: currency-GBP
@@ -16,3 +17,5 @@ metadata:
   reference: 
     - title: Benefits Uprating 2022/23
       href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf
+    - title: Benefits Uprating 2023/24 | Commons Library Briefing
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9680/CBP-9680.pdf

@@ -1,6 +1,3 @@
-metadata:
-  economy: false
-  propagate_metadata_to_children: true
 rate:
   description: Rate at which any remaining basic income (after individual phase-outs)
     is reduced over the household income threshold.

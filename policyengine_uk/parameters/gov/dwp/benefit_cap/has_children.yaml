@@ -3,5 +3,6 @@ values:
   2013-08-12: 384.62
 metadata:
   period: week
+  label: Benefit cap (with children, outside London)
   unit: currency-GBP
   reference: https://www.gov.uk/benefit-cap/benefit-cap-amounts

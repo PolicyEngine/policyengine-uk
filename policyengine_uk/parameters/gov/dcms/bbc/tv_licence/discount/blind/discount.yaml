@@ -1,9 +1,7 @@
 description: Percentage discount for qualifying blind licence holders.
 metadata:
   economy: false
-  label: Blin TV Licence discount
-  name: tv_licence_blind_discount
-  propagate_metadata_to_children: true
+  label: Blind TV Licence discount
   reference:
   - href: https://www.tvlicensing.co.uk/reducedfee
     title: Free and reduced fee TV Licences | TV Licensing
