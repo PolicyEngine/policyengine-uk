@@ -14,7 +14,8 @@ class carers_allowance(Variable):
         weekly_care_hours = person("care_hours", period)
         meets_work_condition = weekly_care_hours >= rate.work_condition_hours
         return (meets_work_condition | receives_ca) * rate * WEEKS_IN_YEAR
-    
+
+
 class care_hours(Variable):
     label = "hours providing care"
     documentation = "Weekly hours providing care to others"
