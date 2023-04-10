@@ -105,7 +105,6 @@ class child_index(Variable):
             person.get_rank(
                 person.benunit,
                 -person("age", period),
-                condition=person("is_child", period),
             )
             + 1
         )
