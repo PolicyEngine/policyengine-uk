@@ -753,3 +753,9 @@
     added:
     - Improvements to calibration routines.
   date: 2023-04-01 09:38:48
+- bump: patch
+  changes:
+    added:
+    - Speed improvements
+    - Parameter metadata fixes
+  date: 2023-04-10 13:36:29
