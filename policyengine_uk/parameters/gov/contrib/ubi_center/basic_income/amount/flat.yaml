@@ -4,5 +4,4 @@ values:
 metadata:
   unit: currency-GBP
   label: Basic income
-  name: bi_amount
   period: week

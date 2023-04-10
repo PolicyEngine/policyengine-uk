@@ -1,9 +1,6 @@
 description: Include basic income as earned income in benefit means tests.
 metadata:
-  economy: false
   label: Include basic income in means tests
-  name: include_bi_in_means_tests
-  propagate_metadata_to_children: true
   unit: bool
 values:
   2010-01-01: false

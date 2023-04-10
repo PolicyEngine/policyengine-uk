@@ -4,7 +4,6 @@ values:
   2020-04-01: true
 metadata:
   unit: bool
-  name: tv_licence_aged_must_claim_pc
   label: Aged TV licence Pension Credit requirement
   reference:
     - title: "Free and reduced fee TV Licences | TV Licensing"

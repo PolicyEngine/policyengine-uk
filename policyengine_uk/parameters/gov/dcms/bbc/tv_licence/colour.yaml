@@ -8,7 +8,6 @@ values:
 metadata:
   unit: currency-GBP
   period: year
-  name: tv_licence_fee
   label: TV Licence fee
   reference:
     - title: The Communications (Television Licensing) Regulations 2004 sch. 1 # F4, F5

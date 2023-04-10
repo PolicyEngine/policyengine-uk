@@ -1,4 +1,4 @@
-description: Percentage by which to increase all benefits.
+description: Increase all benefit values by this percentage.
 values:
   2000-01-01: 0
 metadata:
