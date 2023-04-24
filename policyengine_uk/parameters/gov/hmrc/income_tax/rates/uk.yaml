@@ -82,11 +82,24 @@ brackets:
       unit: currency-GBP
     values:
       2015-06-05: 150000
+- rate:
+    description: An extra tax bracket.
+    metadata:
+      label: Extra tax bracket rate
+      unit: /1
+    values:
+      2015-06-05: 0.45
+  threshold:
+    description: The lower threshold for the extra bracket rate.
+    metadata:
+      label: Extra tax bracket threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2015-06-05: 10_000_000
 description: Income Tax scale
 metadata:
-  economy: false
   label: Income tax main rates
-  propagate_metadata_to_children: true
   rate_unit: /1
   reference:
   - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted

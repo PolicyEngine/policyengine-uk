@@ -87,6 +87,21 @@ brackets:
       unit: currency-GBP
     values:
       2018-06-01: 150000
+- rate:
+    description: An extra Scottish tax bracket.
+    metadata:
+      label: Extra Scottish tax bracket rate
+      unit: /1
+    values:
+      2015-06-05: 0.46
+  threshold:
+    description: The lower threshold for the extra Scottish tax bracket rate.
+    metadata:
+      label: Extra Scottish tax bracket threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2015-06-05: 10_000_000
 description: Income Tax scale for Scotland
 metadata:
   economy: false

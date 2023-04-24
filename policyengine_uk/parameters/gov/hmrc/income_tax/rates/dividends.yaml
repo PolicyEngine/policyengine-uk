@@ -73,6 +73,21 @@ brackets:
         reference:
           - title: Finance Act 2022 s. 4
             href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
+  - rate:
+      description: An extra dividend tax bracket.
+      metadata:
+        label: Extra dividend tax bracket rate
+        unit: /1
+      values:
+        2015-06-05: 0.3935
+    threshold:
+      description: The lower threshold for the extra dividend bracket rate.
+      metadata:
+        label: Extra dividend tax bracket threshold
+        period: year
+        unit: currency-GBP
+      values:
+        2015-06-05: 10_000_000
 metadata:
   threshold_period: year
   type: marginal_rate
