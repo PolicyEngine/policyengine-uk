@@ -201,14 +201,14 @@ class tax_band(Variable):
         scot = person("pays_scottish_income_tax", period)
         income = ANI - allowances
         uk_band = select(
-            [income < threshold for threshold in rates.uk.thresholds],
+            [income < threshold for threshold in rates.uk.thresholds[:3]],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
             default=TaxBand.ADDITIONAL,
         )
         scottish_band = select(
             [
                 income < threshold
-                for threshold in rates.scotland.pre_starter_rate.thresholds
+                for threshold in rates.scotland.pre_starter_rate.thresholds[:3]
             ],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
             default=TaxBand.ADDITIONAL,
