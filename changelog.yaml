@@ -769,3 +769,8 @@
     added:
     - Spring Budget 2023 policy changes.
   date: 2023-04-24 14:03:45
+- bump: minor
+  changes:
+    added:
+    - 2023 tax rates for UK and Scotland
+  date: 2023-04-24 14:04:39
