@@ -30,6 +30,16 @@ brackets:
       2018-06-01: 2000
       2019-06-01: 2049
       2020-06-01: 2085
+      2022-01-01: 
+        value: 2_162
+        reference:
+          - title: "Scottish Rate Resolution 2022-23: motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2022-23-motion-and-explanatory-note/
+      2023-01-01:
+        value: 2_162
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
 - rate:
     description: The third rate in Scottish Income Tax
     metadata:
@@ -50,6 +60,16 @@ brackets:
       2018-06-01: 12150
       2020-06-01: 12444
       2021-06-01: 12658
+      2022-01-01: 
+        value: 13_118
+        reference:
+          - title: "Scottish Rate Resolution 2022-23: motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2022-23-motion-and-explanatory-note/
+      2023-01-01:
+        value: 13_118
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
 - rate:
     description: The fourth rate in Scottish Income Tax
     metadata:
@@ -69,6 +89,16 @@ brackets:
       2018-06-01: 31580
       2019-06-01: 30930
       2020-06-01: 30930
+      2022-01-01: 
+        value: 31_092
+        reference:
+          - title: "Scottish Rate Resolution 2022-23: motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2022-23-motion-and-explanatory-note/
+      2023-01-01:
+        value: 31_092
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
 - rate:
     description: The fifth and final rate in Scottish Income Tax
     metadata:
@@ -76,7 +106,7 @@ brackets:
       name: scottish_additional_rate
       unit: /1
     values:
-      2018-06-01: 0.46
+      2018-06-01: 0.47
   threshold:
     description: The threshold at which an individual pays the Scottish additional
       rate
@@ -86,7 +116,12 @@ brackets:
       period: year
       unit: currency-GBP
     values:
-      2018-06-01: 150000
+      2018-06-01: 150_000
+      2023-01-01:
+        value: 125_140
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
 - rate:
     description: An extra Scottish tax bracket.
     metadata:
