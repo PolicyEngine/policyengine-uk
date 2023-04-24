@@ -81,7 +81,12 @@ brackets:
         title: Finance Act 2022 s. 2
       unit: currency-GBP
     values:
-      2015-06-05: 150000
+      2015-06-05: 150_000
+      2023-01-01: 
+        value: 125_140 # Not actually hard-coded: it's defined as the PA phase-out threshold + 2 * the PA
+        reference:
+          - title: Finance Act 2023 s. 6
+            href: https://www.legislation.gov.uk/ukpga/2023/1/section/6/enacted
 - rate:
     description: An extra tax bracket.
     metadata:
