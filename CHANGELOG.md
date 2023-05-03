@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.0] - 2023-04-24 14:04:39
+
+### Added
+
+- 2023 tax rates for UK and Scotland
+
+## [0.47.0] - 2023-04-24 14:03:45
+
+### Added
+
+- Spring Budget 2023 policy changes.
+
+## [0.46.0] - 2023-04-24 12:16:00
+
+### Added
+
+- Extra tax bands for the UK and Scotland.
+
+## [0.45.1] - 2023-04-10 13:36:29
+
+### Added
+
+- Speed improvements
+- Parameter metadata fixes
+
+## [0.45.0] - 2023-04-01 09:38:48
+
+### Added
+
+- Improvements to calibration routines.
+
+## [0.44.3] - 2023-03-30 14:03:15
+
+### Fixed
+
+- Marriage Allowance previously didn't have an economic impact.
+
 ## [0.44.2] - 2023-03-26 00:21:18
 
 ### Fixed
@@ -613,7 +650,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- OpenFisca-UK-Data version increased to 0.7.0.
+- PolicyEngine-UK-Data version increased to 0.7.0.
 
 ## [0.10.3] - 2022-01-12 00:00:00
 
@@ -825,7 +862,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- OpenFisca-UK now runs from the official OpenFisca-Core.
+- PolicyEngine-UK now runs from the official OpenFisca-Core.
 
 ## [0.3.0] - 2021-07-04 00:00:00
 
@@ -894,6 +931,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.48.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.47.0...0.48.0
+[0.47.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.46.0...0.47.0
+[0.46.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.45.1...0.46.0
+[0.45.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.45.0...0.45.1
+[0.45.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.44.3...0.45.0
+[0.44.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.44.2...0.44.3
 [0.44.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.44.1...0.44.2
 [0.44.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.44.0...0.44.1
 [0.44.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.43.0...0.44.0

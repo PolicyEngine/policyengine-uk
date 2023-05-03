@@ -148,7 +148,7 @@ class BRMA_LHA_rate(Variable):
 
     def formula(benunit, period, parameters):
         BRMA = benunit.value_from_first_person(
-            benunit.members.household("BRMA", period).decode_to_str()
+            benunit.members.household("BRMA", period)
         )
         category = benunit("LHA_category", period)
         rate = parameters(period).gov.dwp.LHA.rates[BRMA][category]

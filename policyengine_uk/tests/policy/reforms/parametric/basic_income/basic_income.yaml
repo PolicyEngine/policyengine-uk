@@ -22,7 +22,7 @@
         members: [working_age, senior, child]
   output:
     basic_income: [52, 104, 156]
-    child_benefit: 1094.60
+    child_benefit: 1820
 
 - name: Basic income with phase-out and CB withdrawal
   period: 2021

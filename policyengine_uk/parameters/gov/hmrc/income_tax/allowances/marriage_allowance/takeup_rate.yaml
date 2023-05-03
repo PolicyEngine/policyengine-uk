@@ -1,0 +1,6 @@
+description: Percentage of eligible couples who claim Marriage Allowance.
+values:
+  2000-01-01: 1
+metadata:
+  unit: /1
+  label: Marriage Allowance take-up rate

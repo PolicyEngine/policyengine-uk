@@ -8,6 +8,13 @@ values:
   2013-04-01: 0.5795
   2021-01-01: 0.5795
   2022-03-23: 0.5295
+  2023-04-01:
+    value: 0.5295
+    metadata:
+      reference:
+      - title: Costing Document - Spring Budget 2023 (page 25)
+        href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1142824/Costing_Document_-_Spring_Budget_2023.pdf#page=9
+
 metadata:
   unit: currency-GBP
   name: fuel_duty_rate

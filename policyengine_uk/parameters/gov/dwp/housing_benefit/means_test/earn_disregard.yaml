@@ -1,7 +1,9 @@
 description: Threshold for earnings, above which Housing Benefit is reduced
-values:
-  2015-06-01: 5.00
 metadata:
+  economy: false
   period: week
-  unit: currency-GBP
+  propagate_metadata_to_children: true
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=40
+  unit: currency-GBP
+values:
+  2015-06-01: 5.0

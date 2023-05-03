@@ -1,42 +1,44 @@
-description: Annual tax on total wealth (includes all property and corporate wealth).
 brackets:
-  - threshold:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: currency-GBP
-        period: year
-    rate:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: /1
-  - threshold:
-      values:
-        0000-01-01: 1_000_000
-      metadata:
-        unit: currency-GBP
-        period: year
-    rate:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: /1
-  - threshold:
-      values:
-        0000-01-01: 10_000_000
-      metadata:
-        unit: currency-GBP
-        period: year
-    rate:
-      values:
-        0000-01-01: 0
-      metadata:
-        unit: /1
+- rate:
+    metadata:
+      unit: /1
+      label: First wealth tax rate
+    values:
+      2000-01-01: 0
+  threshold:
+    metadata:
+      period: year
+      unit: currency-GBP
+      label: First wealth tax threshold
+    values:
+      2000-01-01: 0
+- rate:
+    metadata:
+      unit: /1
+      label: Second wealth tax rate
+    values:
+      2000-01-01: 0
+  threshold:
+    metadata:
+      period: year
+      unit: currency-GBP
+      label: Second wealth tax threshold
+    values:
+      2000-01-01: 100_000_000
+- rate:
+    metadata:
+      unit: /1
+      label: Third wealth tax rate
+    values:
+      2000-01-01: 0
+  threshold:
+    metadata:
+      period: year
+      unit: currency-GBP
+      label: Third wealth tax threshold
+    values:
+      2000-01-01: 1_000_000_000
+description: Annual tax on total wealth (includes all property and corporate wealth).
 metadata:
-  threshold_unit: currency-GBP
-  rate_unit: /1
-  rate_period: year
-  unit: /1
-  name: wealth_tax
   label: Wealth tax
+  type: marginal_rate

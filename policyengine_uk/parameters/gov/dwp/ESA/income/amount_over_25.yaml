@@ -1,8 +1,11 @@
-description: Income-based Employment and Support Allowance personal allowance for persons aged over 25
-values:
-  2015-06-01: 73.10
-  2020-06-01: 74.35
+description: Income-based Employment and Support Allowance personal allowance for
+  persons aged over 25
 metadata:
+  economy: false
   period: week
-  unit: currency-GBP
+  propagate_metadata_to_children: true
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38
+  unit: currency-GBP
+values:
+  2015-06-01: 73.1
+  2020-06-01: 74.35

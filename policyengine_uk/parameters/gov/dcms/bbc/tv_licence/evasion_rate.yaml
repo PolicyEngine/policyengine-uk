@@ -4,7 +4,6 @@ values:
   2019-01-01: 0.0725
 metadata:
   unit: /1
-  name: tv_licence_evasion_rate
   label: TV licence fee evasion rate
   reference:
     - title: Licence fee statistics | House of Commons Library

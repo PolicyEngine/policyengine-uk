@@ -1,15 +1,17 @@
 description: Addition to the Minimum Guarantee for each child.
+metadata:
+  economy: false
+  label: Pension Credit child addition
+  name: pc_child_addition
+  period: week
+  propagate_metadata_to_children: true
+  reference:
+  - href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA/paragraph/9/2019-02-01
+    title: The State Pension Credit Regulations 2002
+  unit: currency-GBP
+  uprating: calibration.uprating.september_cpi
 values:
   2019-02-01: 53.34
   2020-04-01: 54.32
-  2021-04-01: 54.60
+  2021-04-01: 54.6
   2022-04-01: 56.35
-metadata:
-  unit: currency-GBP
-  period: week
-  name: pc_child_addition
-  label: Pension Credit child addition
-  uprating: calibration.uprating.september_cpi
-  reference:
-    - title: The State Pension Credit Regulations 2002
-      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA/paragraph/9/2019-02-01
