@@ -1,0 +1,10 @@
+weekly_rate:
+  description: weekly payment multiplier after death of child
+  values:
+    2020-11-09: 0
+    2022-11-14: 2
+  metadata:
+    unit: /1
+    reference:
+      - title: Value and form of a Scottish child payment
+        href: https://www.legislation.gov.uk/ssi/2020/351/regulation/20

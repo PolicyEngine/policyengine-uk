@@ -1,0 +1,15 @@
+description: Age limit for eligibility in the Scottish Child Payment.
+values:
+  2020-11-09:
+    value: 6
+    reference:
+      - title: Eligibility for a Scottish child payment (2020)
+        href: https://www.legislation.gov.uk/ssi/2020/351/regulation/18/2020-11-09
+  2022-11-14:
+    value: 16
+    reference:
+      - title: Eligibility for a Scottish child payment (2022)
+        href: https://www.legislation.gov.uk/ssi/2022/xyz/regulation/18/2022-11-14
+metadata:
+  unit: years
+

@@ -1,0 +1,11 @@
+period:
+  description: Period after the death of the child   
+  values:
+    2020-11-09: 0
+    2022-11-14: 12
+  metadata:
+    unit: week
+    reference:
+      - title: Value and form of a Scottish child payment
+        href: https://www.legislation.gov.uk/ssi/2020/351/regulation/20
+

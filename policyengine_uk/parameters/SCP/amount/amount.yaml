@@ -1,0 +1,13 @@
+description: Amount of Scottish Child Payment per eligible child.
+values:
+  
+  2020-11-09: 10
+  2022-04-01: 20
+  2022-11-14: 25
+
+metadata:
+  unit: GBP
+  frequency: weekly
+  reference:
+    - title: Value and form of a Scottish child payment
+      href: https://www.legislation.gov.uk/ssi/2020/351/regulation/20
