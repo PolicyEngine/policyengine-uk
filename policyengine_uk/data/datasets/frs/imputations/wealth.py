@@ -2,6 +2,7 @@ from survey_enhance.impute import Imputation
 import pandas as pd
 from pathlib import Path
 import numpy as np
+import yaml
 
 WAS_TAB_FOLDER = Path("/Users/nikhil/ukda/was_2006_20")
 
@@ -43,6 +44,7 @@ IMPUTE_VARIABLES = [
     "main_residence_value",
     "other_residential_property_value",
     "non_residential_property_value",
+    "savings",
 ]
 
 
@@ -149,6 +151,21 @@ def save_imputation_models():
     wealth.save(
         Path(__file__).parents[3] / "storage" / "imputations" / "wealth.pkl"
     )
+
+    # Generate a targets.yaml file with [variable]: [weighted sum]
+    # for each variable in the imputation model.
+    targets = {}
+    for var in IMPUTE_VARIABLES:
+        targets[var] = float((was[var] * was["household_weight"]).sum())
+
+    with open(
+        Path(__file__).parents[3]
+        / "storage"
+        / "imputations"
+        / "wealth_targets.yaml",
+        "w",
+    ) as f:
+        yaml.dump(targets, f)
 
 
 if __name__ == "__main__":

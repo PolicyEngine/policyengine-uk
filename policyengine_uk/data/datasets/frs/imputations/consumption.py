@@ -2,6 +2,7 @@ from survey_enhance.impute import Imputation
 import pandas as pd
 from pathlib import Path
 import numpy as np
+import yaml
 
 LCFS_TAB_FOLDER = Path("/Users/nikhil/ukda/lcfs_2020_21")
 
@@ -25,6 +26,7 @@ HOUSEHOLD_LCF_RENAMES = {
     "G019": "is_child",
     "Gorx": "region",
     "P389p": "household_net_income",
+    "weighta": "household_weight",
 }
 PERSON_LCF_RENAMES = {
     "B303p": "employment_income",
@@ -96,7 +98,10 @@ def generate_lcfs_table(
         household[variable] = (
             person[variable].groupby(person.case).sum()[household.case] * 52
         )
-    return household[PREDICTOR_VARIABLES + IMPUTATIONS].dropna()
+    household.household_weight *= 1_000
+    return household[
+        PREDICTOR_VARIABLES + IMPUTATIONS + ["household_weight"]
+    ].dropna()
 
 
 def save_imputation_models():
@@ -120,6 +125,23 @@ def save_imputation_models():
         / "imputations"
         / "consumption.pkl"
     )
+
+    # Generate a targets.yaml file with [variable]: [weighted sum]
+    # for each variable in the imputation model.
+    targets = {}
+    for var in IMPUTATIONS:
+        targets[var] = float(
+            (household[var] * household["household_weight"]).sum()
+        )
+
+    with open(
+        Path(__file__).parents[3]
+        / "storage"
+        / "imputations"
+        / "consumption_targets.yaml",
+        "w",
+    ) as f:
+        yaml.dump(targets, f)
 
 
 if __name__ == "__main__":
