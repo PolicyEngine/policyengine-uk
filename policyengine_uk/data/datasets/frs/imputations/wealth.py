@@ -118,8 +118,6 @@ def generate_was_table(was: pd.DataFrame):
 
     was["is_renting"] = was["is_renter"] == 1
 
-    was.household_net_income *= 52  # WAS uses monthly income
-
     was["non_db_pensions"] = was.pensions - was.db_pensions
     was["corporate_wealth"] = was[
         [
