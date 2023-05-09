@@ -6,6 +6,7 @@ from ..utils import STORAGE_FOLDER
 from .stacked_frs import PooledFRS_2018_20
 from .frs import FRS_2019_20
 from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2018_20
+import yaml
 
 
 class ImputationExtendedFRS(Dataset):
@@ -49,8 +50,20 @@ class ImputationExtendedFRS(Dataset):
         consumption = Imputation.load(IMPUTATIONS / "consumption.pkl")
         wealth = Imputation.load(IMPUTATIONS / "wealth.pkl")
         vat = Imputation.load(IMPUTATIONS / "vat.pkl")
+
+        # Target aggregates for wealth and consumption variables
+        with open(IMPUTATIONS / "wealth_targets.yaml") as f:
+            wealth_targets = yaml.load(f, Loader=yaml.FullLoader)
+
+        with open(IMPUTATIONS / "consumption_targets.yaml") as f:
+            consumption_targets = yaml.load(f, Loader=yaml.FullLoader)
+
         i = 0
-        for imputation_model in [wealth, vat, consumption]:
+        frs_household_weight = simulation.calculate("household_weight").values
+        for imputation_model, targets in zip(
+            [wealth, vat, consumption],
+            [wealth_targets, {}, consumption_targets],
+        ):
             i += 1
             predictors = imputation_model.X_columns
 
@@ -62,7 +75,18 @@ class ImputationExtendedFRS(Dataset):
                 X_input.loc[
                     X_input["region"] == "NORTHERN_IRELAND", "region"
                 ] = "WALES"
-            Y_output = imputation_model.predict(X_input, verbose=True)
+            if len(targets) > 0:
+                target_values = [
+                    targets[output] for output in imputation_model.Y_columns
+                ]
+                quantiles = imputation_model.solve_for_mean_quantiles(
+                    target_values, X_input, frs_household_weight
+                )
+            else:
+                quantiles = None
+            Y_output = imputation_model.predict(
+                X_input, mean_quantile=quantiles, verbose=True
+            )
 
             for output_variable in Y_output.columns:
                 data[output_variable] = {

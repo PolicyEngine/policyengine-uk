@@ -1,0 +1,6 @@
+- bump: minor
+  changes:
+    added:
+    - Savings variable from the WAS.
+    fixed:
+    - Added logging for targets in imputations for completeness.
