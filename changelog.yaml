@@ -774,3 +774,10 @@
     added:
     - 2023 tax rates for UK and Scotland
   date: 2023-04-24 14:04:39
+- bump: minor
+  changes:
+    added:
+    - Savings variable from the WAS.
+    fixed:
+    - Added logging for targets in imputations for completeness.
+  date: 2023-05-09 17:02:36
