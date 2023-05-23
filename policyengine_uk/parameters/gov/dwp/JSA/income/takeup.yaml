@@ -4,7 +4,6 @@ metadata:
   economy: false
   label: Income-based Jobseeker's Allowance take-up rate
   name: JSA_income_takeup
-  propagate_metadata_to_children: true
   reference:
     href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/645577/income-related-benefits-estimates-of-take-up-2015-16.pdf
     name: 'Income-related benefits: estimates of take-up: financial year 2015/16 |

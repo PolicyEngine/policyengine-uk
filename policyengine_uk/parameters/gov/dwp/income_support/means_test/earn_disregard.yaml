@@ -2,7 +2,7 @@ description: Threshold in earnings, above which the Income Support amount is red
 metadata:
   economy: false
   period: week
-  propagate_metadata_to_children: true
+  label: Income Support earnings disregard
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
   unit: currency-GBP
 values:

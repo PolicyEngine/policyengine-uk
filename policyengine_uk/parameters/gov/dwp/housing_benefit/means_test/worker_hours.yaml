@@ -4,4 +4,6 @@ values:
 metadata:
   period: week
   unit: hour
+  label: HB worker element hours requirement
+  economy: false
   reference: https://www.gov.uk/working-tax-credit

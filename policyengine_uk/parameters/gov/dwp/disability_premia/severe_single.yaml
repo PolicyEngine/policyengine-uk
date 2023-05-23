@@ -4,4 +4,5 @@ values:
 metadata:
   period: week
   unit: currency-GBP
+  label: Legacy benefit severe disability premium (single)
   reference: https://www.gov.uk/disability-premiums/what-youll-get

@@ -4,4 +4,5 @@ values:
 metadata:
   period: week
   unit: currency-GBP
+  label: Housing Benefit couple earnings disregard
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=40

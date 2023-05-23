@@ -11,5 +11,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
+  label: Income-based JSA (18-24)
   uprating: calibration.uprating.september_cpi
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
