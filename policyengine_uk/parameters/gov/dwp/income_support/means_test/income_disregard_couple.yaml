@@ -3,5 +3,6 @@ values:
   2015-06-01: 10.00
 metadata:
   period: week
+  label: Income Support income disregard (couples)
   unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33

@@ -3,7 +3,7 @@ description: Threshold in earnings, above which the contributory Jobseeker's All
 metadata:
   economy: false
   period: week
-  propagate_metadata_to_children: true
+  label: Jobseeker's Allowance earnings disregard
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
   unit: currency-GBP
 values:

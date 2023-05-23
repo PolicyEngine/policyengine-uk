@@ -4,4 +4,5 @@ values:
 metadata:
   period: week
   unit: currency-GBP
+  label: Jobseeker's Allowance income disregard (single)
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33

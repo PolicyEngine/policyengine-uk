@@ -3,7 +3,7 @@ description: Income Support applicable amount for couples in which one is under 
 metadata:
   economy: false
   period: week
-  propagate_metadata_to_children: true
+  label: Income Support applicable amount (couples, one under 18, one over 25)
   reference: https://www.gov.uk/income-support/what-youll-get
   unit: currency-GBP
   uprating: calibration.uprating.september_cpi

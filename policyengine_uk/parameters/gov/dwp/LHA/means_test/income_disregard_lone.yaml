@@ -3,7 +3,7 @@ description: Threshold in income for a lone parent, above which the Housing Bene
 metadata:
   economy: false
   period: week
-  propagate_metadata_to_children: true
+  label: Housing Benefit (LHA) income disregard (lone parent)
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33
   unit: currency-GBP
 values:

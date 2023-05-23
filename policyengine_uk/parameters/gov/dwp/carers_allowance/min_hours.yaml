@@ -4,5 +4,6 @@ metadata:
   period: week
   reference: https://www.gov.uk/carers-allowance
   unit: hour
+  label: "Carer's Allowance minimum hours"
 values:
   2010-06-01: 35

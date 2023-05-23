@@ -3,7 +3,7 @@ description: Income-based Employment and Support Allowance personal allowance fo
 metadata:
   economy: false
   period: week
-  propagate_metadata_to_children: true
+  label: Income-based ESA personal allowance (18-24)
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38
   unit: currency-GBP
 values:

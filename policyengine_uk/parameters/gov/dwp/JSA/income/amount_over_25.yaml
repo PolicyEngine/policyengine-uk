@@ -10,6 +10,7 @@ values:
   2022-04-01: 77.00
 metadata:
   period: week
+  label: Income-based JSA (over 25)
   uprating: calibration.uprating.september_cpi
   unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24

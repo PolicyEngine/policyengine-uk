@@ -2,7 +2,7 @@ description: Threshold for earnings, above which Housing Benefit is reduced
 metadata:
   economy: false
   period: week
-  propagate_metadata_to_children: true
+  label: Housing Benefit earnings disregard
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=40
   unit: currency-GBP
 values:
