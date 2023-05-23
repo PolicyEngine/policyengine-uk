@@ -781,3 +781,8 @@
     fixed:
     - Added logging for targets in imputations for completeness.
   date: 2023-05-09 17:02:36
+- bump: patch
+  changes:
+    added:
+    - Missing labels for parameters.
+  date: 2023-05-23 12:04:57
