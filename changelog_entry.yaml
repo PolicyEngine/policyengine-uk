@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    added:
+    - Missing labels for parameters.
