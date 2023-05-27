@@ -786,3 +786,8 @@
     added:
     - Missing labels for parameters.
   date: 2023-05-23 12:04:57
+- bump: minor
+  changes:
+    added:
+    - Python 3.10 support.
+  date: 2023-05-27 15:52:33

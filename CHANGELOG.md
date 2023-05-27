@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.50.0] - 2023-05-27 15:52:33
+
+### Added
+
+- Python 3.10 support.
+
 ## [0.49.1] - 2023-05-23 12:04:57
 
 ### Added
@@ -947,6 +953,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.50.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.49.1...0.50.0
 [0.49.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.49.0...0.49.1
 [0.49.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.48.0...0.49.0
 [0.48.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.47.0...0.48.0
