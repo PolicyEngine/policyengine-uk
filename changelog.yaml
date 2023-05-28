@@ -791,3 +791,8 @@
     added:
     - Python 3.10 support.
   date: 2023-05-27 15:52:33
+- bump: patch
+  changes:
+    fixed:
+    - Household basic income phase-out rate unit.
+  date: 2023-05-28 02:23:58
