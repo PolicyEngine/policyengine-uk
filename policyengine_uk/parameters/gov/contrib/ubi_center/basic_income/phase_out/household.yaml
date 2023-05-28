@@ -4,7 +4,7 @@ rate:
   metadata:
     label: Basic income household phase-out rate
     period: year
-    unit: currency-GBP
+    unit: /1
   values:
     2010-01-01: 0
 threshold:
