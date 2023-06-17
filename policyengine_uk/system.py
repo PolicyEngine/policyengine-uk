@@ -8,6 +8,8 @@ from policyengine_core.simulations import (
 )
 from policyengine_uk.data import DATASETS, EnhancedFRS
 
+from policyengine_uk.reforms import create_structural_reforms_from_parameters
+
 COUNTRY_DIR = Path(__file__).parent
 
 
@@ -44,6 +46,15 @@ class Simulation(CoreSimulation):
     default_role = "member"
     max_spiral_loops = 10
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        reform = create_structural_reforms_from_parameters(
+            self.tax_benefit_system.parameters, "2023-01-01"
+        )
+        if reform is not None:
+            self.apply_reform(reform)
+
 
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
@@ -55,6 +66,15 @@ class Microsimulation(CoreMicrosimulation):
     default_role = "member"
     max_spiral_loops = 10
     datasets = DATASETS
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        reform = create_structural_reforms_from_parameters(
+            self.tax_benefit_system.parameters, "2023-01-01"
+        )
+        if reform is not None:
+            self.apply_reform(reform)
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated
