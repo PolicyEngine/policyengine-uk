@@ -169,9 +169,35 @@ def create_marriage_neutral_income_tax_reform(
             is_adult = person("is_adult", period)
             total_income = person.benunit.sum(is_adult * income)
             has_spouse = person.benunit("is_married", period) & is_adult
-            return where(
+
+            originally_split_income_branch = person.simulation.get_branch(
+                "originally_split_income", clone_system=True
+            )
+            originally_split_income_branch.set_input(
+                "adjusted_net_income", period, income
+            )
+            originally_split_income_tax = (
+                originally_split_income_branch.calculate("income_tax", period)
+            )
+
+            split_income = where(
                 has_spouse & person("meets_ma_neutral_tax_conditions", period),
                 total_income / 2,
+                income,
+            )
+            split_income_branch = person.simulation.get_branch(
+                "split_income", clone_system=True
+            )
+            split_income_branch.set_input(
+                "adjusted_net_income", period, split_income
+            )
+            split_income_tax = split_income_branch.calculate(
+                "income_tax", period
+            )
+
+            return where(
+                split_income_tax < originally_split_income_tax,
+                split_income,
                 income,
             )
 
