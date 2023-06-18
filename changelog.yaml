@@ -796,3 +796,8 @@
     fixed:
     - Household basic income phase-out rate unit.
   date: 2023-05-28 02:23:58
+- bump: minor
+  changes:
+    added:
+    - Marriage tax-related reforms.
+  date: 2023-06-18 09:17:08
