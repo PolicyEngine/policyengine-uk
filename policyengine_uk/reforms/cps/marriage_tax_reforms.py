@@ -14,20 +14,19 @@ def create_expanded_ma_reform(
 
         def formula(person, period):
             # There is a child who either meets the age condition or the education condition
-            meets_conditions = True
             benunit = person.benunit
             if max_child_age is not None:
                 child_meets_age_condition = (
                     person("age", period) <= max_child_age
                 )
-                meets_conditions = benunit.any(child_meets_age_condition)
+                return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
                 child_meets_education_condition = np.is_in(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )
-                meets_conditions = benunit.any(child_meets_education_condition)
-            return meets_conditions
+                return benunit.any(child_meets_education_condition)
+            return True
 
     class meets_marriage_allowance_income_conditions(Variable):
         label = "Meets Marriage Allowance income conditions"
@@ -44,8 +43,10 @@ def create_expanded_ma_reform(
                 (band == bands.BASIC)
                 | (band == bands.STARTER)
                 | (band == bands.INTERMEDIATE)
-                | person("meets_expanded_ma_conditions", period)
-                & ((band == bands.HIGHER) | (band == bands.ADDITIONAL))
+                | (  # Expand to higher bands if reform conditions are met.
+                    person("meets_expanded_ma_conditions", period)
+                    & ((band == bands.HIGHER) | (band == bands.ADDITIONAL))
+                )
             )
 
     class marriage_allowance(Variable):
@@ -92,9 +93,8 @@ def create_expanded_ma_reform(
                 np.ceil(amount_if_eligible_pre_rounding / rounding_increment)
                 * rounding_increment
             )
-            return (
-                eligible * amount_if_eligible * (random(person) < takeup_rate)
-            )
+            takes_up = random(person) < takeup_rate
+            return eligible * amount_if_eligible * takes_up
 
     class reform(Reform):
         def apply(self):
@@ -117,20 +117,19 @@ def create_marriage_neutral_income_tax_reform(
 
         def formula(person, period):
             # There is a child who either meets the age condition or the education condition
-            meets_conditions = True
             benunit = person.benunit
             if max_child_age is not None:
                 child_meets_age_condition = (
                     person("age", period) <= max_child_age
                 )
-                meets_conditions = benunit.any(child_meets_age_condition)
+                return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
                 child_meets_education_condition = np.is_in(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )
-                meets_conditions = benunit.any(child_meets_education_condition)
-            return meets_conditions
+                return benunit.any(child_meets_education_condition)
+            return True
 
     class unadjusted_net_income(Variable):
         value_type = float
