@@ -801,3 +801,8 @@
     added:
     - Marriage tax-related reforms.
   date: 2023-06-18 09:17:08
+- bump: patch
+  changes:
+    fixed:
+    - A bug in the income-splitting logic that caused taxable incomes to be too low.
+  date: 2023-06-20 19:19:13
