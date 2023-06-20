@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - A bug in the income-splitting logic that caused taxable incomes to be too low.

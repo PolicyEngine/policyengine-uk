@@ -175,7 +175,7 @@ def create_marriage_neutral_income_tax_reform(
             originally_split_income_branch.set_input(
                 "adjusted_net_income", period, income
             )
-            originally_split_income_tax = (
+            originally_split_income_tax = person.benunit.sum(
                 originally_split_income_branch.calculate("income_tax", period)
             )
 
@@ -190,12 +190,12 @@ def create_marriage_neutral_income_tax_reform(
             split_income_branch.set_input(
                 "adjusted_net_income", period, split_income
             )
-            split_income_tax = split_income_branch.calculate(
-                "income_tax", period
+            split_income_tax = person.benunit.sum(
+                split_income_branch.calculate("income_tax", period)
             )
 
             return where(
-                split_income_tax < originally_split_income_tax,
+                split_income_tax <= originally_split_income_tax,
                 split_income,
                 income,
             )
