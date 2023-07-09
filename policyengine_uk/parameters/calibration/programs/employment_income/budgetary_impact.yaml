@@ -1,18 +1,11 @@
 description: Total employment income.
 UNITED_KINGDOM:
-  2019-01-01: 814_000_000_000
-ENGLAND:
-  2022-01-01: 700_300_000_000
-SCOTLAND:
-  2022-01-01: 67_100_000_000
-WALES:
-  2022-01-01: 35_000_000_000
-NORTHERN_IRELAND:
-  2022-01-01: 19_000_000_000
+  values:
+    2020-01-01: 827_000_000_000
+  metadata:
+    uprating:
+      parameter: calibration.uprating.earnings
 metadata:
-  uprating:
-    parameter: calibration.uprating.earnings
-  propagate_metadata_to_children: true
   reference:
     # Data is more recent than the URL suggests.
     - title: Profit, employment and pension income | National Statistics

@@ -1,0 +1,19 @@
+description: Number of taxpayers.
+ENGLAND:
+  2019-01-01: 26_400_000
+WALES:
+  2019-01-01: 1_360_000
+SCOTLAND:
+  2019-01-01: 2_570_000
+NORTHERN_IRELAND:
+  2019-01-01: 783_000
+UNITED_KINGDOM:
+  2019-01-01: 31_500_000
+metadata:
+  uprating:
+    parameter: calibration.uprating.earnings
+  propagate_metadata_to_children: true
+  unit: person
+  reference:
+    - title: Profit, employment and pension income | National Statistics | Table 3.11
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011 # Data is more recent than the URL suggests.

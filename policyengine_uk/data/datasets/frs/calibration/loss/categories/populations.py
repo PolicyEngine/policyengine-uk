@@ -18,7 +18,7 @@ class Populations(LossCategory):
         sex = dataset.person.gender
         region = dataset.person.region
         age_sex_region = (
-            self.calibration_parameters.demographics.populations.by_age_sex_region
+            self.calibration_parameters_at_instant.demographics.populations.by_age_sex_region
         )
         total_population = 0
         for lower_age in list(range(0, 80, 10)) + [79]:

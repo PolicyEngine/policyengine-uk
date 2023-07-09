@@ -25,11 +25,10 @@ GREAT_BRITAIN:
     2024-01-01: 471_000_000
     2025-01-01: 432_000_000
     2026-01-01: 414_000_000
+    
 metadata:
   unit: currency-GBP
   period: year
   reference:
-    - title: Benefit expenditure and caseload tables 2021
-      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
-    - title: Benefit expenditure and caseload tables 2021 | Benefit expenditure by country and region
-      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021
+    - title: Benefit expenditure and caseload tables 2023
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2023
