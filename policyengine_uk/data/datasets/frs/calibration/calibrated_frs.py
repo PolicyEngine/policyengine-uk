@@ -25,7 +25,7 @@ class CalibratedFRS(Dataset):
     time_period: int
     epochs: int = None
     learning_rate: float = 3e2
-    min_loss: float = 0.04
+    min_loss: float = 0.05
     log_dir: str = "."
     time_period: str = None
     log_verbose: bool = False
@@ -78,12 +78,13 @@ class CalibratedFRS(Dataset):
                 Loss,
                 calibration_parameters,
             )
+            log_dir = Path(self.log_dir) / f"{year}"
             calibrated_weights[year] = weights.calibrate(
                 f"{year}-01-01",
                 epochs=self.epochs,
                 learning_rate=self.learning_rate,
                 verbose=self.log_verbose,
-                log_dir=self.log_dir,
+                log_dir=log_dir,
                 min_loss=self.min_loss,
             )
 

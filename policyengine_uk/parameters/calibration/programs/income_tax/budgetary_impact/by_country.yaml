@@ -33,3 +33,7 @@ UNITED_KINGDOM:
     2023-01-01: 215_000_000_000
     2024-01-01: 225_700_000_000
     2025-01-01: 237_500_000_000
+  metadata:
+    reference:
+    - title: OBR forecast
+      href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/

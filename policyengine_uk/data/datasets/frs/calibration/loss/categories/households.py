@@ -13,10 +13,12 @@ class Households(LossCategory):
         self, dataset: Dataset
     ) -> List[Tuple[str, float, torch.Tensor]]:
         region_ct_band_parameter = (
-            self.calibration_parameters.demographics.households.by_region_by_council_tax_band
+            self.calibration_parameters_at_instant.demographics.households.by_region_by_council_tax_band
         )
 
-        uk_wide = self.calibration_parameters.demographics.households.in_total
+        uk_wide = (
+            self.calibration_parameters_at_instant.demographics.households.in_total
+        )
 
         comparisons = []
 
@@ -59,7 +61,7 @@ class Households(LossCategory):
         tenure_type = dataset.household.ons_tenure_type.values
 
         region_tenure_parameter = (
-            self.calibration_parameters.demographics.households.by_region_by_tenure_type
+            self.calibration_parameters_at_instant.demographics.households.by_region_by_tenure_type
         )
         total_actuals = 0
         for target_region in region_tenure_parameter._children:
