@@ -1,0 +1,33 @@
+description: Housing Benefit spending by country.
+ENGLAND:
+  values:
+    2020-01-01: 15_164_000_000
+  metadata:
+    uprating: calibration.programs.housing_benefit.budgetary_impact.GREAT_BRITAIN
+WALES:
+  values:
+    2020-01-01: 791_000_000
+  metadata:
+    uprating: calibration.programs.housing_benefit.budgetary_impact.GREAT_BRITAIN
+SCOTLAND:
+  values:
+    2020-01-01: 1_380_000_000
+  metadata:
+    uprating: calibration.programs.housing_benefit.budgetary_impact.GREAT_BRITAIN
+GREAT_BRITAIN:
+  values:
+    2018-01-01: 20_730_000_000
+    2019-01-01: 18_379_000_000
+    2020-01-01: 17_334_000_000
+    2021-01-01: 17_112_000_000
+    2022-01-01: 15_030_000_000
+    2023-01-01: 14_777_000_000
+    2024-01-01: 14_437_000_000
+    2025-01-01: 11_540_000_000
+    2026-01-01: 10_862_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Benefit expenditure and caseload tables 2023
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2023

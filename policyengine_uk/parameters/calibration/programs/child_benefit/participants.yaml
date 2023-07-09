@@ -1,0 +1,12 @@
+UNITED_KINGDOM:
+  description: Number of families claiming Child Benefit.
+  values:
+    2018-01-01: 7_325_845
+    2019-01-01: 7_281_535
+    2020-01-01: 7_210_595
+  metadata:
+    unit: benefit unit
+    uprating: self
+    reference:
+      - title: "Child Benefit Statistics: Annual Releast, August 2020"
+        href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020

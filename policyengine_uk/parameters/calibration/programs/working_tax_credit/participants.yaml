@@ -1,0 +1,14 @@
+GREAT_BRITAIN:
+  description: Number of families receiving Working Tax Credit
+  values:
+    2018-01-01: 1_970_000
+    2019-01-01: 1_615_000
+    2020-01-01: 1_199_000
+    2021-01-01: 1_044_000
+metadata:
+  unit: benefit unit
+  propagate_metadata_to_children: true
+  uprating: calibration.programs.tax_credits.budgetary_impact.UNITED_KINGDOM
+  reference:
+    - title: "Child and Working Tax Credits Statistics: Provisional Awards- April 2021 | Table 1.1"
+      href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-provisional-awards-april-2021

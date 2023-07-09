@@ -1,0 +1,21 @@
+description: Total dividend income.
+UNITED_KINGDOM:
+  2019-01-01: 65_200_000_000
+ENGLAND:
+  2022-01-01: 53_400_000_000
+SCOTLAND:
+  2022-01-01: 4_000_000_000
+WALES:
+  2022-01-01: 2_000_000_000
+NORTHERN_IRELAND:
+  2022-01-01: 1_400_000_000
+metadata:
+  uprating:
+    parameter: calibration.uprating.earnings
+  propagate_metadata_to_children: true
+  reference:
+    # Data is more recent than the URL suggests.
+    - title: Profit, employment and pension income | National Statistics
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+    - title: Property, interest, dividend and other income | National Statistics
+      href: https://www.gov.uk/government/statistics/investment-income-2010-to-2011

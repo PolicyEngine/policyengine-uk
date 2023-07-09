@@ -1,0 +1,12 @@
+description: UK-wide taxpayers.
+values:
+  2018-01-01: 31_500_000
+  2019-01-01: 31_500_000
+  2020-01-01: 31_200_000
+  2021-01-01: 32_700_000
+  2022-01-01: 34_000_000
+metadata:
+  uprating: calibration.demographics.populations.in_total
+  reference:
+  - title: HMRC income tax statistics
+    href: https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2019-to-2020-to-tax-year-2022-to-2023/summary-statistics#:~:text=there%20are%20a%20projected%2027.8,basic%20rate%20Income%20Tax%20payers.

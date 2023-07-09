@@ -1,0 +1,25 @@
+description: Number of families claiming Income Support.
+GREAT_BRITAIN:
+  values:
+    2018-01-01: 494_000
+    2019-01-01: 360_000
+    2020-01-01: 273_000
+    2021-01-01: 210_000
+    2022-01-01: 157_000
+    2023-01-01: 116_000
+    2024-01-01: 76_000
+    2025-01-01: 34_000
+    2026-01-01: 3_000
+NORTHERN_IRELAND:
+  values:
+    2022-01-01: 16_960
+  metadata:
+    reference:
+      - title: Northern Ireland Benefits Statistics Summary | November 2021
+        href: https://www.communities-ni.gov.uk/system/files/publications/communities/benefit-statistics-summary-nov-2021.pdf
+    uprating: calibration.programs.income_support.participants.GREAT_BRITAIN
+metadata:
+  unit: benefit unit
+  reference:
+    - title: Benefit expenditure and caseload tables 2023
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2023

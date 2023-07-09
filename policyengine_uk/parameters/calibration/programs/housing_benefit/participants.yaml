@@ -1,0 +1,17 @@
+GREAT_BRITAIN:
+  description: Number of families claiming Housing Benefit.
+  values:
+    2018-01-01: 3_984_000
+    2019-01-01: 3_394_000
+    2020-01-01: 3_028_000
+    2021-01-01: 2_923_000
+    2022-01-01: 2_509_000
+    2023-01-01: 2_335_000
+    2024-01-01: 2_177_000
+    2025-01-01: 1_805_000
+    2026-01-01: 1_692_000
+  metadata:
+    unit: benefit unit
+    reference:
+    - title: Benefit expenditure and caseload tables 2023
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2023

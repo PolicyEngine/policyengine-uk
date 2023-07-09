@@ -1,0 +1,18 @@
+description: Expenditure on Working Tax Credit by country.
+UNITED_KINGDOM:
+  metadata:
+    uprating: calibration.programs.tax_credits.budgetary_impact.UNITED_KINGDOM
+  values:
+    2018-01-01: 17_656_000_000
+    2019-01-01: 13_875_000_000
+    # HMRC does not forward-estimate revenue, only caseloads. The DWP
+    # does provide revenue estimates, but only for combined Tax Credits.
+    # We split the revenue by their fractions in 2019, the most recent
+    # HMRC estimates. This is implemented using the uprating parameter.
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: "Child and Working Tax Credits Statistics: Finalised Annual Awards- 2019 to 2020"
+      href: https://www.gov.uk/government/statistics/child-and-working-tax-credits-statistics-finalised-annual-awards-supplement-on-payments-2019-to-2020
+    - title: Benefit expenditure and caseload tables 2021
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

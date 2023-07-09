@@ -1,0 +1,15 @@
+description: Income-based ESA spending by country.
+GREAT_BRITAIN:
+  values:
+    2019-01-01: 9_339_000_000
+    2020-01-01: 8_815_000_000
+    2021-01-01: 8_254_000_000
+    2022-01-01: 7_576_000_000
+    2023-01-01: 8_244_000_000
+    2024-01-01: 7_543_000_000
+    2025-01-01: 6_551_000_000
+    2026-01-01: 5_837_000_000
+metadata:
+  reference:
+    - title: Benefit expenditure and caseload tables 2023
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2023

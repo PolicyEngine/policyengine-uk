@@ -1,0 +1,19 @@
+description: Non-state pension income.
+ENGLAND:
+  2019-01-01: 90_670_000_000
+WALES:
+  2019-01-01: 5_200_000_000
+SCOTLAND:
+  2019-01-01: 9_200_000_000
+NORTHERN_IRELAND:
+  2019-01-01: 2_230_000_000
+metadata:
+  uprating:
+    parameter: calibration.uprating.earnings
+  propagate_metadata_to_children: true
+  reference:
+    # Data is more recent than the URL suggests.
+    - title: Profit, employment and pension income | National Statistics
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+    - title: Property, interest, dividend and other income | National Statistics
+      href: https://www.gov.uk/government/statistics/investment-income-2010-to-2011

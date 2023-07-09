@@ -1,0 +1,28 @@
+income_tax:
+  description: Number of individuals paying Income Tax.
+  values:
+    2018-01-01: 31_600_000
+    2019-01-01: 31_400_000
+    2020-01-01: 31_700_000
+    2021-01-01: 32_200_000
+  metadata:
+    unit: person
+    uprating:
+      parameter: self
+    reference:
+      - title: Number of Individual Income Tax Payers (SPI, National Statistics)
+        href: https://www.gov.uk/government/statistics/number-of-individual-income-taxpayers-by-marginal-rate-gender-and-age
+
+state_pension:
+  description: Number of individuals claiming State Pension.
+  values:
+    2019-01-01: 12_556_000
+    2020-01-01: 12_379_000
+    2021-01-01: 12_506_000
+    2022-01-01: 12_678_000
+  metadata:
+    uprating:
+      parameter: self
+    reference:
+      - title: Benefit expenditure and caseload tables 2021
+        href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2021

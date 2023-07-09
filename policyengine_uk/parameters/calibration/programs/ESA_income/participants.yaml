@@ -1,0 +1,12 @@
+GREAT_BRITAIN:
+  description: Number of families claiming income-based ESA.
+  values:
+    2022-01-01: 788_000
+    2023-01-01: 707_000
+    2024-01-01: 634_000
+    2025-01-01: 530_000
+    2026-01-01: 467_000
+  metadata:
+    reference:
+    - title: Benefit expenditure and caseload tables 2023
+      href: https://www.gov.uk/government/publications/benefit-expenditure-and-caseload-tables-2023
