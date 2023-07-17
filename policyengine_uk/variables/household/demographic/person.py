@@ -109,7 +109,10 @@ class child_index(Variable):
             + 1
         )
         # Fill in adult values
-        return where(person("is_child", period), child_ranking, 100)
+        values = where(person("is_child", period), child_ranking, 100)
+        # Base to 0
+        values = values - person.benunit.min(values) + 1
+        return where(person("is_child", period), values, -1)
 
 
 class is_eldest_child(Variable):

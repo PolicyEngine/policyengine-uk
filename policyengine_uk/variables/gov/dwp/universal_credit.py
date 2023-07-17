@@ -176,18 +176,16 @@ class UC_individual_child_element(Variable):
             ~born_before_limit, UC.elements.child.limit.child_count, inf
         )
         is_eligible = (child_index != -1) & (
-            child_index <= child_limit_applying
+            child_index < child_limit_applying
         )
         return (
             select(
                 [
                     (child_index == 1) & born_before_limit & is_eligible,
-                    child_index == 1 & is_eligible,
-                    (child_index > 1) & is_eligible,
+                    is_eligible,
                 ],
                 [
                     UC.elements.child.first.higher_amount,
-                    UC.elements.child.amount,
                     UC.elements.child.amount,
                 ],
                 default=0,
