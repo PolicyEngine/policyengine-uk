@@ -126,6 +126,7 @@ class is_eldest_child(Variable):
 
     def formula(person, period, parameters):
         index = person("child_index", period)
+        index = where(index < 0, 100, index)
         lowest_index = person.benunit.min(index)
         return index == lowest_index
 
