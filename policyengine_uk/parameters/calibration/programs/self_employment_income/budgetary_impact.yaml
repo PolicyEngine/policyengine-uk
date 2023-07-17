@@ -1,18 +1,11 @@
 description: Total self-employment income.
 UNITED_KINGDOM:
-  2019-01-01: 87_400_000_000
-ENGLAND:
-  2022-01-01: 84_930_000_000
-SCOTLAND:
-  2022-01-01: 6_170_000_000
-WALES:
-  2022-01-01: 3_100_000_000
-NORTHERN_IRELAND:
-  2022-01-01: 2_200_000_000
+  values:
+    2020-01-01: 96_900_000_000
+  metadata:
+    uprating:
+      parameter: calibration.uprating.earnings
 metadata:
-  uprating:
-    parameter: calibration.uprating.earnings
-  propagate_metadata_to_children: true
   reference:
     # Data is more recent than the URL suggests.
     - title: Profit, employment and pension income | National Statistics

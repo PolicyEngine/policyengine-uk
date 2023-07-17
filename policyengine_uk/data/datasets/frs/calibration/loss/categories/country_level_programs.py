@@ -32,7 +32,7 @@ class CountryLevelProgramBudgetaryImpact(LossCategory):
         names = []
         weights = []
 
-        parameter = self.calibration_parameters.programs._children[
+        parameter = self.calibration_parameters_at_instant.programs._children[
             self.variable
         ]
 
@@ -93,7 +93,7 @@ class CountryLevelProgramParticipants(LossCategory):
         names = []
         weights = []
 
-        parameter = self.calibration_parameters.programs._children[
+        parameter = self.calibration_parameters_at_instant.programs._children[
             self.variable
         ]
 
@@ -148,7 +148,7 @@ class CountryLevelProgram(LossCategory):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        parameter = self.calibration_parameters.programs._children[
+        parameter = self.calibration_parameters_at_instant.programs._children[
             self.variable
         ]
 
@@ -188,7 +188,7 @@ class CountryLevelProgram(LossCategory):
 
         init_kwargs = {
             "dataset": self.dataset,
-            "calibration_parameters": self.calibration_parameters,
+            "calibration_parameters_at_instant": self.calibration_parameters_at_instant,
             "ancestor": self.ancestor,
             "static_dataset": self.static_dataset,
             "comparison_white_list": self.comparison_white_list,
@@ -312,7 +312,7 @@ class IncomeTaxBudgetaryImpact(LossCategory):
         countries = dataset.household.country
         household_income_tax = dataset.household.income_tax
 
-        it = self.calibration_parameters.programs.income_tax
+        it = self.calibration_parameters_at_instant.programs.income_tax
 
         comparisons = []
 
@@ -378,7 +378,7 @@ class IncomeTaxParticipants(LossCategory):
     ) -> List[Tuple[str, float, torch.Tensor]]:
         income_tax = dataset.person.income_tax
 
-        it = self.calibration_parameters.programs.income_tax
+        it = self.calibration_parameters_at_instant.programs.income_tax
 
         comparisons = []
 

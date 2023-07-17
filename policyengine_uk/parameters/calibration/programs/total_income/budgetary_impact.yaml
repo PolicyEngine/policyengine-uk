@@ -1,0 +1,20 @@
+description: Total income by country, among taxpayers.
+ENGLAND:
+  2019-01-01: 992_000_000_000
+WALES:
+  2019-01-01: 40_900_000_000
+SCOTLAND:
+  2019-01-01: 85_800_000_000
+NORTHERN_IRELAND:
+  2019-01-01: 24_000_000_000
+UNITED_KINGDOM:
+  2019-01-01: 1_160_000_000_000
+metadata:
+  unit: currency-GBP
+  uprating:
+    parameter: calibration.uprating.earnings
+  propagate_metadata_to_children: true
+  period: year
+  reference:
+    - title: Profit, employment and pension income | National Statistics | Table 3.11
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011 # Data is more recent than the URL suggests.

@@ -8,8 +8,6 @@ SCOTLAND:
 NORTHERN_IRELAND:
   2022-01-01: 392_131
 metadata:
-  uprating:
-    parameter: calibration.uprating.earnings
   unit: currency-GBP
   reference:
     - title: Survey of Personal Incomes
