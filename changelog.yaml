@@ -811,3 +811,8 @@
     added:
     - Updates to calibration statistics from 2023 benefits and tax sources.
   date: 2023-07-09 19:21:46
+- bump: minor
+  changes:
+    fixed:
+    - Bug affecting the two-child limit (1% of households)
+  date: 2023-07-17 17:10:23
