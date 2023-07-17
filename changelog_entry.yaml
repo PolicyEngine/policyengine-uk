@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    fixed:
+    - Bug affecting the two-child limit (1% of households)

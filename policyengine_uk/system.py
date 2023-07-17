@@ -60,9 +60,9 @@ class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
     default_tax_benefit_system_instance = system
     default_dataset = EnhancedFRS
-    default_dataset_year = 2022
-    default_calculation_period = 2022
-    default_input_period = 2022
+    default_dataset_year = 2023
+    default_calculation_period = 2023
+    default_input_period = 2023
     default_role = "member"
     max_spiral_loops = 10
     datasets = DATASETS

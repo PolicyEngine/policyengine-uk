@@ -4,6 +4,7 @@ values:
   2020-04-06: 281.25
   2021-04-12: 282.50
   2022-04-06: 290.00
+  2023-04-01: 315.00
 metadata:
   unit: currency-GBP
   period: month

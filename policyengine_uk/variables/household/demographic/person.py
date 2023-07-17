@@ -109,7 +109,10 @@ class child_index(Variable):
             + 1
         )
         # Fill in adult values
-        return where(person("is_child", period), child_ranking, 100)
+        values = where(person("is_child", period), child_ranking, 100)
+        # Base to 0
+        values = values - person.benunit.min(values) + 1
+        return where(person("is_child", period), values, -1)
 
 
 class is_eldest_child(Variable):
@@ -123,6 +126,7 @@ class is_eldest_child(Variable):
 
     def formula(person, period, parameters):
         index = person("child_index", period)
+        index = where(index < 0, 100, index)
         lowest_index = person.benunit.min(index)
         return index == lowest_index
 

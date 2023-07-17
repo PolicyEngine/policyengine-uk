@@ -72,7 +72,7 @@
         members: [person_1, person_2, child]
         BRMA: DURHAM
   output:
-    universal_credit: [10411.68, 0]
+    universal_credit: [10957, 0]
 - name: Renter with childcare, disabilities and non-dependents
   period: 2022
   absolute_error_margin: 80
@@ -108,4 +108,4 @@
     UC_housing_costs_element: [4478.76, 0]
     UC_disability_elements: [4123.56, 0]
     UC_income_reduction: [4197.12, 0]
-    universal_credit: [12298.24, 0]
+    universal_credit: [12843, 0]

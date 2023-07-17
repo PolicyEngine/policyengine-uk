@@ -156,7 +156,15 @@ class is_child_born_before_child_limit(Variable):
     def formula(person, period, parameters):
         UC = parameters(period).gov.dwp.universal_credit
         start_year = UC.elements.child.limit.start_year
-        born_before_limit = person("birth_year", period) < start_year
+        birth_year = person("birth_year", period)
+        if (
+            hasattr(person.simulation, "dataset")
+            and "frs" in person.simulation.dataset.name
+        ):
+            # FRS data is based on 2019 populations, so we should add (year - 2019) to the start year to account for
+            # the time-fixed nature of the child limit. This should probably be revisited for a more robust solution.
+            birth_year = birth_year + (period.start.year - 2019)
+        born_before_limit = birth_year < start_year
         return person("is_child", period) & born_before_limit
 
 
@@ -182,12 +190,10 @@ class UC_individual_child_element(Variable):
             select(
                 [
                     (child_index == 1) & born_before_limit & is_eligible,
-                    child_index == 1 & is_eligible,
-                    (child_index > 1) & is_eligible,
+                    is_eligible,
                 ],
                 [
                     UC.elements.child.first.higher_amount,
-                    UC.elements.child.amount,
                     UC.elements.child.amount,
                 ],
                 default=0,
