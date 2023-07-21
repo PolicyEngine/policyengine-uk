@@ -43,6 +43,9 @@ class OutputDataset(Dataset):
             "ons_tenure_type",
             "council_tax_band",
             "household_weight",
+            "uc_child_limit_affected",
+            "ctc_child_limit_affected",
+            "is_child",
         ]
 
         PROGRAM_VARIABLES = [
@@ -80,7 +83,7 @@ class OutputDataset(Dataset):
 
         for variable in HOUSEHOLD_VARIABLES:
             household[variable] = sim.calculate(
-                variable, period=self.time_period
+                variable, period=self.time_period, map_to="household"
             ).values
 
         for variable in PROGRAM_VARIABLES:

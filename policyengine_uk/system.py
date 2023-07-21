@@ -6,7 +6,12 @@ from policyengine_core.simulations import (
     Microsimulation as CoreMicrosimulation,
     IndividualSim as CoreIndividualSim,
 )
-from policyengine_uk.data import DATASETS, EnhancedFRS
+from policyengine_uk.data import (
+    DATASETS,
+    EnhancedFRS,
+    FRS_2020_21,
+    CalibratedSPIEnhancedPooledFRS_2018_20,
+)
 
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 

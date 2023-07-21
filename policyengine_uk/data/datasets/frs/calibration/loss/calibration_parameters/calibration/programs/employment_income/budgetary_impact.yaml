@@ -4,7 +4,7 @@ UNITED_KINGDOM:
     2020-01-01: 827_000_000_000
   metadata:
     uprating:
-      parameter: calibration.uprating.earnings
+      parameter: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
 metadata:
   reference:
     # Data is more recent than the URL suggests.

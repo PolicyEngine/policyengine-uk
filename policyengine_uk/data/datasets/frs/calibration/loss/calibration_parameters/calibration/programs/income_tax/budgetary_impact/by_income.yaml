@@ -8,14 +8,9 @@ brackets:
   - threshold: 
       values:
         2018-01-01: 11_850
-        2019-01-01: 12_500
-        2021-01-01: 12_570
     amount: 
       values:
         2018-01-01: 1_180_000_000
-        2019-01-01: 700_000_000
-        2020-01-01: 718_000_000
-        2021-01-01: 686_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -24,9 +19,6 @@ brackets:
     amount: 
       values:
         2018-01-01: 6_500_000_000
-        2019-01-01: 5_620_000_000
-        2020-01-01: 5_740_000_000
-        2021-01-01: 5_660_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -35,9 +27,6 @@ brackets:
     amount: 
       values:
         2018-01-01: 20_900_000_000
-        2019-01-01: 20_100_000_000
-        2020-01-01: 20_300_000_000
-        2021-01-01: 20_400_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -46,9 +35,6 @@ brackets:
     amount: 
       values:
         2018-01-01: 37_400_000_000
-        2019-01-01: 38_200_000_000
-        2020-01-01: 37_800_000_000
-        2021-01-01: 39_100_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -57,9 +43,6 @@ brackets:
     amount: 
       values:
         2018-01-01: 43_000_000_000
-        2019-01-01: 43_600_000_000
-        2020-01-01: 45_000_000_000
-        2021-01-01: 46_900_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -68,9 +51,6 @@ brackets:
     amount: 
       values:
         2018-01-01: 18_000_000_000
-        2019-01-01: 20_000_000_000
-        2020-01-01: 21_600_000_000
-        2021-01-01: 22_700_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -79,9 +59,6 @@ brackets:
     amount: 
       values:
         2018-01-01: 10_200_000_000
-        2019-01-01: 10_600_000_000
-        2020-01-01: 10_800_000_000
-        2021-01-01: 11_400_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -90,9 +67,6 @@ brackets:
     amount: 
       values:
         2018-01-01: 21_200_000_000
-        2019-01-01: 22_600_000_000
-        2020-01-01: 22_300_000_000
-        2021-01-01: 23_100_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
@@ -100,21 +74,7 @@ brackets:
       2018-01-01: 500_000
     amount: 
       values:
-        2018-01-01: 10_100_000_000
-        2019-01-01: 10_700_000_000
-        2020-01-01: 10_400_000_000
-        2021-01-01: 10_700_000_000
-      metadata:
-        uprating: 
-          parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM
-  - threshold: 
-      2018-01-01: 1_000_000
-    amount: 
-      values:
-        2018-01-01: 18_100_000_000
-        2019-01-01: 19_340_000_000
-        2020-01-01: 18_440_000_000
-        2021-01-01: 18_740_000_000
+        2018-01-01: 28_200_000_000
       metadata:
         uprating: 
           parameter: calibration.programs.income_tax.budgetary_impact.by_country.UNITED_KINGDOM

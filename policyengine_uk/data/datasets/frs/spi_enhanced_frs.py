@@ -84,11 +84,14 @@ class SPIEnhancedFRS(Dataset):
 
         SOLVE_QUANTILES = False
         APPLY_QUANTILES = False
+        HIGH_INCOME_SAMPLES = True
         if SOLVE_QUANTILES:
             mean_quantiles = income.solve_quantiles(
                 TARGETS,
                 input_df,
-                sim.calculate("household_weight", map_to="person").values,
+                simulation.calculate(
+                    "household_weight", map_to="person"
+                ).values,
             )
         elif APPLY_QUANTILES:
             mean_quantiles = [
@@ -102,6 +105,8 @@ class SPIEnhancedFRS(Dataset):
                 0.52,
                 0.5,
             ]
+        elif HIGH_INCOME_SAMPLES:
+            mean_quantiles = [0.7] * 9
         else:
             mean_quantiles = None
 
@@ -120,7 +125,6 @@ SPIEnhancedPooledFRS_2018_20 = SPIEnhancedFRS.from_dataset(
     PooledFRS_2018_20,
     "spi_enhanced_pooled_frs_2018_20",
     "SPI-enhanced FRS 2018-20",
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/spi_enhanced_pooled_frs_2018_20.h5",
 )
 
 SPIEnhancedFRS_2019_20 = SPIEnhancedFRS.from_dataset(
