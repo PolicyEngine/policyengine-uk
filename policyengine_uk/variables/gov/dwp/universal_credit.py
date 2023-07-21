@@ -51,8 +51,7 @@ class would_claim_UC(Variable):
             ],
             [
                 True,  # Claims Universal Credit in the baseline
-                random(benunit)
-                < takeup_rate,  # New UC eligibility from a reform
+                random(benunit) < takeup_rate,
             ],
             default=False,  # Always non-claimant
         )
@@ -163,7 +162,7 @@ class is_child_born_before_child_limit(Variable):
         ):
             # FRS data is based on 2019 populations, so we should add (year - 2019) to the start year to account for
             # the time-fixed nature of the child limit. This should probably be revisited for a more robust solution.
-            birth_year = birth_year + (period.start.year - 2019)
+            birth_year = birth_year + (period.start.year - 10)
         born_before_limit = birth_year < start_year
         return person("is_child", period) & born_before_limit
 
@@ -199,6 +198,29 @@ class UC_individual_child_element(Variable):
                 default=0,
             )
             * MONTHS_IN_YEAR
+        )
+
+
+class uc_child_limit_affected(Variable):
+    label = "affected by the UC child limit"
+    documentation = "Whether this family is affected by the UC child limit"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        person = benunit.members
+        UC = parameters(period).gov.dwp.universal_credit
+        child_index = person("child_index", period)
+        born_before_limit = person("is_child_born_before_child_limit", period)
+        child_limit_applying = where(
+            ~born_before_limit, UC.elements.child.limit.child_count, inf
+        )
+        is_eligible = (child_index != -1) & (
+            child_index <= child_limit_applying
+        )
+        return benunit.any(~is_eligible & (child_index != -1)) & (
+            benunit("universal_credit", period) > 0
         )
 
 
@@ -593,10 +615,9 @@ class universal_credit(Variable):
 
     def formula(benunit, period, parameters):
         uc_entitlement = benunit("universal_credit_pre_benefit_cap", period)
-        benefit_cap_reduction = benunit("benefit_cap_reduction", period)
         return where(
             uc_entitlement > 0,
-            max_(0, uc_entitlement - benefit_cap_reduction),
+            max_(0, uc_entitlement),
             0,
         )
 

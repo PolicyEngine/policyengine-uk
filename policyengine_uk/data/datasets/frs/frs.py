@@ -85,7 +85,7 @@ class FRS(Dataset):
 
         person = pd.concat([adult, child]).sort_index().fillna(0)
         add_id_variables(frs, person, benunit, household)
-        add_personal_variables(frs, person)
+        add_personal_variables(frs, person, self.raw_frs.time_period)
         add_benunit_variables(frs, benunit)
         add_household_variables(frs, household)
         add_market_income(
@@ -109,21 +109,21 @@ FRS_2019_20 = FRS.from_dataset(
     RawFRS_2019_20,
     "frs_2019",
     "FRS 2019-20",
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2019.h5",
+    # new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2019.h5",
 )
 
 FRS_2018_19 = FRS.from_dataset(
     RawFRS_2018_19,
     "frs_2018",
     "FRS 2018-19",
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2018.h5",
+    # new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2018.h5",
 )
 
 FRS_2020_21 = FRS.from_dataset(
     RawFRS_2020_21,
     "frs_2020",
     "FRS 2020-21",
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2020.h5",
+    # new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2020.h5",
 )
 
 
@@ -186,7 +186,7 @@ def add_id_variables(
     frs["household_weight"] = household.GROSS4
 
 
-def add_personal_variables(frs: h5py.File, person: DataFrame):
+def add_personal_variables(frs: h5py.File, person: DataFrame, year: int):
     """Adds personal variables (age, gender, education).
 
     Args:
@@ -196,6 +196,7 @@ def add_personal_variables(frs: h5py.File, person: DataFrame):
     # Add basic personal variables
     age = person.AGE80 + person.AGE
     frs["age"] = age
+    frs["birth_year"] = np.ones_like(person.AGE) * (year - age)
     # Age fields are AGE80 (top-coded) and AGE in the adult and child tables, respectively.
     frs["state_id"] = np.array([1])
     frs["person_state_id"] = np.array([1] * len(person))

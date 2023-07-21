@@ -351,12 +351,12 @@ class claims_legacy_benefits(Variable):
 
     def formula(benunit, period, parameters):
         BENEFITS = [
-            "child_tax_credit",
-            "working_tax_credit",
-            "housing_benefit_pre_benefit_cap",
-            "ESA_income",
-            "income_support",
-            "JSA_income",
+            "child_tax_credit_reported",
+            "working_tax_credit_reported",
+            "housing_benefit_reported",
+            "ESA_income_reported",
+            "income_support_reported",
+            "JSA_income_reported",
         ]
 
         return add(benunit, period, BENEFITS) > 0

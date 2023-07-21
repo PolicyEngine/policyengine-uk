@@ -1,0 +1,32 @@
+metadata:
+  reference:
+    - title: GOV.UK
+      href: https://www.gov.uk/government/statistics/universal-credit-and-child-tax-credit-claimants-statistics-related-to-the-policy-to-provide-support-for-a-maximum-of-2-children-april-2023/universal-credit-and-child-tax-credit-claimants-statistics-related-to-the-policy-to-provide-support-for-a-maximum-of-two-children-april-2023
+  propagate_metadata_to_children: true
+households:
+  description: Number of CTC-claiming households affected by the two-child limit
+  values:
+    2023-01-01: 114_250
+    # Subtract 20k per year from reading the recent trend (rough)
+    2024-01-01: 94_250
+    2025-01-01: 74_250
+child_counts:
+  description: Child population in households affected by the two-child limit by number of children in the household
+  "3":
+    values:
+      2023-01-01: 180_000 # Reading off the chart
+      # Subtract 20k per year from reading the recent trend (rough)
+      2024-01-01: 160_000
+      2025-01-01: 140_000
+  "4":
+    values:
+      2023-01-01: 140_000
+      # Subtract 20k per year from reading the recent trend (rough)
+      2024-01-01: 120_000
+      2025-01-01: 100_000
+  "5_PLUS":
+    values:
+      2023-01-01: 110_000
+      # Subtract 20k per year from reading the recent trend (rough)
+      2024-01-01: 90_000
+      2025-01-01: 70_000

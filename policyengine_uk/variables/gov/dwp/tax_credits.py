@@ -109,12 +109,12 @@ class would_claim_CTC(Variable):
             "claims_all_entitled_benefits", period
         )
         baseline = benunit("baseline_ctc_entitlement", period) > 0
-        eligible = benunit("ctc_entitlement", period) > 0
         takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
         return select(
             [
                 reported_ctc | claims_all_entitled_benefits,
-                ~baseline & eligible,
+                ~baseline & claims_legacy_benefits,
             ],
             [True, random(benunit) < takeup_rate],
             default=False,
@@ -169,9 +169,35 @@ class CTC_child_element(Variable):
         exempt_children = benunit.sum(exempt_child)
         child_limit = CTC.limit.child_count
         spaces_left = max_(0, child_limit - exempt_children)
-        non_exempt_children = min_(spaces_left, benunit.sum(is_child_for_CTC))
+        non_exempt_children = min_(
+            spaces_left, benunit.sum(is_child_for_CTC) - exempt_children
+        )
         children = exempt_children + non_exempt_children
         return CTC.elements.child_element * children
+
+
+class ctc_child_limit_affected(Variable):
+    label = "affected by the CTC child limit"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        person = benunit.members
+        CTC = parameters(period).gov.dwp.tax_credits.child_tax_credit
+        is_child_for_CTC = person("is_child_for_CTC", period)
+        is_CTC_child_limit_exempt = person("is_CTC_child_limit_exempt", period)
+        exempt_child = is_child_for_CTC & is_CTC_child_limit_exempt
+        exempt_children = benunit.sum(exempt_child)
+        child_limit = CTC.limit.child_count
+        spaces_left = max_(0, child_limit - exempt_children)
+        non_exempt_children = min_(
+            spaces_left, benunit.sum(is_child_for_CTC) - exempt_children
+        )
+        return (
+            exempt_children + non_exempt_children
+            < benunit.sum(is_child_for_CTC)
+        ) & (benunit("child_tax_credit", period) > 0)
 
 
 class CTC_disabled_child_element(Variable):
@@ -279,12 +305,12 @@ class would_claim_WTC(Variable):
             "claims_all_entitled_benefits", period
         )
         baseline = benunit("baseline_wtc_entitlement", period) > 0
-        eligible = benunit("wtc_entitlement", period) > 0
         takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
+        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
         return select(
             [
                 reported_wtc | claims_all_entitled_benefits,
-                ~baseline & eligible,
+                ~baseline & claims_legacy_benefits,
             ],
             [True, random(benunit) < takeup_rate],
             default=False,
@@ -464,6 +490,7 @@ class working_tax_credit_pre_minimum(Variable):
     documentation = (
         "Working Tax Credit amount before the minimum tax credit is applied"
     )
+    defined_for = "would_claim_WTC"
     definition_period = YEAR
     unit = GBP
 
@@ -482,6 +509,7 @@ class child_tax_credit_pre_minimum(Variable):
     documentation = (
         "Child Tax Credit amount before the minimum tax credit is applied"
     )
+    defined_for = "would_claim_CTC"
     definition_period = YEAR
     unit = GBP
 

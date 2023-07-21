@@ -303,6 +303,11 @@ class DividendIncome(CountryLevelProgram):
     taxpayers_only = True
 
 
+class TotalIncome(CountryLevelProgram):
+    variable = "total_income"
+    taxpayers_only = True
+
+
 class IncomeTaxBudgetaryImpact(LossCategory):
     def get_comparisons(
         self, dataset: Dataset
@@ -324,7 +329,6 @@ class IncomeTaxBudgetaryImpact(LossCategory):
                     f"income_tax_{country}",
                     household_income_tax * (countries == country),
                     it.budgetary_impact.by_country._children[country],
-                    COUNTRY_WEIGHTS[country],
                 )
             ]
 
@@ -333,7 +337,7 @@ class IncomeTaxBudgetaryImpact(LossCategory):
                 "income_tax_UNITED_KINGDOM",
                 household_income_tax,
                 it.budgetary_impact.by_country._children["UNITED_KINGDOM"],
-                COUNTRY_WEIGHTS["UNITED_KINGDOM"],
+                it.budgetary_impact.by_country._children["UNITED_KINGDOM"],
             )
         ]
 
@@ -365,7 +369,7 @@ class IncomeTaxBudgetaryImpact(LossCategory):
                     f"income_tax_by_income_{i}",
                     household_values,
                     amount,
-                    amount / 200e9,
+                    amount,
                 )
             ]
 
@@ -424,12 +428,73 @@ class IncomeTaxParticipants(LossCategory):
 
 class IncomeTax(LossCategory):
     static_dataset = True
-    weight = np.log(200e9)
+    weight = np.log(200e10)
 
     subcategories = [
         IncomeTaxBudgetaryImpact,
         IncomeTaxParticipants,
     ]
+
+
+class TwoChildLimitAffectedHouseholds(LossCategory):
+    def get_comparisons(
+        self, dataset: Dataset
+    ) -> List[Tuple[str, float, torch.Tensor]]:
+        self.weight = np.log(40e9) * 0.1
+        uc_affected = dataset.household.uc_child_limit_affected
+        ctc_affected = dataset.household.ctc_child_limit_affected
+
+        programs = self.calibration_parameters_at_instant.programs
+
+        comparisons = []
+
+        # First, total households affected
+
+        comparisons += [
+            (
+                "uc_households_child_limit_affected",
+                uc_affected,
+                programs.universal_credit.two_child_limit.households,
+            )
+        ]
+
+        comparisons += [
+            (
+                "ctc_households_child_limit_affected",
+                ctc_affected,
+                programs.child_tax_credit.two_child_limit.households,
+            )
+        ]
+
+        # Now, total number of children in affected households, by household child count (3, 4 and 5+)
+        household_count_children = dataset.household.is_child
+
+        for benefit in "uc", "ctc":
+            for i in range(3, 6):
+                qualified_households = (
+                    (
+                        household_count_children == i
+                        if i < 5
+                        else household_count_children >= i
+                    )
+                    * dataset.household[f"{benefit}_child_limit_affected"]
+                    * household_count_children
+                )
+                parameter_name = f"{i}" if i < 5 else "5_PLUS"
+                target = programs._children[
+                    "universal_credit"
+                    if benefit == "uc"
+                    else "child_tax_credit"
+                ].two_child_limit.child_counts._children[parameter_name]
+                comparisons += [
+                    (
+                        f"{benefit}_households_child_limit_affected_{parameter_name}",
+                        qualified_households,
+                        target,
+                    )
+                ]
+
+        return comparisons
 
 
 country_level_programs = [
@@ -452,4 +517,28 @@ country_level_programs = [
     PropertyIncome,
     DividendIncome,
     IncomeTax,
+    TwoChildLimitAffectedHouseholds,
+]
+
+country_level_programs = [
+    UniversalCredit,
+    ChildBenefit,
+    ChildTaxCredit,
+    WorkingTaxCredit,
+    PensionCredit,
+    IncomeSupport,
+    StatePension,
+    HousingBenefit,
+    ESAIncome,
+    JSAIncome,
+    CouncilTax,
+    IncomeTax,
+    SavingsInterestIncome,
+    PropertyIncome,
+    DividendIncome,
+    TwoChildLimitAffectedHouseholds,
+    SelfEmploymentIncome,
+    PensionIncome,
+    EmploymentIncome,
+    TotalNI,
 ]

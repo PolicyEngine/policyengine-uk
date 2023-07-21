@@ -228,19 +228,6 @@ class baseline_hbai_excluded_income(Variable):
     def formula(household, period, parameters):
         if not parameters(period).household.poverty.exclude_non_hbai_income:
             return 0
-        # Establish if currently running a microsimulation
-        if len(household.nb_persons()) > 1_000:
-            from policyengine_uk import Microsimulation
-
-            # Simulate baseline policy
-            dataset = EnhancedFRS
-            result = Microsimulation(
-                dataset=dataset,
-            ).calculate("hbai_excluded_income", period)
-            # Check that the dataset/year combination is valid
-            # (i.e. that the arrays are the same size)
-            if len(result) == len(household.nb_persons()):
-                return result
         # If baseline policy not viable from the above method,
         # no change in HBAI excluded income
         return household("hbai_excluded_income", period)

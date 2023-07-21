@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Type
 import pandas as pd
 from ...utils import STORAGE_FOLDER
-from ..frs import FRS_2019_20
+from ..frs import FRS_2019_20, FRS_2020_21
+from ..uprated_frs import UpratedFRS
 from ..spi_enhanced_frs import (
     SPIEnhancedFRS_2019_20,
     SPIEnhancedPooledFRS_2018_20,
@@ -24,8 +25,8 @@ class CalibratedFRS(Dataset):
     input_dataset: Type[Dataset]
     time_period: int
     epochs: int = None
-    learning_rate: float = 3e2
-    min_loss: float = 0.05
+    learning_rate: float = 5e2
+    min_loss: float = 0.035
     log_dir: str = "."
     time_period: str = None
     log_verbose: bool = False
@@ -62,6 +63,14 @@ class CalibratedFRS(Dataset):
         from .loss import Loss, calibration_parameters
 
         calibrated_weights = {}
+        data = self.input_dataset().load_dataset()
+
+        new_data = {}
+
+        for variable in data:
+            new_data[variable] = {
+                self.input_dataset.time_period: data[variable]
+            }
 
         for year in range(self.time_period, self.time_period + self.num_years):
             print(f"Calibrating weights for {year}...")
@@ -86,21 +95,12 @@ class CalibratedFRS(Dataset):
                 verbose=self.log_verbose,
                 log_dir=log_dir,
                 min_loss=self.min_loss,
+                log_frequency=50,
             )
 
-        data = self.input_dataset().load_dataset()
-
-        new_data = {}
-
-        for variable in data:
-            new_data[variable] = {
-                self.input_dataset.time_period: data[variable]
-            }
-
-        for year in calibrated_weights:
             new_data["household_weight"][year] = calibrated_weights[year]
 
-        self.save_dataset(new_data)
+            self.save_dataset(new_data)
 
 
 CalibratedFRS_2019_20 = CalibratedFRS.from_dataset(
@@ -108,6 +108,15 @@ CalibratedFRS_2019_20 = CalibratedFRS.from_dataset(
     "calibrated_frs_2019",
     "Calibrated FRS 2019-20",
     new_num_years=1,
+)
+
+
+CalibratedFRS_2020_21 = CalibratedFRS.from_dataset(
+    UpratedFRS.from_dataset(FRS_2020_21, out_year=2023),
+    "calibrated_frs_2020",
+    "Calibrated FRS 2020-21",
+    new_num_years=1,
+    log_folder=".",
 )
 
 CalibratedSPIEnhancedFRS_2019_20 = CalibratedFRS.from_dataset(
@@ -122,6 +131,5 @@ CalibratedSPIEnhancedPooledFRS_2018_20 = CalibratedFRS.from_dataset(
     "calibrated_spi_enhanced_pooled_frs_2018_20",
     "Calibrated SPI-enhanced FRS 2018-20",
     log_folder=".",
-    new_num_years=5,
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/calibrated_spi_enhanced_pooled_frs_2018_20.h5",
+    new_num_years=3,
 )
