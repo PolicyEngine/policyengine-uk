@@ -821,3 +821,8 @@
     changed:
     - Calibration updated with new DWP statistics.
   date: 2023-07-21 12:20:43
+- bump: minor
+  changes:
+    added:
+    - Updates values for universal credit from 2016 to 2023
+  date: 2023-08-07 16:52:20
