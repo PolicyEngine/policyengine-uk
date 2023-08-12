@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily remove PIP, DLA and minimum wage parameters from the app.
