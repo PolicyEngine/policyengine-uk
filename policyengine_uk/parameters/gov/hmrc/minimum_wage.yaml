@@ -80,6 +80,7 @@ UNDER_18:
 description: Minimum wage by age group
 metadata:
   economy: false
+  household: false
   label: Minimum Wage
   propagate_metadata_to_children: true
   reference:
