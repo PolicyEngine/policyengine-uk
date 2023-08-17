@@ -9,6 +9,7 @@ parts:
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit
+      - file: programs/gov/hmrc/national-insurance
       - file: programs/contrib/ubi-center/carbon-tax
       - file: programs/gov/ofgem/energy-price-guarantee
   - caption: Using the model
