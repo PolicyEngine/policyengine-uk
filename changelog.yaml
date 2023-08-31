@@ -831,3 +831,8 @@
     fixed:
     - Temporarily remove PIP, DLA and minimum wage parameters from the app.
   date: 2023-08-12 17:36:09
+- bump: patch
+  changes:
+    added:
+    - Documentation for fuel duty.
+  date: 2023-08-24 14:59:45
