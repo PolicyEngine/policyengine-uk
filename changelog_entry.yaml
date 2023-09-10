@@ -2,3 +2,7 @@
    changes:
      added:
        - Update National Insurance documentation
+- bump: patch
+  changes:
+    added:
+    - Documentation for TV licence.
