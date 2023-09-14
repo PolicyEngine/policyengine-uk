@@ -1,5 +1,6 @@
 description: Secondary threshold for National Insurance
 metadata:
+  label: NI Secondary Threshold
   economy: false
   period: week
   propagate_metadata_to_children: true
