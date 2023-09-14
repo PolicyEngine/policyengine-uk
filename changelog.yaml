@@ -846,3 +846,8 @@
     fixed:
     - TOC entry for NI documentation.
   date: 2023-09-14 15:25:24
+- bump: minor
+  changes:
+    added:
+    - Update Universal Credit documentation
+  date: 2023-09-14 15:31:01
