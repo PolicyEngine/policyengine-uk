@@ -851,3 +851,8 @@
     added:
     - Update Universal Credit documentation
   date: 2023-09-14 15:31:01
+- bump: patch
+  changes:
+    added:
+    - Documentation for TV licence.
+  date: 2023-09-14 15:35:12

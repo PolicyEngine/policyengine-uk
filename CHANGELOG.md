@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.1] - 2023-09-14 15:35:12
+
+### Added
+
+- Documentation for TV licence.
+
 ## [0.56.0] - 2023-09-14 15:31:01
 
 ### Added
@@ -1025,6 +1031,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.56.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.0...0.56.1
 [0.56.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.55.4...0.56.0
 [0.55.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.55.3...0.55.4
 [0.55.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.55.2...0.55.3
