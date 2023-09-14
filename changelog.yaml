@@ -841,3 +841,8 @@
     added:
     - Documentation example.
   date: 2023-09-14 13:53:16
+- bump: patch
+  changes:
+    fixed:
+    - TOC entry for NI documentation.
+  date: 2023-09-14 15:25:24
