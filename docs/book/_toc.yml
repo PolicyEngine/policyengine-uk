@@ -16,3 +16,6 @@ parts:
   - caption: Using the model
     chapters:
       - file: usage/getting-started
+  - caption: Examples
+    chapters:
+      - file: examples/income-sources
