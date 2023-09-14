@@ -16,6 +16,8 @@ sphinx:
       - https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js
     html_theme: furo
     pygments_style: default
+    html_css_files:
+      - style.css
   extra_extensions:
     - "sphinx.ext.autodoc"
     - "sphinxarg.ext"
