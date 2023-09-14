@@ -1,4 +1,4 @@
-- bump: minor
+- bump: patch
   changes:
     added:
-      - Update National Insurance documentation
+    - Documentation example.
