@@ -10,8 +10,13 @@ parts:
     chapters:
       - file: programs/gov/hmrc/child-benefit
       - file: programs/gov/dwp/universal-credit
+      - file: programs/gov/hmrc/national-insurance
+      - file: programs/gov/hmrc/fuel-duty
       - file: programs/contrib/ubi-center/carbon-tax
       - file: programs/gov/ofgem/energy-price-guarantee
   - caption: Using the model
     chapters:
       - file: usage/getting-started
+  - caption: Examples
+    chapters:
+      - file: examples/income-sources
