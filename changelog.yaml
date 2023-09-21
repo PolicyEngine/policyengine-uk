@@ -836,3 +836,28 @@
     added:
     - Documentation for fuel duty.
   date: 2023-08-24 14:59:45
+- bump: patch
+  changes:
+    added:
+    - Documentation example.
+  date: 2023-09-14 13:53:16
+- bump: patch
+  changes:
+    fixed:
+    - TOC entry for NI documentation.
+  date: 2023-09-14 15:25:24
+- bump: minor
+  changes:
+    added:
+    - Update Universal Credit documentation
+  date: 2023-09-14 15:31:01
+- bump: patch
+  changes:
+    added:
+    - Documentation for TV licence.
+  date: 2023-09-14 15:35:12
+- bump: patch
+  changes:
+    fixed:
+    - Small issues on the NI page.
+  date: 2023-09-14 16:06:31
