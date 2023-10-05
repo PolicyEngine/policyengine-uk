@@ -10,6 +10,7 @@ parts:
     chapters:
       - file: programs/gov/hmrc/child-benefit
       - file: programs/gov/dwp/universal-credit
+      - file: programs/gov/dwp/Pension-credit
       - file: programs/contrib/ubi-center/carbon-tax
       - file: programs/gov/ofgem/energy-price-guarantee
   - caption: Using the model
