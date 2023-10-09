@@ -288,7 +288,7 @@ class UC_housing_costs_element(Variable):
                     tenure_type,
                     [
                         TenureType.RENT_FROM_COUNCIL,
-                        tenure_type == TenureType.RENT_FROM_HA,
+                        TenureType.RENT_FROM_HA,
                     ],
                 ),
                 tenure_type == TenureType.RENT_PRIVATELY,
