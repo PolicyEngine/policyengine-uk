@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    removed:
+      - numpy pin.

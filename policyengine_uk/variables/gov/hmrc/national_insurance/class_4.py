@@ -19,9 +19,7 @@ class NI_class_4(Variable):
             class_4.thresholds.lower_profits_limit,
             class_4.thresholds.upper_profits_limit,
         )
-        add_amount = amount_over(
-            profits, class_4.thresholds.upper_profits_limit
-        )
+        add_amount = max_(profits - class_4.thresholds.upper_profits_limit, 0)
         main_charge = main_amount * class_4.rates.main
         add_charge = add_amount * class_4.rates.additional
         return main_charge + add_charge

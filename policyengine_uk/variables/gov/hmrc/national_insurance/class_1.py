@@ -35,11 +35,12 @@ class monthly_employee_NI_class_1(Variable):
             * WEEKS_IN_YEAR
             / MONTHS_IN_YEAR,
         )
-        add_earnings = amount_over(
-            earnings,
-            class_1.thresholds.upper_earnings_limit
+        add_earnings = max_(
+            earnings
+            - class_1.thresholds.upper_earnings_limit
             * WEEKS_IN_YEAR
             / MONTHS_IN_YEAR,
+            0,
         )
         main_charge = class_1.rates.employee.main * main_earnings
         add_charge = class_1.rates.employee.additional * add_earnings
@@ -71,9 +72,9 @@ class employer_NI_class_1(Variable):
     def formula(person, period, parameters):
         class_1 = parameters(period).gov.hmrc.national_insurance.class_1
         earnings = person("employment_income", period)
-        main_earnings = amount_over(
-            earnings,
-            class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR,
+        main_earnings = max_(
+            earnings - class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR,
+            0,
         )
         return class_1.rates.employer * main_earnings
 
