@@ -31,7 +31,6 @@ setup(
         "gif[plotly]>=3.0.0",
         "inquirer>=2.7.0",
         "microdf_python>=0.3.0",
-        "numpy<1.22",
         "pandas",
         "plotly>=4.14.3",
         "PolicyEngine-Core>=2.1,<3",
