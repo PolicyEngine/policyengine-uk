@@ -34,7 +34,7 @@ class tax_credits_applicable_income(Variable):
             "property_income",
         ]
         income = add(benunit, period, STEP_1_COMPONENTS)
-        income = amount_over(income, TC.means_test.non_earned_disregard)
+        income = max_(income - TC.means_test.non_earned_disregard, 0)
         STEP_2_COMPONENTS = [
             "employment_income",
             "self_employment_income",

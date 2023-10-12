@@ -284,13 +284,8 @@ class UC_housing_costs_element(Variable):
         rent = benunit("benunit_rent", period)
         max_housing_costs = select(
             [
-                np.isin(
-                    tenure_type,
-                    [
-                        TenureType.RENT_FROM_COUNCIL,
-                        tenure_type == TenureType.RENT_FROM_HA,
-                    ],
-                ),
+                (tenure_type == TenureType.RENT_FROM_COUNCIL)
+                | (tenure_type == TenureType.RENT_FROM_HA),
                 tenure_type == TenureType.RENT_PRIVATELY,
             ],
             [rent, min_(benunit("LHA_cap", period), rent)],

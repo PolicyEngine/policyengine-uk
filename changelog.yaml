@@ -861,3 +861,8 @@
     fixed:
     - Small issues on the NI page.
   date: 2023-09-14 16:06:31
+- bump: patch
+  changes:
+    removed:
+    - numpy pin.
+  date: 2023-10-09 19:01:07
