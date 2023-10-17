@@ -1,0 +1,6 @@
+description: Minimum age for children to receive the child basic income.
+metadata:
+  unit: year
+  label: Child basic income minimum threshold
+values:
+  2010-01-01: 0

@@ -12,7 +12,10 @@ class bi_maximum(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         weekly_flat_amount = bi.amount.flat
         is_senior_for_bi = person("is_SP_age", period)
-        is_child_for_bi = person("age", period) < bi.amount.adult_age
+        age = person("age", period)
+        is_child_for_bi = (age < bi.amount.adult_age) * (
+            age >= bi.amount.child_min_age
+        )
         weekly_amount_by_age = select(
             [is_child_for_bi, is_senior_for_bi],
             [bi.amount.by_age.child, bi.amount.by_age.senior],
