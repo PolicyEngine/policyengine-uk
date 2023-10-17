@@ -871,3 +871,8 @@
     added:
     - Documentation for Stamp Duty Land Tax.
   date: 2023-10-12 15:11:13
+- bump: minor
+  changes:
+    added:
+    - Child minimum age for basic income.
+  date: 2023-10-17 14:55:07
