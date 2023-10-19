@@ -169,6 +169,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../hmrc/child-benefit.html">Child Benefit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dwp/universal-credit.html">Universal Credit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dwp/pension-credit.html">Pension Credit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../hmrc/national-insurance.html">National Insurance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../hmrc/fuel-duty.html">Fuel Duty</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../hmrc/stamp-duty.html">Stamp Duty Land Tax</a></li>
@@ -255,16 +256,19 @@
 <span class="n">dcms</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dcms</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span>
+    <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
 <span class="p">]</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;Full TV Licence Fee&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="sa">f</span><span class="s1">&#39;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Full TV Licence Fee&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
 <span class="p">]</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;Blind TV Licence Fee&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="sa">f</span><span class="s1">&#39;£</span><span class="si">{</span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Blind TV Licence Fee&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
 <span class="p">]</span>
-<span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -339,24 +343,29 @@
 </summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
 <span class="c1"># aged discount</span>
 <span class="n">aged_discount</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Reformed value&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.50</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">],</span>
     <span class="s2">&quot;Current value&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;Change against current&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;Tax revenues impact (£m)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">91.7</span><span class="p">,</span> <span class="mf">68.8</span><span class="p">,</span> <span class="mf">45.9</span><span class="p">,</span> <span class="mf">22.9</span><span class="p">],</span>
-    <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[],</span>
 <span class="p">}</span>
 <span class="n">reference_list_ad</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27903&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27083&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=19090&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27909&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span>
+    <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27909&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">])):</span>
     <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Current value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;100%&quot;</span><span class="p">]</span>
-    <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Change against current&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
-    <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Change against current&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">]</span>
+    <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span>
+        <span class="n">i</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
         <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">reference_list_ad</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;Budgetary impact of changing aged discount to </span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
     <span class="p">]</span>
@@ -365,14 +374,25 @@
 <span class="n">df_aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed policy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Aged discount&quot;</span>
 
 <span class="c1"># minimum age</span>
-<span class="n">age_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span><span class="mi">81</span><span class="p">))</span>
+<span class="n">age_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">81</span><span class="p">))</span>
 <span class="n">age_list</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">75</span><span class="p">)</span>
 <span class="n">min_age</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Reformed value&quot;</span><span class="p">:</span> <span class="n">age_list</span><span class="p">,</span>
     <span class="s2">&quot;Current value&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;Change against current&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">&quot;Tax revenues impact (£m)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">19.6</span><span class="p">,</span> <span class="o">-</span><span class="mf">11.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">7.7</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mf">7.1</span><span class="p">,</span> <span class="mf">91.7</span><span class="p">],</span>
-    <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="s2">&quot;Tax revenues impact (£m)&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="o">-</span><span class="mf">19.6</span><span class="p">,</span>
+        <span class="o">-</span><span class="mf">11.4</span><span class="p">,</span>
+        <span class="o">-</span><span class="mf">7.7</span><span class="p">,</span>
+        <span class="o">-</span><span class="mf">2.4</span><span class="p">,</span>
+        <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span>
+        <span class="mf">1.3</span><span class="p">,</span>
+        <span class="mf">2.2</span><span class="p">,</span>
+        <span class="mf">3.7</span><span class="p">,</span>
+        <span class="mf">7.1</span><span class="p">,</span>
+        <span class="mf">91.7</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[],</span>
 <span class="p">}</span>
 <span class="n">reference_list_minage</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27932&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
@@ -384,13 +404,13 @@
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27951&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27953&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27955&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27960&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span>
+    <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27960&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">min_age</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">])):</span>
     <span class="n">min_age</span><span class="p">[</span><span class="s2">&quot;Current value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">75</span><span class="p">]</span>
     <span class="n">min_age</span><span class="p">[</span><span class="s2">&quot;Change against current&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">min_age</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">75</span><span class="p">]</span>
     <span class="n">min_age</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
-        <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">reference_list_minage</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;Budgetary impact of changing minimum age for aged discount to </span><span class="si">{</span><span class="n">age_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
+        <span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">{</span><span class="n">reference_list_minage</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot;&gt;Budgetary impact of changing minimum age for aged discount to </span><span class="si">{</span><span class="n">age_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
     <span class="p">]</span>
 
 <span class="n">df_min_age</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">min_age</span><span class="p">)</span>
@@ -400,32 +420,36 @@
 <span class="n">fee_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">157</span><span class="p">,</span> <span class="mi">162</span><span class="p">))</span>
 <span class="n">fee_list</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">159</span><span class="p">)</span>
 <span class="n">licence_fee</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;Reformed value&quot;</span><span class="p">:</span> <span class="n">fee_list</span><span class="p">,</span>
-        <span class="s2">&quot;Current value&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;Change against current&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;Tax revenues impact (£m)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">52.1</span><span class="p">,</span> <span class="o">-</span><span class="mi">26</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mf">52.1</span><span class="p">],</span>
-        <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="s2">&quot;Reformed value&quot;</span><span class="p">:</span> <span class="n">fee_list</span><span class="p">,</span>
+    <span class="s2">&quot;Current value&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;Change against current&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;Tax revenues impact (£m)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">52.1</span><span class="p">,</span> <span class="o">-</span><span class="mi">26</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mf">52.1</span><span class="p">],</span>
+    <span class="s2">&quot;Reference&quot;</span><span class="p">:</span> <span class="p">[],</span>
 <span class="p">}</span>
 <span class="n">reference_list_fee</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27089&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=27087&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=26981&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=26983&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span>
+    <span class="s2">&quot;https://policyengine.org/uk/policy?focus=policyOutput.netIncome&amp;reform=26983&amp;region=uk&amp;timePeriod=2023&amp;baseline=1&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">])):</span>
     <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Current value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;£159&quot;</span><span class="p">]</span>
-    <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Change against current&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">159</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+    <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Change against current&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">159</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">]</span>
     <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
         <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">reference_list_fee</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;Budgetary impact of changing licence fee to </span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
     <span class="p">]</span>
 
-<span class="n">df_licence_fee</span> <span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">licence_fee</span><span class="p">)</span>
+<span class="n">df_licence_fee</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">licence_fee</span><span class="p">)</span>
 <span class="n">df_licence_fee</span><span class="p">[</span><span class="s2">&quot;Reformed policy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;TV licence fee&quot;</span>
 
 <span class="c1"># concat df</span>
 <span class="n">df_reform</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_aged_discount</span><span class="p">,</span> <span class="n">df_min_age</span><span class="p">,</span> <span class="n">df_licence_fee</span><span class="p">])</span>
-<span class="n">df_reform</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;Reformed policy&quot;</span><span class="p">,</span> <span class="s2">&quot;Current value&quot;</span><span class="p">,</span> <span class="s2">&quot;Reformed value&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">df_reform</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;Reformed policy&quot;</span><span class="p">,</span> <span class="s2">&quot;Current value&quot;</span><span class="p">,</span> <span class="s2">&quot;Reformed value&quot;</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -433,15 +457,15 @@
 <div class="cell_output docutils container">
 <div class="output text_html"><style type="text/css">
 </style>
-<table id="T_7433b">
+<table id="T_63237">
   <thead>
     <tr>
       <th class="blank" >&nbsp;</th>
       <th class="blank" >&nbsp;</th>
       <th class="blank level0" >&nbsp;</th>
-      <th id="T_7433b_level0_col0" class="col_heading level0 col0" >Change against current</th>
-      <th id="T_7433b_level0_col1" class="col_heading level0 col1" >Tax revenues impact (£m)</th>
-      <th id="T_7433b_level0_col2" class="col_heading level0 col2" >Reference</th>
+      <th id="T_63237_level0_col0" class="col_heading level0 col0" >Change against current</th>
+      <th id="T_63237_level0_col1" class="col_heading level0 col1" >Tax revenues impact (£m)</th>
+      <th id="T_63237_level0_col2" class="col_heading level0 col2" >Reference</th>
     </tr>
     <tr>
       <th class="index_name level0" >Reformed policy</th>
@@ -454,118 +478,118 @@
   </thead>
   <tbody>
     <tr>
-      <th id="T_7433b_level0_row0" class="row_heading level0 row0" rowspan="4">Aged discount</th>
-      <th id="T_7433b_level1_row0" class="row_heading level1 row0" rowspan="4">100%</th>
-      <th id="T_7433b_level2_row0" class="row_heading level2 row0" >0%</th>
-      <td id="T_7433b_row0_col0" class="data row0 col0" >-100%</td>
-      <td id="T_7433b_row0_col1" class="data row0 col1" >91.7</td>
-      <td id="T_7433b_row0_col2" class="data row0 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27903&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 0%</a></td>
+      <th id="T_63237_level0_row0" class="row_heading level0 row0" rowspan="4">Aged discount</th>
+      <th id="T_63237_level1_row0" class="row_heading level1 row0" rowspan="4">100%</th>
+      <th id="T_63237_level2_row0" class="row_heading level2 row0" >0%</th>
+      <td id="T_63237_row0_col0" class="data row0 col0" >-100%</td>
+      <td id="T_63237_row0_col1" class="data row0 col1" >91.7</td>
+      <td id="T_63237_row0_col2" class="data row0 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27903&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 0%</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row1" class="row_heading level2 row1" >25%</th>
-      <td id="T_7433b_row1_col0" class="data row1 col0" >-75%</td>
-      <td id="T_7433b_row1_col1" class="data row1 col1" >68.8</td>
-      <td id="T_7433b_row1_col2" class="data row1 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27083&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 25%</a></td>
+      <th id="T_63237_level2_row1" class="row_heading level2 row1" >25%</th>
+      <td id="T_63237_row1_col0" class="data row1 col0" >-75%</td>
+      <td id="T_63237_row1_col1" class="data row1 col1" >68.8</td>
+      <td id="T_63237_row1_col2" class="data row1 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27083&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 25%</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row2" class="row_heading level2 row2" >50%</th>
-      <td id="T_7433b_row2_col0" class="data row2 col0" >-50%</td>
-      <td id="T_7433b_row2_col1" class="data row2 col1" >45.9</td>
-      <td id="T_7433b_row2_col2" class="data row2 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=19090&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 50%</a></td>
+      <th id="T_63237_level2_row2" class="row_heading level2 row2" >50%</th>
+      <td id="T_63237_row2_col0" class="data row2 col0" >-50%</td>
+      <td id="T_63237_row2_col1" class="data row2 col1" >45.9</td>
+      <td id="T_63237_row2_col2" class="data row2 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=19090&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 50%</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row3" class="row_heading level2 row3" >75%</th>
-      <td id="T_7433b_row3_col0" class="data row3 col0" >-25%</td>
-      <td id="T_7433b_row3_col1" class="data row3 col1" >22.9</td>
-      <td id="T_7433b_row3_col2" class="data row3 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27909&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 75%</a></td>
+      <th id="T_63237_level2_row3" class="row_heading level2 row3" >75%</th>
+      <td id="T_63237_row3_col0" class="data row3 col0" >-25%</td>
+      <td id="T_63237_row3_col1" class="data row3 col1" >22.9</td>
+      <td id="T_63237_row3_col2" class="data row3 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27909&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 75%</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level0_row4" class="row_heading level0 row4" rowspan="10">Minimum age</th>
-      <th id="T_7433b_level1_row4" class="row_heading level1 row4" rowspan="10">75</th>
-      <th id="T_7433b_level2_row4" class="row_heading level2 row4" >70</th>
-      <td id="T_7433b_row4_col0" class="data row4 col0" >-5</td>
-      <td id="T_7433b_row4_col1" class="data row4 col1" >-19.6</td>
-      <td id="T_7433b_row4_col2" class="data row4 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27932&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 70</a></td>
+      <th id="T_63237_level0_row4" class="row_heading level0 row4" rowspan="10">Minimum age</th>
+      <th id="T_63237_level1_row4" class="row_heading level1 row4" rowspan="10">75</th>
+      <th id="T_63237_level2_row4" class="row_heading level2 row4" >70</th>
+      <td id="T_63237_row4_col0" class="data row4 col0" >-5</td>
+      <td id="T_63237_row4_col1" class="data row4 col1" >-19.6</td>
+      <td id="T_63237_row4_col2" class="data row4 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27932&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 70</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row5" class="row_heading level2 row5" >71</th>
-      <td id="T_7433b_row5_col0" class="data row5 col0" >-4</td>
-      <td id="T_7433b_row5_col1" class="data row5 col1" >-11.4</td>
-      <td id="T_7433b_row5_col2" class="data row5 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27939&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 71</a></td>
+      <th id="T_63237_level2_row5" class="row_heading level2 row5" >71</th>
+      <td id="T_63237_row5_col0" class="data row5 col0" >-4</td>
+      <td id="T_63237_row5_col1" class="data row5 col1" >-11.4</td>
+      <td id="T_63237_row5_col2" class="data row5 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27939&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 71</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row6" class="row_heading level2 row6" >72</th>
-      <td id="T_7433b_row6_col0" class="data row6 col0" >-3</td>
-      <td id="T_7433b_row6_col1" class="data row6 col1" >-7.7</td>
-      <td id="T_7433b_row6_col2" class="data row6 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27941&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 72</a></td>
+      <th id="T_63237_level2_row6" class="row_heading level2 row6" >72</th>
+      <td id="T_63237_row6_col0" class="data row6 col0" >-3</td>
+      <td id="T_63237_row6_col1" class="data row6 col1" >-7.7</td>
+      <td id="T_63237_row6_col2" class="data row6 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27941&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 72</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row7" class="row_heading level2 row7" >73</th>
-      <td id="T_7433b_row7_col0" class="data row7 col0" >-2</td>
-      <td id="T_7433b_row7_col1" class="data row7 col1" >-2.4</td>
-      <td id="T_7433b_row7_col2" class="data row7 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27944&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 73</a></td>
+      <th id="T_63237_level2_row7" class="row_heading level2 row7" >73</th>
+      <td id="T_63237_row7_col0" class="data row7 col0" >-2</td>
+      <td id="T_63237_row7_col1" class="data row7 col1" >-2.4</td>
+      <td id="T_63237_row7_col2" class="data row7 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27944&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 73</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row8" class="row_heading level2 row8" >74</th>
-      <td id="T_7433b_row8_col0" class="data row8 col0" >-1</td>
-      <td id="T_7433b_row8_col1" class="data row8 col1" >-1.5</td>
-      <td id="T_7433b_row8_col2" class="data row8 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27947&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 74</a></td>
+      <th id="T_63237_level2_row8" class="row_heading level2 row8" >74</th>
+      <td id="T_63237_row8_col0" class="data row8 col0" >-1</td>
+      <td id="T_63237_row8_col1" class="data row8 col1" >-1.5</td>
+      <td id="T_63237_row8_col2" class="data row8 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27947&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 74</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row9" class="row_heading level2 row9" >76</th>
-      <td id="T_7433b_row9_col0" class="data row9 col0" >1</td>
-      <td id="T_7433b_row9_col1" class="data row9 col1" >1.3</td>
-      <td id="T_7433b_row9_col2" class="data row9 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27949&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 76</a></td>
+      <th id="T_63237_level2_row9" class="row_heading level2 row9" >76</th>
+      <td id="T_63237_row9_col0" class="data row9 col0" >1</td>
+      <td id="T_63237_row9_col1" class="data row9 col1" >1.3</td>
+      <td id="T_63237_row9_col2" class="data row9 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27949&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 76</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row10" class="row_heading level2 row10" >77</th>
-      <td id="T_7433b_row10_col0" class="data row10 col0" >2</td>
-      <td id="T_7433b_row10_col1" class="data row10 col1" >2.2</td>
-      <td id="T_7433b_row10_col2" class="data row10 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27951&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 77</a></td>
+      <th id="T_63237_level2_row10" class="row_heading level2 row10" >77</th>
+      <td id="T_63237_row10_col0" class="data row10 col0" >2</td>
+      <td id="T_63237_row10_col1" class="data row10 col1" >2.2</td>
+      <td id="T_63237_row10_col2" class="data row10 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27951&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 77</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row11" class="row_heading level2 row11" >78</th>
-      <td id="T_7433b_row11_col0" class="data row11 col0" >3</td>
-      <td id="T_7433b_row11_col1" class="data row11 col1" >3.7</td>
-      <td id="T_7433b_row11_col2" class="data row11 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27953&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 78</a></td>
+      <th id="T_63237_level2_row11" class="row_heading level2 row11" >78</th>
+      <td id="T_63237_row11_col0" class="data row11 col0" >3</td>
+      <td id="T_63237_row11_col1" class="data row11 col1" >3.7</td>
+      <td id="T_63237_row11_col2" class="data row11 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27953&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 78</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row12" class="row_heading level2 row12" >79</th>
-      <td id="T_7433b_row12_col0" class="data row12 col0" >4</td>
-      <td id="T_7433b_row12_col1" class="data row12 col1" >7.1</td>
-      <td id="T_7433b_row12_col2" class="data row12 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27955&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 79</a></td>
+      <th id="T_63237_level2_row12" class="row_heading level2 row12" >79</th>
+      <td id="T_63237_row12_col0" class="data row12 col0" >4</td>
+      <td id="T_63237_row12_col1" class="data row12 col1" >7.1</td>
+      <td id="T_63237_row12_col2" class="data row12 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27955&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 79</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row13" class="row_heading level2 row13" >80</th>
-      <td id="T_7433b_row13_col0" class="data row13 col0" >5</td>
-      <td id="T_7433b_row13_col1" class="data row13 col1" >91.7</td>
-      <td id="T_7433b_row13_col2" class="data row13 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27960&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 80</a></td>
+      <th id="T_63237_level2_row13" class="row_heading level2 row13" >80</th>
+      <td id="T_63237_row13_col0" class="data row13 col0" >5</td>
+      <td id="T_63237_row13_col1" class="data row13 col1" >91.7</td>
+      <td id="T_63237_row13_col2" class="data row13 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27960&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 80</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level0_row14" class="row_heading level0 row14" rowspan="4">TV licence fee</th>
-      <th id="T_7433b_level1_row14" class="row_heading level1 row14" rowspan="4">£159</th>
-      <th id="T_7433b_level2_row14" class="row_heading level2 row14" >£157</th>
-      <td id="T_7433b_row14_col0" class="data row14 col0" >£-2</td>
-      <td id="T_7433b_row14_col1" class="data row14 col1" >-52.1</td>
-      <td id="T_7433b_row14_col2" class="data row14 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27089&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £157</a></td>
+      <th id="T_63237_level0_row14" class="row_heading level0 row14" rowspan="4">TV licence fee</th>
+      <th id="T_63237_level1_row14" class="row_heading level1 row14" rowspan="4">£159</th>
+      <th id="T_63237_level2_row14" class="row_heading level2 row14" >£157</th>
+      <td id="T_63237_row14_col0" class="data row14 col0" >£-2</td>
+      <td id="T_63237_row14_col1" class="data row14 col1" >-52.1</td>
+      <td id="T_63237_row14_col2" class="data row14 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27089&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £157</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row15" class="row_heading level2 row15" >£158</th>
-      <td id="T_7433b_row15_col0" class="data row15 col0" >£-1</td>
-      <td id="T_7433b_row15_col1" class="data row15 col1" >-26.0</td>
-      <td id="T_7433b_row15_col2" class="data row15 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27087&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £158</a></td>
+      <th id="T_63237_level2_row15" class="row_heading level2 row15" >£158</th>
+      <td id="T_63237_row15_col0" class="data row15 col0" >£-1</td>
+      <td id="T_63237_row15_col1" class="data row15 col1" >-26.0</td>
+      <td id="T_63237_row15_col2" class="data row15 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27087&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £158</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row16" class="row_heading level2 row16" >£160</th>
-      <td id="T_7433b_row16_col0" class="data row16 col0" >£1</td>
-      <td id="T_7433b_row16_col1" class="data row16 col1" >26.0</td>
-      <td id="T_7433b_row16_col2" class="data row16 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26981&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £160</a></td>
+      <th id="T_63237_level2_row16" class="row_heading level2 row16" >£160</th>
+      <td id="T_63237_row16_col0" class="data row16 col0" >£1</td>
+      <td id="T_63237_row16_col1" class="data row16 col1" >26.0</td>
+      <td id="T_63237_row16_col2" class="data row16 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26981&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £160</a></td>
     </tr>
     <tr>
-      <th id="T_7433b_level2_row17" class="row_heading level2 row17" >£161</th>
-      <td id="T_7433b_row17_col0" class="data row17 col0" >£2</td>
-      <td id="T_7433b_row17_col1" class="data row17 col1" >52.1</td>
-      <td id="T_7433b_row17_col2" class="data row17 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26983&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £161</a></td>
+      <th id="T_63237_level2_row17" class="row_heading level2 row17" >£161</th>
+      <td id="T_63237_row17_col0" class="data row17 col0" >£2</td>
+      <td id="T_63237_row17_col1" class="data row17 col1" >52.1</td>
+      <td id="T_63237_row17_col2" class="data row17 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26983&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £161</a></td>
     </tr>
   </tbody>
 </table>
