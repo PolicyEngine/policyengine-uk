@@ -1,9 +1,4 @@
 - bump: minor
   changes:
     added:
-      - Update Universal Credit documentation
-
-- bump: minor
-  changes:
-    added:
-      - Update Pension Credit documentation
+      - Update PIP documentation
