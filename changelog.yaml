@@ -881,3 +881,9 @@
     added:
     - Pension Credit documentation page.
   date: 2023-10-19 15:46:33
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing child minimum basic income ages to function incorrectly when the
+      adult UBI is nonzero.
+  date: 2023-10-27 20:42:43

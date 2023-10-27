@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Bug causing child minimum basic income ages to function incorrectly when the adult UBI is nonzero.

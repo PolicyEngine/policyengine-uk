@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.1] - 2023-10-27 20:42:43
+
+### Fixed
+
+- Bug causing child minimum basic income ages to function incorrectly when the adult UBI is nonzero.
+
 ## [0.58.0] - 2023-10-19 15:46:33
 
 ### Added
@@ -1057,6 +1063,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.58.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.0...0.58.1
 [0.58.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.57.0...0.58.0
 [0.57.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.4...0.57.0
 [0.56.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.3...0.56.4
