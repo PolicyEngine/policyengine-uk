@@ -16,9 +16,13 @@ class bi_maximum(Variable):
         is_child_for_bi = (age < bi.amount.adult_age) * (
             age >= bi.amount.child_min_age
         )
+        is_adult_for_bi = (age >= bi.amount.adult_age) * ~is_senior_for_bi
         weekly_amount_by_age = select(
-            [is_child_for_bi, is_senior_for_bi],
-            [bi.amount.by_age.child, bi.amount.by_age.senior],
-            default=bi.amount.by_age.working_age,
+            [is_child_for_bi, is_senior_for_bi, is_adult_for_bi],
+            [
+                bi.amount.by_age.child,
+                bi.amount.by_age.senior,
+                bi.amount.by_age.working_age,
+            ],
         )
         return (weekly_flat_amount + weekly_amount_by_age) * WEEKS_IN_YEAR
