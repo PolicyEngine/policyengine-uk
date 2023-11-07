@@ -17,6 +17,8 @@ parts:
       - file: programs/contrib/ubi-center/carbon-tax
       - file: programs/gov/ofgem/energy-price-guarantee
       - file: programs/gov/dcms/bbc/tv-licence
+      - file: programs/gov/revenue_scotland/land-and-buildings-transaction-tax
+      - file: programs/gov/wra/land-transaction-tax
   - caption: Using the model
     chapters:
       - file: usage/getting-started
