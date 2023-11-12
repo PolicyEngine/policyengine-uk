@@ -21,7 +21,7 @@
 				"	entity = ${4:Person}",
 				"	definition_period = ${5:YEAR}",
 				"	value_type = ${6:float}",
-				"	unit = \"${7:currency-GBP}\"",
+				"	unit = ${7:GBP}",
 				"",
 				""
 		 	],

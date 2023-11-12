@@ -1,0 +1,6 @@
+- name: NI employee sums Class 1 contributions.
+  period: 2023
+  input:
+    ni_class_1_employee: 1
+  output:
+    ni_employee: 1
