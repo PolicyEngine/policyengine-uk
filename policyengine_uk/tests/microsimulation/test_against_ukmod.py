@@ -21,6 +21,7 @@ ukmod = pd.merge(
 UKMOD_FRS_2018().generate()
 sim = Microsimulation(dataset="ukmod_frs_2018")
 
+
 @pytest.mark.skip(reason="UKMOD data not publicly shareable")
 def test_ni_class_1():
     # NI Class 1 income matches.
@@ -29,6 +30,7 @@ def test_ni_class_1():
         ukmod.il_empniearns.values * 12,
         atol=1,
     )
+
 
 @pytest.mark.skip(reason="UKMOD data not publicly shareable")
 def test_ni_class_1_employee():
@@ -40,6 +42,7 @@ def test_ni_class_1_employee():
         ukmod.tscee_s.values * 12,
         atol=50,
     )
+
 
 @pytest.mark.skip(reason="UKMOD data not publicly shareable")
 def test_ni_self_employed():
