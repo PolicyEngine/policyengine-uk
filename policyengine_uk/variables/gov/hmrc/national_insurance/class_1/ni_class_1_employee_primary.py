@@ -25,12 +25,6 @@ class ni_class_1_employee_primary(Variable):
             / MONTHS_IN_YEAR
         )
 
-        print(
-            primary_threshold * 12,
-            upper_earnings_limit * 12,
-            parameters.rates.employee.main,
-        )
-
         upper_earnings_limit_income = max_(income - upper_earnings_limit, 0)
         primary_threshold_income = (
             max_(income - primary_threshold, 0) - upper_earnings_limit_income

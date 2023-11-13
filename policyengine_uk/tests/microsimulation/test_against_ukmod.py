@@ -21,7 +21,7 @@ ukmod = pd.merge(
 UKMOD_FRS_2018().generate()
 sim = Microsimulation(dataset="ukmod_frs_2018")
 
-
+@pytest.mark.skip(reason="UKMOD data not publicly shareable")
 def test_ni_class_1():
     # NI Class 1 income matches.
     assert np.allclose(
@@ -30,7 +30,7 @@ def test_ni_class_1():
         atol=1,
     )
 
-
+@pytest.mark.skip(reason="UKMOD data not publicly shareable")
 def test_ni_class_1_employee():
     # NI contributions are off by more because the thresholds change mid-year,
     # and PolicyEngine simulates over the full year while UKMOD simulates one
@@ -41,7 +41,7 @@ def test_ni_class_1_employee():
         atol=50,
     )
 
-
+@pytest.mark.skip(reason="UKMOD data not publicly shareable")
 def test_ni_self_employed():
     # NI self-employed contributions don't match entirely for people with both
     # self-employed and employment income. This might be due to a different
