@@ -4,22 +4,29 @@ from policyengine_uk.data.storage import STORAGE_FOLDER
 import pandas as pd
 import numpy as np
 
-ukmod_output = pd.read_csv(STORAGE_FOLDER / "uk_2018_std.txt", delimiter="\t")
-ukmod_input = pd.read_csv(STORAGE_FOLDER / "uk_2018_a4.txt", delimiter="\t")
-output_columns = [
-    column
-    for column in ukmod_output.columns
-    if column not in ukmod_input.columns
-]
-ukmod = pd.merge(
-    ukmod_output[output_columns + ["idperson"]],
-    ukmod_input,
-    on="idperson",
-    how="right",
-)
+SKIP_UKMOD_TESTS = True
 
-UKMOD_FRS_2018().generate()
-sim = Microsimulation(dataset="ukmod_frs_2018")
+if not SKIP_UKMOD_TESTS:
+    ukmod_output = pd.read_csv(
+        STORAGE_FOLDER / "uk_2018_std.txt", delimiter="\t"
+    )
+    ukmod_input = pd.read_csv(
+        STORAGE_FOLDER / "uk_2018_a4.txt", delimiter="\t"
+    )
+    output_columns = [
+        column
+        for column in ukmod_output.columns
+        if column not in ukmod_input.columns
+    ]
+    ukmod = pd.merge(
+        ukmod_output[output_columns + ["idperson"]],
+        ukmod_input,
+        on="idperson",
+        how="right",
+    )
+
+    UKMOD_FRS_2018().generate()
+    sim = Microsimulation(dataset="ukmod_frs_2018")
 
 
 @pytest.mark.skip(reason="UKMOD data not publicly shareable")
