@@ -1,8 +1,0 @@
-- bump: patch
-  changes:
-    added:
-    - Documentation for Land and Buildings Transaction Tax.
-    - Documentation for Land Transaction Tax.
-    fixed:
-    - Updated LBTT rate increase for non-primary residences.
-    - Fixed SDLT description.
