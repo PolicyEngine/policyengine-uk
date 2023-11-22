@@ -31,7 +31,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     ]
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
 
-    def __init__(self, reform = None):
+    def __init__(self, reform=None):
         super().__init__(entities, reform=reform)
 
         self.parameters.add_child("baseline", self.parameters.clone())
