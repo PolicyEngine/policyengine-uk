@@ -901,3 +901,8 @@
     added:
     - Switch for benefit uprating.
   date: 2023-11-22 12:04:13
+- bump: minor
+  changes:
+    added:
+    - HM Treasury baseline for CPI uprating benefits.
+  date: 2023-11-22 15:17:21
