@@ -1,6 +1,0 @@
-description: Increase benefits subject to inflation uprating maximum amounts by this amount. This takes place over 2024.
-values:
-  2000-01-01: 0
-metadata:
-  unit: /1
-  label: Benefit inflation adjustment

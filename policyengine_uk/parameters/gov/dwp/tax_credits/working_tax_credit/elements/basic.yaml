@@ -25,7 +25,7 @@ metadata:
   unit: currency-GBP
   name: wtc_basic
   label: WTC basic element
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   reference:
     - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
       href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2

@@ -5,7 +5,7 @@ values:
   2022-04-06: 197.10
 metadata:
   period: week
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   name: hb_single_pensioner
   label: HB personal allowance (single, pensioner)
   unit: currency-GBP
