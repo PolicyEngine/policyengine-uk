@@ -5,7 +5,7 @@ values:
   2022-04-06: 77.00
 metadata:
   period: week
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   name: hb_lone_parent_o18
   label: HB personal allowance (lone parent, over 18)
   unit: currency-GBP

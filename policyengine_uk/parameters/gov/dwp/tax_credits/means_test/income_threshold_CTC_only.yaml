@@ -7,7 +7,7 @@ values:
   2022-04-01: 17_005
 metadata:
   period: year
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   name: ctc_income_threshold
   label: "CTC income threshold"

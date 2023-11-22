@@ -47,7 +47,7 @@ brackets:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
         title: Finance Act 2022 s. 2
       unit: currency-GBP
-      uprating: calibration.uprating.september_cpi
+      uprating: gov.benefit_uprating_cpi
     values:
       2015-06-05: 32000
       2017-06-01: 33500
