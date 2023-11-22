@@ -896,3 +896,8 @@
     - Updated LBTT rate increase for non-primary residences.
     - Fixed SDLT description.
   date: 2023-11-16 16:32:22
+- bump: minor
+  changes:
+    added:
+    - Switch for benefit uprating.
+  date: 2023-11-22 12:04:13
