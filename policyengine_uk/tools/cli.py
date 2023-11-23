@@ -38,7 +38,9 @@ def add_tax_benefit_system_arguments(parser):
 def build_parser():
     parser = argparse.ArgumentParser()
 
-    subparsers = parser.add_subparsers(help="Available commands", dest="command")
+    subparsers = parser.add_subparsers(
+        help="Available commands", dest="command"
+    )
     subparsers.required = (
         True  # Can be added as an argument of add_subparsers in Python 3
     )
@@ -100,7 +102,9 @@ def build_parser():
 
         return parser
 
-    parser_test = subparsers.add_parser("test", help="Run PolicyEngine YAML tests")
+    parser_test = subparsers.add_parser(
+        "test", help="Run PolicyEngine YAML tests"
+    )
     parser_test = build_test_parser(parser_test)
 
     return parser

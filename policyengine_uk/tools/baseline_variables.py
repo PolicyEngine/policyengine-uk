@@ -63,7 +63,9 @@ def generate_baseline_variables():
                     year,
                     [True]
                     * len(
-                        baseline.calc(variable_metadata[variable].entity.key + "_id")
+                        baseline.calc(
+                            variable_metadata[variable].entity.key + "_id"
+                        )
                     ),
                 )
 
