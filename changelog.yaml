@@ -906,3 +906,9 @@
     added:
     - HM Treasury baseline for CPI uprating benefits.
   date: 2023-11-22 15:17:21
+- bump: minor
+  changes:
+    added:
+    - Update National Insurance documentation
+    - Update Income Tax documentation
+  date: 2023-11-23 16:22:19
