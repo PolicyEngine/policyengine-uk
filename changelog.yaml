@@ -887,3 +887,22 @@
     - Bug causing child minimum basic income ages to function incorrectly when the
       adult UBI is nonzero.
   date: 2023-10-27 20:42:43
+- bump: patch
+  changes:
+    added:
+    - Documentation for Land and Buildings Transaction Tax.
+    - Documentation for Land Transaction Tax.
+    fixed:
+    - Updated LBTT rate increase for non-primary residences.
+    - Fixed SDLT description.
+  date: 2023-11-16 16:32:22
+- bump: minor
+  changes:
+    added:
+    - Switch for benefit uprating.
+  date: 2023-11-22 12:04:13
+- bump: minor
+  changes:
+    added:
+    - HM Treasury baseline for CPI uprating benefits.
+  date: 2023-11-22 15:17:21

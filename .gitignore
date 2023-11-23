@@ -50,6 +50,6 @@ policyengine_uk/calibration/*.h5
 **/*.csv
 **/*.pkl
 **/*.log
-
 **/*.txt
-ukmod.json
+**/ukmod.json
+*.ipynb

@@ -28,7 +28,7 @@ COUPLE:
 metadata:
   unit: currency-GBP
   period: week
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   propagate_metadata_to_children: true
   reference:
     - title: The State Pension Credit Regulations 2002 reg. 7
