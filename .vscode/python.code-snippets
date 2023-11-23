@@ -12,7 +12,7 @@
 	// 	],
 	// 	"description": "Log output to console"
 	// }
-	"OpenFisca Variable": {
+	"PolicyEngine Variable": {
 		 	"prefix": "var",
 		 	"body": [
 		 		"class ${1:name}(Variable):",
@@ -25,17 +25,17 @@
 				"",
 				""
 		 	],
-		 	"description": "Insert a new OpenFisca Variable, without a formula."
+		 	"description": "Insert a new PolicyEngine Variable, without a formula."
 		 },
-	"OpenFisca Formula": {
+	"PolicyEngine Formula": {
 			"prefix": "form",
 			"body": [
 				"def formula(${1:person}, period, parameters):",
 				"	${2:pass}"
 			],
-			"description": "Insert a new OpenFisca Formula."
+			"description": "Insert a new PolicyEngine Formula."
 		},
-	"OpenFisca Variable File": {
+	"PolicyEngine Variable File": {
 		"prefix": "file",
 		"body": [
 			"from policyengine_uk.model_api import *",
