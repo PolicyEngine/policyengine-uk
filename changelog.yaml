@@ -912,3 +912,8 @@
     - Update National Insurance documentation
     - Update Income Tax documentation
   date: 2023-11-23 16:22:19
+- bump: patch
+  changes:
+    removed:
+    - 19% basic rate change proposed for 2024 that was never enacted.
+  date: 2023-11-23 18:03:37
