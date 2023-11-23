@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    removed:
+      - 19% basic rate change proposed for 2024 that was never enacted.

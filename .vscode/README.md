@@ -3,7 +3,7 @@
 This folder contains some helper files that speed up development within Visual Studio Code:
 
 - ```launch.json``` describes the behaviour when debugging Python files within the repo.
-- ```snippets/``` contains code snippets for creating OpenFisca constructs.
+- ```snippets/``` contains code snippets for creating PolicyEngine constructs.
 
 ## Code Snippets
 
