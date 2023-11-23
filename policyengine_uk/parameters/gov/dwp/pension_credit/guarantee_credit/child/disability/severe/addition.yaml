@@ -10,7 +10,7 @@ metadata:
   - href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA/paragraph/9/2019-02-01
     title: The State Pension Credit Regulations 2002
   unit: currency-GBP
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
 values:
   2019-02-01: 88.34
   2020-04-01: 92.12

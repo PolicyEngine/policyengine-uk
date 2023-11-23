@@ -1,0 +1,10 @@
+- name: Minimum child age functions correctly when adult is non zero.
+  period: 2021
+  input:
+    gov.contrib.ubi_center.basic_income.amount.child_min_age: 16
+    gov.contrib.ubi_center.basic_income.amount.by_age.working_age: 1
+    people:
+      child:
+        age: 14
+  output:
+    basic_income: 0

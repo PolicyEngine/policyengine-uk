@@ -10,7 +10,7 @@ metadata:
   name: tc_income_threshold
   label: "Tax Credits income threshold"
   unit: currency-GBP
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   reference:
     - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
     - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

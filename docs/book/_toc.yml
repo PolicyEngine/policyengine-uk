@@ -10,12 +10,16 @@ parts:
     chapters:
       - file: programs/gov/hmrc/child-benefit
       - file: programs/gov/dwp/universal-credit
+      - file: programs/gov/dwp/pension-credit
       - file: programs/gov/hmrc/national-insurance
       - file: programs/gov/hmrc/income-tax
       - file: programs/gov/hmrc/fuel-duty
+      - file: programs/gov/hmrc/stamp-duty
       - file: programs/contrib/ubi-center/carbon-tax
       - file: programs/gov/ofgem/energy-price-guarantee
       - file: programs/gov/dcms/bbc/tv-licence
+      - file: programs/gov/revenue_scotland/land-and-buildings-transaction-tax
+      - file: programs/gov/wra/land-transaction-tax
   - caption: Using the model
     chapters:
       - file: usage/getting-started
