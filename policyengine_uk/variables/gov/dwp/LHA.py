@@ -1,4 +1,9 @@
 from policyengine_uk.model_api import *
+import pandas as pd
+import warnings
+from policyengine_core.model_api import *
+
+warnings.filterwarnings("ignore")
 
 
 class LHA_eligible(Variable):
@@ -138,6 +143,58 @@ class LHA_category(Variable):
         )
 
 
+def time_shift_dataset(
+    df: pd.DataFrame, year: int, private_rent_index: Parameter
+) -> pd.DataFrame:
+    """Check if we have rows of data for the given year. If so, remove all other years. If not, select the latest year rows and uprate using the private rent index.
+
+    Args:
+        df (pd.DataFrame): The List of Rents.
+        year (int): The requests year.
+        private_rent_index (Parameter): The private rent index.
+
+    Returns:
+        pd.DataFrame: The List of Rents for the given year.
+    """
+    year = int(year)
+    df.year = df.year.astype(int)
+    if year in df.year.unique():
+        df = df[df.year == year]
+    else:
+        df = df[df.year == df.year.max()]
+        start_instant = f"{df.year.max()}-01-01"
+        end_instant = f"{year}-01-01"
+        start_index = private_rent_index(start_instant)
+        end_index = private_rent_index(end_instant)
+        uprating_index = end_index / start_index
+        df.weekly_rent = np.round(df.weekly_rent * uprating_index, 2)
+        df.year = year
+    return df
+
+
+def find_freeze_start(freeze_parameter: Parameter, period: str) -> str:
+    """Finds the first instant in which the LHA freeze was applied. Returns none if this is impossible.
+
+    Args:
+        freeze_parameter (Parameter): The LHA freeze parameter.
+        period (str): The period to search up to.
+
+    Returns:
+        str: The first instant in which the LHA freeze was applied.
+    """
+    freeze_start = None
+    for i in range(len(freeze_parameter.values_list)):
+        param = freeze_parameter.values_list[i]
+        if param.instant_str > str(period):
+            continue
+        if (
+            i < len(freeze_parameter.values_list) - 1
+            and not freeze_parameter.values_list[i + 1].value
+        ):
+            return param.instant_str
+    return None
+
+
 class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
@@ -147,9 +204,45 @@ class BRMA_LHA_rate(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        BRMA = benunit.value_from_first_person(
+        brma = benunit.value_from_first_person(
             benunit.members.household("BRMA", period)
+        ).decode_to_str()
+        category = benunit("LHA_category", period).decode_to_str()
+
+        from policyengine_uk.data.gov import lha_list_of_rents
+
+        parameters = benunit.simulation.tax_benefit_system.parameters
+        lha = parameters.gov.dwp.LHA
+
+        # We first need to know what time period to collect rents from. If LHA is frozen, we need to look earlier
+        # than the current time period.
+
+        frozen = lha.freeze(period)
+        if frozen:
+            # Find the first year of the current freeze
+            freeze_start = find_freeze_start(lha.freeze, period.start)
+            lha_period = int(freeze_start[:4])  # Get year
+        else:
+            lha_period = int(period.start.year)
+
+        private_rent_index = parameters.gov.indices.private_rent_index
+        lha_list_of_rents = time_shift_dataset(
+            lha_list_of_rents.copy(), lha_period, private_rent_index
         )
-        category = benunit("LHA_category", period)
-        rate = parameters(period).gov.dwp.LHA.rates[BRMA][category]
-        return rate * WEEKS_IN_YEAR
+
+        percentile = lha.percentile(period)
+
+        lha_rates = lha_list_of_rents.groupby(
+            ["brma", "lha_category"]
+        ).weekly_rent.quantile(percentile)
+
+        lha_lookup_table = pd.DataFrame(
+            {
+                "brma": brma,
+                "lha_category": category,
+            }
+        )
+        lha_lookup_table["weekly_rent"] = lha_lookup_table.apply(
+            lambda x: lha_rates.loc[x.brma, x.lha_category], axis=1
+        )
+        return lha_lookup_table.weekly_rent.values * 52
