@@ -4,19 +4,12 @@ brackets:
       after allowances are deducted
     metadata:
       label: Basic rate
-      name: basic_rate
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
         title: Finance Act 2022 s. 2
       unit: /1
     values:
       2015-06-01: 0.2
-      2024-04-01:
-        metadata:
-          reference:
-          - href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
-            title: Autumn Budget and Spending Review 2022
-        value: 0.19
   threshold:
     description: The starting threshold for the basic rate, after allowances.
     metadata:
@@ -29,7 +22,6 @@ brackets:
     description: The higher rate is the middle tax bracket on earned income.
     metadata:
       label: Higher rate
-      name: higher_rate
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
         title: Finance Act 2022 s. 2
@@ -41,7 +33,6 @@ brackets:
       the upper threshold of the basic rate)
     metadata:
       label: Higher rate threshold
-      name: higher_threshold
       period: year
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
@@ -60,7 +51,6 @@ brackets:
     description: The additional rate is the highest tax bracket, with no upper bound
     metadata:
       label: Additional rate
-      name: add_rate
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
         title: Finance Act 2022 s. 2
@@ -74,7 +64,6 @@ brackets:
     description: The lower threshold for the additional rate
     metadata:
       label: Additional rate threshold
-      name: add_threshold
       period: year
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted

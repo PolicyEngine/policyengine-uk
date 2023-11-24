@@ -14,7 +14,7 @@ def add_tax_benefit_system_arguments(parser):
         "--country-package",
         default=policyengine_uk,
         action="store",
-        help='country package to use. If not provided, an automatic detection will be attempted by scanning the python packages installed in your environment which name contains the word "openfisca".',
+        help='country package to use. If not provided, an automatic detection will be attempted by scanning the python packages installed in your environment which name contains the word "policyengine".',
     )
     parser.add_argument(
         "-e",
@@ -103,7 +103,7 @@ def build_parser():
         return parser
 
     parser_test = subparsers.add_parser(
-        "test", help="Run OpenFisca YAML tests"
+        "test", help="Run PolicyEngine YAML tests"
     )
     parser_test = build_test_parser(parser_test)
 
