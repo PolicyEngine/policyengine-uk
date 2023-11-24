@@ -17,16 +17,17 @@ class BRMA(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        from policyengine_uk.data.gov import lha_list_of_rents
-        country = household("country", period)
-        # Sample from a random BRMA, weighted by the number of observations in each BRMA
+        if (
+            hasattr(household.simulation, "dataset")
+            and household.simulation.dataset.name == "enhanced_frs"
+        ):
+            from policyengine_uk.data.gov import enhanced_frs_brmas
 
-        brma = lha_list_of_rents.brma.sample(n=len(country))
-
-        encoded_brma = [getattr(BRMAName, x) for x in brma]
-        # Also todo: within region and lha category.
-        return np.array(encoded_brma)
-
+            return np.array(
+                [getattr(BRMAName, x) for x in enhanced_frs_brmas.brma.values]
+            )
+        else:
+            return BRMAName.MAIDSTONE
 
 
 class region(Variable):
