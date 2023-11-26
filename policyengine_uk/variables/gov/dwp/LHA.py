@@ -205,8 +205,8 @@ class BRMA_LHA_rate(Variable):
 
     def formula(benunit, period, parameters):
         brma = benunit.value_from_first_person(
-            benunit.members.household("BRMA", period)
-        ).decode_to_str()
+            benunit.members.household("BRMA", period).decode_to_str()
+        )
         category = benunit("LHA_category", period).decode_to_str()
 
         from policyengine_uk.data.gov import lha_list_of_rents

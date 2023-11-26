@@ -27,7 +27,7 @@ class BRMA(Variable):
                 [getattr(BRMAName, x) for x in enhanced_frs_brmas.brma.values]
             )
         else:
-            return BRMAName.MAIDSTONE
+            return np.array([BRMAName.MAIDSTONE] * household.count)
 
 
 class region(Variable):
