@@ -922,3 +922,8 @@
     fixed:
     - Added missing label for benefit uprating.
   date: 2023-11-24 10:49:06
+- bump: patch
+  changes:
+    fixed:
+    - Added missing label for benefit uprating.
+  date: 2023-11-26 14:29:46
