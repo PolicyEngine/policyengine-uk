@@ -1,0 +1,6 @@
+description: Local Housing Allowance rates are set at this percentile of private rents in the family's Broad Rental Market Area. This parameter does not apply if LHA is frozen.
+values:
+  2015-01-01: 0.3
+metadata:
+  unit: /1
+  label: LHA percentile

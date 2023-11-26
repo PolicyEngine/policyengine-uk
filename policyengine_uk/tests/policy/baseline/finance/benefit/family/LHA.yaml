@@ -6,7 +6,7 @@
     LHA_category: C
   output:
     BRMA: MAIDSTONE
-    BRMA_LHA_rate: 162 * 52
+    BRMA_LHA_rate: 9_771
 - name: BRMA inputs
   period: 2020
   absolute_error_margin: 0
@@ -23,4 +23,4 @@
   output:
     BRMA: GUILDFORD
     LHA_category: C
-    BRMA_LHA_rate: 223 * 52
+    BRMA_LHA_rate: 13_164
