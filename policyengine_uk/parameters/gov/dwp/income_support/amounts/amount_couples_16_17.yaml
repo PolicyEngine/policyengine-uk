@@ -5,6 +5,6 @@ metadata:
   label: Income Support applicable amount (couples, both under 18)
   reference: https://www.gov.uk/income-support/what-youll-get
   unit: currency-GBP
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
 values:
   2015-06-01: 58.9

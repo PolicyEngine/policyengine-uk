@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.61.3] - 2023-11-26 14:29:46
+
+### Fixed
+
+- Added missing label for benefit uprating.
+
+## [0.61.2] - 2023-11-24 10:49:06
+
+### Fixed
+
+- Added missing label for benefit uprating.
+
+## [0.61.1] - 2023-11-23 18:03:37
+
+## [0.61.0] - 2023-11-23 16:22:19
+
+### Added
+
+- Update National Insurance documentation
+- Update Income Tax documentation
+
+## [0.60.0] - 2023-11-22 15:17:21
+
+### Added
+
+- HM Treasury baseline for CPI uprating benefits.
+
+## [0.59.0] - 2023-11-22 12:04:13
+
+### Added
+
+- Switch for benefit uprating.
+
+## [0.58.2] - 2023-11-16 16:32:22
+
+### Added
+
+- Documentation for Land and Buildings Transaction Tax.
+- Documentation for Land Transaction Tax.
+
+### Fixed
+
+- Updated LBTT rate increase for non-primary residences.
+- Fixed SDLT description.
+
 ## [0.58.1] - 2023-10-27 20:42:43
 
 ### Fixed
@@ -1063,6 +1108,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.61.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.2...0.61.3
+[0.61.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.1...0.61.2
+[0.61.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.0...0.61.1
+[0.61.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.60.0...0.61.0
+[0.60.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.59.0...0.60.0
+[0.59.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.2...0.59.0
+[0.58.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.1...0.58.2
 [0.58.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.0...0.58.1
 [0.58.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.57.0...0.58.0
 [0.57.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.4...0.57.0
