@@ -1,6 +1,7 @@
 from policyengine_uk.variables.household.demographic.household import (
     TenureType,
 )
+from policyengine_uk.variables.household.demographic.geography import Region
 from policyengine_uk.model_api import *
 
 
@@ -202,3 +203,16 @@ class benunit_is_renting(Variable):
             tenures.RENT_FROM_HA,
         ]
         return np.isin(tenure, RENT_TENURES)
+
+class benunit_region(Variable):
+    label = "benefit unit region"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = Enum
+    possible_values = Region
+    default_value = Region.LONDON
+
+    def formula(benunit, period, parameters):
+        return benunit.value_from_first_person(
+            benunit.members.household("region", period)
+        )

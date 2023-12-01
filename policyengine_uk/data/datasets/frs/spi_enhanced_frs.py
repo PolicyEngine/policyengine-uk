@@ -106,7 +106,7 @@ class SPIEnhancedFRS(Dataset):
                 0.5,
             ]
         elif HIGH_INCOME_SAMPLES:
-            mean_quantiles = [0.7] * 9
+            mean_quantiles = [0.9] + [0.5] * 8
         else:
             mean_quantiles = None
 

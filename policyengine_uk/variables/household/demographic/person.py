@@ -193,6 +193,8 @@ class current_education(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
+        if person.get_holder("current_education").get_array(period.last_year) is not None:
+            return person("current_education", period.last_year)
         age = person("age", period)
         return np.select(
             [

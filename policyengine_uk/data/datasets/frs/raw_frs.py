@@ -136,3 +136,11 @@ RawFRS_2020_21 = RawFRS.from_folder(
     2020,
     new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2020.h5",
 )
+
+RawFRS_2021_22 = RawFRS.from_folder(
+    "/Users/nikhil/ukda/frs_2021_22",
+    "raw_frs_2021",
+    "FRS 2021-22",
+    2021,
+    #new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2021.h5",
+)

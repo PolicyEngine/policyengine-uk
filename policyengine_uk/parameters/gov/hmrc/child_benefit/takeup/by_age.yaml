@@ -1,0 +1,89 @@
+description: Share of eligible Child Benefit recipients that participate, by age
+brackets:
+  - threshold:
+      2022-01-01: 0
+    amount:
+      2022-01-01: 0.75
+  - threshold:
+      2022-01-01: 1
+    amount:
+      2022-01-01: 0.80
+  - threshold:
+      2022-01-01: 2
+    amount:
+      2022-01-01: 0.83
+  - threshold:
+      2022-01-01: 3
+    amount:
+      2022-01-01: 0.85
+  - threshold:
+      2022-01-01: 4
+    amount:
+      2022-01-01: 0.86
+  - threshold:
+      2022-01-01: 5
+    amount:
+      2022-01-01: 0.88
+  - threshold:
+      2022-01-01: 6
+    amount:
+      2022-01-01: 0.88
+  - threshold:
+      2022-01-01: 7
+    amount:
+      2022-01-01: 0.89
+  - threshold:
+      2022-01-01: 8
+    amount:
+      2022-01-01: 0.89
+  - threshold:
+      2022-01-01: 9
+    amount:
+      2022-01-01: 0.92
+  - threshold:
+      2022-01-01: 10
+    amount:
+      2022-01-01: 0.94
+  - threshold:
+      2022-01-01: 11
+    amount:
+      2022-01-01: 0.96
+  - threshold:
+      2022-01-01: 12
+    amount:
+      2022-01-01: 0.97
+  - threshold:
+      2022-01-01: 13
+    amount:
+      2022-01-01: 0.97
+  - threshold:
+      2022-01-01: 14
+    amount:
+      2022-01-01: 0.97
+  - threshold:
+      2022-01-01: 15
+    amount:
+      2022-01-01: 0.96
+  - threshold:
+      2022-01-01: 16
+    amount:
+      2022-01-01: 0.89
+  - threshold:
+      2022-01-01: 17
+    amount:
+      2022-01-01: 0.79
+  - threshold:
+      2022-01-01: 18
+    amount:
+      2022-01-01: 0.77
+  - threshold:
+      2022-01-01: 19
+    amount:
+      2022-01-01: 0.61
+metadata:
+  label: Child Benefit take-up rate
+  threshold_unit: year
+  amount_unit: /1
+  reference:
+    - title: "Child Benefit statistics: annual release"
+      href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2022/child-benefit-statistics-annual-release-data-at-august-2022

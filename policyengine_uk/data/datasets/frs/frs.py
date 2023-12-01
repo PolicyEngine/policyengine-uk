@@ -16,7 +16,7 @@ from typing import Type
 import h5py
 from pathlib import Path
 from .calibration.output_dataset import OutputDataset
-from .raw_frs import RawFRS_2019_20, RawFRS_2018_19, RawFRS_2020_21, RawFRS
+from .raw_frs import RawFRS_2019_20, RawFRS_2018_19, RawFRS_2020_21, RawFRS, RawFRS_2021_22
 
 
 class FRS(Dataset):
@@ -87,7 +87,7 @@ class FRS(Dataset):
         add_id_variables(frs, person, benunit, household)
         add_personal_variables(frs, person, self.raw_frs.time_period)
         add_benunit_variables(frs, benunit)
-        add_household_variables(frs, household)
+        add_household_variables(frs, household, self.raw_frs.time_period)
         add_market_income(
             frs, person, pension, job, accounts, household, oddjob
         )
@@ -124,6 +124,12 @@ FRS_2020_21 = FRS.from_dataset(
     "frs_2020",
     "FRS 2020-21",
     # new_url="release://policyengine/non-public-microdata/2023-q2-calibration/frs_2020.h5",
+)
+
+FRS_2021_22 = FRS.from_dataset(
+    RawFRS_2021_22,
+    "frs_2021",
+    "FRS 2021-22",
 )
 
 
@@ -284,7 +290,7 @@ def add_personal_variables(frs: h5py.File, person: DataFrame, year: int):
     )
 
 
-def add_household_variables(frs: h5py.File, household: DataFrame):
+def add_household_variables(frs: h5py.File, household: DataFrame, year: int):
     """Adds household variables (region, tenure, council tax imputation).
 
     Args:
@@ -387,15 +393,19 @@ def add_household_variables(frs: h5py.File, household: DataFrame):
         household.CTBAND, 1, range(1, 10), BANDS
     )
     # Domestic rates variables are all weeklyised, unlike Council Tax variables (despite the variable name suggesting otherwise)
+    if year < 2021:
+        DOMESTIC_RATES_VARIABLE = "RTANNUAL"
+    else:
+        DOMESTIC_RATES_VARIABLE = "NIRATLIA"
     frs["domestic_rates"] = (
         np.select(
             [
-                household.RTANNUAL >= 0,
+                household[DOMESTIC_RATES_VARIABLE] >= 0,
                 household.RT2REBAM >= 0,
                 True,
             ],
             [
-                household.RTANNUAL,
+                household[DOMESTIC_RATES_VARIABLE],
                 household.RT2REBAM,
                 0,
             ],
