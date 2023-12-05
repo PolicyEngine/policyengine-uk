@@ -15,8 +15,13 @@ from numpy import maximum as max_, where
 from typing import Type
 import h5py
 from pathlib import Path
-from .calibration.output_dataset import OutputDataset
-from .raw_frs import RawFRS_2019_20, RawFRS_2018_19, RawFRS_2020_21, RawFRS, RawFRS_2021_22
+from .raw_frs import (
+    RawFRS_2019_20,
+    RawFRS_2018_19,
+    RawFRS_2020_21,
+    RawFRS,
+    RawFRS_2021_22,
+)
 
 
 class FRS(Dataset):

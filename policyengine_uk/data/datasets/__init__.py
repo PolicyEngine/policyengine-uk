@@ -8,10 +8,12 @@ from .frs import (
     PooledFRS_2019_21,
     SPIEnhancedFRS_2019_20,
     SPIEnhancedPooledFRS_2018_20,
+    SPIEnhancedPooledFRS_2019_21,
     CalibratedFRS_2019_20,
     CalibratedFRS_2019_21,
     CalibratedSPIEnhancedFRS_2019_20,
     CalibratedSPIEnhancedPooledFRS_2018_20,
+    CalibratedSPIEnhancedPooledFRS_2019_21,
     EnhancedFRS,
 )
 
@@ -25,9 +27,11 @@ DATASETS = [
     PooledFRS_2019_21,
     SPIEnhancedFRS_2019_20,
     SPIEnhancedPooledFRS_2018_20,
+    SPIEnhancedPooledFRS_2019_21,
     CalibratedFRS_2019_20,
     CalibratedFRS_2019_21,
     CalibratedSPIEnhancedFRS_2019_20,
     CalibratedSPIEnhancedPooledFRS_2018_20,
+    CalibratedSPIEnhancedPooledFRS_2019_21,
     EnhancedFRS,
 ]

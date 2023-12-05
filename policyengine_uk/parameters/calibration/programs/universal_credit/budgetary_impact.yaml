@@ -25,6 +25,11 @@ GREAT_BRITAIN:
     2024-01-01: 57_782_000_000
     2025-01-01: 67_959_000_000
     2026-01-01: 77_804_000_000
+NORTHERN_IRELAND:
+  values:
+    2023-01-01: 1_275_422_400 # £840 average payment * caseload
+  metadata:
+    uprating: calibration.programs.universal_credit.budgetary_impact.GREAT_BRITAIN
 metadata:
   unit: currency-GBP
   period: year

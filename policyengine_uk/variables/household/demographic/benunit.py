@@ -204,6 +204,7 @@ class benunit_is_renting(Variable):
         ]
         return np.isin(tenure, RENT_TENURES)
 
+
 class benunit_region(Variable):
     label = "benefit unit region"
     entity = BenUnit

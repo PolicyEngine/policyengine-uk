@@ -10,6 +10,7 @@ from ..uprated_frs import UpratedFRS
 from ..spi_enhanced_frs import (
     SPIEnhancedFRS_2019_20,
     SPIEnhancedPooledFRS_2018_20,
+    SPIEnhancedPooledFRS_2019_21,
 )
 
 
@@ -73,10 +74,13 @@ class CalibratedFRS(Dataset):
                 overwrite_existing_log=year == str(self.time_period),
             )
             for variable in input_dataset.variables:
-                new_data[variable] = {}
+                if variable not in new_data:
+                    new_data[variable] = {}
                 if variable == "household_weight":
                     new_data[variable][year] = adjusted_weights
-                elif "_weight" not in variable:
+                elif "_weight" not in variable and (
+                    (year == str(self.time_period)) or ("_id" in variable)
+                ):
                     new_data[variable][year] = data[variable][...]
 
         self.save_dataset(new_data)
@@ -102,7 +106,7 @@ CalibratedFRS_2019_21 = CalibratedFRS.from_dataset(
     PooledFRS_2019_21,
     "calibrated_frs_2019_21",
     "Calibrated FRS 2019-21",
-    new_num_years=1,
+    new_num_years=2,
     log_folder=".",
 )
 
@@ -120,4 +124,12 @@ CalibratedSPIEnhancedPooledFRS_2018_20 = CalibratedFRS.from_dataset(
     "Calibrated SPI-enhanced FRS 2018-20",
     log_folder=".",
     new_num_years=3,
+)
+
+CalibratedSPIEnhancedPooledFRS_2019_21 = CalibratedFRS.from_dataset(
+    SPIEnhancedPooledFRS_2019_21,
+    "calibrated_spi_enhanced_pooled_frs_2019_21",
+    "Calibrated SPI-enhanced FRS 2019-21",
+    log_folder=".",
+    new_num_years=5,
 )

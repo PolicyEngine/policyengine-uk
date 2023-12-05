@@ -610,7 +610,6 @@ class universal_credit(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        return add(benunit, period, ["universal_credit_reported"])
         uc_entitlement = benunit("universal_credit_pre_benefit_cap", period)
         return where(
             uc_entitlement > 0,

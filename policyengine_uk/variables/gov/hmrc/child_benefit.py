@@ -22,11 +22,16 @@ class would_claim_child_benefit(Variable):
     def formula(benunit, period, parameters):
         takeup_rate = parameters(period).gov.hmrc.child_benefit.takeup
         overall_p = takeup_rate.overall
-        return (random(benunit) < overall_p) * ~benunit("child_benefit_opts_out", period)
+        return (random(benunit) < overall_p) * ~benunit(
+            "child_benefit_opts_out", period
+        )
+
 
 class child_benefit_opts_out(Variable):
     label = "opts out of Child Benefit"
-    documentation = "Whether this family would opt out of receiving Child Benefit payments"
+    documentation = (
+        "Whether this family would opt out of receiving Child Benefit payments"
+    )
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
@@ -42,6 +47,7 @@ class child_benefit_opts_out(Variable):
             random(benunit) < cb.opt_out_rate,
             False,
         )
+
 
 class child_benefit_respective_amount(Variable):
     label = "Child Benefit (respective amount)"
@@ -61,7 +67,10 @@ class child_benefit_respective_amount(Variable):
         if parameters(
             period
         ).gov.contrib.ubi_center.basic_income.interactions.withdraw_cb:
-            eligible &= person.benunit.sum(person("basic_income", period.this_year)) == 0
+            eligible &= (
+                person.benunit.sum(person("basic_income", period.this_year))
+                == 0
+            )
         is_eldest = person("is_eldest_child", period.this_year)
         child_benefit = parameters(period).gov.hmrc.child_benefit.amount
         amount = where(
