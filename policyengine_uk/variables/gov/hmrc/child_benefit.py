@@ -37,16 +37,20 @@ class child_benefit_opts_out(Variable):
     value_type = bool
 
     def formula(benunit, period, parameters):
-        ani = benunit.members("adjusted_net_income", period)
-        hmrc = parameters(period).gov.hmrc
-        cb_hitc = hmrc.income_tax.charges.CB_HITC
-        cb = hmrc.child_benefit
-        in_phase_out = ani > cb_hitc.phase_out_start
-        return where(
-            benunit.any(in_phase_out),
-            random(benunit) < cb.opt_out_rate,
-            False,
-        )
+        if hasattr(benunit.simulation, "dataset"):
+            ani = benunit.members("adjusted_net_income", period)
+            hmrc = parameters(period).gov.hmrc
+            cb_hitc = hmrc.income_tax.charges.CB_HITC
+            cb = hmrc.child_benefit
+            in_phase_out = ani > cb_hitc.phase_out_start
+            return where(
+                benunit.any(in_phase_out),
+                random(benunit) < cb.opt_out_rate,
+                False,
+            )
+        else:
+            # If we're not in a microsimulation, assume the family would not opt out
+            return False
 
 
 class child_benefit_respective_amount(Variable):
