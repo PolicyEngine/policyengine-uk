@@ -927,3 +927,8 @@
     fixed:
     - Added missing label for benefit uprating.
   date: 2023-11-26 14:29:46
+- bump: minor
+  changes:
+    added:
+    - Enhanced FRS version for December 2023.
+  date: 2023-12-05 12:45:18
