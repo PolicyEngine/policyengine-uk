@@ -39,4 +39,4 @@ df = pd.DataFrame(
 df = df.groupby("household_id").brma.aggregate(lambda x: x.sample(n=1).iloc[0])
 brmas = df[sim.calculate("household_id")].values
 
-brmas
+df.to_csv("enhanced_frs_brmas.csv.gz", index=False, compression="gzip")

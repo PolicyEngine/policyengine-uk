@@ -43,6 +43,7 @@ class would_claim_UC(Variable):
         )
         eligible = benunit("universal_credit_entitlement", period) > 0
         takeup_rate = parameters(period).gov.dwp.universal_credit.takeup
+        return current_uc_claimant
         return select(
             [
                 current_uc_claimant
