@@ -452,7 +452,7 @@
                 <span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
-<span class="kn">from</span> <span class="nn">policyengine_core.charts</span> <span class="kn">import</span> <span class="n">format_fig</span><span class="p">,</span> <span class="n">BLUE_COLOR_SCALE</span><span class="p">,</span> <span class="n">GRAY</span>
+<span class="kn">from</span> <span class="nn">policyengine_core.charts</span> <span class="kn">import</span> <span class="n">format_fig</span><span class="p">,</span> <span class="n">BLUE_COLOUR_SCALE</span><span class="p">,</span> <span class="n">GRAY</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">px</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
@@ -467,9 +467,9 @@
         <span class="n">color_discrete_map</span><span class="o">=</span><span class="p">{</span>
             <span class="s2">&quot;Official&quot;</span><span class="p">:</span> <span class="n">GRAY</span><span class="p">,</span>
             <span class="c1"># &quot;Official (error)&quot;: GRAY,</span>
-            <span class="s2">&quot;PolicyEngine&quot;</span><span class="p">:</span> <span class="n">BLUE_COLOR_SCALE</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+            <span class="s2">&quot;PolicyEngine&quot;</span><span class="p">:</span> <span class="n">BLUE_COLOUR_SCALE</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
             <span class="c1"># &quot;PolicyEngine (error)&quot;: BLUE_COLOR_SCALE[3],</span>
-            <span class="s2">&quot;UKMOD&quot;</span><span class="p">:</span> <span class="n">BLUE_COLOR_SCALE</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;UKMOD&quot;</span><span class="p">:</span> <span class="n">BLUE_COLOUR_SCALE</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="c1"># &quot;UKMOD (error)&quot;: BLUE_COLOR_SCALE[0],</span>
         <span class="p">},</span>
     <span class="p">)</span>
@@ -490,25 +490,20 @@
 </details>
 <div class="cell_output docutils container">
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">ImportError</span><span class="g g-Whitespace">                               </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">222</span>
-<span class="g g-Whitespace">    </span><span class="mi">203</span>                 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">204</span>                     <span class="p">[</span>
-<span class="g g-Whitespace">    </span><span class="mi">205</span>                         <span class="n">df</span><span class="p">,</span>
-   <span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">218</span>                     <span class="p">]</span>
-<span class="g g-Whitespace">    </span><span class="mi">219</span>                 <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">221</span> <span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
-<span class="ne">--&gt; </span><span class="mi">222</span> <span class="kn">from</span> <span class="nn">policyengine_core.charts</span> <span class="kn">import</span> <span class="n">format_fig</span><span class="p">,</span> <span class="n">BLUE_COLOR_SCALE</span><span class="p">,</span> <span class="n">GRAY</span>
-<span class="g g-Whitespace">    </span><span class="mi">224</span> <span class="n">fig</span> <span class="o">=</span> <span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">225</span>     <span class="n">px</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">226</span>         <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">error</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]),</span>
-   <span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">250</span>     <span class="o">.</span><span class="n">update_traces</span><span class="p">(</span><span class="n">hovertemplate</span><span class="o">=</span><span class="s2">&quot;%</span><span class="si">{customdata[0]}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">251</span> <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">252</span> <span class="n">fig</span> <span class="o">=</span> <span class="n">format_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">103</span>
+<span class="g g-Whitespace">     </span><span class="mi">96</span> <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="g g-Whitespace">     </span><span class="mi">97</span>     <span class="k">return</span> <span class="p">[</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span>         <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+<span class="nn">     99         for year</span> in <span class="ni">range</span><span class="nt">(2023, 2026)</span>
+<span class="g g-Whitespace">    </span><span class="mi">100</span>     <span class="p">]</span>
+<span class="ne">--&gt; </span><span class="mi">103</span> <span class="kn">from</span> <span class="nn">policyengine_uk.data.datasets.frs.calibration.loss</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">104</span>     <span class="n">calibration_parameters</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">105</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">106</span> <span class="kn">from</span> <span class="nn">policyengine_core.parameters</span> <span class="kn">import</span> <span class="n">get_parameter</span>
+<span class="g g-Whitespace">    </span><span class="mi">109</span> <span class="k">def</span> <span class="nf">official_estimate</span><span class="p">(</span><span class="n">parameter</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 
-<span class="ne">ImportError</span>: cannot import name &#39;BLUE_COLOR_SCALE&#39; from &#39;policyengine_core.charts&#39; (/opt/hostedtoolcache/Python/3.9.18/x64/lib/python3.9/site-packages/policyengine_core/charts/__init__.py)
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;policyengine_uk.data.datasets.frs.calibration.loss&#39;
 </pre></div>
 </div>
 </div>
