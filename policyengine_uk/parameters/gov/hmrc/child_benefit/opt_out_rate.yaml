@@ -1,6 +1,6 @@
 description: Percentage of HITC-liable families who opt out of Child Benefit.
 values:
-  2021-01-01: 0.4 # 1.7m families have ANI over £50k in the 2021 FRS, 683k families opt out of CB.
+  2019-01-01: 0.4 # 1.7m families have ANI over £50k in the 2021 FRS, 683k families opt out of CB.
 metadata:
   unit: /1
   reference:

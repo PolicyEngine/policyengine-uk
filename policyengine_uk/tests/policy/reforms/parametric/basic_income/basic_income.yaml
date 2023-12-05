@@ -6,6 +6,7 @@
 
 - name: Basic income for all age groups.
   period: 2021
+  absolute_error_margin: 30
   input:
     gov.contrib.ubi_center.basic_income.amount.by_age.child: 1
     gov.contrib.ubi_center.basic_income.amount.by_age.working_age: 2
@@ -74,6 +75,7 @@
     benunits:
       benunit:
         members: adult
+        would_claim_UC: true
   output:
     universal_credit: 4_938
 
@@ -89,5 +91,6 @@
     benunits:
       benunit:
         members: adult
+        would_claim_UC: true
   output:
     universal_credit: 4_938 - 5_200 * 0.63

@@ -135,6 +135,7 @@ FRS_2021_22 = FRS.from_dataset(
     RawFRS_2021_22,
     "frs_2021",
     "FRS 2021-22",
+    new_url="release://policyengine/non-public-microdata/2023-dec-calibration/frs_2021.h5",
 )
 
 
