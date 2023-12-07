@@ -5,6 +5,101 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.62.0] - 2023-12-05 12:45:18
+
+### Added
+
+- Enhanced FRS version for December 2023.
+
+## [0.61.3] - 2023-11-26 14:29:46
+
+### Fixed
+
+- Added missing label for benefit uprating.
+
+## [0.61.2] - 2023-11-24 10:49:06
+
+### Fixed
+
+- Added missing label for benefit uprating.
+
+## [0.61.1] - 2023-11-23 18:03:37
+
+## [0.61.0] - 2023-11-23 16:22:19
+
+### Added
+
+- Update National Insurance documentation
+- Update Income Tax documentation
+
+## [0.60.0] - 2023-11-22 15:17:21
+
+### Added
+
+- HM Treasury baseline for CPI uprating benefits.
+
+## [0.59.0] - 2023-11-22 12:04:13
+
+### Added
+
+- Switch for benefit uprating.
+
+## [0.58.2] - 2023-11-16 16:32:22
+
+### Added
+
+- Documentation for Land and Buildings Transaction Tax.
+- Documentation for Land Transaction Tax.
+
+### Fixed
+
+- Updated LBTT rate increase for non-primary residences.
+- Fixed SDLT description.
+
+## [0.58.1] - 2023-10-27 20:42:43
+
+### Fixed
+
+- Bug causing child minimum basic income ages to function incorrectly when the adult UBI is nonzero.
+
+## [0.58.0] - 2023-10-19 15:46:33
+
+### Added
+
+- Pension Credit documentation page.
+
+## [0.57.0] - 2023-10-17 14:55:07
+
+### Added
+
+- Child minimum age for basic income.
+
+## [0.56.4] - 2023-10-12 15:11:13
+
+### Added
+
+- Documentation for Stamp Duty Land Tax.
+
+## [0.56.3] - 2023-10-09 19:01:07
+
+## [0.56.2] - 2023-09-14 16:06:31
+
+### Fixed
+
+- Small issues on the NI page.
+
+## [0.56.1] - 2023-09-14 15:35:12
+
+### Added
+
+- Documentation for TV licence.
+
+## [0.56.0] - 2023-09-14 15:31:01
+
+### Added
+
+- Update Universal Credit documentation
+
 ## [0.55.4] - 2023-09-14 15:25:24
 
 ### Fixed
@@ -1019,6 +1114,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.62.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.3...0.62.0
+[0.61.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.2...0.61.3
+[0.61.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.1...0.61.2
+[0.61.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.0...0.61.1
+[0.61.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.60.0...0.61.0
+[0.60.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.59.0...0.60.0
+[0.59.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.2...0.59.0
+[0.58.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.1...0.58.2
+[0.58.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.0...0.58.1
+[0.58.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.57.0...0.58.0
+[0.57.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.4...0.57.0
+[0.56.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.3...0.56.4
+[0.56.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.2...0.56.3
+[0.56.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.1...0.56.2
+[0.56.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.56.0...0.56.1
+[0.56.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.55.4...0.56.0
 [0.55.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.55.3...0.55.4
 [0.55.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.55.2...0.55.3
 [0.55.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.55.1...0.55.2

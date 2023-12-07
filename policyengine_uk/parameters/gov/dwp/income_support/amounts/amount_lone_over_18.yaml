@@ -5,5 +5,5 @@ metadata:
   period: week
   unit: currency-GBP
   label: Income Support applicable amount (lone parent, over 18)
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   reference: https://www.gov.uk/income-support/what-youll-get

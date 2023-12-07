@@ -1,5 +1,6 @@
 description: Secondary threshold for National Insurance
 metadata:
+  label: NI Secondary Threshold
   economy: false
   period: week
   propagate_metadata_to_children: true
@@ -7,7 +8,7 @@ metadata:
   - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
   unit: currency-GBP
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
 values:
   2015-04-06: 155
   2016-04-06: 155

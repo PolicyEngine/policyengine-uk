@@ -4,7 +4,6 @@ brackets:
       rate
     metadata:
       label: Scottish starter rate
-      name: scottish_starter_rate
       unit: /1
     values:
       2018-06-01: 0.19
@@ -15,7 +14,6 @@ brackets:
       over a smaller region of income
     metadata:
       label: Scottish basic rate
-      name: scottish_basic_rate
       unit: /1
     values:
       2018-06-01: 0.2
@@ -23,13 +21,12 @@ brackets:
     description: The threshold at which an individual pays the basic rate
     metadata:
       label: Scottish basic rate threshold
-      name: scottish_basic_threshold
       period: year
       unit: currency-GBP
     values:
-      2018-06-01: 2000
-      2019-06-01: 2049
-      2020-06-01: 2085
+      2018-06-01: 2_000
+      2019-06-01: 2_049
+      2020-06-01: 2_085
       2022-01-01: 
         value: 2_162
         reference:
@@ -44,7 +41,6 @@ brackets:
     description: The third rate in Scottish Income Tax
     metadata:
       label: Scottish intermediate rate
-      name: scottish_intermediate_rate
       unit: /1
     values:
       2018-06-01: 0.21
@@ -53,13 +49,12 @@ brackets:
       rate
     metadata:
       label: Scottish intermediate rate threshold
-      name: scottish_intermediate_threshold
       period: year
       unit: currency-GBP
     values:
-      2018-06-01: 12150
-      2020-06-01: 12444
-      2021-06-01: 12658
+      2018-06-01: 12_150
+      2020-06-01: 12_444
+      2021-06-01: 12_658
       2022-01-01: 
         value: 13_118
         reference:
@@ -74,7 +69,6 @@ brackets:
     description: The fourth rate in Scottish Income Tax
     metadata:
       label: Scottish higher rate
-      name: scottish_higher_rate
       unit: /1
     values:
       2018-06-01: 0.4
@@ -82,13 +76,12 @@ brackets:
     description: The threshold at which an individual pays the Scottish higher rate
     metadata:
       label: Scottish higher rate threshold
-      name: scottish_higher_threshold
       period: year
       unit: currency-GBP
     values:
-      2018-06-01: 31580
-      2019-06-01: 30930
-      2020-06-01: 30930
+      2018-06-01: 31_580
+      2019-06-01: 30_930
+      2020-06-01: 30_930
       2022-01-01: 
         value: 31_092
         reference:
@@ -103,7 +96,6 @@ brackets:
     description: The fifth and final rate in Scottish Income Tax
     metadata:
       label: Scottish additional rate
-      name: scottish_additional_rate
       unit: /1
     values:
       2018-06-01: 0.47
@@ -112,7 +104,6 @@ brackets:
       rate
     metadata:
       label: Scottish additional rate threshold
-      name: scottish_add_threshold
       period: year
       unit: currency-GBP
     values:

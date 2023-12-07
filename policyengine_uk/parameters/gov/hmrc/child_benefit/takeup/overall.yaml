@@ -1,0 +1,10 @@
+description: Share of eligible children that participate in Child Benefit
+values:
+  2012-01-01: 0.97
+  2022-01-01: 0.89
+metadata:
+  unit: /1
+  uprating: calibration.programs.child_benefit.participants.UNITED_KINGDOM
+  reference:
+    - title: "Child Benefit statistics: 2022 annual release"
+      href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2022/child-benefit-statistics-annual-release-data-at-august-2022#:~:text=since%202012%20the%20take%2Dup,level%20in%202022%20of%2089%25.

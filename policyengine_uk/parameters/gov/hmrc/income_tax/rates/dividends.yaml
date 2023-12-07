@@ -3,7 +3,6 @@ brackets:
   - rate:
       metadata:
         label: Dividends basic rate
-        name: dividend_basic_rate
         unit: /1
         reference:
           - title: Finance Act 2022 s. 4
@@ -20,7 +19,6 @@ brackets:
       values:
         2015-06-01: 0
       metadata:
-        name: dividend_basic_threshold
         label: Dividends basic rate threshold
         reference:
           - title: Finance Act 2022 s. 4
@@ -28,7 +26,6 @@ brackets:
   - rate:
       metadata:
         label: Dividends higher rate
-        name: dividend_higher_rate
         unit: /1
         reference:
           - title: Finance Act 2022 s. 4
@@ -68,7 +65,6 @@ brackets:
         2015-06-01: 150_000
       metadata:
         period: year
-        name: dividend_additional_threshold
         label: Dividends additional rate threshold
         reference:
           - title: Finance Act 2022 s. 4

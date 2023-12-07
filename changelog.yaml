@@ -846,3 +846,89 @@
     fixed:
     - TOC entry for NI documentation.
   date: 2023-09-14 15:25:24
+- bump: minor
+  changes:
+    added:
+    - Update Universal Credit documentation
+  date: 2023-09-14 15:31:01
+- bump: patch
+  changes:
+    added:
+    - Documentation for TV licence.
+  date: 2023-09-14 15:35:12
+- bump: patch
+  changes:
+    fixed:
+    - Small issues on the NI page.
+  date: 2023-09-14 16:06:31
+- bump: patch
+  changes:
+    removed:
+    - numpy pin.
+  date: 2023-10-09 19:01:07
+- bump: patch
+  changes:
+    added:
+    - Documentation for Stamp Duty Land Tax.
+  date: 2023-10-12 15:11:13
+- bump: minor
+  changes:
+    added:
+    - Child minimum age for basic income.
+  date: 2023-10-17 14:55:07
+- bump: minor
+  changes:
+    added:
+    - Pension Credit documentation page.
+  date: 2023-10-19 15:46:33
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing child minimum basic income ages to function incorrectly when the
+      adult UBI is nonzero.
+  date: 2023-10-27 20:42:43
+- bump: patch
+  changes:
+    added:
+    - Documentation for Land and Buildings Transaction Tax.
+    - Documentation for Land Transaction Tax.
+    fixed:
+    - Updated LBTT rate increase for non-primary residences.
+    - Fixed SDLT description.
+  date: 2023-11-16 16:32:22
+- bump: minor
+  changes:
+    added:
+    - Switch for benefit uprating.
+  date: 2023-11-22 12:04:13
+- bump: minor
+  changes:
+    added:
+    - HM Treasury baseline for CPI uprating benefits.
+  date: 2023-11-22 15:17:21
+- bump: minor
+  changes:
+    added:
+    - Update National Insurance documentation
+    - Update Income Tax documentation
+  date: 2023-11-23 16:22:19
+- bump: patch
+  changes:
+    removed:
+    - 19% basic rate change proposed for 2024 that was never enacted.
+  date: 2023-11-23 18:03:37
+- bump: patch
+  changes:
+    fixed:
+    - Added missing label for benefit uprating.
+  date: 2023-11-24 10:49:06
+- bump: patch
+  changes:
+    fixed:
+    - Added missing label for benefit uprating.
+  date: 2023-11-26 14:29:46
+- bump: minor
+  changes:
+    added:
+    - Enhanced FRS version for December 2023.
+  date: 2023-12-05 12:45:18

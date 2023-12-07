@@ -43,6 +43,7 @@ class would_claim_UC(Variable):
         )
         eligible = benunit("universal_credit_entitlement", period) > 0
         takeup_rate = parameters(period).gov.dwp.universal_credit.takeup
+        return current_uc_claimant
         return select(
             [
                 current_uc_claimant
@@ -284,13 +285,8 @@ class UC_housing_costs_element(Variable):
         rent = benunit("benunit_rent", period)
         max_housing_costs = select(
             [
-                np.isin(
-                    tenure_type,
-                    [
-                        TenureType.RENT_FROM_COUNCIL,
-                        tenure_type == TenureType.RENT_FROM_HA,
-                    ],
-                ),
+                (tenure_type == TenureType.RENT_FROM_COUNCIL)
+                | (tenure_type == TenureType.RENT_FROM_HA),
                 tenure_type == TenureType.RENT_PRIVATELY,
             ],
             [rent, min_(benunit("LHA_cap", period), rent)],

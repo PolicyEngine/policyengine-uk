@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PolicyEngine-UK",
-    version="0.55.4",
+    version="0.62.0",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
     classifiers=[
@@ -31,10 +31,9 @@ setup(
         "gif[plotly]>=3.0.0",
         "inquirer>=2.7.0",
         "microdf_python>=0.3.0",
-        "numpy<1.22",
         "pandas",
         "plotly>=4.14.3",
-        "PolicyEngine-Core>=2.1,<3",
+        "PolicyEngine-Core>=2.10,<3",
         "pyyaml>=5.3.1",
         "pytest",
         "requests>=2.25.1",
