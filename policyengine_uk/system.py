@@ -10,7 +10,7 @@ from policyengine_uk.data import (
     DATASETS,
     EnhancedFRS,
     FRS_2020_21,
-    CalibratedSPIEnhancedPooledFRS_2018_20,
+    CalibratedSPIEnhancedPooledFRS_2019_21,
 )
 
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
