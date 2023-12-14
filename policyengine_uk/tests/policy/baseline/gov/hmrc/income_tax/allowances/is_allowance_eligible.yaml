@@ -1,0 +1,56 @@
+- name: Personal Allowance
+  input:
+    adjusted_net_income: 25000
+  expected_output: 12500.0
+
+- name: Blind Person's Allowance
+  input:
+  expected_output: 0.0
+
+- name: Married Couples' Allowance Deduction
+  input:
+    married_couples_allowance: 3000
+  expected_output: 600.0
+
+- name: Capped Married Couples' Allowance Deduction
+  input:
+    married_couples_allowance_deduction: 800.0
+    income_tax_pre_charges: 500.0
+    CB_HITC: 200.0
+  expected_output: 500.0
+
+- name: Annual Allowance for Pension Contributions
+  input:
+    adjusted_net_income: 60000
+  expected_output: 40000.0
+
+- name: Trading Allowance Deduction
+  input:
+    trading_allowance: 2000
+    self_employment_income: 1500
+  expected_output: 1500.0
+
+- name: Property Allowance Deduction
+  input:
+    property_income: 3000
+    property_allowance: 1000
+  expected_output: 1000.0
+
+- name: Savings Allowance
+  input:
+    tax_band: STARTER
+  expected_output: 500.0
+
+- name: Dividend Allowance
+  input:
+  expected_output: 2000.0
+
+- name: Allowances Applicable to Adjusted Net Income
+  input:
+    personal_allowance: 12000
+    blind_persons_allowance: 2000
+    gift_aid: 500
+    covenanted_payments: 300
+    charitable_investment_gifts: 100
+    other_deductions: 50
+  expected_output: 15000.0
