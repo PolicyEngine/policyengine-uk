@@ -932,3 +932,8 @@
     added:
     - Enhanced FRS version for December 2023.
   date: 2023-12-05 12:45:18
+- bump: patch
+  changes:
+    added:
+    - Test cases for TV Licence.
+  date: 2023-12-14 16:07:36
