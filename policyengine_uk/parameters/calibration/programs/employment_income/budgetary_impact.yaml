@@ -1,6 +1,7 @@
 description: Total employment income.
 UNITED_KINGDOM:
   values:
+    2018-01-01: 786_000_000_000
     2020-01-01: 827_000_000_000
   metadata:
     uprating:

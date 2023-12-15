@@ -1,6 +1,7 @@
 description: Total self-employment income.
 UNITED_KINGDOM:
   values:
+    2018-01-01: 84_600_000_000
     2020-01-01: 96_900_000_000
   metadata:
     uprating:
