@@ -937,3 +937,8 @@
     added:
     - Test cases for TV Licence.
   date: 2023-12-14 16:07:36
+- bump: patch
+  changes:
+    added:
+    - Missing uprating parameters for 2018.
+  date: 2023-12-15 14:32:51
