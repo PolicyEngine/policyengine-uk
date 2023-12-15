@@ -22,3 +22,4 @@ from .calibration.calibrated_frs import (
 )
 from .stacked_frs import StackedFRS, PooledFRS_2018_20, PooledFRS_2019_21
 from .enhanced_frs import EnhancedFRS
+from .ukmod import UKMOD_FRS_2018

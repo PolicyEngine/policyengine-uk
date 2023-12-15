@@ -15,6 +15,7 @@ from .frs import (
     CalibratedSPIEnhancedPooledFRS_2018_20,
     CalibratedSPIEnhancedPooledFRS_2019_21,
     EnhancedFRS,
+    UKMOD_FRS_2018,
 )
 
 DATASETS = [
@@ -34,4 +35,5 @@ DATASETS = [
     CalibratedSPIEnhancedPooledFRS_2018_20,
     CalibratedSPIEnhancedPooledFRS_2019_21,
     EnhancedFRS,
+    UKMOD_FRS_2018,
 ]
