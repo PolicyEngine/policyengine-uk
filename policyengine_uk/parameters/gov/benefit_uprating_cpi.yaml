@@ -1,9 +1,11 @@
-description: September CPI
+description: Most recent September CPIH index value, updated for each uprating occurrence.
 values:
-  2024-01-01: 132.0
-  2023-04-01: 123.8
-  2022-04-01: 112.4
-  2021-04-01: 109.2
+  2026-01-01: 130.94
+  2025-01-01: 131.05
+  2024-01-01: 130.34
+  2023-01-01: 126.69
+  2022-01-01: 114.40
+  2021-01-01: 109.04
   2020-04-01: 108.4
   2019-04-01: 106.6
   2018-04-01: 104.3
@@ -25,4 +27,4 @@ values:
   2002-04-01: 75.0
   2001-04-01: 73.8
 metadata:
-  unit: currency-GBP
+  label: Benefit uprating index

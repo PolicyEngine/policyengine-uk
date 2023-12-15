@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.62.2] - 2023-12-15 14:32:51
+
+### Added
+
+- Missing uprating parameters for 2018.
+
+## [0.62.1] - 2023-12-14 16:07:36
+
+### Added
+
+- Test cases for TV Licence.
+
+## [0.62.0] - 2023-12-05 12:45:18
+
+### Added
+
+- Enhanced FRS version for December 2023.
+
+## [0.61.3] - 2023-11-26 14:29:46
+
+### Fixed
+
+- Added missing label for benefit uprating.
+
+## [0.61.2] - 2023-11-24 10:49:06
+
+### Fixed
+
+- Added missing label for benefit uprating.
+
+## [0.61.1] - 2023-11-23 18:03:37
+
+## [0.61.0] - 2023-11-23 16:22:19
+
+### Added
+
+- Update National Insurance documentation
+- Update Income Tax documentation
+
 ## [0.60.0] - 2023-11-22 15:17:21
 
 ### Added
@@ -1087,6 +1126,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.62.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.1...0.62.2
+[0.62.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.0...0.62.1
+[0.62.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.3...0.62.0
+[0.61.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.2...0.61.3
+[0.61.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.1...0.61.2
+[0.61.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.0...0.61.1
+[0.61.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.60.0...0.61.0
 [0.60.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.59.0...0.60.0
 [0.59.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.2...0.59.0
 [0.58.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.58.1...0.58.2

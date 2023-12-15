@@ -19,6 +19,7 @@ GREAT_BRITAIN:
 NORTHERN_IRELAND:
   values:
     2022-01-01: 115_770
+    2023-01-01: 126_530
   metadata:
     reference:
       - title: Northern Ireland Benefits Statistics Summary | November 2021

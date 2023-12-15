@@ -27,7 +27,7 @@
       benunit:
         members: [parent1, parent2, child1]
   output:
-    child_benefit: 1095
+    child_benefit: 1098
 - name: Child Benefit with two children, one over 16
   period: 2021
   absolute_error_margin: 1
@@ -46,4 +46,4 @@
       benunit:
         members: [parent1, parent2, child1, child2]
   output:
-    child_benefit: 1820
+    child_benefit: 1825.20

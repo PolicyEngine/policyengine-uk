@@ -906,3 +906,39 @@
     added:
     - HM Treasury baseline for CPI uprating benefits.
   date: 2023-11-22 15:17:21
+- bump: minor
+  changes:
+    added:
+    - Update National Insurance documentation
+    - Update Income Tax documentation
+  date: 2023-11-23 16:22:19
+- bump: patch
+  changes:
+    removed:
+    - 19% basic rate change proposed for 2024 that was never enacted.
+  date: 2023-11-23 18:03:37
+- bump: patch
+  changes:
+    fixed:
+    - Added missing label for benefit uprating.
+  date: 2023-11-24 10:49:06
+- bump: patch
+  changes:
+    fixed:
+    - Added missing label for benefit uprating.
+  date: 2023-11-26 14:29:46
+- bump: minor
+  changes:
+    added:
+    - Enhanced FRS version for December 2023.
+  date: 2023-12-05 12:45:18
+- bump: patch
+  changes:
+    added:
+    - Test cases for TV Licence.
+  date: 2023-12-14 16:07:36
+- bump: patch
+  changes:
+    added:
+    - Missing uprating parameters for 2018.
+  date: 2023-12-15 14:32:51
