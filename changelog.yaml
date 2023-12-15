@@ -942,3 +942,8 @@
     added:
     - Missing uprating parameters for 2018.
   date: 2023-12-15 14:32:51
+- bump: minor
+  changes:
+    changed:
+    - Validated and standardised National Insurance variables.
+  date: 2023-12-15 14:54:47

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.63.0] - 2023-12-15 14:54:47
+
+### Changed
+
+- Validated and standardised National Insurance variables.
+
 ## [0.62.2] - 2023-12-15 14:32:51
 
 ### Added
@@ -1126,6 +1132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.63.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.2...0.63.0
 [0.62.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.1...0.62.2
 [0.62.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.0...0.62.1
 [0.62.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.61.3...0.62.0
