@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    added:
+    - Missing uprating parameters for 2018.
