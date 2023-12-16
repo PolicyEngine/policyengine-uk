@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+      - Bump policyengine-core to capture simulation randomness bug fixes.
