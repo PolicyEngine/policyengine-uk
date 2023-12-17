@@ -947,3 +947,8 @@
     changed:
     - Validated and standardised National Insurance variables.
   date: 2023-12-15 14:54:47
+- bump: patch
+  changes:
+    fixed:
+    - Bump policyengine-core to capture simulation randomness bug fixes.
+  date: 2023-12-17 10:18:46

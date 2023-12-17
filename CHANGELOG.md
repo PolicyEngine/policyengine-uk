@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.63.1] - 2023-12-17 10:18:46
+
+### Fixed
+
+- Bump policyengine-core to capture simulation randomness bug fixes.
+
 ## [0.63.0] - 2023-12-15 14:54:47
 
 ### Changed
@@ -1132,6 +1138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.63.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.63.0...0.63.1
 [0.63.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.2...0.63.0
 [0.62.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.1...0.62.2
 [0.62.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.62.0...0.62.1
