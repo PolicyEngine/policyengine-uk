@@ -952,3 +952,8 @@
     fixed:
     - Bump policyengine-core to capture simulation randomness bug fixes.
   date: 2023-12-17 10:18:46
+- bump: patch
+  changes:
+    added:
+    - Added tests for fuel duty.
+  date: 2024-01-04 16:08:24
