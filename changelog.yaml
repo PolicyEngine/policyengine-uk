@@ -957,3 +957,8 @@
     added:
     - Added tests for fuel duty.
   date: 2024-01-04 16:08:24
+- bump: minor
+  changes:
+    added:
+    - Update PIP documentation
+  date: 2024-01-04 16:18:59
