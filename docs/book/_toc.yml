@@ -10,6 +10,7 @@ parts:
     chapters:
       - file: programs/gov/hmrc/child-benefit
       - file: programs/gov/dwp/universal-credit
+      - file: programs/gov/dwp/PIP
       - file: programs/gov/dwp/pension-credit
       - file: programs/gov/hmrc/national-insurance
       - file: programs/gov/hmrc/income-tax
@@ -23,6 +24,3 @@ parts:
   - caption: Using the model
     chapters:
       - file: usage/getting-started
-  - caption: Examples
-    chapters:
-      - file: examples/income-sources
