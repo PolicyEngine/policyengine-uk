@@ -1,0 +1,15 @@
+- name: NI Class 1 employer contributions for low income in 2023
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    ni_class_1_income: 8_000  # Annual income below secondary threshold
+  output:
+    ni_class_1_employer: 0.00  # Expected employer contributions
+
+- name: NI Class 1 employer contributions for moderate income in 2023
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    ni_class_1_income: 30_000  # Annual income above secondary threshold but below upper limit
+  output:
+    ni_class_1_employer: (30_000 - 175 * 52) * 0.138  # Expected employer contributions

@@ -1,0 +1,7 @@
+- name: £20k income has NI Class 1 liability
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    employment_income: 20_000
+  output:
+    ni_class_1_employee_primary: (20_000 - 12_570) * 0.12

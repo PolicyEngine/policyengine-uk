@@ -355,3 +355,27 @@ class income_decile(Variable):
 
     def formula(person, period, parameters):
         return person.household("household_income_decile", period)
+
+
+class statutory_maternity_pay(Variable):
+    label = "Statutory maternity pay"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+
+class statutory_paternity_pay(Variable):
+    label = "Statutory paternity pay"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+
+class statutory_sick_pay(Variable):
+    label = "Statutory sick pay"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP

@@ -1,0 +1,8 @@
+- name: NI Class 4 with employment and self-employment income - over UPL has maximum capped.
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    self_employment_income: 100_000
+    employment_income: 100_000
+  output:
+    ni_class_4_maximum: 48_661

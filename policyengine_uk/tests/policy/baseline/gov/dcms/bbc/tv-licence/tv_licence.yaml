@@ -1,0 +1,23 @@
+- name: TV Licence full price - ineligible for aged or blind discount.
+  period: 2023
+  input:
+    tv_licence_discount: 0
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence: 159.00
+
+- name: TV Licence half price - eligible for blind discount but not aged.
+  period: 2023
+  input:
+    tv_licence_discount: 0.5
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence: 79.50
+
+- name: Free TV Licence - eligible for aged discount.
+  period: 2023
+  input:
+    tv_licence_discount: 1
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence: 0
