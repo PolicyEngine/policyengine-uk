@@ -25,7 +25,7 @@ metadata:
   name: wtc_dis
   label: "WTC disability element"
   unit: currency-GBP
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   reference:
     title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
     href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2

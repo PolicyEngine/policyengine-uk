@@ -7,14 +7,14 @@ from policyengine_uk.repo import REPO
 
 
 def baseline_is_nonzero(variable: Type[Variable]) -> Callable:
-    """Creates an OpenFisca formula calculating the whether the specified
+    """Creates an PolicyEngine formula calculating the whether the specified
     variable is non-zero in the baseline.
 
     Args:
         variable (Type[Variable]): The variable to calculate the change in.
 
     Returns:
-        Callable: The OpenFisca formula.
+        Callable: The PolicyEngine formula.
     """
 
     def formula(entity, period):
@@ -25,14 +25,14 @@ def baseline_is_nonzero(variable: Type[Variable]) -> Callable:
 
 
 def change_over_baseline(variable: Type[Variable]) -> Callable:
-    """Creates an OpenFisca formula calculating the change in the
+    """Creates an PolicyEngine formula calculating the change in the
     specified variable over its baseline value.
 
     Args:
         variable (Type[Variable]): The variable to calculate the change in.
 
     Returns:
-        Callable: The OpenFisca formula.
+        Callable: The PolicyEngine formula.
     """
 
     def formula(entity, period):

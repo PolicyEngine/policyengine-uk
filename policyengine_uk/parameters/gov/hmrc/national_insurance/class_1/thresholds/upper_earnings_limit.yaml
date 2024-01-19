@@ -9,10 +9,9 @@ values:
   2021-04-06: 966.73
   2026-04-06: 966.73
 metadata:
-  label: National Insurance Upper Earnings Limit
-  name: NI_UEL
+  label: NI Upper Earnings Limit
   unit: currency-GBP
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   period: week
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

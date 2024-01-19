@@ -1,0 +1,44 @@
+- name: Ineligible for any discount.
+  period: 2023
+  input:
+    age: 74
+    pension_credit: 0
+    is_blind: false
+  output:
+    tv_licence_discount: 0
+
+- name: Eligible for aged discount only.
+  period: 2023
+  input:
+    age: 75
+    pension_credit: 1
+    is_blind: false
+  output:
+    tv_licence_discount: 1
+
+- name: Aged over 75 but ineligible for aged discount.
+  period: 2023
+  input:
+    age: 75
+    pension_credit: 0
+    is_blind: false
+  output:
+    tv_licence_discount: 0
+
+- name: Eligible for blind discount only.
+  period: 2023
+  input:
+    age: 74
+    pension_credit: 0
+    is_blind: true
+  output:
+    tv_licence_discount: 0.5
+
+- name: Eligible for both aged and blind discounts.
+  period: 2023
+  input:
+    age: 75
+    pension_credit: 1
+    is_blind: true
+  output:
+    tv_licence_discount: 1

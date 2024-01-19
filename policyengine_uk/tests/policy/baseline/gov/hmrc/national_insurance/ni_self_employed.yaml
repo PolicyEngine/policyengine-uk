@@ -1,0 +1,7 @@
+- name: NI self-employed sums Class 2 and 4 contributions.
+  period: 2023
+  input:
+    ni_class_2: 1
+    ni_class_4: 2
+  output:
+    ni_self_employed: 3

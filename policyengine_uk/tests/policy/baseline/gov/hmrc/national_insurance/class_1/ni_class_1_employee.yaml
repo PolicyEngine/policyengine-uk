@@ -1,0 +1,22 @@
+- name: NI Class 1 employee contributions - below PT
+  period: 2023
+  input:
+    ni_class_1_income: 11_000
+  output:
+    ni_class_1_employee: 0
+
+- name: NI Class 1 employee contributions - between PT and UEL
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    ni_class_1_income: 30_000
+  output:
+    ni_class_1_employee: (30_000 - 12_570) * 0.12
+
+- name: NI Class 1 employee contributions - above UEL
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    ni_class_1_income: 70000
+  output:
+    ni_class_1_employee: (50_270 - 12_570) * 0.12 + (70_000 - 50_270) * 0.0325

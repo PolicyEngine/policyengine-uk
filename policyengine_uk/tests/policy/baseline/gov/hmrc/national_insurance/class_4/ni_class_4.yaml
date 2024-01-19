@@ -1,0 +1,7 @@
+- name: NI Class 4 - under UPL.
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    self_employment_income: 30_000
+  output:
+    ni_class_4: 1628

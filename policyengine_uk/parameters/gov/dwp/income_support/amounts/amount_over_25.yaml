@@ -4,6 +4,6 @@ values:
 metadata:
   period: week
   label: Income Support applicable amount (single, over 25)
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference: https://www.gov.uk/income-support/what-youll-get

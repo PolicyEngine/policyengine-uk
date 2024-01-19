@@ -13,6 +13,7 @@ values:
           href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-a
 metadata:
   unit: currency-GBP
+  label: NI Class 2 Flat Rate
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
     - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
