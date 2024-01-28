@@ -53,7 +53,6 @@ setup(
             "pydata-sphinx-theme==0.13.1",
             "pytest",
             "setuptools",
-            "sphinx>=4.5.0,<5",
             "sphinx-argparse>=0.3.2,<1",
             "sphinx-math-dollar>=1.2.1,<2",
             "survey-enhance",
