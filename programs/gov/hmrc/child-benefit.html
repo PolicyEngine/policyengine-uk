@@ -1,14 +1,14 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Universal Credit" href="../dwp/universal-credit.html" /><link rel="prev" title="PolicyEngine-UK" href="../../../index.html" />
 
-    <meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
         <title>Child Benefit - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
@@ -156,7 +156,7 @@
   <span class="sidebar-brand-text">PolicyEngine UK documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -215,15 +215,15 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="child-benefit">
-<h1>Child Benefit<a class="headerlink" href="#child-benefit" title="Permalink to this headline">#</a></h1>
+<h1>Child Benefit<a class="headerlink" href="#child-benefit" title="Permalink to this heading">#</a></h1>
 <p>The Child Benefit is a universal benefit for children administered by HMRC. It is not means-tested, but HMRC does impose a tax charge (the High-Income Tax Charge) on the highest-earning parent if their income is over a threshold to recoup the benefit payment.</p>
 <p>Child Benefit parameters can be found in <code class="docutils literal notranslate"><span class="pre">policyengine_uk/parameters/gov/hmrc/child_benefit</span></code> and logic in <code class="docutils literal notranslate"><span class="pre">policyengine_uk/variables/hmrc/child_benefit.py</span></code>.</p>
 <section id="legislation">
-<h2>Legislation<a class="headerlink" href="#legislation" title="Permalink to this headline">#</a></h2>
+<h2>Legislation<a class="headerlink" href="#legislation" title="Permalink to this heading">#</a></h2>
 <p>The Child Benefit is defined primarily in <a class="reference external" href="https://www.legislation.gov.uk/ukpga/1992/4/part/IX">The Social Security Contributions and Benefits Act 1992, Part IX</a>. This defines the core of how the benefit operates, but the rates of payment are prescribed by <a class="reference external" href="https://www.legislation.gov.uk/uksi/2006/965/regulation/2">The Child Benefit (Rates) Regulations 2006 reg. 2</a>, which is amended by up-rating regulations (for example, in 2020, <a class="reference external" href="https://www.legislation.gov.uk/uksi/2020/298/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2020</a> increased the payment levels).</p>
 </section>
 <section id="payment-levels">
-<h2>Payment levels<a class="headerlink" href="#payment-levels" title="Permalink to this headline">#</a></h2>
+<h2>Payment levels<a class="headerlink" href="#payment-levels" title="Permalink to this heading">#</a></h2>
 <p>Child Benefit defines a (higher) amount for the eldest or only child, and an amount for each additional child. There is no limit on the number of children covered, unlike the Child Tax Credit or the Universal Credit child element. The table below shows the rates covered by PolicyEngine-UK.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
@@ -279,13 +279,13 @@
 <div class="cell_output docutils container">
 <div class="output text_html"><style type="text/css">
 </style>
-<table id="T_67196">
+<table id="T_7d186">
   <thead>
     <tr>
       <th class="blank" >&nbsp;</th>
       <th class="blank level0" >&nbsp;</th>
-      <th id="T_67196_level0_col0" class="col_heading level0 col0" >Value</th>
-      <th id="T_67196_level0_col1" class="col_heading level0 col1" >Reference</th>
+      <th id="T_7d186_level0_col0" class="col_heading level0 col0" >Value</th>
+      <th id="T_7d186_level0_col1" class="col_heading level0 col1" >Reference</th>
     </tr>
     <tr>
       <th class="index_name level0" >Date</th>
@@ -296,136 +296,136 @@
   </thead>
   <tbody>
     <tr>
-      <th id="T_67196_level0_row0" class="row_heading level0 row0" rowspan="2">2007-04-09</th>
-      <th id="T_67196_level1_row0" class="row_heading level1 row0" >Eldest</th>
-      <td id="T_67196_row0_col0" class="data row0 col0" >£18.80</td>
-      <td id="T_67196_row0_col1" class="data row0 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level0_row0" class="row_heading level0 row0" rowspan="2">2007-04-09</th>
+      <th id="T_7d186_level1_row0" class="row_heading level1 row0" >Eldest</th>
+      <td id="T_7d186_row0_col0" class="data row0 col0" >£18.80</td>
+      <td id="T_7d186_row0_col1" class="data row0 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row1" class="row_heading level1 row1" >Additional</th>
-      <td id="T_67196_row1_col0" class="data row1 col0" >£12.10</td>
-      <td id="T_67196_row1_col1" class="data row1 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level1_row1" class="row_heading level1 row1" >Additional</th>
+      <td id="T_7d186_row1_col0" class="data row1 col0" >£12.10</td>
+      <td id="T_7d186_row1_col1" class="data row1 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row2" class="row_heading level0 row2" rowspan="2">2009-01-05</th>
-      <th id="T_67196_level1_row2" class="row_heading level1 row2" >Additional</th>
-      <td id="T_67196_row2_col0" class="data row2 col0" >£13.20</td>
-      <td id="T_67196_row2_col1" class="data row2 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level0_row2" class="row_heading level0 row2" rowspan="2">2009-01-05</th>
+      <th id="T_7d186_level1_row2" class="row_heading level1 row2" >Additional</th>
+      <td id="T_7d186_row2_col0" class="data row2 col0" >£13.20</td>
+      <td id="T_7d186_row2_col1" class="data row2 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row3" class="row_heading level1 row3" >Eldest</th>
-      <td id="T_67196_row3_col0" class="data row3 col0" >£20.00</td>
-      <td id="T_67196_row3_col1" class="data row3 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level1_row3" class="row_heading level1 row3" >Eldest</th>
+      <td id="T_7d186_row3_col0" class="data row3 col0" >£20.00</td>
+      <td id="T_7d186_row3_col1" class="data row3 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row4" class="row_heading level0 row4" rowspan="2">2010-04-12</th>
-      <th id="T_67196_level1_row4" class="row_heading level1 row4" >Eldest</th>
-      <td id="T_67196_row4_col0" class="data row4 col0" >£20.30</td>
-      <td id="T_67196_row4_col1" class="data row4 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level0_row4" class="row_heading level0 row4" rowspan="2">2010-04-12</th>
+      <th id="T_7d186_level1_row4" class="row_heading level1 row4" >Eldest</th>
+      <td id="T_7d186_row4_col0" class="data row4 col0" >£20.30</td>
+      <td id="T_7d186_row4_col1" class="data row4 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row5" class="row_heading level1 row5" >Additional</th>
-      <td id="T_67196_row5_col0" class="data row5 col0" >£13.40</td>
-      <td id="T_67196_row5_col1" class="data row5 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level1_row5" class="row_heading level1 row5" >Additional</th>
+      <td id="T_7d186_row5_col0" class="data row5 col0" >£13.40</td>
+      <td id="T_7d186_row5_col1" class="data row5 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row6" class="row_heading level0 row6" rowspan="2">2014-04-07</th>
-      <th id="T_67196_level1_row6" class="row_heading level1 row6" >Eldest</th>
-      <td id="T_67196_row6_col0" class="data row6 col0" >£20.50</td>
-      <td id="T_67196_row6_col1" class="data row6 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level0_row6" class="row_heading level0 row6" rowspan="2">2014-04-07</th>
+      <th id="T_7d186_level1_row6" class="row_heading level1 row6" >Eldest</th>
+      <td id="T_7d186_row6_col0" class="data row6 col0" >£20.50</td>
+      <td id="T_7d186_row6_col1" class="data row6 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row7" class="row_heading level1 row7" >Additional</th>
-      <td id="T_67196_row7_col0" class="data row7 col0" >£13.55</td>
-      <td id="T_67196_row7_col1" class="data row7 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level1_row7" class="row_heading level1 row7" >Additional</th>
+      <td id="T_7d186_row7_col0" class="data row7 col0" >£13.55</td>
+      <td id="T_7d186_row7_col1" class="data row7 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row8" class="row_heading level0 row8" rowspan="2">2015-04-06</th>
-      <th id="T_67196_level1_row8" class="row_heading level1 row8" >Eldest</th>
-      <td id="T_67196_row8_col0" class="data row8 col0" >£20.70</td>
-      <td id="T_67196_row8_col1" class="data row8 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level0_row8" class="row_heading level0 row8" rowspan="2">2015-04-06</th>
+      <th id="T_7d186_level1_row8" class="row_heading level1 row8" >Eldest</th>
+      <td id="T_7d186_row8_col0" class="data row8 col0" >£20.70</td>
+      <td id="T_7d186_row8_col1" class="data row8 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row9" class="row_heading level1 row9" >Additional</th>
-      <td id="T_67196_row9_col0" class="data row9 col0" >£13.70</td>
-      <td id="T_67196_row9_col1" class="data row9 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level1_row9" class="row_heading level1 row9" >Additional</th>
+      <td id="T_7d186_row9_col0" class="data row9 col0" >£13.70</td>
+      <td id="T_7d186_row9_col1" class="data row9 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row10" class="row_heading level0 row10" rowspan="2">2020-04-06</th>
-      <th id="T_67196_level1_row10" class="row_heading level1 row10" >Eldest</th>
-      <td id="T_67196_row10_col0" class="data row10 col0" >£21.05</td>
-      <td id="T_67196_row10_col1" class="data row10 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level0_row10" class="row_heading level0 row10" rowspan="2">2020-04-06</th>
+      <th id="T_7d186_level1_row10" class="row_heading level1 row10" >Eldest</th>
+      <td id="T_7d186_row10_col0" class="data row10 col0" >£21.05</td>
+      <td id="T_7d186_row10_col1" class="data row10 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row11" class="row_heading level1 row11" >Additional</th>
-      <td id="T_67196_row11_col0" class="data row11 col0" >£13.95</td>
-      <td id="T_67196_row11_col1" class="data row11 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level1_row11" class="row_heading level1 row11" >Additional</th>
+      <td id="T_7d186_row11_col0" class="data row11 col0" >£13.95</td>
+      <td id="T_7d186_row11_col1" class="data row11 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row12" class="row_heading level0 row12" rowspan="2">2021-04-12</th>
-      <th id="T_67196_level1_row12" class="row_heading level1 row12" >Additional</th>
-      <td id="T_67196_row12_col0" class="data row12 col0" >£14.00</td>
-      <td id="T_67196_row12_col1" class="data row12 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level0_row12" class="row_heading level0 row12" rowspan="2">2021-04-12</th>
+      <th id="T_7d186_level1_row12" class="row_heading level1 row12" >Additional</th>
+      <td id="T_7d186_row12_col0" class="data row12 col0" >£14.00</td>
+      <td id="T_7d186_row12_col1" class="data row12 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row13" class="row_heading level1 row13" >Eldest</th>
-      <td id="T_67196_row13_col0" class="data row13 col0" >£21.15</td>
-      <td id="T_67196_row13_col1" class="data row13 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
+      <th id="T_7d186_level1_row13" class="row_heading level1 row13" >Eldest</th>
+      <td id="T_7d186_row13_col0" class="data row13 col0" >£21.15</td>
+      <td id="T_7d186_row13_col1" class="data row13 col1" ><a href="https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made">The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)</a></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row14" class="row_heading level0 row14" rowspan="2">2022-04-01</th>
-      <th id="T_67196_level1_row14" class="row_heading level1 row14" >Eldest</th>
-      <td id="T_67196_row14_col0" class="data row14 col0" >£21.80</td>
-      <td id="T_67196_row14_col1" class="data row14 col1" ></td>
+      <th id="T_7d186_level0_row14" class="row_heading level0 row14" rowspan="2">2022-04-01</th>
+      <th id="T_7d186_level1_row14" class="row_heading level1 row14" >Eldest</th>
+      <td id="T_7d186_row14_col0" class="data row14 col0" >£21.80</td>
+      <td id="T_7d186_row14_col1" class="data row14 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row15" class="row_heading level1 row15" >Additional</th>
-      <td id="T_67196_row15_col0" class="data row15 col0" >£14.45</td>
-      <td id="T_67196_row15_col1" class="data row15 col1" ></td>
+      <th id="T_7d186_level1_row15" class="row_heading level1 row15" >Additional</th>
+      <td id="T_7d186_row15_col0" class="data row15 col0" >£14.45</td>
+      <td id="T_7d186_row15_col1" class="data row15 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row16" class="row_heading level0 row16" rowspan="2">2023-01-01</th>
-      <th id="T_67196_level1_row16" class="row_heading level1 row16" >Eldest</th>
-      <td id="T_67196_row16_col0" class="data row16 col0" >£24.00</td>
-      <td id="T_67196_row16_col1" class="data row16 col1" ></td>
+      <th id="T_7d186_level0_row16" class="row_heading level0 row16" rowspan="2">2023-04-01</th>
+      <th id="T_7d186_level1_row16" class="row_heading level1 row16" >Eldest</th>
+      <td id="T_7d186_row16_col0" class="data row16 col0" >£24.00</td>
+      <td id="T_7d186_row16_col1" class="data row16 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row17" class="row_heading level1 row17" >Additional</th>
-      <td id="T_67196_row17_col0" class="data row17 col0" >£15.90</td>
-      <td id="T_67196_row17_col1" class="data row17 col1" ></td>
+      <th id="T_7d186_level1_row17" class="row_heading level1 row17" >Additional</th>
+      <td id="T_7d186_row17_col0" class="data row17 col0" >£15.90</td>
+      <td id="T_7d186_row17_col1" class="data row17 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row18" class="row_heading level0 row18" rowspan="2">2024-01-01</th>
-      <th id="T_67196_level1_row18" class="row_heading level1 row18" >Additional</th>
-      <td id="T_67196_row18_col0" class="data row18 col0" >£16.36</td>
-      <td id="T_67196_row18_col1" class="data row18 col1" ></td>
+      <th id="T_7d186_level0_row18" class="row_heading level0 row18" rowspan="2">2024-04-01</th>
+      <th id="T_7d186_level1_row18" class="row_heading level1 row18" >Additional</th>
+      <td id="T_7d186_row18_col0" class="data row18 col0" >£16.36</td>
+      <td id="T_7d186_row18_col1" class="data row18 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row19" class="row_heading level1 row19" >Eldest</th>
-      <td id="T_67196_row19_col0" class="data row19 col0" >£24.69</td>
-      <td id="T_67196_row19_col1" class="data row19 col1" ></td>
+      <th id="T_7d186_level1_row19" class="row_heading level1 row19" >Eldest</th>
+      <td id="T_7d186_row19_col0" class="data row19 col0" >£24.69</td>
+      <td id="T_7d186_row19_col1" class="data row19 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row20" class="row_heading level0 row20" rowspan="2">2025-01-01</th>
-      <th id="T_67196_level1_row20" class="row_heading level1 row20" >Eldest</th>
-      <td id="T_67196_row20_col0" class="data row20 col0" >£24.83</td>
-      <td id="T_67196_row20_col1" class="data row20 col1" ></td>
+      <th id="T_7d186_level0_row20" class="row_heading level0 row20" rowspan="2">2025-04-01</th>
+      <th id="T_7d186_level1_row20" class="row_heading level1 row20" >Eldest</th>
+      <td id="T_7d186_row20_col0" class="data row20 col0" >£24.83</td>
+      <td id="T_7d186_row20_col1" class="data row20 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row21" class="row_heading level1 row21" >Additional</th>
-      <td id="T_67196_row21_col0" class="data row21 col0" >£16.45</td>
-      <td id="T_67196_row21_col1" class="data row21 col1" ></td>
+      <th id="T_7d186_level1_row21" class="row_heading level1 row21" >Additional</th>
+      <td id="T_7d186_row21_col0" class="data row21 col0" >£16.45</td>
+      <td id="T_7d186_row21_col1" class="data row21 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level0_row22" class="row_heading level0 row22" rowspan="2">2026-01-01</th>
-      <th id="T_67196_level1_row22" class="row_heading level1 row22" >Additional</th>
-      <td id="T_67196_row22_col0" class="data row22 col0" >£16.43</td>
-      <td id="T_67196_row22_col1" class="data row22 col1" ></td>
+      <th id="T_7d186_level0_row22" class="row_heading level0 row22" rowspan="2">2026-01-01</th>
+      <th id="T_7d186_level1_row22" class="row_heading level1 row22" >Additional</th>
+      <td id="T_7d186_row22_col0" class="data row22 col0" >£16.43</td>
+      <td id="T_7d186_row22_col1" class="data row22 col1" ></td>
     </tr>
     <tr>
-      <th id="T_67196_level1_row23" class="row_heading level1 row23" >Eldest</th>
-      <td id="T_67196_row23_col0" class="data row23 col0" >£24.81</td>
-      <td id="T_67196_row23_col1" class="data row23 col1" ></td>
+      <th id="T_7d186_level1_row23" class="row_heading level1 row23" >Eldest</th>
+      <td id="T_7d186_row23_col0" class="data row23 col0" >£24.81</td>
+      <td id="T_7d186_row23_col1" class="data row23 col1" ></td>
     </tr>
   </tbody>
 </table>
@@ -433,7 +433,7 @@
 </div>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">#</a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h2>
 <p>The below table shows the entitlement calculations for a family of increasing size.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
@@ -522,7 +522,7 @@
 </div>
 </section>
 <section id="microsimulation">
-<h2>Microsimulation<a class="headerlink" href="#microsimulation" title="Permalink to this headline">#</a></h2>
+<h2>Microsimulation<a class="headerlink" href="#microsimulation" title="Permalink to this heading">#</a></h2>
 <p>PolicyEngine-UK simulates Child Benefit as described for each family in the survey microdata, preserving reported takeup. Child Benefit has a relatively high take-up rate compared to other benefits, most recently estimated at 92%. We use the central estimates from 2006 through 2018, provided by HMRC <a class="reference external" href="https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020/child-benefit-statistics-annual-release-august-2020-main-commentary">Child Benefit Statistics: Annual Release, August 2020 Main Commentary | Table 3.1</a>, which are calculated from microsimulation and administrative data held by HMRC.</p>
 </section>
 </section>
@@ -583,9 +583,7 @@
             
           </div>
           <div class="right-details">
-            <div class="icons">
-              
-            </div>
+            
           </div>
         </div>
         
@@ -622,6 +620,7 @@
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>

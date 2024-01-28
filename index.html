@@ -1,14 +1,14 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Child Benefit" href="programs/gov/hmrc/child-benefit.html" />
 
-    <meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
         <title>PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
@@ -156,7 +156,7 @@
   <span class="sidebar-brand-text">PolicyEngine UK documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -215,14 +215,14 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="policyengine-uk">
-<h1>PolicyEngine-UK<a class="headerlink" href="#policyengine-uk" title="Permalink to this headline">#</a></h1>
+<h1>PolicyEngine-UK<a class="headerlink" href="#policyengine-uk" title="Permalink to this heading">#</a></h1>
 <p>This book contains an introduction to using PolicyEngine-UK to model UK taxes and benefits. It is currently a work in progress and may be added to. PolicyEngine-UK is a microsimulation model of the UK tax and benefit system: it is a model which calculates variable values over UK entities from given policy parameters and structures. In practice, this gives it two main uses: calculating statistics under current tax and benefit law, and simulating effects of potential new changes to the legislation.</p>
 <p>We’re grateful to the <a class="reference external" href="https://www.iser.essex.ac.uk/research/projects/ukmod">UKMOD</a> team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK’s development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.</p>
 <p>Code examples and outputs are re-run automatically on each new version of PolicyEngine-UK.</p>
 <section id="short-demo">
-<h2>Short demo<a class="headerlink" href="#short-demo" title="Permalink to this headline">#</a></h2>
+<h2>Short demo<a class="headerlink" href="#short-demo" title="Permalink to this heading">#</a></h2>
 <section id="baseline-estimation">
-<h3>Baseline estimation<a class="headerlink" href="#baseline-estimation" title="Permalink to this headline">#</a></h3>
+<h3>Baseline estimation<a class="headerlink" href="#baseline-estimation" title="Permalink to this heading">#</a></h3>
 <p>Calculating, for example, the total tax (Income Tax and National Insurance) liability by region can be done with the following code:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -277,75 +277,75 @@
   <tbody>
     <tr>
       <th>LONDON</th>
-      <td>12.1</td>
-      <td>37.6</td>
-      <td>9.1</td>
+      <td>12.4</td>
+      <td>38.9</td>
+      <td>9.2</td>
     </tr>
     <tr>
       <th>SOUTH_EAST</th>
-      <td>10.5</td>
-      <td>46.6</td>
+      <td>10.1</td>
+      <td>31.5</td>
       <td>9.1</td>
     </tr>
     <tr>
       <th>NORTH_WEST</th>
-      <td>6.7</td>
-      <td>28.5</td>
-      <td>7.4</td>
-    </tr>
-    <tr>
-      <th>SCOTLAND</th>
-      <td>2.4</td>
-      <td>10.5</td>
-      <td>6.1</td>
-    </tr>
-    <tr>
-      <th>WEST_MIDLANDS</th>
-      <td>4.7</td>
-      <td>18.3</td>
-      <td>5.9</td>
+      <td>7.8</td>
+      <td>35.2</td>
+      <td>7.2</td>
     </tr>
     <tr>
       <th>EAST_OF_ENGLAND</th>
-      <td>6.5</td>
-      <td>24.6</td>
+      <td>7.4</td>
+      <td>24.1</td>
+      <td>6.0</td>
+    </tr>
+    <tr>
+      <th>WEST_MIDLANDS</th>
+      <td>4.9</td>
+      <td>13.4</td>
       <td>5.9</td>
     </tr>
     <tr>
       <th>YORKSHIRE</th>
-      <td>4.2</td>
-      <td>13.0</td>
+      <td>5.6</td>
+      <td>17.6</td>
       <td>5.6</td>
     </tr>
     <tr>
       <th>SOUTH_WEST</th>
-      <td>5.6</td>
-      <td>24.8</td>
-      <td>5.4</td>
+      <td>5.9</td>
+      <td>20.3</td>
+      <td>5.5</td>
+    </tr>
+    <tr>
+      <th>SCOTLAND</th>
+      <td>2.3</td>
+      <td>13.9</td>
+      <td>5.5</td>
     </tr>
     <tr>
       <th>EAST_MIDLANDS</th>
-      <td>4.2</td>
-      <td>15.0</td>
+      <td>4.6</td>
+      <td>11.7</td>
       <td>4.7</td>
     </tr>
     <tr>
       <th>WALES</th>
-      <td>0.6</td>
-      <td>5.5</td>
-      <td>3.1</td>
+      <td>0.8</td>
+      <td>5.1</td>
+      <td>3.6</td>
     </tr>
     <tr>
       <th>NORTH_EAST</th>
-      <td>2.2</td>
-      <td>5.9</td>
       <td>2.7</td>
+      <td>23.6</td>
+      <td>2.6</td>
     </tr>
     <tr>
       <th>NORTHERN_IRELAND</th>
-      <td>1.5</td>
-      <td>3.7</td>
-      <td>2.1</td>
+      <td>1.4</td>
+      <td>3.6</td>
+      <td>1.8</td>
     </tr>
   </tbody>
 </table>
@@ -353,7 +353,7 @@
 </div>
 </section>
 <section id="reform-evaluation">
-<h3>Reform evaluation<a class="headerlink" href="#reform-evaluation" title="Permalink to this headline">#</a></h3>
+<h3>Reform evaluation<a class="headerlink" href="#reform-evaluation" title="Permalink to this heading">#</a></h3>
 <p>Below is an example of simulating the effects of a reform (namely, increasing the basic rate of income tax from 20% to 23%).</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
@@ -386,7 +386,7 @@
 </div>
 </details>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;Revenue: £15.4bn&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;Revenue: £16.4bn&#39;
 </pre></div>
 </div>
 </div>
@@ -445,9 +445,7 @@
             
           </div>
           <div class="right-details">
-            <div class="icons">
-              
-            </div>
+            
           </div>
         </div>
         
@@ -485,6 +483,7 @@
 </div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>

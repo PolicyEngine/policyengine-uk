@@ -1,14 +1,14 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" /><link rel="next" title="Land and Buildings Transaction Tax" href="../../revenue_scotland/land-and-buildings-transaction-tax.html" /><link rel="prev" title="Energy Price Cap" href="../../ofgem/energy-price-guarantee.html" />
 
-    <meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
+    <!-- Generated with Sphinx 5.0.2 and Furo 2022.12.07 -->
         <title>TV Licence - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
@@ -156,7 +156,7 @@
   <span class="sidebar-brand-text">PolicyEngine UK documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -215,19 +215,19 @@
         </div>
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="tv-licence">
-<h1>TV Licence<a class="headerlink" href="#tv-licence" title="Permalink to this headline">#</a></h1>
+<h1>TV Licence<a class="headerlink" href="#tv-licence" title="Permalink to this heading">#</a></h1>
 <p>In the UK, a TV licence is a legal requirement for households to watch TV on any channel via any TV service, watch live on streaming services, or use BBC iPlayer on any device. Each household must renew TV licence annually. The revenue generated from the collection of TV licence fees is used to fund the operations and production of the British Broadcasting Corporation (BBC).</p>
 <p>TV licence parameters can be found in <code class="docutils literal notranslate"><span class="pre">policyengine_uk/parameters/gov/dcms/bbc/tv_licence</span></code> and logic in <code class="docutils literal notranslate"><span class="pre">policyengine_uk/variables/gov/dcms/bbc/tv_licence</span></code>.</p>
 <section id="legislation">
-<h2>Legislation<a class="headerlink" href="#legislation" title="Permalink to this headline">#</a></h2>
+<h2>Legislation<a class="headerlink" href="#legislation" title="Permalink to this heading">#</a></h2>
 <p>The TV licence is defined in <a class="reference external" href="https://www.legislation.gov.uk/uksi/2004/692/contents">The Communications (Television Licensing) Regulations 2004</a>. It clearly outlines the definition, function, and fees of the TV licence.</p>
 </section>
 <section id="fees">
-<h2>Fees<a class="headerlink" href="#fees" title="Permalink to this headline">#</a></h2>
+<h2>Fees<a class="headerlink" href="#fees" title="Permalink to this heading">#</a></h2>
 <p>Full price of a TV licence for a colour TV is £159.00, effective from April 2021. Watching or recording any TV or live programmes, or using BBC iPlayer without a valid TV licence would lead to a <a class="reference external" href="https://www.tvlicensing.co.uk/faqs/FAQ71">fine</a> up to £1000 plus any potential legal costs and/or compensation that households may be ordered to pay.</p>
 </section>
 <section id="concessions">
-<h2>Concessions<a class="headerlink" href="#concessions" title="Permalink to this headline">#</a></h2>
+<h2>Concessions<a class="headerlink" href="#concessions" title="Permalink to this heading">#</a></h2>
 <p>There are two types of concessions on TV licence fees:</p>
 <ul>
 <li><p>Blind persons:</p>
@@ -270,6 +270,16 @@
 </div>
 </details>
 <div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2222/3155194124.py:1: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+</pre></div>
+</div>
 <div class="output text_html"><div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -329,7 +339,7 @@
 </div>
 </section>
 <section id="microsimulation">
-<h2>Microsimulation<a class="headerlink" href="#microsimulation" title="Permalink to this headline">#</a></h2>
+<h2>Microsimulation<a class="headerlink" href="#microsimulation" title="Permalink to this heading">#</a></h2>
 <p>PolicyEngine-UK simulates TV licence based on its annual licence fee, aged concession policies, TV ownership, and evasion rate for households. The following table shows the budgeraty impact of policy reformation on TV licence simulated by PolicyEngine-UK. Here we assume that only one policy is reformed per microsimulation while holding other policies unchanged.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
@@ -453,15 +463,15 @@
 <div class="cell_output docutils container">
 <div class="output text_html"><style type="text/css">
 </style>
-<table id="T_bea2e">
+<table id="T_b2ee8">
   <thead>
     <tr>
       <th class="blank" >&nbsp;</th>
       <th class="blank" >&nbsp;</th>
       <th class="blank level0" >&nbsp;</th>
-      <th id="T_bea2e_level0_col0" class="col_heading level0 col0" >Change against current</th>
-      <th id="T_bea2e_level0_col1" class="col_heading level0 col1" >Tax revenues impact (£m)</th>
-      <th id="T_bea2e_level0_col2" class="col_heading level0 col2" >Reference</th>
+      <th id="T_b2ee8_level0_col0" class="col_heading level0 col0" >Change against current</th>
+      <th id="T_b2ee8_level0_col1" class="col_heading level0 col1" >Tax revenues impact (£m)</th>
+      <th id="T_b2ee8_level0_col2" class="col_heading level0 col2" >Reference</th>
     </tr>
     <tr>
       <th class="index_name level0" >Reformed policy</th>
@@ -474,118 +484,118 @@
   </thead>
   <tbody>
     <tr>
-      <th id="T_bea2e_level0_row0" class="row_heading level0 row0" rowspan="4">Aged discount</th>
-      <th id="T_bea2e_level1_row0" class="row_heading level1 row0" rowspan="4">100%</th>
-      <th id="T_bea2e_level2_row0" class="row_heading level2 row0" >0%</th>
-      <td id="T_bea2e_row0_col0" class="data row0 col0" >-100%</td>
-      <td id="T_bea2e_row0_col1" class="data row0 col1" >91.7</td>
-      <td id="T_bea2e_row0_col2" class="data row0 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27903&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 0%</a></td>
+      <th id="T_b2ee8_level0_row0" class="row_heading level0 row0" rowspan="4">Aged discount</th>
+      <th id="T_b2ee8_level1_row0" class="row_heading level1 row0" rowspan="4">100%</th>
+      <th id="T_b2ee8_level2_row0" class="row_heading level2 row0" >0%</th>
+      <td id="T_b2ee8_row0_col0" class="data row0 col0" >-100%</td>
+      <td id="T_b2ee8_row0_col1" class="data row0 col1" >91.7</td>
+      <td id="T_b2ee8_row0_col2" class="data row0 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27903&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 0%</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row1" class="row_heading level2 row1" >25%</th>
-      <td id="T_bea2e_row1_col0" class="data row1 col0" >-75%</td>
-      <td id="T_bea2e_row1_col1" class="data row1 col1" >68.8</td>
-      <td id="T_bea2e_row1_col2" class="data row1 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27083&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 25%</a></td>
+      <th id="T_b2ee8_level2_row1" class="row_heading level2 row1" >25%</th>
+      <td id="T_b2ee8_row1_col0" class="data row1 col0" >-75%</td>
+      <td id="T_b2ee8_row1_col1" class="data row1 col1" >68.8</td>
+      <td id="T_b2ee8_row1_col2" class="data row1 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27083&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 25%</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row2" class="row_heading level2 row2" >50%</th>
-      <td id="T_bea2e_row2_col0" class="data row2 col0" >-50%</td>
-      <td id="T_bea2e_row2_col1" class="data row2 col1" >45.9</td>
-      <td id="T_bea2e_row2_col2" class="data row2 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=19090&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 50%</a></td>
+      <th id="T_b2ee8_level2_row2" class="row_heading level2 row2" >50%</th>
+      <td id="T_b2ee8_row2_col0" class="data row2 col0" >-50%</td>
+      <td id="T_b2ee8_row2_col1" class="data row2 col1" >45.9</td>
+      <td id="T_b2ee8_row2_col2" class="data row2 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=19090&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 50%</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row3" class="row_heading level2 row3" >75%</th>
-      <td id="T_bea2e_row3_col0" class="data row3 col0" >-25%</td>
-      <td id="T_bea2e_row3_col1" class="data row3 col1" >22.9</td>
-      <td id="T_bea2e_row3_col2" class="data row3 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27909&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 75%</a></td>
+      <th id="T_b2ee8_level2_row3" class="row_heading level2 row3" >75%</th>
+      <td id="T_b2ee8_row3_col0" class="data row3 col0" >-25%</td>
+      <td id="T_b2ee8_row3_col1" class="data row3 col1" >22.9</td>
+      <td id="T_b2ee8_row3_col2" class="data row3 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27909&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing aged discount to 75%</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level0_row4" class="row_heading level0 row4" rowspan="10">Minimum age</th>
-      <th id="T_bea2e_level1_row4" class="row_heading level1 row4" rowspan="10">75</th>
-      <th id="T_bea2e_level2_row4" class="row_heading level2 row4" >70</th>
-      <td id="T_bea2e_row4_col0" class="data row4 col0" >-5</td>
-      <td id="T_bea2e_row4_col1" class="data row4 col1" >-19.6</td>
-      <td id="T_bea2e_row4_col2" class="data row4 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27932&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 70</a></td>
+      <th id="T_b2ee8_level0_row4" class="row_heading level0 row4" rowspan="10">Minimum age</th>
+      <th id="T_b2ee8_level1_row4" class="row_heading level1 row4" rowspan="10">75</th>
+      <th id="T_b2ee8_level2_row4" class="row_heading level2 row4" >70</th>
+      <td id="T_b2ee8_row4_col0" class="data row4 col0" >-5</td>
+      <td id="T_b2ee8_row4_col1" class="data row4 col1" >-19.6</td>
+      <td id="T_b2ee8_row4_col2" class="data row4 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27932&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 70</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row5" class="row_heading level2 row5" >71</th>
-      <td id="T_bea2e_row5_col0" class="data row5 col0" >-4</td>
-      <td id="T_bea2e_row5_col1" class="data row5 col1" >-11.4</td>
-      <td id="T_bea2e_row5_col2" class="data row5 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27939&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 71</a></td>
+      <th id="T_b2ee8_level2_row5" class="row_heading level2 row5" >71</th>
+      <td id="T_b2ee8_row5_col0" class="data row5 col0" >-4</td>
+      <td id="T_b2ee8_row5_col1" class="data row5 col1" >-11.4</td>
+      <td id="T_b2ee8_row5_col2" class="data row5 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27939&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 71</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row6" class="row_heading level2 row6" >72</th>
-      <td id="T_bea2e_row6_col0" class="data row6 col0" >-3</td>
-      <td id="T_bea2e_row6_col1" class="data row6 col1" >-7.7</td>
-      <td id="T_bea2e_row6_col2" class="data row6 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27941&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 72</a></td>
+      <th id="T_b2ee8_level2_row6" class="row_heading level2 row6" >72</th>
+      <td id="T_b2ee8_row6_col0" class="data row6 col0" >-3</td>
+      <td id="T_b2ee8_row6_col1" class="data row6 col1" >-7.7</td>
+      <td id="T_b2ee8_row6_col2" class="data row6 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27941&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 72</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row7" class="row_heading level2 row7" >73</th>
-      <td id="T_bea2e_row7_col0" class="data row7 col0" >-2</td>
-      <td id="T_bea2e_row7_col1" class="data row7 col1" >-2.4</td>
-      <td id="T_bea2e_row7_col2" class="data row7 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27944&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 73</a></td>
+      <th id="T_b2ee8_level2_row7" class="row_heading level2 row7" >73</th>
+      <td id="T_b2ee8_row7_col0" class="data row7 col0" >-2</td>
+      <td id="T_b2ee8_row7_col1" class="data row7 col1" >-2.4</td>
+      <td id="T_b2ee8_row7_col2" class="data row7 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27944&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 73</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row8" class="row_heading level2 row8" >74</th>
-      <td id="T_bea2e_row8_col0" class="data row8 col0" >-1</td>
-      <td id="T_bea2e_row8_col1" class="data row8 col1" >-1.5</td>
-      <td id="T_bea2e_row8_col2" class="data row8 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27947&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 74</a></td>
+      <th id="T_b2ee8_level2_row8" class="row_heading level2 row8" >74</th>
+      <td id="T_b2ee8_row8_col0" class="data row8 col0" >-1</td>
+      <td id="T_b2ee8_row8_col1" class="data row8 col1" >-1.5</td>
+      <td id="T_b2ee8_row8_col2" class="data row8 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27947&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 74</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row9" class="row_heading level2 row9" >76</th>
-      <td id="T_bea2e_row9_col0" class="data row9 col0" >1</td>
-      <td id="T_bea2e_row9_col1" class="data row9 col1" >1.3</td>
-      <td id="T_bea2e_row9_col2" class="data row9 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27949&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 76</a></td>
+      <th id="T_b2ee8_level2_row9" class="row_heading level2 row9" >76</th>
+      <td id="T_b2ee8_row9_col0" class="data row9 col0" >1</td>
+      <td id="T_b2ee8_row9_col1" class="data row9 col1" >1.3</td>
+      <td id="T_b2ee8_row9_col2" class="data row9 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27949&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 76</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row10" class="row_heading level2 row10" >77</th>
-      <td id="T_bea2e_row10_col0" class="data row10 col0" >2</td>
-      <td id="T_bea2e_row10_col1" class="data row10 col1" >2.2</td>
-      <td id="T_bea2e_row10_col2" class="data row10 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27951&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 77</a></td>
+      <th id="T_b2ee8_level2_row10" class="row_heading level2 row10" >77</th>
+      <td id="T_b2ee8_row10_col0" class="data row10 col0" >2</td>
+      <td id="T_b2ee8_row10_col1" class="data row10 col1" >2.2</td>
+      <td id="T_b2ee8_row10_col2" class="data row10 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27951&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 77</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row11" class="row_heading level2 row11" >78</th>
-      <td id="T_bea2e_row11_col0" class="data row11 col0" >3</td>
-      <td id="T_bea2e_row11_col1" class="data row11 col1" >3.7</td>
-      <td id="T_bea2e_row11_col2" class="data row11 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27953&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 78</a></td>
+      <th id="T_b2ee8_level2_row11" class="row_heading level2 row11" >78</th>
+      <td id="T_b2ee8_row11_col0" class="data row11 col0" >3</td>
+      <td id="T_b2ee8_row11_col1" class="data row11 col1" >3.7</td>
+      <td id="T_b2ee8_row11_col2" class="data row11 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27953&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 78</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row12" class="row_heading level2 row12" >79</th>
-      <td id="T_bea2e_row12_col0" class="data row12 col0" >4</td>
-      <td id="T_bea2e_row12_col1" class="data row12 col1" >7.1</td>
-      <td id="T_bea2e_row12_col2" class="data row12 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27955&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 79</a></td>
+      <th id="T_b2ee8_level2_row12" class="row_heading level2 row12" >79</th>
+      <td id="T_b2ee8_row12_col0" class="data row12 col0" >4</td>
+      <td id="T_b2ee8_row12_col1" class="data row12 col1" >7.1</td>
+      <td id="T_b2ee8_row12_col2" class="data row12 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27955&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 79</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row13" class="row_heading level2 row13" >80</th>
-      <td id="T_bea2e_row13_col0" class="data row13 col0" >5</td>
-      <td id="T_bea2e_row13_col1" class="data row13 col1" >91.7</td>
-      <td id="T_bea2e_row13_col2" class="data row13 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27960&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 80</a></td>
+      <th id="T_b2ee8_level2_row13" class="row_heading level2 row13" >80</th>
+      <td id="T_b2ee8_row13_col0" class="data row13 col0" >5</td>
+      <td id="T_b2ee8_row13_col1" class="data row13 col1" >91.7</td>
+      <td id="T_b2ee8_row13_col2" class="data row13 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27960&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing minimum age for aged discount to 80</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level0_row14" class="row_heading level0 row14" rowspan="4">TV licence fee</th>
-      <th id="T_bea2e_level1_row14" class="row_heading level1 row14" rowspan="4">£159</th>
-      <th id="T_bea2e_level2_row14" class="row_heading level2 row14" >£157</th>
-      <td id="T_bea2e_row14_col0" class="data row14 col0" >£-2</td>
-      <td id="T_bea2e_row14_col1" class="data row14 col1" >-52.1</td>
-      <td id="T_bea2e_row14_col2" class="data row14 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27089&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £157</a></td>
+      <th id="T_b2ee8_level0_row14" class="row_heading level0 row14" rowspan="4">TV licence fee</th>
+      <th id="T_b2ee8_level1_row14" class="row_heading level1 row14" rowspan="4">£159</th>
+      <th id="T_b2ee8_level2_row14" class="row_heading level2 row14" >£157</th>
+      <td id="T_b2ee8_row14_col0" class="data row14 col0" >£-2</td>
+      <td id="T_b2ee8_row14_col1" class="data row14 col1" >-52.1</td>
+      <td id="T_b2ee8_row14_col2" class="data row14 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27089&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £157</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row15" class="row_heading level2 row15" >£158</th>
-      <td id="T_bea2e_row15_col0" class="data row15 col0" >£-1</td>
-      <td id="T_bea2e_row15_col1" class="data row15 col1" >-26.0</td>
-      <td id="T_bea2e_row15_col2" class="data row15 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27087&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £158</a></td>
+      <th id="T_b2ee8_level2_row15" class="row_heading level2 row15" >£158</th>
+      <td id="T_b2ee8_row15_col0" class="data row15 col0" >£-1</td>
+      <td id="T_b2ee8_row15_col1" class="data row15 col1" >-26.0</td>
+      <td id="T_b2ee8_row15_col2" class="data row15 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=27087&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £158</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row16" class="row_heading level2 row16" >£160</th>
-      <td id="T_bea2e_row16_col0" class="data row16 col0" >£1</td>
-      <td id="T_bea2e_row16_col1" class="data row16 col1" >26.0</td>
-      <td id="T_bea2e_row16_col2" class="data row16 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26981&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £160</a></td>
+      <th id="T_b2ee8_level2_row16" class="row_heading level2 row16" >£160</th>
+      <td id="T_b2ee8_row16_col0" class="data row16 col0" >£1</td>
+      <td id="T_b2ee8_row16_col1" class="data row16 col1" >26.0</td>
+      <td id="T_b2ee8_row16_col2" class="data row16 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26981&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £160</a></td>
     </tr>
     <tr>
-      <th id="T_bea2e_level2_row17" class="row_heading level2 row17" >£161</th>
-      <td id="T_bea2e_row17_col0" class="data row17 col0" >£2</td>
-      <td id="T_bea2e_row17_col1" class="data row17 col1" >52.1</td>
-      <td id="T_bea2e_row17_col2" class="data row17 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26983&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £161</a></td>
+      <th id="T_b2ee8_level2_row17" class="row_heading level2 row17" >£161</th>
+      <td id="T_b2ee8_row17_col0" class="data row17 col0" >£2</td>
+      <td id="T_b2ee8_row17_col1" class="data row17 col1" >52.1</td>
+      <td id="T_b2ee8_row17_col2" class="data row17 col2" ><a href="https://policyengine.org/uk/policy?focus=policyOutput.netIncome&reform=26983&region=uk&timePeriod=2023&baseline=1">Budgetary impact of changing licence fee to £161</a></td>
     </tr>
   </tbody>
 </table>
@@ -650,9 +660,7 @@
             
           </div>
           <div class="right-details">
-            <div class="icons">
-              
-            </div>
+            
           </div>
         </div>
         
@@ -689,6 +697,7 @@
 </div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
