@@ -15,22 +15,22 @@ ENGLAND:
   values:
     2018-01-01: 118_591_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 SCOTLAND:
   values:
     2018-01-01: 10_532_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 WALES:
   values:
     2018-01-01: 4_787_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 NORTHERN_IRELAND:
   values:
     2018-01-01: 2_736_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 metadata:
   reference:
     - title: HMRC Tax Receipts Split by country

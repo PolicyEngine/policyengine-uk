@@ -118,7 +118,7 @@ RawFRS_2019_20 = RawFRS.from_folder(
     "raw_frs_2019",
     "FRS 2019-20",
     2019,
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2019.h5",
+    # new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2019.h5",
 )
 
 RawFRS_2018_19 = RawFRS.from_folder(
@@ -126,7 +126,7 @@ RawFRS_2018_19 = RawFRS.from_folder(
     "raw_frs_2018",
     "FRS 2018-19",
     2018,
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2018.h5",
+    # new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2018.h5",
 )
 
 RawFRS_2020_21 = RawFRS.from_folder(
@@ -134,7 +134,7 @@ RawFRS_2020_21 = RawFRS.from_folder(
     "raw_frs_2020",
     "FRS 2020-21",
     2020,
-    new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2020.h5",
+    # new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2020.h5",
 )
 
 RawFRS_2021_22 = RawFRS.from_folder(

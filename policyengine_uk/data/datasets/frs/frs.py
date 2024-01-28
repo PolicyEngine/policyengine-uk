@@ -135,7 +135,7 @@ FRS_2021_22 = FRS.from_dataset(
     RawFRS_2021_22,
     "frs_2021",
     "FRS 2021-22",
-    new_url="release://policyengine/non-public-microdata/2023-dec-calibration/frs_2021.h5",
+    # new_url="release://policyengine/non-public-microdata/2023-dec-calibration/frs_2021.h5",
 )
 
 
@@ -215,7 +215,7 @@ def add_personal_variables(frs: h5py.File, person: DataFrame, year: int):
     frs["person_state_role"] = np.array(["member"] * len(person)).astype("S")
     frs["state_weight"] = np.array([1])
     frs["gender"] = np.where(person.SEX == 1, "MALE", "FEMALE").astype("S")
-    frs["hours_worked"] = person.TOTHOURS * 52
+    frs["hours_worked"] = np.maximum(person.TOTHOURS, 0) * 52
     frs["is_household_head"] = person.HRPID == 1
     frs["is_benunit_head"] = person.UPERSON == 1
     MARITAL = [
