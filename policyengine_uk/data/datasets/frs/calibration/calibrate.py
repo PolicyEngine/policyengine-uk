@@ -402,19 +402,19 @@ def generate_model_variables(dataset: str, time_period: str = "2023") -> Tuple:
     uc_households_capped = benefit_capped & ~legacy_claimant
     legacy_households_capped = benefit_capped & legacy_claimant
 
-    values_df[
-        "Universal Credit households benefit capped"
-    ] = uc_households_capped.astype(float)
-    targets[
-        "Universal Credit households benefit capped"
-    ] = parameters.programs(current_instant).universal_credit.benefit_cap
+    values_df["Universal Credit households benefit capped"] = (
+        uc_households_capped.astype(float)
+    )
+    targets["Universal Credit households benefit capped"] = (
+        parameters.programs(current_instant).universal_credit.benefit_cap
+    )
     equivalisation["Universal Credit households benefit capped"] = (
         POPULATION_EQUIVALISATION + " (benefit cap)"
     )
 
-    values_df[
-        "Legacy households benefit capped"
-    ] = legacy_households_capped.astype(float)
+    values_df["Legacy households benefit capped"] = (
+        legacy_households_capped.astype(float)
+    )
     targets["Legacy households benefit capped"] = parameters.programs(
         current_instant
     ).housing_benefit.benefit_cap
