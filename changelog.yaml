@@ -962,3 +962,10 @@
     added:
     - Update PIP documentation
   date: 2024-01-04 16:18:59
+- bump: minor
+  changes:
+    changed:
+    - Calibration routine to include benefit cap statistics.
+    fixed:
+    - Benefit cap UC bug.
+  date: 2024-01-28 17:39:54

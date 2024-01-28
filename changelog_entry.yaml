@@ -1,6 +1,0 @@
-- bump: minor
-  changes:
-    fixed:
-    - Benefit cap UC bug.
-    changed:
-    - Calibration routine to include benefit cap statistics.
