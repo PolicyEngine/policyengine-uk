@@ -114,9 +114,9 @@ class SPIEnhancedFRS(Dataset):
         for variable in full_imputations.columns:
             # Assign over the second half of the dataset
             if variable in new_values.keys():
-                new_values[variable][
-                    len(new_values[variable]) // 2 :
-                ] = full_imputations[variable].values
+                new_values[variable][len(new_values[variable]) // 2 :] = (
+                    full_imputations[variable].values
+                )
 
         self.save_dataset(new_values)
 

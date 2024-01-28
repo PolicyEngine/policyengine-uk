@@ -334,7 +334,7 @@ def generate_model_variables(dataset: str, time_period: str = "2023") -> Tuple:
         "child_tax_credit",
         "housing_benefit",
         "income_tax",
-        "total_NI",
+        "total_national_insurance",
         "employment_income",
         "self_employment_income",
         "pension_income",
@@ -384,6 +384,43 @@ def generate_model_variables(dataset: str, time_period: str = "2023") -> Tuple:
         )
         targets[label] = revenue
         equivalisation[label] = FINANCIAL_EQUIVALISATION
+
+    ## Benefit capped households
+
+    benefit_capped = (
+        simulation.calculate(
+            "benefit_cap_reduction", map_to="household"
+        ).values
+        > 0
+    )
+    legacy_claimant = (
+        simulation.calculate(
+            "claims_legacy_benefits", map_to="household"
+        ).values
+        > 0
+    )
+    uc_households_capped = benefit_capped & ~legacy_claimant
+    legacy_households_capped = benefit_capped & legacy_claimant
+
+    values_df["Universal Credit households benefit capped"] = (
+        uc_households_capped.astype(float)
+    )
+    targets["Universal Credit households benefit capped"] = (
+        parameters.programs(current_instant).universal_credit.benefit_cap
+    )
+    equivalisation["Universal Credit households benefit capped"] = (
+        POPULATION_EQUIVALISATION + " (benefit cap)"
+    )
+
+    values_df["Legacy households benefit capped"] = (
+        legacy_households_capped.astype(float)
+    )
+    targets["Legacy households benefit capped"] = parameters.programs(
+        current_instant
+    ).housing_benefit.benefit_cap
+    equivalisation["Legacy households benefit capped"] = (
+        POPULATION_EQUIVALISATION + " (benefit cap)"
+    )
 
     # Find equivalisation by dividing by the mean of each equivalisation group
 
@@ -512,7 +549,7 @@ def calibrate(
     training_log_path: str = "training_log.csv.gz",
     overwrite_existing_log: bool = False,
     learning_rate: float = 4e-1,
-    epochs: int = 20_000,
+    epochs: int = 50_000,
     loss_threshold: float = None,
 ) -> np.ndarray:
     (

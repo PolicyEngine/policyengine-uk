@@ -1,0 +1,9 @@
+description: Households capped by the Housing Benefit benefit cap.
+values:
+  2022-08-01: 12_000
+  2023-08-01: 6_400
+metadata:
+  unit: household
+  reference:
+    - title: Benefit cap number of households capped to August 2022
+      href: https://www.gov.uk/government/statistics/benefit-cap-number-of-households-capped-to-august-2022/benefit-cap-number-of-households-capped-to-august-2022

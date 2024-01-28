@@ -1,0 +1,49 @@
+- name: Universal Credit-claiming, benefit cap-constrained household on EntitledTo
+  # Source: https://www.entitledto.co.uk/benefits-calculator/Results/ComprehensiveCalc?cid=3a823206-e10e-4394-a070-8f7e4ceb83b7&paymentPeriod=Monthly&calcScenario=UniversalCredit
+  period: 2024
+  absolute_error_margin: 70
+  input:
+    people:
+      head:
+        age: 39
+        gender: MALE
+      spouse:
+        age: 36
+        gender: FEMALE
+      child_1:
+        age: 8
+        gender: MALE
+      child_2:
+        age: 2
+        gender: MALE
+      child_3:
+        age: 1
+        gender: MALE
+    benunits:
+      benunit:
+        benunit_rent: 22_048
+        would_claim_UC: true
+        members:
+          - head
+          - spouse
+          - child_1
+          - child_2
+          - child_3
+    households:
+      household:
+        BRMA: INNER_NORTH_LONDON
+        members:
+          - head
+          - spouse
+          - child_1
+          - child_2
+          - child_3
+  output:
+    UC_standard_allowance: 578.82 * 12
+    UC_child_element: 584.58 * 12
+    UC_housing_costs_element: 1_837.33 * 12
+    UC_carer_element: 0
+    UC_disability_elements: 0
+    UC_childcare_element: 0
+    UC_maximum_amount: 3_000.73 * 12
+    universal_credit: 1_868.47 * 12
