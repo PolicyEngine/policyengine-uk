@@ -969,3 +969,8 @@
     fixed:
     - Benefit cap UC bug.
   date: 2024-01-28 17:39:54
+- bump: minor
+  changes:
+    added:
+    - Add Income Tax test.
+  date: 2024-02-01 16:02:50
