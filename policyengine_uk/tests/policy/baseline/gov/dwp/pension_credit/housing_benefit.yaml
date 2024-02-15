@@ -1,36 +1,56 @@
-- name: Single person under 25, eligible for housing benefit
+- name: Single person eligible for housing benefit
   period: 2023
+  absolute_error_margin: 5
   input:
-    age: 24
-    benunit_rent: 30*52
+    age: 28
+    benunit_rent: 80*52
     is_single_person: true
     in_social_housing: true
     housing_benefit_reported: true
+    working_tax_credit_reported: true
     employment_income: 2000
   output:
-    housing_benefit: 30*52
-- name: Single person over 25, not eligible for housing benefit
+    housing_benefit: 80*52
+- name: Single person not eligible for housing benefit
   period: 2023
+  absolute_error_margin: 5
   input:
     age: 28
-    benunit_rent: 30*52
+    benunit_rent: 80*52
     is_single_person: true
     in_social_housing: false
     housing_benefit_reported: 0
+    working_tax_credit_reported: false
     employment_income: 2000
   output:
     housing_benefit: 0
+- name: Single person partial eligible for housing benefit
+  period: 2023
+  absolute_error_margin: 5
+  input:
+    age: 28
+    weekly_hours: 31
+    benunit_rent: 80*52
+    is_single_person: true
+    in_social_housing: true
+    is_household_head: true
+    housing_benefit_reported: true
+    working_tax_credit_reported: true
+    employment_income: 6000
+  output:
+    housing_benefit: 45.86*52
 - name: Lone parent with small earnings
   period: 2023
+  absolute_error_margin: 5
   input:
     age: 26
-    benunit_rent: 30*52
+    benunit_rent: 80*52
     is_lone_parent: true
     tenure_type: RENT_FROM_COUNCIL
     housing_benefit_reported: true
     employment_income: 0
   output:
-    housing_benefit: 30*52
+    housing_benefit: 80*52
 - name: Single person over pension age
   period: 2023
   input:
