@@ -974,3 +974,10 @@
     added:
     - Add Income Tax test.
   date: 2024-02-01 16:02:50
+- bump: minor
+  changes:
+    added:
+    - Household wealth decile.
+    changed:
+    - Assign decile of -1 to households with negative income.
+  date: 2024-02-17 21:35:30

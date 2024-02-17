@@ -1,6 +1,0 @@
-- bump: minor
-  changes:
-    changed:
-      - Assign decile of -1 to households with negative income.
-    added:
-      - Household wealth decile.
