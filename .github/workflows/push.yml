@@ -79,6 +79,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages  # The branch the action should deploy to.
           FOLDER: docs/book/_build/html  # The folder the action should deploy.
+  Docker:
+    if: |
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
+    name: Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build container
+        run: docker build docs/streamlit -t ghcr.io/policyengine/policyengine-uk-documentation
+      - name: Push container
+        run: docker push ghcr.io/policyengine/policyengine-uk-documentation
   Publish:
     if: |
       (github.repository == 'PolicyEngine/policyengine-uk')
