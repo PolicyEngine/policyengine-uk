@@ -383,3 +383,11 @@ class statutory_sick_pay(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+
+
+class capital_gains(Variable):
+    label = "capital gains"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
