@@ -981,3 +981,8 @@
     changed:
     - Assign decile of -1 to households with negative income.
   date: 2024-02-17 21:35:30
+- bump: minor
+  changes:
+    added:
+    - Initial version of capital gains imputations and logic.
+  date: 2024-02-19 22:00:58
