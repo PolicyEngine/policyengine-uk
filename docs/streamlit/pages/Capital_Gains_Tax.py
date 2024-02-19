@@ -5,6 +5,7 @@ import numpy as np
 import plotly.express as px
 from policyengine_core.charts import format_fig, BLUE, BLUE_LIGHT
 from Home import STYLE
+from policyengine_uk.data.storage import STORAGE_FOLDER
 
 # st.set_page_config(layout="wide")
 
@@ -30,7 +31,7 @@ st.warning(
     "**Caveat:** so far, we've only used income bands up to over £128,000, so won't capture the very highest earners."
 )
 
-capital_gains = pd.read_csv("../capital_gains_distribution.csv")
+capital_gains = pd.read_csv(STORAGE_FOLDER / "imputations" / "capital_gains_distribution_advani_summers.csv.gz")
 capital_gains["maximum_total_income"] = (
     capital_gains.minimum_total_income.shift(-1).fillna(np.inf)
 )
