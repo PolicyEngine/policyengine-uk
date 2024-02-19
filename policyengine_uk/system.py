@@ -12,6 +12,7 @@ from policyengine_uk.data import (
     FRS_2020_21,
     CalibratedSPIEnhancedPooledFRS_2019_21,
 )
+from policyengine_uk.data.storage import STORAGE_FOLDER
 import pandas as pd
 
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
@@ -61,11 +62,6 @@ class Simulation(CoreSimulation):
         if reform is not None:
             self.apply_reform(reform)
 
-        capital_gains = pd.read_csv(
-            COUNTRY_DIR.parent / "imputed_gains.csv"
-        ).imputed_gains.values
-        self.set_input("capital_gains", 2023, capital_gains)
-
 
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
@@ -87,10 +83,11 @@ class Microsimulation(CoreMicrosimulation):
         if reform is not None:
             self.apply_reform(reform)
 
-        capital_gains = pd.read_csv(
-            COUNTRY_DIR.parent / "imputed_gains.csv"
-        ).imputed_gains.values
-        self.set_input("capital_gains", 2023, capital_gains)
+        if self.dataset.name == "enhanced_frs":
+            capital_gains = pd.read_csv(
+                STORAGE_FOLDER / "imputations" / "imputed_gains.csv.gz"
+            ).imputed_gains.values
+            self.set_input("capital_gains", 2023, capital_gains)
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated
