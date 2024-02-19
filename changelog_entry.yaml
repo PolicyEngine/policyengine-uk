@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    added:
+    - Initial version of capital gains imputations and logic.
