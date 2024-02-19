@@ -31,7 +31,11 @@ st.warning(
     "**Caveat:** so far, we've only used income bands up to over £128,000, so won't capture the very highest earners."
 )
 
-capital_gains = pd.read_csv(STORAGE_FOLDER / "imputations" / "capital_gains_distribution_advani_summers.csv.gz")
+capital_gains = pd.read_csv(
+    STORAGE_FOLDER
+    / "imputations"
+    / "capital_gains_distribution_advani_summers.csv.gz"
+)
 capital_gains["maximum_total_income"] = (
     capital_gains.minimum_total_income.shift(-1).fillna(np.inf)
 )
