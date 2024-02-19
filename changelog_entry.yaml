@@ -1,4 +1,0 @@
-- bump: minor
-  changes:
-    added:
-    - Docker image deployment for streamlit documentation.
