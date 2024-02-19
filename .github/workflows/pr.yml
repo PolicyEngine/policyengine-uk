@@ -71,5 +71,3 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build container
         run: docker build docs/streamlit -t ghcr.io/policyengine/policyengine-uk-documentation
-      - name: Push container
-        run: docker push ghcr.io/policyengine/policyengine-uk-documentation
