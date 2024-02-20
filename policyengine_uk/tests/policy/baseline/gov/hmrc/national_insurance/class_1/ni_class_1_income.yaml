@@ -1,0 +1,9 @@
+- name: NI Class 1 income sums income components.
+  period: 2023
+  input:
+    employment_income: 1
+    statutory_sick_pay: 2
+    statutory_maternity_pay: 4
+    statutory_paternity_pay: 8
+  output:
+    ni_class_1_income: 15

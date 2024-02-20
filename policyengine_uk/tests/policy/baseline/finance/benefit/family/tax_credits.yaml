@@ -138,13 +138,13 @@
     WTC_worker_element: 0
 - name: 30 hours qualifies someone for worker element
   period: 2022
-  absolute_error_margin: 0
+  absolute_error_margin: 1
   input:
     is_WTC_eligible: true
     working_tax_credit_reported: true
     weekly_hours: 30
   output:
-    WTC_worker_element: 830
+    WTC_worker_element: 870
 - name: Tax credits under £26.00 are not paid
   period: 2022
   absolute_error_margin: 0

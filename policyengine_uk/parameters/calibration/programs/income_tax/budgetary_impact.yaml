@@ -1,0 +1,41 @@
+description: Income Tax revenue by country
+metadata:
+  reference:
+    - title: HMRC Tax Receipts Split by country
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853118/Disaggregated_tax_and_NICs_receipts_-_methodological_note.pdf
+ENGLAND:
+  values:
+    2018-01-01: 169_958_000_000
+  metadata:
+    uprating: calibration.programs.income_tax.budgetary_impact.UNITED_KINGDOM
+WALES:
+  values:
+    2018-01-01: 5_235_000_000
+  metadata:
+    uprating: calibration.programs.income_tax.budgetary_impact.UNITED_KINGDOM
+SCOTLAND:
+  values:
+    2018-01-01: 12_991_000_000
+  metadata:
+    uprating: calibration.programs.income_tax.budgetary_impact.UNITED_KINGDOM
+NORTHERN_IRELAND:
+  values:
+    2018-01-01: 2_847_000_000
+  metadata:
+    uprating: calibration.programs.income_tax.budgetary_impact.UNITED_KINGDOM
+UNITED_KINGDOM:
+  values:
+    2018-01-01: 192_504_000_000
+    2019-01-01: 193_385_000_000
+    2020-01-01: 198_053_000_000
+    2021-01-01: 213_248_652_335
+    2022-01-01: 229_578_723_749
+    2023-01-01: 240_537_006_900
+    2024-01-01: 253_049_631_509
+    2025-01-01: 268_366_726_090
+    2026-01-01: 284_310_561_542
+  metadata:
+    uprating: self
+    reference:
+    - title: OBR forecast
+      href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/income-tax/

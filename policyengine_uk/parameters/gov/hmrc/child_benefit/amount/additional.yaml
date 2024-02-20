@@ -39,12 +39,13 @@ values:
       - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)
         href: https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made
   2022-04-01: 14.45
+  2023-01-01: 15.90
 metadata:
   label: Child Benefit (additional)
   name: CB_additional
   period: week
   unit: currency-GBP
-  uprating: calibration.uprating.september_cpi
+  uprating: gov.benefit_uprating_cpi
   reference:
     - title: The Tax Credits, Child Benefit and Guardian’s Allowance Up-rating Regulations 2021(5)(b)
       href: https://www.legislation.gov.uk/uksi/2021/156/regulation/5/made

@@ -5,7 +5,7 @@ from typing import Type
 from ..utils import STORAGE_FOLDER
 from .stacked_frs import PooledFRS_2018_20
 from .frs import FRS_2019_20
-from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2018_20
+from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2019_21
 import yaml
 
 
@@ -15,6 +15,7 @@ class ImputationExtendedFRS(Dataset):
     file_path = STORAGE_FOLDER / "imputation_extended_frs.h5"
     data_format = Dataset.TIME_PERIOD_ARRAYS
     input_dataset = None
+    num_years = 1
 
     @staticmethod
     def from_dataset(
@@ -23,6 +24,7 @@ class ImputationExtendedFRS(Dataset):
         new_label: str = "Imputation-extended FRS",
         new_url: str = None,
         new_time_period: int = None,
+        new_num_years: int = 1,
     ):
         class ImputationExtendedFRSFromDataset(ImputationExtendedFRS):
             name = new_name
@@ -32,6 +34,7 @@ class ImputationExtendedFRS(Dataset):
             time_period = new_time_period or dataset.time_period
             data_format = Dataset.TIME_PERIOD_ARRAYS
             url = new_url
+            num_years = new_num_years
 
         return ImputationExtendedFRSFromDataset
 
@@ -80,7 +83,10 @@ class ImputationExtendedFRS(Dataset):
                     targets[output] for output in imputation_model.Y_columns
                 ]
                 quantiles = imputation_model.solve_for_mean_quantiles(
-                    target_values, X_input, frs_household_weight
+                    target_values,
+                    X_input,
+                    frs_household_weight,
+                    max_iterations=3,
                 )
             else:
                 quantiles = None
@@ -89,17 +95,22 @@ class ImputationExtendedFRS(Dataset):
             )
 
             for output_variable in Y_output.columns:
+                values = Y_output[output_variable].values
                 data[output_variable] = {
-                    2022: Y_output[output_variable].values
+                    year: values
+                    for year in range(
+                        self.time_period, self.time_period + self.num_years
+                    )
                 }
 
         self.save_dataset(data)
 
 
 EnhancedFRS = ImputationExtendedFRS.from_dataset(
-    CalibratedSPIEnhancedPooledFRS_2018_20,
+    CalibratedSPIEnhancedPooledFRS_2019_21,
     "enhanced_frs",
     "Enhanced FRS",
     new_time_period=2023,
-    new_url="release://policyengine/non-public-microdata/uk-2023-july-calibration/enhanced_frs.h5",
+    new_num_years=5,
+    new_url="release://policyengine/non-public-microdata/uk-2023-dec-calibration/enhanced_frs.h5",
 )

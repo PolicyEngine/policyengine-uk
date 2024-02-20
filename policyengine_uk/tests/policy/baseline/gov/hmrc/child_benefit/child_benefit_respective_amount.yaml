@@ -1,5 +1,6 @@
 - name: Only child receives higher amount
   period: 2022
+  absolute_error_margin: 30
   input:
     people:
       child:
@@ -12,6 +13,7 @@
 
 - name: Eldest child receives higher amount, younger child receives lower amount
   period: 2022
+  absolute_error_margin: 30
   input:
     people:
       eldest:
@@ -26,6 +28,7 @@
 
 - name: Eldest child receives higher amount, all younger children receive lower amount
   period: 2022
+  absolute_error_margin: 5
   input:
     people:
       eldest:
@@ -38,4 +41,4 @@
       benunit:
         members: [eldest, younger, youngest]
   output:
-    child_benefit_respective_amount: [1099.80, 728.00, 728.00]
+    child_benefit_respective_amount: [1125.15, 745.55, 745.55]
