@@ -1,0 +1,20 @@
+- name: Test 1
+  period: 2024
+  input:
+    adjusted_net_income: 40000
+  output:
+    income_tax: 5484.2
+
+- name: Test 2
+  period: 2024
+  input:
+   adjusted_net_income: 50000
+  output:
+   income_tax: 7484.2
+
+- name: Test 3
+  period: 2024
+  input:
+    adjusted_net_income: 60000
+  output:
+    income_tax: 11428.4

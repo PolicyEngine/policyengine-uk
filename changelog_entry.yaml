@@ -1,4 +1,4 @@
 - bump: minor
   changes:
     added:
-      - Update PIP documentation
+      - Add Income Tax Integration test
