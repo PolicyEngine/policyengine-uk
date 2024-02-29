@@ -962,3 +962,32 @@
     added:
     - Update PIP documentation
   date: 2024-01-04 16:18:59
+- bump: minor
+  changes:
+    changed:
+    - Calibration routine to include benefit cap statistics.
+    fixed:
+    - Benefit cap UC bug.
+  date: 2024-01-28 17:39:54
+- bump: minor
+  changes:
+    added:
+    - Add Income Tax test.
+  date: 2024-02-01 16:02:50
+- bump: minor
+  changes:
+    added:
+    - Household wealth decile.
+    changed:
+    - Assign decile of -1 to households with negative income.
+  date: 2024-02-17 21:35:30
+- bump: minor
+  changes:
+    added:
+    - Initial version of capital gains imputations and logic.
+  date: 2024-02-19 22:00:58
+- bump: minor
+  changes:
+    added:
+    - Docker image deployment for streamlit documentation.
+  date: 2024-02-19 22:26:55

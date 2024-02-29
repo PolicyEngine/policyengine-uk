@@ -1,0 +1,35 @@
+description: Benefit cap
+single:
+  metadata:
+    label: Single claimants
+  in_london:
+    metadata:
+      label: Benefit cap (single claimants, in London)
+    values:
+      2016-11-07: 15_410
+      2023-04-01: 16_967
+  outside_london:
+    metadata:
+      label: Benefit cap (single claimants, outside London)
+    values:
+      2016-11-07: 13_400
+      2023-04-01: 14_753
+non_single:
+  metadata:
+    label: Joint or claimants with children
+  in_london:
+    metadata:
+      label: Benefit cap (family claimants, in London)
+    values:
+      2016-11-07: 23_000
+      2023-04-01: 25_323
+  outside_london:
+    metadata:
+      label: Benefit cap (family claimants, outside London)
+    values:
+      2016-11-07: 20_000
+      2023-04-01: 22_020
+metadata:
+  reference: 
+    - title: The Universal Credit Regulations 2013 reg. 80A
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/80A

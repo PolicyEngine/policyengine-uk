@@ -1,11 +1,6 @@
 format: jb-book
 root: index
 parts:
-  - caption: Model
-    chapters:
-      - file: model/data
-      - file: model/validation
-      - file: model/reweighting
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit

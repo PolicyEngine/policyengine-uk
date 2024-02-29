@@ -343,7 +343,11 @@ class household_income_decile(Variable):
         weighted_income = MicroSeries(
             income, weights=household_weight * count_people
         )
-        return weighted_income.decile_rank().values
+        decile = weighted_income.decile_rank().values
+        # Set negatives to -1.
+        # This avoids the bottom decile summing to a negative number,
+        # which would flip the % change in the interface.
+        return where(income < 0, -1, decile)
 
 
 class income_decile(Variable):
@@ -375,6 +379,14 @@ class statutory_paternity_pay(Variable):
 
 class statutory_sick_pay(Variable):
     label = "Statutory sick pay"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+
+class capital_gains(Variable):
+    label = "capital gains"
     entity = Person
     definition_period = YEAR
     value_type = float
