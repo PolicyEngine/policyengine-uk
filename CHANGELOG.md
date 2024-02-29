@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.69.0] - 2024-02-19 22:26:55
+
+### Added
+
+- Docker image deployment for streamlit documentation.
+
+## [0.68.0] - 2024-02-19 22:00:58
+
+### Added
+
+- Initial version of capital gains imputations and logic.
+
+## [0.67.0] - 2024-02-17 21:35:30
+
+### Added
+
+- Household wealth decile.
+
+### Changed
+
+- Assign decile of -1 to households with negative income.
+
+## [0.66.0] - 2024-02-01 16:02:50
+
+### Added
+
+- Add Income Tax test.
+
+## [0.65.0] - 2024-01-28 17:39:54
+
+### Changed
+
+- Calibration routine to include benefit cap statistics.
+
+### Fixed
+
+- Benefit cap UC bug.
+
 ## [0.64.0] - 2024-01-04 16:18:59
 
 ### Added
@@ -1150,6 +1188,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.69.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.68.0...0.69.0
+[0.68.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.67.0...0.68.0
+[0.67.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.66.0...0.67.0
+[0.66.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.65.0...0.66.0
+[0.65.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.64.0...0.65.0
 [0.64.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.63.2...0.64.0
 [0.63.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.63.1...0.63.2
 [0.63.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.63.0...0.63.1

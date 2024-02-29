@@ -31,31 +31,13 @@ class would_claim_UC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        on_legacy_benefits = benunit("claims_legacy_benefits", period)
-        claims_all_entitled_benefits = benunit(
-            "claims_all_entitled_benefits", period
-        )
         current_uc_claimant = (
             add(benunit, period, ["universal_credit_reported"]) > 0
         )
-        baseline_uc = (
-            benunit("baseline_universal_credit_entitlement", period) > 0
-        )
-        eligible = benunit("universal_credit_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.universal_credit.takeup
-        return current_uc_claimant
-        return select(
-            [
-                current_uc_claimant
-                | (claims_all_entitled_benefits & ~on_legacy_benefits),
-                (~baseline_uc & eligible & ~on_legacy_benefits),
-            ],
-            [
-                True,  # Claims Universal Credit in the baseline
-                random(benunit) < takeup_rate,
-            ],
-            default=False,  # Always non-claimant
-        )
+        is_in_microsimulation = hasattr(benunit.simulation, "dataset")
+        if is_in_microsimulation:
+            return current_uc_claimant
+        return True
 
 
 class is_UC_eligible(Variable):
@@ -610,12 +592,12 @@ class universal_credit(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        uc_entitlement = benunit("universal_credit_pre_benefit_cap", period)
-        return where(
-            uc_entitlement > 0,
-            max_(0, uc_entitlement),
-            0,
+        uc_max_entitlement = benunit(
+            "universal_credit_pre_benefit_cap", period
         )
+        benefit_cap_reduction = benunit("benefit_cap_reduction", period)
+        uc_entitlement = uc_max_entitlement - benefit_cap_reduction
+        return max_(0, uc_entitlement)
 
 
 class UC_MIF_applies(Variable):
