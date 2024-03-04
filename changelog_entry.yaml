@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    changed:
+    - Lowered rates for Class 1 and Class 4 NICs, pursuant to the Autumn Update 2023
+    - Set Class 2 NIC rate to 0%, pursuant to the Autumn Update 2023
