@@ -11,6 +11,13 @@ values:
       reference:
         - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(3)(a)
           href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-a
+  2024-04-06:
+    value: 0
+    metadata:
+      reference:
+        - title: >-
+          Autumn Statement 2023: National Insurance Factsheet 
+          href: https://www.gov.uk/government/publications/autumn-statement-2023-national-insurance-factsheet/autumn-statement-2023-national-insurance-factsheet
 metadata:
   unit: currency-GBP
   label: NI Class 2 Flat Rate
