@@ -17,8 +17,7 @@ values:
     value: 0.1
     metadata:
       reference:
-        - title: >-
-          Autumn Statement 2023: National Insurance Factsheet
+        - title: "Autumn Statement 2023: National Insurance Factsheet"
           href: https://www.gov.uk/government/publications/autumn-statement-2023-national-insurance-factsheet/autumn-statement-2023-national-insurance-factsheet
 metadata:
   label: NI Class 1 main rate
