@@ -13,6 +13,12 @@ values:
       reference:
         - title: Health and Social Care Levy Act (Repeal) 2022
           href: https://www.legislation.gov.uk/ukpga/2022/43/section/2
+  2024-01-06:
+    value: 0.1
+    metadata:
+      reference:
+        - title: "Autumn Statement 2023: National Insurance Factsheet"
+          href: https://www.gov.uk/government/publications/autumn-statement-2023-national-insurance-factsheet/autumn-statement-2023-national-insurance-factsheet
 metadata:
   label: NI Class 1 main rate
   name: NI_main_rate
