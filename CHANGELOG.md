@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.69.1] - 2024-03-04 18:45:44
+
+### Changed
+
+- Lowered rates for Class 1 and Class 4 NICs, pursuant to the Autumn Statement 2023
+- Set Class 2 NIC rate to 0%, pursuant to the Autumn Statement 2023
+
+## [0.69.0] - 2024-02-19 22:26:55
+
+### Added
+
+- Docker image deployment for streamlit documentation.
+
 ## [0.68.0] - 2024-02-19 22:00:58
 
 ### Added
@@ -1182,6 +1195,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.69.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.69.0...0.69.1
+[0.69.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.68.0...0.69.0
 [0.68.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.67.0...0.68.0
 [0.67.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.66.0...0.67.0
 [0.66.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.65.0...0.66.0
