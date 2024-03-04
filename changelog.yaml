@@ -991,3 +991,10 @@
     added:
     - Docker image deployment for streamlit documentation.
   date: 2024-02-19 22:26:55
+- bump: patch
+  changes:
+    changed:
+    - Lowered rates for Class 1 and Class 4 NICs, pursuant to the Autumn Statement
+      2023
+    - Set Class 2 NIC rate to 0%, pursuant to the Autumn Statement 2023
+  date: 2024-03-04 18:45:44
