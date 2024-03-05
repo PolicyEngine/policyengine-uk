@@ -998,3 +998,9 @@
       2023
     - Set Class 2 NIC rate to 0%, pursuant to the Autumn Statement 2023
   date: 2024-03-04 18:45:44
+- bump: minor
+  changes:
+    fixed:
+    - Carbon tax intensities for 2024.
+    - UK NI rate for 2024.
+  date: 2024-03-05 11:48:27

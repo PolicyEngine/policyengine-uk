@@ -64,8 +64,8 @@ class ImputationExtendedFRS(Dataset):
         i = 0
         frs_household_weight = simulation.calculate("household_weight").values
         for imputation_model, targets in zip(
-            [wealth, vat, consumption],
-            [wealth_targets, {}, consumption_targets],
+            [consumption, vat, wealth],
+            [consumption_targets, {}, wealth_targets],
         ):
             i += 1
             predictors = imputation_model.X_columns

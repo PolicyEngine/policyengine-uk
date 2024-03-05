@@ -103,13 +103,20 @@ def generate_lcfs_table(
         PREDICTOR_VARIABLES + IMPUTATIONS + ["household_weight"]
     ].dropna()
 
-def uprate_lcfs_table(household: pd.DataFrame, time_period: str) -> pd.DataFrame:
+
+def uprate_lcfs_table(
+    household: pd.DataFrame, time_period: str
+) -> pd.DataFrame:
     from policyengine_uk.system import system
 
-    fuel_duty_revenue = system.parameters.calibration.programs.fuel_duty.revenue
+    fuel_duty_revenue = (
+        system.parameters.calibration.programs.fuel_duty.revenue
+    )
     fuel_duty_rate = system.parameters.gov.hmrc.fuel_duty.petrol_and_diesel
     start_period = 2020
-    start_index = fuel_duty_revenue(start_period) / fuel_duty_rate(start_period)
+    start_index = fuel_duty_revenue(start_period) / fuel_duty_rate(
+        start_period
+    )
     end_index = fuel_duty_revenue(time_period) / fuel_duty_rate(time_period)
     fuel_uprating = end_index / start_index
     household["petrol_spending"] *= fuel_uprating
