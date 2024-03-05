@@ -4,7 +4,7 @@
   input:
     petrol_spending: 100
   output:
-    fuel_duty: 54.32 / 0.51
+    fuel_duty: 54.32 / 0.33
   
 - name: Reduction from 5p cut
   period: 2021
@@ -12,6 +12,6 @@
   input:
     gov.hmrc.fuel_duty.petrol_and_diesel: 0.5295
     petrol_spending: 100
-    baseline_fuel_duty: 54.32 / 0.51
+    baseline_fuel_duty: 54.32 / 0.33
   output:
-    change_in_fuel_duty: -5 / 0.51
+    change_in_fuel_duty: -5 / 0.33

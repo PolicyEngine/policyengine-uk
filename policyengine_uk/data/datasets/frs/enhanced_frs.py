@@ -86,7 +86,7 @@ class ImputationExtendedFRS(Dataset):
                     target_values,
                     X_input,
                     frs_household_weight,
-                    max_iterations=5,
+                    max_iterations=8,
                 )
             else:
                 quantiles = None
