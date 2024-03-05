@@ -1004,3 +1004,8 @@
     - Carbon tax intensities for 2024.
     - UK NI rate for 2024.
   date: 2024-03-05 11:48:27
+- bump: minor
+  changes:
+    added:
+    - Fuel duty revenue projections
+  date: 2024-03-05 17:37:39
