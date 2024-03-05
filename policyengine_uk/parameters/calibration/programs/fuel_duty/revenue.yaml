@@ -1,0 +1,16 @@
+description: Fuel duty revenues.
+values:
+  2020-01-01: 20_934_000_000
+  2021-01-01: 25_943_000_000
+  2022-01-01: 24_799_033_375
+  2023-01-01: 24_799_033_375
+  2024-01-01: 24_348_775_447
+  2025-01-01: 26_621_382_708
+  2026-01-01: 26_262_427_712
+  2027-01-01: 26_034_425_644
+metadata:
+  unit: currency-GBP
+  label: Fuel duty revenues
+  reference:
+    - title: OBR forecast
+      href: https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/fuel-duties

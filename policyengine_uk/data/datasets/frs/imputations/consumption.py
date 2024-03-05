@@ -103,6 +103,26 @@ def generate_lcfs_table(
         PREDICTOR_VARIABLES + IMPUTATIONS + ["household_weight"]
     ].dropna()
 
+def uprate_lcfs_table(household: pd.DataFrame, time_period: str) -> pd.DataFrame:
+    from policyengine_uk.system import system
+
+    fuel_duty_revenue = system.parameters.calibration.programs.fuel_duty.revenue
+    fuel_duty_rate = system.parameters.gov.hmrc.fuel_duty.petrol_and_diesel
+    start_period = 2020
+    start_index = fuel_duty_revenue(start_period) / fuel_duty_rate(start_period)
+    end_index = fuel_duty_revenue(time_period) / fuel_duty_rate(time_period)
+    fuel_uprating = end_index / start_index
+    household["petrol_spending"] *= fuel_uprating
+    household["diesel_spending"] *= fuel_uprating
+
+    cpi = system.parameters.calibration.uprating.CPI
+    cpi_uprating = cpi(time_period) / cpi(start_period)
+
+    for variable in IMPUTATIONS:
+        if variable not in ["petrol_spending", "diesel_spending"]:
+            household[variable] *= cpi_uprating
+    return household
+
 
 def save_imputation_models():
     consumption = Imputation()
@@ -115,6 +135,7 @@ def save_imputation_models():
         LCFS_TAB_FOLDER / "lcfs_2020_dvper_ukanon202021.tab", delimiter="\t"
     )
     household = generate_lcfs_table(lcfs_person, lcfs_household)
+    household = uprate_lcfs_table(household, "2023")
     consumption.train(
         household[PREDICTOR_VARIABLES],
         household[IMPUTATIONS],
