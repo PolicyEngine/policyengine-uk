@@ -1,0 +1,6 @@
+- bump: minor
+  changes:
+    fixed:
+    - Bugs in carbon tax modules for 2026-27 causing NANs.
+    added:
+    - Calibration dashboard.
