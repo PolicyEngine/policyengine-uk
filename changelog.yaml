@@ -1009,3 +1009,8 @@
     added:
     - Fuel duty revenue projections
   date: 2024-03-05 17:37:39
+- bump: minor
+  changes:
+    added:
+    - add Income Tax Integration Test
+  date: 2024-03-07 16:04:57

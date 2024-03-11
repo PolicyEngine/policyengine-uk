@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.72.0] - 2024-03-07 16:04:57
+
+### Added
+
+- add Income Tax Integration Test
+
 ## [0.71.0] - 2024-03-05 17:37:39
 
 ### Added
@@ -1208,6 +1214,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.72.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.71.0...0.72.0
 [0.71.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.70.0...0.71.0
 [0.70.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.69.1...0.70.0
 [0.69.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.69.0...0.69.1
