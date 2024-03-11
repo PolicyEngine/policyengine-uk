@@ -70,7 +70,7 @@ class CalibratedFRS(Dataset):
             adjusted_weights = calibrate(
                 self.input_dataset.name,
                 time_period=year,
-                training_log_path="calibration_log_cps.csv.gz",
+                training_log_path=STORAGE_FOLDER / "calibration_log.csv.gz",
                 overwrite_existing_log=year == str(self.time_period),
             )
             for variable in input_dataset.variables:

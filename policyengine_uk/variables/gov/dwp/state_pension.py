@@ -22,7 +22,9 @@ class is_SP_age(Variable):
     def formula(person, period, parameters):
         age = person("age", period)
         threshold = person("state_pension_age", period)
-        return age >= threshold
+        claims_sp = person("state_pension", 2024) > 0
+        # Aged or claims SP
+        return (age >= threshold) | claims_sp
 
 
 class triple_lock_uprating(Variable):
