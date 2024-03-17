@@ -18,6 +18,8 @@ from .frs import (
     UKMOD_FRS_2018,
 )
 
+from .spi import RawSPI_2019, SPI_2019
+
 DATASETS = [
     FRS_2018_19,
     FRS_2019_20,
@@ -36,4 +38,5 @@ DATASETS = [
     CalibratedSPIEnhancedPooledFRS_2019_21,
     EnhancedFRS,
     UKMOD_FRS_2018,
+    SPI_2019,
 ]

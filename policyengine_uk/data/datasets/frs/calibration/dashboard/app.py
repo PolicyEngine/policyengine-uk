@@ -5,7 +5,7 @@ import streamlit as st
 import numpy as np
 from policyengine_uk.data.storage import STORAGE_FOLDER
 
-# st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")
 
 st.title("PolicyEngine UK microdata dashboard")
 
@@ -18,10 +18,10 @@ df.dataset = df.dataset.replace(
     }
 )
 
-st.dataframe(df, use_container_width=True)
-
 df["rel_error"] = df.value / df.target - 1
 df["abs_rel_error"] = (df.value / df.target - 1).abs()
+
+st.dataframe(df, use_container_width=True)
 
 left, right = st.columns(2)
 with left:
