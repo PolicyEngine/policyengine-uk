@@ -31,8 +31,8 @@ def calibrate(
     time_period: str = "2023",
     training_log_path: str = "training_log.csv.gz",
     overwrite_existing_log: bool = False,
-    learning_rate: float = 2e-0,
-    epochs: int = 1_000,
+    learning_rate: float = 1e-0,
+    epochs: int = 2_000,
     loss_threshold: float = None,
 ) -> np.ndarray:
     (

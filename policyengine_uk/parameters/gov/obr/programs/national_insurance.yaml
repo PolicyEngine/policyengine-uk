@@ -1,0 +1,13 @@
+description: National Insurance receipts.
+values:
+  2022-01-01: 177_100_000_000
+  2023-01-01: 179_200_000_000
+  2024-01-01: 168_100_000_000
+  2025-01-01: 173_600_000_000
+  2026-01-01: 179_800_000_000
+  2027-01-01: 186_100_000_000
+  2028-01-01: 192_100_000_000
+metadata:
+  unit: currency-GBP
+  label: OBR National Insurance receipts forecast
+

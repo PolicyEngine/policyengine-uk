@@ -33,6 +33,7 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
     frs_simulation = Microsimulation(dataset="frs_2021")
     simulation.default_calculation_period = time_period
     parameters = simulation.tax_benefit_system.parameters.calibration
+    obr = simulation.tax_benefit_system.parameters.gov.obr
     current_instant = f"{time_period}-01-01"
 
     household_weights = simulation.calculate("household_weight").values
@@ -329,8 +330,6 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
         "working_tax_credit",
         "child_tax_credit",
         "housing_benefit",
-        "income_tax",
-        "total_national_insurance",
         "employment_income",
         "self_employment_income",
         "pension_income",
@@ -352,7 +351,25 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
             POPULATION_EQUIVALISATION,
         )
 
+    # OBR forecasts
+    
+    # Income Tax
+        
+    income_tax = simulation.calculate("income_tax", map_to="household")
+    values_df["Income Tax receipts"] = income_tax
+    targets["Income Tax receipts"] = obr(current_instant).programs.income_tax
+    equivalisation["Income Tax receipts"] = FINANCIAL_EQUIVALISATION
+
+    # National Insurance
+
+    national_insurance = simulation.calculate("total_national_insurance", map_to="household")
+    values_df["National Insurance receipts"] = national_insurance
+    targets["National Insurance receipts"] = obr(current_instant).programs.national_insurance
+    equivalisation["National Insurance receipts"] = FINANCIAL_EQUIVALISATION
+
     ## Income tax revenue by income band
+        
+    """
 
     income = simulation.calculate("adjusted_net_income").values
     income_tax = simulation.calculate("income_tax").values
@@ -382,6 +399,8 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
         )
         targets[label] = revenue
         equivalisation[label] = FINANCIAL_EQUIVALISATION
+
+    """
 
     ## Benefit capped households
 
@@ -419,6 +438,14 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
     equivalisation["Legacy households benefit capped"] = (
         POPULATION_EQUIVALISATION
     )
+
+    # Employment
+
+    is_employed = (simulation.calculate("employment_income") > 0).values
+    employees = simulation.map_result(is_employed, "person", "household")
+    values_df["Employees"] = employees.astype(float)
+    targets["Employees"] = obr(current_instant).economic_determinants.employment
+    equivalisation["Employees"] = POPULATION_EQUIVALISATION
 
     targets_array = np.array(list(targets.values()))
     equivalisation_factors_array = np.array(list(equivalisation.values()))
@@ -458,16 +485,17 @@ def add_variable_metric(
         parameter_node.budgetary_impact,
     )
 
-    values_df, targets, equivalisation = add_country_level_metric(
-        simulation.map_result(values > 0, entity, "household"),
-        population_equivalisation,
-        country,
-        values_df,
-        targets,
-        equivalisation,
-        variable.label + " participants",
-        parameter_node.participants,
-    )
+    if hasattr(parameter_node, "participants"):
+        values_df, targets, equivalisation = add_country_level_metric(
+            simulation.map_result(values > 0, entity, "household"),
+            population_equivalisation,
+            country,
+            values_df,
+            targets,
+            equivalisation,
+            variable.label + " participants",
+            parameter_node.participants,
+        )
 
     return values_df, targets, equivalisation
 

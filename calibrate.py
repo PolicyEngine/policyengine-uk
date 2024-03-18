@@ -1,0 +1,3 @@
+from policyengine_uk.data import CalibratedSPIEnhancedPooledFRS_2019_21
+
+CalibratedSPIEnhancedPooledFRS_2019_21().generate()

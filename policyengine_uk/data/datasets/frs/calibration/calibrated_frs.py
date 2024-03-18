@@ -131,5 +131,5 @@ CalibratedSPIEnhancedPooledFRS_2019_21 = CalibratedFRS.from_dataset(
     "calibrated_spi_enhanced_pooled_frs_2019_21",
     "Calibrated SPI-enhanced FRS 2019-21",
     log_folder=".",
-    new_num_years=5,
+    new_num_years=6,
 )

@@ -1,0 +1,12 @@
+description: OBR employment economic determinant (total employees in the economy).
+values:
+  2022-01-01: 32_900_000
+  2023-01-01: 33_100_000
+  2024-01-01: 33_200_000
+  2025-01-01: 33_500_000
+  2026-01-01: 33_800_000
+  2027-01-01: 34_100_000
+  2028-01-01: 34_300_000
+metadata:
+  unit: employee
+  label: Employment

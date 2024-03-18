@@ -1,0 +1,13 @@
+description: Wage and salary economic determinant (total wage income in the economy, not per capita).
+values:
+  2021-01-01: 1.000
+  2022-01-01: 1.070
+  2023-01-01: 1.150
+  2024-01-01: 1.200
+  2025-01-01: 1.230
+  2026-01-01: 1.260
+  2027-01-01: 1.300
+  2028-01-01: 1.340
+metadata:
+  unit: /1
+  label: Wages and salaries
