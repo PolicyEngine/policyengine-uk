@@ -54,19 +54,8 @@ class ImputationExtendedFRS(Dataset):
         wealth = Imputation.load(IMPUTATIONS / "wealth.pkl")
         vat = Imputation.load(IMPUTATIONS / "vat.pkl")
 
-        # Target aggregates for wealth and consumption variables
-        with open(IMPUTATIONS / "wealth_targets.yaml") as f:
-            wealth_targets = yaml.load(f, Loader=yaml.FullLoader)
-
-        with open(IMPUTATIONS / "consumption_targets.yaml") as f:
-            consumption_targets = yaml.load(f, Loader=yaml.FullLoader)
-
         i = 0
-        frs_household_weight = simulation.calculate("household_weight").values
-        for imputation_model, targets in zip(
-            [consumption, vat, wealth],
-            [consumption_targets, {}, wealth_targets],
-        ):
+        for imputation_model in [consumption, vat, wealth]:
             i += 1
             predictors = imputation_model.X_columns
 
@@ -78,21 +67,7 @@ class ImputationExtendedFRS(Dataset):
                 X_input.loc[
                     X_input["region"] == "NORTHERN_IRELAND", "region"
                 ] = "WALES"
-            if len(targets) > 0:
-                target_values = [
-                    targets[output] for output in imputation_model.Y_columns
-                ]
-                quantiles = imputation_model.solve_for_mean_quantiles(
-                    target_values,
-                    X_input,
-                    frs_household_weight,
-                    max_iterations=8,
-                )
-            else:
-                quantiles = None
-            Y_output = imputation_model.predict(
-                X_input, mean_quantile=quantiles, verbose=True
-            )
+            Y_output = imputation_model.predict(X_input)
 
             for output_variable in Y_output.columns:
                 values = Y_output[output_variable].values
@@ -110,7 +85,7 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     CalibratedSPIEnhancedPooledFRS_2019_21,
     "enhanced_frs",
     "Enhanced FRS",
-    new_time_period=2023,
+    new_time_period=2024,
     new_num_years=5,
     new_url="release://policyengine/non-public-microdata/uk-2023-dec-calibration/enhanced_frs.h5",
 )
