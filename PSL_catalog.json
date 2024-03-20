@@ -1,51 +1,24 @@
 {
-    "project_one_line": {
-        "start_header": null,
-        "end_header": null,
-        "source": null,
-        "type": "html",
-        "data": "<p>OpenFisca-UK is a static microsimulation model of the UK Tax-Benefit system using the OpenFisca framework.</p>"
-    },
-    "project_overview": {
-        "start_header": null,
-        "end_header": null,
-        "source": null,
-        "type": "html",
-        "data": "<a href=\"https://github.com/PSLmodels/openfisca-uk\">What is OpenFisca-UK?</a>"
-    },
-    "core_maintainers": {
-        "start_header": null,
-        "end_header": null,
-        "source": null,
-        "type": "html",
-        "data": "<ul><li>Nikhil Woodruff</li><ul><li>email: nikhil.woodruff@ubicenter.org</li></ul>"
-    },
-    "user_documentation": {
-        "start_header": null,
-        "end_header": null,
-        "source": null,
-        "type": "html",
-        "data": "<a href=\"https://github.com/PSLmodels/openfisca-uk/blob/master/docs/\"></a>"
-    },
-    "contributor_overview": {
-        "start_header": null,
-        "end_header": null,
-        "source": null,
-        "type": "html",
-        "data": "<a href=\"https://github.com/PSLmodels/openfisca-uk\"></a>"
-    },
-    "user_changelog_recent": {
-        "start_header": null,
-        "end_header": null,
-        "source": null,
-        "type": "html",
-        "data": "<a href=\"https://github.com/PSLmodels/openfisca-uk/blob/master/CHANGELOG.md\"></a>"
-    },
-    "link_to_webapp": {
-        "start_header": null,
-        "end_header": null,
-        "source": null,
-        "type": null,
-        "data": null
+    "name": "PolicyEngine UK",
+    "img": "https://github.com/PolicyEngine/policyengine-app/blob/master/src/images/logos/policyengine/banners/facebook.png?raw=true",
+    "banner_title": "PolicyEngine UK",
+    "banner_subtitle": "A tax-benefit microsimulation model for the United Kingdom.",
+    "detailed_description": "PolicyEngine UK is PolicyEngine's microsimulation model of the UK tax-benefit system. It uses the PolicyEngine Core microsimulation framework, which is based on OpenFisca. The model supports multiple different input datasets provided by the user, one of which is the Family Resources Survey, containing microdata on household incomes across the UK. PolicyEngine UK enhances this dataset by fusing it to other surveys and reweighting it to minimize a comprehensive loss metric that measures the difference from an array of administrative totals.",
+    "policy_area": "Policy Reform, Tax Analysis",
+    "geography": "United Kingdom",
+    "language": "Python",
+    "maintainers": [
+      {
+        "name": "Nikhil Woodruff",
+        "image": "https://avatars.githubusercontent.com/u/35577657?v=4",
+        "link": "https://github.com/nikhilwoodruff"
+      }
+    ],
+    "links": {
+      "code_repository": "https://github.com/policyengine/policyengine-uk",
+      "user_documentation": "https://policyengine.github.io/policyengine-uk/",
+      "contributor_documentation": "https://github.com/PolicyEngine/policyengine-uk/blob/master/README.md",
+      "webapp": "https://policyengine.org/uk",
+      "recent_changes": "https://github.com/PolicyEngine/policyengine-uk/blob/master/CHANGELOG.md"
     }
 }
