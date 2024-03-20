@@ -1,0 +1,10 @@
+description: Whether aged individuals must claim Pension Credit in order to qualify for a free TV licence.
+values:
+  2003-01-01: false
+  2020-04-01: true
+metadata:
+  unit: bool
+  label: Aged TV licence Pension Credit requirement
+  reference:
+    - title: "Free and reduced fee TV Licences | TV Licensing"
+      href: https://www.tvlicensing.co.uk/reducedfee

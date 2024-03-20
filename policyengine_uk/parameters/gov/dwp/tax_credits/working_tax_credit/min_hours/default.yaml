@@ -1,0 +1,10 @@
+description: Default hours requirement for Working Tax Credit
+values:
+  2002-08-01: 30
+metadata:
+  period: week
+  unit: hour
+  reference:
+    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
+    # 1c
+    href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/4

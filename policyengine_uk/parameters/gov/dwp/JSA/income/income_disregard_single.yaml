@@ -1,0 +1,8 @@
+description: Threshold in income for a single person, above which the Jobseeker's Allowance amount is reduced
+values:
+  2015-06-01: 5.00
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Jobseeker's Allowance income disregard (single)
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33

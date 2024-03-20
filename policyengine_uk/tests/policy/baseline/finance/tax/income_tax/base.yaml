@@ -1,0 +1,12 @@
+- name: Tax base variables intact
+  period: 2020
+  absolute_error_margin: 0
+  output:
+    employment_income: 0
+    pension_income: 0
+    social_security_income: 0
+    self_employment_income: 0
+    property_income: 0
+    savings_interest_income: 0
+    dividend_income: 0
+    miscellaneous_income: 0

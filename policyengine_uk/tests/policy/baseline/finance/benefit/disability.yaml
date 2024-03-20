@@ -1,0 +1,27 @@
+- name: Disability premium
+  period: 2020
+  absolute_error_margin: 20
+  input:
+    dla_sc: 10 * 52
+  output:
+    is_disabled_for_benefits: true
+    num_disabled_adults: 1
+    disability_premium: 34.95 * 52
+- name: Enhanced disability premium
+  period: 2020
+  absolute_error_margin: 20
+  input:
+    dla_sc: 100 * 52
+  output:
+    is_enhanced_disabled_for_benefits: true
+    num_enhanced_disabled_adults: 1
+    enhanced_disability_premium: 17.10 * 52
+- name: Severe disability premium
+  period: 2020
+  absolute_error_margin: 20
+  input:
+    dla_sc: 100 * 52
+  output:
+    is_severely_disabled_for_benefits: true
+    num_severely_disabled_adults: 1
+    severe_disability_premium: 66.95 * 52

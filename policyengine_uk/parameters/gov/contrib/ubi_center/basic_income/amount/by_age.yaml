@@ -1,0 +1,24 @@
+child:
+  description: Basic income payment to children.
+  values:
+    2010-01-01: 0
+  metadata:
+    unit: currency-GBP
+    period: week
+    label: Child basic income
+working_age:
+  description: Basic income payment to working-age adults.
+  values:
+    2010-01-01: 0
+  metadata:
+    unit: currency-GBP
+    period: week
+    label: Working-age basic income
+senior:
+  description: Basic income payment to seniors (individuals over State Pension Age).
+  values:
+    2010-01-01: 0
+  metadata:
+    unit: currency-GBP
+    period: week
+    label: Senior basic income

@@ -1,0 +1,15 @@
+description: Share of eligible Child Tax Credit recipients that participate. By definition,
+  this is 100%, because only current claimants are eligible (no new claims).
+metadata:
+  economy: false
+  label: Child Tax Credit take-up rate
+  propagate_metadata_to_children: true
+  unit: /1
+values:
+  2019-01-01: 1.0
+  2020-01-01: 1.0
+  2021-01-01: 1.0
+  2022-01-01: 1.0
+  2023-01-01: 1.0
+  2024-01-01: 1.0
+  2025-01-01: 1.0

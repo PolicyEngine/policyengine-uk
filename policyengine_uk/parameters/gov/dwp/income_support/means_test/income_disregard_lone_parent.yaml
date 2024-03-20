@@ -1,0 +1,8 @@
+description: Threshold in income for a lone parent, above which the Income Support amount is reduced
+values:
+  2015-06-01: 20.00
+metadata:
+  period: week
+  label: Income Support income disregard (lone parent)
+  unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33

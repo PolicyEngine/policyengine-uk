@@ -1,0 +1,9 @@
+description: Minimum number of hours spent providing care to qualify for Carer's Allowance.
+metadata:
+  economy: false
+  period: week
+  reference: https://www.gov.uk/carers-allowance
+  unit: hour
+  label: "Carer's Allowance minimum hours"
+values:
+  2010-06-01: 35

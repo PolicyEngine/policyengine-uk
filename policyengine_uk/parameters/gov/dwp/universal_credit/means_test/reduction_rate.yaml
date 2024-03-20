@@ -1,0 +1,12 @@
+description: Rate at which Universal Credit is reduced with earnings above the work allowance.
+values:
+  2013-04-29: 0.65
+  2017-04-10: 0.63
+  2021-11-24: 0.55
+metadata:
+  label: Universal Credit reduction rate
+  name: UC_reduction_rate
+  unit: /1
+  reference:
+    name: The Universal Credit Regulations 2013
+    href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22

@@ -1,0 +1,25 @@
+brackets:
+- rate:
+    2003-07-10: 0
+  threshold:
+    2003-07-10: 0
+- rate:
+    2003-07-10: 0.01
+  threshold:
+    2003-07-10: 150000
+- rate:
+    2016-09-15: 0.02
+  threshold:
+    2016-09-15: 5000000
+description: Stamp Duty Land Tax progressive rates for cumulative rents on non-residential
+  property
+metadata:
+  economy: false
+  label: Stamp Duty on non-residential cumulative rent
+  name: sdlt_on_non_residential_cumulative_rent
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/5
+    title: Finance Act 2003 schedule 5
+  threshold_unit: currency-GBP

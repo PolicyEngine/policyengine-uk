@@ -1,0 +1,148 @@
+name: Push
+on:
+  push:
+    branches: [ master ]
+env:
+  enhanced_frs: ${{ secrets.ENHANCED_FRS}}
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    if: |
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check formatting
+        uses: "lgeiger/black-action@master"
+        with:
+          args: ". -l 79 --check"
+  versioning:
+    name: Update versioning
+    if: |
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && !(github.event.head_commit.message == 'Update PolicyEngine UK')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.POLICYENGINE_GITHUB }}
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Build changelog
+        run: pip install yaml-changelog && make changelog
+      - name: Preview changelog update
+        run: ".github/get-changelog-diff.sh"
+      - name: Update changelog
+        uses: EndBug/add-and-commit@v8
+        with:
+          add: "."
+          committer_name: Github Actions[bot]
+          author_name: Github Actions[bot]
+          message: Update PolicyEngine UK
+  Test:
+    runs-on: ${{ matrix.os }}
+    if: |
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install Wheel and Pytest
+        run: pip3 install wheel setuptools pytest==5.4.3
+      - name: Install libyaml
+        run: pip3 uninstall pyyaml && pip3 install pyyaml --no-cache-dir
+      - name: Install package
+        run: make install
+      - name: Run tests
+        env:
+          POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
+        run: make test
+      - name: Generate documentation
+        if: matrix.os == 'ubuntu-latest'
+        run: make documentation
+      - name: Deploy documentation
+        if: matrix.os == 'ubuntu-latest'
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages  # The branch the action should deploy to.
+          FOLDER: docs/book/_build/html  # The folder the action should deploy.
+  Docker:
+    if: |
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
+    name: Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build container
+        run: docker build docs/streamlit -t ghcr.io/policyengine/policyengine-uk-documentation
+      - name: Push container
+        run: docker push ghcr.io/policyengine/policyengine-uk-documentation
+  Publish:
+    if: |
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Publish a git tag
+        run: ".github/publish-git-tag.sh"
+      - name: Build package
+        run: make
+      - name: Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI }}
+          skip_existing: true
+  Deploy:
+    if: |
+      (github.repository == 'PolicyEngine/policyengine-uk')
+      && (github.event.head_commit.message == 'Update PolicyEngine UK')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.POLICYENGINE_GITHUB }}
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Wheel and Pytest
+        run: pip3 install wheel setuptools pytest==5.4.3
+      - name: Install package
+        run: make install
+      - name: Update API
+        run: python .github/update_api.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}

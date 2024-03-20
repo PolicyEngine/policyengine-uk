@@ -1,0 +1,6 @@
+description: Reduction rate for the annual allowance
+values:
+  2015-06-01: 0.5
+metadata:
+  unit: marginal-rate
+  reference: https://www.gov.uk/tax-on-your-private-pension/annual-allowance

@@ -1,0 +1,13 @@
+- name: NI Class 2 - under LPL.
+  period: 2023
+  input:
+    self_employment_income: 5_000
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - over LPL.
+  period: 2023
+  input:
+    self_employment_income: 15_000
+  output:
+    ni_class_2: 3.15 * 52

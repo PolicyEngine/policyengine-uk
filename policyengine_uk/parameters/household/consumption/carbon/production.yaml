@@ -1,0 +1,11 @@
+description: Carbon emissions from the production of goods and services in the UK
+values:
+  2016-01-01: 423_000_000
+  2017-01-01: 399_000_000
+  2018-01-01: 406_000_000
+  2019-01-01: 371_000_000
+metadata:
+  unit: tonnes CO2
+  reference:
+    - title: BEIS 2019 Updated Energy & Emissions Projections
+      href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019

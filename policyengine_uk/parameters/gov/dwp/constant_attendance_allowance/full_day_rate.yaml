@@ -1,0 +1,9 @@
+description: Full day rate for Constant Attendance Allowance
+metadata:
+  economy: false
+  period: week
+  reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
+  unit: currency-GBP
+  label: Constant Attendance Allowance full day rate
+values:
+  2015-06-01: 72.8

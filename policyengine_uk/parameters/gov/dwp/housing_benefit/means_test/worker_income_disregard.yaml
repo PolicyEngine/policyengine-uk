@@ -1,0 +1,8 @@
+description: Additional disregard in income for meeting the 16/30 hours requirement for Housing Benefit
+values:
+  2015-06-01: 37.10
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit worker element earnings disregard
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/251256/hb-claims-processing-guidance.pdf

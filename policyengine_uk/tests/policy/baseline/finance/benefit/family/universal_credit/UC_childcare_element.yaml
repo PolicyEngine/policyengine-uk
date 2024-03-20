@@ -1,0 +1,42 @@
+- name: No childcare, no element
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        in_work: true
+        childcare_expenses: 0
+    benunits:
+      benunit:
+        members: parent
+        num_UC_eligible_children: 0
+  output:
+    UC_childcare_element: 0
+- name: Childcare for one child under limit
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        in_work: true
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: parent
+        num_UC_eligible_children: 1
+  output:
+    UC_childcare_element: 5_000 * 0.85
+- name: Childcare for one child over limit
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        in_work: true
+        childcare_expenses: 10_000
+    benunits:
+      benunit:
+        members: parent
+        num_UC_eligible_children: 1
+  output:
+    UC_childcare_element: 646.35 * 12

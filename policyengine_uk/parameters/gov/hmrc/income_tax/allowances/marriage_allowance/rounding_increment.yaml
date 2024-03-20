@@ -1,0 +1,10 @@
+description: The Marriage Allowance is rounded up by this increment.
+values:
+  2016-04-01: 10
+metadata:
+  unit: currency-GBP
+  name: marriage_allowance_rounding_increment
+  label: Marriage Allowance rounding increment
+  reference:
+    - title: Income Tax Act 2007 s. 55B(5)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A

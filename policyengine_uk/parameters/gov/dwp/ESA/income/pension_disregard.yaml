@@ -1,0 +1,10 @@
+description: Threshold for occupational and personal pensions, above which the income-based
+  Employment and Support Allowance amount is reduced
+metadata:
+  economy: false
+  period: week
+  label: Income-based ESA pension disregard
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38
+  unit: currency-GBP
+values:
+  2015-06-01: 50.0

@@ -1,0 +1,11 @@
+description: Rate after income threshold reached by which Child Tax Credit is reduced per £1.
+values:
+  2002-08-01: 0.37
+  2008-04-06: 0.39
+  2012-04-06: 0.41
+metadata:
+  unit: /1
+  reference:
+    title: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002, Section 7
+    # (3) step 5
+    href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/7

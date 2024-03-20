@@ -1,0 +1,8 @@
+- name: Element matches gov.uk guidance
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    age: 6
+    is_severely_disabled_for_benefits: true
+  output:
+    UC_individual_severely_disabled_child_element: 402.41 * 12

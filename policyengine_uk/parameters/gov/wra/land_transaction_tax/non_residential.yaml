@@ -1,0 +1,33 @@
+brackets:
+- rate:
+    2018-04-01: 0.0
+  threshold:
+    2018-04-01: 0.0
+- rate:
+    2018-04-01: 0.01
+  threshold:
+    2018-04-01: 150000
+    2020-12-22: 225000
+- rate:
+    2018-04-01: 0.05
+  threshold:
+    2018-04-01: 250000
+- rate:
+    2018-04-01: 0.06
+  threshold:
+    2018-04-01: 1000000
+description: Non-residential property progressive tax scale
+metadata:
+  economy: false
+  label: LTT on non-residential property
+  name: ltt_on_non_residential_property
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/wsi/2018/128/schedule
+    title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations
+      2018 Schedule
+  - href: https://www.legislation.gov.uk/wsi/2020/1618/regulation/6/made
+    title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) (Amendment)
+      Regulations 2020
+  threshold_unit: currency-GBP

@@ -1,8 +1,0 @@
-description: Absolute poverty threshold for equivalised household net income, after housing costs.
-values:
-  2015-06-01:
-    value: 270
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.ifs.org.uk/comms/comm118.pdf#page=7

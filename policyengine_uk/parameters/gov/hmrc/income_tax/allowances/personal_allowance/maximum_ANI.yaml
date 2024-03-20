@@ -1,0 +1,12 @@
+description: Maximum adjusted net income before the Personal Allowance is reduced
+values:
+  # Date legislation passed. Is this when it was enacted?
+  2009-07-21: 100_000
+metadata:
+  name: PA_reduction_threshold
+  period: year
+  unit: currency-GBP
+  label: Personal Allowance phase-out threshold
+  reference:
+    - title: Income Tax Act 2007 s. 35
+      href: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances

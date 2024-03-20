@@ -1,0 +1,11 @@
+- name: Poverty gap for single person
+  period: 2022
+  absolute_error_margin: 100
+  input:
+    age: 35
+    household_gross_income: 0
+    is_household_head: true
+  output:
+    poverty_gap_bhc: 220 * 52
+    in_poverty_bhc: true
+    in_deep_poverty_bhc: true

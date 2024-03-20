@@ -1,0 +1,41 @@
+- name: Petrol only in 2022.
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    petrol_spending: 1_200
+    diesel_spending: 0
+  output:
+    petrol_litres: 1200 / 1.4910
+    diesel_litres: 0
+    fuel_duty: 1322
+- name: No fuel spending, no fuel duty.
+  period: 2023
+  absolute_error_margin: 0.1
+  input:
+    petrol_spending: 0
+    diesel_spending: 0
+  output:
+    petrol_litres: 0
+    diesel_litres: 0
+    fuel_duty: 0
+- name: Petrol and diesel in 2023.
+  period: 2023
+  absolute_error_margin: 0.1
+  input:
+    petrol_spending: 800
+    diesel_spending: 350
+  output:
+    petrol_litres: 800 / 1.6703
+    diesel_litres: 350 / 1.4559
+    fuel_duty: (478.96 + 240.40) / 0.33 * 0.5295
+- name: Petrol and diesel in 2021.
+  period: 2021
+  absolute_error_margin: 0.1
+  input:
+    petrol_spending: 800
+    diesel_spending: 350
+  output:
+    petrol_litres: 800 / 1.0669
+    diesel_litres: 350 / 1.1186
+    fuel_duty: (749.84 + 312.89) / 0.33 * 0.5795
+    

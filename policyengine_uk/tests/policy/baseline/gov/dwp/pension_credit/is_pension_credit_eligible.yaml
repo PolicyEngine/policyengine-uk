@@ -1,0 +1,22 @@
+- name: Not pension-age, ineligible for Pension Credit (single)
+  period: 2022
+  input:
+    people:
+      person:
+        is_SP_age: false
+  output:
+    is_pension_credit_eligible: false
+
+- name: One member of a couple is pension age; eligible for Pension Credit
+  period: 2022
+  input:
+    people:
+      person:
+        is_SP_age: false
+      spouse:
+        is_SP_age: true
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    is_pension_credit_eligible: true

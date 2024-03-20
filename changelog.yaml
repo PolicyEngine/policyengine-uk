@@ -1,0 +1,1016 @@
+- changes:
+    added:
+    - Income Tax and National Insurance.
+    - All benefits are at least taken from survey reporting (can be switched on-off).
+    - Child Benefit is modelled, others such as Income Support, JSA (both types),
+      Tax Credits can be simulated/reformed but require more reviewing in how to account
+      for discrepancies caused by take-up rates.
+    - Four budget-neutral UBI reforms are implemented.
+    - 15 test cases (unit and integration) testing benefits and taxes.
+    - Simulation helper tools.
+  date: 2020-11-08 00:00:00
+  version: 0.1.0
+- bump: minor
+  changes:
+    changed:
+    - Time periods now appropriate, using an implementation of WEEK for most benefits.
+    - MTRs handled properly and include a breakdown.
+    - Simulation tools are improved and included in a class.
+  date: 2020-12-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Improved documentation of parameters.
+    - Tests now occur in 2021 to ensure FY20-21 parameters are used.
+    fixed:
+    - Bug in CB-HITC that caused overestimation.
+  date: 2021-04-19 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Jupyter-Book documentation.
+    - More detailed disability variables.
+    fixed:
+    - IndividualSim reform handling.
+  date: 2021-04-20 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - MicroDataFrame and MicroSeries returned by default.
+    fixed:
+    - Bugs.
+  date: 2021-04-21 00:00:00
+- bump: minor
+  changes:
+    added:
+    - New interface for microsimulation.
+    - Sources in tax logic.
+    - Tests.
+    changed:
+    - Microdata now generated and loaded in-model.
+    - Variable time periods made more consistent.
+    - Derivative calculations made more efficient and have more options.
+  date: 2021-07-04 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Tests for variable naming conventions.
+    - Postcode lookup optional features available.
+    - LHA rates for all BRMA areas added.
+    changed:
+    - PolicyEngine-UK now runs from the official OpenFisca-Core.
+  date: 2021-07-05 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Minor update
+  date: 2021-07-05 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Minor update
+  date: 2021-07-05 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Minor update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Patch update
+  date: 2021-07-05 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Units for some variables.
+    changed:
+    - Code refactoring.
+  date: 2021-12-23 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Historical Working Tax Credit parameters since 2002 (previously since 2016).
+    - Legislative references for Working Tax Credit parameters.
+    changed:
+    - Working Tax Credit child care parameters represent the maximum amount, prior
+      to the share covered.
+    fixed:
+    - Apply Working Tax Credit old-age provision to 60-year-olds.
+    - Qualify people working 30 hours for the Working Tax Credit.
+    - Point AFCS to AFCS_reported instead of AA_reported.
+    - Fix units on some variables.
+  date: 2021-12-27 00:00:00
+- bump: patch
+  changes:
+    removed:
+    - Benefit unit- and household-level saved random numbers for take-up.
+  date: 2021-12-29 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Minimum tax credit benefit amount.
+  date: 2021-12-29 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Microsimulation tests and YAML data for Child Benefit, Tax Credits and Council
+      Tax.
+    - Documentation page for Tax Credits.
+    - Simplified dataset usage to enhanced FRS only.
+  date: 2021-12-29 00:00:02
+- bump: patch
+  changes:
+    added:
+    - Metadata for the Dividend, Property and Trading Allowances.
+  date: 2022-01-07 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Parameter representing the Child Tax Credit's child limit.
+    changed:
+    - Renamed parameter representing Universal Credit's child limit.
+  date: 2022-01-07 00:00:01
+- bump: patch
+  changes:
+    changed:
+    - Label metadata for tax variables.
+  date: 2022-01-08 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Removes the `u` prefix from all variable label strings.
+  date: 2022-01-08 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Sure Start Maternity Grant (reported).
+    changed:
+    - Education benefits summed in a formula.
+    fixed:
+    - Some maternity benefits (SSMG, SMP) and WFA not included in benefits.
+  date: 2022-01-12 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - PolicyEngine-UK-Data version increased to 0.7.0.
+  date: 2022-01-14 00:00:00
+- bump: patch
+  changes:
+    added:
+    - When datasets are not available, a prompt is displayed to download them or use
+      synthetic data.
+    - CLI interface trigger changed from `openfisca-uk-setup` to `openfisca-uk` and
+      default years updated.
+  date: 2022-01-16 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Stocks/flows metadata for PolicyEngine-facing variables.
+  date: 2022-01-17 00:00:00
+- bump: patch
+  changes:
+    fixed:
+    - Household gross income calculated directly from household benefits and market
+      income.
+    - Savings allowance was previously set to zero erroneously for households in Scotland
+      at the starter or intermediate bands.
+  date: 2022-01-17 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Metadata (period, unit, name, label) for all Universal Credit parameters.
+  date: 2022-01-18 00:00:00
+- bump: patch
+  changes:
+    fixed:
+    - Baseline HBAI-excluded income variable now uses the Synthetic FRS when the enhanced
+      FRS is not available.
+  date: 2022-01-22 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Unit test for benefit unit rent.
+    changed:
+    - OpenFisca-Tools dependency patch increased.
+  date: 2022-01-22 00:00:01
+- bump: minor
+  changes:
+    added:
+    - Re-weighting routine for the Family Resources Survey, matching aggregates, participation
+      and populations.
+  date: 2022-02-04 00:00:00
+- bump: minor
+  changes:
+    added:
+    - The Energy Bills Rebate scheme.
+  date: 2022-02-06 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - OpenFisca-Tools bumped to v0.3
+  date: 2022-02-14 00:00:00
+- bump: patch
+  changes:
+    added:
+    - Basic income parameters and logic.
+  date: 2022-02-14 00:00:01
+- bump: patch
+  changes:
+    changed:
+    - Set basic income phaseout threshold default to 0.
+  date: 2022-02-14 00:00:02
+- bump: patch
+  changes:
+    added:
+    - Historical carbon emissions parameter.
+  date: 2022-02-25 00:00:00
+- bump: minor
+  changes:
+    added:
+    - Pensioner exemption switch for Income Tax rate and threshold reforms.
+  date: 2022-02-28 00:00:00
+- bump: minor
+  changes:
+    changed:
+    - Re-weighting procedure formalised with cross-validation and logging.
+  date: 2022-02-28 00:00:01
+- bump: patch
+  changes:
+    added:
+    - Added a production-based carbon emissions parameter.
+  date: 2022-03-04 00:00:00
+- bump: patch
+  changes:
+    changed:
+    - Re-weighting procedure improved with consolidated categories and added income
+      source targeting.
+  date: 2022-03-04 00:00:01
+- bump: patch
+  changes:
+    fixed:
+    - Basic income means-test inclusion previously didn't work correctly (when turned
+      off) for Housing Benefit and Pension Credit.
+  date: 2022-03-08 00:00:00
+- bump: patch
+  changes: {}
+  date: 2022-03-08 00:00:01
+- bump: minor
+  changes:
+    added:
+    - 'Forecasting to 2027: new and improved household weights.'
+  date: 2022-03-23 00:00:00
+- bump: minor
+  changes:
+    added:
+    - 'Forecasting to 2027: new and improved household weights.'
+  date: 2022-03-24 00:22:00
+- bump: patch
+  changes:
+    fixed:
+    - Pull request merge action didn't correctly update the repo.
+  date: 2022-03-24 03:05:39
+- bump: patch
+  changes:
+    fixed:
+    - Bugs related to uprating parameters.
+  date: 2022-03-24 03:05:39
+- bump: minor
+  changes:
+    added:
+    - Tax and benefit changes announced in the 2022 Spring Statement.
+    - Inflation and real disposable income.
+    - Parameters for PIP, DLA, SDA, AA and Carer's Allowance.
+    changed:
+    - Added calibration make.
+  date: 2022-03-27 14:13:20
+- bump: minor
+  changes:
+    fixed:
+    - Synthetic FRS now successfully loads.
+    - Incorporates better calibration and imputations.
+  date: 2022-04-03 19:28:24
+- bump: minor
+  changes:
+    added:
+    - Total wealth variable.
+  date: 2022-04-05 09:41:35
+- bump: patch
+  changes:
+    fixed:
+    - Spring Statement Class 4 NI change correctly follows 2022/23 adjustment.
+  date: 2022-04-05 12:28:40
+- bump: patch
+  changes:
+    added:
+    - Carbon tax model page added.
+  date: 2022-04-05 14:23:50
+- bump: patch
+  changes:
+    fixed:
+    - A bug preventing the Synthetic FRS from loading.
+  date: 2022-04-07 09:51:58
+- bump: patch
+  changes:
+    added:
+    - Carbon emissions (production-based) by industry.
+  date: 2022-04-07 10:36:03
+- bump: patch
+  changes:
+    fixed:
+    - Chart on carbon intensities.
+  date: 2022-04-08 10:35:59
+- bump: minor
+  changes:
+    added:
+    - Dataset generation.
+  date: 2022-04-14 11:46:45
+- bump: patch
+  changes:
+    fixed:
+    - Failed import of policyengine_uk.tools
+  date: 2022-04-14 12:36:43
+- bump: patch
+  changes:
+    fixed:
+    - Failed imports of reform tools.
+  date: 2022-04-14 12:48:06
+- bump: patch
+  changes:
+    fixed:
+    - MANIFEST.in file re-added (caused previous two issues).
+  date: 2022-04-14 13:10:26
+- bump: patch
+  changes:
+    fixed:
+    - Land and carbon are calculated based off UK-wide statistics, not in-model statistics.
+  date: 2022-04-22 21:26:10
+- bump: minor
+  changes:
+    changed:
+    - Pension Credit code quality improvements.
+    fixed:
+    - Pension Credit missing disability elements.
+  date: 2022-04-26 12:10:51
+- bump: minor
+  changes:
+    changed:
+    - Calibration process improved with country-level targets.
+  date: 2022-04-29 09:29:26
+- bump: minor
+  changes:
+    added:
+    - Household-level phase-outs for basic income.
+  date: 2022-05-16 14:02:26
+- bump: patch
+  changes:
+    fixed:
+    - National Insurance thresholds pre-July, post-Spring Statement (inflation adjustments).
+  date: 2022-05-19 14:58:06
+- bump: patch
+  changes:
+    changed:
+    - Reorganize documentation and variables.
+  date: 2022-05-21 16:01:32
+- bump: patch
+  changes:
+    fixed:
+    - Baseline variables are now generated before calibration (fixes a bug causing
+      overestimation of benefit caseloads).
+  date: 2022-05-22 15:27:50
+- bump: minor
+  changes:
+    added:
+    - Miscellaneous benefit payment.
+  date: 2022-05-26 10:46:43
+- bump: minor
+  changes:
+    added:
+    - UK Government cost-of-living support measures.
+  date: 2022-05-26 13:04:11
+- bump: minor
+  changes:
+    added:
+    - Disability benefits to COL support measures.
+  date: 2022-05-26 16:16:50
+- bump: patch
+  changes:
+    added:
+    - References for some tax and UC parameters.
+  date: 2022-06-05 20:28:29
+- bump: minor
+  changes:
+    added:
+    - Dashboard tool for the calibration procedure.
+    - Loss components for aggregates in demographic targets.
+    fixed:
+    - A bug causing Pension Credit to under-react to increases in Income Tax.
+  date: 2022-07-25 11:14:58
+- bump: minor
+  changes:
+    added:
+    - TV licence fee.
+  date: 2022-07-27 10:14:59
+- bump: patch
+  changes:
+    fixed:
+    - Round marriage allowance.
+  date: 2022-08-25 17:36:23
+- bump: minor
+  changes:
+  - Refactored the parameter tree into the (gov/hh/calibration/contrib)|(dept) format.
+  date: 2022-08-28 14:45:36
+- bump: minor
+  changes:
+    added:
+    - Ofgem energy price cap subsidy parameters.
+  date: 2022-09-07 12:15:01
+- bump: patch
+  changes:
+    added:
+    - New monthly CPI values until July.
+  date: 2022-09-11 15:04:15
+- bump: minor
+  changes:
+    added:
+    - Energy Price Guarantee parametric reform.
+  date: 2022-09-14 19:32:06
+- bump: patch
+  changes:
+    fixed:
+    - Validation page.
+  date: 2022-09-15 13:40:02
+- bump: minor
+  changes:
+    added:
+    - Wealth tax.
+  date: 2022-09-17 16:24:23
+- bump: minor
+  changes:
+    added:
+    - Metadata for SDLT, LTT and LBTT parameters.
+  date: 2022-09-21 11:06:49
+- bump: minor
+  changes:
+    added:
+    - Flat basic income amount.
+  date: 2022-09-27 15:37:07
+- bump: patch
+  changes:
+    fixed:
+    - UC amount for single, under-25s after the last uprating.
+  date: 2022-10-04 11:02:45
+- bump: minor
+  changes:
+    changed:
+    - Moved to PolicyEngine Core.
+  date: 2022-10-22 18:22:07
+- bump: minor
+  changes:
+    changed:
+    - Roles to 'member'.
+  date: 2022-12-06 12:00:54
+- bump: patch
+  changes:
+    fixed:
+    - PolicyEngine-Core pinned to a minor version.
+  date: 2022-12-07 13:31:54
+- bump: patch
+  changes:
+    fixed:
+    - Incorporated Core fix.
+  date: 2022-12-07 13:50:34
+- bump: minor
+  changes:
+    added:
+    - LVT
+    - Carbon tax
+    - NI BRMAs
+    - NI domestic rates by local authority
+  date: 2022-12-11 18:29:22
+- bump: patch
+  changes:
+    added:
+    - Metadata for contrib parameters.
+  date: 2022-12-13 20:20:48
+- bump: patch
+  changes:
+    added:
+    - Metadata for PolicyEngine.
+  date: 2022-12-14 16:33:27
+- bump: patch
+  changes:
+    changed:
+    - Bumped PolicyEngine-Core.
+  date: 2022-12-15 16:10:43
+- bump: patch
+  changes:
+    added:
+    - Variable metadata for disability variables.
+    - Auto-update for the API.
+  date: 2022-12-20 10:59:01
+- bump: patch
+  changes:
+    added:
+    - ENV token for the deployment action.
+  date: 2022-12-20 11:41:05
+- bump: patch
+  changes:
+    added:
+    - Token for GitHub PR filing (deployment of the API).
+  date: 2022-12-20 14:11:35
+- bump: minor
+  changes:
+    added:
+    - Normalised poverty and deep poverty variables.
+  date: 2022-12-27 13:53:34
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing UC housing entitlements to be too low for single people with children.
+  date: 2022-12-28 17:28:42
+- bump: patch
+  changes:
+    changed:
+    - Reorganised variables in the input tree.
+  date: 2022-12-30 17:05:40
+- bump: patch
+  changes:
+    added:
+    - Missing label in inputs.
+  date: 2023-01-03 20:32:56
+- bump: patch
+  changes:
+    changed:
+    - PolicyEngine Core version widened.
+  date: 2023-01-03 23:39:07
+- bump: patch
+  changes:
+    added:
+    - Metadata on modelled policies.
+  date: 2023-01-06 10:07:28
+- bump: patch
+  changes:
+    changed:
+    - Use `adds` and `subtracts` everywhere.
+    - Replace `aggr` with `add`.
+    - Apply `defined_for`.
+    - Use `default` arg to `select` rather than dummy `True` condition.
+  date: 2023-01-10 17:31:54
+- bump: minor
+  changes:
+    added:
+    - Monthly NI calculations.
+  date: 2023-01-19 22:59:56
+- bump: minor
+  changes:
+    added:
+    - VAT imputation and implementation.
+  date: 2023-01-25 21:14:21
+- bump: minor
+  changes:
+    added:
+    - Wealth tax brackets.
+    - Intermediate benefit uprating (multiplies by a percentage).
+  date: 2023-01-26 20:09:59
+- bump: patch
+  changes:
+    changed:
+    - MTR calculation limited to one person for speed improvement.
+    - Benefit cap implementation refactored to share code between UC and HB.
+    fixed:
+    - Property income reduces UC as unearned income.
+  date: 2023-01-27 09:21:35
+- bump: patch
+  changes:
+    changed:
+    - VAT adjusted to hit administrative targets.
+  date: 2023-01-27 13:02:28
+- bump: patch
+  changes:
+    changed:
+    - Raised default age from 18 to 30.
+  date: 2023-02-01 00:43:08
+- bump: patch
+  changes:
+    changed:
+    - Increased default age from 30 to 40.
+  date: 2023-02-01 03:38:40
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing pension contributions to not be correctly deducted from taxable
+      income.
+  date: 2023-02-27 13:23:51
+- bump: patch
+  changes:
+    fixed:
+    - Energy Price Guarantee implementation.
+  date: 2023-02-27 15:06:37
+- bump: patch
+  changes:
+    added:
+    - Seasonality to EPG modelling (simple).
+    - EPG documentation updates.
+  date: 2023-02-27 15:37:16
+- bump: patch
+  changes:
+    fixed:
+    - Properly exclude primary residence values from the CEC wealth tax.
+  date: 2023-02-27 16:01:50
+- bump: patch
+  changes:
+    fixed:
+    - EPG properly included in net income.
+  date: 2023-02-27 16:53:13
+- bump: patch
+  changes:
+    fixed:
+    - EPG test used the wrong variable name.
+  date: 2023-02-27 17:19:33
+- bump: patch
+  changes:
+    fixed:
+    - Parameter updates for the CoL payments.
+    - Metadata for the CEC wealth tax.
+  date: 2023-03-02 11:57:32
+- bump: minor
+  changes:
+    added:
+    - State Pension uprating parameter.
+    fixed:
+    - Corporate wealth for pensioners capped to ensure consistency with pension income
+      in some cases.
+    - EBC end date is before 2023.
+  date: 2023-03-03 16:23:13
+- bump: patch
+  changes:
+    fixed:
+    - Bugs relating to private pension contributions.
+  date: 2023-03-14 18:22:37
+- bump: minor
+  changes:
+    changed:
+    - Fuel duty incidence assumed to be 100% on consumers.
+  date: 2023-03-15 11:40:17
+- bump: minor
+  changes:
+    changed:
+    - PolicyEngine Core data updates accounted for.
+  date: 2023-03-23 08:45:05
+- bump: patch
+  changes:
+    fixed:
+    - Made Survey-Enhance a dev dependency.
+  date: 2023-03-25 23:53:14
+- bump: patch
+  changes:
+    fixed:
+    - Import errors due to survey-enhance.
+  date: 2023-03-26 00:21:18
+- bump: patch
+  changes:
+    fixed:
+    - Marriage Allowance previously didn't have an economic impact.
+  date: 2023-03-30 14:03:15
+- bump: minor
+  changes:
+    added:
+    - Improvements to calibration routines.
+  date: 2023-04-01 09:38:48
+- bump: patch
+  changes:
+    added:
+    - Speed improvements
+    - Parameter metadata fixes
+  date: 2023-04-10 13:36:29
+- bump: minor
+  changes:
+    added:
+    - Extra tax bands for the UK and Scotland.
+  date: 2023-04-24 12:16:00
+- bump: minor
+  changes:
+    added:
+    - Spring Budget 2023 policy changes.
+  date: 2023-04-24 14:03:45
+- bump: minor
+  changes:
+    added:
+    - 2023 tax rates for UK and Scotland
+  date: 2023-04-24 14:04:39
+- bump: minor
+  changes:
+    added:
+    - Savings variable from the WAS.
+    fixed:
+    - Added logging for targets in imputations for completeness.
+  date: 2023-05-09 17:02:36
+- bump: patch
+  changes:
+    added:
+    - Missing labels for parameters.
+  date: 2023-05-23 12:04:57
+- bump: minor
+  changes:
+    added:
+    - Python 3.10 support.
+  date: 2023-05-27 15:52:33
+- bump: patch
+  changes:
+    fixed:
+    - Household basic income phase-out rate unit.
+  date: 2023-05-28 02:23:58
+- bump: minor
+  changes:
+    added:
+    - Marriage tax-related reforms.
+  date: 2023-06-18 09:17:08
+- bump: patch
+  changes:
+    fixed:
+    - A bug in the income-splitting logic that caused taxable incomes to be too low.
+  date: 2023-06-20 19:19:13
+- bump: minor
+  changes:
+    added:
+    - Updates to calibration statistics from 2023 benefits and tax sources.
+  date: 2023-07-09 19:21:46
+- bump: minor
+  changes:
+    fixed:
+    - Bug affecting the two-child limit (1% of households)
+  date: 2023-07-17 17:10:23
+- bump: minor
+  changes:
+    changed:
+    - Calibration updated with new DWP statistics.
+  date: 2023-07-21 12:20:43
+- bump: minor
+  changes:
+    added:
+    - Updates values for universal credit from 2016 to 2023
+  date: 2023-08-07 16:52:20
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily remove PIP, DLA and minimum wage parameters from the app.
+  date: 2023-08-12 17:36:09
+- bump: patch
+  changes:
+    added:
+    - Documentation for fuel duty.
+  date: 2023-08-24 14:59:45
+- bump: patch
+  changes:
+    added:
+    - Documentation example.
+  date: 2023-09-14 13:53:16
+- bump: patch
+  changes:
+    fixed:
+    - TOC entry for NI documentation.
+  date: 2023-09-14 15:25:24
+- bump: minor
+  changes:
+    added:
+    - Update Universal Credit documentation
+  date: 2023-09-14 15:31:01
+- bump: patch
+  changes:
+    added:
+    - Documentation for TV licence.
+  date: 2023-09-14 15:35:12
+- bump: patch
+  changes:
+    fixed:
+    - Small issues on the NI page.
+  date: 2023-09-14 16:06:31
+- bump: patch
+  changes:
+    removed:
+    - numpy pin.
+  date: 2023-10-09 19:01:07
+- bump: patch
+  changes:
+    added:
+    - Documentation for Stamp Duty Land Tax.
+  date: 2023-10-12 15:11:13
+- bump: minor
+  changes:
+    added:
+    - Child minimum age for basic income.
+  date: 2023-10-17 14:55:07
+- bump: minor
+  changes:
+    added:
+    - Pension Credit documentation page.
+  date: 2023-10-19 15:46:33
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing child minimum basic income ages to function incorrectly when the
+      adult UBI is nonzero.
+  date: 2023-10-27 20:42:43
+- bump: patch
+  changes:
+    added:
+    - Documentation for Land and Buildings Transaction Tax.
+    - Documentation for Land Transaction Tax.
+    fixed:
+    - Updated LBTT rate increase for non-primary residences.
+    - Fixed SDLT description.
+  date: 2023-11-16 16:32:22
+- bump: minor
+  changes:
+    added:
+    - Switch for benefit uprating.
+  date: 2023-11-22 12:04:13
+- bump: minor
+  changes:
+    added:
+    - HM Treasury baseline for CPI uprating benefits.
+  date: 2023-11-22 15:17:21
+- bump: minor
+  changes:
+    added:
+    - Update National Insurance documentation
+    - Update Income Tax documentation
+  date: 2023-11-23 16:22:19
+- bump: patch
+  changes:
+    removed:
+    - 19% basic rate change proposed for 2024 that was never enacted.
+  date: 2023-11-23 18:03:37
+- bump: patch
+  changes:
+    fixed:
+    - Added missing label for benefit uprating.
+  date: 2023-11-24 10:49:06
+- bump: patch
+  changes:
+    fixed:
+    - Added missing label for benefit uprating.
+  date: 2023-11-26 14:29:46
+- bump: minor
+  changes:
+    added:
+    - Enhanced FRS version for December 2023.
+  date: 2023-12-05 12:45:18
+- bump: patch
+  changes:
+    added:
+    - Test cases for TV Licence.
+  date: 2023-12-14 16:07:36
+- bump: patch
+  changes:
+    added:
+    - Missing uprating parameters for 2018.
+  date: 2023-12-15 14:32:51
+- bump: minor
+  changes:
+    changed:
+    - Validated and standardised National Insurance variables.
+  date: 2023-12-15 14:54:47
+- bump: patch
+  changes:
+    fixed:
+    - Bump policyengine-core to capture simulation randomness bug fixes.
+  date: 2023-12-17 10:18:46
+- bump: patch
+  changes:
+    added:
+    - Added tests for fuel duty.
+  date: 2024-01-04 16:08:24
+- bump: minor
+  changes:
+    added:
+    - Update PIP documentation
+  date: 2024-01-04 16:18:59
+- bump: minor
+  changes:
+    changed:
+    - Calibration routine to include benefit cap statistics.
+    fixed:
+    - Benefit cap UC bug.
+  date: 2024-01-28 17:39:54
+- bump: minor
+  changes:
+    added:
+    - Add Income Tax test.
+  date: 2024-02-01 16:02:50
+- bump: minor
+  changes:
+    added:
+    - Household wealth decile.
+    changed:
+    - Assign decile of -1 to households with negative income.
+  date: 2024-02-17 21:35:30
+- bump: minor
+  changes:
+    added:
+    - Initial version of capital gains imputations and logic.
+  date: 2024-02-19 22:00:58
+- bump: minor
+  changes:
+    added:
+    - Docker image deployment for streamlit documentation.
+  date: 2024-02-19 22:26:55
+- bump: patch
+  changes:
+    changed:
+    - Lowered rates for Class 1 and Class 4 NICs, pursuant to the Autumn Statement
+      2023
+    - Set Class 2 NIC rate to 0%, pursuant to the Autumn Statement 2023
+  date: 2024-03-04 18:45:44
+- bump: minor
+  changes:
+    fixed:
+    - Carbon tax intensities for 2024.
+    - UK NI rate for 2024.
+  date: 2024-03-05 11:48:27
+- bump: minor
+  changes:
+    added:
+    - Fuel duty revenue projections
+  date: 2024-03-05 17:37:39
+- bump: minor
+  changes:
+    added:
+    - add Income Tax Integration Test
+  date: 2024-03-07 16:04:57

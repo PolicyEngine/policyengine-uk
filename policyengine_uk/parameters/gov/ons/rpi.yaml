@@ -1,0 +1,30 @@
+description: Retail Price Index (RPI) is a measure of inflation published by the Office for National Statistics.
+values:
+  2022-10-01: 358.30
+  2023-01-01: 361.85
+  2023-04-01: 371.31
+  2023-07-01: 373.32
+  2023-10-01: 375.80
+  2024-01-01: 371.54
+  2024-04-01: 377.20
+  2024-07-01: 377.75
+  2024-10-01: 379.82
+  2025-01-01: 375.60
+  2025-04-01: 380.05
+  2025-07-01: 381.41
+  2025-10-01: 383.92
+  2026-01-01: 380.07
+  2026-04-01: 385.92
+  2026-07-01: 388.59
+  2026-10-01: 392.69
+  2027-01-01: 389.92
+  2027-04-01: 396.43
+  2027-07-01: 399.90
+  2027-10-01: 404.38
+  2028-01-01: 401.96
+metadata:
+  unit: currency-GBP
+  label: RPI
+  reference:
+    - title: OBR forecast
+      href: https://obr.uk/forecasts-in-depth/the-economy-forecast/inflation

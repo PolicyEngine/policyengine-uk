@@ -1,0 +1,12 @@
+description: Female State Pension age
+values:
+  1950-01-05: 60
+  2010-01-01: 61
+  2012-01-01: 62
+  2014-01-01: 63
+  2016-01-01: 64
+  2019-01-01: 65
+  2020-01-01: 66
+metadata:
+  unit: year
+  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=88

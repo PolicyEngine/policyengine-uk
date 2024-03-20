@@ -1,0 +1,10 @@
+description: Threshold for income for a lone parent, above which the income-based
+  Employment and Support Allowance amount is reduced
+metadata:
+  economy: false
+  period: week
+  label: Income-based ESA lone parent earnings disregard
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38
+  unit: currency-GBP
+values:
+  2015-06-01: 20.0

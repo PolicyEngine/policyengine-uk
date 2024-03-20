@@ -1,0 +1,64 @@
+description: Universal Credit standard allowance.
+SINGLE_YOUNG:
+  description: Standard allowance for single claimants under 25
+  values:
+    2015-06-01: 251.77
+    2020-04-06: 344.00 # From gov.uk and entitledto
+    2021-10-06: 257.33
+    2022-04-06: 265.31
+    2023-04-01: 292.11
+  metadata:
+    label: Universal Credit single amount (under 25)
+    name: UC_single_young
+    unit: currency-GBP
+    period: month
+SINGLE_OLD:
+  description: Standard allowance for single claimants over 25.
+  values:
+    2015-06-01: 317.82
+    2020-04-06: 411.51 # From gov.uk and entitledto
+    2021-10-06: 324.84
+    2022-04-06: 334.91
+    2023-04-01: 368.74
+  metadata:
+    label: Universal Credit single amount (over 25)
+    name: UC_single_old
+    unit: currency-GBP
+    period: month
+COUPLE_YOUNG:
+  description: Standard allowance for couples where both are under 25.
+  values:
+    2015-06-01: 395.20
+    2020-04-06: 490.60 # From gov.uk and entitledto
+    2021-10-06: 403.93
+    2022-04-06: 416.45
+    2023-04-01: 458.51
+  metadata:
+    label: Universal Credit couple amount (both under 25)
+    name: UC_couple_young
+    unit: currency-GBP
+    period: month
+COUPLE_OLD:
+  description: Standard allowance for couples where one is over 25.
+  values:
+    2013-04-29: 489.06
+    2015-06-01: 498.89
+    2020-04-06: 596.58 # From gov.uk/entitledto
+    2021-10-06: 509.91
+    2022-04-06: 525.72
+    2023-04-01: 578.82
+  metadata:
+    label: Universal Credit couple amount (one over 25)
+    name: UC_couple_old
+    unit: currency-GBP
+    period: month
+metadata:
+  unit: currency-GBP
+  uprating: gov.benefit_uprating_cpi
+  propagate_metadata_to_children: true
+  reference:
+    # Values.
+    - https://www.legislation.gov.uk/uksi/2013/376/regulation/36
+    # As-of date.
+    - https://www.legislation.gov.uk/uksi/2013/376/regulation/1
+    - https://www.gov.uk/universal-credit/what-youll-get

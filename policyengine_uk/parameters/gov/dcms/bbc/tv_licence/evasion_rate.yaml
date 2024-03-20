@@ -1,0 +1,10 @@
+description: Percent of households legally required to purchase a TV licence who evade the licence fee.
+values:
+  2018-01-01: 0.0657
+  2019-01-01: 0.0725
+metadata:
+  unit: /1
+  label: TV licence fee evasion rate
+  reference:
+    - title: Licence fee statistics | House of Commons Library
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-8101/#:~:text=Estimated%20TV%20licence%20evasion%20rate,from%206.57%25%20to%207.25%25.

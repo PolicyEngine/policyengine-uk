@@ -1,0 +1,9 @@
+description: Land intensity by asset type (where microsimulation data is not available)
+property_wealth:
+  2019-01-01: 0.635
+  2022-01-01: 0.673
+corporate_wealth:
+  2019-01-01: 0.349
+  2022-01-01: 0.321
+metadata:
+  unit: /1

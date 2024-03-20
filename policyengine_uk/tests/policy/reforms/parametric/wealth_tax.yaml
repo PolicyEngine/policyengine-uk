@@ -1,0 +1,8 @@
+- name: 1% wealth tax with exemption.
+  period: 2022
+  input:
+    gov.contrib.ubi_center.wealth_tax[0].rate: 0.01
+    gov.contrib.ubi_center.wealth_tax[0].threshold: 1_000
+    total_wealth: 2_000
+  output:
+    wealth_tax: 10

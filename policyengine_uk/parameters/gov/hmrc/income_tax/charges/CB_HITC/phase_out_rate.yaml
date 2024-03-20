@@ -1,0 +1,11 @@
+description: Percent of Child Benefit recollected for every £1,000 over the phase-out threshold
+values:
+  2015-06-05: 0.1
+metadata:
+  period: year
+  name: CB_HITC_reduction_rate
+  label: Child Benefit Tax Charge phase-out rate
+  unit: /1
+  reference:
+    - title: Finance Act 2012 Schedule 1 s. 681C
+      href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/1

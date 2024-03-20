@@ -1,0 +1,26 @@
+description: The Class 1 National Insurance main rate is paid on employment earnings between the Primary Threshold and the Upper Earnings Limit
+values:
+  2015-06-01: 0.12
+  2022-04-01: 
+    value: 0.1325
+    metadata:
+      reference:
+        - title: Autumn Budget and Spending Review 2022
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+  2022-11-06:
+    value: 0.12
+    metadata:
+      reference:
+        - title: Health and Social Care Levy Act (Repeal) 2022
+          href: https://www.legislation.gov.uk/ukpga/2022/43/section/2
+  2024-01-01:
+    value: 0.1
+    metadata:
+      reference:
+        - title: "Autumn Statement 2023: National Insurance Factsheet"
+          href: https://www.gov.uk/government/publications/autumn-statement-2023-national-insurance-factsheet/autumn-statement-2023-national-insurance-factsheet
+metadata:
+  label: NI Class 1 main rate
+  name: NI_main_rate
+  unit: /1
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

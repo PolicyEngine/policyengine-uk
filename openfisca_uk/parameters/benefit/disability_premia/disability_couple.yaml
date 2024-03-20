@@ -1,8 +1,0 @@
-description: Disability premium for a couple
-values:
-  2015-06-01:
-    value: 49.80
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/disability-premiums/what-youll-get

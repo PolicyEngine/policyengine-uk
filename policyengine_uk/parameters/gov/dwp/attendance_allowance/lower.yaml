@@ -1,0 +1,21 @@
+description: Lower Attendance Allowance amount.
+values:
+  2015-04-01: 55.10
+  2016-04-01: 55.10
+  2017-04-01: 55.65
+  2018-04-01: 57.30
+  2019-04-01: 58.70
+  2020-04-01: 59.70
+  2021-04-01: 60.00
+  2022-04-01: 61.85
+  2023-04-01: 68.10
+metadata:
+  period: week
+  unit: currency-GBP
+  name: aa_lower
+  label: Attendance Allowance (lower rate)
+  reference: 
+    - title: Benefits Uprating 2022/23
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf
+    - title: Benefits Uprating 2023/24 | Commons Library Briefing
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9680/CBP-9680.pdf

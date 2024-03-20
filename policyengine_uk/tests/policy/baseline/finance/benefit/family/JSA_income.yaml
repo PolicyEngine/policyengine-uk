@@ -1,0 +1,37 @@
+- name: JSA income-based, just after phase-out
+  period: 2021
+  absolute_error_margin: 20
+  input:
+    employment_income: 4200
+    employment_status: "UNEMPLOYED"
+    weekly_hours: 4
+    age: 27
+    JSA_income_reported: true
+  output:
+    JSA_income_eligible: true
+    JSA_income: 0
+- name: JSA income-based, basic amount
+  period: 2021
+  absolute_error_margin: 20
+  input:
+    age: 18
+    weekly_hours: 5
+    employment_income: 100
+    employment_status: "UNEMPLOYED"
+    JSA_income_reported: true
+  output:
+    JSA_income_eligible: true
+    JSA_income_applicable_amount: 59 * 52
+- name: JSA income-based, higher age amount
+  period: 2021
+  absolute_error_margin: 30
+  input:
+    age: 26
+    weekly_hours: 1
+    employment_income: 20
+    employment_status: "UNEMPLOYED"
+    JSA_income_reported: true
+    claims_legacy_benefits: true
+  output:
+    JSA_income_eligible: true
+    JSA_income_applicable_amount: 74.58 * 52

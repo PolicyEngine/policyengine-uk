@@ -1,0 +1,8 @@
+description: Threshold for income for a couple, above which Housing Benefit is reduced
+values:
+  2015-06-01: 10.00
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit couple earnings disregard
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=40

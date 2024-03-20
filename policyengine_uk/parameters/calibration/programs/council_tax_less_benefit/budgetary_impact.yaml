@@ -1,0 +1,10 @@
+description: Council Tax spending, minus CTB by country.
+GREAT_BRITAIN:
+  values:
+    2019-01-01: 36_300_000_000
+    2020-01-01: 37_500_000_000
+    2021-01-01: 38_700_000_000
+    2022-01-01: 39_900_000_000
+    2023-01-01: 41_100_000_000
+metadata:
+  uprating: self

@@ -1,0 +1,5 @@
+description: People with self-employment income.
+UNITED_KINGDOM:
+  2020-01-01: 3_280_000
+metadata:
+  unit: currency-GBP

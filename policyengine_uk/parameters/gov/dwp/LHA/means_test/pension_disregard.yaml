@@ -1,0 +1,11 @@
+description: Threshold in occupational and personal pensions, above which the Housing
+  Benefit (LHA) amount is reduced
+metadata:
+  economy: false
+  period: week
+  label: Housing Benefit (LHA) pension disregard
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
+  unit: currency-GBP
+values:
+  2015-06-01:
+    value: 50.0

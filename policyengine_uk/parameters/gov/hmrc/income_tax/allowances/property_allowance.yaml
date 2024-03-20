@@ -1,0 +1,9 @@
+description: Amount of income from property untaxed per year
+values:
+  2005-06-01: 1_000
+metadata:
+  name: property_allowance
+  label: Property Allowance
+  period: year
+  unit: currency-GBP
+  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

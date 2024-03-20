@@ -1,0 +1,13 @@
+description: Family premium for Housing Benefit
+metadata:
+  economy: false
+  label: HB family premium
+  name: hb_family
+  period: week
+  propagate_metadata_to_children: true
+  reference: https://england.shelter.org.uk/legal/benefits/housing_benefit/benefit_rates/housing_benefit_calculation_rates_2019_to_2020
+  unit: currency-GBP
+values:
+  2019-06-01: 17.45
+  2021-04-01: 17.65
+  2022-04-06: 17.85

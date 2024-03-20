@@ -1,0 +1,12 @@
+description: Absolute poverty threshold for equivalised household net income, before housing costs
+values:
+  2010-01-01: 251.4
+metadata:
+  period: week
+  unit: currency-GBP
+  name: abs_poverty_threshold_bhc
+  label: Absolute poverty threshold, before housing costs
+  reference:
+    - title: Households Below Average income, 2010/11
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/200720/full_hbai12.pdf#page=35
+  uprating: calibration.uprating.CPI

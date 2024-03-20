@@ -1,0 +1,8 @@
+- name: Reductions apply at correct rates
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    UC_earned_income: 10
+    UC_unearned_income: 1
+  output:
+    UC_income_reduction: 0.63 * 10 + 1.0 * 1

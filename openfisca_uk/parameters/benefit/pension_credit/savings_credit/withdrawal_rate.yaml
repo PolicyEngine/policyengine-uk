@@ -1,8 +1,0 @@
-description: Reduction rate for Savings Credit over the threshold
-values:
-  2015-06-01:
-    value: 0.4
-metadata:
-  period: week
-  unit: /1
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=36

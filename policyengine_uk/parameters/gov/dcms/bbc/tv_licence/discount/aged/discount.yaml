@@ -1,0 +1,9 @@
+description: Percentage discount for qualifying aged households.
+values:
+  2003-01-01: 1
+metadata:
+  unit: /1
+  label: Aged TV Licence discount
+  reference:
+    - title: "Free and reduced fee TV Licences | TV Licensing"
+      href: https://www.tvlicensing.co.uk/reducedfee

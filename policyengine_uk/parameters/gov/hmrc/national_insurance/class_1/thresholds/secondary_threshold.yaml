@@ -1,0 +1,26 @@
+description: Secondary threshold for National Insurance
+metadata:
+  label: NI Secondary Threshold
+  economy: false
+  period: week
+  propagate_metadata_to_children: true
+  reference:
+  - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+  - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+  unit: currency-GBP
+values:
+  2015-04-06: 155
+  2016-04-06: 155
+  2017-04-06: 157
+  2018-04-06: 162
+  2019-04-06: 166
+  2020-04-06: 169
+  2021-04-06: 170
+  2022-04-06:
+    metadata:
+      reference:
+      - href: https://www.legislation.gov.uk/uksi/2022/232/regulation/6/made#regulation-6-2-a
+        title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments
+          and National Insurance Funds Payments) Regulations 2022(6)
+    value: 175
+  2024-01-01: 175

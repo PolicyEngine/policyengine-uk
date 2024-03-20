@@ -1,8 +1,0 @@
-description: Benefit cap for benefit units with children outside of London
-values:
-  2013-08-12:
-    value: 384.62
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/benefit-cap/benefit-cap-amounts

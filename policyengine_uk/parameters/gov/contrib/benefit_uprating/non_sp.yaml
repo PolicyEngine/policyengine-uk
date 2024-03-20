@@ -1,0 +1,6 @@
+description: Increase all non-State Pension benefits by this amount (this multiplies the end value, not the maximum amount).
+values:
+  2000-01-01: 0
+metadata:
+  unit: /1
+  label: Non-State Pension benefit uprating

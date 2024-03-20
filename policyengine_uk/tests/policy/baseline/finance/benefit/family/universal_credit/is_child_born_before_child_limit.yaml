@@ -1,0 +1,21 @@
+- name: An adult is not recognised
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 23
+  output:
+    is_child_born_before_child_limit: false
+- name: A child born after 6 April 2017 is not recognised
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 1
+  output:
+    is_child_born_before_child_limit: false
+- name: A child born before 6 April 2017 is recognised
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 4
+  output:
+    is_child_born_before_child_limit: true

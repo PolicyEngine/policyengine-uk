@@ -1,0 +1,37 @@
+description: ONS National Balance Sheet statistics on wealth
+household:
+  metadata:
+    uprating: self
+    propagate_metadata_to_children: true
+  dwellings:
+    2019-01-01: 1_367_360_000_000
+    2020-01-01: 1_413_104_000_000
+    2021-01-01: 1_425_250_000_000
+  other_structures:
+    2019-01-01: 18_214_000_000
+    2020-01-01: 19_325_000_000
+    2021-01-01: 146_466_000_000
+  land:
+    2019-01-01: 3_947_306_000_000
+    2020-01-01: 3_961_152_000_000
+    2021-01-01: 4_309_180_000_000
+  financial_net_worth:
+    2019-01-01: 4_556_770_000_000
+    2020-01-01: 4_818_898_000_000
+    2021-01-01: 5_327_153_000_000
+  net_worth:
+    2019-01-01: 10_052_472_000_000
+    2020-01-01: 10_381_309_000_000
+    2021-01-01: 11_249_849_000_000
+corporate:
+  dwellings:
+    2021-01-01: 388_496_000_000
+  other_structures:
+    2021-01-01: 979_153_000_000
+  land:
+    2021-01-01: 1_738_203_000_000
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: ONS National Balance Sheet
+      href: https://www.ons.gov.uk/economy/nationalaccounts/uksectoraccounts/datasets/nationalbalancesheet

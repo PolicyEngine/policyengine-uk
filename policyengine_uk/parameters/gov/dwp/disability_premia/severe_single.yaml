@@ -1,0 +1,8 @@
+description: Severe disability premium for a single person
+values:
+  2015-06-01: 66.95
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Legacy benefit severe disability premium (single)
+  reference: https://www.gov.uk/disability-premiums/what-youll-get

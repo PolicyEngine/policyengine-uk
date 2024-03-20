@@ -1,0 +1,141 @@
+brackets:
+- rate:
+    description: The starter rate applies in Scotland and is the first Income Tax
+      rate
+    metadata:
+      label: Scottish starter rate
+      unit: /1
+    values:
+      2018-06-01: 0.19
+  threshold:
+    2018-06-01: 0
+- rate:
+    description: The Scottish basic rate is similar to the UK basic rate, but operates
+      over a smaller region of income
+    metadata:
+      label: Scottish basic rate
+      unit: /1
+    values:
+      2018-06-01: 0.2
+  threshold:
+    description: The threshold at which an individual pays the basic rate
+    metadata:
+      label: Scottish basic rate threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2018-06-01: 2_000
+      2019-06-01: 2_049
+      2020-06-01: 2_085
+      2022-01-01: 
+        value: 2_162
+        reference:
+          - title: "Scottish Rate Resolution 2022-23: motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2022-23-motion-and-explanatory-note/
+      2023-01-01:
+        value: 2_162
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
+- rate:
+    description: The third rate in Scottish Income Tax
+    metadata:
+      label: Scottish intermediate rate
+      unit: /1
+    values:
+      2018-06-01: 0.21
+  threshold:
+    description: The threshold at which an individual pays the Scottish intermediate
+      rate
+    metadata:
+      label: Scottish intermediate rate threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2018-06-01: 12_150
+      2020-06-01: 12_444
+      2021-06-01: 12_658
+      2022-01-01: 
+        value: 13_118
+        reference:
+          - title: "Scottish Rate Resolution 2022-23: motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2022-23-motion-and-explanatory-note/
+      2023-01-01:
+        value: 13_118
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
+- rate:
+    description: The fourth rate in Scottish Income Tax
+    metadata:
+      label: Scottish higher rate
+      unit: /1
+    values:
+      2018-06-01: 0.4
+  threshold:
+    description: The threshold at which an individual pays the Scottish higher rate
+    metadata:
+      label: Scottish higher rate threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2018-06-01: 31_580
+      2019-06-01: 30_930
+      2020-06-01: 30_930
+      2022-01-01: 
+        value: 31_092
+        reference:
+          - title: "Scottish Rate Resolution 2022-23: motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2022-23-motion-and-explanatory-note/
+      2023-01-01:
+        value: 31_092
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
+- rate:
+    description: The fifth and final rate in Scottish Income Tax
+    metadata:
+      label: Scottish additional rate
+      unit: /1
+    values:
+      2018-06-01: 0.47
+  threshold:
+    description: The threshold at which an individual pays the Scottish additional
+      rate
+    metadata:
+      label: Scottish additional rate threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2018-06-01: 150_000
+      2023-01-01:
+        value: 125_140
+        reference:
+          - title: "Scottish Rate Resolution 2023-24: draft motion and explanatory note"
+            href: https://www.gov.scot/publications/scottish-rate-resolution-2023-24-draft-motion-explanatory-note/
+- rate:
+    description: An extra Scottish tax bracket.
+    metadata:
+      label: Extra Scottish tax bracket rate
+      unit: /1
+    values:
+      2015-06-05: 0.46
+  threshold:
+    description: The lower threshold for the extra Scottish tax bracket rate.
+    metadata:
+      label: Extra Scottish tax bracket threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2015-06-05: 10_000_000
+description: Income Tax scale for Scotland
+metadata:
+  economy: false
+  period: year
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+    title: GOV.UK - Historical Income Tax rates and thresholds
+  threshold_unit: currency-GBP
+  type: marginal_rate

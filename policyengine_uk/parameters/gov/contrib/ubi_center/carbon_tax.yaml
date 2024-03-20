@@ -1,0 +1,17 @@
+consumer_incidence:
+  description: Proportion of corporate carbon taxes which is passed on to consumers
+    in the form of higher prices (as opposed to shareholders in the form of reduced
+    profitability).
+  metadata:
+    label: Carbon tax consumer incidence
+    name: carbon_tax_consumer_incidence
+    unit: /1
+  values:
+    2010-01-01: 1.0
+rate:
+  description: Price per tonne of carbon emissions
+  metadata:
+    label: Carbon tax
+    unit: currency-GBP
+  values:
+    2010-01-01: 0.0

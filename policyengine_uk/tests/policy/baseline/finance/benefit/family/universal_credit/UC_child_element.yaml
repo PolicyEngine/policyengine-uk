@@ -1,0 +1,18 @@
+- name: Child elements are summed
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        UC_individual_child_element: 1
+      person_2:
+        UC_individual_child_element: 1
+      person_3:
+        UC_individual_child_element: 1
+      person_4:
+        UC_individual_child_element: 1
+    benunits:
+      benunit:
+        members: [person_1, person_2, person_3, person_4]
+  output:
+    UC_child_element: 4

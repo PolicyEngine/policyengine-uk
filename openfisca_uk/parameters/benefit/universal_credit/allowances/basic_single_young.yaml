@@ -1,9 +1,0 @@
-description: Personal allowance for a single person under 25, per month
-values:
-  2015-06-01: 251.77
-  2020-04-06: 342.72
-  2021-10-06: 257.33
-metadata:
-  period: month
-  unit: currency
-  reference: The Universal Credit Regulations 2013 reg. 36

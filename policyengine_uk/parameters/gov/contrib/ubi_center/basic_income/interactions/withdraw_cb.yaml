@@ -1,0 +1,6 @@
+description: Withdraw Child Benefit payments from basic income recipients.
+metadata:
+  label: Withdraw Child Benefit from basic income recipients
+  unit: bool
+values:
+  2010-01-01: false

@@ -1,0 +1,28 @@
+description: Total spending by category.
+food_and_non_alcoholic_beverages_consumption:
+  2022-01-01: 101_271_123_550
+alcohol_and_tobacco_consumption:
+  2022-01-01: 20_649_078_205
+clothing_and_footwear_consumption:
+  2022-01-01: 20_963_698_388
+housing_water_and_electricity_consumption:
+  2022-01-01: 124_038_611_201
+household_furnishings_consumption:
+  2022-01-01: 50_520_352_855
+health_consumption:
+  2022-01-01: 9_779_703_006
+transport_consumption:
+  2022-01-01: 89_217_063_076
+communication_consumption:
+  2022-01-01: 16_271_643_314
+recreation_consumption:
+  2022-01-01: 65_969_989_193
+education_consumption:
+  2022-01-01: 12_218_834_005
+restaurants_and_hotels_consumption:
+  2022-01-01: 26_464_397_527
+miscellaneous_consumption:
+  2022-01-01: 54_415_069_696
+metadata:
+  unit: currency-GBP
+  period: year

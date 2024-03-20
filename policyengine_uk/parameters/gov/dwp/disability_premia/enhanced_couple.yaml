@@ -1,0 +1,8 @@
+description: Enhanced disability premium for a couple, invalid for Employment and Support Allowance
+values:
+  2015-06-01: 24.50
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Legacy benefit enhanced disability premium (couple)
+  reference: https://www.gov.uk/disability-premiums/what-youll-get

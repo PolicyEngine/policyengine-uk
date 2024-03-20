@@ -1,0 +1,52 @@
+- name: Child or QYP for child
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 14
+  output:
+    is_child_or_QYP: true
+- name: Child or QYP for student in FE
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 17
+    current_education: POST_SECONDARY
+  output:
+    is_child_or_QYP: true
+- name: Benefits premiums summed
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    disability_premium: 1
+    enhanced_disability_premium: 1
+    severe_disability_premium: 1
+    carer_premium: 1
+  output:
+    benefits_premiums: 4
+- name: Weekly hours
+  period: 2020
+  absolute_error_margin: 1
+  input:
+    hours_worked: 52
+  output:
+    benunit_weekly_hours: 1
+- name: Family structure
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1: {}
+      person_2: {}
+    benunits:
+      benunit:
+        members: ["person_1", "person_2"]
+  output:
+    is_single: false
+    is_couple: true
+- name: Personal benefits added up
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    attendance_allowance: 1
+  output:
+    personal_benefits: 1

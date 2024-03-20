@@ -1,0 +1,12 @@
+description: Increase in percentage rates for non-primary residence purchases.
+values:
+  2016-04-01: 0.03
+  2019-01-25: 0.04
+  2022-12-16: 0.06
+metadata:
+  unit: /1
+  name: lbtt_rate_increase_for_secondary_residences
+  label: LBTT fixed rate increase for secondary residences
+  reference:
+    - title: Land and Buildings Transaction Tax (Scotland) Act 2013 Schedule 2A(4)(2)
+      href: https://www.legislation.gov.uk/asp/2013/11/schedule/2A/part/3/crossheading/additional-amount/2022-12-16

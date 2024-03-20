@@ -1,0 +1,103 @@
+brackets:
+- rate:
+    description: The basic rate is the first of three tax brackets on all income,
+      after allowances are deducted
+    metadata:
+      label: Basic rate
+      reference:
+      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+        title: Finance Act 2022 s. 2
+      unit: /1
+    values:
+      2015-06-01: 0.2
+  threshold:
+    description: The starting threshold for the basic rate, after allowances.
+    metadata:
+      reference:
+      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+        title: Finance Act 2022 s. 2
+    values:
+      2015-06-05: 0
+- rate:
+    description: The higher rate is the middle tax bracket on earned income.
+    metadata:
+      label: Higher rate
+      reference:
+      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+        title: Finance Act 2022 s. 2
+      unit: /1
+    values:
+      2015-06-05: 0.4
+  threshold:
+    description: The lower threshold for the higher rate of income tax (and therefore
+      the upper threshold of the basic rate)
+    metadata:
+      label: Higher rate threshold
+      period: year
+      reference:
+      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+        title: Finance Act 2022 s. 2
+      unit: currency-GBP
+      uprating: gov.benefit_uprating_cpi
+    values:
+      2015-06-05: 32000
+      2017-06-01: 33500
+      2018-06-01: 34500
+      2019-06-01: 37500
+      2020-06-01: 37500
+      2021-06-01: 37700
+      2025-06-01: 37700
+- rate:
+    description: The additional rate is the highest tax bracket, with no upper bound
+    metadata:
+      label: Additional rate
+      reference:
+      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+        title: Finance Act 2022 s. 2
+      tests:
+      - decreases_net_income: true
+        period: 2022
+      unit: /1
+    values:
+      2015-06-05: 0.45
+  threshold:
+    description: The lower threshold for the additional rate
+    metadata:
+      label: Additional rate threshold
+      period: year
+      reference:
+      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+        title: Finance Act 2022 s. 2
+      unit: currency-GBP
+    values:
+      2015-06-05: 150_000
+      2023-01-01: 
+        value: 125_140 # Not actually hard-coded: it's defined as the PA phase-out threshold + 2 * the PA
+        reference:
+          - title: Finance Act 2023 s. 6
+            href: https://www.legislation.gov.uk/ukpga/2023/1/section/6/enacted
+- rate:
+    description: An extra tax bracket.
+    metadata:
+      label: Extra tax bracket rate
+      unit: /1
+    values:
+      2015-06-05: 0.45
+  threshold:
+    description: The lower threshold for the extra bracket rate.
+    metadata:
+      label: Extra tax bracket threshold
+      period: year
+      unit: currency-GBP
+    values:
+      2015-06-05: 10_000_000
+description: Income Tax scale
+metadata:
+  label: Income tax main rates
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
+    title: Finance Act 2022 s. 2
+  threshold_period: year
+  threshold_unit: currency-GBP
+  type: marginal_rate

@@ -1,0 +1,38 @@
+- name: Family type and relation type
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      adult:
+        age: 30
+      child:
+        age: 14
+    benunits:
+      benunit:
+        members: [adult, child]
+  output:
+    family_type: "LONE_PARENT"
+    relation_type: "SINGLE"
+- name: Age variables
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      adult_1:
+        age: 34
+      adult_2:
+        age: 35
+      child_1:
+        age: 3
+      child_2:
+        age: 4
+    benunits:
+      benunit:
+        members: [adult_1, adult_2, child_1, child_2]
+  output:
+    eldest_adult_age: 35
+    youngest_adult_age: 34
+    eldest_child_age: 4
+    youngest_child_age: 3
+    num_children: 2
+    num_adults: 2

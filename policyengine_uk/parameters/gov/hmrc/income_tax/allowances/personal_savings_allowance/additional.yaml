@@ -1,0 +1,7 @@
+description: Savings allowance in the additional threshold
+values:
+  2005-06-01: 0
+metadata:
+  period: week
+  unit: currency-GBP
+  reference: https://www.gov.uk/apply-tax-free-interest-on-savings

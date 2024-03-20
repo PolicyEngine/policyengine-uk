@@ -12,7 +12,7 @@
 	// 	],
 	// 	"description": "Log output to console"
 	// }
-	"Insert OpenFisca basic parameter": {
+	"Insert PolicyEngine basic parameter": {
 		"prefix": "param",
 		"body": [
 			"description: ${1:Description}",
@@ -21,21 +21,54 @@
 			"    value: ${2:0.00}",
 			"metadata:",
 			"  unit: currency-GBP",
-			"  reference: $3:none"
+			"  reference: ${3:none}"
 		],
-		"description": "Insert a basic OpenFisca parameter."
+		"description": "Insert a basic PolicyEngine parameter."
 	},
-	"Insert OpenFisca basic test": {
+	"Insert PolicyEngine parameter value with reference": {
+		"prefix": "refparam",
+		"body": [
+			"value: ${1:0.00}",
+			"reference:",
+			"  - title: ${2:Title}",
+			"    href: ${3:Link}",
+		],
+		"description": "Insert a basic PolicyEngine parameter."
+	},
+	"Insert PolicyEngine basic test": {
 		"prefix": "test",
 		"body": [
 			"- name: ${1:Name}",
-			"  period: 2020",
-			"  absolute_error_margin: ${2:0}",
+			"  period: 2021",
 			"  input:",
 			"    ${3:variable values here}",
 			"  output:",
 			"    ${4:expected output here}"
 		],
-		"description": "Insert a basic OpenFisca parameter for one person."
+		"description": "Insert a basic PolicyEngine parameter for one person."
+	},
+	"2019-2025 (millions) PolicyEngine parameter": {
+		"prefix": "1926bn",
+		"body": [
+			"2019-01-01: ${1}_000_000",
+			"2020-01-01: ${2}_000_000",
+			"2021-01-01: ${3}_000_000",
+			"2022-01-01: ${4}_000_000",
+			"2023-01-01: ${5}_000_000",
+			"2024-01-01: ${6}_000_000",
+			"2025-01-01: ${7}_000_000",
+		]
+	},
+	"2019-2025 (thousands) PolicyEngine parameter": {
+		"prefix": "1926mn",
+		"body": [
+			"2019-01-01: ${1}_000",
+			"2020-01-01: ${2}_000",
+			"2021-01-01: ${3}_000",
+			"2022-01-01: ${4}_000",
+			"2023-01-01: ${5}_000",
+			"2024-01-01: ${6}_000",
+			"2025-01-01: ${7}_000",
+		]
 	}
 }

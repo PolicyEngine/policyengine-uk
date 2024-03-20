@@ -1,8 +1,0 @@
-description: Benefit cap for benefit units without children in London
-values:
-  2013-08-12:
-    value: 296.35
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/benefit-cap/benefit-cap-amounts

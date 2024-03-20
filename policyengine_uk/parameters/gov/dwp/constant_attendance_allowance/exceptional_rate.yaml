@@ -1,0 +1,9 @@
+description: Exceptional rate for Constant Attendance Allowance
+metadata:
+  economy: false
+  period: week
+  reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
+  unit: currency-GBP
+  label: Constant Attendance Allowance exceptional rate
+values:
+  2015-06-01: 145.6

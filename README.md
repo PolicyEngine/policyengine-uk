@@ -1,41 +1,37 @@
-# OpenFisca UK
+# PolicyEngine UK
 
-This extension of [OpenFisca](https://github.com/openfisca/country-template) aims to model the UK Tax-Benefit system.
+[![PyPI version](https://badge.fury.io/py/policyengine-uk.svg)](https://badge.fury.io/py/policyengine-uk)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-This is in the early stages (from the country template linked above) and documentation and better modeling is in progress - feel free to contact or open an issue with bugs/errors/inaccuracies/suggestions.
+PolicyEngine UK is [PolicyEngine](https://policyengine.org)'s microsimulation model of the UK tax-benefit system.
+It uses the PolicyEngine Core microsimulation framework, which is based on [OpenFisca](https://openfisca.org).
 
-The elements are described in different folders. All the modelling happens within the `openfisca_uk` folder.
+The elements are described in different folders. All the modelling happens within the `policyengine_uk` folder.
 
 - The rates and other system parameters are in the `parameters` folder.
 - The formulas and inputs are in the `variables` folder.
 - This country package comes also with reforms in the `reforms` folder.
 
-The files that are outside from the `openfisca_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the ```docs``` folder.
+The files that are outside from the `policyengine_uk` folder are used to set up the development environment. Installation instructions are located along with other documentation in the `docs` folder.
+
+The model supports multiple different input datasets provided by the user, one of which is the Family Resources Survey,[^1] containing microdata on household incomes across the UK.
+PolicyEngine UK enhances this dataset by fusing it to other surveys and reweighting it to minimize a comprehensive loss metric that measures the difference from an array of administrative totals.
+
+[^1]: Department for Work and Pensions, Office for National Statistics, NatCen Social Research. (2021). Family Resources Survey, 2019-2020. [data collection]. UK Data Service. SN: 8802, http://doi.org/10.5255/UKDA-SN-8802-1
+
 
 ## Fast setup instructions
 
-1. `pip install git+https://github.com/PSLmodels/openfisca-uk`
+1. Run `pip install policyengine-uk`
 
-For microdata instructions, follow (from [openfisca-uk-data](https://github.com/nikhilwoodruff/openfisca-uk-data)):
-2. Download the [synthetic FRS file](https://github.com/nikhilwoodruff/openfisca-uk-data/releases/download/synth-frs/synth_frs_2018.h5)
-3. Run `openfisca-uk-data synth_frs save synth_frs_2018`
+2. Run `policyengine-uk` and go through the prompt to setup microdata.
 
-Or with the actual microdata:
-2. Have the `8633~~~.zip` file ready
-3. Run `openfisca-uk-data raw_frs generate 2018 8633~~~.zip`
-4. Run `openfisca-uk-data frs generate 2018`
 
 ## Contact
 
-The maintainer for OpenFisca-UK is Nikhil Woodruff - feel free to contact via [email](mailto:nikhil.woodruff@ubicenter.org).
+The primary maintainer for PolicyEngine UK is Nikhil Woodruff, co-founder and CTO of PolicyEngine (nikhil@policyengine.org).
 
-## Disclaimer
-
-The model is currently under development. Users should be forewarned that the
-model components could change significantly. Therefore, there is NO GUARANTEE
-OF ACCURACY. THE CODE SHOULD NOT CURRENTLY BE USED FOR PUBLICATIONS, JOURNAL
-ARTICLES, OR RESEARCH PURPOSES. Essentially, you should assume the calculations are unreliable until we finish the code re-architecture and have checked the results against other existing implementations of the tax code. The package will have released versions, which will be checked against existing code prior to release.
 
 ## Citation
 
-You may cite the source of your analysis as "OpenFisca-UK release #.#.#, author's calculations."
+You may cite the source of your analysis as "PolicyEngine UK release #.#.#, author's calculations."

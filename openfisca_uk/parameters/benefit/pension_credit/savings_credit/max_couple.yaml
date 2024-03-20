@@ -1,8 +1,0 @@
-description: Savings Credit (Pension Credit) maximum amount for a couple
-values:
-  2015-06-01:
-    value: 15.62
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=37

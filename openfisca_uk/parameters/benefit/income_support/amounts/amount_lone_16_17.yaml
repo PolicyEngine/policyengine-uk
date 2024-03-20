@@ -1,8 +1,0 @@
-description: Income Support applicable amount for lone parents aged under 18
-values:
-  2015-06-01:
-    value: 58.90
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/income-support/what-youll-get

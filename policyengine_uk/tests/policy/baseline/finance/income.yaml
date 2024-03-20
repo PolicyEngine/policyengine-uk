@@ -1,0 +1,17 @@
+- name: Net income with base income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    gross_income: 400
+    tax: 50
+  output:
+    net_income: 350
+- name: Household net income can be negative
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    household_market_income: 1
+    household_tax: 2
+    household_benefits: 0
+  output:
+    household_net_income: -1

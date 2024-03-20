@@ -1,0 +1,14 @@
+- name: Not disabled
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    is_disabled_for_benefits: false
+  output:
+    limited_capability_for_WRA: false
+- name: Disabled
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    is_disabled_for_benefits: true
+  output:
+    limited_capability_for_WRA: true

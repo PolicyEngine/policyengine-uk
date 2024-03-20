@@ -1,0 +1,8 @@
+description: While this parameter is true, LHA rates are frozen in cash terms.
+values:
+  2015-01-01: false
+  2020-01-01: true
+  2024-01-01: false
+metadata:
+  unit: bool
+  label: LHA freeze

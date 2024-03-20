@@ -1,0 +1,8 @@
+description: Threshold in income for a couple, above which the contributory Jobseeker's Allowance amount is reduced
+values:
+  2015-06-01: 10.00
+metadata:
+  period: week
+  label: Jobseeker's Allowance income disregard (couple)
+  unit: currency-GBP
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33

@@ -1,0 +1,51 @@
+brackets:
+- amount:
+    2018-06-18: 15.25
+    2021-04-01: 15.95
+    2022-04-01: 16.45
+  threshold:
+    2018-06-18: 0.0
+- amount:
+    2018-06-18: 35.0
+    2021-04-01: 36.65
+    2022-04-01: 37.8
+  threshold:
+    2018-06-18: 139.0
+    2021-04-01: 154.0
+- amount:
+    2018-06-18: 48.05
+    2021-04-01: 50.3
+    2022-04-01: 51.85
+  threshold:
+    2018-06-18: 204.0
+    2021-04-01: 224.0
+- amount:
+    2018-06-18: 78.65
+    2021-04-01: 82.3
+    2022-04-01: 84.85
+  threshold:
+    2018-06-18: 265.0
+    2021-04-01: 292.0
+- amount:
+    2018-06-18: 89.55
+    2021-04-01: 93.7
+    2022-04-01: 96.6
+  threshold:
+    2018-06-18: 354.0
+    2021-04-01: 389.0
+- amount:
+    2018-06-18: 98.3
+    2021-04-01: 102.85
+    2022-04-01: 106.05
+  threshold:
+    2018-06-18: 439.0
+    2021-04-01: 484.0
+description: Housing Benefit non-dependent deduction for an individual
+metadata:
+  amount_unit: currency-GBP
+  economy: false
+  period: week
+  propagate_metadata_to_children: true
+  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=37
+  threshold_unit: currency-GBP
+  type: single_amount

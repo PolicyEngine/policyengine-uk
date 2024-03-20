@@ -1,0 +1,17 @@
+- name: Three children, one not disabled, two disabled, one severely.
+  period: 2022
+  input:
+    people:
+      child_1:
+        age: 5
+      child_2:
+        age: 5
+        dla_sc_category: LOWER
+      child_3:
+        age: 5
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [child_1, child_2, child_3]
+  output:
+    child_minimum_guarantee_addition: (54.60 + 84.26 + 147.14) * 52

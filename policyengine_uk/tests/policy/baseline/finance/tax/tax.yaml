@@ -1,0 +1,14 @@
+- name: No income
+  period: 2020
+  absolute_error_margin: 0
+  output:
+    income_tax: 0
+    national_insurance: 0
+- name: Some employed income
+  period: 2019
+  absolute_error_margin: 30
+  input:
+    employment_income: 41223
+  output:
+    national_insurance: 3935
+    income_tax: 5875

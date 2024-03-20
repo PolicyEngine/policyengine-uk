@@ -1,0 +1,33 @@
+description: Total number of taxpayers by Income Tax band.
+metadata:
+  reference:
+    - title: NS Summary Statistics | Income Tax payer numbers by type
+      href: https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2018-to-2019-to-tax-year-2021-to-2022/summary-statistics
+BASIC:
+  # Includes Scottish starter and intermediate bands.
+  values:
+    2018-01-01: 26_300_000
+    2019-01-01: 26_400_000
+    2020-01-01: 26_600_000
+    2021-01-01: 27_000_000
+  metadata:
+    uprating: 
+      parameter: calibration.demographics.populations.by_program_participation.income_tax
+HIGHER:
+  values:
+    2018-01-01: 4_230_000
+    2019-01-01: 3_860_000
+    2020-01-01: 3_970_000
+    2021-01-01: 4_130_000
+  metadata:
+    uprating: 
+      parameter: calibration.demographics.populations.by_program_participation.income_tax
+ADDITIONAL:
+  values:
+    2018-01-01: 399_000
+    2019-01-01: 425_000
+    2020-01-01: 420_000
+    2021-01-01: 440_000
+  metadata:
+    uprating: 
+      parameter: calibration.demographics.populations.by_program_participation.income_tax

@@ -1,0 +1,49 @@
+- name: Child Benefit with no children
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      parent1:
+        age: 41
+      parent2:
+        age: 42
+    benunits:
+      benunit:
+        members: [parent1, parent2]
+  output:
+    child_benefit: 0
+- name: Child Benefit with one child
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      parent1:
+        age: 41
+      parent2:
+        age: 42
+      child1:
+        age: 15
+    benunits:
+      benunit:
+        members: [parent1, parent2, child1]
+  output:
+    child_benefit: 1098
+- name: Child Benefit with two children, one over 16
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      parent1:
+        age: 41
+      parent2:
+        age: 42
+      child1:
+        age: 14
+      child2:
+        age: 17
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members: [parent1, parent2, child1, child2]
+  output:
+    child_benefit: 1825.20

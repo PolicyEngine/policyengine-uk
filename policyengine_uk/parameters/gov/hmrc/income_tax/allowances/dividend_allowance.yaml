@@ -1,0 +1,9 @@
+description: Amount of dividend income untaxed per year
+values:
+  2015-06-05: 2_000
+metadata:
+  name: dividend_allowance
+  label: Dividend Allowance
+  period: year
+  unit: currency-GBP
+  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

@@ -1,0 +1,20 @@
+brackets:
+- rate:
+    2018-03-15: 0
+  threshold:
+    2018-03-15: 0
+- rate:
+    2018-03-15: 0.05
+  threshold:
+    2018-03-15: 300000
+description: Stamp Duty Land Tax progressive rates for residential property transfers
+metadata:
+  economy: false
+  label: Stamp Duty on first homes
+  name: sdlt_on_first_time_buyer_homes
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA/2018-03-15
+    title: Finance Act 2003 schedule 6ZA(4)
+  threshold_unit: currency-GBP

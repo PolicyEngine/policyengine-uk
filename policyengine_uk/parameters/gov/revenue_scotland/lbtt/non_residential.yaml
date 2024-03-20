@@ -1,0 +1,31 @@
+brackets:
+- rate:
+    2015-04-01: 0.0
+  threshold:
+    2015-04-01: 0.0
+- rate:
+    2015-04-01: 0.03
+    2019-01-25: 0.01
+  threshold:
+    2015-04-01: 150000
+- rate:
+    2015-04-01: 0.045
+    2019-01-25: 0.05
+  threshold:
+    2015-04-01: 350000
+    2019-01-25: 250000
+description: Rates on Scotland's non-residential property purchases
+metadata:
+  economy: false
+  label: LBTT on non-residential property
+  name: lbtt_on_non_residential_property
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/ssi/2015/126/schedule
+    title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands) (Scotland)
+      Order 2015
+  - href: https://www.legislation.gov.uk/ssi/2018/372/article/2/made
+    title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands etc) (Scotland)
+      Amendment Order 2018
+  threshold_unit: currency-GBP

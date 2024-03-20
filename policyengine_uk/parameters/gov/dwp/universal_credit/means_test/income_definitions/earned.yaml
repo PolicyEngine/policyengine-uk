@@ -1,0 +1,12 @@
+description: Earned income sources for Universal Credit.
+metadata:
+  economy: false
+  label: UC earned income sources
+  name: UC_earned_income_sources
+  propagate_metadata_to_children: true
+  unit: list
+values:
+  2010-01-01:
+  - employment_income
+  - self_employment_income
+  - miscellaneous_income

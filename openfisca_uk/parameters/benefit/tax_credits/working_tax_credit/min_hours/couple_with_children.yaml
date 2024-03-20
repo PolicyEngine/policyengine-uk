@@ -1,8 +1,0 @@
-description: Couple with children hours requirement
-values:
-  2015-06-01:
-    value: 24
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.gov.uk/working-tax-credit

@@ -1,0 +1,14 @@
+- name: Country from region - England
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    region: "LONDON"
+  output:
+    country: "ENGLAND"
+- name: Country from region - Scotland
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    region: "SCOTLAND"
+  output:
+    country: "SCOTLAND"

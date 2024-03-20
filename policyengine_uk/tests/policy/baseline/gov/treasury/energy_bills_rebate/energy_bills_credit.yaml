@@ -1,0 +1,5 @@
+- name: A household gets the full transfer.
+  period: 2022
+  input: {}
+  output:
+    ebr_energy_bills_credit: 200

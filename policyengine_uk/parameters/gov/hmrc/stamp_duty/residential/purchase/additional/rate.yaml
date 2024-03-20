@@ -1,0 +1,38 @@
+description: Stamp Duty Land Tax progressive rates for residential property transfers that are not replacements of an individual's primary residence
+brackets:
+  - rate:
+      2016-09-15: 0.03
+    threshold:
+      2016-09-15: 0
+  - rate:
+      2016-09-15: 0.05
+      2020-07-08: null
+      2021-03-31: 0.05
+    threshold:
+      2016-09-15: 125_000
+      2020-07-08: null
+      2021-03-31: 125_000
+  - rate:
+      2016-09-15: 0.08
+    threshold:
+      2016-09-15: 250_000
+      2020-07-08: 500_000
+      2021-03-31: 250_000
+  - rate:
+      2016-09-15: 0.13
+    threshold:
+      2016-09-15: 925_000
+  - rate:
+      2016-09-15: 0.15
+    threshold:
+      2016-09-15: 1_500_000
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  name: sdlt_on_secondary_residences
+  label: Stamp Duty on secondary residences
+  reference:
+    - title: Finance Act 2003 schedule 4ZA(1)(2)
+      href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA
+    - title: Stamp Duty Land Tax (Temporary Relief) Act 2020
+      href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted

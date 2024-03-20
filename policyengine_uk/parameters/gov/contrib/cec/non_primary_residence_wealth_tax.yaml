@@ -1,0 +1,21 @@
+brackets:
+- rate:
+    description: This is the marginal rate of tax on wealth above the threshold.
+    metadata:
+      label: Wealth tax rate on non-primary residence wealth
+      unit: /1
+    values:
+      2000-01-01: 0
+  threshold:
+    description: This much wealth is exempt from the wealth tax.
+    metadata:
+      label: Wealth tax exemption on non-primary residence wealth
+      period: year
+      unit: currency-GBP
+    values:
+      2000-01-01: 0
+description: Annual tax on total wealth (includes all property and corporate wealth
+  except primary residences).
+metadata:
+  label: Wealth tax excluding primary residences
+  type: marginal_rate

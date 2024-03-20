@@ -1,0 +1,21 @@
+- name: Over 16
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 64
+  output:
+    over_16: true
+- name: Under 16
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 15
+  output:
+    over_16: false
+- name: Birth year
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 5
+  output:
+    birth_year: 2015

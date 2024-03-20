@@ -1,0 +1,771 @@
+FEMALE:
+  EAST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 270_670
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 274_250
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 300_920
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 302_605
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 297_173
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 341_528
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 275_007
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 232_128
+    OVER_80:
+      values:
+        2019-01-01: 184_219
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.EAST_MIDLANDS
+  EAST_OF_ENGLAND:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 367_781
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 348_413
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 340_501
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 407_229
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 403_911
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 436_303
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 349_428
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 303_496
+    OVER_80:
+      values:
+        2019-01-01: 251_998
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.EAST_OF_ENGLAND
+  LONDON:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 581_924
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 494_263
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 643_985
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 766_502
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 620_032
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 543_298
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 372_158
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 257_162
+    OVER_80:
+      values:
+        2019-01-01: 223_550
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.LONDON
+  NORTHERN_IRELAND:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 118_862
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 115_297
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 112_473
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 126_485
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 123_324
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 130_869
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 100_786
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 77_340
+    OVER_80:
+      values:
+        2019-01-01: 63_535
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.NORTHERN_IRELAND
+  NORTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 142_576
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 145_901
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 172_173
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 169_415
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 158_345
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 192_116
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 165_038
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 129_685
+    OVER_80:
+      values:
+        2019-01-01: 107_998
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.NORTH_EAST
+  NORTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 427_137
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 414_069
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 467_737
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 479_081
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 447_057
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 513_406
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 408_962
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 336_031
+    OVER_80:
+      values:
+        2019-01-01: 279_758
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.NORTH_WEST
+  SCOTLAND:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 271_644
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 282_808
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 354_874
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 368_312
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 343_735
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 407_864
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 336_214
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 257_730
+    OVER_80:
+      values:
+        2019-01-01: 215_491
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.SCOTLAND
+  SOUTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 527_555
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 527_698
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 513_573
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 576_638
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 607_377
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 646_193
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 507_016
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 441_373
+    OVER_80:
+      values:
+        2019-01-01: 373_616
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.SOUTH_EAST
+  SOUTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 294_594
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 303_129
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 319_408
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 332_713
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 336_673
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 402_989
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 348_181
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 308_905
+    OVER_80:
+      values:
+        2019-01-01: 253_886
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.SOUTH_WEST
+  WALES:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 166_863
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 172_949
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 198_438
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 191_368
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 185_295
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 224_653
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 193_265
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 162_697
+    OVER_80:
+      values:
+        2019-01-01: 131_240
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.WALES
+  WEST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 352_994
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 344_995
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 384_693
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 382_294
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 358_874
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 398_210
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 314_162
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 269_185
+    OVER_80:
+      values:
+        2019-01-01: 227_332
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.WEST_MIDLANDS
+  YORKSHIRE:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 317_457
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 316_574
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 364_040
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 354_453
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 330_785
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 376_336
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 306_928
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 253_151
+    OVER_80:
+      values:
+        2019-01-01: 212_535
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.YORKSHIRE
+MALE:
+  EAST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 284_043
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 286_991
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 322_250
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 291_785
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 290_386
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 332_879
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 265_831
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 213_493
+    OVER_80:
+      values:
+        2019-01-01: 144_009
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.EAST_MIDLANDS
+  EAST_OF_ENGLAND:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 388_097
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 369_042
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 358_982
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 388_980
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 393_273
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 425_609
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 330_960
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 272_546
+    OVER_80:
+      values:
+        2019-01-01: 194_515
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.EAST_OF_ENGLAND
+  LONDON:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 611_981
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 523_930
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 661_461
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 824_552
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 647_233
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 527_980
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 346_607
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 216_426
+    OVER_80:
+      values:
+        2019-01-01: 170_228
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.LONDON
+  NORTHERN_IRELAND:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 125_188
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 122_071
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 118_196
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 122_856
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 116_029
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 125_578
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 97_659
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 68_325
+    OVER_80:
+      values:
+        2019-01-01: 46_876
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.NORTHERN_IRELAND
+  NORTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 150_761
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 154_455
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 182_825
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 163_927
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 150_906
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 181_564
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 155_934
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 117_033
+    OVER_80:
+      values:
+        2019-01-01: 80_303
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.NORTH_EAST
+  NORTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 448_895
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 437_322
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 488_824
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 473_868
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 434_588
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 494_281
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 392_920
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 305_554
+    OVER_80:
+      values:
+        2019-01-01: 214_230
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.NORTH_WEST
+  SCOTLAND:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 287_474
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 294_716
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 360_769
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 358_057
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 327_445
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 380_938
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 313_776
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 224_078
+    OVER_80:
+      values:
+        2019-01-01: 154_762
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.SCOTLAND
+  SOUTH_EAST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 557_154
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 558_318
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 549_837
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 549_906
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 588_102
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 633_918
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 482_256
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 390_661
+    OVER_80:
+      values:
+        2019-01-01: 285_384
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.SOUTH_EAST
+  SOUTH_WEST:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 311_003
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 317_932
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 342_145
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 328_003
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 327_051
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 387_086
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 326_873
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 279_609
+    OVER_80:
+      values:
+        2019-01-01: 198_822
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.SOUTH_WEST
+  WALES:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 175_104
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 183_690
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 214_359
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 189_448
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 178_449
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 212_554
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 182_401
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 148_798
+    OVER_80:
+      values:
+        2019-01-01: 104_161
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.WALES
+  WEST_MIDLANDS:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 371_511
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 364_471
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 408_391
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 380_809
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 353_920
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 389_315
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 302_342
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 242_548
+    OVER_80:
+      values:
+        2019-01-01: 175_335
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.WEST_MIDLANDS
+  YORKSHIRE:
+    BETWEEN_0_10:
+      values:
+        2019-01-01: 332_616
+    BETWEEN_10_20:
+      values:
+        2019-01-01: 331_001
+    BETWEEN_20_30:
+      values:
+        2019-01-01: 379_412
+    BETWEEN_30_40:
+      values:
+        2019-01-01: 345_062
+    BETWEEN_40_50:
+      values:
+        2019-01-01: 327_014
+    BETWEEN_50_60:
+      values:
+        2019-01-01: 369_074
+    BETWEEN_60_70:
+      values:
+        2019-01-01: 295_338
+    BETWEEN_70_80:
+      values:
+        2019-01-01: 226_712
+    OVER_80:
+      values:
+        2019-01-01: 158_983
+    metadata:
+      propagate_metadata_to_children: true
+      uprating:
+        parameter: calibration.demographics.populations.by_region.YORKSHIRE
+

@@ -1,0 +1,8 @@
+description: Enhanced disability premium for a single person, invalid for Employment and Support Allowance
+values:
+  2015-06-01: 17.10
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Legacy benefit enhanced disability premium (single)
+  reference: https://www.gov.uk/disability-premiums/what-youll-get

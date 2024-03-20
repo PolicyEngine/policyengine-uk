@@ -1,0 +1,14 @@
+description: Tax credit amount below which tax credits are not paid
+metadata:
+  economy: false
+  label: Tax credits minimum benefit
+  name: tax_credits_minimum_benefit
+  period: year
+  propagate_metadata_to_children: true
+  reference:
+  - href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/9
+    name: The Tax Credits (Income Thresholds and Determination of Rates) Regulations
+      2002
+  unit: currency-USD
+values:
+  2002-08-01: 26

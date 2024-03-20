@@ -1,0 +1,12 @@
+description: Credit on energy bills paid to households. This is modeled as a flat transfer to households.
+values:
+  2022-01-01: 200
+  2023-01-01: 0
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Energy bills credit
+  name: ebr_energy_bills_credit
+  reference:
+    - title: GOV.UK Press release
+      href: https://www.gov.uk/government/news/millions-to-receive-350-boost-to-help-with-rising-energy-costs

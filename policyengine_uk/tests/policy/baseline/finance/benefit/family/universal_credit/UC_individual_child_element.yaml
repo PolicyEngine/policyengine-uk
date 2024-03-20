@@ -1,0 +1,84 @@
+- name: Single child born before limit, gets higher amount
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 8
+    benunits:
+      benunit:
+        members: person_1
+  output:
+    UC_individual_child_element: 282.50 * 12
+- name: Single child born after limit, gets lower amount
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 2
+    benunits:
+      benunit:
+        members: person_1
+  output:
+    UC_individual_child_element: 237.08 * 12
+- name: Two children, one born before and one after limit
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 8
+      person_2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person_1, person_2]
+  output:
+    UC_individual_child_element: [3390, 2844.96]
+- name: Two children, both born after limit
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 3
+      person_2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person_1, person_2]
+  output:
+    UC_individual_child_element: [2844.96, 2844.96]
+- name: Three children, all born before limit
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 10
+      person_2:
+        age: 11
+      person_3:
+        age: 12
+    benunits:
+      benunit:
+        members: [person_1, person_2, person_3]
+  output:
+    UC_individual_child_element: [2844.96, 2844.96, 3390]
+- name: Three children, all born after limit
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 1
+      person_2:
+        age: 1
+      person_3:
+        age: 1
+    benunits:
+      benunit:
+        members: [person_1, person_2, person_3]
+  output:
+    UC_individual_child_element: [2844.96, 2844.96, 0]

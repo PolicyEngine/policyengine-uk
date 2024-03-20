@@ -1,0 +1,54 @@
+# Tests from https://www.stampdutycalculator.org.uk/
+- name: £105k first-time buyer
+  period: 2021
+  input:
+    main_residential_property_purchased: 105_000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 0
+- name: £105k first-time buyer
+  period: 2021
+  input:
+    main_residential_property_purchased: 175_000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 0
+- name: £445k first-time buyer
+  period: 2021
+  input:
+    main_residential_property_purchased: 445_000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 7_250
+- name: £500k first-time buyer (just over limit)
+  period: 2022
+  input:
+    main_residential_property_purchased: 500_000.01
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 15_000
+- name: £500k non-first-time buyer
+  period: 2022
+  input:
+    main_residential_property_purchased: 500_000.01
+    main_residential_property_purchased_is_first_home: false
+  output:
+    stamp_duty_land_tax: 15_000
+- name: £2.3m residential property transfer
+  period: 2022
+  input:
+    main_residential_property_purchased: 2_300_000
+  output:
+    stamp_duty_land_tax: 189_750
+- name: £350k second home
+  period: 2022
+  input:
+    additional_residential_property_purchased: 350_000
+  output:
+    stamp_duty_land_tax: 18_000
+- name: £3.5m second home
+  period: 2022
+  input:
+    additional_residential_property_purchased: 3_500_000
+  output:
+    stamp_duty_land_tax: 438_750

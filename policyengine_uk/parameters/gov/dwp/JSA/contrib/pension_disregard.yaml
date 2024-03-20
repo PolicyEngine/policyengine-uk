@@ -1,0 +1,10 @@
+description: Threshold in occupational and personal pensions, above which the contributory
+  Jobseeker's Allowance amount is reduced
+metadata:
+  economy: false
+  period: week
+  label: Jobseeker's Allowance pension disregard
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
+  unit: currency-GBP
+values:
+  2015-06-01: 50.0

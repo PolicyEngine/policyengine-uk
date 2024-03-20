@@ -1,0 +1,7 @@
+- name: Domestic rates example 1
+  period: 2022
+  input:
+    local_authority: BELFAST
+    main_residence_value: 300_000
+  output:
+    domestic_rates: 2_440.80

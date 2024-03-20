@@ -1,0 +1,6 @@
+- name: Claims all entitled benefits overrides takeup
+  period: 2021
+  input:
+    claims_all_entitled_benefits: true
+  output:
+    would_claim_child_benefit: true

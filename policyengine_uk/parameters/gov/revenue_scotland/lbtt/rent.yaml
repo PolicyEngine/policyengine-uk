@@ -1,0 +1,28 @@
+brackets:
+- rate:
+    2015-04-01: 0.0
+  threshold:
+    2015-04-01: 0.0
+- rate:
+    2015-04-01: 0.01
+  threshold:
+    2015-04-01: 150000
+- rate:
+    2019-01-25: 0.05
+  threshold:
+    2019-01-25: 2000000
+description: Rates on cumulative rent
+metadata:
+  economy: false
+  label: LBTT on cumulative rent
+  name: lbtt_on_cumulative_rent
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/ssi/2015/126/schedule
+    title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands) (Scotland)
+      Order 2015
+  - href: https://www.legislation.gov.uk/ssi/2018/372/article/2/made
+    title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands etc) (Scotland)
+      Amendment Order 2018
+  threshold_unit: currency-GBP

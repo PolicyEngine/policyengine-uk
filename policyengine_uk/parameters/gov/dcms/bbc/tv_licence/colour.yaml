@@ -1,0 +1,14 @@
+description: Full TV licence for a colour TV, before any discounts are applied.
+values:
+  2017-04-01: 147.00
+  2018-04-01: 150.50
+  2019-04-01: 154.50
+  2020-04-01: 157.50
+  2021-04-01: 159.00
+metadata:
+  unit: currency-GBP
+  period: year
+  label: TV Licence fee
+  reference:
+    - title: The Communications (Television Licensing) Regulations 2004 sch. 1 # F4, F5
+      href: https://www.legislation.gov.uk/uksi/2004/692/schedule/1

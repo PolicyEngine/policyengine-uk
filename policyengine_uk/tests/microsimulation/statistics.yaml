@@ -1,0 +1,38 @@
+child_benefit:
+  test:
+    - absolute_aggregate_error_less_than: 1.3e+9
+    - relative_caseload_error_less_than: 0.10
+council_tax_less_benefit:
+  test:
+    - relative_aggregate_error_less_than: 0.11
+child_tax_credit:
+  test:
+    - relative_aggregate_error_less_than: 0.55
+    - relative_caseload_error_less_than: 0.25
+working_tax_credit:
+  test:
+    - absolute_aggregate_error_less_than: 1.5e+9
+    - relative_caseload_error_less_than: 0.45
+housing_benefit:
+  test:
+    - absolute_aggregate_error_less_than: 6.e+9
+    - relative_caseload_error_less_than: 0.15
+JSA_income:
+  test:
+    - relative_aggregate_error_less_than: 1.1
+    - absolute_caseload_error_less_than: 0.2e+9
+income_support:
+  test:
+    - absolute_aggregate_error_less_than: 0.4e+9
+    - relative_caseload_error_less_than: 0.5
+universal_credit:
+  test:
+    - absolute_aggregate_error_less_than: 0.1
+    - relative_caseload_error_less_than: 0.2
+income_tax:
+  test:
+    - absolute_aggregate_error_less_than: 10.0e+9
+    - relative_caseload_error_less_than: 0.17 # Temporarily expanded for 2022 given multiple mid-year policy changes
+total_NI:
+  test:
+    - relative_aggregate_error_less_than: 0.09

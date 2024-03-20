@@ -1,0 +1,17 @@
+description: Carer premium for one qualifying carer, for legacy benefits.
+values:
+  2015-04-01: 34.60
+  2016-04-01: 34.60
+  2017-04-01: 34.95
+  2018-04-01: 36.00
+  2019-04-01: 36.85
+  2020-04-01: 37.50
+  2021-04-01: 37.70
+  2022-04-01: 38.85
+metadata:
+  period: week
+  label: Legacy benefit carer premium (one carer)
+  unit: currency-GBP
+  reference: 
+    - title: Benefits Uprating 2022/23
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

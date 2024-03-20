@@ -1,0 +1,13 @@
+description: Benefits which confer eligibility to the household payment to pensioners.
+metadata:
+  economy: false
+  label: Qualifying benefits for extra pensioner support
+  name: col_pensioner_payment_benefits
+  propagate_metadata_to_children: true
+  reference:
+  - href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
+    title: Cost-of-living support announcement | GOV.UK
+  unit: variable
+values:
+  2022-01-01:
+  - winter_fuel_allowance

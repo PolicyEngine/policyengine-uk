@@ -1,0 +1,19 @@
+description: Income sources included in income used to determine Pension Credit entitlement.
+metadata:
+  economy: false
+  label: Pension Credit income sources
+  name: pc_income_sources
+  propagate_metadata_to_children: true
+  reference:
+  - href: https://www.legislation.gov.uk/ukpga/2002/16/section/15
+    title: State Pension Credit Act 2002 s. 15(1)
+  unit: list
+values:
+  2002-01-01:
+  - earned_income
+  - working_tax_credit
+  - state_pension
+  - pension_income
+  - capital_income
+  - ESA_contrib
+  - JSA_contrib

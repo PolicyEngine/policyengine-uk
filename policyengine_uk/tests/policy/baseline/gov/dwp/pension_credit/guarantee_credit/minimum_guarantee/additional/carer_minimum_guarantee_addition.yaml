@@ -1,0 +1,22 @@
+- name: Receives carers' allowance, eligible for addition.
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    carers_allowance: 30
+  output:
+    carer_minimum_guarantee_addition: 1_960
+
+- name: Both adults receive carers' allowance, eligible for addition (each).
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    people:
+      claimant:
+        carers_allowance: 30
+      spouse:
+        carers_allowance: 30
+    benunits:
+      benunit:
+        members: [claimant, spouse]
+  output:
+    carer_minimum_guarantee_addition: 3_920

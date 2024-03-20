@@ -1,0 +1,10 @@
+description: Couple with children hours requirement for Working Tax Credit
+values:
+  2012-04-06: 24 # No special rule prior to 2012.
+metadata:
+  period: week
+  unit: hour
+  reference:
+    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
+    # (1) third variation (a)
+    href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/4

@@ -1,0 +1,9 @@
+- name: National Insurance sums non-employer-side contributions.
+  period: 2023
+  input:
+    ni_class_1_employee: 1
+    ni_class_2: 2
+    ni_class_3: 4
+    ni_class_4: 8
+  output:
+    national_insurance: 15

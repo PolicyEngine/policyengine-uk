@@ -1,0 +1,10 @@
+description: Share of eligible Pension Credit recipients that participate.
+values:
+  2015-01-01: 0.7
+metadata:
+  label: Pension Credit take-up rate
+  name: PC_takeup
+  unit: /1
+  reference:
+    - title: "Income-related benefits: estimates of take-up: financial year 2019 to 2020"
+      href: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2019-to-2020/income-related-benefits-estimates-of-take-up-financial-year-2019-to-2020#pension-credit-2

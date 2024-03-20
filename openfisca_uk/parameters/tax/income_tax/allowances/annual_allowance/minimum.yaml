@@ -1,7 +1,0 @@
-description: Minimum annual allowance for relief on pension contributions.
-values:
-  2015-06-01:
-    value: 4000
-metadata:
-  unit: currency-GBP
-  reference: https://www.gov.uk/guidance/pension-schemes-work-out-your-tapered-annual-allowance

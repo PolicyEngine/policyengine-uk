@@ -1,0 +1,42 @@
+brackets:
+- rate:
+    2015-04-01: 0.0
+  threshold:
+    2015-04-01: 0.0
+- rate:
+    2015-04-01: 0.02
+    2020-07-15: null
+    2021-03-31: 0.02
+  threshold:
+    2015-04-01: 175000
+    2020-07-15: null
+    2021-03-31: 175000
+- rate:
+    2015-04-01: 0.05
+  threshold:
+    2015-04-01: 250000
+- rate:
+    2015-04-01: 0.1
+  threshold:
+    2015-04-01: 325000
+- rate:
+    2015-04-01: 0.12
+  threshold:
+    2015-04-01: 750000
+description: Rates applied to first-time buyers.
+metadata:
+  economy: false
+  label: LBTT for first-time buyers
+  name: lbtt_first_time_buyers
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/ssi/2015/126/schedule
+    title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands) (Scotland)
+      Order 2015
+  - href: https://www.legislation.gov.uk/ssi/2020/215/article/2/made
+    title: The Land and Buildings Transaction Tax (Tax Rates and Tax Bands) (Scotland)
+      Amendment (No. 2) (Coronavirus) Order 2020(2)
+  - href: https://www.legislation.gov.uk/asp/2013/11/schedule/4A/paragraph/3
+    title: Land and Buildings Transaction Tax (Scotland) Act 2013 Schedule 4A(3)
+  threshold_unit: currency-GBP

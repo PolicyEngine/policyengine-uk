@@ -1,0 +1,9 @@
+description: People with employment income.
+UNITED_KINGDOM:
+  2022-01-01: 29_268_147
+  2023-01-01: 30_036_081
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: "Earnings and employment from Pay As You Earn Real Time Information, UK: February 2023"
+      href: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/bulletins/earningsandemploymentfrompayasyouearnrealtimeinformationuk/latest

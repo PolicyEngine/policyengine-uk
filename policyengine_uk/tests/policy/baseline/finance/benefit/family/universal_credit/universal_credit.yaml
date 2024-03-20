@@ -1,0 +1,10 @@
+- name: Income reduction applies
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    UC_maximum_amount: 1000
+    UC_income_reduction: 100
+    would_claim_UC: true
+    is_UC_eligible: true
+  output:
+    universal_credit: 1000 - 100

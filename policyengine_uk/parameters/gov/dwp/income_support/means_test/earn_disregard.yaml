@@ -1,0 +1,9 @@
+description: Threshold in earnings, above which the Income Support amount is reduced
+metadata:
+  economy: false
+  period: week
+  label: Income Support earnings disregard
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
+  unit: currency-GBP
+values:
+  2015-06-01: 5.0

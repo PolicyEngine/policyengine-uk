@@ -1,0 +1,20 @@
+description: Small profits National Insurance threshold for self-employed earners
+values:
+  2015-04-06: 3_965
+  2017-04-06: 6_025
+  2018-04-06: 6_205
+  2019-04-06: 6_365
+  2020-04-06: 6_475
+  2021-04-06: 6_515
+  2022-04-06:
+    value: 6_725
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-b
+metadata:
+  unit: currency-GBP
+  label: NI Class 2 Small Profits Threshold
+  reference:
+    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

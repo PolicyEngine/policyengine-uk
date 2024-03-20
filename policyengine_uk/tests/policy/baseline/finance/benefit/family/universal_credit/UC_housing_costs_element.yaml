@@ -1,0 +1,100 @@
+- name: No housing costs, no element
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 10_000
+        members: person
+    households:
+      household:
+        tenure_type: OWNED_WITH_MORTGAGE
+        members: person
+  output:
+    UC_housing_costs_element: 0
+- name: Owned home, no element
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 10_000
+        members: person
+    households:
+      household:
+        tenure_type: OWNED_WITH_MORTGAGE
+        members: person
+  output:
+    UC_housing_costs_element: 0
+- name: Rented socially
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 5_000
+        members: person
+    households:
+      household:
+        tenure_type: RENT_FROM_COUNCIL
+        members: person
+  output:
+    UC_housing_costs_element: 5_000
+- name: Rented privately, under LHA cap
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 5_000
+        LHA_cap: 6_000
+        members: person
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: person
+  output:
+    UC_housing_costs_element: 5_000
+- name: Rented privately, over LHA cap
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 6_000
+        LHA_cap: 5_000
+        members: person
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: person
+  output:
+    UC_housing_costs_element: 5_000
+- name: Rented privately, over LHA cap, less non-dependent deductions
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 6_000
+        UC_non_dep_deductions: 10 * 52
+        LHA_cap: 5_000
+        members: person
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: person
+  output:
+    UC_housing_costs_element: 5_000 - 10 * 52

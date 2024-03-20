@@ -1,0 +1,10 @@
+description: Threshold in income for a lone parent, above which the contributory Jobseeker's
+  Allowance amount is reduced
+metadata:
+  economy: false
+  period: week
+  label: Jobseeker's Allowance income disregard (lone parent)
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33
+  unit: currency-GBP
+values:
+  2015-06-01: 20.0

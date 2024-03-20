@@ -1,0 +1,10 @@
+description: Proportion of eligible childcare costs covered by Working Tax Credit
+values:
+  2002-08-01: 0.7
+  2006-04-06: 0.8
+  2011-04-06: 0.7
+metadata:
+  unit: /1
+  reference:
+    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
+    href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2

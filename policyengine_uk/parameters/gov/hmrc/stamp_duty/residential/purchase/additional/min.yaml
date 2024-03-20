@@ -1,0 +1,10 @@
+description: Minimum value for taxability of additional residential property
+values:
+  2016-09-15: 40_000
+metadata:
+  unit: currency-GBP
+  name: sdlt_secondary_residence_min_value
+  label: Stamp Duty secondary residence minimum value
+  reference:
+    - title: Finance Act 2003 schedule 4ZA(3)(4)(b)
+      href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA

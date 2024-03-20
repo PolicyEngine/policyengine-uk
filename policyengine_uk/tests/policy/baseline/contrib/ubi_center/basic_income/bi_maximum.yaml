@@ -1,0 +1,16 @@
+- name: £100 per person.
+  period: 2022
+  input:
+    gov.contrib.ubi_center.basic_income.amount.flat: 100
+  output:
+    bi_maximum: 5_200
+
+- name: £90 per adult, £50 per child, plus £10 for everyone. Adult.
+  period: 2022
+  input:
+    gov.contrib.ubi_center.basic_income.amount.flat: 10
+    gov.contrib.ubi_center.basic_income.amount.by_age.working_age: 90
+    gov.contrib.ubi_center.basic_income.amount.by_age.child: 50
+    age: 18
+  output:
+    bi_maximum: 5_200

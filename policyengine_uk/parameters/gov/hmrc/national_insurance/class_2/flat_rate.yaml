@@ -1,0 +1,25 @@
+description: Flat rate National Insurance contribution for self-employed earners
+values:
+  2015-06-01: 2.80
+  2017-06-01: 2.85
+  2018-06-01: 2.95
+  2019-06-01: 3.00
+  2020-06-01: 3.05
+  2022-04-06:
+    value: 3.15
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(3)(a)
+          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-a
+  2024-04-06:
+    value: 0
+    metadata:
+      reference:
+        - title: "Autumn Statement 2023: National Insurance Factsheet"
+          href: https://www.gov.uk/government/publications/autumn-statement-2023-national-insurance-factsheet/autumn-statement-2023-national-insurance-factsheet
+metadata:
+  unit: currency-GBP
+  label: NI Class 2 Flat Rate
+  reference:
+    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

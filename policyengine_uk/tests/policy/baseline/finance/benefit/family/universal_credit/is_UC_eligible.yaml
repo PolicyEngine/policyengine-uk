@@ -1,0 +1,28 @@
+- name: Has no working-age adults
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 70
+      person_2:
+        age: 72
+    benunits:
+      benunit:
+        members: [person_1, person_2]
+  output:
+    is_UC_eligible: false
+- name: Has one working-age adult
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 25
+      person_2:
+        age: 6
+    benunits:
+      benunit:
+        members: [person_1, person_2]
+  output:
+    is_UC_eligible: true

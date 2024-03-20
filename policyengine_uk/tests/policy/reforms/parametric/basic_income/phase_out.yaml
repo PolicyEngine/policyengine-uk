@@ -1,0 +1,22 @@
+- name: Individual and household phase-outs together
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.basic_income.phase_out.individual.rate: 1
+    gov.contrib.ubi_center.basic_income.phase_out.household.threshold: 10_000
+    gov.contrib.ubi_center.basic_income.phase_out.household.rate: 1
+    gov.contrib.ubi_center.basic_income.amount.by_age.child: 192.30
+    gov.contrib.ubi_center.basic_income.amount.by_age.working_age: 192.30 # = 10k / 52
+    households:
+      household:
+        members: [adult, child]
+    people:
+      adult:
+        age: 18
+        total_income: 15_000
+      child:
+        age: 10
+  output:
+    bi_individual_phaseout: [10_000, 0]
+    bi_household_phaseout: [0, 5_000]
+    basic_income: [0, 5_000]

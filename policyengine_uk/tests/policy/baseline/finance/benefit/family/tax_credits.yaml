@@ -1,0 +1,162 @@
+- name: Applicable income from earnings
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 5000
+  output:
+    tax_credits_applicable_income: 5000
+- name: CTC two-child limit exemption
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 14
+  output:
+    is_CTC_child_limit_exempt: true
+- name: CTC two-child limit non-exemption
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 0
+  output:
+    is_CTC_child_limit_exempt: false
+- name: CTC children
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      child1:
+        age: 3
+      child2:
+        age: 3
+      child3:
+        age: 1
+  output:
+    is_child_for_CTC: [true, true, true]
+- name: WTC eligibility for worker
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 40
+    working_tax_credit_reported: true
+    child_tax_credit_reported: true
+  output:
+    is_WTC_eligible: true
+    is_CTC_eligible: false
+- name: WTC eligibility for worker under hours requirement
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 8
+    working_tax_credit_reported: true
+    child_tax_credit_reported: true
+  output:
+    is_WTC_eligible: false
+    is_CTC_eligible: false
+- name: CTC for two children - maximum rate
+  period: 2020
+  absolute_error_margin: 100
+  input:
+    people:
+      adult1:
+        child_tax_credit_reported: true
+        working_tax_credit_reported: true
+      child1:
+        age: 4
+      child2:
+        age: 6
+    benunits:
+      benunit1:
+        members: [adult1, child1, child2]
+  output:
+    age: [18, 4, 6]
+    CTC_maximum_rate: 6100
+- name: "CTC for three children born pre-2017: maximum rate for two children"
+  period: 2020
+  absolute_error_margin: 100
+  input:
+    people:
+      adult1:
+        child_tax_credit_reported: true
+        working_tax_credit_reported: true
+      child1:
+        age: 1
+      child2:
+        age: 1
+      child3:
+        age: 1
+    benunits:
+      benunit1:
+        members: [adult1, child1, child2, child3]
+  output:
+    CTC_maximum_rate: 6100
+- name: WTC for working earner with no taxable income
+  period: 2020
+  absolute_error_margin: 100
+  input:
+    employment_income: 0
+    weekly_hours: 40
+    age: 26
+    working_tax_credit_reported: true
+    child_tax_credit_reported: true
+  output:
+    is_WTC_eligible: true
+    WTC_basic_element: 2060
+    WTC_couple_element: 0
+    WTC_lone_parent_element: 0
+    WTC_disabled_element: 0
+    WTC_severely_disabled_element: 0
+    WTC_worker_element: 825
+    WTC_childcare_element: 0
+    WTC_maximum_rate: 2834
+- name: 60-year-old only needs to meet the lower hours requirement (16)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 60
+    weekly_hours: 16
+    working_tax_credit_reported: true
+  output:
+    is_WTC_eligible: true
+- name: 59-year-old needs to meet the default hours requirement (30)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 59
+    weekly_hours: 16
+  output:
+    is_WTC_eligible: false
+- name: 29 hours does not qualify someone for worker element
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    is_WTC_eligible: true
+    working_tax_credit_reported: true
+    weekly_hours: 29
+  output:
+    WTC_worker_element: 0
+- name: 30 hours qualifies someone for worker element
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    is_WTC_eligible: true
+    working_tax_credit_reported: true
+    weekly_hours: 30
+  output:
+    WTC_worker_element: 870
+- name: Tax credits under £26.00 are not paid
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    child_tax_credit_pre_minimum: 20
+    working_tax_credit_pre_minimum: 5.99
+  output:
+    tax_credits: 0
+- name: Tax credits equal to £26 are paid
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    child_tax_credit_pre_minimum: 26
+  output:
+    tax_credits: 26

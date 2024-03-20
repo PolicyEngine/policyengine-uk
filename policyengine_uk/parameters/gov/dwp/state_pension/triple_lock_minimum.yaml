@@ -1,0 +1,10 @@
+description: Minimum increase in the State Pension
+metadata:
+  economy: false
+  propagate_metadata_to_children: true
+  reference:
+  - href: https://commonslibrary.parliament.uk/research-briefings/cbp-7812/
+    title: House of Commons Library
+  unit: /1
+values:
+  2015-06-01: 0.025

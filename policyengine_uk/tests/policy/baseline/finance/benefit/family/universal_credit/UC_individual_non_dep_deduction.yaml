@@ -1,0 +1,42 @@
+- name: Fully liable
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 22
+        UC_non_dep_deduction_exempt: false
+    benunits:
+      benunit:
+        members: person
+        benunit_rent: 0
+  output:
+    UC_individual_non_dep_deduction: 75.53 * 12
+- name: Exempt, no deduction
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 22
+        UC_non_dep_deduction_exempt: true
+    benunits:
+      benunit:
+        members: person
+        benunit_rent: 0
+  output:
+    UC_individual_non_dep_deduction: 0
+- name: Too young, no deduction
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 20
+        UC_non_dep_deduction_exempt: false
+    benunits:
+      benunit:
+        members: person
+        benunit_rent: 0
+  output:
+    UC_individual_non_dep_deduction: 0

@@ -1,0 +1,9 @@
+description: Income Support applicable amount for lone parents aged over 18
+values:
+  2015-06-01: 74.35
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Income Support applicable amount (lone parent, over 18)
+  uprating: gov.benefit_uprating_cpi
+  reference: https://www.gov.uk/income-support/what-youll-get

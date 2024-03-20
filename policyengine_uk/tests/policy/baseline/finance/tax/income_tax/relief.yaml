@@ -1,0 +1,83 @@
+- name: Deductions from employment
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    employment_deductions: 5000
+  output:
+    taxable_employment_income: 10000
+- name: Deductions from employment stay positive
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    employment_deductions: 25000
+  output:
+    taxable_employment_income: 0
+- name: Specific deductions from employment (not pension contributions at this stage)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    pension_contributions: 1000
+    employment_expenses: 2000
+  output:
+    taxable_employment_income: 13000
+- name: Pension relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 76000
+    pension_contributions: 40000
+  output:
+    pension_contributions_relief: 40000
+- name: Pension relief excessive
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 2000000
+    pension_contributions: 400000
+  output:
+    pension_contributions_relief: 4000
+- name: Trading loss relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    loss_relief: 2000
+  output:
+    taxable_self_employment_income: 0
+- name: Trading loss relief of previous year
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    loss_relief:
+      2019: 2000
+  output:
+    taxable_self_employment_income: 0
+- name: Trading loss relief doesn't offset other income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    employment_income: 1000
+    loss_relief: 2000
+  output:
+    taxable_self_employment_income: 0
+    taxable_employment_income: 1000
+- name: Property income within allowance
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    property_income: 1000
+  output:
+    taxable_property_income: 0
+- name: Dividend income with deficiency relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    dividend_income: 10000
+    deficiency_relief: 1000
+  output:
+    taxable_dividend_income: 9000

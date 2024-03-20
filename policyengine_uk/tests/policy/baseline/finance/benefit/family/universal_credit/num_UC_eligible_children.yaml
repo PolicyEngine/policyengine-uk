@@ -1,0 +1,16 @@
+- name: Three children counted
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        UC_individual_child_element: 1
+      person_2:
+        UC_individual_child_element: 1
+      person_3:
+        UC_individual_child_element: 1
+    benunits:
+      benunit:
+        members: [person_1, person_2, person_3]
+  output:
+    num_UC_eligible_children: 3

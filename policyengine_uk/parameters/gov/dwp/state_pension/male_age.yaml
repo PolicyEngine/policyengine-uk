@@ -1,0 +1,7 @@
+description: Male State Pension age
+values:
+  1950-01-05: 65
+  2020-01-01: 66
+metadata:
+  unit: year
+  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=88

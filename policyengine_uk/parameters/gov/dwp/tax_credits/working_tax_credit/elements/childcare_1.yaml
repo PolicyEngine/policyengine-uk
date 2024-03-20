@@ -1,0 +1,10 @@
+description: Working Tax Credit childcare element for one child
+values:
+  2002-08-01: 135
+  2005-04-06: 175
+metadata:
+  period: week
+  unit: currency-GBP
+  reference:
+    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
+    href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/20

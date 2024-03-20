@@ -1,0 +1,6 @@
+description: Allow couples to split their taxable income equally for Income Tax.
+values:
+  2000-01-01: false
+metadata:
+  unit: bool
+  label: Marriage-neutral Income Tax

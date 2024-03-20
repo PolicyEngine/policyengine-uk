@@ -13,6 +13,9 @@ dist
 .spyderproject
 .vscode/settings.json
 .vscode/launch.json
+.vscode/dryrun.log
+.vscode/targets.log
+.vscode/configurationCache.log
 
 # OS stuff
 
@@ -29,7 +32,23 @@ household.csv
 
 docs/book/_build/
 docs/book/.ipynb_checkpoints
+**/.ipynb_checkpoints
+Untitled.ipynb
 
 # Config files
 
-openfisca_uk/tools/datasets.yml
+policyengine_uk/tools/datasets.yml
+
+# Temporary files
+policyengine_uk/calibration/*.csv
+policyengine_uk/calibration/*.yaml
+policyengine_uk/calibration/*.h5
+
+# Microdata
+
+**/*.h5
+**/*.csv
+**/*.pkl
+**/*.log
+**/ukmod.json
+*.ipynb

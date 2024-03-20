@@ -1,0 +1,15 @@
+description: The additional National Insurance rate paid above the Upper Profits Limit for self-employed profits
+values:
+  2015-06-01: 0.02
+  2022-04-01:
+    value: 0.035
+    metadata:
+      reference:
+        - title: Autumn Budget and Spending Review 2022
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+
+metadata:
+  label: NI Class 4 additional rate
+  name: NI_class_4_add_rate
+  unit: /1
+  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

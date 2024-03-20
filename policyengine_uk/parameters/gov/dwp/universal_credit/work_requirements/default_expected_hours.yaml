@@ -1,0 +1,11 @@
+description: Default expected hours worked per week for Universal Credit.
+values:
+  2013-04-29: 35
+metadata:
+  unit: hour
+  period: week
+  name: UC_expected_hours
+  label: "UC expected weekly hours worked"
+  reference:
+    - title: The Universal Credit Regulations 2013, section 88
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/88/2013-04-29

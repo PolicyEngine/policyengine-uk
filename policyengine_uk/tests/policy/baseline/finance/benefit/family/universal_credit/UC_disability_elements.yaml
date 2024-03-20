@@ -1,0 +1,14 @@
+- name: Disability elements summed
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        UC_individual_disabled_child_element: 1
+        UC_individual_severely_disabled_child_element: 1
+    benunits:
+      benunit:
+        members: person
+        UC_LCWRA_element: 1
+  output:
+    UC_disability_elements: 3

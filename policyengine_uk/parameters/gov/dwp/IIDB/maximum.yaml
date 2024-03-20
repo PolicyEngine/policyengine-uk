@@ -1,0 +1,10 @@
+description: Maximum weekly Industrial Injuries Disablement Benefit; amount varies
+  in 10% increments
+metadata:
+  economy: false
+  period: week
+  label: Industrial Injuries Disablement Benefit maximum
+  reference: https://www.gov.uk/industrial-injuries-disablement-benefit/what-youll-get
+  unit: currency-GBP
+values:
+  2015-06-01: 182

@@ -1,0 +1,32 @@
+brackets:
+- rate:
+    2003-07-10: 0
+  threshold:
+    2003-07-10: 0
+- rate:
+    2003-07-10: 0.01
+    2016-09-15: 0.02
+  threshold:
+    2003-07-10: 150000
+- rate:
+    2003-07-10: 0.03
+    2016-09-15: 0.05
+  threshold:
+    2003-07-10: 250000
+- rate:
+    2003-07-10: 0.04
+    2016-09-15: null
+  threshold:
+    2003-07-10: 500000
+    2016-09-15: null
+description: Stamp Duty Land Tax progressive rates for residential property transfers
+metadata:
+  economy: false
+  label: Stamp Duty on non-residential property
+  name: sdlt_on_non_residential_property
+  propagate_metadata_to_children: true
+  rate_unit: /1
+  reference:
+  - href: https://www.legislation.gov.uk/ukpga/2003/14/part/4
+    title: Finance Act 2003 s. 55
+  threshold_unit: currency-GBP

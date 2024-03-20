@@ -1,0 +1,20 @@
+- name: Child isn't liable for NI.
+  period: 2023
+  input:
+    age: 15
+  output:
+    ni_liable: false
+
+- name: Working-age adult is liable for NI.
+  period: 2023
+  input:
+    age: 35
+  output:
+    ni_liable: true
+
+- name: Retired adult isn't liable for NI.
+  period: 2023
+  input:
+    age: 70
+  output:
+    ni_liable: false

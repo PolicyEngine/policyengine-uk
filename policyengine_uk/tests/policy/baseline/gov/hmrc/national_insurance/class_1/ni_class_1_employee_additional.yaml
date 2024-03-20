@@ -1,0 +1,15 @@
+- name: NI Class 1 employee additional contributions - income below UEL
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    ni_class_1_income: 30_000
+  output:
+    ni_class_1_employee_additional: 0
+
+- name: NI Class 1 employee additional contributions - income above UEL
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    ni_class_1_income: 100_000
+  output:
+    ni_class_1_employee_additional: (100_000 - 50_270) * 0.0325

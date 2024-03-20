@@ -1,0 +1,37 @@
+- name: Respective amounts added when claimant
+  period: 2021
+  input:
+    people:
+      p1:
+        child_benefit_respective_amount: 1
+      p2:
+        child_benefit_respective_amount: 1
+      p3:
+        child_benefit_respective_amount: 1
+      p4:
+        child_benefit_respective_amount: 1
+    benunits:
+      benunit:
+        members: [p1, p2, p3, p4]
+        would_claim_child_benefit: true
+  output:
+    child_benefit: 4
+
+- name: Respective amounts ignored when non-claimant
+  period: 2021
+  input:
+    people:
+      p1:
+        child_benefit_respective_amount: 1
+      p2:
+        child_benefit_respective_amount: 1
+      p3:
+        child_benefit_respective_amount: 1
+      p4:
+        child_benefit_respective_amount: 1
+    benunits:
+      benunit:
+        members: [p1, p2, p3, p4]
+        would_claim_child_benefit: false
+  output:
+    child_benefit: 0

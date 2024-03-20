@@ -4,7 +4,8 @@ This document describes the input variables expected for microsimulation. None o
 
 ## Entities
 
-OpenFisca-UK deals with three main entity types:
+PolicyEngine-UK deals with three main entity types:
+
 - Person: a singular entity, either adult or child.
 - Benefit Unit: standard unit for benefit entitlement, consisting of:
   - 1 adult
@@ -16,10 +17,10 @@ Note. Benefit Units are often referred to as "families". While this is often equ
 
 ## Entity variables
 
-Each entity type has a set of variables which can be populated. In OpenFisca-UK, all variable definitions are organised by their entity type. These are detailed with descriptive statistics in ```docs\VARIABLE_STATS.md```.
+Each entity type has a set of variables which can be populated. In PolicyEngine-UK, all variable definitions are organised by their entity type. These are detailed with descriptive statistics in `docs\VARIABLE_STATS.md`.
 
-IMPORTANT: All variables are weeklysed. This decision has been taken because the FRS weeklyises practically all variables - this has been preserved in OpenFisca-UK in order to minimise the risk of incorrectly imputing values. However, OpenFisca itself does not provide a WEEK period for variables, so currently all variables use the ETERNITY period. This should be interpreted as a variable describing an abstract week, instead of a particular week in time. Suggestions very welcome on other approaches than this imperfect solution.
+IMPORTANT: All variables are weeklysed. This decision has been taken because the FRS weeklyises practically all variables - this has been preserved in PolicyEngine-UK in order to minimise the risk of incorrectly imputing values. However, PolicyEngine itself does not provide a WEEK period for variables, so currently all variables use the YEAR period. This should be interpreted as a variable describing an abstract week, instead of a particular week in time. Suggestions very welcome on other approaches than this imperfect solution.
 
 ## Obtaining datasets
 
-OpenFisca country models can deal with either manual input of individual data, or CSV input for datasets. The primary use of OpenFisca-UK is in simulating tax changes across survey data - specifically, the Family Resources Survey. This is obtainable via the [UK Data Service](https://beta.ukdataservice.ac.uk/datacatalogue/series/series?id=200017), and comes in two forms, safeguarded (accessible only to academic members) and restricted (accessible only to vetted users in a secure environment). OpenFisca-UK has been designed to take inputs from the safeguarded version - for code which automates this process, see [frs-tools](https://github.com/nikhilwoodruff/frs-tools).
+PolicyEngine country models can deal with either manual input of individual data, or CSV input for datasets. The primary use of PolicyEngine-UK is in simulating tax changes across survey data - specifically, the Family Resources Survey. This is obtainable via the [UK Data Service](https://beta.ukdataservice.ac.uk/datacatalogue/series/series?id=200017), and comes in two forms, safeguarded (accessible only to academic members) and restricted (accessible only to vetted users in a secure environment). PolicyEngine-UK has been designed to take inputs from the safeguarded version - for code which automates this process, see [frs-tools](https://github.com/nikhilwoodruff/frs-tools).

@@ -1,0 +1,16 @@
+- name: Work allowance without housing
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_housing_costs_element: 0
+    limited_capability_for_WRA: true
+  output:
+    UC_work_allowance: 557 * 12
+- name: Work allowance with housing
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    UC_housing_costs_element: 1
+    limited_capability_for_WRA: true
+  output:
+    UC_work_allowance: 335 * 12

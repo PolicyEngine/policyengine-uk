@@ -1,0 +1,6 @@
+description: Only marriage-neutralise Income Tax for couples with a child under this age (zero does not limit by child age).
+values:
+  2000-01-01: 0
+metadata:
+  unit: year
+  label: Expanded MA child age condition

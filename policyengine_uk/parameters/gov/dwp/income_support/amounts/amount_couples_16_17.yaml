@@ -1,0 +1,10 @@
+description: Income Support applicable amount for couples both aged under 18
+metadata:
+  economy: false
+  period: week
+  label: Income Support applicable amount (couples, both under 18)
+  reference: https://www.gov.uk/income-support/what-youll-get
+  unit: currency-GBP
+  uprating: gov.benefit_uprating_cpi
+values:
+  2015-06-01: 58.9

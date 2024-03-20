@@ -1,0 +1,111 @@
+- name: Renting, single, 30, employed
+  period: 2022
+  absolute_error_margin: 35
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 30000
+        pension_contributions: 1000
+        weekly_hours: 20
+    benunits:
+      benunit:
+        members: person
+        would_claim_UC: true
+    households:
+      household:
+        members: person
+        tenure_type: RENT_PRIVATELY
+        rent: 10000
+  output:
+    universal_credit: 0
+    income_tax: (30000 - 1000 - 12570) * 0.2
+    national_insurance: 2451.83
+- name: Renting, single, 30, employed with little earnings
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 3000
+        pension_contributions: 1000
+        weekly_hours: 20
+    benunits:
+      benunit:
+        members: person
+        would_claim_UC: true
+        benunit_rent: 10000
+    households:
+      household:
+        members: person
+        tenure_type: RENT_PRIVATELY
+        BRMA: GUILDFORD
+  output:
+    UC_standard_allowance: 324.84 * 12
+    UC_housing_costs_element: 488.67 * 12
+    UC_income_reduction: 91.67 * 12
+    LHA_cap: 488.67 * 12
+- name: Renter with childcare, and non-dependents
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    people:
+      person_1:
+        age: 20
+      person_2:
+        age: 23
+      child:
+        age: 10
+        childcare_expenses: 200 * 12
+    benunits:
+      benunit_1:
+        would_claim_UC: true
+        members: [person_1, child]
+        benunit_rent: 10000
+      benunit_2:
+        would_claim_UC: false
+        members: person_2
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: [person_1, person_2, child]
+        BRMA: DURHAM
+  output:
+    universal_credit: [10957, 0]
+- name: Renter with childcare, disabilities and non-dependents
+  period: 2022
+  absolute_error_margin: 80
+  input:
+    people:
+      person_1:
+        age: 20
+        weekly_hours: 25
+        employment_income: 12000
+        pension_contributions: 57
+        dla_m: 62.55 * 52
+        limited_capability_for_WRA: true
+      person_2:
+        age: 23
+      child:
+        age: 10
+        childcare_expenses: 200 * 12
+    benunits:
+      benunit_1:
+        would_claim_UC: true
+        members: [person_1, child]
+        benunit_rent: 12500
+      benunit_2:
+        would_claim_UC: false
+        members: person_2
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: [person_1, person_2, child]
+        BRMA: DURHAM
+  output:
+    UC_standard_allowance: [3087.96, 3087.96]
+    UC_housing_costs_element: [4478.76, 0]
+    UC_disability_elements: [4123.56, 0]
+    UC_income_reduction: [4197.12, 0]
+    universal_credit: [12843, 0]

@@ -1,0 +1,21 @@
+rate:
+  description: Tax rate on the unimproved value of land
+  values:
+    2010-01-01: 0.00
+  metadata:
+    label: Land value tax
+    unit: /1
+household_rate:
+  description: Tax rate on the unimproved value of land owned by households
+  values:
+    2010-01-01: 0.00
+  metadata:
+    label: Land value tax (households)
+    unit: /1
+corporate_rate:
+  description: Tax rate on the unimproved value of land owned by corporations
+  values:
+    2010-01-01: 0.00
+  metadata:
+    label: Land value tax (corporations)
+    unit: /1

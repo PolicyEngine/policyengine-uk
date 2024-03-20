@@ -1,0 +1,9 @@
+- name: Carer from CA
+  period: 2020
+  absolute_error_margin: 40
+  input:
+    carers_allowance: 1 * 52
+  output:
+    is_carer_for_benefits: true
+    num_carers: 1
+    carer_premium: 37.5 * 52

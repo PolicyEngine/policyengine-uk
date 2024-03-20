@@ -1,0 +1,184 @@
+description: Stamp Duty Land Tax statistics
+metadata:
+  economy: false
+  propagate_metadata_to_children: true
+  reference:
+  - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+    title: UK Stamp Tax statistics
+  unit: currency-GBP
+non_residential:
+  corporate:
+    revenue:
+      2019-01-01: 2965000000
+      2020-01-01: 2425000000
+    transaction_values:
+      2019-01-01: 103395000000
+      2020-01-01: 77080000000
+    transactions:
+      2019-01-01: 78800
+      2020-01-01: 65300
+  household:
+    revenue:
+      2019-01-01: 210000000
+      2020-01-01: 230000000
+    transaction_values:
+      2019-01-01: 7025000000
+      2020-01-01: 7150000000
+    transactions:
+      2019-01-01: 27800
+      2020-01-01: 24500
+  metadata:
+    reference:
+    - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+      title: UK Stamp Tax statistics (Table 6b)
+residential:
+  corporate:
+    revenue:
+      2019-01-01: 885000000
+      2020-01-01: 705000000
+    transaction_values:
+      2019-01-01: 31640000000
+      2020-01-01: 30460000000
+    transactions:
+      2019-01-01: 104200
+      2020-01-01: 91600
+  household:
+    first_time_buyers_relief:
+      brackets:
+      - amount:
+          2020-01-01: 400
+        threshold:
+          2018-01-01: 0
+      - amount:
+          2020-01-01: 12500
+        threshold:
+          2018-01-01: 20
+      - amount:
+          2020-01-01: 38200
+        threshold:
+          2018-01-01: 25
+      - amount:
+          2020-01-01: 26500
+        threshold:
+          2018-01-01: 30
+      - amount:
+          2020-01-01: 13700
+        threshold:
+          2018-01-01: 35
+      - amount:
+          2020-01-01: 6900
+        threshold:
+          2018-01-01: 40
+      - amount:
+          2020-01-01: 3400
+        threshold:
+          2018-01-01: 45
+      - amount:
+          2020-01-01: 1700
+        threshold:
+          2018-01-01: 50
+      - amount:
+          2020-01-01: 900
+        threshold:
+          2018-01-01: 55
+      - amount:
+          2020-01-01: 300
+        threshold:
+          2018-01-01: 60
+      - amount:
+          2020-01-01: 100
+        threshold:
+          2018-01-01: 65
+      - amount:
+          2020-01-01: 100
+        threshold:
+          2018-01-01: 70
+      - amount:
+          2020-01-01: 0
+        threshold:
+          2018-01-01: 75
+      - amount:
+          2020-01-01: 100
+        threshold:
+          2018-01-01: 80
+      description: Number of claims for First Time Buyer's Relief
+      metadata:
+        reference:
+        - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          title: UK Stamp Tax statistics (Table 6a) (Experimental)
+    revenue:
+      2019-01-01: 7540000000
+      2020-01-01: 5310000000
+    transaction_values:
+      2019-01-01: 269690000000
+      2020-01-01: 310380000000
+    transactions:
+      2019-01-01: 918600
+      2020-01-01: 933700
+    transactions_by_age:
+      brackets:
+      - amount:
+          2020-01-01: 2100
+        threshold:
+          2018-01-01: 0
+      - amount:
+          2020-01-01: 34300
+        threshold:
+          2018-01-01: 20
+      - amount:
+          2020-01-01: 121100
+        threshold:
+          2018-01-01: 25
+      - amount:
+          2020-01-01: 139600
+        threshold:
+          2018-01-01: 30
+      - amount:
+          2020-01-01: 114200
+        threshold:
+          2018-01-01: 35
+      - amount:
+          2020-01-01: 88400
+        threshold:
+          2018-01-01: 40
+      - amount:
+          2020-01-01: 70400
+        threshold:
+          2018-01-01: 45
+      - amount:
+          2020-01-01: 66200
+        threshold:
+          2018-01-01: 50
+      - amount:
+          2020-01-01: 62300
+        threshold:
+          2018-01-01: 55
+      - amount:
+          2020-01-01: 46500
+        threshold:
+          2018-01-01: 60
+      - amount:
+          2020-01-01: 34300
+        threshold:
+          2018-01-01: 65
+      - amount:
+          2020-01-01: 26800
+        threshold:
+          2018-01-01: 70
+      - amount:
+          2020-01-01: 16100
+        threshold:
+          2018-01-01: 75
+      - amount:
+          2020-01-01: 15400
+        threshold:
+          2018-01-01: 80
+      description: Number of transactions by age
+      metadata:
+        reference:
+        - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+          title: UK Stamp Tax statistics (Table 6c) (Experimental)
+  metadata:
+    reference:
+    - href: https://www.gov.uk/government/statistics/uk-stamp-tax-statistics
+      title: UK Stamp Tax statistics (Table 6a)

@@ -1,8 +1,0 @@
-description: Threshold in income for a lone parent, above which the Housing Benefit is reduced
-values:
-  2015-06-01:
-    value: 25.00
-metadata:
-  period: week
-  unit: currency
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=40

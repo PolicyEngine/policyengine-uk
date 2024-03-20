@@ -1,8 +1,0 @@
-description: Minimum wage for apprentices
-values:
-  2015-06-01:
-    value: 4.15
-metadata:
-  period: hour
-  unit: currency
-  reference: https://www.gov.uk/national-minimum-wage-rates

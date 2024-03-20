@@ -1,0 +1,6 @@
+description: Include basic income as earned income in benefit means tests.
+metadata:
+  label: Include basic income in means tests
+  unit: bool
+values:
+  2010-01-01: false

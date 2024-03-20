@@ -1,0 +1,14 @@
+description: Unearned income sources for Universal Credit.
+metadata:
+  economy: false
+  label: UC unearned income sources
+  name: UC_unearned_income_sources
+  propagate_metadata_to_children: true
+  unit: list
+values:
+  2010-01-01:
+  - carers_allowance
+  - JSA_contrib
+  - pension_income
+  - savings_interest_income
+  - dividend_income

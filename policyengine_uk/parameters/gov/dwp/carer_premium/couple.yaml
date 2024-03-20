@@ -1,0 +1,8 @@
+description: Carer premium for two qualifying carers for legacy benefits.
+values:
+  2010-01-01: 37.50
+metadata:
+  period: week
+  label: Legacy benefit carer premium (two carers)
+  unit: currency-GBP
+  reference: https://www.mariecurie.org.uk/help/support/benefits-entitlements/carers/premium

@@ -1,0 +1,5 @@
+description: Year in which the Universal Credit child limit applies
+values:
+  0001-01-01: 2017
+metadata:
+  unit: int
