@@ -45,28 +45,27 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
     if no_weight_adjustment:
         weight_adjustment = np.zeros_like(household_weights)
 
+    household_weights += weight_adjustment
+
     values_df = pd.DataFrame()
     targets = {}
-
-    # We need to normalise the targets. Common regression targets are often 1e1 to 1e3 (this informs the scale of the learning rate).
-    COUNT_HOUSEHOLDS = household_weights.sum()
     
     # DEMOGRAPHICS
     # First: ONS population projections
 
     age_sex_df = pd.read_csv(CALIBRATION_PARAMETER_FOLDER / "ons" / "populations" / "population_age_sex.csv.gz")
     # Combine 79+ into 79
-    age_sex_df["Age"] = age_sex_df.Age.apply(lambda x: round(min(79, x)))
+    age_sex_df["Age"] = age_sex_df.Age.apply(lambda x: round(min(79, x) / 5) * 5)
     age_sex_df = age_sex_df.groupby(["Age", "Sex"]).sum().reset_index()
     for i, row in age_sex_df.iterrows():
         age = row["Age"]
         sex = "MALE" if row["Sex"] == 0 else "FEMALE"
 
-        ages = simulation.calculate("age").apply(round).values
+        ages = simulation.calculate("age").apply(lambda x: round(min(79, x) / 5) * 5).values
         sex_values = simulation.calculate("gender").values
 
         in_criteria = (ages == age) & (sex_values == sex)
-        name = f"{sex.lower()} population aged {age}"
+        name = f"{sex.lower()} population aged {age} to {age + 4}"
 
         values_df[name] = simulation.map_result(in_criteria, "person", "household")
         targets[name] = row[str(time_period)]
@@ -89,11 +88,10 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
         targets[name] = households.by_size[str(size)]
 
     # INCOMES
-    # First, HMRC "Profit, employment and pension income" statistics
         
     total_income = simulation.calculate("total_income").values
         
-    for variable in ["employment_income", "self_employment_income", "pension_income"]:
+    for variable in ["employment_income", "self_employment_income", "pension_income", "dividend_income", "property_income"]:
         income_parameter = parameters(current_instant).hmrc.income[variable]
         label = simulation.tax_benefit_system.variables[variable].label
         amounts = simulation.calculate(variable).values
@@ -106,8 +104,25 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
             in_criteria = ((total_income >= threshold) & (total_income < upper_threshold)).astype(float)
             values_df[name] = simulation.map_result(in_criteria * amounts, "person", "household")
             targets[name] = income_parameter.amount.amounts[i]
+        
+        for i in range(len(income_parameter.count.thresholds)):
+            threshold = income_parameter.count.thresholds[i]
+            upper_threshold = income_parameter.count.thresholds[i + 1] if i + 1 < len(income_parameter.count.thresholds) else np.inf
+            name = f"individuals with {label} ({threshold} to {upper_threshold})"
+            in_criteria = ((total_income >= threshold) & (total_income < upper_threshold)).astype(float)
+            values_df[name] = simulation.map_result(in_criteria * nonzero, "person", "household")
+            targets[name] = income_parameter.count.amounts[i]
+        
+    # PROGRAMS
+    # OBR forecasts
+            
+    for program in parameters.obr.program_forecasts.children:
+        obr_program = parameters.obr(current_instant).program_forecasts[program]
+        label = simulation.tax_benefit_system.variables[program].label
+        values = simulation.calculate(program, map_to="household").values
 
-    
+        values_df[label] = values
+        targets[label] = obr_program
     
     targets_array = np.array(list(targets.values()))
 

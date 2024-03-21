@@ -21,7 +21,7 @@ df.dataset = df.dataset.replace(
 df["rel_error"] = df.value / df.target - 1
 df["abs_rel_error"] = (df.value / df.target - 1).abs()
 
-st.dataframe(df, use_container_width=True)
+st.dataframe(df[df.dataset == "Enhanced FRS"], use_container_width=True)
 
 left, right = st.columns(2)
 with left:

@@ -54,6 +54,7 @@ class state_pension_reported(Variable):
     label = "Reported income from the State Pension"
     definition_period = YEAR
     unit = GBP
+    uprating = "calibration.obr.program_forecasts.state_pension"
 
     def formula_2022(person, period, parameters):
         sp_ly = person("state_pension_reported", period.last_year)

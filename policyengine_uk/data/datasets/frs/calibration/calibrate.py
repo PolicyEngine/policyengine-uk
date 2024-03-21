@@ -11,7 +11,7 @@ import pandas as pd
 from typing import Tuple
 import warnings
 from pathlib import Path
-from torch.optim import Adam, RMSprop, Adamax, Adagrad, SGD
+from torch.optim import Adam
 from policyengine_uk.data.datasets.frs.calibration.loss import generate_model_variables
 
 warnings.filterwarnings("ignore")
@@ -31,8 +31,8 @@ def calibrate(
     time_period: str = None,
     training_log_path: str = None,
     overwrite_existing_log: bool = False,
-    learning_rate: float = 1e-1,
-    epochs: int = 10_000,
+    learning_rate: float = 1e-0,
+    epochs: int = 1_000,
     loss_threshold: float = None,
 ) -> np.ndarray:
     (
@@ -41,7 +41,7 @@ def calibrate(
         targets,
         targets_array,
     ) = generate_model_variables(dataset, time_period)
-    household_weights = torch.tensor(household_weights, dtype=torch.float32, requires_grad=True)
+    household_weights = torch.tensor(household_weights + np.random.random() * 10, dtype=torch.float32, requires_grad=True)
     targets_array = torch.tensor(targets_array, dtype=torch.float32)
 
     if training_log_path is not None:
@@ -57,8 +57,9 @@ def calibrate(
     )
     starting_loss = None
     optimizer = Adam([household_weights], lr=learning_rate)
+    elu = torch.nn.ELU()
     for i in progress_bar:
-        adjusted_weights = torch.relu(household_weights)
+        adjusted_weights = elu(household_weights) + 1
         result = (
             aggregate(adjusted_weights, values_df)
         )
