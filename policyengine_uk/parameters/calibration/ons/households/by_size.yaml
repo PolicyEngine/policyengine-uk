@@ -1,0 +1,22 @@
+metadata:
+  label: Households by size
+  propagate_metadata_to_children: true
+  uprating: calibration.ons.households.total
+  reference:
+    - title: ONS | Families and households
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/families/bulletins/familiesandhouseholds/2021
+
+1:
+  2022-01-01: 8_346_000
+2:
+  2022-01-01: 9_804_000
+3:
+  2022-01-01: 4_288_000
+4:
+  2022-01-01: 1_239_000
+5:
+  2022-01-01: 567_000
+6:
+  2022-01-01: 396_000
+7:
+  2022-01-01: 171_000

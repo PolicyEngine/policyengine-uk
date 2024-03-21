@@ -9,8 +9,6 @@ from policyengine_core.simulations import (
 from policyengine_uk.data import (
     DATASETS,
     EnhancedFRS,
-    FRS_2020_21,
-    CalibratedSPIEnhancedPooledFRS_2019_21,
 )
 from policyengine_uk.data.storage import STORAGE_FOLDER
 import pandas as pd

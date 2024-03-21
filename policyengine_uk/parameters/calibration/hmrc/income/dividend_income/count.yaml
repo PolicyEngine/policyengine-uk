@@ -1,0 +1,63 @@
+description: Total count of individuals with dividend income by total income range.
+metadata:
+  amount_unit: person
+  threshold_unit: currency-GBP
+  uprating: gov.obr.economic_determinants.employment
+  label: Individuals with dividend income by total income range
+  reference:
+    - title: HMRC | Property, interest, dividend and other income
+      href: https://www.gov.uk/government/statistics/investment-income-2010-to-2011
+
+brackets:
+  - threshold:
+      2021-01-01: 12_570
+    amount:
+      2021-01-01: 84_000
+  - threshold:
+      2021-01-01: 15_000
+    amount:
+      2021-01-01: 390_000
+  - threshold:
+      2021-01-01: 20_000
+    amount:
+      2021-01-01: 811_000
+  - threshold:
+      2021-01-01: 30_000
+    amount:
+      2021-01-01: 636_000
+  - threshold:
+      2021-01-01: 40_000
+    amount:
+      2021-01-01: 589_000
+  - threshold:
+      2021-01-01: 50_000
+    amount:
+      2021-01-01: 543_000
+  - threshold:
+      2021-01-01: 70_000
+    amount:
+      2021-01-01: 300_000
+  - threshold:
+      2021-01-01: 100_000
+    amount:
+      2021-01-01: 198_000
+  - threshold:
+      2021-01-01: 150_000
+    amount:
+      2021-01-01: 80_000
+  - threshold:
+      2021-01-01: 200_000
+    amount:
+      2021-01-01: 63_000
+  - threshold:
+      2021-01-01: 300_000
+    amount:
+      2021-01-01: 42_000
+  - threshold:
+      2021-01-01: 500_000
+    amount:
+      2021-01-01: 27_000
+  - threshold:
+      2021-01-01: 1_000_000
+    amount:
+      2021-01-01: 18_000

@@ -4,8 +4,8 @@ import pandas as pd
 
 
 def main():
-    YEARS = ["2023", "2024", "2025", "2026", "2027", "2028"]
-    DATASETS = ["frs_2021", "calibrated_spi_enhanced_pooled_frs_2019_21"]
+    YEARS = ["2024"]#, "2025", "2026", "2027", "2028"]
+    DATASETS = ["frs_2021", "enhanced_frs"]
 
     dfs = []
 

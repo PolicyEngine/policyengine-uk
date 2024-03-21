@@ -24,3 +24,8 @@ changelog:
 	bump-version changelog.yaml setup.py
 	rm changelog_entry.yaml || true
 	touch changelog_entry.yaml
+
+imputations:
+	python policyengine_uk/data/datasets/frs/imputations/consumption.py
+	python policyengine_uk/data/datasets/frs/imputations/wealth.py
+	python policyengine_uk/data/datasets/frs/imputations/income.py

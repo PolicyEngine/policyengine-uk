@@ -14,7 +14,7 @@ df = pd.read_csv(STORAGE_FOLDER / "dataset_losses.csv.gz")
 df.dataset = df.dataset.replace(
     {
         "frs_2021": "FRS (2021)",
-        "calibrated_spi_enhanced_pooled_frs_2019_21": "Enhanced FRS",
+        "enhanced_frs": "Enhanced FRS",
     }
 )
 

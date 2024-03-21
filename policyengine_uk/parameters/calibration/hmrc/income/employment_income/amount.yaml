@@ -1,0 +1,63 @@
+description: Total amount of employment income by total income range.
+metadata:
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  uprating: gov.obr.economic_determinants.employment
+  label: employment income by total income range
+  reference:
+    - title: HMRC | Profit, employment and pension income
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+
+brackets:
+  - threshold:
+      2021-01-01: 12_570
+    amount:
+      2021-01-01: 19_000_000_000
+  - threshold:
+      2021-01-01: 15_000
+    amount:
+      2021-01-01: 61_900_000_000
+  - threshold:
+      2021-01-01: 20_000
+    amount:
+      2021-01-01: 166_000_000_000
+  - threshold:
+      2021-01-01: 30_000
+    amount:
+      2021-01-01: 144_000_000_000
+  - threshold:
+      2021-01-01: 40_000
+    amount:
+      2021-01-01: 112_000_000_000
+  - threshold:
+      2021-01-01: 50_000
+    amount:
+      2021-01-01: 127_000_000_000
+  - threshold:
+      2021-01-01: 70_000
+    amount:
+      2021-01-01: 87_000_000_000
+  - threshold:
+      2021-01-01: 100_000
+    amount:
+      2021-01-01: 61_600_000_000
+  - threshold:
+      2021-01-01: 150_000
+    amount:
+      2021-01-01: 30_000_000_000
+  - threshold:
+      2021-01-01: 200_000
+    amount:
+      2021-01-01: 28_800_000_000
+  - threshold:
+      2021-01-01: 300_000
+    amount:
+      2021-01-01: 23_700_000_000
+  - threshold:
+      2021-01-01: 500_000
+    amount:
+      2021-01-01: 20_500_000_000
+  - threshold:
+      2021-01-01: 1_000_000
+    amount:
+      2021-01-01: 36_700_000_000

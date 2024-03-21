@@ -1,0 +1,63 @@
+description: Total count of individuals with pension income by total income range.
+metadata:
+  amount_unit: person
+  threshold_unit: currency-GBP
+  uprating: gov.obr.economic_determinants.employment
+  label: Individuals with pension income by total income range
+  reference:
+    - title: HMRC | Profit, employment and pension income
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+
+brackets:
+  - threshold:
+      2021-01-01: 12_570
+    amount:
+      2021-01-01: 1_220_000
+  - threshold:
+      2021-01-01: 15_000
+    amount:
+      2021-01-01: 2_060_000
+  - threshold:
+      2021-01-01: 20_000
+    amount:
+      2021-01-01: 2_320_000
+  - threshold:
+      2021-01-01: 30_000
+    amount:
+      2021-01-01: 1_100_000
+  - threshold:
+      2021-01-01: 40_000
+    amount:
+      2021-01-01: 574_000
+  - threshold:
+      2021-01-01: 50_000
+    amount:
+      2021-01-01: 440_000
+  - threshold:
+      2021-01-01: 70_000
+    amount:
+      2021-01-01: 186_000
+  - threshold:
+      2021-01-01: 100_000
+    amount:
+      2021-01-01: 75_000
+  - threshold:
+      2021-01-01: 150_000
+    amount:
+      2021-01-01: 23_000
+  - threshold:
+      2021-01-01: 200_000
+    amount:
+      2021-01-01: 16_000
+  - threshold:
+      2021-01-01: 300_000
+    amount:
+      2021-01-01: 8_000
+  - threshold:
+      2021-01-01: 500_000
+    amount:
+      2021-01-01: 4_000
+  - threshold:
+      2021-01-01: 1_000_000
+    amount:
+      2021-01-01: 2_000

@@ -3,9 +3,8 @@ from pathlib import Path
 import numpy as np
 from typing import Type
 from ..utils import STORAGE_FOLDER
-from .stacked_frs import PooledFRS_2018_20
 from .frs import FRS_2019_20
-from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2019_21
+from .spi_enhanced_frs import SPIEnhancedPooledFRS_2019_21
 import yaml
 
 
@@ -46,6 +45,11 @@ class ImputationExtendedFRS(Dataset):
 
         data = self.input_dataset().load_dataset()
 
+        for variable in data.keys():
+            data[variable] = {
+                year: data[variable] for year in range(self.time_period, self.time_period + self.num_years)
+            }
+
         # We're imputing consumption, wealth and VAT.
 
         IMPUTATIONS = STORAGE_FOLDER / "imputations"
@@ -62,7 +66,7 @@ class ImputationExtendedFRS(Dataset):
             X_input = simulation.calculate_dataframe(
                 predictors, map_to="household"
             )
-            if i == 1:
+            if i == 3:
                 # WAS doesn't sample NI -> put NI households in Wales (closest aggregate)
                 X_input.loc[
                     X_input["region"] == "NORTHERN_IRELAND", "region"
@@ -81,11 +85,10 @@ class ImputationExtendedFRS(Dataset):
         self.save_dataset(data)
 
 
-EnhancedFRS = ImputationExtendedFRS.from_dataset(
-    CalibratedSPIEnhancedPooledFRS_2019_21,
-    "enhanced_frs",
-    "Enhanced FRS",
+ImputationExtendedFRS_2019_21 = ImputationExtendedFRS.from_dataset(
+    SPIEnhancedPooledFRS_2019_21,
+    "imputation_extended_frs_2019_21",
+    "Imputation-extended FRS 2019-21",
     new_time_period=2024,
     new_num_years=5,
-    new_url="release://policyengine/non-public-microdata/uk-2023-dec-calibration/enhanced_frs.h5",
 )

@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from typing import Type
 from ..utils import STORAGE_FOLDER
-from .stacked_frs import PooledFRS_2018_20, PooledFRS_2019_21
+from .stacked_frs import PooledFRS_2019_21
 from .frs import FRS_2019_20
 from .uprated_frs import UpratedFRS
 
@@ -36,7 +36,10 @@ class SPIEnhancedFRS(Dataset):
         from policyengine_uk import Microsimulation
         from survey_enhance.impute import Imputation
 
-        frs = self.input_dataset().load()
+        input_dataset = self.input_dataset()
+        if not input_dataset.exists:
+            input_dataset.generate()
+        frs = input_dataset.load()
 
         new_values = {}
 
@@ -81,34 +84,7 @@ class SPIEnhancedFRS(Dataset):
         input_df = simulation.calculate_dataframe(
             ["age", "gender", "region"], 2022
         )
-
-        SOLVE_QUANTILES = False
-        APPLY_QUANTILES = False
-        HIGH_INCOME_SAMPLES = True
-        if SOLVE_QUANTILES:
-            mean_quantiles = income.solve_quantiles(
-                TARGETS,
-                input_df,
-                simulation.calculate(
-                    "household_weight", map_to="person"
-                ).values,
-            )
-        elif APPLY_QUANTILES:
-            mean_quantiles = [
-                0.38,
-                0.24,
-                0.39,
-                0.28,
-                0.45,
-                0.43,
-                0.29,
-                0.52,
-                0.5,
-            ]
-        elif HIGH_INCOME_SAMPLES:
-            mean_quantiles = 0.9
-        else:
-            mean_quantiles = None
+        mean_quantiles = [0.99] + [0.5] * (len(TARGETS) - 1)
 
         full_imputations = income.predict(input_df, mean_quantiles)
         for variable in full_imputations.columns:
@@ -121,11 +97,6 @@ class SPIEnhancedFRS(Dataset):
         self.save_dataset(new_values)
 
 
-SPIEnhancedPooledFRS_2018_20 = SPIEnhancedFRS.from_dataset(
-    PooledFRS_2018_20,
-    "spi_enhanced_pooled_frs_2018_20",
-    "SPI-enhanced FRS 2018-20",
-)
 
 SPIEnhancedPooledFRS_2019_21 = SPIEnhancedFRS.from_dataset(
     PooledFRS_2019_21,
@@ -133,11 +104,6 @@ SPIEnhancedPooledFRS_2019_21 = SPIEnhancedFRS.from_dataset(
     "SPI-enhanced FRS 2019-21",
 )
 
-SPIEnhancedFRS_2019_20 = SPIEnhancedFRS.from_dataset(
-    UpratedFRS.from_dataset(FRS_2019_20),
-    "spi_enhanced_frs_2019",
-    "SPI-enhanced FRS 2019-20",
-)
 
 IMPUTATIONS = [
     "employment_income",

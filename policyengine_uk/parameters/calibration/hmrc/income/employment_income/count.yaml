@@ -1,0 +1,63 @@
+description: Total count of individuals with self-employment income by total income range.
+metadata:
+  amount_unit: person
+  threshold_unit: currency-GBP
+  uprating: gov.obr.economic_determinants.employment
+  label: Individuals with self-employment income by total income range
+  reference:
+    - title: HMRC | Profit, employment and pension income
+      href: https://www.gov.uk/government/statistics/earned-income-2010-to-2011
+
+brackets:
+  - threshold:
+      2021-01-01: 12_570
+    amount:
+      2021-01-01: 1_530_000
+  - threshold:
+      2021-01-01: 15_000
+    amount:
+      2021-01-01: 3_860_000
+  - threshold:
+      2021-01-01: 20_000
+    amount:
+      2021-01-01: 7_300_000
+  - threshold:
+      2021-01-01: 30_000
+    amount:
+      2021-01-01: 4_560_000
+  - threshold:
+      2021-01-01: 40_000
+    amount:
+      2021-01-01: 2_880_000
+  - threshold:
+      2021-01-01: 50_000
+    amount:
+      2021-01-01: 2_520_000
+  - threshold:
+      2021-01-01: 70_000
+    amount:
+      2021-01-01: 1_220_000
+  - threshold:
+      2021-01-01: 100_000
+    amount:
+      2021-01-01: 598_000
+  - threshold:
+      2021-01-01: 150_000
+    amount:
+      2021-01-01: 206_000
+  - threshold:
+      2021-01-01: 200_000
+    amount:
+      2021-01-01: 142_000
+  - threshold:
+      2021-01-01: 300_000
+    amount:
+      2021-01-01: 77_000
+  - threshold:
+      2021-01-01: 500_000
+    amount:
+      2021-01-01: 39_000
+  - threshold:
+      2021-01-01: 1_000_000
+    amount:
+      2021-01-01: 20_000
