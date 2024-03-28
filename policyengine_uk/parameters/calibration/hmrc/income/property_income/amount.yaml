@@ -1,0 +1,63 @@
+description: Total amount of property income by total income range.
+metadata:
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  uprating: gov.obr.economic_determinants.employment
+  label: Property income by total income range
+  reference:
+    - title: HMRC | Property, interest, dividend and other income
+      href: https://www.gov.uk/government/statistics/investment-income-2010-to-2011
+
+brackets:
+  - threshold:
+      2021-01-01: 12_570
+    amount:
+      2021-01-01: 747_000_000
+  - threshold:
+      2021-01-01: 15_000
+    amount:
+      2021-01-01: 1_750_000_000
+  - threshold:
+      2021-01-01: 20_000
+    amount:
+      2021-01-01: 3_770_000_000
+  - threshold:
+      2021-01-01: 30_000
+    amount:
+      2021-01-01: 3_510_000_000
+  - threshold:
+      2021-01-01: 40_000
+    amount:
+      2021-01-01: 3_410_000_000
+  - threshold:
+      2021-01-01: 50_000
+    amount:
+      2021-01-01: 4_380_000_000
+  - threshold:
+      2021-01-01: 70_000
+    amount:
+      2021-01-01: 3_090_000_000
+  - threshold:
+      2021-01-01: 100_000
+    amount:
+      2021-01-01: 2_020_000_000
+  - threshold:
+      2021-01-01: 150_000
+    amount:
+      2021-01-01: 889_000_000
+  - threshold:
+      2021-01-01: 200_000
+    amount:
+      2021-01-01: 853_000_000
+  - threshold:
+      2021-01-01: 300_000
+    amount:
+      2021-01-01: 604_000_000
+  - threshold:
+      2021-01-01: 500_000
+    amount:
+      2021-01-01: 423_000_000
+  - threshold:
+      2021-01-01: 1_000_000
+    amount:
+      2021-01-01: 380_000_000

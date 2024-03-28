@@ -22,7 +22,9 @@ class is_SP_age(Variable):
     def formula(person, period, parameters):
         age = person("age", period)
         threshold = person("state_pension_age", period)
-        return age >= threshold
+        claims_sp = person("state_pension", 2024) > 0
+        # Aged or claims SP
+        return (age >= threshold) | claims_sp
 
 
 class triple_lock_uprating(Variable):
@@ -52,6 +54,7 @@ class state_pension_reported(Variable):
     label = "Reported income from the State Pension"
     definition_period = YEAR
     unit = GBP
+    uprating = "calibration.obr.program_forecasts.state_pension"
 
     def formula_2022(person, period, parameters):
         sp_ly = person("state_pension_reported", period.last_year)

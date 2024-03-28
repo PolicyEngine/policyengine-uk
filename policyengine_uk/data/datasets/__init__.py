@@ -4,19 +4,14 @@ from .frs import (
     FRS_2020_21,
     FRS_2021_22,
     RawFRS_2021_22,
-    PooledFRS_2018_20,
     PooledFRS_2019_21,
-    SPIEnhancedFRS_2019_20,
-    SPIEnhancedPooledFRS_2018_20,
     SPIEnhancedPooledFRS_2019_21,
-    CalibratedFRS_2019_20,
-    CalibratedFRS_2019_21,
-    CalibratedSPIEnhancedFRS_2019_20,
-    CalibratedSPIEnhancedPooledFRS_2018_20,
-    CalibratedSPIEnhancedPooledFRS_2019_21,
+    ImputationExtendedFRS_2019_21,
     EnhancedFRS,
     UKMOD_FRS_2018,
 )
+
+from .spi import RawSPI_2019, SPI_2019
 
 DATASETS = [
     FRS_2018_19,
@@ -24,16 +19,10 @@ DATASETS = [
     FRS_2020_21,
     FRS_2021_22,
     RawFRS_2021_22,
-    PooledFRS_2018_20,
     PooledFRS_2019_21,
-    SPIEnhancedFRS_2019_20,
-    SPIEnhancedPooledFRS_2018_20,
     SPIEnhancedPooledFRS_2019_21,
-    CalibratedFRS_2019_20,
-    CalibratedFRS_2019_21,
-    CalibratedSPIEnhancedFRS_2019_20,
-    CalibratedSPIEnhancedPooledFRS_2018_20,
-    CalibratedSPIEnhancedPooledFRS_2019_21,
+    ImputationExtendedFRS_2019_21,
     EnhancedFRS,
     UKMOD_FRS_2018,
+    SPI_2019,
 ]

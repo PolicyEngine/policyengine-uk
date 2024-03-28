@@ -9,8 +9,6 @@ from policyengine_core.simulations import (
 from policyengine_uk.data import (
     DATASETS,
     EnhancedFRS,
-    FRS_2020_21,
-    CalibratedSPIEnhancedPooledFRS_2019_21,
 )
 from policyengine_uk.data.storage import STORAGE_FOLDER
 import pandas as pd
@@ -87,7 +85,7 @@ class Microsimulation(CoreMicrosimulation):
             capital_gains = pd.read_csv(
                 STORAGE_FOLDER / "imputations" / "imputed_gains.csv.gz"
             ).imputed_gains.values
-            self.set_input("capital_gains", 2023, capital_gains)
+            # self.set_input("capital_gains", 2023, capital_gains)
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated

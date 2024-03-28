@@ -1,4 +1,6 @@
 - bump: minor
-   changes:
-     added:
-       - Add test cases for housing benefit
+  changes:
+    fixed:
+    - Bugs in carbon tax modules for 2026-27 causing NANs.
+    added:
+    - Calibration dashboard.

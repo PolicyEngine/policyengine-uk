@@ -14,7 +14,7 @@ class employment_income(Variable):
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
     quantity_type = FLOW
     category = INCOME
-    uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class pension_income(Variable):
@@ -26,7 +26,7 @@ class pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = "calibration.programs.pension_income.budgetary_impact.ENGLAND"
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class state_pension(Variable):
@@ -56,7 +56,7 @@ class self_employment_income(Variable):
     unit = GBP
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
     quantity_type = FLOW
-    uprating = "calibration.programs.self_employment_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class property_income(Variable):
@@ -68,9 +68,7 @@ class property_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
     unit = GBP
     quantity_type = FLOW
-    uprating = (
-        "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
-    )
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class savings_interest_income(Variable):
@@ -82,7 +80,7 @@ class savings_interest_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "calibration.programs.savings_interest_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class dividend_income(Variable):
@@ -94,9 +92,7 @@ class dividend_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
     unit = GBP
     quantity_type = FLOW
-    uprating = (
-        "calibration.programs.dividend_income.budgetary_impact.UNITED_KINGDOM"
-    )
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class sublet_income(Variable):
@@ -106,9 +102,7 @@ class sublet_income(Variable):
     documentation = "Income from subletting properties"
     definition_period = YEAR
     unit = GBP
-    uprating = (
-        "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
-    )
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class miscellaneous_income(Variable):
@@ -118,7 +112,7 @@ class miscellaneous_income(Variable):
     documentation = "Income from any other source"
     definition_period = YEAR
     unit = GBP
-    uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class private_transfer_income(Variable):
@@ -128,6 +122,7 @@ class private_transfer_income(Variable):
     documentation = "Income from private transfers"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class lump_sum_income(Variable):
@@ -137,6 +132,7 @@ class lump_sum_income(Variable):
     documentation = "Income from lump sums"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.economic_determinants.wages"
 
 
 class maintenance_income(Variable):
@@ -146,3 +142,4 @@ class maintenance_income(Variable):
     documentation = "Income from maintenance payments to you"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.economic_determinants.wages"

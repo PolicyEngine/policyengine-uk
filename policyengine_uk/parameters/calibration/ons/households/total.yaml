@@ -1,0 +1,14 @@
+description: Household population projections for the UK.
+values:
+  2022-01-01: 28_550_938
+  2023-01-01: 28_749_215
+  2024-01-01: 28_943_119
+  2025-01-01: 29_125_537
+  2026-01-01: 29_306_621
+  2027-01-01: 29_491_301
+  2028-01-01: 29_672_429
+metadata:
+  unit: household
+  reference:
+    - title: ONS | Household projections for England (contains UK estimates)
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/datasets/householdprojectionsforengland

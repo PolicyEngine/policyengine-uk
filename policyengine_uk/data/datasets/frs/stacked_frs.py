@@ -33,6 +33,9 @@ class StackedFRS(Dataset):
 
     def generate(self):
         sub_datasets = [dataset() for dataset in self.sub_datasets]
+        for dataset in sub_datasets:
+            if not dataset.exists:
+                dataset.generate()
         variable_names = sub_datasets[0].variables
         data = {}
         for variable in variable_names:
@@ -59,27 +62,14 @@ class StackedFRS(Dataset):
         self.save_dataset(data)
 
 
-PooledFRS_2018_20 = StackedFRS.from_dataset(
-    [
-        UpratedFRS.from_dataset(FRS_2018_19),
-        UpratedFRS.from_dataset(FRS_2019_20),
-        UpratedFRS.from_dataset(FRS_2020_21),
-    ],
-    [0.0, 0.0, 1.0],
-    "pooled_frs_2018_20",
-    "FRS 2018-20",
-    2023,
-)
-
 PooledFRS_2019_21 = StackedFRS.from_dataset(
     [
-        UpratedFRS.from_dataset(FRS_2019_20),
-        UpratedFRS.from_dataset(FRS_2020_21),
-        UpratedFRS.from_dataset(FRS_2021_22),
+        UpratedFRS.from_dataset(FRS_2019_20, 2024),
+        UpratedFRS.from_dataset(FRS_2020_21, 2024),
+        UpratedFRS.from_dataset(FRS_2021_22, 2024),
     ],
     [0.0, 0.0, 1.0],
     "pooled_frs_2019_21",
     "FRS 2019-21",
-    2023,
-    # new_url="release://policyengine/non-public-microdata/2023-dec-calibration/pooled_frs_2019_21.h5",
+    2024,
 )
