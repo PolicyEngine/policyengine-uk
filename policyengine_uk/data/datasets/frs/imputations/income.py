@@ -95,9 +95,14 @@ def save_imputation_models():
 
     high_income = Imputation()
     is_high_income = spi.total_income >= 100_000
-    high_income.train(spi[is_high_income][PREDICTORS], spi[is_high_income][IMPUTATIONS])
+    high_income.train(
+        spi[is_high_income][PREDICTORS], spi[is_high_income][IMPUTATIONS]
+    )
     high_income.save(
-        Path(__file__).parents[3] / "storage" / "imputations" / "high_income.pkl"
+        Path(__file__).parents[3]
+        / "storage"
+        / "imputations"
+        / "high_income.pkl"
     )
 
 

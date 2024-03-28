@@ -47,7 +47,10 @@ class ImputationExtendedFRS(Dataset):
 
         for variable in data.keys():
             data[variable] = {
-                year: data[variable] for year in range(self.time_period, self.time_period + self.num_years)
+                year: data[variable]
+                for year in range(
+                    self.time_period, self.time_period + self.num_years
+                )
             }
 
         # We're imputing consumption, wealth and VAT.

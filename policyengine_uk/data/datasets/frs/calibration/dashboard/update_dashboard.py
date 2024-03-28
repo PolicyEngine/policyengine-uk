@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def main():
-    YEARS = ["2024"]#, "2025", "2026", "2027", "2028"]
+    YEARS = ["2024"]  # , "2025", "2026", "2027", "2028"]
     DATASETS = ["frs_2021", "enhanced_frs"]
 
     dfs = []

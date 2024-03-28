@@ -47,14 +47,16 @@ class SPIEnhancedFRS(Dataset):
             if "_id" in variable:
                 # e.g. [1, 2, 3] -> [11, 12, 13, 21, 22, 23]
                 marker = 10 ** np.ceil(max(np.log10(frs[variable][...])))
-                values = list(frs[variable][...] + marker) + list(
-                    frs[variable][...] + marker * 2
-                ) + list(frs[variable][...] + marker * 3)
+                values = (
+                    list(frs[variable][...] + marker)
+                    + list(frs[variable][...] + marker * 2)
+                    + list(frs[variable][...] + marker * 3)
+                )
                 new_values[variable] = values
             elif "_weight" in variable:
-                new_values[variable] = list(frs[variable][...]) + list(
-                    frs[variable][...] * 0
-                ) * 2
+                new_values[variable] = (
+                    list(frs[variable][...]) + list(frs[variable][...] * 0) * 2
+                )
             else:
                 new_values[variable] = list(frs[variable][...]) * 3
 
@@ -80,7 +82,7 @@ class SPIEnhancedFRS(Dataset):
             # Assign over the second third of the dataset
             if variable in new_values.keys():
                 length = len(new_values[variable])
-                new_values[variable][length//3:(length * 2)//3] = (
+                new_values[variable][length // 3 : (length * 2) // 3] = (
                     full_imputations[variable].values
                 )
 
@@ -99,12 +101,11 @@ class SPIEnhancedFRS(Dataset):
             # Assign over the last third of the dataset
             if variable in new_values.keys():
                 length = len(new_values[variable])
-                new_values[variable][(length * 2)//3:] = (
+                new_values[variable][(length * 2) // 3 :] = (
                     high_income_imputations[variable].values
                 )
 
         self.save_dataset(new_values)
-
 
 
 SPIEnhancedPooledFRS_2019_21 = SPIEnhancedFRS.from_dataset(

@@ -14,7 +14,9 @@ class carbon_tax(Variable):
         emissions = household("carbon_consumption", period)
         # Household's share of total stocks and other corporate tax exposure.
         shareholding = household("shareholding", period)
-        total_emissions = parameters(period).household.consumption.carbon.consumption
+        total_emissions = parameters(
+            period
+        ).household.consumption.carbon.consumption
         consumer_incidence = carbon_tax.consumer_incidence * rate * emissions
         corporate_incidence = (
             (1 - carbon_tax.consumer_incidence)

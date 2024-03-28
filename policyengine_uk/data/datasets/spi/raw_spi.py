@@ -13,20 +13,23 @@ class RawSPI(Dataset):
     data_format = Dataset.TABLES
     tab_folder = None
     time_period = None
-    
+
     def generate(self):
         if self.tab_folder is None:
-            raise ValueError("`tab_folder` must be set to generate the dataset.")
-    
+            raise ValueError(
+                "`tab_folder` must be set to generate the dataset."
+            )
+
         # Filename is tab/put1920.tab for 2019-20
         folder = Path(self.tab_folder) / "tab"
         two_digit_year = self.time_period % 100
         filename = f"put{two_digit_year:02d}{two_digit_year + 1:02d}uk.tab"
         file_path = folder / filename
-        
+
         # Load the data
         main = pd.read_csv(file_path, sep="\t").fillna(0)
         main.to_hdf(STORAGE_FOLDER / "raw_spi_2019.h5", key="main", mode="w")
+
 
 class RawSPI_2019(RawSPI):
     tab_folder = "~/Downloads/UKDA-9031-tab"

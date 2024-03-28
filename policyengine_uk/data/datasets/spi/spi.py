@@ -5,6 +5,7 @@ import numpy as np
 from .raw_spi import RawSPI_2019
 from policyengine_uk.data.storage import STORAGE_FOLDER
 
+
 class SPI(Dataset):
     raw_spi: Type[Dataset]
     time_period: int
@@ -26,15 +27,19 @@ class SPI(Dataset):
         data["person_benunit_id"] = data["benunit_id"][...]
         data["person_household_id"] = data["household_id"][...]
 
-        data["employment_income"] = np.maximum(0, main.PAY + main.EPB -  main.EXPS) + main.INCPBEN + main.OSSBEN + main.TAXTERM + main.UBISJA + main.MOTHINC
+        data["employment_income"] = (
+            np.maximum(0, main.PAY + main.EPB - main.EXPS)
+            + main.INCPBEN
+            + main.OSSBEN
+            + main.TAXTERM
+            + main.UBISJA
+            + main.MOTHINC
+        )
         data["household_weight"] = main.FACT
 
-
         for variable in data:
-            data[variable] = {
-                self.time_period: np.array(data[variable])
-            }
-        
+            data[variable] = {self.time_period: np.array(data[variable])}
+
         self.save_dataset(data)
 
 

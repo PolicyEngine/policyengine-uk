@@ -33,6 +33,7 @@ with right:
 def capitalise(string):
     return string[0].upper() + string[1:]
 
+
 df["Text"] = df.rel_error.apply(lambda x: f"{x:+.0%}")
 
 fig = px.bar(
@@ -77,9 +78,15 @@ for quantile in np.linspace(0.1, 0.9, 9):
     for dataset in df.dataset.unique():
         datasets.append(dataset)
         quantiles.append(quantile)
-        values.append(df[df.dataset == dataset][df.time_period == time_period].abs_rel_error.quantile(quantile))
+        values.append(
+            df[df.dataset == dataset][
+                df.time_period == time_period
+            ].abs_rel_error.quantile(quantile)
+        )
 
-quantile_df = pd.DataFrame({"Dataset": datasets, "Quantile": quantiles, "Value": values})
+quantile_df = pd.DataFrame(
+    {"Dataset": datasets, "Quantile": quantiles, "Value": values}
+)
 quantile_df["Text"] = quantile_df.Value.apply(lambda x: f"{x:.0%}")
 
 fig = px.bar(

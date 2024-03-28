@@ -687,6 +687,7 @@ class uc_has_entitlement(Variable):
     def formula(benunit, period, parameters):
         return benunit("universal_credit", period) > 0
 
+
 class baseline_uc_has_entitlement(Variable):
     label = "eligible for Universal Credit under baseline policy"
     entity = BenUnit
