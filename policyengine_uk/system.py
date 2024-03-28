@@ -85,7 +85,7 @@ class Microsimulation(CoreMicrosimulation):
             capital_gains = pd.read_csv(
                 STORAGE_FOLDER / "imputations" / "imputed_gains.csv.gz"
             ).imputed_gains.values
-            self.set_input("capital_gains", 2023, capital_gains)
+            # self.set_input("capital_gains", 2023, capital_gains)
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated

@@ -59,6 +59,8 @@ def generate_spi_table(spi: pd.DataFrame):
 
     spi["employment_income"] = spi[["PAY", "EPB", "TAXTERM"]].sum(axis=1)
 
+    spi["total_income"] = spi.TI
+
     return spi
 
 
@@ -85,10 +87,17 @@ def save_imputation_models():
     income = Imputation()
     spi = pd.read_csv(SPI_TAB_FOLDER / "put1920uk.tab", delimiter="\t")
     spi = generate_spi_table(spi)
-    spi = spi[PREDICTORS + IMPUTATIONS]
+    spi = spi[PREDICTORS + IMPUTATIONS + ["total_income"]]
     income.train(spi[PREDICTORS], spi[IMPUTATIONS])
     income.save(
         Path(__file__).parents[3] / "storage" / "imputations" / "income.pkl"
+    )
+
+    high_income = Imputation()
+    is_high_income = spi.total_income >= 100_000
+    high_income.train(spi[is_high_income][PREDICTORS], spi[is_high_income][IMPUTATIONS])
+    high_income.save(
+        Path(__file__).parents[3] / "storage" / "imputations" / "high_income.pkl"
     )
 
 

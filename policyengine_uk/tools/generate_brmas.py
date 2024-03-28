@@ -5,7 +5,7 @@ from policyengine_uk.variables.household.demographic.locations import BRMAName
 from policyengine_uk import Microsimulation
 
 sim = Microsimulation()
-region = sim.populations["benunit"].household("region", 2023).decode_to_str()
+region = sim.populations["benunit"].household("region", 2025).decode_to_str()
 lha_category = sim.calculate("LHA_category")
 
 brma = np.empty(len(region), dtype=object)
@@ -31,7 +31,7 @@ df = pd.DataFrame(
     {
         "brma": brma,
         "household_id": sim.populations["benunit"].household(
-            "household_id", 2023
+            "household_id", 2024
         ),
     }
 )

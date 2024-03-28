@@ -29,3 +29,9 @@ imputations:
 	python policyengine_uk/data/datasets/frs/imputations/consumption.py
 	python policyengine_uk/data/datasets/frs/imputations/wealth.py
 	python policyengine_uk/data/datasets/frs/imputations/income.py
+
+dashboard-data:
+	python policyengine_uk/data/datasets/frs/calibration/dashboard/update_dashboard.py
+
+dashboard:
+	cd policyengine_uk/data/datasets/frs/calibration/dashboard && streamlit run app.py

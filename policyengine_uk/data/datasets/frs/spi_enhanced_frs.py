@@ -49,26 +49,14 @@ class SPIEnhancedFRS(Dataset):
                 marker = 10 ** np.ceil(max(np.log10(frs[variable][...])))
                 values = list(frs[variable][...] + marker) + list(
                     frs[variable][...] + marker * 2
-                )
+                ) + list(frs[variable][...] + marker * 3)
                 new_values[variable] = values
             elif "_weight" in variable:
                 new_values[variable] = list(frs[variable][...]) + list(
                     frs[variable][...] * 0
-                )
+                ) * 2
             else:
-                new_values[variable] = list(frs[variable][...]) * 2
-
-        TARGETS = [
-            1.016e12,  # From up-to-date published RTI data
-            123.3e9,  # This and below from the 2019-20 SPI, uprated by 16% (2019 -> 2022)
-            7.25e9,  # 16% is the relative change from 2019 SPI total pay to 2022 EOY RTI total pay
-            78.0e9,
-            133.0e9,
-            10.3e9,
-            30.9e9,
-            4.0e9,
-            31.9e9,
-        ]
+                new_values[variable] = list(frs[variable][...]) * 3
 
         income = Imputation.load(
             Path(__file__).parent.parent.parent
@@ -82,16 +70,37 @@ class SPIEnhancedFRS(Dataset):
         )
 
         input_df = simulation.calculate_dataframe(
-            ["age", "gender", "region"], 2022
+            ["age", "gender", "region"],
         )
-        mean_quantiles = [0.99] + [0.5] * (len(TARGETS) - 1)
 
-        full_imputations = income.predict(input_df, mean_quantiles)
+        full_imputations = income.predict(input_df)
+
+        full_imputations[input_df.age.values < 18] *= 0
         for variable in full_imputations.columns:
-            # Assign over the second half of the dataset
+            # Assign over the second third of the dataset
             if variable in new_values.keys():
-                new_values[variable][len(new_values[variable]) // 2 :] = (
+                length = len(new_values[variable])
+                new_values[variable][length//3:(length * 2)//3] = (
                     full_imputations[variable].values
+                )
+
+        high_income = Imputation.load(
+            Path(__file__).parent.parent.parent
+            / "storage"
+            / "imputations"
+            / "high_income.pkl"
+        )
+
+        high_income_imputations = high_income.predict(input_df)
+
+        high_income_imputations[input_df.age.values < 18] *= 0
+
+        for variable in high_income_imputations.columns:
+            # Assign over the last third of the dataset
+            if variable in new_values.keys():
+                length = len(new_values[variable])
+                new_values[variable][(length * 2)//3:] = (
+                    high_income_imputations[variable].values
                 )
 
         self.save_dataset(new_values)

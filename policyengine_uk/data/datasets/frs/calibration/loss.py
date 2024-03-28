@@ -50,22 +50,23 @@ def generate_model_variables(dataset: str, time_period: str = "2023", no_weight_
     values_df = pd.DataFrame()
     targets = {}
     
+    
     # DEMOGRAPHICS
     # First: ONS population projections
 
     age_sex_df = pd.read_csv(CALIBRATION_PARAMETER_FOLDER / "ons" / "populations" / "population_age_sex.csv.gz")
     # Combine 79+ into 79
-    age_sex_df["Age"] = age_sex_df.Age.apply(lambda x: round(min(79, x) / 5) * 5)
+    age_sex_df["Age"] = age_sex_df.Age.apply(lambda x: round(min(79, x)))
     age_sex_df = age_sex_df.groupby(["Age", "Sex"]).sum().reset_index()
     for i, row in age_sex_df.iterrows():
         age = row["Age"]
-        sex = "MALE" if row["Sex"] == 0 else "FEMALE"
+        sex = "MALE" if row["Sex"] == 1 else "FEMALE"
 
-        ages = simulation.calculate("age").apply(lambda x: round(min(79, x) / 5) * 5).values
+        ages = simulation.calculate("age").apply(lambda x: round(min(79, x))).values
         sex_values = simulation.calculate("gender").values
 
         in_criteria = (ages == age) & (sex_values == sex)
-        name = f"{sex.lower()} population aged {age} to {age + 4}"
+        name = f"{sex.lower()} population aged {age}"
 
         values_df[name] = simulation.map_result(in_criteria, "person", "household")
         targets[name] = row[str(time_period)]

@@ -11,7 +11,7 @@ import pandas as pd
 from typing import Tuple
 import warnings
 from pathlib import Path
-from torch.optim import Adam
+from torch.optim import Adam, SGD
 from policyengine_uk.data.datasets.frs.calibration.loss import generate_model_variables
 
 warnings.filterwarnings("ignore")
@@ -31,9 +31,9 @@ def calibrate(
     time_period: str = None,
     training_log_path: str = None,
     overwrite_existing_log: bool = False,
-    learning_rate: float = 1e-0,
+    learning_rate: float = 1e4,
     epochs: int = 1_000,
-    loss_threshold: float = None,
+    loss_threshold: float = 1e-3,
 ) -> np.ndarray:
     (
         household_weights,
@@ -41,7 +41,8 @@ def calibrate(
         targets,
         targets_array,
     ) = generate_model_variables(dataset, time_period)
-    household_weights = torch.tensor(household_weights + np.random.random() * 10, dtype=torch.float32, requires_grad=True)
+    ORIGINAL_WEIGHT_BIAS = 0
+    weights = torch.tensor(household_weights * ORIGINAL_WEIGHT_BIAS + 1 * (1 - ORIGINAL_WEIGHT_BIAS), dtype=torch.float32, requires_grad=True)
     targets_array = torch.tensor(targets_array, dtype=torch.float32)
 
     if training_log_path is not None:
@@ -56,26 +57,33 @@ def calibrate(
         desc="Calibrating weights",
     )
     starting_loss = None
-    optimizer = Adam([household_weights], lr=learning_rate)
     elu = torch.nn.ELU()
     for i in progress_bar:
-        adjusted_weights = elu(household_weights) + 1
+        adjusted_weights = elu(weights) + 2
         result = (
             aggregate(adjusted_weights, values_df)
         )
         target = targets_array
-        loss = torch.mean(
-            ((result + 1) / (target + 1) - 1) ** 2
-            # Mean (squared error * log y)
+        loss = torch.max(
+            (result / target - 1) ** 2
         )
         if i == 0:
             starting_loss = loss.item()
         loss.backward()
-        optimizer.step()
+        # Apply gradient descent
+        with torch.no_grad():
+            weights -= learning_rate * weights.grad
+            weights.grad.zero_()
         if i % 5 == 0:
             current_loss = loss.item()
+            rel_errors = torch.abs(result / target - 1).squeeze().detach().numpy()
+            max_error_i = np.argmax(rel_errors)
+            max_error_value = rel_errors[max_error_i]
+            max_error_label = list(targets.keys())[max_error_i]
+            max_error_result = result.squeeze().detach().numpy()[max_error_i]
+            max_error_target = target.squeeze().detach().numpy()[max_error_i]
             progress_bar.set_description_str(
-                f"Calibrating weights | Loss = {current_loss:,.5f}"
+                f"Calibrating weights | Loss = {current_loss:,.5f} | Max error = {max_error_value:.1%} ({max_error_label}) | Result = {max_error_result:,.0f} | Target = {max_error_target:,.0f}"
             )
             current_aggregates = (
                 (result).detach().numpy()[0]
