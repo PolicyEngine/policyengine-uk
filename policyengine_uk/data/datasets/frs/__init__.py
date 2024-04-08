@@ -16,3 +16,4 @@ from .calibration.calibrated_frs import (
 from .stacked_frs import StackedFRS, PooledFRS_2019_21
 from .imputation_extended_frs import ImputationExtendedFRS_2019_21
 from .ukmod import UKMOD_FRS_2018
+from .uprated_frs import UpratedFRS_2021

@@ -2,6 +2,7 @@ from policyengine_core.data import Dataset
 from typing import Type
 from pathlib import Path
 from ..utils import STORAGE_FOLDER
+from .frs import FRS_2021_22
 
 
 class UpratedFRS(Dataset):
@@ -33,9 +34,13 @@ class UpratedFRS(Dataset):
         for variable in input_dataset.variables:
             try:
                 data[variable] = simulation.calculate(
-                    variable, period=self.output_year
+                    variable,
+                    period=self.time_period,
                 ).values
             except:
                 data[variable] = input_dataset.load(variable)
 
         self.save_dataset(data)
+
+
+UpratedFRS_2021 = UpratedFRS.from_dataset(FRS_2021_22, 2024)

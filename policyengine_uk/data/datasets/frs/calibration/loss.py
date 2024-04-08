@@ -37,7 +37,6 @@ def generate_model_variables(
         equivalisation_factors_array (dict): A 1D array of equivalisation factors for the statistical predictions to normalise the targets.
     """
     simulation = Microsimulation(dataset=dataset)
-    frs_simulation = Microsimulation(dataset="frs_2021")
     simulation.default_calculation_period = time_period
     parameters = simulation.tax_benefit_system.parameters.calibration
     obr = simulation.tax_benefit_system.parameters.gov.obr
@@ -63,8 +62,12 @@ def generate_model_variables(
         / "populations"
         / "population_age_sex.csv.gz"
     )
+    AGE_BAND_SIZE = 10
     # Combine 79+ into 79
     age_sex_df["Age"] = age_sex_df.Age.apply(lambda x: round(min(79, x)))
+    age_sex_df["Age"] = age_sex_df.Age.apply(
+        lambda x: round(x / AGE_BAND_SIZE) * AGE_BAND_SIZE
+    )
     age_sex_df = age_sex_df.groupby(["Age", "Sex"]).sum().reset_index()
     for i, row in age_sex_df.iterrows():
         age = row["Age"]
@@ -73,12 +76,15 @@ def generate_model_variables(
         ages = (
             simulation.calculate("age")
             .apply(lambda x: round(min(79, x)))
+            .apply(lambda x: round(x / AGE_BAND_SIZE) * AGE_BAND_SIZE)
             .values
         )
         sex_values = simulation.calculate("gender").values
 
         in_criteria = (ages == age) & (sex_values == sex)
-        name = f"{sex.lower()} population aged {age}"
+        name = (
+            f"{sex.lower()} population aged {age} to {age + AGE_BAND_SIZE - 1}"
+        )
 
         values_df[name] = simulation.map_result(
             in_criteria, "person", "household"
@@ -135,24 +141,6 @@ def generate_model_variables(
                 in_criteria * amounts, "person", "household"
             )
             targets[name] = income_parameter.amount.amounts[i]
-
-        for i in range(len(income_parameter.count.thresholds)):
-            threshold = income_parameter.count.thresholds[i]
-            upper_threshold = (
-                income_parameter.count.thresholds[i + 1]
-                if i + 1 < len(income_parameter.count.thresholds)
-                else np.inf
-            )
-            name = (
-                f"individuals with {label} ({threshold} to {upper_threshold})"
-            )
-            in_criteria = (
-                (total_income >= threshold) & (total_income < upper_threshold)
-            ).astype(float)
-            values_df[name] = simulation.map_result(
-                in_criteria * nonzero, "person", "household"
-            )
-            targets[name] = income_parameter.count.amounts[i]
 
     # PROGRAMS
     # OBR forecasts

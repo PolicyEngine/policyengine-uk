@@ -48,28 +48,58 @@ class CalibratedFRS(Dataset):
         if not input_dataset.exists:
             input_dataset.generate()
         data = input_dataset.load()
+
+        if self.exists:
+            original_data = self.load_dataset()
+        else:
+            original_data = {}
+
         for year in range(self.time_period, self.time_period + self.num_years):
             year = str(year)
-            adjusted_weights = calibrate(
-                self.input_dataset.name,
-                time_period=year,
-            )
             for variable in input_dataset.variables:
                 if variable not in new_data:
                     new_data[variable] = {}
                 if variable == "household_weight":
-                    new_data[variable][year] = adjusted_weights
+                    pass
                 elif "_weight" not in variable and (
                     (year == str(self.time_period)) or ("_id" in variable)
                 ):
                     new_data[variable][year] = data[variable][year]
 
-        self.save_dataset(new_data)
+        for year in range(self.time_period, self.time_period + self.num_years):
+            year = str(year)
+            START_FROM_PREVIOUS = True
+            last_trained_weights = None
+            if START_FROM_PREVIOUS and "household_weight" in original_data:
+                if int(year) == self.time_period:
+                    last_trained_weights = original_data["household_weight"][
+                        year
+                    ]
+                elif str(int(year) - 1) in original_data["household_weight"]:
+                    last_trained_weights = new_data["household_weight"][
+                        str(int(year) - 1)
+                    ]
+
+            # In year 1, calibrate to hit max 1% deviation. In future years, train for 10k epochs
+            adjusted_weights = calibrate(
+                self.input_dataset.name,
+                time_period=year,
+                iter_checkpoint_every=10_000,
+                initial_weights=last_trained_weights,
+                learning_rate=1e0,
+                loss_threshold=(
+                    0.1**2 if year == str(self.time_period) else None
+                ),
+                epochs=10_000 if year != str(self.time_period) else None,
+            )
+            for checkpoint_weights in adjusted_weights:
+                new_data["household_weight"][year] = checkpoint_weights
+                self.save_dataset(new_data)
 
 
 EnhancedFRS = CalibratedFRS.from_dataset(
     ImputationExtendedFRS_2019_21,
     "enhanced_frs",
     "Enhanced FRS",
-    new_num_years=1,
+    new_num_years=5,
 )
