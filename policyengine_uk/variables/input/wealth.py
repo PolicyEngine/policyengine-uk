@@ -11,6 +11,7 @@ class corporate_wealth(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    uprating = "household.wealth.corporate_wealth"
     quantity_type = STOCK
 
 
@@ -22,6 +23,7 @@ class owned_land(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
+    uprating = "household.wealth.financial_assets"
 
 
 class main_residence_value(Variable):
@@ -32,6 +34,7 @@ class main_residence_value(Variable):
     value_type = float
     unit = GBP
     quantity_type = STOCK
+    uprating = "household.wealth.financial_assets"
 
 
 class other_residential_property_value(Variable):
@@ -44,6 +47,7 @@ class other_residential_property_value(Variable):
     value_type = float
     unit = GBP
     quantity_type = STOCK
+    uprating = "household.wealth.financial_assets"
 
 
 class non_residential_property_value(Variable):
@@ -56,3 +60,4 @@ class non_residential_property_value(Variable):
     value_type = float
     unit = GBP
     quantity_type = STOCK
+    uprating = "household.wealth.financial_assets"

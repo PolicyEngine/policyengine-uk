@@ -31,11 +31,11 @@ for i in range(len(capital_gains)):
 
 sim = Microsimulation()
 
-total_income = sim.calculate("total_income", 2023)
+total_income = sim.calculate("total_income", 2021)
 cgt_revenue = system.parameters.calibration.programs.capital_gains.total
 
 lower_income_bounds = list(splines)
-uprating_from_2017 = cgt_revenue("2023-01-01") / cgt_revenue("2017-01-01")
+uprating_from_2017 = cgt_revenue("2021-01-01") / cgt_revenue("2017-01-01")
 
 
 def impute_capital_gains(total_income: float, age: float) -> float:

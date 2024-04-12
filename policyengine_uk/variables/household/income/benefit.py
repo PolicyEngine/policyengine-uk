@@ -52,7 +52,7 @@ class benefits(Variable):
 class household_benefits(Variable):
     value_type = float
     entity = Household
-    label = "benefits"
+    label = "household benefits"
     documentation = "Total value of benefits received by household"
     definition_period = YEAR
     unit = GBP

@@ -17,7 +17,7 @@ brackets:
         2020-01-01: 718_000_000
         2021-01-01: 686_000_000
       metadata:
-        uprating: 
+        uprating:
           parameter: calibration.programs.income_tax.budgetary_impact.UNITED_KINGDOM
   - threshold: 
       2018-01-01: 15_000

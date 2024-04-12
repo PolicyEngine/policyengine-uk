@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+import datetime
 
 
 class earned_income(Variable):
@@ -167,14 +168,44 @@ class hbai_household_net_income(Variable):
 
 
 class household_net_income(Variable):
-    label = "net income"
-    documentation = "Household net income after taxes and benefits"
+    label = "household net income"
+    documentation = "household net income"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = GBP
     adds = ["household_market_income", "household_benefits"]
     subtracts = ["household_tax"]
+
+
+class inflation_adjustment(Variable):
+    label = (
+        f"inflation multiplier to get {datetime.datetime.now().year} prices"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "/1"
+
+    def formula(household, period, parameters):
+        cpi = parameters.calibration.uprating.CPI
+        current_period_cpi = cpi(period)
+        now_cpi = cpi(datetime.datetime.now().strftime("%Y-%m-%d"))
+        return now_cpi / current_period_cpi
+
+
+class real_household_net_income(Variable):
+    label = (
+        f"real household net income ({datetime.datetime.now().year} prices)"
+    )
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        net_income = household("household_net_income", period)
+        return net_income * household("inflation_adjustment", period)
 
 
 class real_household_net_income(Variable):
@@ -312,7 +343,7 @@ class minimum_wage(Variable):
 class household_market_income(Variable):
     value_type = float
     entity = Household
-    label = "market income"
+    label = "household market income"
     documentation = "Market income for the household"
     definition_period = YEAR
     unit = GBP

@@ -10,7 +10,7 @@ class UpratedFRS(Dataset):
     @staticmethod
     def from_dataset(
         dataset: Type[Dataset],
-        out_year: int = 2023,
+        out_year: int = 2024,
     ):
         class UpratedFRSFromDataset(UpratedFRS):
             name = f"{dataset.name}_uprated_{out_year}"
