@@ -10,7 +10,18 @@ class full_rate_vat_consumption(Variable):
 
     def formula(household, period, parameters):
         # If unknown, assume half of consumption is VAT full-rated.
-        return household("consumption", period) * 0.5
+        return household("consumption", period) * household(
+            "full_rate_vat_expenditure_rate", period
+        )
+
+
+class full_rate_vat_expenditure_rate(Variable):
+    label = "VAT full-rated expenditure rate"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = "/1"
+    default_value = 0.5
 
 
 class reduced_rate_vat_consumption(Variable):

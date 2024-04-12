@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 from typing import Type
 from ..utils import STORAGE_FOLDER
-from .stacked_frs import PooledFRS_2018_20
 from .frs import FRS_2019_20
 from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2019_21
 import yaml
@@ -65,7 +64,7 @@ class ImputationExtendedFRS(Dataset):
         frs_household_weight = simulation.calculate("household_weight").values
         for imputation_model, targets in zip(
             [consumption, vat, wealth],
-            [consumption_targets, {}, wealth_targets],
+            [{}, {}, {}],
         ):
             i += 1
             predictors = imputation_model.X_columns
@@ -73,7 +72,7 @@ class ImputationExtendedFRS(Dataset):
             X_input = simulation.calculate_dataframe(
                 predictors, map_to="household"
             )
-            if i == 1:
+            if i == 3:
                 # WAS doesn't sample NI -> put NI households in Wales (closest aggregate)
                 X_input.loc[
                     X_input["region"] == "NORTHERN_IRELAND", "region"
@@ -86,7 +85,7 @@ class ImputationExtendedFRS(Dataset):
                     target_values,
                     X_input,
                     frs_household_weight,
-                    max_iterations=8,
+                    max_iterations=3,
                 )
             else:
                 quantiles = None
@@ -96,12 +95,7 @@ class ImputationExtendedFRS(Dataset):
 
             for output_variable in Y_output.columns:
                 values = Y_output[output_variable].values
-                data[output_variable] = {
-                    year: values
-                    for year in range(
-                        self.time_period, self.time_period + self.num_years
-                    )
-                }
+                data[output_variable] = {self.time_period: values}
 
         self.save_dataset(data)
 
@@ -110,7 +104,6 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     CalibratedSPIEnhancedPooledFRS_2019_21,
     "enhanced_frs",
     "Enhanced FRS",
-    new_time_period=2023,
-    new_num_years=5,
-    new_url="release://policyengine/non-public-microdata/uk-2023-dec-calibration/enhanced_frs.h5",
+    new_num_years=7,
+    new_url="release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5",
 )

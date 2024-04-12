@@ -10,6 +10,10 @@ class shareholding(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
+        wealth = household("corporate_wealth", period)
+        if hasattr(household.simulation, "dataset"):
+            weight = household("household_weight", period)
+            return wealth / (wealth * weight).sum()
         wealth = parameters(period).household.wealth
         nbs = wealth.national_balance_sheet
         wealth = household("corporate_wealth", period)

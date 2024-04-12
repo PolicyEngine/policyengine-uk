@@ -584,7 +584,8 @@ def calibrate(
             starting_loss = loss.item()
         loss.backward()
         optimizer.step()
-        if i % 5 == 0:
+        if i % 250 == 0:
+            yield adjusted_weights.detach().numpy()
             current_loss = loss.item()
             progress_bar.set_description_str(
                 f"Calibrating weights | Loss = {current_loss:,.3f}"
@@ -617,4 +618,4 @@ def calibrate(
 
     print(f"Loss reduction: {loss_reduction:.3%}")
 
-    return adjusted_weights.detach().numpy()
+    yield adjusted_weights.detach().numpy()
