@@ -37,7 +37,6 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     def __init__(self, reform=None):
         super().__init__(entities, reform=reform)
 
-        self.parameters.add_child("baseline", self.parameters.clone())
         self.parameters = backdate_parameters(self.parameters, "2021-01-01")
 
 
