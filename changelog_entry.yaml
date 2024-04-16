@@ -1,5 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Bug causing frs_2021 simulations to error.
-    - Unnecessary system initialisation code.
