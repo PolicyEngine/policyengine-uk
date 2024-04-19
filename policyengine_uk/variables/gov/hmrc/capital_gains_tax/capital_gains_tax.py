@@ -15,11 +15,17 @@ class capital_gains_tax(Variable):
 
         ani = person("adjusted_net_income", period)
         gains = max_(0, person("capital_gains", period))
+        aea = cgt.annual_exempt_amount
+        gains_less_aea = max_(0, gains - aea)
         basic_rate_limit = it.rates.uk.thresholds[1]
         remaining_basic_rate_band = max_(basic_rate_limit - ani, 0)
 
-        basic_rate_applicable_cg = min_(gains, remaining_basic_rate_band)
-        higher_rate_applicable_cg = max_(gains - remaining_basic_rate_band, 0)
+        basic_rate_applicable_cg = min_(
+            gains_less_aea, remaining_basic_rate_band
+        )
+        higher_rate_applicable_cg = max_(
+            gains_less_aea - remaining_basic_rate_band, 0
+        )
 
         basic_rate_tax = basic_rate_applicable_cg * cgt.basic_rate
         higher_rate_tax = higher_rate_applicable_cg * cgt.higher_rate

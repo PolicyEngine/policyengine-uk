@@ -7,6 +7,7 @@ from policyengine_uk import Microsimulation
 from tqdm import tqdm
 from policyengine_uk.system import system
 from policyengine_uk.data.storage import STORAGE_FOLDER
+from policyengine_core.data import Dataset
 
 capital_gains = pd.read_csv(
     STORAGE_FOLDER
@@ -60,13 +61,18 @@ def impute_capital_gains(total_income: float, age: float) -> float:
     return spline(sample_percentile) * uprating_from_2017
 
 
-if __name__ == "__main__":
+def add_capital_gains_to_dataset(dataset: Dataset, time_period: str):
+    sim = Microsimulation(dataset=dataset)
+    total_income = sim.calculate("total_income", time_period)
+    age = sim.calculate("age", time_period)
     imputed_gains = []
-    for income, age in tqdm(
-        list(zip(total_income, sim.calculate("age", 2023)))
-    ):
+    for income, age in tqdm(list(zip(total_income, age))):
         imputed_gains.append(impute_capital_gains(income, age))
 
-    pd.DataFrame({"imputed_gains": imputed_gains}).to_csv(
-        STORAGE_FOLDER / "imputations" / "imputed_gains.csv.gz", index=False
-    )
+    data = sim.dataset.load_dataset()
+    data["capital_gains"] = {time_period: np.array(imputed_gains)}
+    sim.dataset.save_dataset(data)
+
+
+if __name__ == "__main__":
+    add_capital_gains_to_dataset("enhanced_frs", 2021)
