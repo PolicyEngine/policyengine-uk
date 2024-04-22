@@ -5,9 +5,11 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 from policyengine_uk import Microsimulation
 from tqdm import tqdm
-from policyengine_uk.system import system
 from policyengine_uk.data.storage import STORAGE_FOLDER
 from policyengine_core.data import Dataset
+
+import torch
+from torch.optim import Adam
 
 capital_gains = pd.read_csv(
     STORAGE_FOLDER
@@ -18,61 +20,41 @@ capital_gains["maximum_total_income"] = (
     capital_gains.minimum_total_income.shift(-1).fillna(np.inf)
 )
 
+def impute_capital_gains(time_period: int):
+    """Assumes that the capital gains distribution is the same for all years.
+    """
 
-splines = {}
+    sim = Microsimulation(dataset="experimental_enhanced_frs")
+    ti = sim.calculate("total_income", time_period)
+    person_weight = sim.calculate("person_weight", time_period).values
+    has_capital_gains = np.zeros_like(person_weight) > 0
+    first_half = np.concatenate([np.ones(len(person_weight)//2), np.zeros(len(person_weight)//2)]) > 0
+    pred_cg = np.ones_like(~first_half)
+    blend_factor = torch.tensor(np.zeros(first_half.sum()), requires_grad=True)
 
-for i in range(len(capital_gains)):
-    row = capital_gains.iloc[i]
-    splines[row.minimum_total_income] = UnivariateSpline(
-        [0.05, 0.1, 0.25, 0.5, 0.75, 0.90, 0.95],
-        [row.p05, row.p10, row.p25, row.p50, row.p75, row.p90, row.p95],
-        k=1,
-    )
+    def loss(blend_factor):
+        for i in range(len(capital_gains)):
+            np.random.seed(i)
+            lower = capital_gains.minimum_total_income.iloc[i]
+            upper = capital_gains.maximum_total_income.iloc[i]
+            selection = ti.between(lower, upper)
+            first_half_of_selection = selection * first_half
+            second_half_of_selection = selection * ~first_half
+            fraction_with_capital_gains = capital_gains.percent_with_gains.iloc[i]
+            person_weights_subset = person_weight[selection][:selection.sum()//2]
+            person_weight[first_half_of_selection] = person_weights_subset * (1 - fraction_with_capital_gains)
+            person_weight[second_half_of_selection] = person_weights_subset * fraction_with_capital_gains
+            has_capital_gains[second_half_of_selection] = True
+            row = capital_gains.iloc[i]
+            spline = UnivariateSpline(
+                [0.05, 0.1, 0.25, 0.5, 0.75, 0.90, 0.95],
+                [row.p05, row.p10, row.p25, row.p50, row.p75, row.p90, row.p95],
+                k=4,
+            )
+            quantiles = np.random.random(second_half_of_selection.sum())
+            pred_capital_gains = spline(quantiles)
+            pred_cg[second_half_of_selection] = pred_capital_gains
 
-
-sim = Microsimulation()
-
-total_income = sim.calculate("total_income", 2021)
-cgt_revenue = system.parameters.calibration.programs.capital_gains.total
-
-lower_income_bounds = list(splines)
-uprating_from_2017 = cgt_revenue("2021-01-01") / cgt_revenue("2017-01-01")
-
-
-def impute_capital_gains(total_income: float, age: float) -> float:
-    if total_income < 0 or age < 18:
-        return 0
-    distribution_row = capital_gains[
-        (capital_gains["minimum_total_income"] <= total_income)
-        & (capital_gains["maximum_total_income"] > total_income)
-    ]
-    percent_with_gains = distribution_row["percent_with_gains"].values[0]
-    has_gains = np.random.choice(
-        [0, 1], p=[1 - percent_with_gains, percent_with_gains]
-    )
-    if not has_gains:
-        return 0
-    sample_percentile = np.random.random()
-    for i in range(len(splines)):
-        if lower_income_bounds[i] > total_income:
-            continue
-    i -= 1
-    spline = splines[lower_income_bounds[i]]
-    return spline(sample_percentile) * uprating_from_2017
-
-
-def add_capital_gains_to_dataset(dataset: Dataset, time_period: str):
-    sim = Microsimulation(dataset=dataset)
-    total_income = sim.calculate("total_income", time_period)
-    age = sim.calculate("age", time_period)
-    imputed_gains = []
-    for income, age in tqdm(list(zip(total_income, age))):
-        imputed_gains.append(impute_capital_gains(income, age))
-
-    data = sim.dataset.load_dataset()
-    data["capital_gains"] = {time_period: np.array(imputed_gains)}
-    sim.dataset.save_dataset(data)
-
-
-if __name__ == "__main__":
-    add_capital_gains_to_dataset("enhanced_frs", 2021)
+    new_household_weight = sim.map_result(person_weight, "person", "household", how="max")
+    
+    return pred_cg, new_household_weight

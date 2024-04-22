@@ -15,5 +15,5 @@ from .calibration.calibrated_frs import (
     CalibratedSPIEnhancedPooledFRS_2019_21,
 )
 from .stacked_frs import StackedFRS, PooledFRS_2019_21
-from .enhanced_frs import EnhancedFRS
+from .enhanced_frs import EnhancedFRS, ExperimentalEnhancedFRS
 from .ukmod import UKMOD_FRS_2018

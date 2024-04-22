@@ -422,4 +422,4 @@ class capital_gains(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "calibration.uprating.earnings"
+    uprating = "calibration.uprating.equity_prices"

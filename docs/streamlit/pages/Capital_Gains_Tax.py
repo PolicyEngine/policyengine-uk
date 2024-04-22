@@ -123,7 +123,7 @@ with st.expander("Capital gains imputation test runner"):
     income = st.slider("Total income", 0, 500000, 50000, 1000)
 
     with st.spinner("Imputing capital gains..."):
-        capital_gains = [impute_capital_gains(income) for _ in range(100)]
+        capital_gains = [impute_capital_gains(income) for _ in range(1000)]
 
     fig = (
         px.histogram(x=capital_gains, nbins=10)
@@ -133,7 +133,7 @@ with st.expander("Capital gains imputation test runner"):
             yaxis_title="Frequency",
             xaxis_tickformat=",.0f",
             xaxis_tickprefix="£",
-            xaxis_range=[0, 1_000_000],
+            xaxis_range=[-1_000, 1_000_000],
         )
         .update_traces(marker=dict(color=BLUE))
     )
