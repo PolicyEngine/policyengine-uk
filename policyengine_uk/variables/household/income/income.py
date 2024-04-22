@@ -357,6 +357,7 @@ class household_market_income(Variable):
         "pension_income",
         "private_transfer_income",
         "maintenance_income",
+        "capital_gains",
     ]
 
 
@@ -422,4 +423,4 @@ class capital_gains(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "calibration.uprating.equity_prices"
+    uprating = "calibration.programs.capital_gains.total"

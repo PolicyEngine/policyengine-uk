@@ -23,11 +23,20 @@ class capital_gains_tax(Variable):
         basic_rate_applicable_cg = min_(
             gains_less_aea, remaining_basic_rate_band
         )
-        higher_rate_applicable_cg = max_(
+        higher_and_add_rate_applicable_cg = max_(
             gains_less_aea - remaining_basic_rate_band, 0
+        )
+        higher_rate_limit = it.rates.uk.thresholds[2]
+        higher_rate_applicable_cg = min_(
+            higher_and_add_rate_applicable_cg,
+            higher_rate_limit - basic_rate_limit,
+        )
+        add_rate_applicable_cg = max_(
+            higher_and_add_rate_applicable_cg - higher_rate_applicable_cg, 0
         )
 
         basic_rate_tax = basic_rate_applicable_cg * cgt.basic_rate
         higher_rate_tax = higher_rate_applicable_cg * cgt.higher_rate
+        add_rate_tax = add_rate_applicable_cg * cgt.additional_rate
 
-        return basic_rate_tax + higher_rate_tax
+        return basic_rate_tax + higher_rate_tax + add_rate_tax

@@ -23,5 +23,5 @@ DATASETS = [
     CalibratedSPIEnhancedPooledFRS_2019_21,
     EnhancedFRS,
     UKMOD_FRS_2018,
-    ExperimentalEnhancedFRS
+    ExperimentalEnhancedFRS,
 ]

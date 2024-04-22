@@ -9,6 +9,7 @@ from policyengine_core.simulations import (
 from policyengine_uk.data import (
     DATASETS,
     EnhancedFRS,
+    ExperimentalEnhancedFRS,
     FRS_2020_21,
     CalibratedSPIEnhancedPooledFRS_2019_21,
 )
@@ -67,7 +68,7 @@ class Simulation(CoreSimulation):
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
     default_tax_benefit_system_instance = system
-    default_dataset = EnhancedFRS
+    default_dataset = ExperimentalEnhancedFRS
     default_dataset_year = 2023
     default_calculation_period = 2023
     default_input_period = 2023

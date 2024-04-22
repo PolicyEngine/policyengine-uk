@@ -109,6 +109,7 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     new_url="release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5",
 )
 
+
 class ExperimentalEnhancedFRS(Dataset):
     name = "experimental_enhanced_frs"
     label = "Experimental Enhanced FRS"
@@ -119,9 +120,13 @@ class ExperimentalEnhancedFRS(Dataset):
     time_period = 2021
 
     def generate(self):
-        from policyengine_uk.tools.drop_zero_weight_households import drop_zero_weight_households
+        from policyengine_uk.tools.drop_zero_weight_households import (
+            drop_zero_weight_households,
+        )
         from policyengine_uk.tools.stack_datasets import stack_datasets
-        from policyengine_uk.data.datasets.frs.imputations.capital_gains import impute_capital_gains
+        from policyengine_uk.data.datasets.frs.imputations.capital_gains import (
+            impute_capital_gains,
+        )
 
         data = EnhancedFRS().load_dataset()
         self.save_dataset(data)
@@ -134,10 +139,12 @@ class ExperimentalEnhancedFRS(Dataset):
         zero_weight_copy_2 = copy.deepcopy(data)
 
         for time_period in zero_weight_copy_2["household_weight"]:
-            zero_weight_copy_2["household_weight"][time_period] = np.zeros_like(
-                zero_weight_copy_1["household_weight"][time_period]
+            zero_weight_copy_2["household_weight"][time_period] = (
+                np.zeros_like(
+                    zero_weight_copy_1["household_weight"][time_period]
+                )
             )
-        
+
         data = stack_datasets(data, zero_weight_copy_2)
 
         print("stacked datasets")
@@ -148,14 +155,10 @@ class ExperimentalEnhancedFRS(Dataset):
 
         print("imputed cg")
 
-        data["capital_gains"] = {
-            2021: pred_cg
-        }
+        data["capital_gains"] = {2021: pred_cg}
         data["household_weight"][2021] = household_weights_21
 
         for year in range(2022, 2028):
             _, data["household_weight"][year] = impute_capital_gains(year)
-            print(year)
 
         self.save_dataset(data)
-
