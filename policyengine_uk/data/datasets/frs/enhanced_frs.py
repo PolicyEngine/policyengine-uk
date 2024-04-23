@@ -144,4 +144,3 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     new_num_years=7,
     new_url="release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5",
 )
-
