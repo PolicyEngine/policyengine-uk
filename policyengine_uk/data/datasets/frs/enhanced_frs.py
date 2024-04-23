@@ -147,13 +147,9 @@ class ExperimentalEnhancedFRS(Dataset):
 
         data = stack_datasets(data, zero_weight_copy_2)
 
-        print("stacked datasets")
-
         self.save_dataset(data)
 
         pred_cg, household_weights_21 = impute_capital_gains(2021)
-
-        print("imputed cg")
 
         data["capital_gains"] = {2021: pred_cg}
         data["household_weight"][2021] = household_weights_21

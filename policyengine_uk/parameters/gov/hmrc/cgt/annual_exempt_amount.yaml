@@ -8,6 +8,11 @@ values:
     reference:
       - title: Finance Act 2023 s. 8(2)
         href: https://www.legislation.gov.uk/ukpga/2023/1/section/8
+  2024-01-01: 
+    value: 3_000
+    reference:
+      - title: Finance Act 2023 s. 8(2)
+        href: https://www.legislation.gov.uk/ukpga/2023/1/section/8
 metadata:
   unit: currency-GBP
   label: Annual Exempt Amount
