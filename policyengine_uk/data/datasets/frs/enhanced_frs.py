@@ -98,28 +98,6 @@ class ImputationExtendedFRS(Dataset):
                 values = Y_output[output_variable].values
                 data[output_variable] = {self.time_period: values}
 
-        self.save_dataset(data)
-
-
-EnhancedFRS = ImputationExtendedFRS.from_dataset(
-    CalibratedSPIEnhancedPooledFRS_2019_21,
-    "enhanced_frs",
-    "Enhanced FRS",
-    new_num_years=7,
-    new_url="release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5",
-)
-
-
-class ExperimentalEnhancedFRS(Dataset):
-    name = "experimental_enhanced_frs"
-    label = "Experimental Enhanced FRS"
-    file_path = STORAGE_FOLDER / "experimental_enhanced_frs.h5"
-    data_format = Dataset.TIME_PERIOD_ARRAYS
-    input_dataset = None
-    num_years = 7
-    time_period = 2021
-
-    def generate(self):
         from policyengine_uk.tools.drop_zero_weight_households import (
             drop_zero_weight_households,
         )
@@ -128,7 +106,6 @@ class ExperimentalEnhancedFRS(Dataset):
             impute_capital_gains,
         )
 
-        data = EnhancedFRS().load_dataset()
         self.save_dataset(data)
 
         drop_zero_weight_households(self)
@@ -158,3 +135,13 @@ class ExperimentalEnhancedFRS(Dataset):
             _, data["household_weight"][year] = impute_capital_gains(year)
 
         self.save_dataset(data)
+
+
+EnhancedFRS = ImputationExtendedFRS.from_dataset(
+    CalibratedSPIEnhancedPooledFRS_2019_21,
+    "enhanced_frs",
+    "Enhanced FRS",
+    new_num_years=7,
+    new_url="release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5",
+)
+
