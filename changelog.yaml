@@ -1030,3 +1030,8 @@
     fixed:
     - Capital gains tax improvements.
   date: 2024-04-30 17:53:26
+- bump: patch
+  changes:
+    fixed:
+    - Update BRMAs.
+  date: 2024-04-30 18:10:23
