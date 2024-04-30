@@ -35,7 +35,14 @@ values:
   2019-01-01: 63_488_000_000
   2020-01-01: 76_582_000_000
   2021-01-01: 87_275_000_000
-  
+  # Solved capital gains aggregates (backing out the OBR behavioural response and including it)
+  2022-01-01: 101_231_000_000
+  2023-01-01: 76_302_000_000
+  2024-01-01: 79_114_000_000
+  2025-01-01: 79_881_000_000
+  2026-01-01: 91_899_000_000
+  2027-01-01: 100_081_000_000
+  2028-01-01: 109_925_000_000
 metadata:
   unit: currency-GBP
   label: Total capital gains
