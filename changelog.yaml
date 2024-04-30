@@ -1025,3 +1025,8 @@
     - Bug causing frs_2021 simulations to error.
     - Unnecessary system initialisation code.
   date: 2024-04-16 13:18:46
+- bump: minor
+  changes:
+    fixed:
+    - Capital gains tax improvements.
+  date: 2024-04-30 17:53:26
