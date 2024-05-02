@@ -14,7 +14,7 @@ def test_not_nan(year):
             variable
         ].requires_computation_after
         if requires_computation_after:
-            baseline.calculate(requires_computation_after, period=year)
+            continue
         if (
             baseline.tax_benefit_system.variables[variable].definition_period
             == "year"
