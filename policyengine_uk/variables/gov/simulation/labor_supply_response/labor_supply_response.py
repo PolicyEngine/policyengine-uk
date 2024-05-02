@@ -71,7 +71,7 @@ class income_elasticity_lsr(Variable):
     value_type = float
     entity = Person
     label = "income elasticity of labor supply response"
-    unit = USD
+    unit = GBP
     definition_period = YEAR
     requires_computation_after = "employment_income_behavioral_response"
 
@@ -87,7 +87,7 @@ class substitution_elasticity_lsr(Variable):
     value_type = float
     entity = Person
     label = "substitution elasticity of labor supply response"
-    unit = USD
+    unit = GBP
     definition_period = YEAR
     requires_computation_after = "employment_income_behavioral_response"
 
@@ -103,7 +103,7 @@ class employment_income_behavioral_response(Variable):
     value_type = float
     entity = Person
     label = "income-related labor supply change"
-    unit = USD
+    unit = GBP
     definition_period = YEAR
 
     def formula(person, period, parameters):
