@@ -13,7 +13,18 @@ class employment_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
     quantity_type = FLOW
-    category = INCOME
+    adds = [
+        "employment_income_before_lsr",
+        "employment_income_behavioral_response",
+    ]
+
+
+class employment_income_before_lsr(Variable):
+    value_type = float
+    entity = Person
+    label = "employment income before labor supply responses"
+    unit = GBP
+    definition_period = YEAR
     uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
 
 
