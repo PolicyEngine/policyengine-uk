@@ -10,6 +10,11 @@ baseline = Microsimulation(dataset=EnhancedFRS)
 @pytest.mark.parametrize("year", YEARS)
 def test_not_nan(year):
     for variable in baseline.tax_benefit_system.variables:
+        requires_computation_after = baseline.tax_benefit_system.variables[
+            variable
+        ].requires_computation_after
+        if requires_computation_after:
+            baseline.calculate(requires_computation_after, period=year)
         if (
             baseline.tax_benefit_system.variables[variable].definition_period
             == "year"
