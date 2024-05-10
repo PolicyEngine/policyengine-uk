@@ -4,7 +4,7 @@ metadata:
 IN_LONDON:
   description: Description
   values:
-    2015-01-01: 845
+    2015-01-01: 195
   metadata:
     unit: currency-GBP
     label: amount per child per month if you live in London
@@ -12,7 +12,7 @@ IN_LONDON:
 OUTSIDE_LONDON:
   description: Description
   values:
-    2015-01-01: 720
+    2015-01-01: 180
   metadata:
     unit: currency-GBP
     label: amount per child per month if you live outside London
