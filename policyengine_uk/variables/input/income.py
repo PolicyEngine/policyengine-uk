@@ -51,6 +51,8 @@ class state_pension(Variable):
 
     def formula(person, period, parameters):
         gov = parameters(period).gov
+        if gov.contrib.abolish_state_pension:
+            return 0
         relative_increase = gov.contrib.cec.state_pension_increase
         uprating = 1 + relative_increase
         sp = gov.dwp.state_pension
