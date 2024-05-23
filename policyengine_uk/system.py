@@ -92,11 +92,14 @@ class Microsimulation(CoreMicrosimulation):
 
         # Labor supply responses
 
-        employment_income = self.get_holder("employment_income")
-        for known_period in employment_income.get_known_periods():
-            array = employment_income.get_array(known_period)
-            self.set_input("employment_income_before_lsr", known_period, array)
-            employment_income.delete_arrays(known_period)
+        for simulation in list(self.branches.values()) + [self]:
+            employment_income = simulation.get_holder("employment_income")
+            for known_period in employment_income.get_known_periods():
+                array = employment_income.get_array(known_period)
+                simulation.set_input(
+                    "employment_income_before_lsr", known_period, array
+                )
+                employment_income.delete_arrays(known_period)
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated

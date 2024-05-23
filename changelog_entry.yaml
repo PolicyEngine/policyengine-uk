@@ -1,0 +1,7 @@
+- bump: minor
+  changes:
+    fixed:
+    - New benefit claimants are now accounted for in reforms.
+    added:
+    - Abolition switch for State Pension payments.
+    - Freeze switch for Pension Credit payments.

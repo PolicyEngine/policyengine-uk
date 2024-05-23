@@ -240,8 +240,7 @@ class housing_benefit_pre_benefit_cap(Variable):
     def formula(benunit, period, parameters):
         entitlement = benunit("housing_benefit_entitlement", period)
         eligible = benunit("housing_benefit_eligible", period)
-        would_claim = benunit("would_claim_HB", period)
-        return would_claim * entitlement * eligible
+        return entitlement * eligible
 
 
 class housing_benefit(Variable):
@@ -250,6 +249,7 @@ class housing_benefit(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    defined_for = "would_claim_HB"
 
     def formula(benunit, period, parameters):
         housing_benefit_entitlement = benunit(
@@ -269,3 +269,9 @@ class baseline_housing_benefit_entitlement(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+
+    def formula(benunit, period, parameters):
+        if benunit.simulation.baseline is None:
+            return 1
+        baseline = benunit.simulation.baseline.populations["benunit"]
+        return baseline("housing_benefit_entitlement", period)
