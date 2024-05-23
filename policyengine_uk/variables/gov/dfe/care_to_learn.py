@@ -17,9 +17,7 @@ class care_to_learn(Variable):
         amount_per_child = parameters(
             period
         ).gov.dfe.care_to_learn.amount_per_child
-        multiplier = MONTHS_IN_YEAR / WEEKS_IN_YEAR
-        return where(
-            live_in_london,
-            amount_per_child.IN_LONDON * multiplier,
-            amount_per_child.OUTSIDE_LONDON * multiplier,
-        )
+        weeks_per_month = 52 / 12
+        return where(live_in_london, 
+                     amount_per_child.IN_LONDON * weeks_per_month, 
+                     amount_per_child.OUTSIDE_LONDON * weeks_per_month)
