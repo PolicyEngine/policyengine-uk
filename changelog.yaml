@@ -1045,3 +1045,11 @@
     added:
     - U.S. progress on labour supply responses.
   date: 2024-05-02 11:47:45
+- bump: minor
+  changes:
+    added:
+    - Abolition switch for State Pension payments.
+    - Freeze switch for Pension Credit payments.
+    fixed:
+    - New benefit claimants are now accounted for in reforms.
+  date: 2024-05-23 17:20:21
