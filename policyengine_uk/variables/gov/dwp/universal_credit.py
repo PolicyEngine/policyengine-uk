@@ -79,6 +79,8 @@ class is_uc_entitled_baseline(Variable):
     value_type = bool
 
     def formula(benunit, period, parameters):
+        if benunit.simulation.baseline is None:
+            return True
         baseline = benunit.simulation.baseline.populations["benunit"]
         uc = baseline("universal_credit_pre_benefit_cap", period)
         return uc > 0
