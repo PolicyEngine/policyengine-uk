@@ -1,0 +1,10 @@
+description: Personal Allowance for pensioners.
+values:
+  2017-04-06: 11_500
+  2018-04-06: 11_850
+  2019-04-06: 12_500
+  2021-04-06: 12_570
+  2025-04-06: 12_570
+metadata:
+  unit: currency-GBP
+  label: personal allowance for pensioners
