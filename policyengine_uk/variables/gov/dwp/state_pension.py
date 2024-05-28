@@ -134,27 +134,6 @@ class new_state_pension(Variable):
         )
 
 
-class triple_lock_uprating(Variable):
-    value_type = float
-    entity = Person
-    label = "Triple lock relative increase"
-    documentation = (
-        "A government commitment, rather than a legislative requirement"
-    )
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        uprating = parameters(period).calibration.uprating
-        uprating_ly = parameters(period.last_year).calibration.uprating
-        cpi_growth = uprating.CPI / uprating_ly.CPI
-        earnings_growth = uprating.earnings / uprating_ly.earnings
-        return max(
-            parameters(period).gov.dwp.state_pension.triple_lock_minimum,
-            cpi_growth,
-            earnings_growth,
-        )
-
-
 class state_pension_reported(Variable):
     value_type = float
     entity = Person
@@ -164,4 +143,4 @@ class state_pension_reported(Variable):
 
     def formula_2022(person, period, parameters):
         sp_ly = person("state_pension_reported", period.last_year)
-        return sp_ly * person("triple_lock_uprating", period)
+        return sp_ly
