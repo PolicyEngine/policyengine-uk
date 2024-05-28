@@ -1053,3 +1053,8 @@
     fixed:
     - New benefit claimants are now accounted for in reforms.
   date: 2024-05-23 17:20:21
+- bump: minor
+  changes:
+    added:
+    - Pensioner personal allowance
+  date: 2024-05-27 22:27:48

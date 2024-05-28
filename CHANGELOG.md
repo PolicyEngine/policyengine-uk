@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.78.0] - 2024-05-27 22:27:48
+
+### Added
+
+- Pensioner personal allowance
+
 ## [0.77.0] - 2024-05-23 17:20:21
 
 ### Added
@@ -1262,6 +1268,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.78.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.77.0...0.78.0
 [0.77.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.76.0...0.77.0
 [0.76.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.75.0...0.76.0
 [0.75.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.74.1...0.75.0
