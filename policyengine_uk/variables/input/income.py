@@ -58,7 +58,15 @@ class state_pension(Variable):
         sp = gov.dwp.state_pension
         gender = person("gender", period).decode_to_str()
         is_sp_age = person("is_SP_age", period)
-        return person("state_pension_reported", period) * uprating * is_sp_age
+        return add(
+            person,
+            period,
+            [
+                "basic_state_pension",
+                "additional_state_pension",
+                "new_state_pension",
+            ],
+        )
 
 
 class self_employment_income(Variable):

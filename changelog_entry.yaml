@@ -1,0 +1,5 @@
+- bump: minor
+  changes:
+    added:
+    - Improvements to State Pension handling.
+    - Basic/additional State Pension splitting.
