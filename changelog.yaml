@@ -1058,3 +1058,9 @@
     added:
     - Pensioner personal allowance
   date: 2024-05-27 22:27:48
+- bump: minor
+  changes:
+    added:
+    - Improvements to State Pension handling.
+    - Basic/additional State Pension splitting.
+  date: 2024-05-28 11:46:47
