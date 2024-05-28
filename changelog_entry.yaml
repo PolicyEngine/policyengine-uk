@@ -1,4 +1,5 @@
 - bump: minor
   changes:
     added:
-    - Pensioner personal allowance
+    - Improvements to State Pension handling.
+    - Basic/additional State Pension splitting.
