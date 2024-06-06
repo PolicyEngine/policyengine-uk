@@ -18,6 +18,8 @@ class care_to_learn(Variable):
             period
         ).gov.dfe.care_to_learn.amount_per_child
         weeks_per_month = 52 / 12
-        return where(live_in_london, 
-                     amount_per_child.IN_LONDON * weeks_per_month, 
-                     amount_per_child.OUTSIDE_LONDON * weeks_per_month)
+        return where(
+            live_in_london,
+            amount_per_child.IN_LONDON * weeks_per_month,
+            amount_per_child.OUTSIDE_LONDON * weeks_per_month,
+        )
