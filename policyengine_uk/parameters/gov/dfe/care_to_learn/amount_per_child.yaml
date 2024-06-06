@@ -1,0 +1,22 @@
+metadata:
+  label: care-to-learn subsidy
+
+IN_LONDON:
+  description: Description
+  values:
+    2015-01-01: 195
+  metadata:
+  reference:
+    - href: https://www.gov.uk/care-to-learn/what-youll-get
+    unit: currency-GBP
+    label: amount per child per month if you live in London
+
+OUTSIDE_LONDON:
+  description: Description
+  values:
+    2015-01-01: 180
+  metadata:
+    reference:
+    - href: https://www.gov.uk/care-to-learn/what-youll-get
+    unit: currency-GBP
+    label: amount per child per month if you live outside London
