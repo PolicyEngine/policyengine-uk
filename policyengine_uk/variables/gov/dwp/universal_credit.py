@@ -31,31 +31,59 @@ class would_claim_UC(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        on_legacy_benefits = benunit("claims_legacy_benefits", period)
-        claims_all_entitled_benefits = benunit(
-            "claims_all_entitled_benefits", period
-        )
         current_uc_claimant = (
             add(benunit, period, ["universal_credit_reported"]) > 0
         )
-        baseline_uc = (
-            benunit("baseline_universal_credit_entitlement", period) > 0
+        brought_into_claim = benunit(
+            "is_brought_into_uc_claimant_status", period
         )
-        eligible = benunit("universal_credit_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.universal_credit.takeup
-        return current_uc_claimant
-        return select(
-            [
-                current_uc_claimant
-                | (claims_all_entitled_benefits & ~on_legacy_benefits),
-                (~baseline_uc & eligible & ~on_legacy_benefits),
-            ],
-            [
-                True,  # Claims Universal Credit in the baseline
-                random(benunit) < takeup_rate,
-            ],
-            default=False,  # Always non-claimant
+        is_in_microsimulation = hasattr(benunit.simulation, "dataset")
+        if is_in_microsimulation:
+            return current_uc_claimant | brought_into_claim
+        return True
+
+
+class is_brought_into_uc_claimant_status(Variable):
+    label = "brought into UC claimant status"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        if benunit.simulation.baseline is None:
+            return False
+        uc_entitled = benunit("is_uc_entitled", period)
+        uc_entitled_baseline = benunit("is_uc_entitled_baseline", period)
+        takeup = parameters(period).gov.dwp.universal_credit.takeup
+        takes_up_given_new_claimant = random(benunit) < takeup
+        return (
+            uc_entitled & ~uc_entitled_baseline & takes_up_given_new_claimant
         )
+
+
+class is_uc_entitled(Variable):
+    label = "meets the means test for Universal Credit"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        uc = benunit("universal_credit_pre_benefit_cap", period)
+        return uc > 0
+
+
+class is_uc_entitled_baseline(Variable):
+    label = "meets the means test for Universal Credit under baseline law"
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(benunit, period, parameters):
+        if benunit.simulation.baseline is None:
+            return True
+        baseline = benunit.simulation.baseline.populations["benunit"]
+        uc = baseline("universal_credit_pre_benefit_cap", period)
+        return uc > 0
 
 
 class is_UC_eligible(Variable):
@@ -599,7 +627,6 @@ class universal_credit_pre_benefit_cap(Variable):
     category = BENEFIT
     adds = ["UC_maximum_amount"]
     subtracts = ["UC_income_reduction"]
-    defined_for = "would_claim_UC"
 
 
 class universal_credit(Variable):
@@ -608,14 +635,15 @@ class universal_credit(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    defined_for = "would_claim_UC"
 
     def formula(benunit, period, parameters):
-        uc_entitlement = benunit("universal_credit_pre_benefit_cap", period)
-        return where(
-            uc_entitlement > 0,
-            max_(0, uc_entitlement),
-            0,
+        uc_max_entitlement = benunit(
+            "universal_credit_pre_benefit_cap", period
         )
+        benefit_cap_reduction = benunit("benefit_cap_reduction", period)
+        uc_entitlement = uc_max_entitlement - benefit_cap_reduction
+        return max_(0, uc_entitlement)
 
 
 class UC_MIF_applies(Variable):

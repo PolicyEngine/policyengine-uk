@@ -5,32 +5,32 @@ UNITED_KINGDOM:
     2019-01-01: 145_000_000_000
     2020-01-01: 140_800_000_000
     2021-01-01: 145_900_000_000
-    2022-01-01: 151_300_000_000
-    2023-01-01: 172_300_000_000
-    2024-01-01: 176_400_000_000
-    2025-01-01: 181_300_000_000
-    2026-01-01: 187_200_000_000
-    2027-01-01: 194_200_000_000
+    2022-01-01: 179_200_000_000
+    2023-01-01: 168_100_000_000
+    2024-01-01: 173_600_000_000
+    2025-01-01: 179_800_000_000
+    2026-01-01: 186_100_000_000
+    2027-01-01: 192_100_000_000
 ENGLAND:
   values:
     2018-01-01: 118_591_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 SCOTLAND:
   values:
     2018-01-01: 10_532_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 WALES:
   values:
     2018-01-01: 4_787_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 NORTHERN_IRELAND:
   values:
     2018-01-01: 2_736_000_000
   metadata:
-    uprating: calibration.programs.total_NI.budgetary_impact.UNITED_KINGDOM
+    uprating: calibration.programs.total_national_insurance.budgetary_impact.UNITED_KINGDOM
 metadata:
   reference:
     - title: HMRC Tax Receipts Split by country

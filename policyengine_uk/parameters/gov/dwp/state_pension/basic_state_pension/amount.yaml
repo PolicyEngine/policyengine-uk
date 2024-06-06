@@ -1,0 +1,29 @@
+description: Weekly amount paid to recipients of the basic State Pension.
+values:
+  2002-01-01: 75.50
+  2003-01-01: 77.45
+  2004-01-01: 79.60
+  2005-01-01: 82.05
+  2006-01-01: 84.25
+  2007-01-01: 87.30
+  2008-01-01: 90.70
+  2009-01-01: 95.25
+  2010-01-01: 97.65
+  2011-01-01: 102.15
+  2012-01-01: 107.45
+  2013-01-01: 110.15
+  2014-01-01: 113.10
+  2015-01-01: 115.95
+  2016-01-01: 119.30
+  2017-01-01: 122.30
+  2018-01-01: 125.95
+  2019-01-01: 129.20
+  2020-01-01: 134.25
+  2021-01-01: 137.60
+metadata:
+  unit: currency-GBP
+  label: basic State Pension amount
+  uprating: gov.dwp.state_pension.triple_lock
+  reference:
+    - title: House of Commons Library
+      href: https://researchbriefings.files.parliament.uk/documents/SN05649/SN05649.pdf

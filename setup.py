@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PolicyEngine-UK",
-    version="0.64.0",
+    version="0.79.0",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
     classifiers=[
@@ -33,7 +33,7 @@ setup(
         "microdf_python>=0.3.0",
         "pandas",
         "plotly>=4.14.3",
-        "PolicyEngine-Core>=2.11.3,<3",
+        "PolicyEngine-Core>=2.19.0,<3",
         "pyyaml>=5.3.1",
         "pytest",
         "requests>=2.25.1",
@@ -53,7 +53,6 @@ setup(
             "pydata-sphinx-theme==0.13.1",
             "pytest",
             "setuptools",
-            "sphinx>=4.5.0,<5",
             "sphinx-argparse>=0.3.2,<1",
             "sphinx-math-dollar>=1.2.1,<2",
             "survey-enhance",

@@ -1,0 +1,70 @@
+- name: Single person eligible for housing benefit
+  # Source: https://www.entitledto.co.uk/benefits-calculator/Results/ComprehensiveCalc?cid=6ea29422-0999-4439-8047-b43ac444acb9&paymentPeriod=Weekly&calcScenario=CurrentSystem
+  period: 2023
+  absolute_error_margin: 15
+  input:
+    age: 28
+    weekly_hours: 26
+    benunit_rent: 80*52
+    is_single_person: true
+    tenure_type: RENT_FROM_COUNCIL
+    housing_benefit_reported: true
+    employment_income: 2000
+  output:
+    housing_benefit: 80*52
+- name: Single person not eligible for housing benefit
+  # Source: https://www.entitledto.co.uk/benefits-calculator/Results/ComprehensiveCalc?cid=995817cb-b6f2-4350-825f-14f3e5a71265&paymentPeriod=Weekly&calcScenario=UniversalCredit
+  period: 2023
+  absolute_error_margin: 15
+  input:
+    age: 28
+    weekly_hours: 26
+    benunit_rent: 80*52
+    is_single_person: true
+    in_social_housing: false
+    housing_benefit_reported: false
+    employment_income: 2000
+  output:
+    housing_benefit: 0
+- name: Single person partial eligible for housing benefit
+  # Source: https://www.entitledto.co.uk/benefits-calculator/Results/ComprehensiveCalc?cid=08fab4da-9c8b-4866-b126-61ca8159baed&paymentPeriod=Weekly&calcScenario=CurrentSystem
+  period: 2023
+  absolute_error_margin: 15
+  input:
+    age: 28
+    weekly_hours: 26
+    benunit_rent: 80*52
+    is_single_person: true
+    is_household_head: true
+    tenure_type: RENT_FROM_COUNCIL
+    housing_benefit_reported: true
+    employment_income: 6000
+  output:
+    housing_benefit: 58.3*52
+- name: Lone parent with small earnings
+  # Source: https://www.entitledto.co.uk/benefits-calculator/Results/ComprehensiveCalc?cid=6b6f49eb-8054-47d8-90d5-0f74e23b89cb&paymentPeriod=Weekly&calcScenario=CurrentSystem
+  period: 2023
+  absolute_error_margin: 15
+  input:
+    age: 26
+    benunit_rent: 80*52
+    is_lone_parent: true
+    tenure_type: RENT_FROM_COUNCIL
+    housing_benefit_reported: true
+    employment_income: 0
+  output:
+    housing_benefit: 80*52
+- name: Single person over pension age
+  # Source: https://www.entitledto.co.uk/benefits-calculator/Results/ComprehensiveCalc?cid=0e7190d3-6662-4653-b9d8-1836077df2b1&paymentPeriod=Weekly&calcScenario=CurrentSystem
+  period: 2023
+  input:
+    age: 68
+    gender: MALE
+    benunit_rent: 80*52
+    tenure_type: RENT_FROM_COUNCIL
+    housing_benefit_reported: true
+    is_single_person: true
+    pension_income: 100*52
+  output:
+    housing_benefit: 80*52
+  

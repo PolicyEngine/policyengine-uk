@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from typing import Type
 from ..utils import STORAGE_FOLDER
-from .stacked_frs import PooledFRS_2018_20, PooledFRS_2019_21
+from .stacked_frs import PooledFRS_2019_21
 from .frs import FRS_2019_20
 from .uprated_frs import UpratedFRS
 
@@ -114,29 +114,17 @@ class SPIEnhancedFRS(Dataset):
         for variable in full_imputations.columns:
             # Assign over the second half of the dataset
             if variable in new_values.keys():
-                new_values[variable][
-                    len(new_values[variable]) // 2 :
-                ] = full_imputations[variable].values
+                new_values[variable][len(new_values[variable]) // 2 :] = (
+                    full_imputations[variable].values
+                )
 
         self.save_dataset(new_values)
 
-
-SPIEnhancedPooledFRS_2018_20 = SPIEnhancedFRS.from_dataset(
-    PooledFRS_2018_20,
-    "spi_enhanced_pooled_frs_2018_20",
-    "SPI-enhanced FRS 2018-20",
-)
 
 SPIEnhancedPooledFRS_2019_21 = SPIEnhancedFRS.from_dataset(
     PooledFRS_2019_21,
     "spi_enhanced_pooled_frs_2019_21",
     "SPI-enhanced FRS 2019-21",
-)
-
-SPIEnhancedFRS_2019_20 = SPIEnhancedFRS.from_dataset(
-    UpratedFRS.from_dataset(FRS_2019_20),
-    "spi_enhanced_frs_2019",
-    "SPI-enhanced FRS 2019-20",
 )
 
 IMPUTATIONS = [

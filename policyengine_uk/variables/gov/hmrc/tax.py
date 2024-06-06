@@ -14,7 +14,7 @@ class tax(Variable):
 class household_tax(Variable):
     value_type = float
     entity = Household
-    label = "taxes"
+    label = "household taxes"
     documentation = "Total taxes owed by the household"
     definition_period = YEAR
     unit = GBP
@@ -35,6 +35,7 @@ class household_tax(Variable):
         "LVT",
         "carbon_tax",
         "vat_change",
+        "capital_gains_tax",
     ]
 
     def formula(household, period, parameters):

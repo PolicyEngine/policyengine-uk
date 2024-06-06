@@ -5,6 +5,131 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.79.0] - 2024-05-28 11:46:47
+
+### Added
+
+- Improvements to State Pension handling.
+- Basic/additional State Pension splitting.
+
+## [0.78.0] - 2024-05-27 22:27:48
+
+### Added
+
+- Pensioner personal allowance
+
+## [0.77.0] - 2024-05-23 17:20:21
+
+### Added
+
+- Abolition switch for State Pension payments.
+- Freeze switch for Pension Credit payments.
+
+### Fixed
+
+- New benefit claimants are now accounted for in reforms.
+
+## [0.76.0] - 2024-05-02 11:47:45
+
+### Added
+
+- U.S. progress on labour supply responses.
+
+## [0.75.0] - 2024-05-01 16:32:07
+
+### Added
+
+- State Pension Age reforms.
+
+## [0.74.1] - 2024-04-30 18:10:23
+
+### Fixed
+
+- Update BRMAs.
+
+## [0.74.0] - 2024-04-30 17:53:26
+
+### Fixed
+
+- Capital gains tax improvements.
+
+## [0.73.1] - 2024-04-16 13:18:46
+
+### Fixed
+
+- Bug causing frs_2021 simulations to error.
+- Unnecessary system initialisation code.
+
+## [0.73.0] - 2024-04-12 17:36:36
+
+### Changed
+
+- OBR forecast update.
+
+## [0.72.0] - 2024-03-07 16:04:57
+
+### Added
+
+- add Income Tax Integration Test
+
+## [0.71.0] - 2024-03-05 17:37:39
+
+### Added
+
+- Fuel duty revenue projections
+
+## [0.70.0] - 2024-03-05 11:48:27
+
+### Fixed
+
+- Carbon tax intensities for 2024.
+- UK NI rate for 2024.
+
+## [0.69.1] - 2024-03-04 18:45:44
+
+### Changed
+
+- Lowered rates for Class 1 and Class 4 NICs, pursuant to the Autumn Statement 2023
+- Set Class 2 NIC rate to 0%, pursuant to the Autumn Statement 2023
+
+## [0.69.0] - 2024-02-19 22:26:55
+
+### Added
+
+- Docker image deployment for streamlit documentation.
+
+## [0.68.0] - 2024-02-19 22:00:58
+
+### Added
+
+- Initial version of capital gains imputations and logic.
+
+## [0.67.0] - 2024-02-17 21:35:30
+
+### Added
+
+- Household wealth decile.
+
+### Changed
+
+- Assign decile of -1 to households with negative income.
+
+## [0.66.0] - 2024-02-01 16:02:50
+
+### Added
+
+- Add Income Tax test.
+
+## [0.65.0] - 2024-01-28 17:39:54
+
+### Changed
+
+- Calibration routine to include benefit cap statistics.
+
+### Fixed
+
+- Benefit cap UC bug.
+
 ## [0.64.0] - 2024-01-04 16:18:59
 
 ### Added
@@ -1150,6 +1275,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.79.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.78.0...0.79.0
+[0.78.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.77.0...0.78.0
+[0.77.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.76.0...0.77.0
+[0.76.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.75.0...0.76.0
+[0.75.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.74.1...0.75.0
+[0.74.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.74.0...0.74.1
+[0.74.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.73.1...0.74.0
+[0.73.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.73.0...0.73.1
+[0.73.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.72.0...0.73.0
+[0.72.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.71.0...0.72.0
+[0.71.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.70.0...0.71.0
+[0.70.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.69.1...0.70.0
+[0.69.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.69.0...0.69.1
+[0.69.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.68.0...0.69.0
+[0.68.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.67.0...0.68.0
+[0.67.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.66.0...0.67.0
+[0.66.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.65.0...0.66.0
+[0.65.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.64.0...0.65.0
 [0.64.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.63.2...0.64.0
 [0.63.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.63.1...0.63.2
 [0.63.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.63.0...0.63.1

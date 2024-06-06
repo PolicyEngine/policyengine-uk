@@ -1,0 +1,23 @@
+description: Annual Exempt Amount for individuals. This parameter is under active development and reforms including it should not be cited.
+values:
+  2018-01-01: 11_700
+  2019-01-01: 12_000
+  2020-01-01: 12_300
+  2023-01-01: 
+    value: 6_000
+    reference:
+      - title: Finance Act 2023 s. 8(2)
+        href: https://www.legislation.gov.uk/ukpga/2023/1/section/8
+  2024-01-01: 
+    value: 3_000
+    reference:
+      - title: Finance Act 2023 s. 8(2)
+        href: https://www.legislation.gov.uk/ukpga/2023/1/section/8
+metadata:
+  unit: currency-GBP
+  label: Annual Exempt Amount
+  reference:
+    - title: Taxation of Chargeable Gains Act 1992 s. 1K(2) # Current law
+      href: https://www.legislation.gov.uk/ukpga/1992/12/section/1K
+    - title: GOV.UK | Capital Gains Tax rates and allowances # For 2018-22
+      href: https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances#tax-free-allowances-for-capital-gains-tax

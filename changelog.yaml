@@ -962,3 +962,105 @@
     added:
     - Update PIP documentation
   date: 2024-01-04 16:18:59
+- bump: minor
+  changes:
+    changed:
+    - Calibration routine to include benefit cap statistics.
+    fixed:
+    - Benefit cap UC bug.
+  date: 2024-01-28 17:39:54
+- bump: minor
+  changes:
+    added:
+    - Add Income Tax test.
+  date: 2024-02-01 16:02:50
+- bump: minor
+  changes:
+    added:
+    - Household wealth decile.
+    changed:
+    - Assign decile of -1 to households with negative income.
+  date: 2024-02-17 21:35:30
+- bump: minor
+  changes:
+    added:
+    - Initial version of capital gains imputations and logic.
+  date: 2024-02-19 22:00:58
+- bump: minor
+  changes:
+    added:
+    - Docker image deployment for streamlit documentation.
+  date: 2024-02-19 22:26:55
+- bump: patch
+  changes:
+    changed:
+    - Lowered rates for Class 1 and Class 4 NICs, pursuant to the Autumn Statement
+      2023
+    - Set Class 2 NIC rate to 0%, pursuant to the Autumn Statement 2023
+  date: 2024-03-04 18:45:44
+- bump: minor
+  changes:
+    fixed:
+    - Carbon tax intensities for 2024.
+    - UK NI rate for 2024.
+  date: 2024-03-05 11:48:27
+- bump: minor
+  changes:
+    added:
+    - Fuel duty revenue projections
+  date: 2024-03-05 17:37:39
+- bump: minor
+  changes:
+    added:
+    - add Income Tax Integration Test
+  date: 2024-03-07 16:04:57
+- bump: minor
+  changes:
+    changed:
+    - OBR forecast update.
+  date: 2024-04-12 17:36:36
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing frs_2021 simulations to error.
+    - Unnecessary system initialisation code.
+  date: 2024-04-16 13:18:46
+- bump: minor
+  changes:
+    fixed:
+    - Capital gains tax improvements.
+  date: 2024-04-30 17:53:26
+- bump: patch
+  changes:
+    fixed:
+    - Update BRMAs.
+  date: 2024-04-30 18:10:23
+- bump: minor
+  changes:
+    added:
+    - State Pension Age reforms.
+  date: 2024-05-01 16:32:07
+- bump: minor
+  changes:
+    added:
+    - U.S. progress on labour supply responses.
+  date: 2024-05-02 11:47:45
+- bump: minor
+  changes:
+    added:
+    - Abolition switch for State Pension payments.
+    - Freeze switch for Pension Credit payments.
+    fixed:
+    - New benefit claimants are now accounted for in reforms.
+  date: 2024-05-23 17:20:21
+- bump: minor
+  changes:
+    added:
+    - Pensioner personal allowance
+  date: 2024-05-27 22:27:48
+- bump: minor
+  changes:
+    added:
+    - Improvements to State Pension handling.
+    - Basic/additional State Pension splitting.
+  date: 2024-05-28 11:46:47

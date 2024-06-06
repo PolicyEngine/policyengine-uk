@@ -21,5 +21,4 @@ class property_wealth(Variable):
     value_type = float
     unit = GBP
     quantity_type = STOCK
-
     adds = ["residential_property_value", "non_residential_property_value"]

@@ -1,0 +1,15 @@
+description: Weekly amount paid to recipients of the New State Pension.
+values:
+  2016-01-01: 155.65
+  2017-01-01: 159.55
+  2018-01-01: 164.35
+  2019-01-01: 168.60
+  2020-01-01: 175.20
+  2021-01-01: 179.60
+metadata:
+  unit: currency-GBP
+  label: New State Pension amount
+  uprating: gov.dwp.state_pension.triple_lock
+  reference:
+    - title: House of Commons Library
+      href: https://researchbriefings.files.parliament.uk/documents/SN05649/SN05649.pdf

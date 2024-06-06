@@ -3,10 +3,10 @@ from pathlib import Path
 import numpy as np
 from typing import Type
 from ..utils import STORAGE_FOLDER
-from .stacked_frs import PooledFRS_2018_20
 from .frs import FRS_2019_20
 from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2019_21
 import yaml
+import copy
 
 
 class ImputationExtendedFRS(Dataset):
@@ -64,8 +64,8 @@ class ImputationExtendedFRS(Dataset):
         i = 0
         frs_household_weight = simulation.calculate("household_weight").values
         for imputation_model, targets in zip(
-            [wealth, vat, consumption],
-            [wealth_targets, {}, consumption_targets],
+            [consumption, vat, wealth],
+            [{}, {}, {}],
         ):
             i += 1
             predictors = imputation_model.X_columns
@@ -73,7 +73,7 @@ class ImputationExtendedFRS(Dataset):
             X_input = simulation.calculate_dataframe(
                 predictors, map_to="household"
             )
-            if i == 1:
+            if i == 3:
                 # WAS doesn't sample NI -> put NI households in Wales (closest aggregate)
                 X_input.loc[
                     X_input["region"] == "NORTHERN_IRELAND", "region"
@@ -96,12 +96,43 @@ class ImputationExtendedFRS(Dataset):
 
             for output_variable in Y_output.columns:
                 values = Y_output[output_variable].values
-                data[output_variable] = {
-                    year: values
-                    for year in range(
-                        self.time_period, self.time_period + self.num_years
-                    )
-                }
+                data[output_variable] = {self.time_period: values}
+
+        from policyengine_uk.tools.drop_zero_weight_households import (
+            drop_zero_weight_households,
+        )
+        from policyengine_uk.tools.stack_datasets import stack_datasets
+        from policyengine_uk.data.datasets.frs.imputations.capital_gains import (
+            impute_capital_gains,
+        )
+
+        self.save_dataset(data)
+
+        drop_zero_weight_households(self)
+
+        data = self.load_dataset()
+
+        zero_weight_copy_1 = copy.deepcopy(data)
+        zero_weight_copy_2 = copy.deepcopy(data)
+
+        for time_period in zero_weight_copy_2["household_weight"]:
+            zero_weight_copy_2["household_weight"][time_period] = (
+                np.zeros_like(
+                    zero_weight_copy_1["household_weight"][time_period]
+                )
+            )
+
+        data = stack_datasets(data, zero_weight_copy_2)
+
+        self.save_dataset(data)
+
+        pred_cg, household_weights_21 = impute_capital_gains(2021)
+
+        data["capital_gains"] = {2021: pred_cg}
+        data["household_weight"][2021] = household_weights_21
+
+        for year in range(2022, 2028):
+            _, data["household_weight"][year] = impute_capital_gains(year)
 
         self.save_dataset(data)
 
@@ -110,7 +141,6 @@ EnhancedFRS = ImputationExtendedFRS.from_dataset(
     CalibratedSPIEnhancedPooledFRS_2019_21,
     "enhanced_frs",
     "Enhanced FRS",
-    new_time_period=2023,
-    new_num_years=5,
-    new_url="release://policyengine/non-public-microdata/uk-2023-dec-calibration/enhanced_frs.h5",
+    new_num_years=7,
+    new_url="release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5",
 )
