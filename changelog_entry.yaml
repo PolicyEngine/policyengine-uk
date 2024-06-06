@@ -1,4 +1,4 @@
 - bump: minor
   changes:
     added:
-      - add care_to_learn variables
+      - make format for care-to-learn
