@@ -1064,3 +1064,8 @@
     - Improvements to State Pension handling.
     - Basic/additional State Pension splitting.
   date: 2024-05-28 11:46:47
+- bump: minor
+  changes:
+    added:
+    - Recent reforms to Income Tax and NI.
+  date: 2024-06-07 08:22:24
