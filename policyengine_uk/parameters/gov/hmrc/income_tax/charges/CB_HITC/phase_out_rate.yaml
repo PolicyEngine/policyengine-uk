@@ -1,6 +1,7 @@
 description: Percent of Child Benefit recollected for every £1,000 over the phase-out threshold
 values:
   2015-06-05: 0.1
+  2024-01-01: 0.05
 metadata:
   period: year
   name: CB_HITC_reduction_rate
