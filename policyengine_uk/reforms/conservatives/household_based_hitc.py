@@ -13,8 +13,21 @@ class CB_HITC(Variable):
     def formula(person, period, parameters):
         CB_received = person.benunit("child_benefit", period)
         hitc = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
-        income = person("adjusted_net_income", period)
+        personal_income = person("adjusted_net_income", period)
+        income = person.benunit.sum(personal_income)
         percentage = max_(income - hitc.phase_out_start, 0) / (
             hitc.phase_out_end - hitc.phase_out_start
         )
         return min_(percentage, 1) * CB_received
+
+
+class make_cb_hitc_household_based(Variable):
+    def apply(self):
+        self.update_variable(CB_HITC)
+
+
+def create_household_based_hitc_reform(parameters, period):
+    if parameters(period).gov.contrib.conservatives.cb_hitc_household:
+        return make_cb_hitc_household_based
+    else:
+        return None

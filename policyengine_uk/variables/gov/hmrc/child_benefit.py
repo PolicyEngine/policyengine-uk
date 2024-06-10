@@ -42,7 +42,7 @@ class child_benefit_opts_out(Variable):
             hmrc = parameters(period).gov.hmrc
             cb_hitc = hmrc.income_tax.charges.CB_HITC
             cb = hmrc.child_benefit
-            in_phase_out = ani > cb_hitc.phase_out_start
+            in_phase_out = ani > cb_hitc.phase_out_end
             return where(
                 benunit.any(in_phase_out),
                 random(benunit) < cb.opt_out_rate,
