@@ -1069,3 +1069,8 @@
     added:
     - Recent reforms to Income Tax and NI.
   date: 2024-06-07 08:22:24
+- bump: minor
+  changes:
+    added:
+    - Conservative manifesto policy to move CB HITC to household based.
+  date: 2024-06-10 12:42:45
