@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    added:
+    - Budgetary change distributional impact parameters.
