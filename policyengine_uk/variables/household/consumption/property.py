@@ -10,18 +10,7 @@ class property_sale_rate(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).gov.hmrc.stamp_duty.statistics
-        nbs = parameters(period).household.wealth.national_balance_sheet
-        total_sale_value = (
-            stamp_duty.residential.household.transaction_values
-            + stamp_duty.non_residential.household.transaction_values
-        )
-        total_value = (
-            nbs.household.dwellings
-            + nbs.household.other_structures
-            + nbs.household.land
-        )
-        return total_sale_value / total_value
+        return parameters(period).gov.hmrc.stamp_duty.property_sale_rate
 
 
 class main_residential_property_purchased(Variable):
