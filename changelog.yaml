@@ -1074,3 +1074,8 @@
     added:
     - Conservative manifesto policy to move CB HITC to household based.
   date: 2024-06-10 12:42:45
+- bump: minor
+  changes:
+    added:
+    - Budgetary change distributional impact parameters.
+  date: 2024-06-11 07:51:23
