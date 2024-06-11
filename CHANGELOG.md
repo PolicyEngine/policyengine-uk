@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.83.0] - 2024-06-11 15:49:29
+
+### Fixed
+
+- Property sale rates at 4.5%.
+
 ## [0.82.0] - 2024-06-11 07:51:23
 
 ### Added
@@ -1293,6 +1299,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.83.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.82.0...0.83.0
 [0.82.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.81.0...0.82.0
 [0.81.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.80.0...0.81.0
 [0.80.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.79.0...0.80.0

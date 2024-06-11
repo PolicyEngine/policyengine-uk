@@ -1079,3 +1079,8 @@
     added:
     - Budgetary change distributional impact parameters.
   date: 2024-06-11 07:51:23
+- bump: minor
+  changes:
+    fixed:
+    - Property sale rates at 4.5%.
+  date: 2024-06-11 15:49:29
