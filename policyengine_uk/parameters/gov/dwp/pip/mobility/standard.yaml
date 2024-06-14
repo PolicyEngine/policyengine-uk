@@ -22,7 +22,7 @@ metadata:
   period: week
   unit: currency-GBP
   name: dla_m_standard
-  label: DLA (mobility) (standard rate)
+  label: PIP (mobility) (standard rate)
   reference: 
     - title: Benefits Uprating 2022/23
       href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

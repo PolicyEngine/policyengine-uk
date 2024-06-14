@@ -5,7 +5,7 @@ from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 class PIP_M_reported(Variable):
     value_type = float
     entity = Person
-    label = "Disability Living Allowance (mobility) (reported)"
+    label = "PIP (mobility) (reported)"
     definition_period = YEAR
     unit = GBP
 
