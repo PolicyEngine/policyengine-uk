@@ -1084,3 +1084,10 @@
     fixed:
     - Property sale rates at 4.5%.
   date: 2024-06-11 15:49:29
+- bump: patch
+  changes:
+    changed:
+    - Uprated PIP, DLA, and Accessibility Account
+    - Re-enabled PIP and DLA within webapp
+    - Corrected mistakes in PIP
+  date: 2024-06-17 16:09:43

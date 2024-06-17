@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.83.1] - 2024-06-17 16:09:43
+
+### Changed
+
+- Uprated PIP, DLA, and Accessibility Account
+- Re-enabled PIP and DLA within webapp
+- Corrected mistakes in PIP
+
 ## [0.83.0] - 2024-06-11 15:49:29
 
 ### Fixed
@@ -1299,6 +1307,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.83.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.83.0...0.83.1
 [0.83.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.82.0...0.83.0
 [0.82.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.81.0...0.82.0
 [0.81.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.80.0...0.81.0
