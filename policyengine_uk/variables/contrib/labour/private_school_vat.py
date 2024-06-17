@@ -1,8 +1,6 @@
 from policyengine_uk.model_api import *
 from sys import stderr
 
-AVG_YEARLY_PRIVATE_SCHOOL_COST = 15_700
-
 
 class private_school_vat(Variable):
     label = "Private school VAT"
@@ -15,11 +13,9 @@ class private_school_vat(Variable):
         private_school_vat_rate: float = parameters(
             period
         ).gov.contrib.labour.private_school_vat
-        print(private_school_vat_rate, stderr)
         household_income_decile: int = household(
             "household_income_decile", period
         )
-        print(household_income_decile, stderr)
         attends_private_school: bool = (
             random(household)
             < parameters(
@@ -28,6 +24,9 @@ class private_school_vat(Variable):
                 household_income_decile
             ]
         )
+        avg_yearly_private_school_cost = parameters(
+            period
+        ).calibration.programs.private_school_vat.private_school_fees
         # num_children =  How do we count children? num_children is a benunit var
 
         # The below is incorrect
@@ -36,6 +35,6 @@ class private_school_vat(Variable):
         return (
             attends_private_school
             * num_people
-            * AVG_YEARLY_PRIVATE_SCHOOL_COST
+            * avg_yearly_private_school_cost
             * private_school_vat_rate
         )
