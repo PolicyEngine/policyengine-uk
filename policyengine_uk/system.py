@@ -9,11 +9,10 @@ from policyengine_core.simulations import (
 from policyengine_uk.data import (
     DATASETS,
     EnhancedFRS,
-    FRS_2020_21,
-    CalibratedSPIEnhancedPooledFRS_2019_21,
 )
 from policyengine_uk.data.storage import STORAGE_FOLDER
 import pandas as pd
+from policyengine_uk.tools.parameters import backdate_parameters
 
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
@@ -36,7 +35,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     def __init__(self, reform=None):
         super().__init__(entities, reform=reform)
 
-        self.parameters.add_child("baseline", self.parameters.clone())
+        self.parameters = backdate_parameters(self.parameters, "2021-01-01")
 
 
 system = CountryTaxBenefitSystem()
@@ -62,14 +61,22 @@ class Simulation(CoreSimulation):
         if reform is not None:
             self.apply_reform(reform)
 
+        # Labor supply responses
+
+        employment_income = self.get_holder("employment_income")
+        for known_period in employment_income.get_known_periods():
+            array = employment_income.get_array(known_period)
+            self.set_input("employment_income_before_lsr", known_period, array)
+            employment_income.delete_arrays(known_period)
+
 
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
     default_tax_benefit_system_instance = system
     default_dataset = EnhancedFRS
-    default_dataset_year = 2023
-    default_calculation_period = 2023
-    default_input_period = 2023
+    default_dataset_year = 2024
+    default_calculation_period = 2024
+    default_input_period = 2024
     default_role = "member"
     max_spiral_loops = 10
     datasets = DATASETS
@@ -83,11 +90,16 @@ class Microsimulation(CoreMicrosimulation):
         if reform is not None:
             self.apply_reform(reform)
 
-        if self.dataset.name == "enhanced_frs":
-            capital_gains = pd.read_csv(
-                STORAGE_FOLDER / "imputations" / "imputed_gains.csv.gz"
-            ).imputed_gains.values
-            self.set_input("capital_gains", 2023, capital_gains)
+        # Labor supply responses
+
+        for simulation in list(self.branches.values()) + [self]:
+            employment_income = simulation.get_holder("employment_income")
+            for known_period in employment_income.get_known_periods():
+                array = employment_income.get_array(known_period)
+                simulation.set_input(
+                    "employment_income_before_lsr", known_period, array
+                )
+                employment_income.delete_arrays(known_period)
 
 
 class IndividualSim(CoreIndividualSim):  # Deprecated

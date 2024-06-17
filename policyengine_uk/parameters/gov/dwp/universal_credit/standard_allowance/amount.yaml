@@ -7,6 +7,11 @@ SINGLE_YOUNG:
     2021-10-06: 257.33
     2022-04-06: 265.31
     2023-04-01: 292.11
+    2024-04-01: 
+      value: 311.68
+      reference:
+        - title: Benefits Uprating 2024/25 | Commons Library Briefing
+          href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit single amount (under 25)
     name: UC_single_young
@@ -20,6 +25,11 @@ SINGLE_OLD:
     2021-10-06: 324.84
     2022-04-06: 334.91
     2023-04-01: 368.74
+    2024-04-01: 
+      value: 393.45
+      reference:
+        - title: Benefits Uprating 2024/25 | Commons Library Briefing
+          href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit single amount (over 25)
     name: UC_single_old
@@ -33,6 +43,11 @@ COUPLE_YOUNG:
     2021-10-06: 403.93
     2022-04-06: 416.45
     2023-04-01: 458.51
+    2024-04-01: 
+      value: 489.23
+      reference:
+        - title: Benefits Uprating 2024/25 | Commons Library Briefing
+          href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit couple amount (both under 25)
     name: UC_couple_young
@@ -47,6 +62,11 @@ COUPLE_OLD:
     2021-10-06: 509.91
     2022-04-06: 525.72
     2023-04-01: 578.82
+    2024-04-01: 
+      value: 617.60
+      reference:
+        - title: Benefits Uprating 2024/25 | Commons Library Briefing
+          href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit couple amount (one over 25)
     name: UC_couple_old

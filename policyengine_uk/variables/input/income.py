@@ -13,7 +13,18 @@ class employment_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
     quantity_type = FLOW
-    category = INCOME
+    adds = [
+        "employment_income_before_lsr",
+        "employment_income_behavioral_response",
+    ]
+
+
+class employment_income_before_lsr(Variable):
+    value_type = float
+    entity = Person
+    label = "employment income before labor supply responses"
+    unit = GBP
+    definition_period = YEAR
     uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
 
 
@@ -39,11 +50,22 @@ class state_pension(Variable):
     quantity_type = FLOW
 
     def formula(person, period, parameters):
-        relative_increase = parameters(
-            period
-        ).gov.contrib.cec.state_pension_increase
-        return person("state_pension_reported", period) * (
-            1 + relative_increase
+        gov = parameters(period).gov
+        if gov.contrib.abolish_state_pension:
+            return 0
+        relative_increase = gov.contrib.cec.state_pension_increase
+        uprating = 1 + relative_increase
+        sp = gov.dwp.state_pension
+        gender = person("gender", period).decode_to_str()
+        is_sp_age = person("is_SP_age", period)
+        return add(
+            person,
+            period,
+            [
+                "basic_state_pension",
+                "additional_state_pension",
+                "new_state_pension",
+            ],
         )
 
 

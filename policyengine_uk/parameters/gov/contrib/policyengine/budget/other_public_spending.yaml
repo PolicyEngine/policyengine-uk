@@ -1,0 +1,5 @@
+description: Increase in non-NHS, non-education public spending, distributed by income decile as estimated by the ONS Effects of Taxes and Benefits dataset.
+values:
+  2000-01-01: 0
+metadata:
+  label: general public spending change (£bn)

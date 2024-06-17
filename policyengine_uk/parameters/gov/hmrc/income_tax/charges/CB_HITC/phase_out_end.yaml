@@ -1,0 +1,12 @@
+description: Income after which the Child Benefit is fully phased out
+values:
+  2015-06-05: 60_000
+  2024-01-01: 80_000
+metadata:
+  period: year
+  name: CB_HITC_reduction_threshold
+  label: Child Benefit Tax Charge phase-out end
+  unit: currency-GBP
+  reference:
+    - title: Finance Act 2012 Schedule 1 s. 681C
+      href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/1

@@ -5,6 +5,91 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.83.0] - 2024-06-11 15:49:29
+
+### Fixed
+
+- Property sale rates at 4.5%.
+
+## [0.82.0] - 2024-06-11 07:51:23
+
+### Added
+
+- Budgetary change distributional impact parameters.
+
+## [0.81.0] - 2024-06-10 12:42:45
+
+### Added
+
+- Conservative manifesto policy to move CB HITC to household based.
+
+## [0.80.0] - 2024-06-07 08:22:24
+
+### Added
+
+- Recent reforms to Income Tax and NI.
+
+## [0.79.0] - 2024-05-28 11:46:47
+
+### Added
+
+- Improvements to State Pension handling.
+- Basic/additional State Pension splitting.
+
+## [0.78.0] - 2024-05-27 22:27:48
+
+### Added
+
+- Pensioner personal allowance
+
+## [0.77.0] - 2024-05-23 17:20:21
+
+### Added
+
+- Abolition switch for State Pension payments.
+- Freeze switch for Pension Credit payments.
+
+### Fixed
+
+- New benefit claimants are now accounted for in reforms.
+
+## [0.76.0] - 2024-05-02 11:47:45
+
+### Added
+
+- U.S. progress on labour supply responses.
+
+## [0.75.0] - 2024-05-01 16:32:07
+
+### Added
+
+- State Pension Age reforms.
+
+## [0.74.1] - 2024-04-30 18:10:23
+
+### Fixed
+
+- Update BRMAs.
+
+## [0.74.0] - 2024-04-30 17:53:26
+
+### Fixed
+
+- Capital gains tax improvements.
+
+## [0.73.1] - 2024-04-16 13:18:46
+
+### Fixed
+
+- Bug causing frs_2021 simulations to error.
+- Unnecessary system initialisation code.
+
+## [0.73.0] - 2024-04-12 17:36:36
+
+### Changed
+
+- OBR forecast update.
+
 ## [0.72.0] - 2024-03-07 16:04:57
 
 ### Added
@@ -1214,6 +1299,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.83.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.82.0...0.83.0
+[0.82.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.81.0...0.82.0
+[0.81.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.80.0...0.81.0
+[0.80.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.79.0...0.80.0
+[0.79.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.78.0...0.79.0
+[0.78.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.77.0...0.78.0
+[0.77.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.76.0...0.77.0
+[0.76.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.75.0...0.76.0
+[0.75.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.74.1...0.75.0
+[0.74.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.74.0...0.74.1
+[0.74.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.73.1...0.74.0
+[0.73.1]: https://github.com/PolicyEngine/openfisca-uk/compare/0.73.0...0.73.1
+[0.73.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.72.0...0.73.0
 [0.72.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.71.0...0.72.0
 [0.71.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.70.0...0.71.0
 [0.70.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.69.1...0.70.0

@@ -12,16 +12,9 @@ class CB_HITC(Variable):
 
     def formula(person, period, parameters):
         CB_received = person.benunit("child_benefit", period)
-        CB_HITC = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
-        percentage = (
-            max_(
-                person("adjusted_net_income", period)
-                - CB_HITC.phase_out_start,
-                0,
-            )
-            # HITC is specified as a percent of Child Benefit recollected for
-            # every £1,000 over the phase-out threshold.
-            / 1_000
-            * CB_HITC.phase_out_rate
+        hitc = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
+        income = person("adjusted_net_income", period)
+        percentage = max_(income - hitc.phase_out_start, 0) / (
+            hitc.phase_out_end - hitc.phase_out_start
         )
         return min_(percentage, 1) * CB_received

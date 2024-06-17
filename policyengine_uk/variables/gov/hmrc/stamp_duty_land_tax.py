@@ -200,7 +200,9 @@ class expected_sdlt(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period):
+    def formula(household, period, parameters):
+        if parameters(period).gov.hmrc.stamp_duty.abolish:
+            return 0
         return (
             household.state("property_sale_rate", period)
             * household("stamp_duty_land_tax", period)
