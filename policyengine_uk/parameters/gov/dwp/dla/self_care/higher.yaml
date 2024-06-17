@@ -8,6 +8,11 @@ values:
   2020-04-01: 89.15
   2021-04-01: 89.60
   2022-04-01: 92.40
+  2023-04-01: 
+    value: 101.75
+    reference:
+      - title: Benefits Uprating 2024/25 | Commons Library Briefing
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   2024-04-01: 
     value: 108.55
     reference:

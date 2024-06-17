@@ -1,18 +1,29 @@
 description: Enhanced rate for Personal Independence Payment (mobility component).
 values:
-  2015-04-01: 55.10
-  2016-04-01: 55.10
-  2017-04-01: 55.65
-  2018-04-01: 57.30
-  2019-04-01: 58.70
-  2020-04-01: 59.70
-  2021-04-01: 60.00
-  2022-04-01: 61.85
+  2015-04-01:
+    value: 57.45
+    reference: 
+      - title: Benefits Uprating 2022/23
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf
+  2016-04-01:
+    value: 57.45
+    reference: 
+      - title: Benefits Uprating 2022/23
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf
+  2017-04-01: 58.00
+  2018-04-01: 59.75
+  2019-04-01: 61.20
+  2020-04-01: 62.25
+  2021-04-01: 62.55
+  2022-04-01: 64.50
+  2023-04-01: 71.00
+  2024-04-01: 75.75
+
 metadata:
   period: week
   unit: currency-GBP
   name: dla_m_enhanced
-  label: DLA (mobility) (enhanced rate)
+  label: PIP (mobility) (enhanced rate)
   reference: 
-    - title: Benefits Uprating 2022/23
-      href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf
+    - title: Benefits Uprating 2024/25
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
