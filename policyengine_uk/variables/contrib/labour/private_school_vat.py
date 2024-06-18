@@ -1,6 +1,4 @@
 from policyengine_uk.model_api import *
-from sys import stderr
-
 
 class private_school_vat(Variable):
     label = "Private school VAT"
