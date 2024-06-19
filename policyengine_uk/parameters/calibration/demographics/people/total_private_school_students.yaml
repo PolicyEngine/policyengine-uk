@@ -13,5 +13,5 @@ metadata:
   unit: person
   label: total number of private school students
   reference:
-    - title: 'School characteristics' for Academy, Independent, Independent school, LA Maintained, Non-maintained special school and 5 other filters in England between 2015/16 and 2023/24
+    - title: School characteristics for Academy, Independent, Independent school, LA Maintained, Non-maintained special school and 5 other filters in England between 2015/16 and 2023/24
       href: https://explore-education-statistics.service.gov.uk/data-tables/fast-track/27e148e3-2581-4bc3-b0bc-08dc6f35f09f
