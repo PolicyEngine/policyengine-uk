@@ -9,7 +9,7 @@ class private_school_vat(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        ADJUSTMENT_FACTOR = 1
+        ADJUSTMENT_FACTOR = 1.1067
 
         private_school_vat_rate = parameters(
             period
@@ -44,4 +44,5 @@ class private_school_vat(Variable):
             * num_children
             * avg_yearly_private_school_cost
             * private_school_vat_rate
+            * ADJUSTMENT_FACTOR
         )
