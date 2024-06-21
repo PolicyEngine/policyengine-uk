@@ -36,6 +36,7 @@ class household_tax(Variable):
         "carbon_tax",
         "vat_change",
         "capital_gains_tax",
+        "private_school_vat",
     ]
 
     def formula(household, period, parameters):

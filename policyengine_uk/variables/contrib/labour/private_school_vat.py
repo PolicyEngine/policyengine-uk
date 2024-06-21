@@ -19,7 +19,7 @@ class private_school_vat(Variable):
             period
         ).calibration.programs.private_school_vat.private_school_fees
 
-        income = household("household_net_income", period)
+        income = household("household_market_income", period)
         count_people = household("household_count_people", period)
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(
