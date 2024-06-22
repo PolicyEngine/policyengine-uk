@@ -9,12 +9,12 @@ class private_school_vat(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        
+
         # To ensure that our model matches
         # total number of students actually enrolled
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = 1.0586
 
-        # Per IFS article 
+        # Per IFS article
         # (https://ifs.org.uk/publications/tax-private-school-fees-and-state-school-spending),
         # about 25% of private school costs would be
         # effectively VAT-free

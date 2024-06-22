@@ -5,6 +5,7 @@
     age: 35
     household_gross_income: 0
     is_household_head: true
+    household_weight: 1
   output:
     poverty_gap_bhc: 220 * 52
     in_poverty_bhc: true
