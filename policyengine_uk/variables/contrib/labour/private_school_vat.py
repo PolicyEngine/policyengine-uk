@@ -26,7 +26,7 @@ class private_school_vat(Variable):
 
         avg_yearly_private_school_cost = parameters(
             period
-        ).calibration.programs.private_school_vat.private_school_fees
+        ).gov.simulation.private_school_vat.private_school_fees
 
         income = household("household_market_income", period)
         count_people = household("household_count_people", period)
@@ -42,7 +42,7 @@ class private_school_vat(Variable):
             random(household)
             < parameters(
                 period
-            ).calibration.programs.private_school_vat.private_school_attendance_rate[
+            ).gov.simulation.private_school_vat.private_school_attendance_rate[
                 percentile - (percentile % 5)
             ]
         )
