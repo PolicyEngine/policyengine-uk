@@ -14,11 +14,9 @@ class private_school_vat(Variable):
         # total number of students actually enrolled
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = 1.0586
 
-        # Per IFS article
-        # (https://ifs.org.uk/publications/tax-private-school-fees-and-state-school-spending),
-        # about 25% of private school costs would be
-        # effectively VAT-free
-        EFFECTIVE_RATE_FACTOR = 0.75
+        private_school_vat_basis = parameters(
+            period
+        ).gov.simulation.private_school_vat.private_school_vat_basis
 
         private_school_vat_rate = parameters(
             period
@@ -53,6 +51,6 @@ class private_school_vat(Variable):
             * num_children
             * avg_yearly_private_school_cost
             * private_school_vat_rate
+            * private_school_vat_basis
             * STUDENT_POPULATION_ADJUSTMENT_FACTOR
-            * EFFECTIVE_RATE_FACTOR
         )
