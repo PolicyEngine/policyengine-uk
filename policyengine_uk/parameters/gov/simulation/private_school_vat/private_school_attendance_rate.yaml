@@ -43,6 +43,7 @@ description: Rate at which households enroll children in private schools, by per
   2000-01-01: 0.47
 metadata:
   unit: /1
+  label: percentage of students in private school, by household net income percentile
   reference:
   - title: Income, housing wealth, and private school access in Britain
     href: https://www.tandfonline.com/doi/full/10.1080/09645292.2021.1874878
