@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.hmrc.tax import household_tax
 
 
 class private_school_vat(Variable):
@@ -23,11 +24,23 @@ class private_school_vat(Variable):
             period
         ).gov.contrib.labour.private_school_vat
 
-        income = household("household_market_income", period)
+        person = household.members
+
+        taxes = household.sum(
+            person("income_tax", period) + 
+            person("national_insurance", period)
+        )
+
+        net_income = (
+            household("household_market_income", period) +
+            household("household_benefits", period) -
+            taxes
+        )
+
         count_people = household("household_count_people", period)
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(
-            income, weights=household_weight * count_people
+            net_income, weights=household_weight * count_people
         )
         percentile = weighted_income.percentile_rank().values.astype(
             numpy.int64
