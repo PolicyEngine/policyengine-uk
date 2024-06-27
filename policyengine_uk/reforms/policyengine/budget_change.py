@@ -341,7 +341,7 @@ class household_tax(Variable):
         "capital_gains_tax",
         "corporate_incident_tax_revenue_change",
         "consumer_incident_tax_revenue_change",
-        "private_school_vat"
+        "private_school_vat",
     ]
 
     def formula(household, period, parameters):

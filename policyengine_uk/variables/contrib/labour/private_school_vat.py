@@ -10,7 +10,6 @@ class private_school_vat(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-
         # To ensure that our model matches
         # total number of students actually enrolled
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = 1.0586
@@ -19,6 +18,9 @@ class private_school_vat(Variable):
 
         private_school_vat_basis = ps_vat_params.private_school_vat_basis
         avg_yearly_private_school_cost = ps_vat_params.private_school_fees
+        private_school_attendance_rate = (
+            ps_vat_params.private_school_attendance_rate
+        )
 
         private_school_vat_rate = parameters(
             period
@@ -27,14 +29,13 @@ class private_school_vat(Variable):
         person = household.members
 
         taxes = household.sum(
-            person("income_tax", period) + 
-            person("national_insurance", period)
+            person("income_tax", period) + person("national_insurance", period)
         )
 
         net_income = (
-            household("household_market_income", period) +
-            household("household_benefits", period) -
-            taxes
+            household("household_market_income", period)
+            + household("household_benefits", period)
+            - taxes
         )
 
         count_people = household("household_count_people", period)
@@ -46,14 +47,11 @@ class private_school_vat(Variable):
             numpy.int64
         )
 
-        attends_private_school = (
-            random(household)
-            < parameters(
-                period
-            ).gov.simulation.private_school_vat.private_school_attendance_rate[
-                percentile - (percentile % 5)
-            ]
-        )
+        attends_private_school = random(household) < [
+            interpolate_percentile(private_school_attendance_rate, p)
+            for p in percentile
+        ]
+        print(type(attends_private_school))
         num_children = add(household, period, ["is_child"])
 
         return (
@@ -64,3 +62,16 @@ class private_school_vat(Variable):
             * private_school_vat_basis
             * STUDENT_POPULATION_ADJUSTMENT_FACTOR
         )
+
+
+def interpolate_percentile(param, percentile):
+
+    if str(percentile) in param:
+        return param[str(percentile)]
+    else:
+        idx = percentile - (percentile % 5)
+        p1 = idx
+        p2 = idx + 5
+        v1 = param[str(idx)]
+        v2 = param[str(idx + 5)]
+        return v1 + (v2 - v1) * (percentile - p1) / (p2 - p1)
