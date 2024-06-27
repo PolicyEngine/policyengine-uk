@@ -14,17 +14,14 @@ class private_school_vat(Variable):
         # total number of students actually enrolled
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = 1.0586
 
-        private_school_vat_basis = parameters(
-            period
-        ).gov.simulation.private_school_vat.private_school_vat_basis
+        ps_vat_params = parameters(period).gov.simulation.private_school_vat
+
+        private_school_vat_basis = ps_vat_params.private_school_vat_basis
+        avg_yearly_private_school_cost = ps_vat_params.private_school_fees
 
         private_school_vat_rate = parameters(
             period
         ).gov.contrib.labour.private_school_vat
-
-        avg_yearly_private_school_cost = parameters(
-            period
-        ).gov.simulation.private_school_vat.private_school_fees
 
         income = household("household_market_income", period)
         count_people = household("household_count_people", period)
