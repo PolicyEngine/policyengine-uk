@@ -1,0 +1,43 @@
+description: Proportion of non-domiciled people by income band.
+brackets:
+  - threshold:
+      2022-01-01: 0
+    amount:
+      2022-01-01: 0 # Actually 0.03 but 0 to be safe
+  - threshold:
+      2022-01-01: 100_000
+    amount:
+      2022-01-01: 0.052
+  - threshold:
+      2022-01-01: 200_000
+    amount:
+      2022-01-01: 0.134
+  - threshold:
+      2022-01-01: 500_000
+    amount:
+      2022-01-01: 0.211
+  - threshold:
+      2022-01-01: 1_000_000
+    amount:
+      2022-01-01: 0.268
+  - threshold:
+      2022-01-01: 2_000_000
+    amount:
+      2022-01-01: 0.344
+  - threshold:
+      2022-01-01: 5_000_000
+    amount:
+      2022-01-01: 0.414
+  - threshold:
+      2022-01-01: 10_000_000
+    amount:
+      2022-01-01: 0.4
+
+metadata:
+  label: proportion of non-domiciled individuals by income band
+  type: single_amount
+  threshold_unit: currency-GBP
+  amount_unit: /1
+  reference:
+    - title: CAGE Policy Briefing no. 36
+      href: https://warwick.ac.uk/fac/soc/economics/research/centres/cage/manage/publications/bn36.2022.pdf

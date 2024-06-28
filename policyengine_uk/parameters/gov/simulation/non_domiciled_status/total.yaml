@@ -1,0 +1,9 @@
+description: Total number of non-domiciled people.
+values:
+  2022-01-01: 238_000
+metadata:
+  unit: person
+  label: total non-domiciled individuals
+  reference:
+    - title: CAGE Policy Briefing no. 36
+      href: https://warwick.ac.uk/fac/soc/economics/research/centres/cage/manage/publications/bn36.2022.pdf
