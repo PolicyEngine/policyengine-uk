@@ -1096,3 +1096,8 @@
     added:
     - Private school VAT calculation
   date: 2024-06-28 00:49:27
+- bump: minor
+  changes:
+    added:
+    - Non-dom status switch.
+  date: 2024-06-28 16:35:47
