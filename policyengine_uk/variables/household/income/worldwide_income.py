@@ -43,7 +43,7 @@ class worldwide_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        ADJUSTMENT_FACTOR = 0.72  # Gets 3.2bn from abolishing non-dom status
+        ADJUSTMENT_FACTOR = 2  # Gets 3.2bn from abolishing non-dom status
         total_income = person("total_income", period)
         is_non_dom = person("is_non_domiciled", period)
 
