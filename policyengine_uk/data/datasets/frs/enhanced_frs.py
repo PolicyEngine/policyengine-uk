@@ -5,6 +5,7 @@ from typing import Type
 from ..utils import STORAGE_FOLDER
 from .frs import FRS_2019_20
 from .calibration.calibrated_frs import CalibratedSPIEnhancedPooledFRS_2019_21
+from .stacked_frs import StackedFRS
 import yaml
 import copy
 
@@ -137,10 +138,41 @@ class ImputationExtendedFRS(Dataset):
         self.save_dataset(data)
 
 
-EnhancedFRS = ImputationExtendedFRS.from_dataset(
+ImputedCalibratedFRS = ImputationExtendedFRS.from_dataset(
     CalibratedSPIEnhancedPooledFRS_2019_21,
-    "enhanced_frs",
-    "Enhanced FRS",
+    "imputed_calibrated_frs",
+    "Imputed-Calibrated FRS",
     new_num_years=7,
-    new_url="release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5",
 )
+
+
+class EnhancedFRS(Dataset):
+    name = "enhanced_frs"
+    label = "Enhanced FRS"
+    file_path = STORAGE_FOLDER / "enhanced_frs.h5"
+    data_format = Dataset.TIME_PERIOD_ARRAYS
+    num_years = 7
+    time_period = 2021
+    count_copies = 4
+    url = "release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5"
+
+    def generate(self):
+        from policyengine_uk.tools.stack_datasets import stack_datasets
+
+        data = ImputedCalibratedFRS().load_dataset()
+
+        copies = []
+        for _ in range(self.count_copies):
+            copies.append(copy.deepcopy(data))
+
+        for time_period in data["household_weight"]:
+            original_weights = data["household_weight"][time_period].copy()
+            for dataset in [data] + copies:
+                dataset["household_weight"][time_period] = original_weights / (
+                    self.count_copies + 1
+                )
+
+        for dataset in copies:
+            data = stack_datasets(data, dataset)
+
+        self.save_dataset(data)
