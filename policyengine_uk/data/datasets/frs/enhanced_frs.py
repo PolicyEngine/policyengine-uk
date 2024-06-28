@@ -153,7 +153,7 @@ class EnhancedFRS(Dataset):
     data_format = Dataset.TIME_PERIOD_ARRAYS
     num_years = 7
     time_period = 2021
-    count_copies = 9
+    count_copies = 4
     url = "release://policyengine/non-public-microdata/uk-2024-march-efo/enhanced_frs.h5"
 
     def generate(self):
