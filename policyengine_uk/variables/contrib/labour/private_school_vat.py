@@ -39,7 +39,7 @@ class attends_private_school(Variable):
             .clip(0, 100)
             .values.astype(numpy.int64)
         )
-        STUDENT_POPULATION_ADJUSTMENT_FACTOR = 1
+        STUDENT_POPULATION_ADJUSTMENT_FACTOR = 1.1
 
         p_attends_private_school = (
             np.array(
@@ -75,7 +75,6 @@ class private_school_vat(Variable):
 
         return (
             num_children
-            * num_children
             * avg_yearly_private_school_cost
             * private_school_vat_rate
             * private_school_vat_basis
