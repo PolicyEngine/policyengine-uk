@@ -1091,3 +1091,8 @@
     - Re-enabled PIP and DLA within webapp
     - Corrected mistakes in PIP
   date: 2024-06-17 16:09:43
+- bump: patch
+  changes:
+    added:
+    - Private school VAT calculation
+  date: 2024-06-28 00:49:27
