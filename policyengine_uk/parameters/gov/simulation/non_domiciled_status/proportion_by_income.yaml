@@ -3,7 +3,7 @@ brackets:
   - threshold:
       2022-01-01: 0
     amount:
-      2022-01-01: 0.03
+      2022-01-01: 0 # Actually 0.03 but 0 to be safe
   - threshold:
       2022-01-01: 100_000
     amount:

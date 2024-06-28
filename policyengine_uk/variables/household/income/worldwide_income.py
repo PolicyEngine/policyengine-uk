@@ -20,16 +20,20 @@ class is_non_domiciled(Variable):
         thresholds = non_dom.proportion_by_income.thresholds
         shares_of_non_doms = non_dom.proportion_by_income.amounts
         probabilities = np.zeros_like(total_income)
-        ADJUSTMENT_FACTOR = 0.0035
+        ADJUSTMENT_FACTOR = 1e3
         for i in range(len(thresholds)):
             lower = thresholds[i]
             upper = thresholds[i + 1] if i + 1 < len(thresholds) else np.inf
             in_range = (total_income >= lower) & (total_income < upper)
             total_population = weight[in_range].sum()
-            percent_non_dom = shares_of_non_doms[i] / total_population
-            probabilities[in_range] = 1 - (1 - percent_non_dom) * (
-                1 - ADJUSTMENT_FACTOR
+            percent_non_dom = where(
+                total_population == 0,
+                0,
+                shares_of_non_doms[i] / total_population,
             )
+            probability = 1 - (1 - percent_non_dom) ** ADJUSTMENT_FACTOR
+            probabilities[in_range] = probability
+            print(thresholds[i], probability, percent_non_dom)
 
         return random(person) < probabilities
 
@@ -43,7 +47,7 @@ class worldwide_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        ADJUSTMENT_FACTOR = 2  # Gets 3.2bn from abolishing non-dom status
+        ADJUSTMENT_FACTOR = 2.7  # Gets 3.2bn from abolishing non-dom status
         total_income = person("total_income", period)
         is_non_dom = person("is_non_domiciled", period)
 
