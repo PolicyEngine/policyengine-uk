@@ -343,7 +343,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>68.39705238209994
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>68.55452074734313
 </pre></div>
 </div>
 </div>
@@ -455,7 +455,368 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Raising the basic rate to 25% would raise the UK £26.70bn per year
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">KeyboardInterrupt</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
+<span class="nn">/tmp/ipykernel_2574/731819060.py</span> in <span class="ni">&lt;cell line: 6&gt;</span><span class="nt">()</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="o">-</span><span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span>         <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2023</span><span class="p">)</span>
+<span class="ne">----&gt; </span><span class="mi">7</span>         <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2023</span><span class="p">)</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>     <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>     <span class="o">/</span> <span class="mf">1e9</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, use_weights, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span>         <span class="k">elif</span> <span class="n">period</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_calculation_period</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span>             <span class="n">period</span> <span class="o">=</span> <span class="n">get_period</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_calculation_period</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">54</span>         <span class="n">values</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">map_to</span><span class="p">,</span> <span class="n">decode_enums</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">55</span>         <span class="k">if</span> <span class="ow">not</span> <span class="n">use_weights</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">56</span>             <span class="k">return</span> <span class="n">values</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span> 
+<span class="g g-Whitespace">    </span><span class="mi">387</span>         <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">388</span>             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate</span><span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">389</span>             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">EnumArray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">decode_enums</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">390</span>                 <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">decode_to_str</span><span class="p">()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_calculate</span><span class="nt">(self, variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">592</span>         <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">593</span>             <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_cycle</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">594</span>             <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_formula</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">population</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">595</span> 
+<span class="g g-Whitespace">    </span><span class="mi">596</span>             <span class="c1"># If no result, use the default value and cache it</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_run_formula</span><span class="nt">(self, variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">810</span>                 <span class="k">for</span> <span class="n">added_variable</span> <span class="ow">in</span> <span class="n">adds_list</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">811</span>                     <span class="k">if</span> <span class="n">added_variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tax_benefit_system</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">812</span>                         <span class="n">values</span> <span class="o">=</span> <span class="n">values</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">813</span>                             <span class="n">added_variable</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">entity</span><span class="o">.</span><span class="n">key</span>
+<span class="g g-Whitespace">    </span><span class="mi">814</span>                         <span class="p">)</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, use_weights, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span>         <span class="k">elif</span> <span class="n">period</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_calculation_period</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span>             <span class="n">period</span> <span class="o">=</span> <span class="n">get_period</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_calculation_period</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">54</span>         <span class="n">values</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">map_to</span><span class="p">,</span> <span class="n">decode_enums</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">55</span>         <span class="k">if</span> <span class="ow">not</span> <span class="n">use_weights</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">56</span>             <span class="k">return</span> <span class="n">values</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span> 
+<span class="g g-Whitespace">    </span><span class="mi">387</span>         <span class="k">try</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">388</span>             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate</span><span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">389</span>             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">EnumArray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">decode_enums</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">390</span>                 <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">decode_to_str</span><span class="p">()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_calculate</span><span class="nt">(self, variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">592</span>         <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">593</span>             <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_cycle</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">594</span>             <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_formula</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">population</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">595</span> 
+<span class="g g-Whitespace">    </span><span class="mi">596</span>             <span class="c1"># If no result, use the default value and cache it</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_run_formula</span><span class="nt">(self, variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">875</span>             <span class="n">array</span> <span class="o">=</span> <span class="n">formula</span><span class="p">(</span><span class="n">population</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">876</span>         <span class="k">else</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">877</span>             <span class="n">array</span> <span class="o">=</span> <span class="n">formula</span><span class="p">(</span><span class="n">population</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">parameters_at</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">878</span> 
+<span class="g g-Whitespace">    </span><span class="mi">879</span>         <span class="k">return</span> <span class="n">array</span>
+
+<span class="nn">~/work/policyengine-uk/policyengine-uk/policyengine_uk/variables/household/income/benefit.py</span> in <span class="ni">formula</span><span class="nt">(household, period, parameters)</span>
+<span class="g g-Whitespace">     </span><span class="mi">99</span>                 <span class="k">if</span> <span class="n">benefit</span> <span class="o">!=</span> <span class="s2">&quot;council_tax_benefit&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">100</span>             <span class="p">]</span>
+<span class="ne">--&gt; </span><span class="mi">101</span>         <span class="n">general_benefits</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">102</span>             <span class="n">household</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">103</span>             <span class="n">period</span><span class="p">,</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/commons/formulas.py</span> in <span class="ni">add</span><span class="nt">(entity, period, variables, options)</span>
+<span class="g g-Whitespace">    </span><span class="mi">225</span>         <span class="n">ArrayLike</span><span class="p">:</span> <span class="n">The</span> <span class="n">result</span> <span class="n">of</span> <span class="n">the</span> <span class="n">operation</span><span class="o">.</span>
+<span class="g g-Whitespace">    </span><span class="mi">226</span>     <span class="s2">&quot;&quot;&quot;</span>
+<span class="ne">--&gt; </span><span class="mi">227</span><span class="s2">     return for_each_variable(</span>
+<span class="g g-Whitespace">    </span><span class="mi">228</span><span class="s2">         entity, period, variables, agg_func=&quot;add&quot;, options=options</span>
+<span class="g g-Whitespace">    </span><span class="mi">229</span><span class="s2">     )</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/commons/formulas.py</span> in <span class="ni">for_each_variable</span><span class="nt">(entity, period, variables, agg_func, group_agg_func, options)</span>
+<span class="g g-Whitespace">    </span><span class="mi">195</span><span class="s2">             ]</span>
+<span class="g g-Whitespace">    </span><span class="mi">196</span><span class="s2">             person_shares = variable_population.project(</span>
+<span class="ne">--&gt; </span><span class="mi">197</span><span class="s2">                 variable_population(variable, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">198</span><span class="s2">             ) / variable_population.project(variable_population.nb_persons())</span>
+<span class="g g-Whitespace">    </span><span class="mi">199</span><span class="s2">             values = entity.sum(person_shares)</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/populations/population.py</span> in <span class="ni">__call__</span><span class="nt">(self, variable_name, period, options)</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span><span class="s2">             )</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span><span class="s2">             return self.simulation.calculate(</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span><span class="s2">                 variable_name, period, **calculate_kwargs</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span><span class="s2">             )</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, use_weights, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span><span class="s2">         elif period is None and self.default_calculation_period is not None:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span><span class="s2">             period = get_period(self.default_calculation_period)</span>
+<span class="ne">---&gt; </span><span class="mi">54</span><span class="s2">         values = super().calculate(variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">55</span><span class="s2">         if not use_weights:</span>
+<span class="g g-Whitespace">     </span><span class="mi">56</span><span class="s2">             return values</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">387</span><span class="s2">         try:</span>
+<span class="ne">--&gt; </span><span class="mi">388</span><span class="s2">             result = self._calculate(variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">389</span><span class="s2">             if isinstance(result, EnumArray) and decode_enums:</span>
+<span class="g g-Whitespace">    </span><span class="mi">390</span><span class="s2">                 result = result.decode_to_str()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_calculate</span><span class="nt">(self, variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">576</span><span class="s2">         if variable.defined_for is not None:</span>
+<span class="g g-Whitespace">    </span><span class="mi">577</span><span class="s2">             mask = (</span>
+<span class="ne">--&gt; </span><span class="mi">578</span><span class="s2">                 self.calculate(</span>
+<span class="g g-Whitespace">    </span><span class="mi">579</span><span class="s2">                     variable.defined_for, period, map_to=variable.entity.key</span>
+<span class="g g-Whitespace">    </span><span class="mi">580</span><span class="s2">                 )</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, use_weights, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span><span class="s2">         elif period is None and self.default_calculation_period is not None:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span><span class="s2">             period = get_period(self.default_calculation_period)</span>
+<span class="ne">---&gt; </span><span class="mi">54</span><span class="s2">         values = super().calculate(variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">55</span><span class="s2">         if not use_weights:</span>
+<span class="g g-Whitespace">     </span><span class="mi">56</span><span class="s2">             return values</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">387</span><span class="s2">         try:</span>
+<span class="ne">--&gt; </span><span class="mi">388</span><span class="s2">             result = self._calculate(variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">389</span><span class="s2">             if isinstance(result, EnumArray) and decode_enums:</span>
+<span class="g g-Whitespace">    </span><span class="mi">390</span><span class="s2">                 result = result.decode_to_str()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_calculate</span><span class="nt">(self, variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">592</span><span class="s2">         try:</span>
+<span class="g g-Whitespace">    </span><span class="mi">593</span><span class="s2">             self._check_for_cycle(variable.name, period)</span>
+<span class="ne">--&gt; </span><span class="mi">594</span><span class="s2">             array = self._run_formula(variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">595</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">596</span><span class="s2">             # If no result, use the default value and cache it</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_run_formula</span><span class="nt">(self, variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">875</span><span class="s2">             array = formula(population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">876</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">877</span><span class="s2">             array = formula(population, period, parameters_at)</span>
+<span class="g g-Whitespace">    </span><span class="mi">878</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">879</span><span class="s2">         return array</span>
+
+<span class="nn">~/work/policyengine-uk/policyengine-uk/policyengine_uk/variables/gov/dwp/housing_benefit.py</span> in <span class="ni">formula</span><span class="nt">(benunit, period, parameters)</span>
+<span class="g g-Whitespace">     </span><span class="mi">39</span><span class="s2">         reported_hb = add(benunit, period, [&quot;housing_benefit_reported&quot;]) &gt; 0</span>
+<span class="g g-Whitespace">     </span><span class="mi">40</span><span class="s2">         baseline = benunit(&quot;baseline_housing_benefit_entitlement&quot;, period) &gt; 0</span>
+<span class="ne">---&gt; </span><span class="mi">41</span><span class="s2">         eligible = benunit(&quot;housing_benefit_entitlement&quot;, period) &gt; 0</span>
+<span class="g g-Whitespace">     </span><span class="mi">42</span><span class="s2">         takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup</span>
+<span class="g g-Whitespace">     </span><span class="mi">43</span><span class="s2">         return select(</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/populations/population.py</span> in <span class="ni">__call__</span><span class="nt">(self, variable_name, period, options)</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span><span class="s2">             )</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span><span class="s2">             return self.simulation.calculate(</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span><span class="s2">                 variable_name, period, **calculate_kwargs</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span><span class="s2">             )</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, use_weights, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span><span class="s2">         elif period is None and self.default_calculation_period is not None:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span><span class="s2">             period = get_period(self.default_calculation_period)</span>
+<span class="ne">---&gt; </span><span class="mi">54</span><span class="s2">         values = super().calculate(variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">55</span><span class="s2">         if not use_weights:</span>
+<span class="g g-Whitespace">     </span><span class="mi">56</span><span class="s2">             return values</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">387</span><span class="s2">         try:</span>
+<span class="ne">--&gt; </span><span class="mi">388</span><span class="s2">             result = self._calculate(variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">389</span><span class="s2">             if isinstance(result, EnumArray) and decode_enums:</span>
+<span class="g g-Whitespace">    </span><span class="mi">390</span><span class="s2">                 result = result.decode_to_str()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_calculate</span><span class="nt">(self, variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">592</span><span class="s2">         try:</span>
+<span class="g g-Whitespace">    </span><span class="mi">593</span><span class="s2">             self._check_for_cycle(variable.name, period)</span>
+<span class="ne">--&gt; </span><span class="mi">594</span><span class="s2">             array = self._run_formula(variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">595</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">596</span><span class="s2">             # If no result, use the default value and cache it</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_run_formula</span><span class="nt">(self, variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">875</span><span class="s2">             array = formula(population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">876</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">877</span><span class="s2">             array = formula(population, period, parameters_at)</span>
+<span class="g g-Whitespace">    </span><span class="mi">878</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">879</span><span class="s2">         return array</span>
+
+<span class="nn">~/work/policyengine-uk/policyengine-uk/policyengine_uk/variables/gov/dwp/housing_benefit.py</span> in <span class="ni">formula</span><span class="nt">(benunit, period, parameters)</span>
+<span class="g g-Whitespace">    </span><span class="mi">226</span><span class="s2">         )</span>
+<span class="g g-Whitespace">    </span><span class="mi">227</span><span class="s2">         amount = where(</span>
+<span class="ne">--&gt; </span><span class="mi">228</span><span class="s2">             LHA, min_(final_amount, benunit(&quot;LHA_cap&quot;, period)), final_amount</span>
+<span class="g g-Whitespace">    </span><span class="mi">229</span><span class="s2">         )</span>
+<span class="g g-Whitespace">    </span><span class="mi">230</span><span class="s2">         return max_(0, amount - benunit(&quot;HB_non_dep_deductions&quot;, period))</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/populations/population.py</span> in <span class="ni">__call__</span><span class="nt">(self, variable_name, period, options)</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span><span class="s2">             )</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span><span class="s2">             return self.simulation.calculate(</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span><span class="s2">                 variable_name, period, **calculate_kwargs</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span><span class="s2">             )</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, use_weights, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span><span class="s2">         elif period is None and self.default_calculation_period is not None:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span><span class="s2">             period = get_period(self.default_calculation_period)</span>
+<span class="ne">---&gt; </span><span class="mi">54</span><span class="s2">         values = super().calculate(variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">55</span><span class="s2">         if not use_weights:</span>
+<span class="g g-Whitespace">     </span><span class="mi">56</span><span class="s2">             return values</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">387</span><span class="s2">         try:</span>
+<span class="ne">--&gt; </span><span class="mi">388</span><span class="s2">             result = self._calculate(variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">389</span><span class="s2">             if isinstance(result, EnumArray) and decode_enums:</span>
+<span class="g g-Whitespace">    </span><span class="mi">390</span><span class="s2">                 result = result.decode_to_str()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_calculate</span><span class="nt">(self, variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">592</span><span class="s2">         try:</span>
+<span class="g g-Whitespace">    </span><span class="mi">593</span><span class="s2">             self._check_for_cycle(variable.name, period)</span>
+<span class="ne">--&gt; </span><span class="mi">594</span><span class="s2">             array = self._run_formula(variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">595</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">596</span><span class="s2">             # If no result, use the default value and cache it</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_run_formula</span><span class="nt">(self, variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">875</span><span class="s2">             array = formula(population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">876</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">877</span><span class="s2">             array = formula(population, period, parameters_at)</span>
+<span class="g g-Whitespace">    </span><span class="mi">878</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">879</span><span class="s2">         return array</span>
+
+<span class="nn">~/work/policyengine-uk/policyengine-uk/policyengine_uk/variables/gov/dwp/LHA.py</span> in <span class="ni">formula</span><span class="nt">(benunit, period, parameters)</span>
+<span class="g g-Whitespace">     </span><span class="mi">85</span><span class="s2">     def formula(benunit, period, parameters):</span>
+<span class="g g-Whitespace">     </span><span class="mi">86</span><span class="s2">         rent = benunit(&quot;benunit_rent&quot;, period)</span>
+<span class="ne">---&gt; </span><span class="mi">87</span><span class="s2">         cap = benunit(&quot;BRMA_LHA_rate&quot;, period)</span>
+<span class="g g-Whitespace">     </span><span class="mi">88</span><span class="s2">         return min_(rent, cap)</span>
+<span class="g g-Whitespace">     </span><span class="mi">89</span><span class="s2"> </span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/populations/population.py</span> in <span class="ni">__call__</span><span class="nt">(self, variable_name, period, options)</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span><span class="s2">             )</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span><span class="s2">             return self.simulation.calculate(</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span><span class="s2">                 variable_name, period, **calculate_kwargs</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span><span class="s2">             )</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/microsimulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, use_weights, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span><span class="s2">         elif period is None and self.default_calculation_period is not None:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span><span class="s2">             period = get_period(self.default_calculation_period)</span>
+<span class="ne">---&gt; </span><span class="mi">54</span><span class="s2">         values = super().calculate(variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">     </span><span class="mi">55</span><span class="s2">         if not use_weights:</span>
+<span class="g g-Whitespace">     </span><span class="mi">56</span><span class="s2">             return values</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">calculate</span><span class="nt">(self, variable_name, period, map_to, decode_enums)</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">387</span><span class="s2">         try:</span>
+<span class="ne">--&gt; </span><span class="mi">388</span><span class="s2">             result = self._calculate(variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">389</span><span class="s2">             if isinstance(result, EnumArray) and decode_enums:</span>
+<span class="g g-Whitespace">    </span><span class="mi">390</span><span class="s2">                 result = result.decode_to_str()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_calculate</span><span class="nt">(self, variable_name, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">592</span><span class="s2">         try:</span>
+<span class="g g-Whitespace">    </span><span class="mi">593</span><span class="s2">             self._check_for_cycle(variable.name, period)</span>
+<span class="ne">--&gt; </span><span class="mi">594</span><span class="s2">             array = self._run_formula(variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">595</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">596</span><span class="s2">             # If no result, use the default value and cache it</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/policyengine_core/simulations/simulation.py</span> in <span class="ni">_run_formula</span><span class="nt">(self, variable, population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">875</span><span class="s2">             array = formula(population, period)</span>
+<span class="g g-Whitespace">    </span><span class="mi">876</span><span class="s2">         else:</span>
+<span class="ne">--&gt; </span><span class="mi">877</span><span class="s2">             array = formula(population, period, parameters_at)</span>
+<span class="g g-Whitespace">    </span><span class="mi">878</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">879</span><span class="s2">         return array</span>
+
+<span class="nn">~/work/policyengine-uk/policyengine-uk/policyengine_uk/variables/gov/dwp/LHA.py</span> in <span class="ni">formula</span><span class="nt">(benunit, period, parameters)</span>
+<span class="g g-Whitespace">    </span><span class="mi">243</span><span class="s2">             }</span>
+<span class="g g-Whitespace">    </span><span class="mi">244</span><span class="s2">         )</span>
+<span class="ne">--&gt; </span><span class="mi">245</span><span class="s2">         lha_lookup_table[&quot;weekly_rent&quot;] = lha_lookup_table.apply(</span>
+<span class="g g-Whitespace">    </span><span class="mi">246</span><span class="s2">             lambda x: lha_rates.loc[x.brma, x.lha_category], axis=1</span>
+<span class="g g-Whitespace">    </span><span class="mi">247</span><span class="s2">         )</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/frame.py</span> in <span class="ni">apply</span><span class="nt">(self, func, axis, raw, result_type, args, by_row, engine, engine_kwargs, **kwargs)</span>
+<span class="g g-Whitespace">  </span><span class="mi">10372</span><span class="s2">             kwargs=kwargs,</span>
+<span class="g g-Whitespace">  </span><span class="mi">10373</span><span class="s2">         )</span>
+<span class="ne">&gt; </span><span class="mi">10374</span><span class="s2">         return op.apply().__finalize__(self, method=&quot;apply&quot;)</span>
+<span class="g g-Whitespace">  </span><span class="mi">10375</span><span class="s2"> </span>
+<span class="g g-Whitespace">  </span><span class="mi">10376</span><span class="s2">     def map(</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/apply.py</span> in <span class="ni">apply</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">    </span><span class="mi">914</span><span class="s2">             return self.apply_raw(engine=self.engine, engine_kwargs=self.engine_kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">915</span><span class="s2"> </span>
+<span class="ne">--&gt; </span><span class="mi">916</span><span class="s2">         return self.apply_standard()</span>
+<span class="g g-Whitespace">    </span><span class="mi">917</span><span class="s2"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">918</span><span class="s2">     def agg(self):</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/apply.py</span> in <span class="ni">apply_standard</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1061</span><span class="s2">     def apply_standard(self):</span>
+<span class="g g-Whitespace">   </span><span class="mi">1062</span><span class="s2">         if self.engine == &quot;python&quot;:</span>
+<span class="ne">-&gt; </span><span class="mi">1063</span><span class="s2">             results, res_index = self.apply_series_generator()</span>
+<span class="g g-Whitespace">   </span><span class="mi">1064</span><span class="s2">         else:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1065</span><span class="s2">             results, res_index = self.apply_series_numba()</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/apply.py</span> in <span class="ni">apply_series_generator</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1079</span><span class="s2">             for i, v in enumerate(series_gen):</span>
+<span class="g g-Whitespace">   </span><span class="mi">1080</span><span class="s2">                 # ignore SettingWithCopy here in case the user mutates</span>
+<span class="ne">-&gt; </span><span class="mi">1081</span><span class="s2">                 results[i] = self.func(v, *self.args, **self.kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1082</span><span class="s2">                 if isinstance(results[i], ABCSeries):</span>
+<span class="g g-Whitespace">   </span><span class="mi">1083</span><span class="s2">                     # If we have a view on v, we need to make a copy because</span>
+
+<span class="nn">~/work/policyengine-uk/policyengine-uk/policyengine_uk/variables/gov/dwp/LHA.py</span> in <span class="ni">&lt;lambda&gt;</span><span class="nt">(x)</span>
+<span class="g g-Whitespace">    </span><span class="mi">244</span><span class="s2">         )</span>
+<span class="g g-Whitespace">    </span><span class="mi">245</span><span class="s2">         lha_lookup_table[&quot;weekly_rent&quot;] = lha_lookup_table.apply(</span>
+<span class="ne">--&gt; </span><span class="mi">246</span><span class="s2">             lambda x: lha_rates.loc[x.brma, x.lha_category], axis=1</span>
+<span class="g g-Whitespace">    </span><span class="mi">247</span><span class="s2">         )</span>
+<span class="g g-Whitespace">    </span><span class="mi">248</span><span class="s2">         return lha_lookup_table.weekly_rent.values * 52</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/indexing.py</span> in <span class="ni">__getitem__</span><span class="nt">(self, key)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1182</span><span class="s2">             if self._is_scalar_access(key):</span>
+<span class="g g-Whitespace">   </span><span class="mi">1183</span><span class="s2">                 return self.obj._get_value(*key, takeable=self._takeable)</span>
+<span class="ne">-&gt; </span><span class="mi">1184</span><span class="s2">             return self._getitem_tuple(key)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1185</span><span class="s2">         else:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1186</span><span class="s2">             # we by definition only have the 0th axis</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/indexing.py</span> in <span class="ni">_getitem_tuple</span><span class="nt">(self, tup)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1366</span><span class="s2">         with suppress(IndexingError):</span>
+<span class="g g-Whitespace">   </span><span class="mi">1367</span><span class="s2">             tup = self._expand_ellipsis(tup)</span>
+<span class="ne">-&gt; </span><span class="mi">1368</span><span class="s2">             return self._getitem_lowerdim(tup)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1369</span><span class="s2"> </span>
+<span class="g g-Whitespace">   </span><span class="mi">1370</span><span class="s2">         # no multi-index, so validate all of the indexers</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/indexing.py</span> in <span class="ni">_getitem_lowerdim</span><span class="nt">(self, tup)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1055</span><span class="s2">             #  (see the other place where we call _handle_lowerdim_multi_index_axis0)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1056</span><span class="s2">             with suppress(IndexingError):</span>
+<span class="ne">-&gt; </span><span class="mi">1057</span><span class="s2">                 return cast(_LocIndexer, self)._handle_lowerdim_multi_index_axis0(tup)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1058</span><span class="s2"> </span>
+<span class="g g-Whitespace">   </span><span class="mi">1059</span><span class="s2">         tup = self._validate_key_length(tup)</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/indexing.py</span> in <span class="ni">_handle_lowerdim_multi_index_axis0</span><span class="nt">(self, tup)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1386</span><span class="s2">         try:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1387</span><span class="s2">             # fast path for series or for tup devoid of slices</span>
+<span class="ne">-&gt; </span><span class="mi">1388</span><span class="s2">             return self._get_label(tup, axis=axis)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1389</span><span class="s2"> </span>
+<span class="g g-Whitespace">   </span><span class="mi">1390</span><span class="s2">         except KeyError as ek:</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/indexing.py</span> in <span class="ni">_get_label</span><span class="nt">(self, label, axis)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1379</span><span class="s2">     def _get_label(self, label, axis: AxisInt):</span>
+<span class="g g-Whitespace">   </span><span class="mi">1380</span><span class="s2">         # GH#5567 this will fail if the label is not present in the axis.</span>
+<span class="ne">-&gt; </span><span class="mi">1381</span><span class="s2">         return self.obj.xs(label, axis=axis)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1382</span><span class="s2"> </span>
+<span class="g g-Whitespace">   </span><span class="mi">1383</span><span class="s2">     def _handle_lowerdim_multi_index_axis0(self, tup: tuple):</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/generic.py</span> in <span class="ni">xs</span><span class="nt">(self, key, axis, level, drop_level)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4291</span><span class="s2"> </span>
+<span class="g g-Whitespace">   </span><span class="mi">4292</span><span class="s2">         if isinstance(index, MultiIndex):</span>
+<span class="ne">-&gt; </span><span class="mi">4293</span><span class="s2">             loc, new_index = index._get_loc_level(key, level=0)</span>
+<span class="g g-Whitespace">   </span><span class="mi">4294</span><span class="s2">             if not drop_level:</span>
+<span class="g g-Whitespace">   </span><span class="mi">4295</span><span class="s2">                 if lib.is_integer(loc):</span>
+
+<span class="nn">/opt/hostedtoolcache/Python/3.9.19/x64/lib/python3.9/site-packages/pandas/core/indexes/multi.py</span> in <span class="ni">_get_loc_level</span><span class="nt">(self, key, level)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3218</span><span class="s2">                     # Complete key in unique index -&gt; standard get_loc</span>
+<span class="g g-Whitespace">   </span><span class="mi">3219</span><span class="s2">                     try:</span>
+<span class="ne">-&gt; </span><span class="mi">3220</span><span class="s2">                         return (self._engine.get_loc(key), None)</span>
+<span class="g g-Whitespace">   </span><span class="mi">3221</span><span class="s2">                     except KeyError as err:</span>
+<span class="g g-Whitespace">   </span><span class="mi">3222</span><span class="s2">                         raise KeyError(key) from err</span>
+
+<span class="nn">index.pyx</span> in <span class="ni">pandas._libs.index.BaseMultiIndexCodesEngine.get_loc</span><span class="nt">()</span>
+
+<span class="ne">KeyboardInterrupt</span>: 
 </pre></div>
 </div>
 </div>
