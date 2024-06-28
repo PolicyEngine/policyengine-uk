@@ -327,10 +327,6 @@ class adjusted_net_income(Variable):
             "taxable_dividend_income",
             "taxable_miscellaneous_income",
         ]
-        if not parameters(
-            period
-        ).gov.hmrc.income_tax.reliefs.non_domiciled_status:
-            COMPONENTS.append("worldwide_income")
         if parameters(
             period
         ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:

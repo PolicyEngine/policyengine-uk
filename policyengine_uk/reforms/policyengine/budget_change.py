@@ -342,6 +342,7 @@ class household_tax(Variable):
         "corporate_incident_tax_revenue_change",
         "consumer_incident_tax_revenue_change",
         "private_school_vat",
+        "high_income_incident_tax_change",
     ]
 
     def formula(household, period, parameters):
@@ -451,6 +452,27 @@ class corporate_incident_tax_revenue_change(Variable):
         return revenue_change * share * 1e9
 
 
+class high_income_incident_tax_change(Variable):
+    label = "high income-incident tax revenue change"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        if not hasattr(household.simulation, "dataset"):
+            return 0
+
+        total_income = household.members("total_income", period)
+        high_income = household.sum(max_(total_income - 100e3, 0))
+        weight = household("household_weight", period)
+        share = high_income / (high_income * weight).sum()
+        revenue_change = parameters(
+            period
+        ).gov.contrib.policyengine.budget.high_income_incident_tax_change
+        return revenue_change * 1e9 * share
+
+
 class consumer_incident_tax_revenue_change(Variable):
     label = "consumer-incident tax revenue change"
     entity = Household
@@ -486,6 +508,7 @@ class budget_change_reform(Reform):
             other_public_spending_budget_change,
             corporate_incident_tax_revenue_change,
             consumer_incident_tax_revenue_change,
+            high_income_incident_tax_change,
         )
         self.update_variable(household_benefits)
         self.update_variable(household_tax)
