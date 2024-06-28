@@ -33,7 +33,6 @@ class is_non_domiciled(Variable):
             )
             probability = 1 - (1 - percent_non_dom) ** ADJUSTMENT_FACTOR
             probabilities[in_range] = probability
-            print(thresholds[i], probability, percent_non_dom)
 
         return random(person) < probabilities
 
