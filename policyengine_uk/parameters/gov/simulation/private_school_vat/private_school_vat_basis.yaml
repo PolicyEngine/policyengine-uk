@@ -1,0 +1,13 @@
+description: Effective percentage of private school tuition subject to VAT
+# Per IFS article
+# (https://ifs.org.uk/publications/tax-private-school-fees-and-state-school-spending),
+# about 25% of private school costs would be
+# effectively VAT-free
+values: 
+  0000-01-01: 0.75
+metadata:
+  unit: /1
+  label: private school tuition VAT basis
+  reference:
+    - title: Tax, private school fees and state school spending
+      href: https://ifs.org.uk/publications/tax-private-school-fees-and-state-school-spending

@@ -1,0 +1,17 @@
+description: Total number of private school students
+value: 
+  2015-01-01: 583_029
+  2016-01-01: 583_268
+  2017-01-01: 581_873
+  2018-01-01: 580_480
+  2019-01-01: 576_857
+  2020-01-01: 569_366
+  2021-01-01: 581_427
+  2022-01-01: 591_954
+  2023-01-01: 593_486
+metadata:
+  unit: person
+  label: total number of private school students
+  reference:
+    - title: School characteristics for Academy, Independent, Independent school, LA Maintained, Non-maintained special school and 5 other filters in England between 2015/16 and 2023/24
+      href: https://explore-education-statistics.service.gov.uk/data-tables/fast-track/27e148e3-2581-4bc3-b0bc-08dc6f35f09f

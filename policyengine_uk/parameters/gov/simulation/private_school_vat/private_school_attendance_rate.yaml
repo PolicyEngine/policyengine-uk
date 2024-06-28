@@ -1,0 +1,49 @@
+description: Rate at which households enroll children in private schools, by percentile.
+0:
+  2000-01-01: 0
+5:
+  2000-01-01: 0.025
+10:
+  2000-01-01: 0.0125
+15:
+  2000-01-01: 0.01
+20:
+  2000-01-01: 0.005
+25:
+  2000-01-01: 0.008
+30:
+  2000-01-01: 0.01
+35:
+  2000-01-01: 0.015
+40:
+  2000-01-01: 0.01
+45:
+  2000-01-01: 0.0175
+50:
+  2000-01-01: 0.025
+55:
+  2000-01-01: 0.0175
+60:
+  2000-01-01: 0.0175
+65:
+  2000-01-01: 0.025
+70:
+  2000-01-01: 0.03
+75:
+  2000-01-01: 0.025
+80:
+  2000-01-01: 0.05
+85:
+  2000-01-01: 0.06
+90:
+  2000-01-01: 0.0875
+95:
+  2000-01-01: 0.13
+100:
+  2000-01-01: 0.47
+metadata:
+  unit: /1
+  label: percentage of students in private school, by household net income percentile
+  reference:
+  - title: Income, housing wealth, and private school access in Britain
+    href: https://www.tandfonline.com/doi/full/10.1080/09645292.2021.1874878

@@ -1,0 +1,10 @@
+description: Mean annual private school fee
+values:
+  2022-01-01: 15_200
+metadata:
+  unit: currency-GBP
+  label: mean annual private school fee
+  reference:
+    - title: Tax, private school fees and state school spending
+      href: https://ifs.org.uk/publications/tax-private-school-fees-and-state-school-spending
+  uprating: calibration.uprating.CPI
