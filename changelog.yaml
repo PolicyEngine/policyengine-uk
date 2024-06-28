@@ -1101,3 +1101,10 @@
     added:
     - Non-dom status switch.
   date: 2024-06-28 16:35:47
+- bump: minor
+  changes:
+    added:
+    - High-income budget switch.
+    removed:
+    - Non-dom logic.
+  date: 2024-06-28 19:59:31

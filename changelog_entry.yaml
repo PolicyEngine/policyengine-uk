@@ -1,6 +1,0 @@
-- bump: minor
-  changes:
-    removed:
-    - Non-dom logic.
-    added:
-    - High-income budget switch.
