@@ -1,0 +1,21 @@
+description: Most recent Capital Gains Tax rates
+BASIC_RATE_TAXPAYER:
+  percentage:
+    Residential property: 
+      taxable_income_within_basic_rate_band: 18
+      taxable_income_above_basic_rate_band: 24
+    Carried interest:
+      taxable_income_within_basic_rate_band: 18
+      taxable_income_above_basic_rate_band: 28
+    Other assets: 
+      taxable_income_within_basic_rate_band: 10
+      taxable_income_above_basic_rate_band: 20
+HIGHER_RATE_TAXPAYER:
+  percentage:
+    Residential property: 24
+    Investment fund: 28
+    Chargeable assets: 20
+BUSINESS:
+  percentage:
+    Residential property: 24
+    Chargeable assets: 20
