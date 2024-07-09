@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    added:
+    - Tests to income-related variables
