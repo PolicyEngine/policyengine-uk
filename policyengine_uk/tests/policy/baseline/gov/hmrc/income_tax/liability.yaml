@@ -1,0 +1,134 @@
+- name: Allowances are deducted to zero
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 10000
+    pension_income: 10000
+    allowances: 20000
+  output:
+    earned_taxable_income: 0
+- name: Earned income is split correctly
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    earned_taxable_income: 100000
+  output:
+    basic_rate_earned_income: 37500
+    higher_rate_earned_income: 62500
+    add_rate_earned_income: 0
+- name: Earned income is taxed correctly
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 100000
+  output:
+    allowances: 12500
+    earned_taxable_income: 87500
+    basic_rate_earned_income_tax: 7500
+    higher_rate_earned_income_tax: 20000
+    add_rate_earned_income_tax: 0
+    earned_income_tax: 27500
+    tax_band: "HIGHER"
+    taxed_income: 87500
+- name: Savings slice of basic rate band
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 40000
+    savings_interest_income: 15000
+  output:
+    basic_rate_savings_income_pre_starter: 10000
+    savings_starter_rate_income: 0
+    basic_rate_savings_income: 10000
+    savings_allowance: 500
+    higher_rate_savings_income: 4500
+    taxed_savings_income: 14500
+- name: Dividends taxed at the marginal rates
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    dividend_income: 50000
+  output:
+    dividend_income_tax: 6225
+
+# taxed_dividend_income
+- name: No dividend income
+  period: 2024
+  input:
+    taxable_dividend_income: 0
+    dividend_allowance: 1000
+  output:
+    taxed_dividend_income: 0
+
+- name: Dividend income below allowance
+  period: 2024
+  input:
+    taxable_dividend_income: 500
+    dividend_allowance: 1000
+  output:
+    taxed_dividend_income: 0
+
+- name: Dividend income equal to allowance
+  period: 2024
+  input:
+    taxable_dividend_income: 1000
+    dividend_allowance: 1000
+  output:
+    taxed_dividend_income: 0
+
+- name: Dividend income slightly above allowance
+  period: 2024
+  input:
+    taxable_dividend_income: 1100
+    dividend_allowance: 1000
+  output:
+    taxed_dividend_income: 100
+
+- name: High dividend income
+  period: 2024
+  input:
+    taxable_dividend_income: 50000
+    dividend_allowance: 2000
+  output:
+    taxed_dividend_income: 48000
+
+- name: Very high dividend income
+  period: 2024
+  input:
+    taxable_dividend_income: 1000000
+    dividend_allowance: 2000
+  output:
+    taxed_dividend_income: 998000
+
+- name: Dividend income with zero allowance
+  period: 2024
+  input:
+    taxable_dividend_income: 5000
+    dividend_allowance: 0
+  output:
+    taxed_dividend_income: 5000
+
+- name: Decimal values
+  period: 2024
+  input:
+    taxable_dividend_income: 2500.50
+    dividend_allowance: 2000.00
+  output:
+    taxed_dividend_income: 500.50
+
+- name: Allowance higher than income
+  period: 2024
+  input:
+    taxable_dividend_income: 1000
+    dividend_allowance: 2000
+  output:
+    taxed_dividend_income: 0
+
+- name: Very small positive difference
+  period: 2024
+  input:
+    taxable_dividend_income: 1000.01
+    dividend_allowance: 1000
+  output:
+    taxed_dividend_income: 0.01
+
