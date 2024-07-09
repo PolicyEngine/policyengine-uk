@@ -1,0 +1,663 @@
+- name: Deductions from employment
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    employment_deductions: 5000
+  output:
+    taxable_employment_income: 10000
+- name: Deductions from employment stay positive
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    employment_deductions: 25000
+  output:
+    taxable_employment_income: 0
+- name: Specific deductions from employment (not pension contributions at this stage)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    pension_contributions: 1000
+    employment_expenses: 2000
+  output:
+    taxable_employment_income: 13000
+- name: Pension relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 76000
+    pension_contributions: 40000
+  output:
+    pension_contributions_relief: 40000
+- name: Pension relief excessive
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 2000000
+    pension_contributions: 400000
+  output:
+    pension_contributions_relief: 4000
+- name: Trading loss relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    loss_relief: 2000
+  output:
+    taxable_self_employment_income: 0
+- name: Trading loss relief of previous year
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    loss_relief:
+      2019: 2000
+  output:
+    taxable_self_employment_income: 0
+- name: Trading loss relief doesn't offset other income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    employment_income: 1000
+    loss_relief: 2000
+  output:
+    taxable_self_employment_income: 0
+    taxable_employment_income: 1000
+- name: Property income within allowance
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    property_income: 1000
+  output:
+    taxable_property_income: 0
+- name: Dividend income with deficiency relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    dividend_income: 10000
+    deficiency_relief: 1000
+  output:
+    taxable_dividend_income: 9000
+
+# pension_contributions
+- name: No pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 0
+    occupational_pension_contributions: 0
+  output:
+    pension_contributions: 0
+
+- name: Only private pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 5000
+    occupational_pension_contributions: 0
+  output:
+    pension_contributions: 5000
+
+- name: Only occupational pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 0
+    occupational_pension_contributions: 7500
+  output:
+    pension_contributions: 7500
+
+- name: Both types of pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 3000
+    occupational_pension_contributions: 4000
+  output:
+    pension_contributions: 7000
+
+- name: High contribution amounts
+  period: 2024
+  input:
+    private_pension_contributions: 20000
+    occupational_pension_contributions: 30000
+  output:
+    pension_contributions: 50000
+
+- name: Very low positive contributions
+  period: 2024
+  input:
+    private_pension_contributions: 1
+    occupational_pension_contributions: 1
+  output:
+    pension_contributions: 2
+
+- name: Uneven contributions
+  period: 2024
+  input:
+    private_pension_contributions: 1234.56
+    occupational_pension_contributions: 9876.54
+  output:
+    pension_contributions: 11111.10
+
+- name: Maximum allowed annual contributions (for 2023/2024 tax year)
+  period: 2024
+  input:
+    private_pension_contributions: 40000
+    occupational_pension_contributions: 20000
+  output:
+    pension_contributions: 60000
+
+# taxable_savings_interest_income
+- name: No savings interest income
+  period: 2024
+  input:
+    savings_interest_income: 0
+    tax_free_savings_income: 0
+  output:
+    taxable_savings_interest_income: 0
+
+- name: Savings interest income fully covered by tax-free allowance
+  period: 2024
+  input:
+    savings_interest_income: 1000
+    tax_free_savings_income: 1000
+  output:
+    taxable_savings_interest_income: 0
+
+- name: Savings interest income partially taxable
+  period: 2024
+  input:
+    savings_interest_income: 1500
+    tax_free_savings_income: 1000
+  output:
+    taxable_savings_interest_income: 500
+
+- name: High savings interest income, standard tax-free allowance
+  period: 2024
+  input:
+    savings_interest_income: 10000
+    tax_free_savings_income: 1000
+  output:
+    taxable_savings_interest_income: 9000
+
+- name: Savings interest income, no tax-free allowance
+  period: 2024
+  input:
+    savings_interest_income: 5000
+    tax_free_savings_income: 0
+  output:
+    taxable_savings_interest_income: 5000
+
+- name: Very low positive savings interest income
+  period: 2024
+  input:
+    savings_interest_income: 1
+    tax_free_savings_income: 0
+  output:
+    taxable_savings_interest_income: 1
+
+- name: Tax-free allowance exceeds savings interest income
+  period: 2024
+  input:
+    savings_interest_income: 500
+    tax_free_savings_income: 1000
+  output:
+    taxable_savings_interest_income: 0
+
+- name: High values for both inputs
+  period: 2024
+  input:
+    savings_interest_income: 100000
+    tax_free_savings_income: 50000
+  output:
+    taxable_savings_interest_income: 50000
+
+- name: Decimal values
+  period: 2024
+  input:
+    savings_interest_income: 1234.56
+    tax_free_savings_income: 1000.00
+  output:
+    taxable_savings_interest_income: 234.56
+
+# loss_relief
+- name: No trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 0
+      2024: 0
+  output:
+    loss_relief: 0
+
+- name: Current year trading loss only
+  period: 2024
+  input:
+    trading_loss:
+      2023: 0
+      2024: 5000
+  output:
+    loss_relief: 5000
+
+- name: Previous year trading loss only
+  period: 2024
+  input:
+    trading_loss:
+      2023: 3000
+      2024: 0
+  output:
+    loss_relief: 3000
+
+- name: Trading losses in both years
+  period: 2024
+  input:
+    trading_loss:
+      2023: 2500
+      2024: 3500
+  output:
+    loss_relief: 6000
+
+- name: High trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 50000
+      2024: 75000
+  output:
+    loss_relief: 125000
+
+- name: Very low positive trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 1
+      2024: 1
+  output:
+    loss_relief: 2
+
+- name: Uneven trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 1234.56
+      2024: 5678.90
+  output:
+    loss_relief: 6913.46
+
+- name: Large previous year loss, small current year loss
+  period: 2024
+  input:
+    trading_loss:
+      2023: 100000
+      2024: 1000
+  output:
+    loss_relief: 101000
+
+- name: Small previous year loss, large current year loss
+  period: 2024
+  input:
+    trading_loss:
+      2023: 1000
+      2024: 100000
+  output:
+    loss_relief: 101000
+
+# taxable_self_employment_income
+- name: No self-employment income or deductions
+  period: 2024
+  input:
+    self_employment_income: 0
+    loss_relief: 0
+    capital_allowances: 0
+    trading_allowance: 0
+  output:
+    taxable_self_employment_income: 0
+
+- name: Self-employment income with no deductions
+  period: 2024
+  input:
+    self_employment_income: 50000
+    loss_relief: 0
+    capital_allowances: 0
+    trading_allowance: 0
+  output:
+    taxable_self_employment_income: 50000
+
+- name: Self-employment income fully offset by deductions
+  period: 2024
+  input:
+    self_employment_income: 30000
+    loss_relief: 10000
+    capital_allowances: 15000
+    trading_allowance: 5000
+  output:
+    taxable_self_employment_income: 0
+
+- name: Self-employment income partially offset by deductions
+  period: 2024
+  input:
+    self_employment_income: 50000
+    loss_relief: 5000
+    capital_allowances: 10000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 34000
+
+- name: High self-employment income with some deductions
+  period: 2024
+  input:
+    self_employment_income: 200000
+    loss_relief: 20000
+    capital_allowances: 30000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 149000
+
+- name: Low self-employment income with low deductions
+  period: 2024
+  input:
+    self_employment_income: 1000
+    loss_relief: 100
+    capital_allowances: 200
+    trading_allowance: 300
+  output:
+    taxable_self_employment_income: 400
+
+- name: Deductions exceed self-employment income
+  period: 2024
+  input:
+    self_employment_income: 50000
+    loss_relief: 30000
+    capital_allowances: 25000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 0
+
+- name: Very high values
+  period: 2024
+  input:
+    self_employment_income: 1000000
+    loss_relief: 200000
+    capital_allowances: 300000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 499000
+
+- name: Decimal values
+  period: 2024
+  input:
+    self_employment_income: 50000.50
+    loss_relief: 10000.25
+    capital_allowances: 5000.75
+    trading_allowance: 1000.00
+  output:
+    taxable_self_employment_income: 33999.50
+
+# taxable_property_income
+- name: No property income or allowance
+  period: 2024
+  input:
+    property_income: 0
+    property_allowance: 0
+  output:
+    taxable_property_income: 0
+
+- name: Property income fully covered by allowance
+  period: 2024
+  input:
+    property_income: 1000
+    property_allowance: 1000
+  output:
+    taxable_property_income: 0
+
+- name: Property income partially taxable
+  period: 2024
+  input:
+    property_income: 10000
+    property_allowance: 1000
+  output:
+    taxable_property_income: 9000
+
+- name: High property income with standard allowance
+  period: 2024
+  input:
+    property_income: 50000
+    property_allowance: 1000
+  output:
+    taxable_property_income: 49000
+
+- name: Property income with no allowance
+  period: 2024
+  input:
+    property_income: 5000
+    property_allowance: 0
+  output:
+    taxable_property_income: 5000
+
+- name: Very low positive property income
+  period: 2024
+  input:
+    property_income: 1
+    property_allowance: 0
+  output:
+    taxable_property_income: 1
+
+- name: Property allowance exceeds income
+  period: 2024
+  input:
+    property_income: 500
+    property_allowance: 1000
+  output:
+    taxable_property_income: 0
+
+- name: High values for both income and allowance
+  period: 2024
+  input:
+    property_income: 100000
+    property_allowance: 50000
+  output:
+    taxable_property_income: 50000
+
+- name: Decimal values
+  period: 2024
+  input:
+    property_income: 1234.56
+    property_allowance: 1000.00
+  output:
+    taxable_property_income: 234.56
+
+# taxable_dividend_income
+- name: No dividend income or deficiency relief
+  period: 2024
+  input:
+    dividend_income: 0
+    deficiency_relief: 0
+  output:
+    taxable_dividend_income: 0
+
+- name: Dividend income fully offset by deficiency relief
+  period: 2024
+  input:
+    dividend_income: 5000
+    deficiency_relief: 5000
+  output:
+    taxable_dividend_income: 0
+
+- name: Dividend income partially taxable
+  period: 2024
+  input:
+    dividend_income: 10000
+    deficiency_relief: 2000
+  output:
+    taxable_dividend_income: 8000
+
+- name: High dividend income with some deficiency relief
+  period: 2024
+  input:
+    dividend_income: 50000
+    deficiency_relief: 5000
+  output:
+    taxable_dividend_income: 45000
+
+- name: Dividend income with no deficiency relief
+  period: 2024
+  input:
+    dividend_income: 15000
+    deficiency_relief: 0
+  output:
+    taxable_dividend_income: 15000
+
+- name: Very low positive dividend income
+  period: 2024
+  input:
+    dividend_income: 1
+    deficiency_relief: 0
+  output:
+    taxable_dividend_income: 1
+
+- name: Deficiency relief exceeds dividend income
+  period: 2024
+  input:
+    dividend_income: 3000
+    deficiency_relief: 5000
+  output:
+    taxable_dividend_income: 0
+
+- name: High values for both dividend income and deficiency relief
+  period: 2024
+  input:
+    dividend_income: 100000
+    deficiency_relief: 40000
+  output:
+    taxable_dividend_income: 60000
+
+- name: Decimal values
+  period: 2024
+  input:
+    dividend_income: 1234.56
+    deficiency_relief: 234.56
+  output:
+    taxable_dividend_income: 1000.00
+
+# adjusted_net_income
+- name: No income from any source
+  period: 2024
+  input:
+    taxable_employment_income: 0
+    taxable_pension_income: 0
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 0
+    taxable_property_income: 0
+    taxable_savings_interest_income: 0
+    taxable_dividend_income: 0
+    taxable_miscellaneous_income: 0
+    basic_income: 0
+  output:
+    adjusted_net_income: 0
+
+- name: Income from all sources
+  period: 2024
+  input:
+    taxable_employment_income: 30000
+    taxable_pension_income: 5000
+    taxable_social_security_income: 2000
+    taxable_self_employment_income: 10000
+    taxable_property_income: 5000
+    taxable_savings_interest_income: 1000
+    taxable_dividend_income: 3000
+    taxable_miscellaneous_income: 500
+    basic_income: 0
+  output:
+    adjusted_net_income: 56500
+
+- name: Only employment income
+  period: 2024
+  input:
+    taxable_employment_income: 40000
+    taxable_pension_income: 0
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 0
+    taxable_property_income: 0
+    taxable_savings_interest_income: 0
+    taxable_dividend_income: 0
+    taxable_miscellaneous_income: 0
+    basic_income: 0
+  output:
+    adjusted_net_income: 40000
+
+- name: High income from multiple sources
+  period: 2024
+  input:
+    taxable_employment_income: 100000
+    taxable_pension_income: 50000
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 75000
+    taxable_property_income: 25000
+    taxable_savings_interest_income: 10000
+    taxable_dividend_income: 20000
+    taxable_miscellaneous_income: 5000
+    basic_income: 0
+  output:
+    adjusted_net_income: 285000
+
+- name: Low income from multiple sources
+  period: 2024
+  input:
+    taxable_employment_income: 5000
+    taxable_pension_income: 1000
+    taxable_social_security_income: 500
+    taxable_self_employment_income: 2000
+    taxable_property_income: 1000
+    taxable_savings_interest_income: 100
+    taxable_dividend_income: 200
+    taxable_miscellaneous_income: 50
+    basic_income: 0
+  output:
+    adjusted_net_income: 9850
+
+- name: Decimal values
+  period: 2024
+  input:
+    taxable_employment_income: 30000.50
+    taxable_pension_income: 5000.25
+    taxable_social_security_income: 2000.75
+    taxable_self_employment_income: 10000.00
+    taxable_property_income: 5000.50
+    taxable_savings_interest_income: 1000.25
+    taxable_dividend_income: 3000.75
+    taxable_miscellaneous_income: 500.00
+    basic_income: 0
+  output:
+    adjusted_net_income: 56503.00
+
+- name: With basic income included
+  period: 2024
+  input:
+    gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income: true
+    taxable_employment_income: 30000
+    taxable_pension_income: 5000
+    taxable_social_security_income: 2000
+    taxable_self_employment_income: 10000
+    taxable_property_income: 5000
+    taxable_savings_interest_income: 1000
+    taxable_dividend_income: 3000
+    taxable_miscellaneous_income: 500
+    basic_income: 10000
+  output:
+    adjusted_net_income: 66500
+
+- name: Only basic income
+  period: 2024
+  input:
+    gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income: true
+    taxable_employment_income: 0
+    taxable_pension_income: 0
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 0
+    taxable_property_income: 0
+    taxable_savings_interest_income: 0
+    taxable_dividend_income: 0
+    taxable_miscellaneous_income: 0
+    basic_income: 10000
+  output:
+    adjusted_net_income: 10000
