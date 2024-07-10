@@ -80,12 +80,7 @@ class pension_contributions(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
-        PENSIONS = [
-            "private_pension_contributions",
-            "occupational_pension_contributions",
-        ]
-        return add(person, period, PENSIONS)
+    adds = "gov.hmrc.income_tax.reliefs.pension_contribution.pensions_programs"
 
 
 class pension_contributions_relief(Variable):

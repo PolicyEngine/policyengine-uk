@@ -1,0 +1,79 @@
+- name: No capital gains
+  period: 2024
+  input:
+    adjusted_net_income: 0
+    capital_gains: 0
+  output:
+    capital_gains_tax: 0
+
+- name: Capital gains below annual exempt amount
+  period: 2024
+  input:
+    adjusted_net_income: 0
+    capital_gains: 2_000
+  output:
+    capital_gains_tax: 0
+
+- name: Capital gains just above annual exempt amount
+  period: 2024
+  input:
+    adjusted_net_income: 0
+    capital_gains: 3_500
+  output:
+    capital_gains_tax: 50
+
+- name: Basic rate capital gains tax
+  period: 2024
+  input:
+    adjusted_net_income: 20_000
+    capital_gains: 23_000
+  output:
+    capital_gains_tax: 2_230
+
+- name: Higher rate capital gains tax
+  period: 2024
+  input:
+    adjusted_net_income: 50_000
+    capital_gains: 50_000
+  output:
+    capital_gains_tax: 9_400
+
+- name: Additional rate capital gains tax
+  period: 2024
+  input:
+    adjusted_net_income: 150_000
+    capital_gains: 100_000
+  output:
+    capital_gains_tax: 19_400
+
+- name: Mixed rates capital gains tax
+  period: 2024
+  input:
+    adjusted_net_income: 35_000
+    capital_gains: 40_000
+  output:
+    capital_gains_tax: 7_130
+
+- name: High capital gains, low income
+  period: 2024
+  input:
+    adjusted_net_income: 10_000
+    capital_gains: 200_000
+  output:
+    capital_gains_tax: 36_630
+
+- name: Very high capital gains and income
+  period: 2024
+  input:
+    adjusted_net_income: 500_000
+    capital_gains: 1_000_000
+  output:
+    capital_gains_tax: 199_400
+
+- name: Edge case, capital gains exactly equal to annual exempt amount
+  period: 2024
+  input:
+    adjusted_net_income: 0
+    capital_gains: 3_000
+  output:
+    capital_gains_tax: 0
