@@ -1,9 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-
-
-
 class taxed_dividend_income(Variable):
     value_type = float
     entity = Person
@@ -17,6 +14,3 @@ class taxed_dividend_income(Variable):
             person("taxable_dividend_income", period)
             - person("dividend_allowance", period),
         )
-
-
-
