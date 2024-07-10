@@ -14,5 +14,4 @@ class taxable_dividend_income(Variable):
             0,
             person("dividend_income", period)
             - person("deficiency_relief", period)
-            - person("dividend_allowance", period),
         )
