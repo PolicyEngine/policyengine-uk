@@ -82,6 +82,7 @@ class pension_contributions(Variable):
 
     adds = "gov.hmrc.income_tax.reliefs.pension_contribution.pensions_programs"
 
+
 class pension_contributions_relief(Variable):
     value_type = float
     entity = Person
