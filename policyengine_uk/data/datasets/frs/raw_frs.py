@@ -66,6 +66,9 @@ class RawFRS(Dataset):
                 tables[table_name] = pd.read_csv(
                     tab_file, delimiter="\t"
                 ).apply(pd.to_numeric, errors="coerce")
+                tables[table_name].columns = tables[
+                    table_name
+                ].columns.str.upper()
 
             sernum = (
                 "sernum"
@@ -143,4 +146,12 @@ RawFRS_2021_22 = RawFRS.from_folder(
     "FRS 2021-22",
     2021,
     new_url="release://policyengine/non-public-microdata/2023-q2-calibration/raw_frs_2021.h5",
+)
+
+RawFRS_2022_23 = RawFRS.from_folder(
+    "/Users/nikhilwoodruff/ukda/frs_2022_23",
+    "raw_frs_2022",
+    "FRS 2022-23",
+    2022,
+    new_url="release://policyengine/non-public-microdata/uk-2024-july/raw_frs_2022.h5",
 )
