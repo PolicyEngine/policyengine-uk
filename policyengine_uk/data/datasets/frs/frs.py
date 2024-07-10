@@ -21,6 +21,7 @@ from .raw_frs import (
     RawFRS_2020_21,
     RawFRS,
     RawFRS_2021_22,
+    RawFRS_2022_23,
 )
 
 
@@ -134,6 +135,13 @@ FRS_2021_22 = FRS.from_dataset(
     "FRS 2021-22",
 )
 
+FRS_2022_23 = FRS.from_dataset(
+    RawFRS_2022_23,
+    "frs_2022",
+    "FRS 2022-23",
+    new_url="release://policyengine/non-public-microdata/uk-2024-july/raw_frs_2022.h5",
+)
+
 
 def sum_to_entity(
     values: pd.Series, foreign_key: pd.Series, primary_key
@@ -227,7 +235,10 @@ def add_personal_variables(frs: h5py.File, person: DataFrame, year: int):
     )
 
     # Add education levels
-    fted = person.FTED
+    if "FTED" in person.columns:
+        fted = person.FTED
+    else:
+        fted = person.EDUCFT  # Renamed in FRS 2022-23
     typeed2 = person.TYPEED2
     frs["current_education"] = np.select(
         [
@@ -733,7 +744,9 @@ def add_benefit_income(
     frs["SMP"] = person.SMPADJ * 52
 
     frs["student_loans"] = np.maximum(person.TUBORR, 0)
-
+    if "ADEMA" not in person.columns:
+        person["ADEMA"] = person.EDUMA
+        person["ADEMAAMT"] = person.EDUMAAMT
     frs["adult_ema"] = fill_with_mean(person, "ADEMA", "ADEMAAMT")
     frs["child_ema"] = fill_with_mean(person, "CHEMA", "CHEMAAMT")
 
