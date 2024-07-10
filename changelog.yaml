@@ -1113,3 +1113,8 @@
     added:
     - 2022-23 FRS.
   date: 2024-07-10 18:29:49
+- bump: patch
+  changes:
+    added:
+    - Tests to income-related variables
+  date: 2024-07-10 18:58:10
