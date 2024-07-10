@@ -1118,3 +1118,8 @@
     added:
     - Tests to income-related variables
   date: 2024-07-10 18:58:10
+- bump: patch
+  changes:
+    added:
+    - Auto-updating of the household API when this package is updated
+  date: 2024-07-10 20:08:36

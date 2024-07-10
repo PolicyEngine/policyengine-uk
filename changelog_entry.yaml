@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    added:
-    - Auto-updating of the household API when this package is updated
