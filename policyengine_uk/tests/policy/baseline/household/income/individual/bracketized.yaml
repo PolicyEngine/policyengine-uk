@@ -1,0 +1,9 @@
+- name: Earned income is split correctly
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    earned_taxable_income: 100000
+  output:
+    basic_rate_earned_income: 37500
+    higher_rate_earned_income: 62500
+    add_rate_earned_income: 0
