@@ -1,0 +1,25 @@
+- name: Deductions from employment
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    employment_deductions: 5000
+  output:
+    taxable_employment_income: 10000
+- name: Deductions from employment stay positive
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    employment_deductions: 25000
+  output:
+    taxable_employment_income: 0
+- name: Specific deductions from employment (not pension contributions at this stage)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 15000
+    pension_contributions: 1000
+    employment_expenses: 2000
+  output:
+    taxable_employment_income: 13000

@@ -1,0 +1,121 @@
+- name: No income from any source
+  period: 2024
+  input:
+    taxable_employment_income: 0
+    taxable_pension_income: 0
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 0
+    taxable_property_income: 0
+    taxable_savings_interest_income: 0
+    taxable_dividend_income: 0
+    taxable_miscellaneous_income: 0
+    basic_income: 0
+  output:
+    adjusted_net_income: 0
+
+- name: Income from all sources
+  period: 2024
+  input:
+    taxable_employment_income: 30000
+    taxable_pension_income: 5000
+    taxable_social_security_income: 2000
+    taxable_self_employment_income: 10000
+    taxable_property_income: 5000
+    taxable_savings_interest_income: 1000
+    taxable_dividend_income: 3000
+    taxable_miscellaneous_income: 500
+    basic_income: 0
+  output:
+    adjusted_net_income: 56500
+
+- name: Only employment income
+  period: 2024
+  input:
+    taxable_employment_income: 40000
+    taxable_pension_income: 0
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 0
+    taxable_property_income: 0
+    taxable_savings_interest_income: 0
+    taxable_dividend_income: 0
+    taxable_miscellaneous_income: 0
+    basic_income: 0
+  output:
+    adjusted_net_income: 40000
+
+- name: High income from multiple sources
+  period: 2024
+  input:
+    taxable_employment_income: 100000
+    taxable_pension_income: 50000
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 75000
+    taxable_property_income: 25000
+    taxable_savings_interest_income: 10000
+    taxable_dividend_income: 20000
+    taxable_miscellaneous_income: 5000
+    basic_income: 0
+  output:
+    adjusted_net_income: 285000
+
+- name: Low income from multiple sources
+  period: 2024
+  input:
+    taxable_employment_income: 5000
+    taxable_pension_income: 1000
+    taxable_social_security_income: 500
+    taxable_self_employment_income: 2000
+    taxable_property_income: 1000
+    taxable_savings_interest_income: 100
+    taxable_dividend_income: 200
+    taxable_miscellaneous_income: 50
+    basic_income: 0
+  output:
+    adjusted_net_income: 9850
+
+- name: Decimal values
+  period: 2024
+  input:
+    taxable_employment_income: 30000.50
+    taxable_pension_income: 5000.25
+    taxable_social_security_income: 2000.75
+    taxable_self_employment_income: 10000.00
+    taxable_property_income: 5000.50
+    taxable_savings_interest_income: 1000.25
+    taxable_dividend_income: 3000.75
+    taxable_miscellaneous_income: 500.00
+    basic_income: 0
+  output:
+    adjusted_net_income: 56503.00
+
+- name: With basic income included
+  period: 2024
+  input:
+    gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income: true
+    taxable_employment_income: 30000
+    taxable_pension_income: 5000
+    taxable_social_security_income: 2000
+    taxable_self_employment_income: 10000
+    taxable_property_income: 5000
+    taxable_savings_interest_income: 1000
+    taxable_dividend_income: 3000
+    taxable_miscellaneous_income: 500
+    basic_income: 10000
+  output:
+    adjusted_net_income: 66500
+
+- name: Only basic income
+  period: 2024
+  input:
+    gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income: true
+    taxable_employment_income: 0
+    taxable_pension_income: 0
+    taxable_social_security_income: 0
+    taxable_self_employment_income: 0
+    taxable_property_income: 0
+    taxable_savings_interest_income: 0
+    taxable_dividend_income: 0
+    taxable_miscellaneous_income: 0
+    basic_income: 10000
+  output:
+    adjusted_net_income: 10000
