@@ -29,7 +29,7 @@
     dividend_income: 15_000
     dividend_allowance: 1_000
     adjusted_net_income: 30
-    personal_allowance: 1_000
+    # personal_allowance: 1_000
   output:
     taxed_dividend_income: 13_030
 

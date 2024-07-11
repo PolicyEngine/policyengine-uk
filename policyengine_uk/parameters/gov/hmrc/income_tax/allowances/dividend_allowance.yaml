@@ -1,6 +1,9 @@
 description: Amount of dividend income untaxed per year
 values:
-  2015-06-05: 2_000
+  2016-04-06: 5_000
+  2018-04-06: 2_000
+  2023-04-06: 1_000
+  2024-04-06: 500
 metadata:
   name: dividend_allowance
   label: Dividend Allowance
