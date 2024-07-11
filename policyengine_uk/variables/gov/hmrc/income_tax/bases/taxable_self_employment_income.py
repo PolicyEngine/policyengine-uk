@@ -14,6 +14,6 @@ class taxable_self_employment_income(Variable):
 
     def formula(person, period, parameters):
         self_employment_income = person("self_employment_income", period)
-        DEDUCTIONS = ["loss_relief", "capital_allowances", "trading_allowance"]
-        deductions = add(person, period, DEDUCTIONS)
+        deductions_list = parameters(period).gov.hmrc.income_tax.bases.taxable_self_employment_income_deductions
+        deductions = add(person, period, deductions_list)
         return max_(0, self_employment_income - deductions)
