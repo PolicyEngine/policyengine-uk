@@ -15,21 +15,3 @@ class earned_income_tax(Variable):
     def formula(person, period, parameters):
         rates = parameters(period).gov.hmrc.income_tax.rates
         return rates.uk.calc(person("earned_taxable_income", period))
-
-    def formula_2017_04_06(person, period, parameters):
-        rates = parameters(period).gov.hmrc.income_tax.rates
-        scot = person("pays_scottish_income_tax", period)
-        uk_amount = rates.uk.calc(person("earned_taxable_income", period))
-        scot_amount = rates.scotland.pre_starter_rate.calc(
-            person("earned_taxable_income", period)
-        )
-        return where(scot, scot_amount, uk_amount)
-
-    def formula_2018_04_06(person, period, parameters):
-        rates = parameters(period).gov.hmrc.income_tax.rates
-        scot = person("pays_scottish_income_tax", period)
-        uk_amount = rates.uk.calc(person("earned_taxable_income", period))
-        scot_amount = rates.scotland.post_starter_rate.calc(
-            person("earned_taxable_income", period)
-        )
-        return where(scot, scot_amount, uk_amount)

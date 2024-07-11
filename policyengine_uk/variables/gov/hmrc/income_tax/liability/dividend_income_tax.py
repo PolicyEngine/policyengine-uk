@@ -22,4 +22,4 @@ class dividend_income_tax(Variable):
             other_income + taxable_dividends
         )
         tax_without_dividends = rates.dividends.calc(other_income)
-        return tax_with_dividends - tax_without_dividends
+        return max_(0, tax_with_dividends - tax_without_dividends)
