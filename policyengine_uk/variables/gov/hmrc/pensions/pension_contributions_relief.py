@@ -15,14 +15,15 @@ class pension_contributions_relief(Variable):
     def formula_2004_07_22(person, period, parameters):
         contributions = person("pension_contributions", period)
         pension_allowance = person("pension_annual_allowance", period)
+        age_limit = parameters(period).gov.hmrc.pensions.pension_contribution.age_limit
         pay = add(
             person, period, ["employment_income", "self_employment_income"]
         )
-        under_75 = person("age", period) < 75
+        under_age_limit = person("age", period) < age_limit
         basic_amount = parameters(
             period
         ).gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount
-        tax_relief = min_(pay, contributions) * under_75
+        tax_relief = min_(pay, contributions) * under_age_limit
         max_pension_relief = max_(basic_amount, pension_allowance)
 
         return min_(
