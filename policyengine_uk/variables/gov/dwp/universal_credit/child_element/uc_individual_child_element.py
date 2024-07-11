@@ -29,7 +29,7 @@ class uc_individual_child_element(Variable):
                 ],
                 [
                     p.first.higher_amount,
-                    p.child.amount,
+                    p.amount,
                 ],
                 default=0,
             )
