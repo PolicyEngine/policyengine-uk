@@ -2,7 +2,7 @@
   period: 2024
   input:
     taxable_dividend_income: 0
-    dividend_allowance: 1000
+    dividend_allowance: 1_000
   output:
     taxed_dividend_income: 0
 
@@ -10,70 +10,81 @@
   period: 2024
   input:
     taxable_dividend_income: 500
-    dividend_allowance: 1000
+    dividend_allowance: 1_000
   output:
     taxed_dividend_income: 0
 
 - name: Dividend income equal to allowance
   period: 2024
   input:
-    taxable_dividend_income: 1000
-    dividend_allowance: 1000
+    taxable_dividend_income: 1_000
+    dividend_allowance: 1_000
   output:
     taxed_dividend_income: 0
+
+
+- name: Situation where personal allowance is used for some dividend income
+  period: 2024
+  input:
+    dividend_income: 15_000
+    dividend_allowance: 1_000
+    adjusted_net_income: 30
+    personal_allowance: 1_000
+  output:
+    taxed_dividend_income: 13_030
 
 - name: Dividend income slightly above allowance
   period: 2024
   input:
-    taxable_dividend_income: 1100
-    dividend_allowance: 1000
+    taxable_dividend_income: 1_100
+    dividend_allowance: 1_000
   output:
     taxed_dividend_income: 100
 
 - name: High dividend income
   period: 2024
   input:
-    taxable_dividend_income: 50000
+    taxable_dividend_income: 50_000
     dividend_allowance: 2000
   output:
-    taxed_dividend_income: 48000
+    taxed_dividend_income: 48_000
 
 - name: Very high dividend income
   period: 2024
   input:
-    taxable_dividend_income: 1000000
-    dividend_allowance: 2000
+    taxable_dividend_income: 100_0000
+    dividend_allowance: 2_000
   output:
-    taxed_dividend_income: 998000
+    taxed_dividend_income: 998_000
 
 - name: Dividend income with zero allowance
   period: 2024
   input:
-    taxable_dividend_income: 5000
+    taxable_dividend_income: 5_000
     dividend_allowance: 0
   output:
-    taxed_dividend_income: 5000
+    taxed_dividend_income: 5_000
 
 - name: Decimal values
   period: 2024
   input:
-    taxable_dividend_income: 2500.50
-    dividend_allowance: 2000.00
+    taxable_dividend_income: 2_500.50
+    dividend_allowance: 2_000.00
   output:
     taxed_dividend_income: 500.50
 
 - name: Allowance higher than income
   period: 2024
   input:
-    taxable_dividend_income: 1000
-    dividend_allowance: 2000
+    taxable_dividend_income: 1_000
+    dividend_allowance: 2_000
   output:
     taxed_dividend_income: 0
 
 - name: Very small positive difference
   period: 2024
   input:
-    taxable_dividend_income: 1000.01
-    dividend_allowance: 1000
+    taxable_dividend_income: 1_000.01
+    dividend_allowance: 1_000
   output:
     taxed_dividend_income: 0.01
