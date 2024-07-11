@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PolicyEngine-UK",
-    version="0.86.1",
+    version="0.86.2",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
     classifiers=[
