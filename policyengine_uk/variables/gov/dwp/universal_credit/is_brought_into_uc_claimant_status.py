@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 
 
 class is_brought_into_uc_claimant_status(Variable):
-    label = "brought into UC claimant status"
+    label = "brought into Universal Credit claimant status"
     entity = BenUnit
     definition_period = YEAR
     value_type = bool

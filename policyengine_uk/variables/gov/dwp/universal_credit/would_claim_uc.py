@@ -6,7 +6,7 @@ class would_claim_uc(Variable):
     entity = BenUnit
     label = "Would claim Universal Credit"
     documentation = (
-        "Whether this family would claim Universal Credit if eligible"
+        "Whether this family would claim the Universal Credit if eligible"
     )
     definition_period = YEAR
 

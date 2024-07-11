@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class uc_is_child_born_before_child_limit(Variable):
     value_type = bool
     entity = Person
-    label = "Born before child limit (exempt)"
+    label = "Born before Universal Credit child limit"
     definition_period = YEAR
 
     def formula(person, period, parameters):

@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class uc_mif_applies(Variable):
     value_type = bool
     entity = Person
-    label = "Minimum Income Floor applies"
+    label = "Universal Credit minimum income floor applies"
     documentation = "Whether the Minimum Income Floor should be used to determine UC entitlement"
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/62/2021-04-06"

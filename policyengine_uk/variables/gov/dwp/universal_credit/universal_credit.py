@@ -14,5 +14,4 @@ class universal_credit(Variable):
             "universal_credit_pre_benefit_cap", period
         )
         benefit_cap_reduction = benunit("benefit_cap_reduction", period)
-        uc_entitlement = uc_max_entitlement - benefit_cap_reduction
-        return max_(0, uc_entitlement)
+        return max_(uc_max_entitlement - benefit_cap_reduction, 0)
