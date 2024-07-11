@@ -1,10 +1,15 @@
 description: Unearned income sources for Universal Credit.
 metadata:
   economy: false
-  label: UC unearned income sources
-  name: UC_unearned_income_sources
+  label: Universal Credit unearned income sources
   propagate_metadata_to_children: true
+  period: year
   unit: list
+  reference:
+    - title: The Universal Credit Regulations 2013 sec. 66.
+      href: https://www.legislation.gov.uk/uksi/2013/376/data.pdf#page=64
+
+
 values:
   2010-01-01:
   - carers_allowance
@@ -12,3 +17,4 @@ values:
   - pension_income
   - savings_interest_income
   - dividend_income
+  - property_income

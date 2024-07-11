@@ -1,0 +1,29 @@
+- name: Reductions apply at correct rates
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    uc_earned_income: 10
+    uc_unearned_income: 1
+  output:
+    uc_income_reduction: 0.63 * 10 + 1.0 * 1
+
+
+- name: Capped at max amount
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    uc_earned_income: 1_000
+    uc_unearned_income: 400
+    uc_maximum_amount: 500
+  output:
+    uc_income_reduction: 500
+
+- name: Uncapped at max amount
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    uc_earned_income: 1_000
+    uc_unearned_income: 400
+    uc_maximum_amount: 5_000
+  output:
+    uc_income_reduction: 950

@@ -1,0 +1,6 @@
+- name: Receives credit
+  period: 2025
+  input:
+    universal_credit_pre_benefit_cap: 1
+  output:
+    is_uc_entitled_baseline: true

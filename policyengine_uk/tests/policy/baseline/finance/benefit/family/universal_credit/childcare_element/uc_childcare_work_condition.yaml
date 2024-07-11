@@ -1,0 +1,50 @@
+- name: Single adult not in work
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        in_work: false
+  output:
+    uc_childcare_work_condition: false
+
+- name: Single adult in work
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        in_work: true
+  output:
+    uc_childcare_work_condition: true
+
+- name: Head of household, child in work - ineligible
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      person1:
+        in_work: false
+        is_adult: true
+      person2:  
+        in_work: true
+        is_adult: false
+  output:
+    uc_childcare_work_condition: false
+
+- name: Couple, one person in work
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      person1:
+        in_work: false
+        is_adult: true
+      person2:  
+        in_work: true
+        is_adult: true
+    benunits: 
+      benunit:
+        members: [person1, person2]
+  output:
+    uc_childcare_work_condition: true

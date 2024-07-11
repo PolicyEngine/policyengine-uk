@@ -1,0 +1,10 @@
+description: A higher Universal Credit standard allowance is provided to claimants over this age threshold.
+values:
+  2017-06-01: 25
+metadata:
+  unit: year
+  period: year
+  label: Universal Credit standard allowance claimant type age threshold
+  reference:
+    - title: The Universal Credit Regulations 2013 reg.36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

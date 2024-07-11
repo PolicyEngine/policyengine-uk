@@ -1,5 +1,10 @@
-description: Year in which the Universal Credit child limit applies
+description: A higher Universal Credit child element is payable for the first child if the child is born before this year.
 values:
   0001-01-01: 2017
 metadata:
-  unit: int
+  unit: year
+  period: year
+  label: Universal Credit child element start year
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 24A (3)
+      href: https://www.legislation.gov.uk/uksi/2013/376/data.pdf#page=31

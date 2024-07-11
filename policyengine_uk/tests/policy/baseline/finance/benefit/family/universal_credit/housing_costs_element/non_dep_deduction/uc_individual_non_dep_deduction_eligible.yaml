@@ -1,0 +1,19 @@
+- name: Eligible
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 21
+    uc_non_dep_deduction_exempt: false
+    benunit_is_rent_liable: false
+  output:
+    uc_individual_non_dep_deduction_eligible: true
+
+- name: Age ineligible
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 20
+    uc_non_dep_deduction_exempt: false
+    benunit_is_rent_liable: false
+  output:
+    uc_individual_non_dep_deduction_eligible: false

@@ -1,0 +1,13 @@
+description: Non-dependent deduction amount for the housing element of the Universal Credit.
+values:
+  2017-06-01: 75.53
+  2022-04-01: 77.87
+  2023-04-01: 85.73
+  2024-04-01: 91.47
+metadata:
+  unit: currency-GBP
+  period: month
+  label: Universal Credit housing element non-dependent deduction amount
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 26(2), Schedule 4, Part 3, 14, (page 136)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

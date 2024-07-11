@@ -1,0 +1,17 @@
+- name: Not entitled
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    is_uc_entitled: false
+    is_uc_entitled_baseline: false
+  output:
+    is_brought_into_uc_claimant_status: false
+
+- name: Not entitled baseline ineligible
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    is_uc_entitled: true
+    is_uc_entitled_baseline: false
+  output:
+    is_brought_into_uc_claimant_status: false

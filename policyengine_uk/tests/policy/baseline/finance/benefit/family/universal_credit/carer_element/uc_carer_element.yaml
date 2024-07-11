@@ -1,0 +1,22 @@
+- name: No carers, no element
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    benunit_has_carer: false
+  output:
+    uc_carer_element: 0
+
+- name: Carer gets element
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    benunit_has_carer: true
+  output:
+    uc_carer_element: 163.73 * 12
+
+- name: Carer gets element
+  period: 2025
+  input:
+    benunit_has_carer: true
+  output:
+    uc_carer_element: 2_379.72
