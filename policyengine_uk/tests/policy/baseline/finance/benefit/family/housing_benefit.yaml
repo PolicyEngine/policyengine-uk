@@ -15,6 +15,7 @@
     WTC_worker_element: 825
     working_tax_credit: 3040 + 825
     housing_benefit: 88 * 52
+
 - name: Check no change up until the phase-out point
   period: 2021
   absolute_error_margin: 5
@@ -33,6 +34,7 @@
     working_tax_credit: 3865
     housing_benefit_applicable_income: 3801
     housing_benefit: 88 * 52
+
 - name: Check phase-out rate is 65%
   period: 2021
   absolute_error_margin: 5
