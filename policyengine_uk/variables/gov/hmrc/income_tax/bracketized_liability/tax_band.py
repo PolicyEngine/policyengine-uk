@@ -24,23 +24,23 @@ class tax_band(Variable):
 
     def formula(person, period, parameters):
         allowances = person("allowances", period)
-        ANI = person("adjusted_net_income", period)
+        ani = person("adjusted_net_income", period)
         rates = parameters(period).gov.hmrc.income_tax.rates
         basic = allowances + rates.uk.thresholds[0]
         higher = allowances + rates.uk.thresholds[-2]
         add = allowances + rates.uk.thresholds[-1]
         return select(
-            [ANI >= add, ANI >= higher, ANI > basic],
+            [ani >= add, ani >= higher, ani > basic],
             [TaxBand.ADDITIONAL, TaxBand.HIGHER, TaxBand.BASIC],
             default=TaxBand.NONE,
         )
 
     def formula_2017_04_06(person, period, parameters):
         allowances = person("allowances", period)
-        ANI = person("adjusted_net_income", period)
+        ani = person("adjusted_net_income", period)
         rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
-        income = ANI - allowances
+        income = ani - allowances
         uk_band = select(
             [income < threshold for threshold in rates.uk.thresholds[:3]],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
@@ -58,10 +58,10 @@ class tax_band(Variable):
 
     def formula_2018_06_01(person, period, parameters):
         allowances = person("allowances", period)
-        ANI = person("adjusted_net_income", period)
+        ani = person("adjusted_net_income", period)
         rates = parameters(period).gov.hmrc.income_tax.rates
         scot = person("pays_scottish_income_tax", period)
-        income = ANI - allowances
+        income = ani - allowances
         uk_band = select(
             [income < threshold for threshold in rates.uk.thresholds[:3]],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],

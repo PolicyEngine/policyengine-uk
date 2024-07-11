@@ -13,18 +13,11 @@ class adjusted_net_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        COMPONENTS = [
-            "taxable_employment_income",
-            "taxable_pension_income",
-            "taxable_social_security_income",
-            "taxable_self_employment_income",
-            "taxable_property_income",
-            "taxable_savings_interest_income",
-            "taxable_dividend_income",
-            "taxable_miscellaneous_income",
-        ]
+        adjusted_net_income_components = parameters(
+            period
+        ).gov.hmrc.income_tax.adjusted_net_income_components
         if parameters(
             period
         ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
-            COMPONENTS.append("basic_income")
-        return max_(0, add(person, period, COMPONENTS))
+            adjusted_net_income_components.append("basic_income")
+        return max_(0, add(person, period, adjusted_net_income_components))
