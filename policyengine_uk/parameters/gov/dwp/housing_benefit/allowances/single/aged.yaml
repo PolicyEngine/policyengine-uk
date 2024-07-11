@@ -1,0 +1,13 @@
+description: The following personal allowance amount is provided to single filers over the pension age udner the Housing Benefit.
+values:
+  2015-06-01: 181.00
+  2021-04-01: 191.15
+  2022-04-06: 197.10
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit single aged personal allowance 
+  uprating: gov.benefit_uprating_cpi
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212

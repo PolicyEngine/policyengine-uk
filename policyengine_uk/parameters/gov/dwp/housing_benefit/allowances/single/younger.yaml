@@ -1,0 +1,15 @@
+description: The following younger single person personal allowance is provided under the Housing Benefit.
+values:
+  2015-06-01: 57.9
+  2021-04-01: 59.2
+  2022-04-06: 61.05
+  2023-04-01: 67.2
+  2024-04-01: 71.7
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit single younger personal allowance 
+  uprating: gov.benefit_uprating_cpi
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
