@@ -14,12 +14,8 @@ class earned_taxable_income(Variable):
 
     def formula(person, period, parameters):
         EXCLUSIONS = [
-            "taxable_savings_interest_income",
-            "taxable_dividend_income",
-            "allowances",
-            "marriage_allowance",
-            "pension_contributions_relief",
         ]
-        ANI = person("adjusted_net_income", period)
+        exclusions = parameters(period).gov.hmrc.income_tax.earned_taxable_income_exclusions
+        ani = person("adjusted_net_income", period)
         exclusions = add(person, period, EXCLUSIONS)
-        return max_(0, ANI - exclusions)
+        return max_(0, ani - exclusions)
