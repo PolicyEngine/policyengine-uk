@@ -2,5 +2,3 @@
   changes:
     changed:
     - Refactor the Universal Credit parameter, variable and test files.
-    added:
-    - 2024 Universal Credit parameter values.
