@@ -2,8 +2,9 @@ description: Proportion of childcare costs covered by Universal Credit.
 values:
   2015-06-01: 0.85
 metadata:
-  period: month
+  period: year
   unit: /1
-  name: UC_childcare_coverage_rate
-  label: "UC childcare coverage rate"
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=46
+  label: Universal Credit childcare element coverage rate
+  reference: 
+    - title: The Universal Credit Regulations 2013 reg. 34
+      href: https://www.legislation.gov.uk/uksi/2013/376/data.pdf#page=41

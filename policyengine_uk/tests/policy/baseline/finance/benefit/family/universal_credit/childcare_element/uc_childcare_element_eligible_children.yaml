@@ -1,0 +1,33 @@
+- name: Three children counted
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        uc_individual_child_element: 1
+      person_2:
+        uc_individual_child_element: 1
+      person_3:
+        uc_individual_child_element: 1
+    benunits:
+      benunit:
+        members: [person_1, person_2, person_3]
+  output:
+    uc_childcare_element_eligible_children: 3
+
+- name: No eligible children
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        uc_individual_child_element: 0
+      person_2:
+        uc_individual_child_element: 0
+      person_3:
+        uc_individual_child_element: 0
+    benunits:
+      benunit:
+        members: [person_1, person_2, person_3]
+  output:
+    uc_childcare_element_eligible_children: 0

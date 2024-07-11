@@ -175,7 +175,7 @@ class HB_individual_non_dep_deduction(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        not_rent_liable = person.benunit("benunit_rent", period) == 0
+        not_rent_liable = ~person.benunit("benunit_is_rent_liable", period)
         over_21 = person("age", period) >= 21
         deduction_scale = parameters(
             period

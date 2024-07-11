@@ -1,0 +1,25 @@
+- name: Current LCWRA rates from gov.uk
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: person
+  output:
+    uc_LCWRA_element: 343.63 * 12
+
+- name: Ineligible
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        uc_limited_capability_for_WRA: false
+    benunits:
+      benunit:
+        members: person
+  output:
+    uc_LCWRA_element: 0

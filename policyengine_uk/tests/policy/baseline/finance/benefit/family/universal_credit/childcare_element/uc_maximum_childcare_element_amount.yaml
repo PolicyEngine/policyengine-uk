@@ -1,0 +1,20 @@
+- name: Capped at two children
+  period: 2025
+  input:
+    uc_childcare_element_eligible_children: 5
+  output:
+    uc_maximum_childcare_element_amount: 1_739.37 * 12
+
+- name: One child - lower amount
+  period: 2025
+  input:
+    uc_childcare_element_eligible_children: 1
+  output:
+    uc_maximum_childcare_element_amount: 1_014.63 * 12
+
+- name: No children 
+  period: 2025
+  input:
+    uc_childcare_element_eligible_children: 0
+  output:
+    uc_maximum_childcare_element_amount: 0

@@ -1,0 +1,10 @@
+description: The non-dependent deduction is limited to filers over this age threshold under the housing element of the Universal Credit.
+values:
+  2017-06-01: 21
+metadata:
+  unit: year
+  period: year
+  label: Universal Credit housing element non-dependent deduction age threshold
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 26(2), Schedule 4, Part 3, 16, (page 138)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12

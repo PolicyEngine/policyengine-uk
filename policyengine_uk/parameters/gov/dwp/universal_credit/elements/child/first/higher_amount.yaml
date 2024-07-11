@@ -5,17 +5,14 @@ values:
   2021-04-12: 282.50
   2022-04-06: 290.00
   2023-04-01: 315.00
-  2024-04-01: 
-    value: 333.33
-    reference:
-      - title: Benefits Uprating 2024/25 | Commons Library Briefing
-        href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+  2024-04-01: 333.33
 metadata:
   unit: currency-GBP
   period: month
-  name: UC_first_child_element
-  label: "UC first child element"
+  label: Universal Credit child element higher amount
   uprating: gov.benefit_uprating_cpi
   reference:
-    - name: The Universal Credit Regulations 2013 reg. 36
+    - title: The Universal Credit Regulations 2013 reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
+    - title: Benefits Uprating 2024/25 | Commons Library Briefing
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf

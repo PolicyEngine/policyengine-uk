@@ -1,0 +1,65 @@
+- name: Single under 25
+  period: 2025
+  input:
+    eldest_adult_age: 24
+    is_single: true
+  output:
+    uc_standard_allowance_claimant_type: SINGLE_YOUNG
+
+- name: Single over 25
+  period: 2025
+  input:
+    eldest_adult_age: 25
+    is_single: true
+  output:
+    uc_standard_allowance_claimant_type: SINGLE_OLD
+
+- name: Couple under 25
+  period: 2025
+  input:
+    eldest_adult_age: 24
+    is_single: false
+  output:
+    uc_standard_allowance_claimant_type: COUPLE_YOUNG
+
+- name: Couple over 25
+  period: 2025
+  input:
+    eldest_adult_age: 25
+    is_single: false
+  output:
+    uc_standard_allowance_claimant_type: COUPLE_OLD
+
+- name: Integration - old couple
+  period: 2025
+  input:
+    people:   
+      person1:
+        age: 24
+        is_adult: true
+      person2:
+        age: 25
+        is_adult: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        is_single: false
+  output:
+    uc_standard_allowance_claimant_type: COUPLE_OLD
+
+- name: Integration - young couple
+  period: 2025
+  input:
+    people:   
+      person1:
+        age: 24
+        is_adult: true
+      person2:
+        age: 24
+        is_adult: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        is_single: false
+  output:
+    uc_standard_allowance_claimant_type: COUPLE_YOUNG

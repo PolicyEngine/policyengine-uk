@@ -4,8 +4,7 @@ values:
 metadata:
   unit: hour
   period: week
-  name: UC_expected_hours
-  label: "UC expected weekly hours worked"
+  label: Universal Credit minimum income floor expected weekly hours worked
   reference:
     - title: The Universal Credit Regulations 2013, section 88
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/88/2013-04-29

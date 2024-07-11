@@ -2,8 +2,13 @@ description: Roll-out rate of Universal Credit
 metadata:
   economy: false
   propagate_metadata_to_children: true
-  reference: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=54
   unit: /1
+  label: Universal Credit roll-out rate
+  period: year
+  reference: 
+    - title: UKMOD/EUROMOD Country Report
+      href: https://www.iser.essex.ac.uk/research/publications/working-papers/cempa/cempa7-20.pdf#page=54
+
 values:
   2010-01-01: 0
   2018-01-01: 0.2

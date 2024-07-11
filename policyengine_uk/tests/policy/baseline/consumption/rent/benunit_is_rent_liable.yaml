@@ -1,0 +1,13 @@
+- name: Liable
+  period: 2024
+  input:
+    benunit_rent: 1
+  output:
+    benunit_is_rent_liable: true
+
+- name: Not liable
+  period: 2024
+  input:
+    benunit_rent: 0
+  output:
+    benunit_is_rent_liable: false
