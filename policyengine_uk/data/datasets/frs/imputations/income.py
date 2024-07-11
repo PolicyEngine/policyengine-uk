@@ -14,7 +14,6 @@ SPI_RENAMES = dict(
     married_couples_allowance="MCAS",
     gift_aid="GIFTAID",
     capital_allowances="CAPALL",
-    deficiency_relief="DEFICIEN",
     covenanted_payments="COVNTS",
     charitable_investment_gifts="GIFTINV",
     employment_expenses="EPB",
