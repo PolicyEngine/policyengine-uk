@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    changed:
-    - Refactor the Universal Credit parameter, variable and test files.

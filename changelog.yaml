@@ -1123,3 +1123,8 @@
     added:
     - Auto-updating of the household API when this package is updated
   date: 2024-07-10 20:08:36
+- bump: patch
+  changes:
+    changed:
+    - Refactor the Universal Credit parameter, variable and test files.
+  date: 2024-07-11 14:58:53
