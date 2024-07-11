@@ -13,5 +13,5 @@ class deficiency_relief(Variable):
     unit = GBP
     reference = dict(
         title="Income Tax Act 2007, Part 4",
-        href="https://www.legislation.gov.uk/ukpga/2007/3/part/4"
+        href="https://www.legislation.gov.uk/ukpga/2007/3/part/4",
     )

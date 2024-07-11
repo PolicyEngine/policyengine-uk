@@ -8,7 +8,7 @@ class taxable_self_employment_income(Variable):
     definition_period = YEAR
     reference = dict(
         title="Income Tax Act (Trading and Other Income) 2005, s. 5",
-        href="https://www.legislation.gov.uk/ukpga/2005/5/section/5"
+        href="https://www.legislation.gov.uk/ukpga/2005/5/section/5",
     )
     unit = GBP
 

@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-
 class higher_rate_earned_income_tax(Variable):
     value_type = float
     entity = Person

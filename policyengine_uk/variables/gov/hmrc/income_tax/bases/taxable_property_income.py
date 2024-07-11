@@ -9,7 +9,6 @@ class taxable_property_income(Variable):
     reference = dict(
         title="Income Tax (Trading and Other Income) Act 2005, s. 268",
         href="https://www.legislation.gov.uk/ukpga/2005/5/section/268",
-
     )
     unit = GBP
 

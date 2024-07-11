@@ -3,3 +3,5 @@
     fixed:
     - Folder distribution and formatting for income tax-related variables
     - pays_scottish_income_tax now returns a Boolean value
+    added:
+    - References to many income tax provisions

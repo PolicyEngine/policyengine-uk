@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class TaxBand(Enum):
     NONE = "None"
     STARTER = "Starter (Scottish rates)"
@@ -7,6 +8,7 @@ class TaxBand(Enum):
     INTERMEDIATE = "Intermediate (Scottish rates)"
     HIGHER = "Higher"
     ADDITIONAL = "Additional"
+
 
 class tax_band(Variable):
     value_type = Enum

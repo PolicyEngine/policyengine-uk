@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-
 class earned_taxable_income(Variable):
     value_type = float
     entity = Person
