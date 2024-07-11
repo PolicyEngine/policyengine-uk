@@ -4,9 +4,9 @@ values:
   2017-04-10: 0.63
   2021-11-24: 0.55
 metadata:
-  label: Universal Credit reduction rate
-  name: UC_reduction_rate
+  label: Universal Credit earned income reduction rate
+  period: year
   unit: /1
   reference:
-    name: The Universal Credit Regulations 2013
-    href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22
+    - title: The Universal Credit Regulations 2013 sec. 22. (1) (b)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22

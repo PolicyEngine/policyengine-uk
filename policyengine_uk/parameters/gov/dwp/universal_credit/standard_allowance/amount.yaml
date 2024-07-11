@@ -14,7 +14,6 @@ SINGLE_YOUNG:
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit single amount (under 25)
-    name: UC_single_young
     unit: currency-GBP
     period: month
 SINGLE_OLD:
@@ -32,7 +31,6 @@ SINGLE_OLD:
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit single amount (over 25)
-    name: UC_single_old
     unit: currency-GBP
     period: month
 COUPLE_YOUNG:
@@ -50,7 +48,6 @@ COUPLE_YOUNG:
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit couple amount (both under 25)
-    name: UC_couple_young
     unit: currency-GBP
     period: month
 COUPLE_OLD:
@@ -69,7 +66,6 @@ COUPLE_OLD:
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   metadata:
     label: Universal Credit couple amount (one over 25)
-    name: UC_couple_old
     unit: currency-GBP
     period: month
 metadata:

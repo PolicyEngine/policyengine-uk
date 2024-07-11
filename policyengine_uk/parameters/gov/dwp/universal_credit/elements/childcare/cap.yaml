@@ -1,0 +1,18 @@
+description: The childcare costs accounted under the childcare element of the Universal Credit are capped at this amount, based on the number of eligible children.
+1:
+  2017-04-10: 646.35
+  2023-04-01: 951
+  2024-04-01: 1_014.63
+2:
+  2017-04-10: 1_108.04
+  2023-04-01: 1_630
+  2024-04-01: 1_739.37
+metadata:
+  period: month
+  unit: currency-GBP
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 36.
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
+    - title: Costing Document - Spring Budget 2023
+      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1142824/Costing_Document_-_Spring_Budget_2023.pdf#page=9

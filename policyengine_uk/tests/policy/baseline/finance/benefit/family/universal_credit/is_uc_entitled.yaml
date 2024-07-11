@@ -1,0 +1,13 @@
+- name: Entitled
+  period: 2025
+  input:
+    universal_credit_pre_benefit_cap: 1
+  output:
+    is_uc_entitled: true
+
+- name: Not entitled
+  period: 2025
+  input:
+    universal_credit_pre_benefit_cap: 0
+  output:
+    is_uc_entitled: false

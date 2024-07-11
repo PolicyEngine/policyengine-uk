@@ -1,0 +1,31 @@
+- name: Child present
+  period: 2025
+  input:
+    people:   
+      person1:
+        uc_limited_capability_for_WRA: false
+        is_child: false
+      person2:
+        uc_limited_capability_for_WRA: false
+        is_child: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: true
+
+- name: Ineligible
+  period: 2025
+  input:
+    people:   
+      person1:
+        uc_limited_capability_for_WRA: false
+        is_child: false
+      person2:
+        uc_limited_capability_for_WRA: false
+        is_child: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: false

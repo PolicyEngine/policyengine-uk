@@ -1,0 +1,35 @@
+- name: Non exempt
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    pension_credit: 0
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    receives_carers_allowance: false
+  output:
+    uc_non_dep_deduction_exempt: false
+
+- name: Exempt - pension
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    pension_credit: 1
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    receives_carers_allowance: false
+  output:
+    uc_non_dep_deduction_exempt: true
+
+- name: Exempt - carers
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    pension_credit: 1
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    receives_carers_allowance: true
+  output:
+    uc_non_dep_deduction_exempt: true

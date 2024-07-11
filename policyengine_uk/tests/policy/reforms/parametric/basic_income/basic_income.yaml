@@ -75,7 +75,7 @@
     benunits:
       benunit:
         members: adult
-        would_claim_UC: true
+        would_claim_uc: true
   output:
     universal_credit: 4_938
 
@@ -91,6 +91,6 @@
     benunits:
       benunit:
         members: adult
-        would_claim_UC: true
+        would_claim_uc: true
   output:
     universal_credit: 4_938 - 5_200 * 0.63

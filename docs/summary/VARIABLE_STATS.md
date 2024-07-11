@@ -1305,7 +1305,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 40,298,441.5902257
 
 
-- UC_LCWRA_element:
+- uc_LCWRA_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit limited capability for work-related-activity element
@@ -1315,7 +1315,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 12,817,742.397387981
 
 
-- UC_MIF_applies:
+- uc_mif_applies:
   - Type: bool
   - Entity: person
   - Description: Minimum Income Floor applies
@@ -1325,7 +1325,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 13,990,680.348232985
 
 
-- UC_MIF_capped_earned_income:
+- uc_mif_capped_earned_income:
   - Type: float
   - Entity: person
   - Description: The birth year of the person
@@ -1345,7 +1345,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 67,106,864.33584666
 
 
-- UC_child_element:
+- uc_child_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit child element
@@ -1355,7 +1355,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 8,443,678.907532245
 
 
-- UC_childcare_element:
+- uc_childcare_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit childcare element
@@ -1365,7 +1365,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 1,519,132.8197327852
 
 
-- UC_childcare_work_condition:
+- uc_childcare_work_condition:
   - Type: bool
   - Entity: benunit
   - Description: Meets Universal Credit childcare work condition
@@ -1375,13 +1375,13 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 21,225,406.266597122
 
 
-- UC_claimant_type:
+- uc_standard_allowance_claimant_type:
   - Type: Categorical
   - Entity: benunit
   - Description: UC claimant type
 
 
-- UC_disability_elements:
+- uc_disability_elements:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit disability elements
@@ -1391,7 +1391,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 2,858,800.7575235367
 
 
-- UC_earned_income:
+- uc_earned_income:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit earned income (after disregards and tax)
@@ -1401,7 +1401,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 23,671,908.818345606
 
 
-- UC_housing_costs_element:
+- uc_housing_costs_element:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit housing costs element
@@ -1411,7 +1411,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 8,001,651.48728615
 
 
-- UC_income_reduction:
+- uc_income_reduction:
   - Type: float
   - Entity: benunit
   - Description: Reduction from income for Universal Credit
@@ -1421,7 +1421,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 30,846,576.42927602
 
 
-- UC_individual_child_element:
+- uc_individual_child_element:
   - Type: float
   - Entity: person
   - Description: Universal Credit child element
@@ -1431,7 +1431,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 11,848,416.583055496
 
 
-- UC_individual_disabled_child_element:
+- uc_individual_disabled_child_element:
   - Type: float
   - Entity: person
   - Description: Whether is a working-age adult
@@ -1441,7 +1441,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 41,125,564.52147722
 
 
-- UC_individual_non_dep_deduction:
+- uc_individual_non_dep_deduction:
   - Type: float
   - Entity: person
   - Description: Whether this person is an adult
@@ -1451,7 +1451,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 53,116,183.98761368
 
 
-- UC_individual_severely_disabled_child_element:
+- uc_individual_severely_disabled_child_element:
   - Type: float
   - Entity: person
   - Description: Universal Credit severely disabled child element
@@ -1471,7 +1471,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 36,955,812.870046616
 
 
-- UC_maximum_childcare:
+- uc_maximum_childcare_element_amount:
   - Type: float
   - Entity: benunit
   - Description: Maximum Universal Credit childcare element
@@ -1481,7 +1481,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 36,144,140.87005857
 
 
-- UC_minimum_income_floor:
+- uc_minimum_income_floor:
   - Type: float
   - Entity: person
   - Description: Is a child
@@ -1491,7 +1491,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 13,990,680.348232985
 
 
-- UC_non_dep_deduction_exempt:
+- uc_non_dep_deduction_exempt:
   - Type: bool
   - Entity: person
   - Description: Not expected to contribute to housing costs for Universal Credit
@@ -1531,7 +1531,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 33,223,151.934690475
 
 
-- UC_work_allowance:
+- uc_work_allowance:
   - Type: float
   - Entity: benunit
   - Description: Universal Credit work allowance
@@ -1561,7 +1561,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 0.0
 
 
-- is_UC_eligible:
+- is_uc_eligible:
   - Type: bool
   - Entity: benunit
   - Description: Universal Credit eligible
@@ -1581,7 +1581,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 67,106,864.33584666
 
 
-- is_child_born_before_child_limit:
+- uc_is_child_born_before_child_limit:
   - Type: bool
   - Entity: person
   - Description: ID for the person
@@ -1591,7 +1591,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 67,106,864.33584666
 
 
-- is_in_startup_period:
+- uc_is_in_startup_period:
   - Type: bool
   - Entity: person
   - Description: Weight
@@ -1601,17 +1601,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 67,106,864.33584666
 
 
-- legacy_benefits:
-  - Type: float
-  - Entity: benunit
-  - Description: Legacy benefits
-  - Mean: 717.9
-  - Median: 0.0
-  - Stddev: 1,781.0999755859375
-  - Non-zero count: 4,295,344.807775497
-
-
-- limited_capability_for_WRA:
+- uc_limited_capability_for_WRA:
   - Type: bool
   - Entity: person
   - Description: Weight factor
@@ -1620,7 +1610,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Stddev: 0.0
   - Non-zero count: 67,106,864.33584666
 
-- num_UC_eligible_children:
+- uc_childcare_element_eligible_children:
   - Type: int
   - Entity: benunit
   - Description: Children eligible for Universal Credit
@@ -1650,7 +1640,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 67,106,864.33584666
 
 
-- would_claim_UC:
+- would_claim_uc:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Universal Credit
@@ -3360,7 +3350,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 3,355,690.3569927216
 
 
-- UC_MIF_applies:
+- uc_mif_applies:
   - Type: bool
   - Entity: person
   - Description: Deduction applied by the property allowance
@@ -3420,7 +3410,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 23,253,274.75121045
 
 
-- UC_claimant_type:
+- uc_standard_allowance_claimant_type:
   - Type: Categorical
   - Entity: benunit
   - Description: UC claimant type
@@ -3536,7 +3526,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 67,106,864.33584666
 
 
-- UC_non_dep_deduction_exempt:
+- uc_non_dep_deduction_exempt:
   - Type: bool
   - Entity: person
   - Description: Not expected to contribute to housing costs for Universal Credit
@@ -3606,7 +3596,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 1,760,112.264848709
 
 
-- is_UC_eligible:
+- is_uc_eligible:
   - Type: bool
   - Entity: benunit
   - Description: Universal Credit eligible
@@ -3616,7 +3606,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 27,565,529.92134452
 
 
-- is_UC_work_allowance_eligible:
+- is_uc_work_allowance_eligible:
   - Type: bool
   - Entity: benunit
   - Description: Family receives a Universal Credit Work Allowance
@@ -3626,7 +3616,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 11,358,075.536501646
 
 
-- is_child_born_before_child_limit:
+- uc_is_child_born_before_child_limit:
   - Type: bool
   - Entity: person
   - Description: Born before child limit (exempt)
@@ -3656,7 +3646,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 4,598,995.6716918945
 
 
-- limited_capability_for_WRA:
+- uc_limited_capability_for_WRA:
   - Type: bool
   - Entity: person
   - Description: Assessed to have limited capability for work-related activity
@@ -3666,7 +3656,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 3,778,370.4700603485
 
 
-- num_UC_eligible_children:
+- uc_childcare_element_eligible_children:
   - Type: int
   - Entity: benunit
   - Description: Children eligible for Universal Credit
