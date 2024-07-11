@@ -16,8 +16,15 @@ class adjusted_net_income(Variable):
         adjusted_net_income_components = parameters(
             period
         ).gov.hmrc.income_tax.adjusted_net_income_components
+
+        # Find adjusted net income
+        ani = add(person, period, adjusted_net_income_components)
+
+        # For basic income contributions, add basic income
+        # Modifying param list directly is mutative, hence two-step process
         if parameters(
             period
         ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
-            adjusted_net_income_components.append("basic_income")
-        return max_(0, add(person, period, adjusted_net_income_components))
+            ani += person("basic_income", period)
+
+        return max_(0, ani)
