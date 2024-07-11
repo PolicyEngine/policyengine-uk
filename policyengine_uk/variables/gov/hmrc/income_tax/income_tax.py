@@ -8,7 +8,10 @@ class income_tax(Variable):
     documentation = "Total Income Tax liability"
     definition_period = YEAR
     unit = GBP
-    reference = "Income Tax Act 2007 s. 23"
+    reference = dict(
+        title="Income Tax Act 2007 s. 23",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/23",
+    )
     category = TAX
     adds = [
         "earned_income_tax",

@@ -11,7 +11,10 @@ class loss_relief(Variable):
     entity = Person
     label = "Tax relief from trading losses"
     definition_period = YEAR
-    reference = "Income Tax (Trading and Other Income) Act 2005 s. 59"
+    reference = dict(
+        title="Income Tax (Trading and Other Income) Act 2005 s. 59",
+        href="https://www.legislation.gov.uk/ukpga/2005/5/section/59",
+    )
     documentation = "Can be set against general income."
     unit = GBP
 

@@ -6,7 +6,10 @@ class taxable_employment_income(Variable):
     entity = Person
     label = "Net taxable earnings"
     definition_period = YEAR
-    reference = "Income Tax (Earnings and Pensions) Act 2003 s. 11"
+    reference = dict(
+        title="Income Tax (Earnings and Pensions) Act 2003, s. 11",
+        href="https://www.legislation.gov.uk/ukpga/2003/1/section/11",
+    )
     unit = GBP
 
     def formula(person, period, parameters):

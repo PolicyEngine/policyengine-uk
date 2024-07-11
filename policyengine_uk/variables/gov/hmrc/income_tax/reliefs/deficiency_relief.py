@@ -11,3 +11,7 @@ class deficiency_relief(Variable):
     label = "Deficiency relief"
     definition_period = YEAR
     unit = GBP
+    reference = dict(
+        title="Income Tax Act 2007, Part 4",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/part/4"
+    )

@@ -10,5 +10,8 @@ class capital_allowances(Variable):
     entity = Person
     label = "Full relief from capital expenditure allowances"
     definition_period = YEAR
-    reference = "Capital Allowances Act 2001 s. 1"
+    reference = dict(
+        title="Capital Allowances Act 2001 s. 1",
+        href="https://www.legislation.gov.uk/ukpga/2001/2/section/1",
+    )
     unit = GBP

@@ -6,7 +6,10 @@ class taxable_dividend_income(Variable):
     entity = Person
     label = "Amount of dividend income that is taxable"
     definition_period = YEAR
-    reference = "Income Tax (Trading and Other Income) Act 2005 s. 383"
+    reference = dict(
+        title="Income Tax Act (Trading and Other Income) 2005, s. 383",
+        href="https://www.legislation.gov.uk/ukpga/2005/5/section/383",
+    )
     unit = GBP
 
     def formula(person, period, parameters):

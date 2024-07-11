@@ -6,7 +6,10 @@ class dividend_income_tax(Variable):
     entity = Person
     label = "Income tax on dividend income"
     definition_period = YEAR
-    reference = "Income Tax Act 2007 s. 13"
+    reference = dict(
+        title="Income Tax Act 2007, s. 13",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/13",
+    )
     unit = GBP
 
     def formula(person, period, parameters):

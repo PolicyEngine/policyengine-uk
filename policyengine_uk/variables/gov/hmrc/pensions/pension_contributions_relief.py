@@ -6,7 +6,10 @@ class pension_contributions_relief(Variable):
     entity = Person
     label = "Reduction in taxable income from pension contributions"
     definition_period = YEAR
-    reference = "Finance Act 2004 s. 188-194"
+    reference = dict(
+        title="Finance Act 2004 s. 188-194",
+        href="https://www.legislation.gov.uk/ukpga/2004/12/section/188",
+    )
     unit = GBP
 
     def formula_2004_07_22(person, period, parameters):

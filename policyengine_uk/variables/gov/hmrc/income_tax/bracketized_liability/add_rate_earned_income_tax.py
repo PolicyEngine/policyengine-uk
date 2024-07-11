@@ -7,6 +7,10 @@ class add_rate_earned_income_tax(Variable):
     label = "Income tax on earned income at the additional rate"
     definition_period = YEAR
     unit = GBP
+    reference = dict(
+        title="Income Tax Act 2007, s. 10",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/10",
+    )
 
     def formula(person, period, parameters):
         amount = person("add_rate_earned_income", period)

@@ -7,6 +7,11 @@ class taxed_dividend_income(Variable):
     label = "Dividend income which is taxed"
     definition_period = YEAR
     unit = GBP
+    reference = dict(
+        title="Income Tax (Trading and Other Income) Act 2005 s. 383",
+        href="https://www.legislation.gov.uk/ukpga/2005/5/section/383",
+
+    )
 
     def formula(person, period, parameters):
         return max_(

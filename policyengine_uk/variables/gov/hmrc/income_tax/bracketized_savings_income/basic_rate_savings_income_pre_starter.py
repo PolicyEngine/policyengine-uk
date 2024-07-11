@@ -7,6 +7,10 @@ class basic_rate_savings_income_pre_starter(Variable):
     label = "Savings income which would otherwise be taxed at the basic rate, without the starter rate"
     definition_period = YEAR
     unit = GBP
+    reference = dict(
+        title="Income Tax Act 2007, s. 12",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/12",
+    )
 
     def formula(person, period, parameters):
         thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds

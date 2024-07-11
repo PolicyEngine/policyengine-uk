@@ -1,7 +1,5 @@
 from policyengine_uk.model_api import *
 
-
-
 class TaxBand(Enum):
     NONE = "None"
     STARTER = "Starter (Scottish rates)"
@@ -10,9 +8,6 @@ class TaxBand(Enum):
     HIGHER = "Higher"
     ADDITIONAL = "Additional"
 
-
-
-
 class tax_band(Variable):
     value_type = Enum
     possible_values = TaxBand
@@ -20,6 +15,10 @@ class tax_band(Variable):
     entity = Person
     label = "Tax band of the individual"
     definition_period = YEAR
+    reference = dict(
+        title="Income Tax Act 2007, s. 10",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/10",
+    )
 
     def formula(person, period, parameters):
         allowances = person("allowances", period)

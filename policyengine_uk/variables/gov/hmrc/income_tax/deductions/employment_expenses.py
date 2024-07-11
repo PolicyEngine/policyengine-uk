@@ -8,5 +8,8 @@ class employment_expenses(Variable):
         "Cost of expenses necessarily incurred and reimbursed by employment"
     )
     definition_period = YEAR
-    reference = "Income Tax Act (Earnings and Pensions) Act 2003 s. 333"
+    reference = dict(
+        title="Income Tax Act (Earnings and Pensions) Act 2003 s. 333",
+        href="https://www.legislation.gov.uk/ukpga/2003/1/section/333",
+    )
     unit = GBP

@@ -6,7 +6,10 @@ class taxable_self_employment_income(Variable):
     entity = Person
     label = "Amount of trading income that is taxable"
     definition_period = YEAR
-    reference = "Income Tax (Trading and Other Income) Act 2005 s. 5"
+    reference = dict(
+        title="Income Tax Act (Trading and Other Income) 2005, s. 5",
+        href="https://www.legislation.gov.uk/ukpga/2005/5/section/5"
+    )
     unit = GBP
 
     def formula(person, period, parameters):

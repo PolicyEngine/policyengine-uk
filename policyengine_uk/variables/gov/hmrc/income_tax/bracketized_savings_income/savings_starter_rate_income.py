@@ -6,7 +6,10 @@ class savings_starter_rate_income(Variable):
     entity = Person
     label = "Savings income which is tax-free under the starter rate"
     definition_period = YEAR
-    reference = "Income Tax Act 2007 s. 12"
+    reference = dict(
+        title="Income Tax Act 2007, s. 12",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/12",
+    )
     unit = GBP
 
     def formula(person, period, parameters):

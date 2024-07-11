@@ -6,7 +6,10 @@ class taxable_savings_interest_income(Variable):
     entity = Person
     label = "Amount of savings interest which is taxable"
     definition_period = YEAR
-    reference = "Income Tax Act (Trading and Other Income) 2005 s. 369"
+    reference = dict(
+        title="Income Tax Act (Trading and Other Income) 2005, s. 369",
+        href="https://www.legislation.gov.uk/ukpga/2005/5/section/369",
+    )
     unit = GBP
 
     def formula(person, period, parameters):
