@@ -2900,16 +2900,6 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 0.0
 
 
-- deficiency_relief:
-  - Type: float
-  - Entity: person
-  - Description: Carer's Allowance
-  - Mean: 35.1
-  - Median: 0.0
-  - Stddev: 331.5
-  - Non-zero count: 670,706.3129017353
-
-
 - employment_benefits:
   - Type: float
   - Entity: person
