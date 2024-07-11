@@ -13,9 +13,9 @@ class earned_taxable_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        EXCLUSIONS = [
-        ]
-        exclusions = parameters(period).gov.hmrc.income_tax.earned_taxable_income_exclusions
+        exclusion_list = parameters(
+            period
+        ).gov.hmrc.income_tax.earned_taxable_income_exclusions
         ani = person("adjusted_net_income", period)
-        exclusions = add(person, period, EXCLUSIONS)
+        exclusions = add(person, period, exclusion_list)
         return max_(0, ani - exclusions)

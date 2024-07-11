@@ -8,4 +8,4 @@ class pension_contributions(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = "gov.hmrc.income_tax.reliefs.pension_contribution.pensions_programs"
+    adds = "gov.hmrc.pensions.pensions_programs"
