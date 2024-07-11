@@ -20,9 +20,7 @@ class housing_benefit_applicable_income_disregard(Variable):
         couple = benunit("is_couple", period)
         couple_disregard = couple * p.couple
         lone_parent = benunit("is_lone_parent", period)
-        lone_parent_disregard = (
-            lone_parent * p.lone_parent
-        )
+        lone_parent_disregard = lone_parent * p.lone_parent
         hour_requirement = where(
             lone_parent, WTC.min_hours.lower, p.worker_hours
         )
