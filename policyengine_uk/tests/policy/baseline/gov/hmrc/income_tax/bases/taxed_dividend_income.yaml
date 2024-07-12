@@ -26,12 +26,13 @@
 - name: Situation where personal allowance is used for some dividend income
   period: 2024
   input:
-    dividend_income: 15_000
-    dividend_allowance: 1_000
-    adjusted_net_income: 30
-    # personal_allowance: 1_000
+    taxable_dividend_income: 10_000
+    taxable_employment_income: 10_000
   output:
-    taxed_dividend_income: 13_030
+    personal_allowance: 12_570
+    taxed_dividend_income: 9_000
+    dividend_allowance: 1_000
+
 
 - name: Dividend income slightly above allowance
   period: 2024
