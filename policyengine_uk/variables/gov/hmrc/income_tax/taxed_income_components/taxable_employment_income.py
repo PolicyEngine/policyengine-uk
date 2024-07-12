@@ -13,7 +13,7 @@ class taxable_employment_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        taxable_earnings = person("employment_income", period)
+        earnings = person("employment_income", period)
         deductions = add(person, period, ["employment_deductions"])
         benefits = person("employment_benefits", period)
-        return max_(0, taxable_earnings + benefits - deductions)
+        return max_(0, earnings + benefits - deductions)
