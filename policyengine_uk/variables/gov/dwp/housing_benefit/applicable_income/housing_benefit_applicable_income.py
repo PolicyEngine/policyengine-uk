@@ -25,19 +25,32 @@ class housing_benefit_applicable_income(Variable):
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = add(benunit, period, INCOME_COMPONENTS)
-        tax = add(benunit, period, TAX_COMPONENTS)
-        income += add(benunit, period, ["personal_benefits"])
+
+        personal_benefits = add(benunit, period, ["personal_benefits"])
+        # Add personal benefits, credits and total benefits to tax
+        credits = add(benunit, period, ["tax_credits"])
+        increased_income = income + personal_benefits + credits + benefits
+
         if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
-            income -= add(benunit, period, ["basic_income"])
-        income += add(benunit, period, ["tax_credits"])
-        income -= tax
-        income -= add(benunit, period, ["pension_contributions"]) * 0.5
-        income += benefits
+            increased_income -= add(benunit, period, ["basic_income"])
+        # Reduce increased income by pension contributions and tax
+        pension_contributions = (
+            add(benunit, period, ["pension_contributions"]) * 0.5
+        )
+        tax = add(benunit, period, TAX_COMPONENTS)
+        increased_income_reduced_by_tax_and_pensions = (
+            increased_income - tax - pension_contributions
+        )
         disregard = benunit(
             "housing_benefit_applicable_income_disregard", period
         )
         childcare_element = benunit(
             "housing_benefit_applicable_income_childcare_element", period
         )
-        return max_(0, income - disregard - childcare_element)
+        return max_(
+            0,
+            increased_income_reduced_by_tax_and_pensions
+            - disregard
+            - childcare_element,
+        )

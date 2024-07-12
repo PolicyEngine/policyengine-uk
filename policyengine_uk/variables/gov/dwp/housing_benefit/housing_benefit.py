@@ -7,7 +7,7 @@ class housing_benefit(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    defined_for = "would_claim_HB"
+    defined_for = "would_claim_housing_benefit"
 
     def formula(benunit, period, parameters):
         housing_benefit_entitlement = benunit(

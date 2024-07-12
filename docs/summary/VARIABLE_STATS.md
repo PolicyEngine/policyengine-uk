@@ -1295,7 +1295,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 66,383,947.325356245
 
 
-- would_claim_HB:
+- would_claim_housing_benefit:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Housing Benefit
@@ -3060,7 +3060,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 3,736,540.6955184937
 
 
-- would_claim_HB:
+- would_claim_housing_benefit:
   - Type: bool
   - Entity: benunit
   - Description: Would claim Housing Benefit
