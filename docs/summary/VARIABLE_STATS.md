@@ -1205,7 +1205,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 11,848,860.556090355
 
 
-- HB_individual_non_dep_deduction:
+- household_benefits_individual_non_dep_deduction:
   - Type: float
   - Entity: person
   - Description: Private pension contributions
@@ -1215,7 +1215,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 1,974,908.7239151
 
 
-- HB_non_dep_deductions:
+- housing_benefit_non_dep_deductions:
   - Type: float
   - Entity: household
   - Description: Water and sewerage charges
@@ -2980,7 +2980,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 34,296,161.06988621
 
 
-- HB_non_dep_deductions:
+- housing_benefit_non_dep_deductions:
   - Type: float
   - Entity: benunit
   - Description: Non-dependent deductions

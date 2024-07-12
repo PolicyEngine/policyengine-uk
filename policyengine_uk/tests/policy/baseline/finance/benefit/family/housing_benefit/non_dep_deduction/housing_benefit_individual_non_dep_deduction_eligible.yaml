@@ -1,0 +1,23 @@
+- name: Eligible
+  period: 2025
+  input:
+    benunit_is_rent_liable: false
+    age: 18
+  output:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+
+- name: Age ineligible
+  period: 2025
+  input:
+    benunit_is_rent_liable: false
+    age: 17
+  output:
+    housing_benefit_individual_non_dep_deduction_eligible: false
+
+- name: Rent ineligible
+  period: 2025
+  input:
+    benunit_is_rent_liable: true
+    age: 18
+  output:
+    housing_benefit_individual_non_dep_deduction_eligible: false

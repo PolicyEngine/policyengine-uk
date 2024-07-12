@@ -1,0 +1,6 @@
+- name: Baseline test
+  period: 2025
+  input:
+    housing_benefit_entitlement: 1_000
+  output:
+    housing_benefit_baseline_entitlement: 1

@@ -1,0 +1,40 @@
+- name: Single under work hour requirement
+  period: 2025
+  input:
+    weekly_hours: 29
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+  output:
+    housing_benefit_applicable_income_disregard: 5 * 52
+
+- name: Lone parent under work hour requirement
+  period: 2025
+  input:
+    weekly_hours: 16
+    is_single_person: false
+    is_lone_parent: true
+    is_couple: false
+  output:
+    housing_benefit_applicable_income_disregard: 25 * 52
+
+
+- name: Lone parent over work hour requirement
+  period: 2025
+  input:
+    weekly_hours: 17
+    is_single_person: false
+    is_lone_parent: true
+    is_couple: false
+  output:
+    housing_benefit_applicable_income_disregard: 62.10 * 52
+
+- name: Couple under work hour requirement
+  period: 2025
+  input:
+    weekly_hours: 17
+    is_single_person: false
+    is_lone_parent: false
+    is_couple: true
+  output:
+    housing_benefit_applicable_income_disregard: 10 * 52

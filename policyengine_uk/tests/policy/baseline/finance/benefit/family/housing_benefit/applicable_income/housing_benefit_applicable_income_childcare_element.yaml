@@ -1,0 +1,70 @@
+- name: One child, uncapped
+  period: 2025
+  input:
+    benunit_count_children: 1
+    childcare_expenses: 10_000
+  output:
+    housing_benefit_applicable_income_childcare_element: 175 * 52
+
+- name: One child, capped
+  period: 2025
+  input:
+    benunit_count_children: 1
+    childcare_expenses: 9_000
+  output:
+    housing_benefit_applicable_income_childcare_element: 9_000
+
+- name: Two child, capped
+  period: 2025
+  input:
+    benunit_count_children: 2
+    childcare_expenses: 10_000
+  output:
+    housing_benefit_applicable_income_childcare_element: 10_000
+
+- name: Two child, uncapped
+  period: 2025
+  input:
+    benunit_count_children: 2
+    childcare_expenses: 30_000
+  output:
+    housing_benefit_applicable_income_childcare_element: 300 * 52
+
+- name: No children
+  period: 2025
+  input:
+    benunit_count_children: 0
+    childcare_expenses: 30_000
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: Four children
+  period: 2025
+  input:
+    benunit_count_children: 4
+    childcare_expenses: 30_000
+  output:
+    housing_benefit_applicable_income_childcare_element: 300 * 52
+
+
+- name: Four children
+  period: 2025
+  input:
+    people: 
+      person1:
+        is_child: false
+        childcare_expenses: 0 
+      person2:
+        is_child: true
+        childcare_expenses: 1_000
+      person3:
+        is_child: true
+        childcare_expenses: 6_000
+      person4:
+        is_child: true
+        childcare_expenses: 10_000
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+  output:
+    housing_benefit_applicable_income_childcare_element: 300 * 52

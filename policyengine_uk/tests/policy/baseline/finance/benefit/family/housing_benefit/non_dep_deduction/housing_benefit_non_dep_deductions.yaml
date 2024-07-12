@@ -1,0 +1,61 @@
+- name: Single family, no deductions
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        household_benefits_individual_non_dep_deduction: 1
+      person_2:
+        household_benefits_individual_non_dep_deduction: 2
+    benunits:
+      benunit:
+        members: [person_1, person_2]
+    households:
+      household:
+        members: [person_1, person_2]
+  output:
+    housing_benefit_non_dep_deductions: 0
+
+- name: Two families, each affecting only the other
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        household_benefits_individual_non_dep_deduction: 1
+      person_2:
+        household_benefits_individual_non_dep_deduction: 2
+    benunits:
+      benunit_1:
+        members: person_1
+      benunit_2:
+        members: person_2
+    households:
+      household:
+        members: [person_1, person_2]
+  output:
+    housing_benefit_non_dep_deductions: [2, 1]
+
+- name: Three families, each affecting only the other
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        household_benefits_individual_non_dep_deduction: 1
+      person_2:
+        household_benefits_individual_non_dep_deduction: 2
+      person_3:
+        household_benefits_individual_non_dep_deduction: 3
+    benunits:
+      benunit_1:
+        members: person_1
+      benunit_2:
+        members: person_2
+      benunit_3:
+        members: person_3
+    households:
+      household:
+        members: [person_1, person_2, person_3]
+  output:
+    housing_benefit_non_dep_deductions: [5, 4, 3]

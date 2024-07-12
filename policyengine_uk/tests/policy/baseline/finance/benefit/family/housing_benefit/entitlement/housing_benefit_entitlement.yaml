@@ -1,0 +1,47 @@
+- name: Reduced rent without LHA
+  period: 2025
+  input:
+    benunit_rent: 8_000
+    LHA_eligible: false
+    housing_benefit_applicable_amount: 1_000
+    housing_benefit_applicable_income: 11_000
+    LHA_cap: 1_000
+    housing_benefit_non_dep_deductions: 0
+  output:
+    housing_benefit_entitlement: 1_500
+
+- name: Reduced rent with LHA
+  period: 2025
+  input:
+    benunit_rent: 8_000
+    LHA_eligible: true
+    housing_benefit_applicable_amount: 1_000
+    housing_benefit_applicable_income: 11_000
+    LHA_cap: 1_000
+    housing_benefit_non_dep_deductions: 0
+  output:
+    housing_benefit_entitlement: 1_000
+
+- name: Capped at 0
+  period: 2025
+  input:
+    benunit_rent: 8_000
+    LHA_eligible: false
+    housing_benefit_applicable_amount: 1_000
+    housing_benefit_applicable_income: 11_000
+    LHA_cap: 1_000
+    housing_benefit_non_dep_deductions: 2_000
+  output:
+    housing_benefit_entitlement: 0
+
+- name: Fully reduceed rent
+  period: 2025
+  input:
+    benunit_rent: 6_000
+    LHA_eligible: false
+    housing_benefit_applicable_amount: 1_000
+    housing_benefit_applicable_income: 11_000
+    LHA_cap: 1_000
+    housing_benefit_non_dep_deductions: 0
+  output:
+    housing_benefit_entitlement: 0

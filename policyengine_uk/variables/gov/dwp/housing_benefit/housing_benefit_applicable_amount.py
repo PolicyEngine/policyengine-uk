@@ -23,19 +23,19 @@ class housing_benefit_applicable_amount(Variable):
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_lone_parent", period)
         single_personal_allowance = (
-            u_25 * p.single.under_25
-            + o_25 * p.single.over_25
-            + any_over_SP_age * p.single.SP_age
+            u_25 * p.single.younger
+            + o_25 * p.single.older
+            + any_over_SP_age * p.single.aged
         )
         couple_personal_allowance = (
-            u_18 * p.couple.both_under_18
-            + o_18 * p.couple.over_18
-            + any_over_SP_age * p.couple.SP_age
+            u_18 * p.couple.younger
+            + o_18 * p.couple.older
+            + any_over_SP_age * p.couple.aged
         )
         lone_parent_personal_allowance = (
-            u_18 * p.lone_parent.under_18
-            + o_18 * p.lone_parent.over_18
-            + any_over_SP_age * p.lone_parent.SP_age
+            u_18 * p.lone_parent.younger
+            + o_18 * p.lone_parent.older
+            + any_over_SP_age * p.lone_parent.aged
         )
         personal_allowance = (
             single * single_personal_allowance

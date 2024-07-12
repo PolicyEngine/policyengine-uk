@@ -14,7 +14,11 @@ class housing_benefit_applicable_income_childcare_element(Variable):
         childcare_amount_1 = (num_children == 1) * p.childcare_1
         childcare_amount_2 = (num_children > 1) * p.childcare_2
         max_weekly_childcare_amount = childcare_amount_1 + childcare_amount_2
-        max_childcare_amount = max_weekly_childcare_amount * WEEKS_IN_YEAR
+        # Assuming that no children leads to no childcare element
+        capped_max_childcare_amount = where(
+            num_children == 0, 0, max_weekly_childcare_amount
+        )
+        max_childcare_amount = capped_max_childcare_amount * WEEKS_IN_YEAR
         childcare_expenses = add(benunit, period, ["childcare_expenses"])
         return min_(
             max_childcare_amount,

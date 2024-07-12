@@ -1,0 +1,143 @@
+- name: Single person, older amount
+  period: 2025
+  input:
+    people: 
+      person1:
+        is_SP_age: false
+      person2:
+        is_SP_age: false
+      person3:
+        is_SP_age: false
+      person4:
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        housing_benefit_eligible: true
+        eldest_adult_age: 25
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 90.5 * 52
+
+- name: Single person, younger amount
+  period: 2025
+  input:
+    people: 
+      person1:
+        is_SP_age: false
+      person2:
+        is_SP_age: false
+      person3:
+        is_SP_age: false
+      person4:
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        housing_benefit_eligible: true
+        eldest_adult_age: 23
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 71.7 * 52
+
+- name: Lone parent, younger amount
+  period: 2025
+  input:
+    people: 
+      person1:
+        is_SP_age: false
+      person2:
+        is_SP_age: false
+      person3:
+        is_SP_age: false
+      person4:
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        housing_benefit_eligible: true
+        eldest_adult_age: 17
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 71.7 * 52
+
+- name: Lone parent, older amount
+  period: 2025
+  input:
+    people: 
+      person1:
+        is_SP_age: false
+      person2:
+        is_SP_age: false
+      person3:
+        is_SP_age: false
+      person4:
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        housing_benefit_eligible: true
+        eldest_adult_age: 18
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 90.5 * 52
+
+- name: Couple, older amount
+  period: 2025
+  input:
+    people: 
+      person1:
+        is_SP_age: false
+      person2:
+        is_SP_age: false
+      person3:
+        is_SP_age: false
+      person4:
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        housing_benefit_eligible: true
+        eldest_adult_age: 18
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 142.25 * 52
+
+- name: Couple, younger amount
+  period: 2025
+  input:
+    people: 
+      person1:
+        is_SP_age: false
+      person2:
+        is_SP_age: false
+      person3:
+        is_SP_age: false
+      person4:
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        housing_benefit_eligible: true
+        eldest_adult_age: 17
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 108.3 * 52

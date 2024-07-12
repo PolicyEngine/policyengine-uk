@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 
 
 class housing_benefit_baseline_entitlement(Variable):
-    label = "Housing Benefit entitlement (baseline)"
+    label = "Basleine Housing Benefit entitlement"
     entity = BenUnit
     definition_period = YEAR
     value_type = float
