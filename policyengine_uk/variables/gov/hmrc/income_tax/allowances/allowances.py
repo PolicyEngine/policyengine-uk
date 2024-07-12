@@ -190,9 +190,42 @@ class dividend_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(
+        
+        # Pull maximum allowance param
+        max_dividend_allowance = parameters(
             period
-        ).gov.hmrc.income_tax.allowances.dividend_allowance
+        ).gov.hmrc.income_tax.allowances.dividend_allowance 
+
+        print("max_dividend_allowance: ", max_dividend_allowance)
+
+        # Find taxable dividend income, adjusted net income, personal allowance
+        di = person("taxable_dividend_income", period)
+        ani = person("adjusted_net_income", period)
+        pa = person("personal_allowance", period)
+
+        print("di: ", di)
+        print("ani: ", ani)
+        print("pa: ", pa)
+
+        # Personal Allowance is applied to the entirety of adjusted net income (ANI),
+        # including dividend income, in its formula. We need to determine if any portion
+        # was applied to dividend income at that point
+
+        # Determine if max Personal Allowance is lower than other types of income;
+        # dividend income is applied last
+        ani_less_di = ani - di
+
+        pa_remainder = max_(0, pa - ani_less_di)
+        print("ani_less_di: ", ani_less_di)
+        print("pa_remainder: ", pa_remainder)
+
+        # If Personal Allowance remainder exists, apply that to dividend income first
+        di = max_(0, di - pa_remainder)
+        print("di: ", di)
+
+        # Take the minimum of either the remainder or the dividend income allowance
+        print("min_(di, max_dividend_allowance): ", min_(di, max_dividend_allowance))
+        return min_(di, max_dividend_allowance)
 
 
 class gift_aid(Variable):
