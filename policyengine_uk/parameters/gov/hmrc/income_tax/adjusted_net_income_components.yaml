@@ -11,9 +11,9 @@ values:
     - taxable_miscellaneous_income
     
 metadata:
-  unit: program
+  unit: list
   label: Adjusted net income components
   period: year
   reference:
     - title: "Income Tax Act 2007, s. 58"
-      url: "https://www.legislation.gov.uk/ukpga/2007/3/section/58"
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/58
