@@ -22,12 +22,10 @@ class housing_benefit_applicable_income(Variable):
             "pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
-        TAX_COMPONENTS = ["income_tax", "national_insurance"]
+        # Add personal benefits, credits and total benefits to income
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = add(benunit, period, INCOME_COMPONENTS)
-
         personal_benefits = add(benunit, period, ["personal_benefits"])
-        # Add personal benefits, credits and total benefits to tax
         credits = add(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefits + credits + benefits
 
@@ -38,6 +36,7 @@ class housing_benefit_applicable_income(Variable):
         pension_contributions = (
             add(benunit, period, ["pension_contributions"]) * 0.5
         )
+        TAX_COMPONENTS = ["income_tax", "national_insurance"]
         tax = add(benunit, period, TAX_COMPONENTS)
         increased_income_reduced_by_tax_and_pensions = (
             increased_income - tax - pension_contributions
