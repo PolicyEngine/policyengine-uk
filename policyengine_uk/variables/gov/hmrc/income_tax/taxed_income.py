@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class taxed_income(Variable):
     value_type = float
     entity = Person
-    label = "Income which is taxed"
+    label = "Income which is taxed (allowances applied)"
     definition_period = YEAR
     unit = GBP
     reference = dict(
