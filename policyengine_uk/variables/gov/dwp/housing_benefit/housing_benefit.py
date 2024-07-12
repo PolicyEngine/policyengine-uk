@@ -11,7 +11,7 @@ class housing_benefit(Variable):
 
     def formula(benunit, period, parameters):
         housing_benefit_entitlement = benunit(
-            "housing_benefit_entitlement", period
+            "housing_benefit_pre_benefit_cap", period
         )
         benefit_cap_reduction = benunit("benefit_cap_reduction", period)
         return max_(0, housing_benefit_entitlement - benefit_cap_reduction)

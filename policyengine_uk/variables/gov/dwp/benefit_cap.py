@@ -72,7 +72,7 @@ class benefit_cap_reduction(Variable):
             "income_support",
             "ESA_income",
             "universal_credit_pre_benefit_cap",
-            "housing_benefit_entitlement",
+            "housing_benefit_pre_benefit_cap",
             "JSA_contrib",
             "incapacity_benefit",
             "ESA_contrib",
