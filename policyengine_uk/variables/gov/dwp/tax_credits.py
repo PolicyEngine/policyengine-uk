@@ -28,7 +28,7 @@ class tax_credits_applicable_income(Variable):
     def formula(benunit, period, parameters):
         TC = parameters(period).gov.dwp.tax_credits
         STEP_1_COMPONENTS = [
-            "pension_income",
+            "private_pension_income",
             "savings_interest_income",
             "dividend_income",
             "property_income",

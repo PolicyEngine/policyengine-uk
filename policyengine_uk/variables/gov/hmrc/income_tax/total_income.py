@@ -14,7 +14,7 @@ class total_income(Variable):
 
     adds = [
         "employment_income",
-        "pension_income",
+        "private_pension_income",
         "social_security_income",
         "self_employment_income",
         "property_income",

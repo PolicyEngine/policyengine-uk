@@ -28,7 +28,7 @@ class employment_income_before_lsr(Variable):
     uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
 
 
-class pension_income(Variable):
+class private_pension_income(Variable):
     value_type = float
     entity = Person
     label = "pension income"
@@ -37,7 +37,9 @@ class pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = "calibration.programs.pension_income.budgetary_impact.ENGLAND"
+    uprating = (
+        "calibration.programs.private_pension_income.budgetary_impact.ENGLAND"
+    )
 
 
 class state_pension(Variable):

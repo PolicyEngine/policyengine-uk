@@ -6,7 +6,7 @@ from itertools import product
 UPRATED_VARIABLES = (
     "council_tax",
     "employment_income",
-    "pension_income",
+    "private_pension_income",
     "self_employment_income",
     "property_income",
     "savings_interest_income",

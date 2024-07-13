@@ -132,7 +132,7 @@ IMPUTATIONS = [
     "self_employment_income",
     "savings_interest_income",
     "dividend_income",
-    "pension_income",
+    "private_pension_income",
     "employment_expenses",
     "property_income",
     "gift_aid",

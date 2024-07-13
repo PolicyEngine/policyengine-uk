@@ -68,7 +68,7 @@
     tenure_type: RENT_FROM_COUNCIL
     housing_benefit_reported: true
     is_single_person: true
-    pension_income: 100*52
+    private_pension_income: 100*52
   output:
     housing_benefit: 80*52
   

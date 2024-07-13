@@ -3140,7 +3140,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 2,307.4921264648438
 
 
-- pension_income:
+- private_pension_income:
   - Type: float
   - Entity: person
   - Description: Severe Disablement Allowance

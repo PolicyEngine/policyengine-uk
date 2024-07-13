@@ -467,7 +467,7 @@ def add_market_income(
         person.index,
     )
 
-    frs["pension_income"] = (
+    frs["private_pension_income"] = (
         pension_payment + pension_tax_paid + pension_deductions_removed
     ) * 52
 

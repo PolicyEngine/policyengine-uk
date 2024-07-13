@@ -12,4 +12,4 @@ class taxable_pension_income(Variable):
     )
     unit = GBP
 
-    adds = ["pension_income"]
+    adds = ["private_pension_income"]

@@ -13,7 +13,7 @@ class earned_income(Variable):
         COMPONENTS = [
             "employment_income",
             "self_employment_income",
-            "pension_income",
+            "private_pension_income",
         ]
         return add(person, period, COMPONENTS)
 
@@ -34,7 +34,7 @@ class market_income(Variable):
             "dividend_income",
             "miscellaneous_income",
             "property_income",
-            "pension_income",
+            "private_pension_income",
             "private_transfer_income",
             "maintenance_income",
         ]
@@ -354,7 +354,7 @@ class household_market_income(Variable):
         "dividend_income",
         "miscellaneous_income",
         "property_income",
-        "pension_income",
+        "private_pension_income",
         "private_transfer_income",
         "maintenance_income",
         "capital_gains",
