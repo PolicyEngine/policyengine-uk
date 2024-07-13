@@ -17,10 +17,8 @@ class personal_allowance_savings_income(Variable):
         pa_remaining = pa_max_value - pa_earned_income
 
         savings_income = person("taxable_savings_interest_income", period)
-        is_income_greater = savings_income > pa_remaining
+        is_income_lesser = savings_income < pa_remaining
 
         return where(
-            is_income_greater,
-            pa_remaining,
-            clip(pa_remaining - savings_income, 0, savings_income),
+            is_income_lesser, max_(0, savings_income), max_(0, pa_remaining)
         )

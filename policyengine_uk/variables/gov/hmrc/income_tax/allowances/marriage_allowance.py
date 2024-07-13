@@ -10,9 +10,11 @@ class unused_personal_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        max_personal_allowance = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.personal_allowance.amount
         return max_(
-            person("personal_allowance", period)
-            - person("adjusted_net_income", period),
+            max_personal_allowance - person("adjusted_net_income", period),
             0,
         )
 
