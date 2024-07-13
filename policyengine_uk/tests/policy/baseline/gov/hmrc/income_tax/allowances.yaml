@@ -4,7 +4,7 @@
   input:
     adjusted_net_income: 0
   output:
-    personal_allowance: 12500
+    personal_allowance: 0
 - name: Personal Allowance eliminated
   period: 2020
   absolute_error_margin: 0
@@ -97,7 +97,7 @@
   period: 2020
   absolute_error_margin: 0
   output:
-    personal_allowance: 12500
+    personal_allowance: 0
     blind_persons_allowance: 0
     gift_aid: 0
     covenanted_payments: 0
