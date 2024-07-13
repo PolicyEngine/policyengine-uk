@@ -13,7 +13,4 @@ class taxable_dividend_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return max_(
-            0,
-            person("dividend_income", period)
-        )
+        return max_(0, person("dividend_income", period))

@@ -1,0 +1,44 @@
+- name: Personal allowance with low income
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 8_000
+    personal_allowance_savings_income: 1_000
+    personal_allowance_dividend_income: 500
+  output:
+    personal_allowance: 9_500
+
+- name: Personal allowance with medium income
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 25_000
+    personal_allowance_savings_income: 3_000
+    personal_allowance_dividend_income: 2_000
+  output:
+    personal_allowance: 30_000
+
+- name: Personal allowance with high income
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 80_000
+    personal_allowance_savings_income: 10_000
+    personal_allowance_dividend_income: 5_000
+  output:
+    personal_allowance: 95_000
+
+- name: Personal allowance with uneven amounts
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 42_567.50
+    personal_allowance_savings_income: 3_789.25
+    personal_allowance_dividend_income: 1_234.75
+  output:
+    personal_allowance: 47_591.50
+
+- name: Personal allowance with zero savings and dividend income
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 50_000
+    personal_allowance_savings_income: 0
+    personal_allowance_dividend_income: 0
+  output:
+    personal_allowance: 50_000
