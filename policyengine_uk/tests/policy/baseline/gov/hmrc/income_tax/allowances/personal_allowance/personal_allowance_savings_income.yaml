@@ -1,0 +1,39 @@
+- name: No remaining allowance after earned income
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 12_570
+    taxable_savings_interest_income: 1_000
+  output:
+    personal_allowance_savings_income: 0
+
+- name: Small remaining allowance, fully used by savings
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 12_000
+    taxable_savings_interest_income: 1_000
+  output:
+    personal_allowance_savings_income: 570
+
+- name: Large remaining allowance
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 5_000
+    taxable_savings_interest_income: 3_000
+  output:
+    personal_allowance_savings_income: 3_000
+
+- name: Remaining allowance larger than savings income
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 10_000
+    taxable_savings_interest_income: 1_000
+  output:
+    personal_allowance_savings_income: 1_000
+
+- name: No savings income, full remaining allowance
+  period: 2024
+  input:
+    personal_allowance_earned_taxable_income: 8_000
+    taxable_savings_interest_income: 0
+  output:
+    personal_allowance_savings_income: 0

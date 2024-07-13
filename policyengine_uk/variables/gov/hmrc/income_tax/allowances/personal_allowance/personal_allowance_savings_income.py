@@ -10,8 +10,17 @@ class personal_allowance_savings_income(Variable):
     reference = "Income Tax Act 2007 s. 35"
 
     def formula(person, period, parameters):
-        max_pa = person("personal_allowance_earned_taxable_income", period)
+        pa_max_value = person("personal_allowance_max_value", period)
+        pa_earned_income = person(
+            "personal_allowance_earned_taxable_income", period
+        )
+        pa_remaining = pa_max_value - pa_earned_income
 
-        income = person("taxable_savings_interest_income", period)
+        savings_income = person("taxable_savings_interest_income", period)
+        is_income_greater = savings_income > pa_remaining
 
-        return max_(0, max_pa - income)
+        return where(
+            is_income_greater,
+            pa_remaining,
+            clip(pa_remaining - savings_income, 0, savings_income),
+        )
