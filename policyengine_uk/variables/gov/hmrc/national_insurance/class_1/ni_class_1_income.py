@@ -10,8 +10,8 @@ class ni_class_1_income(Variable):
     unit = GBP
     adds = [
         "employment_income",
-        "statutory_sick_pay",
-        "statutory_maternity_pay",
-        "statutory_paternity_pay",
+        "household_statutory_sick_pay",
+        "household_statutory_maternity_pay",
+        "household_statutory_paternity_pay",
     ]
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/3"

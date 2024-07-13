@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class SMP(Variable):
+class statutory_maternity_pay(Variable):
     value_type = float
     entity = Person
     label = "Statutory Maternity Pay"

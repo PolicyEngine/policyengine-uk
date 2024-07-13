@@ -8,4 +8,4 @@ class employment_benefits(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["SSP", "SMP"]
+    adds = ["statutory_sick_pay", "statutory_maternity_pay"]

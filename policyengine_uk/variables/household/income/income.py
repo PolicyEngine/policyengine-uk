@@ -393,7 +393,7 @@ class income_decile(Variable):
         return person.household("household_income_decile", period)
 
 
-class statutory_maternity_pay(Variable):
+class household_statutory_maternity_pay(Variable):
     label = "Statutory maternity pay"
     entity = Person
     definition_period = YEAR
@@ -401,7 +401,7 @@ class statutory_maternity_pay(Variable):
     unit = GBP
 
 
-class statutory_paternity_pay(Variable):
+class household_statutory_paternity_pay(Variable):
     label = "Statutory paternity pay"
     entity = Person
     definition_period = YEAR
@@ -409,7 +409,7 @@ class statutory_paternity_pay(Variable):
     unit = GBP
 
 
-class statutory_sick_pay(Variable):
+class household_statutory_sick_pay(Variable):
     label = "Statutory sick pay"
     entity = Person
     definition_period = YEAR

@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class SSP(Variable):
+class statutory_sick_pay(Variable):
     value_type = float
     entity = Person
     label = "Statutory Sick Pay"
