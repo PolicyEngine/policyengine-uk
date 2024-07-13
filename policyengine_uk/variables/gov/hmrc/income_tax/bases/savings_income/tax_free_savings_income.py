@@ -8,4 +8,4 @@ class tax_free_savings_income(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["ISA_interest_income"]
+    adds = ["individual_savings_account_interest_income"]
