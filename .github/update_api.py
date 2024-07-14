@@ -21,8 +21,9 @@ def main():
         f"git clone https://nikhilwodruff:{pat}@github.com/policyengine/policyengine-household-api"
     )
 
+    # Then, cd inside and run gcp/bump_country_package.py --country policyengine-uk --version {version}
     os.system(
-        f"cd policyengine-household-api && python gcp/bump_country_package.py --country policyengine-us --version {version}"
+        f"cd policyengine-household-api && python gcp/bump_country_package.py --country policyengine-uk --version {version}"
     )
 
 
