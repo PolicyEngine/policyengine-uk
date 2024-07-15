@@ -19,7 +19,7 @@ class housing_benefit_applicable_income(Variable):
             "employment_income",
             "self_employment_income",
             "property_income",
-            "pension_income",
+            "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         # Add personal benefits, credits and total benefits to income
