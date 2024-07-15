@@ -1128,3 +1128,8 @@
     changed:
     - Refactor the Universal Credit parameter, variable and test files.
   date: 2024-07-11 14:58:53
+- bump: patch
+  changes:
+    changed:
+    - Refactor the Housing Benefit parameter, variable and test files.
+  date: 2024-07-15 12:12:25
