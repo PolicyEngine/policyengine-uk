@@ -1,0 +1,18 @@
+description: The following couple personal allowance is provided under the Housing Benefit if at least one member is over the state pension age threshold.
+values:
+  2015-06-01: 270.6
+  2021-04-01: 286.05
+  2022-04-06: 294.9
+  2023-04-01: 324.7
+  2024-04-01: 352
+
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit aged couple personal allowance 
+  uprating: gov.benefit_uprating_cpi
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
+    - title: Benefit and pension rates 2024 to 2025 - Policy paper
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025

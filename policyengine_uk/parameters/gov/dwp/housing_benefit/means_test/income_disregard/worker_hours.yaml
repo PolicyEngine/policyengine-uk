@@ -1,0 +1,11 @@
+description: Filers can receive an additional income disregard amount if the meet the following averge weekly work hour quota under the Housing Benefit.
+values:
+  2015-06-01: 30
+metadata:
+  period: week
+  unit: hour
+  label: Housing Benefit worker element hours requirement
+  economy: false
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 17 (4)
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=242

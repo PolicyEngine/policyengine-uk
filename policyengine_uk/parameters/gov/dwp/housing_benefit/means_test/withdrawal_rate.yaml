@@ -1,7 +1,10 @@
-description: Withdrawal rate of Housing Benefit
+description: Withdrawal rate under the Housing Benefit.
 values:
   2015-06-01: 0.65
 metadata:
   unit: /1
   label: Housing Benefit withdrawal rate
-  reference: http://www.oecd.org/els/soc/TaxBEN-United-Kingdom-2018.pdf#page=13
+  period: year
+  reference: 
+    - title: The Housing Benefit Regulations 2006 sec. 71.
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=71

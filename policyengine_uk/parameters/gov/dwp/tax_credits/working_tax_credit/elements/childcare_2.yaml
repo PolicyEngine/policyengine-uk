@@ -4,6 +4,7 @@ values:
   2005-04-06: 300
 metadata:
   period: week
+  label: Working Tax Credit childcare element two or more children amount
   unit: currency-GBP
   reference:
     title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002

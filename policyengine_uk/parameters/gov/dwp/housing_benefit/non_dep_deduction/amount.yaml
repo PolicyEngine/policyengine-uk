@@ -1,0 +1,78 @@
+description: The following amount is provided for individuals under the Housing Benefit non-dependent deduction, based on total income.
+
+brackets:
+- threshold:
+    2018-06-18: 0
+  amount:
+    2018-06-18: 15.25
+    2021-04-01: 15.95
+    2022-04-01: 16.45
+    2023-04-01: 18.1
+    2024-04-01: 19.3
+- threshold:
+    2018-06-18: 139
+    2021-04-01: 154
+    2023-04-01: 162
+    2024-04-01: 176
+  amount:
+    2018-06-18: 35.0
+    2021-04-01: 36.65
+    2022-04-01: 37.8
+    2023-04-01: 41.6
+    2024-04-01: 44.4
+- threshold:
+    2018-06-18: 204
+    2021-04-01: 224
+    2023-04-01: 236
+    2024-04-01: 256
+  amount:
+    2018-06-18: 48.05
+    2021-04-01: 50.3
+    2022-04-01: 51.85
+    2023-04-01: 57.1
+    2024-04-01: 60.95
+- threshold:
+    2018-06-18: 265
+    2021-04-01: 292
+    2023-04-01: 308
+    2024-04-01: 334
+  amount:
+    2018-06-18: 78.65
+    2021-04-01: 82.3
+    2022-04-01: 84.85
+    2023-04-01: 93.4
+    2024-04-01: 99.65
+- threshold:
+    2018-06-18: 354
+    2021-04-01: 389
+    2023-04-01: 410
+    2024-04-01: 445
+  amount:
+    2018-06-18: 89.55
+    2021-04-01: 93.7
+    2022-04-01: 96.6
+    2023-04-01: 106.35
+    2024-04-01: 113.5
+- threshold:
+    2018-06-18: 439
+    2021-04-01: 484
+    2023-04-01: 511
+    2024-04-01: 554
+  amount:
+    2018-06-18: 98.3
+    2021-04-01: 102.85
+    2022-04-01: 106.05
+    2023-04-01: 116.75
+    2024-04-01: 124.55
+
+
+metadata:
+  amount_unit: currency-GBP
+  economy: false
+  period: week
+  propagate_metadata_to_children: true
+  threshold_unit: currency-GBP
+  type: single_amount
+  reference: 
+    - title: The Housing Benefit Regulations 2006 sec. 74
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74/2024-04-01

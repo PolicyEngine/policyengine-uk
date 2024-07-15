@@ -1,0 +1,17 @@
+- name: Partially reduced benefit
+  period: 2025
+  input:
+    housing_benefit_pre_benefit_cap: 1_000
+    benefit_cap_reduction: 400
+    would_claim_housing_benefit: true
+  output:
+    housing_benefit: 600
+
+- name: Capped at 0
+  period: 2025
+  input:
+    housing_benefit_pre_benefit_cap: 1_000
+    benefit_cap_reduction: 3_000
+    would_claim_housing_benefit: true
+  output:
+    housing_benefit: 0

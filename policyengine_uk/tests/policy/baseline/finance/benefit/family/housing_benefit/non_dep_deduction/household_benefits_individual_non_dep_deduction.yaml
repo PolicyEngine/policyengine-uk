@@ -1,0 +1,31 @@
+- name: Reduced rent without LHA
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    total_income: 5_200 # 100 weekly
+  output:
+    household_benefits_individual_non_dep_deduction: 19.3 * 52
+
+- name: Higher amount
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    total_income: 28_912 # 556 weekly
+  output:
+    household_benefits_individual_non_dep_deduction: 124.55 * 52
+
+- name: Middle amount
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    total_income: 17_420 # 335 weekly
+  output:
+    household_benefits_individual_non_dep_deduction: 99.65 * 52
+
+- name: Exclusive brackets
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    total_income: 9_153 # 176 weekly
+  output:
+    household_benefits_individual_non_dep_deduction: 44.4 * 52

@@ -1,0 +1,11 @@
+description: A higher Houseing Benefit allowance amount is provided for filers over this age threshold.
+metadata:
+  label: Housing Benefit allowance older age threshold
+  period: year
+  unit: year
+  reference: 
+    - title: The Housing Benefit Regulations 2006 sec. 74
+      href: https://www.legislation.gov.uk/uksi/2006/213/made/data.pdf#page=73
+
+values:
+  2019-06-01: 25

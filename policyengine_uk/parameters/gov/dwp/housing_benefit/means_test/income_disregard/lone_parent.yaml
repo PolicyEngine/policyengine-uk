@@ -1,0 +1,10 @@
+description: This amount of earnings is disreagrded for lone parents under the Housing Benefit.
+values:
+  2015-06-01: 25
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit lone parent earnings disregard
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 4
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=240

@@ -1,0 +1,10 @@
+description: This amount of earnings is disreagrded for workers under the Housing Benefit.
+values:
+  2015-06-01: 37.10
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit worker earnings disregard
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 4 (5)(6)(17)
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=242

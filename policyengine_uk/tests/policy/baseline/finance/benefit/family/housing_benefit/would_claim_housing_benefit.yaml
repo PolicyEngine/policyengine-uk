@@ -1,0 +1,39 @@
+- name: Claims all benefits
+  period: 2025
+  input:
+    claims_all_entitled_benefits: true
+    housing_benefit_reported: 0
+    housing_benefit_baseline_entitlement: 0
+    housing_benefit_entitlement: 0
+  output:
+    would_claim_housing_benefit: true
+
+- name: Reported
+  period: 2025
+  input:
+    claims_all_entitled_benefits: false
+    housing_benefit_reported: 1
+    housing_benefit_baseline_entitlement: 0
+    housing_benefit_entitlement: 0
+  output:
+    would_claim_housing_benefit: true
+
+- name: Entitlement received
+  period: 2025
+  input:
+    claims_all_entitled_benefits: false
+    housing_benefit_reported: 0
+    housing_benefit_baseline_entitlement: 0
+    housing_benefit_entitlement: 1
+  output:
+    would_claim_housing_benefit: true
+
+- name: Ineligible
+  period: 2025
+  input:
+    claims_all_entitled_benefits: false
+    housing_benefit_reported: 0
+    housing_benefit_baseline_entitlement: 0
+    housing_benefit_entitlement: 0
+  output:
+    would_claim_housing_benefit: false

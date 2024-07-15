@@ -1,0 +1,16 @@
+description: The following couple personal allowance is provided under the Housing Benefit, if at least one member is over the younger age threshold.
+values:
+  2015-06-01: 114.85
+  2021-04-01: 117.4
+  2022-04-01: 121.05
+  2023-04-01: 133.3
+  2024-04-01: 142.25
+
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit older couple personal allowance 
+  uprating: gov.benefit_uprating_cpi
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212

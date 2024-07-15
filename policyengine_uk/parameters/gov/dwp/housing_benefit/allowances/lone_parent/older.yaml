@@ -1,0 +1,16 @@
+description: The following older lone parent personal allowance is provided under the Housing Benefit.
+values:
+  2015-06-01: 73.10
+  2021-04-01: 74.70
+  2022-04-06: 77.00
+  2023-04-01: 84.8
+  2024-04-01: 90.5
+
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit lone parent older personal allowance 
+  uprating: gov.benefit_uprating_cpi
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212

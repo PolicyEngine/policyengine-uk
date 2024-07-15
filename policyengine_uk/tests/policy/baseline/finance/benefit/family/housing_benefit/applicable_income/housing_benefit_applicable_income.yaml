@@ -1,0 +1,124 @@
+- name: Capped at 0
+  period: 2025
+  input:
+    # Benefits
+    child_benefit: 1_000
+    income_support: 0
+    JSA_income: 0
+    ESA_income: 0
+    # Income
+    employment_income: 0
+    self_employment_income: 0
+    property_income: 0
+    pension_income: 0
+    # Tax
+    income_tax: 0
+    national_insurance: 0
+    # Other 
+    personal_benefits: 0
+    tax_credits: 0
+    pension_contributions: 0
+    housing_benefit_applicable_income_disregard: 5_000
+    housing_benefit_applicable_income_childcare_element: 10_000
+  output:
+    housing_benefit_applicable_income: 0
+
+- name: Baseline inputs
+  period: 2025
+  input:
+    # Benefits
+    child_benefit: 1_000
+    income_support: 0
+    JSA_income: 0
+    ESA_income: 0
+    # Income
+    employment_income: 0
+    self_employment_income: 0
+    property_income: 0
+    pension_income: 0
+    # Tax
+    income_tax: 0
+    national_insurance: 0
+    # Other 
+    personal_benefits: 0
+    tax_credits: 0
+    pension_contributions: 0
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+  output:
+    housing_benefit_applicable_income: 1_000
+
+- name: Pension contributions halved
+  period: 2025
+  input:
+    # Benefits
+    child_benefit: 1_000
+    income_support: 2_250
+    JSA_income: 0
+    ESA_income: 0
+    # Income
+    employment_income: 0
+    self_employment_income: 0
+    property_income: 0
+    pension_income: 0
+    # Tax
+    income_tax: 0
+    national_insurance: 0
+    # Other 
+    personal_benefits: 0
+    tax_credits: 0
+    pension_contributions: 1_500
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+  output:
+    housing_benefit_applicable_income: 2_500
+
+- name: Added Tax and income
+  period: 2025
+  input:
+    # Benefits
+    child_benefit: 1_000
+    income_support: 2_250
+    JSA_income: 0
+    ESA_income: 0
+    # Income
+    employment_income: 0
+    self_employment_income: 0
+    property_income: 1_000
+    pension_income: 0
+    # Tax
+    income_tax: 0
+    national_insurance: 0
+    # Other 
+    personal_benefits: 0
+    tax_credits: 1_000
+    pension_contributions: 1_500
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+  output:
+    housing_benefit_applicable_income: 4_500
+
+- name: Pension contributions capped at 0
+  period: 2025
+  input:
+    # Benefits
+    child_benefit: 1_000
+    income_support: 2_250
+    JSA_income: 0
+    ESA_income: 0
+    # Income
+    employment_income: 0
+    self_employment_income: 0
+    property_income: 1_000
+    pension_income: 0
+    # Tax
+    income_tax: 0
+    national_insurance: 0
+    # Other 
+    personal_benefits: 0
+    tax_credits: 1_000
+    pension_contributions: 100_000
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+  output:
+    housing_benefit_applicable_income: 0

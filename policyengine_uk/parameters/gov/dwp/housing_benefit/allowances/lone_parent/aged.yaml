@@ -1,0 +1,19 @@
+description: Personal allowance for Housing Benefit for a lone parent over State Pension age.
+
+values:
+  2015-06-01: 181
+  2021-04-01: 191.15
+  2022-04-06: 197.1
+  2023-04-01: 217
+  2024-04-01: 235.2
+
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit lone parent aged personal allowance 
+  uprating: gov.benefit_uprating_cpi
+  reference: 
+    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
+    - title: Benefit and pension rates 2024 to 2025 - Policy paper
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025

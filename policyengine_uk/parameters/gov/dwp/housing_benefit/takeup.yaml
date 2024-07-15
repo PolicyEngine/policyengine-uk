@@ -3,9 +3,9 @@ description: Share of eligible Housing Benefit recipients that participate. By d
 metadata:
   economy: false
   label: Housing Benefit take-up rate
-  name: HB_takeup
   propagate_metadata_to_children: true
   unit: /1
+  period: year
 values:
   2019-01-01: 1.0
   2020-01-01: 1.0
