@@ -32,6 +32,7 @@
   absolute_error_margin: 0
   input:
     dividend_income: 50_000
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     dividend_income_tax: 6_225
 

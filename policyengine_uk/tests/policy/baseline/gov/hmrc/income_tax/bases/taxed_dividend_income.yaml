@@ -37,6 +37,7 @@
   input:
     taxable_dividend_income: 1_100
     dividend_allowance: 1_000
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 100
 
@@ -45,6 +46,7 @@
   input:
     taxable_dividend_income: 50_000
     dividend_allowance: 2000
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 48_000
 
@@ -61,6 +63,7 @@
   input:
     taxable_dividend_income: 2_500.50
     dividend_allowance: 2_000.00
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 500.50
 
@@ -77,5 +80,6 @@
   input:
     taxable_dividend_income: 1_000.01
     dividend_allowance: 1_000
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 0.01
