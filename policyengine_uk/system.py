@@ -12,7 +12,10 @@ from policyengine_uk.data import (
 )
 from policyengine_uk.data.storage import STORAGE_FOLDER
 import pandas as pd
-from policyengine_uk.tools.parameters import backdate_parameters
+from policyengine_uk.tools.parameters import (
+    backdate_parameters,
+    convert_to_fiscal_year_parameters,
+)
 
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
@@ -36,6 +39,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         super().__init__(entities, reform=reform)
 
         self.parameters = backdate_parameters(self.parameters, "2021-01-01")
+        self.parameters = convert_to_fiscal_year_parameters(self.parameters)
 
 
 system = CountryTaxBenefitSystem()

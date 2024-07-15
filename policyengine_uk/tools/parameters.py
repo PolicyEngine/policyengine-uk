@@ -23,3 +23,16 @@ def backdate_parameters(
                     value=earliest_value,
                 )
     return root
+
+
+def convert_to_fiscal_year_parameters(parameters):
+    YEARS = list(range(2018, 2026))
+    for param in parameters.get_descendants():
+        if isinstance(param, Parameter):
+            for year in YEARS:
+                value_mid_year = param(f"{year}-04-30")
+                param.update(
+                    period=f"{year}",
+                    value=value_mid_year,
+                )
+    return parameters
