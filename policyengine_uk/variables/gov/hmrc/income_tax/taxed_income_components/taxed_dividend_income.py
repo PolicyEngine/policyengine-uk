@@ -13,6 +13,7 @@ class taxed_dividend_income(Variable):
     )
 
     def formula(person, period, parameters):
+
         return max_(
             0,
             person("taxable_dividend_income", period)

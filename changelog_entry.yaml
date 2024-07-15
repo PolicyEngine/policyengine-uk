@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Personal Allowance now properly calculates cases where dividend income is covered by the allowance
