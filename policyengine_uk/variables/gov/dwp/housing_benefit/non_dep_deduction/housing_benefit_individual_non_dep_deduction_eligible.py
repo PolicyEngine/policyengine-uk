@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class housing_benefit_individual_non_dep_deduction_eligible(Variable):
     value_type = bool
     entity = Person
-    label = "Eligible person for the Housing Benefit non-dependent deduction"
+    label = "eligible person for the Housing Benefit non-dependent deduction"
     definition_period = YEAR
 
     def formula(person, period, parameters):
