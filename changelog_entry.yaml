@@ -1,7 +1,4 @@
 - bump: patch
   changes:
     fixed:
-    - Folder distribution and formatting for income tax-related variables.
-    - pays_scottish_income_tax now returns a Boolean value.
-    added:
-    - References to many income tax provisions.
+    - Personal Allowance now properly calculates cases where dividend income is covered by the allowance
