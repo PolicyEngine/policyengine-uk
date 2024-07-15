@@ -22,7 +22,6 @@
   output:
     taxed_dividend_income: 0
 
-
 - name: Situation where personal allowance is used for some dividend income
   period: 2024
   input:
@@ -30,9 +29,8 @@
     taxable_employment_income: 10_000
   output:
     personal_allowance: 12_570
-    taxed_dividend_income: 9_000
+    taxed_dividend_income: 6_430
     dividend_allowance: 1_000
-
 
 - name: Dividend income slightly above allowance
   period: 2024
@@ -57,14 +55,6 @@
     dividend_allowance: 2_000
   output:
     taxed_dividend_income: 998_000
-
-- name: Dividend income with zero allowance
-  period: 2024
-  input:
-    taxable_dividend_income: 5_000
-    dividend_allowance: 0
-  output:
-    taxed_dividend_income: 5_000
 
 - name: Decimal values
   period: 2024

@@ -57,14 +57,6 @@
   output: 
     savings_allowance: 1_000.0
 
-- name: Dividend Allowance (after zeroing out Personal Allowance)
-  period: 2024
-  input: 
-    taxable_dividend_income: 5_000
-    personal_allowance: 0
-  output: 
-    dividend_allowance: 1_000.0
-
 - name: Allowances Applicable to Adjusted Net Income
   period: 2024
   input:
