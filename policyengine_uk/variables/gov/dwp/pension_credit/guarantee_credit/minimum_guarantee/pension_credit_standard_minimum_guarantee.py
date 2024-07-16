@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 
 
-class standard_minimum_guarantee(Variable):
-    label = "Standard Minimum Guarantee"
+class pension_credit_standard_minimum_guarantee(Variable):
+    label = "Pension Credit standard minimum guarantee"
     entity = BenUnit
     definition_period = YEAR
     value_type = float

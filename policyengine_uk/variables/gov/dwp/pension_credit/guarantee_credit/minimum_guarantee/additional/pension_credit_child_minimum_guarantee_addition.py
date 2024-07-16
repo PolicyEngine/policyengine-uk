@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 
 
-class child_minimum_guarantee_addition(Variable):
-    label = "Child-related addition"
+class pension_credit_child_minimum_guarantee_addition(Variable):
+    label = "Pension Credit child-related addition"
     entity = BenUnit
     definition_period = YEAR
     value_type = float

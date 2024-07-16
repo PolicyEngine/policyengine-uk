@@ -8,4 +8,4 @@ class pension_credit_entitlement(Variable):
     value_type = float
     unit = GBP
     defined_for = "is_pension_credit_eligible"
-    adds = ["guarantee_credit", "savings_credit"]
+    adds = ["pension_credit_guarantee_credit", "savings_credit"]

@@ -1,11 +1,14 @@
 description: Benefits which confer standard disability in children for Pension Credit.
 metadata:
   economy: false
+  period: year
   propagate_metadata_to_children: true
+  label: Pension Credit guaranteed credit child disability eligibility sources
   reference:
-  - href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA
-    title: The State Pension Credit Regulations 2002 sch. 2A(9)
+    - title: The State Pension Credit Regulations 2002 sch. 2A(9)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA
   unit: currency-GBP
+
 values:
   2002-01-01:
   - pip

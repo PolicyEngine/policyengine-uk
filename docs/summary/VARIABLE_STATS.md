@@ -3886,7 +3886,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 10,001,110.31248188
 
 
-- guarantee_credit:
+- pension_credit_guarantee_credit:
   - Type: float
   - Entity: benunit
   - Description: Guarantee Credit
@@ -3896,7 +3896,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 10,001,110.31248188
 
 
-- minimum_guarantee:
+- pension_credit_minimum_guarantee:
   - Type: float
   - Entity: benunit
   - Description: Minimum Guarantee
@@ -3906,7 +3906,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 36,955,812.870046616
 
 
-- standard_minimum_guarantee:
+- pension_credit_standard_minimum_guarantee:
   - Type: float
   - Entity: benunit
   - Description: Standard Minimum Guarantee
@@ -3916,7 +3916,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 36,955,812.870046616
 
 
-- severe_disability_minimum_guarantee_addition:
+- pension_credit_severe_disability_minimum_guarantee_addition:
   - Type: float
   - Entity: benunit
   - Description: Severe disability-related increase
@@ -3926,7 +3926,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 2,765,413.3859882355
 
 
-- additional_minimum_guarantee:
+- pension_credit_additional_minimum_guarantee:
   - Type: float
   - Entity: benunit
   - Description: Additional Minimum Guarantee
@@ -3936,7 +3936,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 10,863,037.356937408
 
 
-- child_minimum_guarantee_addition:
+- pension_credit_child_minimum_guarantee_addition:
   - Type: float
   - Entity: benunit
   - Description: Child-related addition
@@ -3946,7 +3946,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 7,626,600.520817518
 
 
-- carer_minimum_guarantee_addition:
+- pension_credit_carer_minimum_guarantee_addition:
   - Type: float
   - Entity: benunit
   - Description: Carer-related increase

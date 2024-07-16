@@ -3,7 +3,7 @@ values:
   2002-01-01: 0.5
 metadata:
   unit: /1
-  name: pc_pen_con_deduction
+  period: year
   label: Pension Credit pension contribution deduction
   reference:
     - title: Pension Credit technical guidance | GOV.UK

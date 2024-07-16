@@ -14,7 +14,7 @@ class savings_credit(Variable):
         sc = parameters(period).gov.dwp.pension_credit.savings_credit
         relation_type = benunit("relation_type", period)
         threshold = sc.threshold[relation_type] * WEEKS_IN_YEAR
-        minimum_guarantee = benunit("minimum_guarantee", period)
+        minimum_guarantee = benunit("pension_credit_minimum_guarantee", period)
         income_over_threshold = max_(income - threshold, 0)
         income_over_mg = max_(income - minimum_guarantee, 0)
         maximum_savings_credit = sc.rate.phase_in * (

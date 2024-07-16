@@ -4,4 +4,4 @@
   input:
     dla_sc_category: HIGHER
   output:
-    severe_disability_minimum_guarantee_addition: 67.29 * 52
+    pension_credit_severe_disability_minimum_guarantee_addition: 67.29 * 52

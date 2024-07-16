@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class carer_minimum_guarantee_addition(Variable):
+class pension_credit_carer_minimum_guarantee_addition(Variable):
     label = "Carer-related increase"
     entity = BenUnit
     definition_period = YEAR

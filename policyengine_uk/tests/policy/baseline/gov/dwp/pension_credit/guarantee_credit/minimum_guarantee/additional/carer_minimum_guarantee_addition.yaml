@@ -4,7 +4,7 @@
   input:
     carers_allowance: 30
   output:
-    carer_minimum_guarantee_addition: 1_960
+    pension_credit_carer_minimum_guarantee_addition: 1_960
 
 - name: Both adults receive carers' allowance, eligible for addition (each).
   period: 2022
@@ -19,4 +19,4 @@
       benunit:
         members: [claimant, spouse]
   output:
-    carer_minimum_guarantee_addition: 3_920
+    pension_credit_carer_minimum_guarantee_addition: 3_920

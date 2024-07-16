@@ -1,11 +1,12 @@
 description: Additional elements available in Pension Credit.
 metadata:
   economy: false
+  period: year
   propagate_metadata_to_children: true
   reference: none
   unit: currency-GBP
 values:
   2002-01-01:
-  - severe_disability_minimum_guarantee_addition
-  - carer_minimum_guarantee_addition
-  - child_minimum_guarantee_addition
+  - pension_credit_severe_disability_minimum_guarantee_addition
+  - pension_credit_carer_minimum_guarantee_addition
+  - pension_credit_child_minimum_guarantee_addition

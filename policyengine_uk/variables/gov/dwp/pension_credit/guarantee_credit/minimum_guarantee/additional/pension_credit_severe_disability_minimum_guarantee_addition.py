@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 
 
-class severe_disability_minimum_guarantee_addition(Variable):
-    label = "Severe disability-related increase"
+class pension_credit_severe_disability_minimum_guarantee_addition(Variable):
+    label = "Pension Credit severe disability-related increase"
     entity = BenUnit
     definition_period = YEAR
     value_type = float

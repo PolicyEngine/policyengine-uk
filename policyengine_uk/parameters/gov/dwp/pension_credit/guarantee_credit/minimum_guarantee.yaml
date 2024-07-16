@@ -8,6 +8,8 @@ SINGLE:
   2020-04-06: 173.75
   2021-04-06: 177.10
   2022-04-01: 182.60
+  2023-04-01: 201.05
+  2024-04-01: 218.15
 COUPLE:
   2015-04-06: 230.85
   2016-04-06: 237.55
@@ -17,12 +19,13 @@ COUPLE:
   2020-04-06: 265.20
   2021-04-06: 270.30
   2022-04-01: 278.70
+  2023-04-01: 306.85
+  2024-04-01: 332.95
 metadata:
   period: week
-  name: pc_min_guarantee
   label: Pension Credit minimum guarantee
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference:
-    - title: The State Pension Credit Regulations 2002 reg. 6
-      url: https://www.legislation.gov.uk/uksi/2002/1792/regulation/6/2021-04-12
+    - title: The State Pension Credit Regulations 2002 reg. 6 (1)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/data.pdf#page=21

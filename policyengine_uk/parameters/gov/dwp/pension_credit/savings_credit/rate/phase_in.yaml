@@ -3,6 +3,7 @@ values:
   2002-01-01: 0.6
 metadata:
   unit: /1
+  period: year
   label: Savings Credit phase-in rate
   reference:
     - title: The State Pension Credit Regulations 2002 reg. 7
