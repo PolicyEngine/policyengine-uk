@@ -15,6 +15,4 @@ class pension_credit_carer_minimum_guarantee_addition(Variable):
         carers_allowance = benunit.members("carers_allowance", period)
         num_receiving_carers_allowance = benunit.sum(carers_allowance > 0)
         gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
-        return (
-            num_receiving_carers_allowance * gc.carer.addition * WEEKS_IN_YEAR
-        )
+        return num_receiving_carers_allowance * gc.carer.amount * WEEKS_IN_YEAR

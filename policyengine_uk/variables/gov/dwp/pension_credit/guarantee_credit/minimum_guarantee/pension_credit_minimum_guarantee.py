@@ -10,4 +10,7 @@ class pension_credit_minimum_guarantee(Variable):
     unit = GBP
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6"
 
-    adds = ["pension_credit_standard_minimum_guarantee", "pension_credit_additional_minimum_guarantee"]
+    adds = [
+        "pension_credit_standard_minimum_guarantee",
+        "pension_credit_additional_minimum_guarantee",
+    ]

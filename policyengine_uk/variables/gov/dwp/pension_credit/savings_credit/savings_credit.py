@@ -8,6 +8,7 @@ class savings_credit(Variable):
     value_type = float
     unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/3"
+    defined_for = "is_savings_credit_eligible"
 
     def formula(benunit, period, parameters):
         income = benunit("savings_credit_income", period)
@@ -24,5 +25,4 @@ class savings_credit(Variable):
             maximum_savings_credit, sc.rate.phase_in * income_over_threshold
         )
         sc_reduction = sc.rate.phase_out * income_over_mg
-        eligible = benunit("is_savings_credit_eligible", period)
-        return max_(0, phased_in_sc - sc_reduction) * eligible
+        return max_(0, phased_in_sc - sc_reduction)

@@ -29,9 +29,9 @@ class pension_credit_child_minimum_guarantee_addition(Variable):
                     is_child & is_severely_disabled,
                 ],
                 [
-                    gc.child.addition,
-                    gc.child.addition + gc.child.disability.addition,
-                    gc.child.addition + gc.child.disability.severe.addition,
+                    gc.child.amount,
+                    gc.child.amount + gc.child.disability.amount,
+                    gc.child.amount + gc.child.disability.severe.amount,
                 ],
             )
             * WEEKS_IN_YEAR

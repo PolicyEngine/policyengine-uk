@@ -2,7 +2,7 @@
   period: 2021
   input:
     pension_credit_income: 170
-    minimum_guarantee: 180
+    pension_credit_minimum_guarantee: 180
   output:
     is_pension_credit_guarantee_credit_eligible: true
 
@@ -10,6 +10,6 @@
   period: 2021
   input:
     pension_credit_income: 190
-    minimum_guarantee: 180
+    pension_credit_minimum_guarantee: 180
   output:
     is_pension_credit_guarantee_credit_eligible: false

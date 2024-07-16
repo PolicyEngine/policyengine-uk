@@ -37,6 +37,6 @@ class pension_credit_severe_disability_minimum_guarantee_addition(Variable):
         return (
             eligible
             * count_eligible_adults
-            * severe_disability.addition
+            * severe_disability.amount
             * WEEKS_IN_YEAR
         )
