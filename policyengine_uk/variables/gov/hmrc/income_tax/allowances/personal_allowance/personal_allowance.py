@@ -2,6 +2,8 @@ from policyengine_uk.model_api import *
 
 
 class personal_allowance(Variable):
+    # The order in which segments of the Personal Allowance
+    # are calculated is found in Income Tax Act 2007, chapter 2, section 16 (5)
 
     value_type = float
     entity = Person
