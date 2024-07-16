@@ -1,10 +1,10 @@
-description: Additional elements available in Pension Credit.
+description: The following additional elements are provided under the Pension Credit.
 metadata:
   economy: false
   period: year
   propagate_metadata_to_children: true
-  reference: none
   unit: currency-GBP
+  label: Pension Credit guarantee credit additions
 values:
   2002-01-01:
   - pension_credit_severe_disability_minimum_guarantee_addition

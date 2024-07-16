@@ -5,9 +5,8 @@ metadata:
   propagate_metadata_to_children: true
   period: year
   reference:
-  - title: State Pension Credit Act 2002 s. 15(1)
-    href: https://www.legislation.gov.uk/ukpga/2002/16/section/15
-    
+    - title: State Pension Credit Act 2002 s. 15(1)
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/15
   unit: list
 
 values:

@@ -27,5 +27,5 @@ metadata:
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference:
-    - title: The State Pension Credit Regulations 2002 reg. 6 (1)
+    - title: The State Pension Credit Regulations 2002 Part II reg. 6 (1)
       href: https://www.legislation.gov.uk/uksi/2002/1792/data.pdf#page=21

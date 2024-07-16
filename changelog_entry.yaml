@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    changed:
+    - Refactor the Pension Credit parameter, variable and test files.

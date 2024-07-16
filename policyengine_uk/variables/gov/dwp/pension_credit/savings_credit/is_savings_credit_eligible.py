@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 
 
 class is_savings_credit_eligible(Variable):
-    label = "Eligible for Savings Credit"
+    label = "eligible for Savings Credit"
     entity = BenUnit
     definition_period = YEAR
     value_type = bool

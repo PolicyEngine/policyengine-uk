@@ -15,25 +15,27 @@ class pension_credit_child_minimum_guarantee_addition(Variable):
         gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
         standard_disability_benefits = gc.child.disability.eligibility
         severe_disability_benefits = gc.child.disability.severe.eligibility
-        is_disabled = add(person, period, standard_disability_benefits) > 0
-        is_severely_disabled = (
+        receives_disability_benefits = (
+            add(person, period, standard_disability_benefits) > 0
+        )
+        receives_severe_disability_benefits = (
             add(person, period, severe_disability_benefits) > 0
         )
-        is_standard_disabled = is_disabled & ~is_severely_disabled
-        is_not_disabled = ~is_disabled
-        per_child_amount = (
-            select(
-                [
-                    is_child & is_not_disabled,
-                    is_child & is_standard_disabled,
-                    is_child & is_severely_disabled,
-                ],
-                [
-                    gc.child.amount,
-                    gc.child.amount + gc.child.disability.amount,
-                    gc.child.amount + gc.child.disability.severe.amount,
-                ],
-            )
-            * WEEKS_IN_YEAR
+        is_standard_disabled = (
+            receives_disability_benefits & ~receives_severe_disability_benefits
         )
-        return benunit.sum(per_child_amount)
+        is_not_disabled = ~receives_disability_benefits
+        per_child_amount = select(
+            [
+                is_child & is_not_disabled,
+                is_child & is_standard_disabled,
+                is_child & receives_severe_disability_benefits,
+            ],
+            [
+                gc.child.amount,
+                gc.child.amount + gc.child.disability.amount,
+                gc.child.amount + gc.child.disability.severe.amount,
+            ],
+            default=0,
+        )
+        return benunit.sum(per_child_amount) * WEEKS_IN_YEAR
