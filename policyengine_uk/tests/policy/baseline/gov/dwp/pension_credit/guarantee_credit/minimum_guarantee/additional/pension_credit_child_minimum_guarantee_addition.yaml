@@ -40,4 +40,4 @@
       benunit:
         members: [person1, child_2, child_3]
   output:
-    pension_credit_child_minimum_guarantee_addition: (54.60 + 84.26 + 147.14) * 52
+    pension_credit_child_minimum_guarantee_addition: 10_059.92

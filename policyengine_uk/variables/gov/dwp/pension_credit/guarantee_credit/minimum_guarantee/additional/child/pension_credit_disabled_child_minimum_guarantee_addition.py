@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 
 
-class pension_credit_child_minimum_guarantee_addition(Variable):
-    label = "Pension Credit child-related addition"
+class pension_credit_child_minimum_guarantee_addition_eligible(Variable):
+    label = "eligible for the child-related Pension Credit addition"
     entity = BenUnit
     definition_period = YEAR
     value_type = float
@@ -24,18 +24,16 @@ class pension_credit_child_minimum_guarantee_addition(Variable):
         is_standard_disabled = (
             receives_disability_benefits & ~receives_severe_disability_benefits
         )
-        is_not_disabled = ~receives_disability_benefits
+        disabled_child = receives_disability_benefits & is_child
         per_child_amount = select(
             [
-                is_child & is_not_disabled,
-                is_child & is_standard_disabled,
-                is_child & receives_severe_disability_benefits,
+                is_standard_disabled,
+                receives_severe_disability_benefits,
             ],
             [
-                gc.child.amount,
-                gc.child.amount + gc.child.disability.amount,
-                gc.child.amount + gc.child.disability.severe.amount,
+                gc.child.disability.amount,
+                gc.child.disability.severe.amount,
             ],
             default=0,
-        )
+        ) * disabled_child
         return benunit.sum(per_child_amount) * WEEKS_IN_YEAR

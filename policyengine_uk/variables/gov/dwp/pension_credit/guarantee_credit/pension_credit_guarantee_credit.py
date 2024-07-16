@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 
 
 class pension_credit_guarantee_credit(Variable):
-    label = "Guarantee Credit"
+    label = "Pension Credit guarantee credit"
     entity = BenUnit
     definition_period = YEAR
     value_type = float
