@@ -1,0 +1,95 @@
+- name: Three children, one not disabled, two disabled, one severely.
+  period: 2022
+  input:
+    people:
+      child_1:
+        age: 5
+      child_2:
+        age: 5
+        dla_sc_category: LOWER
+      child_3:
+        age: 5
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [child_1, child_2, child_3]
+  output:
+    pension_credit_disabled_child_minimum_guarantee_addition: (95.48 + 61.16) * 52
+
+- name: Two children, one disabled
+  period: 2022
+  input:
+    people:
+      person1:
+        is_child_or_QYP: 5
+        pip: 
+        dla:
+      child_2:
+        is_child_or_QYP: 5
+        pip: 1
+        receives_highest_dla_sc: 0
+        receives_enhanced_pip_dl: 0
+        dla: 0
+      child_3:
+        is_child_or_QYP: 5
+        pip: 0
+        receives_highest_dla_sc: 0
+        receives_enhanced_pip_dl: 0
+        dla: 0
+    benunits:
+      benunit:
+        members: [person1, child_2, child_3]
+  output:
+    pension_credit_disabled_child_minimum_guarantee_addition: 1_542.32
+
+- name: Two children, none disabled
+  period: 2022
+  input:
+    people:
+      person1:
+        is_child_or_QYP: 5
+        pip: 
+        dla:
+      child_2:
+        is_child_or_QYP: 5
+        pip: 0
+        receives_highest_dla_sc: 0
+        receives_enhanced_pip_dl: 0
+        dla: 0
+      child_3:
+        is_child_or_QYP: 5
+        pip: 0
+        receives_highest_dla_sc: 0
+        receives_enhanced_pip_dl: 0
+        dla: 0
+    benunits:
+      benunit:
+        members: [person1, child_2, child_3]
+  output:
+    pension_credit_disabled_child_minimum_guarantee_addition: 0
+
+- name: Two children, both disabled, one severely
+  period: 2022
+  input:
+    people:
+      person1:
+        is_child_or_QYP: 5
+        pip: 
+        dla:
+      child_2:
+        is_child_or_QYP: 5
+        pip: 1
+        receives_highest_dla_sc: 0
+        receives_enhanced_pip_dl: 2
+        dla: 0
+      child_3:
+        is_child_or_QYP: 5
+        pip: 1
+        receives_highest_dla_sc: 0
+        receives_enhanced_pip_dl: 0
+        dla: 0
+    benunits:
+      benunit:
+        members: [person1, child_2, child_3]
+  output:
+    pension_credit_disabled_child_minimum_guarantee_addition: 6_354.4

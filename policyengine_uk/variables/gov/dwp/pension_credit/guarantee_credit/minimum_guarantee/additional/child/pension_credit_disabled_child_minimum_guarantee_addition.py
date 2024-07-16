@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class pension_credit_child_minimum_guarantee_addition_eligible(Variable):
+class pension_credit_disabled_child_minimum_guarantee_addition(Variable):
     label = "eligible for the child-related Pension Credit addition"
     entity = BenUnit
     definition_period = YEAR

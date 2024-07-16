@@ -15,5 +15,5 @@ class pension_credit_child_minimum_guarantee_addition(Variable):
         gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
 
         base_amount = benunit.sum(is_child) * gc.child.amount * WEEKS_IN_YEAR
-        disabled_child_amount = benunit("pension_credit_child_minimum_guarantee_addition_eligible", period)
+        disabled_child_amount = benunit("pension_credit_disabled_child_minimum_guarantee_addition", period)
         return base_amount + disabled_child_amount
