@@ -55,3 +55,22 @@
     household_benefits: 0
   output:
     household_net_income: -1
+
+- name: Individual dividend income partly covered by Personal Allowance
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    dividend_income: 5_000
+    employment_income: 10_000
+  output:
+    personal_allowance: 12_570
+    dividend_allowance: 1_000
+    taxed_dividend_income: 1_430
+    dividend_income_tax: 125.125
+    taxed_income: 1_430
+    income_tax: 125.125
+    earned_taxable_income: 0
+    received_personal_allowance: 12_570
+    received_personal_allowance_earned_income: 10_000
+    received_personal_allowance_savings: 0
+    received_personal_allowance_dividends: 2_570
