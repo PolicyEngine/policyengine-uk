@@ -74,3 +74,35 @@
     received_personal_allowance_earned_income: 10_000
     received_personal_allowance_savings: 0
     received_personal_allowance_dividends: 2_570
+
+- name: Dividend income partly covered by Personal Allowance
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    dividend_income: 3_500
+    employment_income: 11_000
+  output:
+    personal_allowance: 12_570
+    dividend_allowance: 1_000
+    received_personal_allowance: 12_570
+    received_personal_allowance_earned_income: 11_000
+    received_personal_allowance_dividends: 1_570
+    received_dividend_allowance: 1_000
+    taxed_dividend_income: 930
+    dividend_income_tax: 81.38
+
+- name: Dividend income partly covered by Personal Allowance and fully covered by Dividend Allowance
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    dividend_income: 900
+    employment_income: 12_000
+  output:
+    personal_allowance: 12_570
+    dividend_allowance: 1_000
+    received_personal_allowance: 12_570
+    received_personal_allowance_earned_income: 12_000
+    received_personal_allowance_dividends: 570
+    received_dividend_allowance: 330
+    taxed_dividend_income: 0
+    dividend_income_tax: 0

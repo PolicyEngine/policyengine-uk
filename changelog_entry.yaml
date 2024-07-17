@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Properly calculate interaction effects between Dividend Allowance and Personal Allowance

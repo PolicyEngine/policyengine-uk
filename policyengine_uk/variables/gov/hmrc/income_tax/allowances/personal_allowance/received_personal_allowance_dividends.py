@@ -14,7 +14,9 @@ class received_personal_allowance_dividends(Variable):
         pa_earned_income = person(
             "received_personal_allowance_earned_income", period
         )
-        pa_savings_income = person("received_personal_allowance_savings", period)
+        pa_savings_income = person(
+            "received_personal_allowance_savings", period
+        )
         pa_remaining = pa_max_value - pa_earned_income - pa_savings_income
 
         dividend_income = person("taxable_dividend_income", period)

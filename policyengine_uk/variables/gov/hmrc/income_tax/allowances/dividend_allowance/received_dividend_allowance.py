@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class received_dividend_allowance(Variable):
     value_type = float
     entity = Person
@@ -11,12 +12,16 @@ class received_dividend_allowance(Variable):
     def formula(person, period, parameters):
         dividend_income = person("taxable_dividend_income", period)
         max_dividend_allowance = person("dividend_allowance", period)
-        personal_allowance_dividends = person("received_personal_allowance_dividends", period)
+        personal_allowance_dividends = person(
+            "received_personal_allowance_dividends", period
+        )
 
-        remaining_taxable_dividends = dividend_income - personal_allowance_dividends
+        remaining_taxable_dividends = (
+            dividend_income - personal_allowance_dividends
+        )
 
         return where(
             remaining_taxable_dividends > max_dividend_allowance,
             max_dividend_allowance,
-            remaining_taxable_dividends
+            remaining_taxable_dividends,
         )
