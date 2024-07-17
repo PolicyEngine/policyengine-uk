@@ -33,7 +33,9 @@
   input:
     dividend_income: 50_000
   output:
-    dividend_income_tax: 6_225
+    received_personal_allowance_dividends: 12_500
+    dividend_allowance: 2_000
+    dividend_income_tax: 2_662.5
 
 - name: Net income with base income
   period: 2020

@@ -3,6 +3,8 @@
   input:
     taxable_dividend_income: 0
     dividend_allowance: 1000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 0
 
@@ -11,6 +13,8 @@
   input:
     taxable_dividend_income: 500
     dividend_allowance: 1000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 0
 
@@ -19,6 +23,8 @@
   input:
     taxable_dividend_income: 1000
     dividend_allowance: 1000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 0
 
@@ -27,6 +33,8 @@
   input:
     taxable_dividend_income: 1100
     dividend_allowance: 1000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 100
 
@@ -35,6 +43,8 @@
   input:
     taxable_dividend_income: 50000
     dividend_allowance: 2000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 48000
 
@@ -43,6 +53,8 @@
   input:
     taxable_dividend_income: 1000000
     dividend_allowance: 2000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 998000
 
@@ -51,6 +63,8 @@
   input:
     taxable_dividend_income: 5000
     dividend_allowance: 0
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 5000
 
@@ -59,6 +73,8 @@
   input:
     taxable_dividend_income: 2500.50
     dividend_allowance: 2000.00
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 500.50
 
@@ -67,6 +83,8 @@
   input:
     taxable_dividend_income: 1000
     dividend_allowance: 2000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 0
 
@@ -75,5 +93,7 @@
   input:
     taxable_dividend_income: 1000.01
     dividend_allowance: 1000
+    # Zero-out Personal Allowance to avoid interaction effects
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     taxed_dividend_income: 0.01
