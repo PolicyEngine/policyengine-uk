@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.86.5] - 2024-07-17 15:26:43
+
+### Added
+
+- References to many income tax provisions.
+
+### Fixed
+
+- Folder distribution and formatting for income tax-related variables.
+- pays_scottish_income_tax now returns a Boolean value.
+
 ## [0.86.4] - 2024-07-15 12:12:25
 
 ### Changed
@@ -1355,6 +1366,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.86.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.4...0.86.5
 [0.86.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.3...0.86.4
 [0.86.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.2...0.86.3
 [0.86.2]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.1...0.86.2

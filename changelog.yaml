@@ -1133,3 +1133,11 @@
     changed:
     - Refactor the Housing Benefit parameter, variable and test files.
   date: 2024-07-15 12:12:25
+- bump: patch
+  changes:
+    added:
+    - References to many income tax provisions.
+    fixed:
+    - Folder distribution and formatting for income tax-related variables.
+    - pays_scottish_income_tax now returns a Boolean value.
+  date: 2024-07-17 15:26:43
