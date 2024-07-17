@@ -1,0 +1,44 @@
+- name: No remaining allowance for dividends
+  period: 2024
+  input:
+    received_personal_allowance_earned_income: 10_000
+    received_personal_allowance_savings: 2_570
+    taxable_dividend_income: 5_000
+  output:
+    received_personal_allowance_dividends: 0
+
+- name: Small remaining allowance, fully used by dividends
+  period: 2024
+  input:
+    received_personal_allowance_earned_income: 11_000
+    received_personal_allowance_savings: 1_000
+    taxable_dividend_income: 1_000
+  output:
+    received_personal_allowance_dividends: 570
+
+- name: Large remaining allowance, partially used by dividends
+  period: 2024
+  input:
+    received_personal_allowance_earned_income: 5_000
+    received_personal_allowance_savings: 2_000
+    taxable_dividend_income: 3_000
+  output:
+    received_personal_allowance_dividends: 3_000
+
+- name: Remaining allowance larger than dividend income
+  period: 2024
+  input:
+    received_personal_allowance_earned_income: 10_000
+    received_personal_allowance_savings: 1_000
+    taxable_dividend_income: 1_000
+  output:
+    received_personal_allowance_dividends: 1_000
+
+- name: No dividend income, full remaining allowance
+  period: 2024
+  input:
+    received_personal_allowance_earned_income: 8_000
+    received_personal_allowance_savings: 2_000
+    taxable_dividend_income: 0
+  output:
+    received_personal_allowance_dividends: 0
