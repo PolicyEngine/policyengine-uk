@@ -20,7 +20,7 @@ class total_pension_income(Variable):
     value_type = float
     unit = GBP
 
-    adds = ["pension_income", "state_pension"]
+    adds = ["private_pension_income", "state_pension"]
 
 
 class social_security_income(Variable):

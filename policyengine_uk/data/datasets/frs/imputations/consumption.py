@@ -32,7 +32,7 @@ PERSON_LCF_RENAMES = {
     "B303p": "employment_income",
     "B3262p": "self_employment_income",
     "B3381": "state_pension",
-    "P049p": "pension_income",
+    "P049p": "private_pension_income",
 }
 
 CONSUMPTION_VARIABLE_RENAMES = {
@@ -60,7 +60,7 @@ PREDICTOR_VARIABLES = [
     "region",
     "employment_income",
     "self_employment_income",
-    "pension_income",
+    "private_pension_income",
     "household_net_income",
 ]
 

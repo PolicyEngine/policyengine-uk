@@ -1,0 +1,10 @@
+description: The pensions contributions relief is limited to filers below this age threshold.
+values:
+  2004-01-01: 75
+metadata:
+  unit: year
+  label: pension contributions relief age limit
+  period: year
+  reference:
+    - title: Finance Act 2004, s. 188 (3)(a)
+      href: https://www.legislation.gov.uk/ukpga/2004/12/section/188

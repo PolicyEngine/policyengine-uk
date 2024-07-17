@@ -3,7 +3,7 @@
   absolute_error_margin: 0
   output:
     employment_income: 0
-    pension_income: 0
+    private_pension_income: 0
     social_security_income: 0
     self_employment_income: 0
     property_income: 0

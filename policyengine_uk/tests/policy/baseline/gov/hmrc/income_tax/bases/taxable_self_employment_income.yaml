@@ -1,0 +1,116 @@
+- name: Trading loss relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    loss_relief: 2000
+  output:
+    taxable_self_employment_income: 0
+- name: Trading loss relief of previous year
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    loss_relief:
+      2019: 2000
+  output:
+    taxable_self_employment_income: 0
+- name: Trading loss relief doesn't offset other income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 1000
+    employment_income: 1000
+    loss_relief: 2000
+  output:
+    taxable_self_employment_income: 0
+    taxable_employment_income: 1000
+- name: No self-employment income or deductions
+  period: 2024
+  input:
+    self_employment_income: 0
+    loss_relief: 0
+    capital_allowances: 0
+    trading_allowance: 0
+  output:
+    taxable_self_employment_income: 0
+
+- name: Self-employment income with no deductions
+  period: 2024
+  input:
+    self_employment_income: 50000
+    loss_relief: 0
+    capital_allowances: 0
+    trading_allowance: 0
+  output:
+    taxable_self_employment_income: 50000
+
+- name: Self-employment income fully offset by deductions
+  period: 2024
+  input:
+    self_employment_income: 30000
+    loss_relief: 10000
+    capital_allowances: 15000
+    trading_allowance: 5000
+  output:
+    taxable_self_employment_income: 0
+
+- name: Self-employment income partially offset by deductions
+  period: 2024
+  input:
+    self_employment_income: 50000
+    loss_relief: 5000
+    capital_allowances: 10000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 34000
+
+- name: High self-employment income with some deductions
+  period: 2024
+  input:
+    self_employment_income: 200000
+    loss_relief: 20000
+    capital_allowances: 30000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 149000
+
+- name: Low self-employment income with low deductions
+  period: 2024
+  input:
+    self_employment_income: 1000
+    loss_relief: 100
+    capital_allowances: 200
+    trading_allowance: 300
+  output:
+    taxable_self_employment_income: 400
+
+- name: Deductions exceed self-employment income
+  period: 2024
+  input:
+    self_employment_income: 50000
+    loss_relief: 30000
+    capital_allowances: 25000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 0
+
+- name: Very high values
+  period: 2024
+  input:
+    self_employment_income: 1000000
+    loss_relief: 200000
+    capital_allowances: 300000
+    trading_allowance: 1000
+  output:
+    taxable_self_employment_income: 499000
+
+- name: Decimal values
+  period: 2024
+  input:
+    self_employment_income: 50000.50
+    loss_relief: 10000.25
+    capital_allowances: 5000.75
+    trading_allowance: 1000.00
+  output:
+    taxable_self_employment_income: 33999.50

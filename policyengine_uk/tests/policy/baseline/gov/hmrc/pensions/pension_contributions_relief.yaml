@@ -1,3 +1,19 @@
+- name: Pension relief
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 76000
+    pension_contributions: 40000
+  output:
+    pension_contributions_relief: 40000
+- name: Pension relief excessive
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 2000000
+    pension_contributions: 400000
+  output:
+    pension_contributions_relief: 4000
 - name: £30k self-employment income, no private pension contributions
   period: 2023
   absolute_error_margin: 0.01

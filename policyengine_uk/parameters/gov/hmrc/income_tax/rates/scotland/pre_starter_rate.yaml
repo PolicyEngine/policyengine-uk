@@ -19,6 +19,8 @@ metadata:
   period: year
   propagate_metadata_to_children: true
   rate_unit: /1
-  reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+  reference: 
+  - title: Income Tax rates and allowances for current and previous tax years
+    href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
   threshold_unit: currency-GBP
   type: marginal_rate

@@ -1,0 +1,80 @@
+- name: No trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 0
+      2024: 0
+  output:
+    loss_relief: 0
+
+- name: Current year trading loss only
+  period: 2024
+  input:
+    trading_loss:
+      2023: 0
+      2024: 5000
+  output:
+    loss_relief: 5000
+
+- name: Previous year trading loss only
+  period: 2024
+  input:
+    trading_loss:
+      2023: 3000
+      2024: 0
+  output:
+    loss_relief: 3000
+
+- name: Trading losses in both years
+  period: 2024
+  input:
+    trading_loss:
+      2023: 2500
+      2024: 3500
+  output:
+    loss_relief: 6000
+
+- name: High trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 50000
+      2024: 75000
+  output:
+    loss_relief: 125000
+
+- name: Very low positive trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 1
+      2024: 1
+  output:
+    loss_relief: 2
+
+- name: Uneven trading losses
+  period: 2024
+  input:
+    trading_loss:
+      2023: 1234.56
+      2024: 5678.90
+  output:
+    loss_relief: 6913.46
+
+- name: Large previous year loss, small current year loss
+  period: 2024
+  input:
+    trading_loss:
+      2023: 100000
+      2024: 1000
+  output:
+    loss_relief: 101000
+
+- name: Small previous year loss, large current year loss
+  period: 2024
+  input:
+    trading_loss:
+      2023: 1000
+      2024: 100000
+  output:
+    loss_relief: 101000

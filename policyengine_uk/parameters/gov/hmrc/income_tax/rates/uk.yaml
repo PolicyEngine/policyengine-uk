@@ -6,7 +6,7 @@ brackets:
       label: Basic rate
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
-        title: Finance Act 2022 s. 2
+        title: Finance Act 2022 s. 2 (a)
       unit: /1
     values:
       2015-06-01: 0.2
@@ -14,8 +14,8 @@ brackets:
     description: The starting threshold for the basic rate, after allowances.
     metadata:
       reference:
-      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
-        title: Finance Act 2022 s. 2
+      - title: Income Tax Act 2007, s. 6 (1)(b)
+        href: https://www.legislation.gov.uk/ukpga/2007/3/section/6
     values:
       2015-06-05: 0
 - rate:
@@ -24,7 +24,7 @@ brackets:
       label: Higher rate
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
-        title: Finance Act 2022 s. 2
+        title: Finance Act 2022 s. 2 (b)
       unit: /1
     values:
       2015-06-05: 0.4
@@ -35,8 +35,8 @@ brackets:
       label: Higher rate threshold
       period: year
       reference:
-      - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
-        title: Finance Act 2022 s. 2
+      - href: https://www.legislation.gov.uk/ukpga/2021/26/section/5
+        title: Finance Act 2021 s. 5 (1)
       unit: currency-GBP
       uprating: gov.benefit_uprating_cpi
     values:
@@ -53,7 +53,7 @@ brackets:
       label: Additional rate
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2022/3/section/2/enacted
-        title: Finance Act 2022 s. 2
+        title: Finance Act 2022 s. 2 (c)
       tests:
       - decreases_net_income: true
         period: 2022
@@ -72,9 +72,9 @@ brackets:
     values:
       2015-06-05: 150_000
       2023-01-01: 
-        value: 125_140 # Not actually hard-coded: it's defined as the PA phase-out threshold + 2 * the PA
+        value: 125_140 
         reference:
-          - title: Finance Act 2023 s. 6
+          - title: Finance Act 2023 s. 6 (4)
             href: https://www.legislation.gov.uk/ukpga/2023/1/section/6/enacted
 - rate:
     description: An extra tax bracket.

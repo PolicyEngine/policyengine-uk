@@ -13,7 +13,7 @@ class earned_income(Variable):
         COMPONENTS = [
             "employment_income",
             "self_employment_income",
-            "pension_income",
+            "private_pension_income",
         ]
         return add(person, period, COMPONENTS)
 
@@ -34,7 +34,7 @@ class market_income(Variable):
             "dividend_income",
             "miscellaneous_income",
             "property_income",
-            "pension_income",
+            "private_pension_income",
             "private_transfer_income",
             "maintenance_income",
         ]
@@ -354,7 +354,7 @@ class household_market_income(Variable):
         "dividend_income",
         "miscellaneous_income",
         "property_income",
-        "pension_income",
+        "private_pension_income",
         "private_transfer_income",
         "maintenance_income",
         "capital_gains",
@@ -393,7 +393,7 @@ class income_decile(Variable):
         return person.household("household_income_decile", period)
 
 
-class statutory_maternity_pay(Variable):
+class household_statutory_maternity_pay(Variable):
     label = "Statutory maternity pay"
     entity = Person
     definition_period = YEAR
@@ -401,7 +401,7 @@ class statutory_maternity_pay(Variable):
     unit = GBP
 
 
-class statutory_paternity_pay(Variable):
+class household_statutory_paternity_pay(Variable):
     label = "Statutory paternity pay"
     entity = Person
     definition_period = YEAR
@@ -409,7 +409,7 @@ class statutory_paternity_pay(Variable):
     unit = GBP
 
 
-class statutory_sick_pay(Variable):
+class household_statutory_sick_pay(Variable):
     label = "Statutory sick pay"
     entity = Person
     definition_period = YEAR

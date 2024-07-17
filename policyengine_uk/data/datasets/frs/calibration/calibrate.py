@@ -337,7 +337,7 @@ def generate_model_variables(dataset: str, time_period: str = "2023") -> Tuple:
         "total_national_insurance",
         "employment_income",
         "self_employment_income",
-        "pension_income",
+        "private_pension_income",
         "dividend_income",
         "property_income",
         "savings_interest_income",

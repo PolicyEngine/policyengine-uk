@@ -28,6 +28,31 @@ class employment_income_before_lsr(Variable):
     uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
 
 
+class private_pension_income(Variable):
+    value_type = float
+    entity = Person
+    label = "pension income"
+    documentation = "Income from private or occupational pensions (not including the State Pension)"
+    definition_period = YEAR
+    unit = GBP
+    reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
+    quantity_type = FLOW
+    uprating = (
+        "calibration.programs.private_pension_income.budgetary_impact.ENGLAND"
+    )
+
+    def formula(person, period, parameters):
+        # Don't have data, use the old pension income
+        pension_income = person("pension_income", period)
+        if pension_income.sum() != 0:
+            logging.warn(
+                "`pension_income` is deprecated and will be removed- use `private_pension_income` instead"
+            )
+            return pension_income
+        else:
+            return 0
+
+
 class pension_income(Variable):
     value_type = float
     entity = Person
@@ -37,7 +62,9 @@ class pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = "calibration.programs.pension_income.budgetary_impact.ENGLAND"
+    uprating = (
+        "calibration.programs.private_pension_income.budgetary_impact.ENGLAND"
+    )
 
 
 class state_pension(Variable):

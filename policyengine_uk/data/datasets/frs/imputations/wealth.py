@@ -25,7 +25,7 @@ PREDICTOR_VARIABLES = [
     "household_net_income",
     "num_adults",
     "num_children",
-    "pension_income",
+    "private_pension_income",
     "employment_income",
     "self_employment_income",
     "capital_income",
@@ -70,7 +70,7 @@ def generate_was_table(was: pd.DataFrame):
         "NumAdultW7": "num_adults",
         "NumCh18W7": "num_children",
         # Household Gross Annual income from occupational or private pensions
-        "DVGIPPENR7_AGGR": "pension_income",
+        "DVGIPPENR7_AGGR": "private_pension_income",
         "DVGISER7_AGGR": "self_employment_income",
         # Household Gross annual income from investments
         "DVGIINVR7_aggr": "capital_income",

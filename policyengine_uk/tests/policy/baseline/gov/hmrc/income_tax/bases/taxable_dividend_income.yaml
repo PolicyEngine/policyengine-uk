@@ -1,0 +1,71 @@
+- name: No dividend income or deficiency relief
+  period: 2024
+  input:
+    dividend_income: 0
+    deficiency_relief: 0
+  output:
+    taxable_dividend_income: 0
+
+- name: Dividend income fully offset by deficiency relief
+  period: 2024
+  input:
+    dividend_income: 5000
+    deficiency_relief: 5000
+  output:
+    taxable_dividend_income: 0
+
+- name: Dividend income partially taxable
+  period: 2024
+  input:
+    dividend_income: 10000
+    deficiency_relief: 2000
+  output:
+    taxable_dividend_income: 8000
+
+- name: High dividend income with some deficiency relief
+  period: 2024
+  input:
+    dividend_income: 50000
+    deficiency_relief: 5000
+  output:
+    taxable_dividend_income: 45000
+
+- name: Dividend income with no deficiency relief
+  period: 2024
+  input:
+    dividend_income: 15000
+    deficiency_relief: 0
+  output:
+    taxable_dividend_income: 15000
+
+- name: Very low positive dividend income
+  period: 2024
+  input:
+    dividend_income: 1
+    deficiency_relief: 0
+  output:
+    taxable_dividend_income: 1
+
+- name: Deficiency relief exceeds dividend income
+  period: 2024
+  input:
+    dividend_income: 3000
+    deficiency_relief: 5000
+  output:
+    taxable_dividend_income: 0
+
+- name: High values for both dividend income and deficiency relief
+  period: 2024
+  input:
+    dividend_income: 100000
+    deficiency_relief: 40000
+  output:
+    taxable_dividend_income: 60000
+
+- name: Decimal values
+  period: 2024
+  input:
+    dividend_income: 1234.56
+    deficiency_relief: 234.56
+  output:
+    taxable_dividend_income: 1000.00

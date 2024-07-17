@@ -1,0 +1,71 @@
+- name: No property income or allowance
+  period: 2024
+  input:
+    property_income: 0
+    property_allowance: 0
+  output:
+    taxable_property_income: 0
+
+- name: Property income fully covered by allowance
+  period: 2024
+  input:
+    property_income: 1000
+    property_allowance: 1000
+  output:
+    taxable_property_income: 0
+
+- name: Property income partially taxable
+  period: 2024
+  input:
+    property_income: 10000
+    property_allowance: 1000
+  output:
+    taxable_property_income: 9000
+
+- name: High property income with standard allowance
+  period: 2024
+  input:
+    property_income: 50000
+    property_allowance: 1000
+  output:
+    taxable_property_income: 49000
+
+- name: Property income with no allowance
+  period: 2024
+  input:
+    property_income: 5000
+    property_allowance: 0
+  output:
+    taxable_property_income: 5000
+
+- name: Very low positive property income
+  period: 2024
+  input:
+    property_income: 1
+    property_allowance: 0
+  output:
+    taxable_property_income: 1
+
+- name: Property allowance exceeds income
+  period: 2024
+  input:
+    property_income: 500
+    property_allowance: 1000
+  output:
+    taxable_property_income: 0
+
+- name: High values for both income and allowance
+  period: 2024
+  input:
+    property_income: 100000
+    property_allowance: 50000
+  output:
+    taxable_property_income: 50000
+
+- name: Decimal values
+  period: 2024
+  input:
+    property_income: 1234.56
+    property_allowance: 1000.00
+  output:
+    taxable_property_income: 234.56

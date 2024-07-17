@@ -102,7 +102,7 @@ class JSA_income_applicable_income(Variable):
             "employment_income",
             "self_employment_income",
             "property_income",
-            "pension_income",
+            "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:

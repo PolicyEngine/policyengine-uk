@@ -52,10 +52,10 @@ class UKMOD_FRS_2018(Dataset):
         ).astype("S")
         data["employment_income"] = ukmod.yem.values * 12
         data["self_employment_income"] = ukmod.yse.values * 12
-        data["pension_income"] = ukmod.ypp.values * 12
-        data["statutory_sick_pay"] = ukmod.bhlwk.values * 12
-        data["statutory_maternity_pay"] = ukmod.bmact_s.values * 12
-        data["statutory_paternity_pay"] = ukmod.bpact_s.values * 12
+        data["private_pension_income"] = ukmod.ypp.values * 12
+        data["household_statutory_sick_pay"] = ukmod.bhlwk.values * 12
+        data["household_statutory_maternity_pay"] = ukmod.bmact_s.values * 12
+        data["household_statutory_paternity_pay"] = ukmod.bpact_s.values * 12
 
         for variable in data:
             data[variable] = {"2018": data[variable]}

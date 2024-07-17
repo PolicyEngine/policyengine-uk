@@ -5,7 +5,7 @@ import numpy as np
 
 SPI_TAB_FOLDER = Path("/Users/nikhil/ukda/spi_2019_20")
 SPI_RENAMES = dict(
-    pension_income="PENSION",
+    private_pension_income="PENSION",
     self_employment_income="PROFITS",
     property_income="INCPROP",
     savings_interest_income="INCBBS",
@@ -73,7 +73,7 @@ IMPUTATIONS = [
     "self_employment_income",
     "savings_interest_income",
     "dividend_income",
-    "pension_income",
+    "private_pension_income",
     "employment_expenses",
     "property_income",
     "gift_aid",

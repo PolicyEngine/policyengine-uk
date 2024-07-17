@@ -1,0 +1,19 @@
+description: Components of adjusted net income
+values:
+  0000-01-01:
+    - taxable_employment_income
+    - taxable_pension_income
+    - taxable_social_security_income
+    - taxable_self_employment_income
+    - taxable_property_income
+    - taxable_savings_interest_income
+    - taxable_dividend_income
+    - taxable_miscellaneous_income
+    
+metadata:
+  unit: list
+  label: Adjusted net income components
+  period: year
+  reference:
+    - title: "Income Tax Act 2007, s. 58 (1)"
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/58

@@ -1,0 +1,55 @@
+- name: Earned income is taxed correctly
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 100_000
+  output:
+    allowances: 12_500
+    earned_taxable_income: 87_500
+    basic_rate_earned_income_tax: 7_500
+    higher_rate_earned_income_tax: 20_000
+    add_rate_earned_income_tax: 0
+    earned_income_tax: 27_500
+    tax_band: "HIGHER"
+    taxed_income: 87_500
+
+- name: Savings slice of basic rate band
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 40_000
+    savings_interest_income: 15_000
+  output:
+    basic_rate_savings_income_pre_starter: 10_000
+    savings_starter_rate_income: 0
+    basic_rate_savings_income: 10_000
+    savings_allowance: 500
+    higher_rate_savings_income: 4_500
+    taxed_savings_income: 14_500
+
+- name: Dividends taxed at the marginal rates
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    dividend_income: 50_000
+  output:
+    dividend_income_tax: 6_225
+
+- name: Net income with base income
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    gross_income: 400
+    tax: 50
+  output:
+    net_income: 350
+
+- name: Household net income can be negative
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    household_market_income: 1
+    household_tax: 2
+    household_benefits: 0
+  output:
+    household_net_income: -1

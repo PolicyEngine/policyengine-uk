@@ -467,7 +467,7 @@ def add_market_income(
         person.index,
     )
 
-    frs["pension_income"] = (
+    frs["private_pension_income"] = (
         pension_payment + pension_tax_paid + pension_deductions_removed
     ) * 52
 
@@ -740,8 +740,8 @@ def add_benefit_income(
         np.array(frs["winter_fuel_allowance_reported"]) / 52
     )
 
-    frs["SSP"] = person.SSPADJ * 52
-    frs["SMP"] = person.SMPADJ * 52
+    frs["statutory_sick_pay"] = person.SSPADJ * 52
+    frs["statutory_maternity_pay"] = person.SMPADJ * 52
 
     frs["student_loans"] = np.maximum(person.TUBORR, 0)
     if "ADEMA" not in person.columns:

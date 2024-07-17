@@ -1,0 +1,17 @@
+description: Pre-tax deductions applied to self-employment income
+values:
+  0000-01-01:
+    - loss_relief
+    - capital_allowances
+    - trading_allowance
+metadata:
+  unit: list
+  label: Deductions from self-employment income
+  period: year
+  reference:
+    - title: "Income Tax Act 2007, s. 64"
+      href:  https://www.legislation.gov.uk/ukpga/2007/3/section/64
+    - title: "Capital Allowances Act 2001, s. 1"
+      href:  https://www.legislation.gov.uk/ukpga/2001/2/section/1
+    - title: "Income Tax (Trading and Other Income) Act 2005, s. 783A"
+      href:  https://www.legislation.gov.uk/ukpga/2005/5/section/783A

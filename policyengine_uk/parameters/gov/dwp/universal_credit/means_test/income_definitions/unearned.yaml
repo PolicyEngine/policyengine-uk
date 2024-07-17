@@ -14,7 +14,7 @@ values:
   2010-01-01:
   - carers_allowance
   - JSA_contrib
-  - pension_income
+  - private_pension_income
   - savings_interest_income
   - dividend_income
   - property_income

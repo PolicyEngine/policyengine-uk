@@ -14,7 +14,7 @@ values:
   - earned_income
   - working_tax_credit
   - state_pension
-  - pension_income
+  - private_pension_income
   - capital_income
   - ESA_contrib
   - JSA_contrib

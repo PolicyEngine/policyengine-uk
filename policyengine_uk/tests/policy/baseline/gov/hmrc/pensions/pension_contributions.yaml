@@ -1,0 +1,63 @@
+- name: No pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 0
+    occupational_pension_contributions: 0
+  output:
+    pension_contributions: 0
+
+- name: Only private pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 5000
+    occupational_pension_contributions: 0
+  output:
+    pension_contributions: 5000
+
+- name: Only occupational pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 0
+    occupational_pension_contributions: 7500
+  output:
+    pension_contributions: 7500
+
+- name: Both types of pension contributions
+  period: 2024
+  input:
+    private_pension_contributions: 3000
+    occupational_pension_contributions: 4000
+  output:
+    pension_contributions: 7000
+
+- name: High contribution amounts
+  period: 2024
+  input:
+    private_pension_contributions: 20000
+    occupational_pension_contributions: 30000
+  output:
+    pension_contributions: 50000
+
+- name: Very low positive contributions
+  period: 2024
+  input:
+    private_pension_contributions: 1
+    occupational_pension_contributions: 1
+  output:
+    pension_contributions: 2
+
+- name: Uneven contributions
+  period: 2024
+  input:
+    private_pension_contributions: 1234.56
+    occupational_pension_contributions: 9876.54
+  output:
+    pension_contributions: 11111.10
+
+- name: Maximum allowed annual contributions (for 2023/2024 tax year)
+  period: 2024
+  input:
+    private_pension_contributions: 40000
+    occupational_pension_contributions: 20000
+  output:
+    pension_contributions: 60000

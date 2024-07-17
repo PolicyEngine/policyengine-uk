@@ -4,4 +4,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  reference: https://www.gov.uk/apply-tax-free-interest-on-savings
+  reference: 
+  - title: Tax on savings interest
+    href: https://www.gov.uk/apply-tax-free-interest-on-savings

@@ -1,0 +1,9 @@
+- name: Allowances are deducted to zero
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    employment_income: 10000
+    private_pension_income: 10000
+    allowances: 20000
+  output:
+    earned_taxable_income: 0
