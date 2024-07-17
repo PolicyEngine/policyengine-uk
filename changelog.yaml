@@ -1141,3 +1141,8 @@
     - Folder distribution and formatting for income tax-related variables.
     - pays_scottish_income_tax now returns a Boolean value.
   date: 2024-07-17 15:26:43
+- bump: patch
+  changes:
+    fixed:
+    - Ensure household API version script bumps UK version
+  date: 2024-07-17 16:23:18

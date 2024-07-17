@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.86.6] - 2024-07-17 16:23:18
+
+### Fixed
+
+- Ensure household API version script bumps UK version
+
 ## [0.86.5] - 2024-07-17 15:26:43
 
 ### Added
@@ -1366,6 +1372,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[0.86.6]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.5...0.86.6
 [0.86.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.4...0.86.5
 [0.86.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.3...0.86.4
 [0.86.3]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.2...0.86.3
