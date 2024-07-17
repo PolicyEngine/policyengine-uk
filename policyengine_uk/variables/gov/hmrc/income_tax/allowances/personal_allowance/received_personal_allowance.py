@@ -11,7 +11,7 @@ class received_personal_allowance(Variable):
     reference = "Income Tax Act 2007 s. 35"
 
     adds = [
-        "personal_allowance_earned_taxable_income",
-        "personal_allowance_savings_income",
-        "personal_allowance_dividend_income",
+        "received_personal_allowance_earned_income",
+        "received_personal_allowance_savings",
+        "received_personal_allowance_dividend",
     ]
