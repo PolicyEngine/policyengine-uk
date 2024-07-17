@@ -17,5 +17,5 @@ class taxed_dividend_income(Variable):
             0,
             person("taxable_dividend_income", period)
             - person("received_personal_allowance_dividends", period)
-            - person("dividend_allowance", period),
+            - person("received_dividend_allowance", period),
         )
