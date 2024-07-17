@@ -13,5 +13,5 @@ class received_personal_allowance(Variable):
     adds = [
         "received_personal_allowance_earned_income",
         "received_personal_allowance_savings",
-        "received_personal_allowance_dividend",
+        "received_personal_allowance_dividends",
     ]

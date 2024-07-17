@@ -1,0 +1,6 @@
+- name: Personal Allowance
+  period: 2024
+  input:
+    adjusted_net_income: 25_000
+  output:
+    personal_allowance: 12_570

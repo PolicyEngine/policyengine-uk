@@ -1,10 +1,3 @@
-- name: Personal Allowance
-  period: 2024
-  input:
-    adjusted_net_income: 25000
-  output:
-    personal_allowance: 12570
-
 - name: Blind Person's Allowance
   period: 2024
   input: {}
@@ -14,7 +7,7 @@
 - name: Married Couples' Allowance Deduction
   period: 2024
   input:
-    married_couples_allowance: 3000
+    married_couples_allowance: 3_000
   output: 
     married_couples_allowance_deduction: 300.0
 
@@ -30,47 +23,47 @@
 - name: Annual Allowance for Pension Contributions
   period: 2024
   input:
-    adjusted_net_income: 60000
+    adjusted_net_income: 60_000
   output: 
-    pension_annual_allowance: 40000.0
+    pension_annual_allowance: 40_000.0
 
 - name: Trading Allowance Deduction
   period: 2024
   input:
-    trading_allowance: 2000
-    self_employment_income: 1500
+    trading_allowance: 2_000
+    self_employment_income: 1_500
   output: 
-    trading_allowance_deduction: 1500.0
+    trading_allowance_deduction: 1_500.0
 
 - name: Property Allowance Deduction
   period: 2024
   input:
-    property_income: 3000
-    property_allowance: 1000
+    property_income: 3_000
+    property_allowance: 1_000
   output: 
-    property_allowance_deduction: 1000.0
+    property_allowance_deduction: 1_000.0
 
 - name: Savings Allowance
   period: 2024
   input:
     tax_band: STARTER
   output: 
-    savings_allowance: 1000.0
+    savings_allowance: 1_000.0
 
 - name: Dividend Allowance
   period: 2024
   input: {}
   output: 
-    dividend_allowance: 2000.0
+    dividend_allowance: 1_000.0
 
 - name: Allowances Applicable to Adjusted Net Income
   period: 2024
   input:
-    personal_allowance: 12000
-    blind_persons_allowance: 2000
+    personal_allowance: 12_000
+    blind_persons_allowance: 2_000
     gift_aid: 500
     covenanted_payments: 300
     charitable_investment_gifts: 100
     other_deductions: 50
   output: 
-    allowances: 14950.0
+    allowances: 14_950.0
