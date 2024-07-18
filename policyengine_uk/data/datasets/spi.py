@@ -71,7 +71,7 @@ class SPI(Dataset):
 
 
 class SPI_2020_21(SPI):
-    spi_data_file_path = "~/Downloads/UKDA-9121-tab/tab/put2021uk.tab"
+    spi_data_file_path = "~/Desktop/put2021uk.tab"
     file_path = STORAGE_FOLDER / "spi_2020_21.h5"
     label = "SPI 2020-21"
     name = "spi_2020_21"
