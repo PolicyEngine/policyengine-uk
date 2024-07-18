@@ -63,6 +63,7 @@ class SPI(Dataset):
         data["other_tax_credits"] = df.TAX_CRED
         data["miscellaneous_income"] = df.MOTHINC
         data["gift_aid"] = df.GIFTAID + df.GIFTINV
+        data["other_investment_income"] = df.OTHERINV
 
         for field in data:
             data[field] = {self.time_period: data[field]}
