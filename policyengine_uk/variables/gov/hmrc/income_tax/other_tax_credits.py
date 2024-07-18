@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class other_tax_credits(Variable):
     label = "other miscellaneous tax credits for Income Tax"
     documentation = """Includes Venture Capital Trusts, Enterprise Investment Schemes, 
@@ -9,4 +10,3 @@ Social Investment Tax Relief, foreign tax relief on income and landlord tax reli
     definition_period = YEAR
     value_type = float
     unit = GBP
-
