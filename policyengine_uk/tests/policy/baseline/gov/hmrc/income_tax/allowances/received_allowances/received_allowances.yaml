@@ -1,0 +1,44 @@
+- name: Received allowances with low income
+  period: 2024
+  input:
+    received_allowances_earned_income: 8_000
+    received_allowances_savings_income: 1_000
+    received_allowances_dividend_income: 500
+  output:
+    received_allowances: 9_500
+
+- name: Received allowances with medium income
+  period: 2024
+  input:
+    received_allowances_earned_income: 25_000
+    received_allowances_savings_income: 3_000
+    received_allowances_dividend_income: 2_000
+  output:
+    received_allowances: 30_000
+
+- name: Received allowances with high income
+  period: 2024
+  input:
+    received_allowances_earned_income: 80_000
+    received_allowances_savings_income: 10_000
+    received_allowances_dividend_income: 5_000
+  output:
+    received_allowances: 95_000
+
+- name: Received allowances with uneven amounts
+  period: 2024
+  input:
+    received_allowances_earned_income: 42_567.50
+    received_allowances_savings_income: 3_789.25
+    received_allowances_dividend_income: 1_234.75
+  output:
+    received_allowances: 47_591.50
+
+- name: Received allowances with zero savings and dividend income
+  period: 2024
+  input:
+    received_allowances_earned_income: 50_000
+    received_allowances_savings_income: 0
+    received_allowances_dividend_income: 0
+  output:
+    received_allowances: 50_000

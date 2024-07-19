@@ -1,0 +1,53 @@
+- name: Savings income less than remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 10_000
+    taxable_savings_interest_income: 2_000
+  output:
+    received_allowances_savings_income: 2_000
+
+- name: Savings income equal to remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 10_570
+    taxable_savings_interest_income: 2_000
+  output:
+    received_allowances_savings_income: 2_000
+
+- name: Savings income greater than remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 11_570
+    taxable_savings_interest_income: 3_000
+  output:
+    received_allowances_savings_income: 1_000
+
+- name: No remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 12_570
+    taxable_savings_interest_income: 1_000
+  output:
+    received_allowances_savings_income: 0
+
+- name: Negative taxable savings interest income
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 10_000
+    taxable_savings_interest_income: -500
+  output:
+    received_allowances_savings_income: 0
+
+- name: Negative remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 13_000
+    taxable_savings_interest_income: 1_000
+  output:
+    received_allowances_savings_income: 0

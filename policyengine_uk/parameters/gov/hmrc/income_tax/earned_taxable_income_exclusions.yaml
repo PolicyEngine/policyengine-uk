@@ -3,7 +3,7 @@ values:
   0000-01-01:
     - taxable_savings_interest_income
     - taxable_dividend_income
-    - allowances
+    - received_allowances_earned_income
     - marriage_allowance
     - pension_contributions_relief
     

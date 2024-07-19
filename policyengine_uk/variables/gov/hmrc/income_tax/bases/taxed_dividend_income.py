@@ -16,5 +16,6 @@ class taxed_dividend_income(Variable):
         return max_(
             0,
             person("taxable_dividend_income", period)
+            - person("received_allowances_dividend_income", period)
             - person("dividend_allowance", period),
         )

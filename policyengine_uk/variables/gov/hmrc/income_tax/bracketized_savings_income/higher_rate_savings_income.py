@@ -18,7 +18,7 @@ class higher_rate_savings_income(Variable):
         savings_deductions = add(
             person,
             period,
-            ["savings_allowance", "savings_starter_rate_income"],
+            ["received_allowances_savings_income", "savings_allowance", "savings_starter_rate_income"],
         )
         savings_income_less_deductions = max_(
             0,
