@@ -52,6 +52,7 @@ class SPI(Dataset):
         data["employment_income"] = df.PAY
         data["employment_expenses"] = df.EXPS
         data["private_pension_income"] = df.PENSION
+        data["private_pension_contributions"] = df.PSAV_XS
         data["pension_contributions_relief"] = df.PENSRLF
         data["self_employment_income"] = df.PROFITS
         # HMRC seems to assume the trading allowance is already deducted (per record inspection of SREF 15494988 in 2020-21)

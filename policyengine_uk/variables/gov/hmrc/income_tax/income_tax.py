@@ -18,6 +18,7 @@ class income_tax(Variable):
         "savings_income_tax",
         "dividend_income_tax",
         "CB_HITC",
+        "private_pension_contributions_tax"
     ]
     subtracts = [
         "capped_mcad",
