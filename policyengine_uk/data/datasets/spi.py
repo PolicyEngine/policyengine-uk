@@ -61,7 +61,7 @@ class SPI(Dataset):
         data["is_SP_age"] = df.SPA == 1
         data["state_pension"] = df.SRP
         data["other_tax_credits"] = df.TAX_CRED
-        data["miscellaneous_income"] = df.MOTHINC + df.EPB
+        data["miscellaneous_income"] = df.MOTHINC + df.EPB + df.INCPBEN + df.OSSBEN + df.TAXTERM + df.UBISJA + df.OTHERINC
         data["gift_aid"] = df.GIFTAID + df.GIFTINV
         data["other_investment_income"] = df.OTHERINV
 
