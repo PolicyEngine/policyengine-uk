@@ -1,5 +1,5 @@
 - name: Minimum wage for a person over 25
-  period: 2022
+  period: 2021
   absolute_error_margin: 0
   input:
     age: 30

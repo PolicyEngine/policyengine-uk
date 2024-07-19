@@ -13,6 +13,7 @@ class rent(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
+    uprating = "gov.indices.private_rent_index"
 
 
 class CouncilTaxBand(Enum):
