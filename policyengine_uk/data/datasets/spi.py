@@ -64,6 +64,8 @@ class SPI(Dataset):
         data["miscellaneous_income"] = df.MOTHINC + df.EPB + df.INCPBEN + df.OSSBEN + df.TAXTERM + df.UBISJA + df.OTHERINC
         data["gift_aid"] = df.GIFTAID + df.GIFTINV
         data["other_investment_income"] = df.OTHERINV
+        data["covenanted_payments"] = df.COVNTS
+        data["other_deductions"] = df.MOTHDED + df.DEFICIEN
 
         for field in data:
             data[field] = {self.time_period: data[field]}
