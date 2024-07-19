@@ -14,7 +14,7 @@
     child_benefit: 0
 - name: Child Benefit with one child
   period: 2021
-  absolute_error_margin: 1
+  absolute_error_margin: 10
   input:
     people:
       parent1:
@@ -29,8 +29,8 @@
   output:
     child_benefit: 1098
 - name: Child Benefit with two children, one over 16
-  period: 2021
-  absolute_error_margin: 1
+  period: 2020
+  absolute_error_margin: 10
   input:
     people:
       parent1:

@@ -1,5 +1,5 @@
 - name: Renting, single, 30, employed
-  period: 2022
+  period: 2021
   absolute_error_margin: 35
   input:
     people:

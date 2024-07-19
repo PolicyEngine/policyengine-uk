@@ -1,0 +1,4 @@
+- bump: major
+  changes:
+    changed:
+    - Fiscal years are years by default.
