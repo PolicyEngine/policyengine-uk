@@ -1146,3 +1146,8 @@
     fixed:
     - Ensure household API version script bumps UK version
   date: 2024-07-17 16:23:18
+- bump: major
+  changes:
+    changed:
+    - Fiscal years are years by default.
+  date: 2024-07-19 09:43:03

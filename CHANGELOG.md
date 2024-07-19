@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2024-07-19 09:43:03
+
+### Changed
+
+- Fiscal years are years by default.
+
 ## [0.86.6] - 2024-07-17 16:23:18
 
 ### Fixed
@@ -1372,6 +1378,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.0.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.6...1.0.0
 [0.86.6]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.5...0.86.6
 [0.86.5]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.4...0.86.5
 [0.86.4]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.3...0.86.4
