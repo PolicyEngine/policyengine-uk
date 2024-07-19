@@ -32,6 +32,8 @@
   absolute_error_margin: 0
   input:
     dividend_income: 50_000
+    # Nullify Personal Allowance for testing purposes
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
     dividend_income_tax: 6_225
 
