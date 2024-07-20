@@ -1,0 +1,8 @@
+description: All variables that are subtracted from the base amount to calculate total income tax
+metadata:
+  label: Subtractive components of total income tax
+  unit: list
+values:
+  0000-01-01:
+  - capped_mcad
+  - other_tax_credits

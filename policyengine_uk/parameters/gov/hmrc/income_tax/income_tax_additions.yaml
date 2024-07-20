@@ -1,0 +1,11 @@
+description: All variables that are added together to calculate total income tax
+metadata:
+  label: Additive components of total income tax
+  unit: list
+values:
+  0000-01-01:
+  - earned_income_tax
+  - savings_income_tax
+  - dividend_income_tax
+  - CB_HITC
+  - private_pension_contributions_tax
