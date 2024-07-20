@@ -5,7 +5,6 @@ values:
     - taxable_dividend_income
     - received_allowances_earned_income
     - marriage_allowance
-    - pension_contributions_relief
     
 metadata:
   unit: list
