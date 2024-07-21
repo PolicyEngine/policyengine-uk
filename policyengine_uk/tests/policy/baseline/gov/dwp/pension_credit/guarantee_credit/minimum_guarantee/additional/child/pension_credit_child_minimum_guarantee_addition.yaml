@@ -1,17 +1,34 @@
-- name: Three children, one not disabled, two disabled, one severely.
-  period: 2022
+- name: Two children with disabled amount
+  period: 2025
   input:
     people:
       child_1:
-        age: 5
+        is_child_or_QYP: false
       child_2:
-        age: 5
-        dla_sc_category: LOWER
+        is_child_or_QYP: true
       child_3:
-        age: 5
-        dla_sc_category: HIGHER
+        is_child_or_QYP: true
     benunits:
       benunit:
         members: [child_1, child_2, child_3]
+        pension_credit_disabled_child_minimum_guarantee_addition: 1_000
   output:
-    pension_credit_child_minimum_guarantee_addition: (54.60 + 84.26 + 147.14) * 52
+    pension_credit_child_minimum_guarantee_addition: 7_894.16 #((66.29 * 2) * 52) + 1_000
+
+
+- name: No children
+  period: 2024
+  input:
+    people:
+      child_1:
+        is_child_or_QYP: false
+      child_2:
+        is_child_or_QYP: false
+      child_3:
+        is_child_or_QYP: false
+    benunits:
+      benunit:
+        members: [child_1, child_2, child_3]
+        pension_credit_disabled_child_minimum_guarantee_addition: 0
+  output:
+    pension_credit_child_minimum_guarantee_addition: 0

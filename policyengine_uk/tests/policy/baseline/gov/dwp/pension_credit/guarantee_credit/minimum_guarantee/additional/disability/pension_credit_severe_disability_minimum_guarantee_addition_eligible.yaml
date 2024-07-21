@@ -1,0 +1,24 @@
+- name: Two children, no carers allowance and no children with benefits
+  period: 2025
+  input:
+    people:
+      child_1:
+        is_adult: true
+        carers_allowance: 0
+        attendance_allowance: 0
+        dla_sc_middle_plus: 0
+      child_2:
+        is_adult: false
+        carers_allowance: 0
+        attendance_allowance: 0
+        dla_sc_middle_plus: 0
+      child_3:
+        is_adult: false
+        carers_allowance: 0
+        attendance_allowance: 0
+        dla_sc_middle_plus: 0
+    benunits:
+      benunit:
+        members: [child_1, child_2, child_3]
+  output:
+    pension_credit_severe_disability_minimum_guarantee_addition_eligible: false
