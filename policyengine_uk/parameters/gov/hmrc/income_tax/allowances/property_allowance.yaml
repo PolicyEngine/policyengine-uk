@@ -1,8 +1,6 @@
 description: Amount of income from property untaxed per year
 values:
   2005-06-01: 1_000
-  # For testing purposes; ELIMINATE BEFORE MERGING
-  2010-01-01: 0
 metadata:
   name: property_allowance
   label: Property Allowance
