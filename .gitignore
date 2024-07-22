@@ -52,3 +52,5 @@ policyengine_uk/calibration/*.h5
 **/*.log
 **/ukmod.json
 *.ipynb
+
+!test9.ipynb
