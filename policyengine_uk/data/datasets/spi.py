@@ -57,8 +57,10 @@ class SPI(Dataset):
         data["private_pension_contributions"] = df.PSAV_XS 
         data["pension_contributions_relief"] = df.PENSRLF
         data["self_employment_income"] = df.PROFITS
-        # HMRC seems to assume the trading allowance is already deducted (per record inspection of SREF 15494988 in 2020-21)
+        # HMRC seems to assume the trading and property allowance are already deducted 
+        # (per record inspection of SREF 15494988 in 2020-21)
         data["trading_allowance"] = np.zeros(len(df))
+        data["property_allowance"] = np.zeros(len(df))
         data["capital_allowances"] = df.CAPALL
         data["loss_relief"] = df.LOSSBF
         data["is_SP_age"] = df.SPA == 1
