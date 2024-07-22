@@ -58,7 +58,7 @@ class SPI(Dataset):
         data["pension_contributions_relief"] = df.PENSRLF
         data["self_employment_income"] = df.PROFITS
         # HMRC seems to assume the trading and property allowance are already deducted 
-        # (per record inspection of SREF 15494988 in 2020-21)
+        #(per record inspection of SREF 15494988 in 2020-21)
         data["trading_allowance"] = np.zeros(len(df))
         data["property_allowance"] = np.zeros(len(df))
         data["capital_allowances"] = df.CAPALL
@@ -71,7 +71,7 @@ class SPI(Dataset):
         data["other_investment_income"] = df.OTHERINV
         data["covenanted_payments"] = df.COVNTS
         data["other_deductions"] = df.MOTHDED + df.DEFICIEN
-        data["marriage_allowance"] = df.MCAS
+        data["married_couples_allowance"] = df.MCAS
 
         for field in data:
             data[field] = {self.time_period: data[field]}
