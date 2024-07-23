@@ -72,6 +72,7 @@ class SPI(Dataset):
         data["covenanted_payments"] = df.COVNTS
         data["other_deductions"] = df.MOTHDED + df.DEFICIEN
         data["married_couples_allowance"] = df.MCAS
+        data["blind_persons_allowance"] = df.BPADUE
 
         for field in data:
             data[field] = {self.time_period: data[field]}
