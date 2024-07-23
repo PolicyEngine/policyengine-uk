@@ -17,4 +17,9 @@ class savings_starter_rate_income(Variable):
         limit = parameters(
             period
         ).gov.hmrc.income_tax.rates.savings_starter_rate.allowance
-        return max_(0, limit - income)
+        # return max_(0, limit - income)
+        return clip(
+            income,
+            0,
+            limit,
+        )
