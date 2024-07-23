@@ -73,6 +73,7 @@ class SPI(Dataset):
         data["other_deductions"] = df.MOTHDED + df.DEFICIEN
         data["married_couples_allowance"] = df.MCAS
         data["blind_persons_allowance"] = df.BPADUE
+        data["marriage_allowance"] = np.where(df.MAIND == 1, 1_250, 0)
 
         for field in data:
             data[field] = {self.time_period: data[field]}
