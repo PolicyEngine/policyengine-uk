@@ -61,7 +61,7 @@
   period: 2024
   input: {}
   output: 
-    dividend_allowance: 2000.0
+    dividend_allowance: 500.0
 
 - name: Allowances Applicable to Adjusted Net Income
   period: 2024

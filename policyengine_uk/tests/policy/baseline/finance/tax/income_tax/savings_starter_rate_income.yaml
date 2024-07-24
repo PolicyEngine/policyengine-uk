@@ -1,0 +1,44 @@
+- name: Full savings starter rate allowance
+  period: 2024
+  input:
+    basic_rate_savings_income_pre_starter: 5_000
+    earned_taxable_income: 15_000
+    taxable_dividend_income: 0
+  output:
+    savings_starter_rate_income: 5_000
+
+- name: Partial savings starter rate allowance
+  period: 2024
+  input:
+    basic_rate_savings_income_pre_starter: 4_000
+    earned_taxable_income: 19_000
+    taxable_dividend_income: 0
+  output:
+    savings_starter_rate_income: 3_570
+
+- name: No savings starter rate allowance due to high non-savings income
+  period: 2024
+  input:
+    basic_rate_savings_income_pre_starter: 2_000
+    earned_taxable_income: 22_000
+    taxable_dividend_income: 1_000
+  output:
+    savings_starter_rate_income: 0
+
+- name: Savings income exceeds allowance
+  period: 2024
+  input:
+    basic_rate_savings_income_pre_starter: 10_000
+    earned_taxable_income: 16_000
+    taxable_dividend_income: 0
+  output:
+    savings_starter_rate_income: 5_000
+
+- name: Partial allowance with dividend income
+  period: 2024
+  input:
+    basic_rate_savings_income_pre_starter: 5_000
+    earned_taxable_income: 16_000
+    taxable_dividend_income: 2_000
+  output:
+    savings_starter_rate_income: 4_570
