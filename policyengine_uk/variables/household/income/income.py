@@ -190,7 +190,7 @@ class inflation_adjustment(Variable):
     def formula(household, period, parameters):
         cpi = parameters.calibration.uprating.CPI
         current_period_cpi = cpi(period)
-        now_cpi = cpi(datetime.datetime.now().strftime("%Y-%m-%d"))
+        now_cpi = cpi(datetime.datetime.now().strftime("%Y-01-01"))
         return now_cpi / current_period_cpi
 
 
@@ -359,6 +359,11 @@ class household_market_income(Variable):
         "maintenance_income",
         "capital_gains",
     ]
+
+    def formula(person, period, parameters):
+        total = add(person, period, household_market_income.adds)
+        contrib = parameters(period).gov.contrib.policyengine.economy.gdp_per_capita
+        return total * (contrib + 1)
 
 
 class household_income_decile(Variable):
