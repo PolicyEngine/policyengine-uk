@@ -15,6 +15,7 @@ class savings_starter_rate_income(Variable):
           title="Tax on savings interest",
           href="https://www.gov.uk/apply-tax-free-interest-on-savings"
         )
+    )
     unit = GBP
 
     def formula(person, period, parameters):
