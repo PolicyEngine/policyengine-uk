@@ -49,7 +49,7 @@ class SPI(Dataset):
         )
         data["savings_interest_income"] = df.INCBBS
         data["property_income"] = df.INCPROP
-        data["employment_income"] = df.PAY
+        data["employment_income"] = df.PAY + df.EPB
         data["employment_expenses"] = df.EXPS
         data["private_pension_income"] = df.PENSION
         # The below underestimates those with high amounts of excess pension
@@ -66,7 +66,7 @@ class SPI(Dataset):
         data["is_SP_age"] = df.SPA == 1
         data["state_pension"] = df.SRP
         data["other_tax_credits"] = df.TAX_CRED
-        data["miscellaneous_income"] = df.MOTHINC + df.EPB + df.INCPBEN + df.OSSBEN + df.TAXTERM + df.UBISJA + df.OTHERINC
+        data["miscellaneous_income"] = df.MOTHINC + df.INCPBEN + df.OSSBEN + df.TAXTERM + df.UBISJA + df.OTHERINC
         data["gift_aid"] = df.GIFTAID + df.GIFTINV
         data["other_investment_income"] = df.OTHERINV
         data["covenanted_payments"] = df.COVNTS
