@@ -25,7 +25,7 @@ class employment_income_before_lsr(Variable):
     label = "employment income before labor supply responses"
     unit = GBP
     definition_period = YEAR
-    uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.average_earnings"
 
 
 class private_pension_income(Variable):
@@ -37,9 +37,7 @@ class private_pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = (
-        "calibration.programs.private_pension_income.budgetary_impact.ENGLAND"
-    )
+    uprating = "gov.obr.non_labour_income"
 
     def formula(person, period, parameters):
         # Don't have data, use the old pension income
@@ -62,9 +60,7 @@ class pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = (
-        "calibration.programs.private_pension_income.budgetary_impact.ENGLAND"
-    )
+    uprating = "gov.obr.non_labour_income"
 
 
 class state_pension(Variable):
@@ -105,7 +101,7 @@ class self_employment_income(Variable):
     unit = GBP
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
     quantity_type = FLOW
-    uprating = "calibration.programs.self_employment_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.mixed_income"
 
 
 class property_income(Variable):
@@ -117,9 +113,7 @@ class property_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
     unit = GBP
     quantity_type = FLOW
-    uprating = (
-        "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
-    )
+    uprating = "gov.obr.non_labour_income"
 
 
 class savings_interest_income(Variable):
@@ -131,7 +125,7 @@ class savings_interest_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "calibration.programs.savings_interest_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.non_labour_income"
 
 
 class dividend_income(Variable):
@@ -143,9 +137,7 @@ class dividend_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
     unit = GBP
     quantity_type = FLOW
-    uprating = (
-        "calibration.programs.dividend_income.budgetary_impact.UNITED_KINGDOM"
-    )
+    uprating = "gov.obr.non_labour_income"
 
 
 class sublet_income(Variable):
@@ -155,9 +147,7 @@ class sublet_income(Variable):
     documentation = "Income from subletting properties"
     definition_period = YEAR
     unit = GBP
-    uprating = (
-        "calibration.programs.property_income.budgetary_impact.UNITED_KINGDOM"
-    )
+    uprating = "gov.obr.non_labour_income"
 
 
 class miscellaneous_income(Variable):
@@ -167,7 +157,7 @@ class miscellaneous_income(Variable):
     documentation = "Income from any other source"
     definition_period = YEAR
     unit = GBP
-    uprating = "calibration.programs.employment_income.budgetary_impact.UNITED_KINGDOM"
+    uprating = "gov.obr.non_labour_income"
 
 
 class private_transfer_income(Variable):
