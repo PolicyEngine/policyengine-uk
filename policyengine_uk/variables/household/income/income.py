@@ -198,7 +198,7 @@ class real_household_net_income(Variable):
     label = (
         f"real household net income ({datetime.datetime.now().year} prices)"
     )
-    entity = Person
+    entity = Household
     definition_period = YEAR
     value_type = float
     unit = GBP
