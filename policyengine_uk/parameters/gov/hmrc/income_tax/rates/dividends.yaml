@@ -75,7 +75,8 @@ brackets:
         label: Extra dividend tax bracket rate
         unit: /1
       values:
-        2015-06-05: 0.3935
+        2015-06-01: 0.381
+        2022-06-05: 0.3935
     threshold:
       description: The lower threshold for the extra dividend bracket rate.
       metadata:
