@@ -61,6 +61,7 @@ class SPI(Dataset):
         #(per record inspection of SREF 15494988 in 2020-21)
         data["trading_allowance"] = np.zeros(len(df))
         data["property_allowance"] = np.zeros(len(df))
+        data["savings_starter_rate_income"] = np.zeros(len(df))
         data["capital_allowances"] = df.CAPALL
         data["loss_relief"] = df.LOSSBF
         data["is_SP_age"] = df.SPA == 1
