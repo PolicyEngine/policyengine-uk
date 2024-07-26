@@ -1,0 +1,23 @@
+description: OBR forecast for mixed income (largely self-employment income).
+values:
+  2012-01-01: 103.4
+  2013-01-01: 111.5
+  2014-01-01: 114.9
+  2015-01-01: 124.5
+  2016-01-01: 128.0
+  2017-01-01: 140.0
+  2018-01-01: 144.2
+  2019-01-01: 151.3
+  2020-01-01: 153.7
+  2021-01-01: 158.3
+  2022-01-01: 161.9
+  2023-01-01: 171.5
+  2024-01-01: 178.2
+  2025-01-01: 185.3
+  2026-01-01: 193.5
+  2027-01-01: 202.3
+  2028-01-01: 211.8
+metadata:
+  reference:
+    - title: OBR March 2024 EFO
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2024/

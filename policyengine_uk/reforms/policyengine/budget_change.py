@@ -163,7 +163,6 @@ class pre_budget_change_ons_household_income_decile(Variable):
                 [equivalised_income <= upper_bounds[i] for i in range(10)],
                 list(range(1, 11)),
             )
-            print(decile)
         # Set negatives to -1.
         # This avoids the bottom decile summing to a negative number,
         # which would flip the % change in the interface.

@@ -44,6 +44,7 @@ class mortgage_interest_repayment(Variable):
     documentation = "Total amount spent on mortgage interest repayments"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.mortgage_interest"
 
 
 class mortgage_capital_repayment(Variable):
@@ -52,6 +53,7 @@ class mortgage_capital_repayment(Variable):
     label = "mortgage capital repayments"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.house_prices"
 
 
 class council_tax(Variable):

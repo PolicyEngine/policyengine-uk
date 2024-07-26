@@ -139,7 +139,7 @@ FRS_2022_23 = FRS.from_dataset(
     RawFRS_2022_23,
     "frs_2022",
     "FRS 2022-23",
-    new_url="release://policyengine/non-public-microdata/uk-2024-july/raw_frs_2022.h5",
+    new_url="release://policyengine/non-public-microdata/uk-2024-july/frs_2022.h5",
 )
 
 

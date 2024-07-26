@@ -188,9 +188,9 @@ class inflation_adjustment(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        cpi = parameters.calibration.uprating.CPI
+        cpi = parameters.gov.obr.consumer_price_index
         current_period_cpi = cpi(period)
-        now_cpi = cpi(datetime.datetime.now().strftime("%Y-%m-%d"))
+        now_cpi = cpi(datetime.datetime.now().strftime("%Y-01-01"))
         return now_cpi / current_period_cpi
 
 
@@ -198,7 +198,7 @@ class real_household_net_income(Variable):
     label = (
         f"real household net income ({datetime.datetime.now().year} prices)"
     )
-    entity = Person
+    entity = Household
     definition_period = YEAR
     value_type = float
     unit = GBP
@@ -206,22 +206,6 @@ class real_household_net_income(Variable):
     def formula(household, period, parameters):
         net_income = household("household_net_income", period)
         return net_income * household("inflation_adjustment", period)
-
-
-class real_household_net_income(Variable):
-    label = "Real household net income"
-    documentation = "Disposable income in January 2015 prices"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-    def formula(household, period, parameters):
-        def cpi(period):
-            return parameters(period).calibration.uprating.CPI
-
-        multiplier = cpi("2015-01-01") / cpi(period)
-        return household("household_net_income", period) * multiplier
 
 
 class hbai_household_net_income_ahc(Variable):
@@ -359,6 +343,13 @@ class household_market_income(Variable):
         "maintenance_income",
         "capital_gains",
     ]
+
+    def formula(person, period, parameters):
+        total = add(person, period, household_market_income.adds)
+        contrib = parameters(
+            period
+        ).gov.contrib.policyengine.economy.gdp_per_capita
+        return total * (contrib + 1)
 
 
 class household_income_decile(Variable):

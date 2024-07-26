@@ -13,5 +13,4 @@ class household_benefits_individual_non_dep_deduction(Variable):
         p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
         weekly_income = person("total_income", period) / WEEKS_IN_YEAR
         deduction = p.amount.calc(weekly_income, right=True)
-        print(weekly_income)
         return deduction * WEEKS_IN_YEAR
