@@ -26,7 +26,11 @@ brackets:
     values:
       2018-06-01: 2_000
       2019-06-01: 2_049
-      2020-06-01: 2_085
+      2020-03-04: 
+        value: 2_085
+        reference:
+          - title: "Capture in full: Tax rates 2020/21; Spring Budget 2020"
+            href: https://taxscape.deloitte.com/taxtables/deloitte-uk-tax-rates-2020-21--updated.pdf
       2022-01-01: 
         value: 2_162
         reference:
@@ -53,7 +57,11 @@ brackets:
       unit: currency-GBP
     values:
       2018-06-01: 12_150
-      2020-06-01: 12_444
+      2020-03-04: 
+        value: 12_444
+        reference:
+          - title: "Capture in full: Tax rates 2020/21; Spring Budget 2020"
+            href: https://taxscape.deloitte.com/taxtables/deloitte-uk-tax-rates-2020-21--updated.pdf
       2021-06-01: 12_658
       2022-01-01: 
         value: 13_118
@@ -81,7 +89,11 @@ brackets:
     values:
       2018-06-01: 31_580
       2019-06-01: 30_930
-      2020-06-01: 30_930
+      2020-03-04: 
+        value: 30_930
+        reference:
+          - title: "Capture in full: Tax rates 2020/21; Spring Budget 2020"
+            href: https://taxscape.deloitte.com/taxtables/deloitte-uk-tax-rates-2020-21--updated.pdf
       2022-01-01: 
         value: 31_092
         reference:
@@ -99,6 +111,11 @@ brackets:
       unit: /1
     values:
       2018-06-01: 0.47
+      2020-03-04:
+        value: 0.46
+        reference:
+          - title: "Capture in full: Tax rates 2020/21; Spring Budget 2020"
+            href: https://taxscape.deloitte.com/taxtables/deloitte-uk-tax-rates-2020-21--updated.pdf
   threshold:
     description: The threshold at which an individual pays the Scottish additional
       rate
