@@ -16,9 +16,13 @@ class private_pension_contributions_tax(Variable):
         p = parameters(period).gov.hmrc.income_tax.rates.uk
         taxed_income = person("taxed_income", period)
 
-        private_pension_contributions = person("private_pension_contributions", period)
+        private_pension_contributions = person(
+            "private_pension_contributions", period
+        )
         pension_annual_allowance = person("pension_annual_allowance", period)
-        taxable_contributions = private_pension_contributions - pension_annual_allowance
+        taxable_contributions = (
+            private_pension_contributions - pension_annual_allowance
+        )
 
         tax_rate = p.marginal_rates(taxed_income)
         return max_(0, taxable_contributions * tax_rate)

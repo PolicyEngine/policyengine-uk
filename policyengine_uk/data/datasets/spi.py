@@ -54,11 +54,11 @@ class SPI(Dataset):
         data["private_pension_income"] = df.PENSION
         # The below underestimates those with high amounts of excess pension
         # savings, as it does not include the Annual Allowance
-        data["private_pension_contributions"] = df.PSAV_XS 
+        data["private_pension_contributions"] = df.PSAV_XS
         data["pension_contributions_relief"] = df.PENSRLF
         data["self_employment_income"] = df.PROFITS
-        # HMRC seems to assume the trading and property allowance are already deducted 
-        #(per record inspection of SREF 15494988 in 2020-21)
+        # HMRC seems to assume the trading and property allowance are already deducted
+        # (per record inspection of SREF 15494988 in 2020-21)
         data["trading_allowance"] = np.zeros(len(df))
         data["property_allowance"] = np.zeros(len(df))
         data["savings_starter_rate_income"] = np.zeros(len(df))
@@ -67,7 +67,14 @@ class SPI(Dataset):
         data["is_SP_age"] = df.SPA == 1
         data["state_pension"] = df.SRP
         data["other_tax_credits"] = df.TAX_CRED
-        data["miscellaneous_income"] = df.MOTHINC + df.INCPBEN + df.OSSBEN + df.TAXTERM + df.UBISJA + df.OTHERINC
+        data["miscellaneous_income"] = (
+            df.MOTHINC
+            + df.INCPBEN
+            + df.OSSBEN
+            + df.TAXTERM
+            + df.UBISJA
+            + df.OTHERINC
+        )
         data["gift_aid"] = df.GIFTAID + df.GIFTINV
         data["other_investment_income"] = df.OTHERINV
         data["covenanted_payments"] = df.COVNTS

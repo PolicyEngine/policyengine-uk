@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class received_allowances(Variable):
     value_type = float
     entity = Person
@@ -10,5 +11,5 @@ class received_allowances(Variable):
     adds = [
         "received_allowances_earned_income",
         "received_allowances_savings_income",
-        "received_allowances_dividend_income"
+        "received_allowances_dividend_income",
     ]

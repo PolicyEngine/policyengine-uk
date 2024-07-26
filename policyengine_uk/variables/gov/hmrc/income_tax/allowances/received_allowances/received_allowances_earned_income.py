@@ -23,5 +23,5 @@ class received_allowances_earned_income(Variable):
         return where(
             earned_income < all_allowances,
             max_(0, earned_income),
-            all_allowances
+            all_allowances,
         )

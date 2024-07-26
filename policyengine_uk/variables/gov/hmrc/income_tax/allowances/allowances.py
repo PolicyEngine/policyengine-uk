@@ -234,5 +234,5 @@ class allowances(Variable):
         "covenanted_payments",
         "charitable_investment_gifts",
         "other_deductions",
-        "pension_contributions_relief"
+        "pension_contributions_relief",
     ]

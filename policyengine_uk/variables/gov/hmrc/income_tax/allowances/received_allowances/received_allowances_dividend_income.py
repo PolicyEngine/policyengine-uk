@@ -17,12 +17,16 @@ class received_allowances_dividend_income(Variable):
         received_allowances_savings_income = person(
             "received_allowances_savings_income", period
         )
-        remaining_allowance = all_allowances - received_allowances_earned_income - received_allowances_savings_income
+        remaining_allowance = (
+            all_allowances
+            - received_allowances_earned_income
+            - received_allowances_savings_income
+        )
 
         dividend_income = person("taxable_dividend_income", period)
 
         return where(
-            dividend_income < remaining_allowance, 
-            max_(0, dividend_income), 
-            max_(0, remaining_allowance)
+            dividend_income < remaining_allowance,
+            max_(0, dividend_income),
+            max_(0, remaining_allowance),
         )

@@ -186,6 +186,7 @@ class maintenance_income(Variable):
     definition_period = YEAR
     unit = GBP
 
+
 class other_investment_income(Variable):
     value_type = float
     entity = Person
