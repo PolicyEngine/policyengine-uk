@@ -1,4 +1,0 @@
-- bump: minor
-  changes:
-    changed:
-    - Simplified uprating indices by moving OBR parameters to gov folder.

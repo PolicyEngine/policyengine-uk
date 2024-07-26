@@ -1151,3 +1151,8 @@
     changed:
     - Fiscal years are years by default.
   date: 2024-07-19 09:43:03
+- bump: minor
+  changes:
+    changed:
+    - Simplified uprating indices by moving OBR parameters to gov folder.
+  date: 2024-07-26 08:35:13
