@@ -13,6 +13,8 @@ class taxable_savings_interest_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        total_interest = person("savings_interest_income", period)
+        standard_interest = person("savings_interest_income", period)
+        other_interest = person("other_investment_income", period)
+        total_interest = standard_interest + other_interest
         exempt_interest = person("tax_free_savings_income", period)
         return max_(0, total_interest - exempt_interest)

@@ -13,12 +13,11 @@ class income_tax(Variable):
         href="https://www.legislation.gov.uk/ukpga/2007/3/section/23",
     )
     category = TAX
-    adds = [
-        "earned_income_tax",
-        "savings_income_tax",
-        "dividend_income_tax",
-        "CB_HITC",
-    ]
-    subtracts = [
-        "capped_mcad",
-    ]
+
+    def formula(person, period, parameters):
+        p = parameters(period).gov.hmrc.income_tax
+
+        additions = add(person, period, p.income_tax_additions)
+        subtractions = add(person, period, p.income_tax_subtractions)
+
+        return max_(0, additions - subtractions)

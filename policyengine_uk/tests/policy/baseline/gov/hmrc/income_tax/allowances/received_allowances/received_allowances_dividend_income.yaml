@@ -1,0 +1,59 @@
+- name: Dividend income less than remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 8_000
+    received_allowances_savings_income: 2_000
+    taxable_dividend_income: 2_000
+  output:
+    received_allowances_dividend_income: 2_000
+
+- name: Dividend income equal to remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 10_000
+    received_allowances_savings_income: 570
+    taxable_dividend_income: 2_000
+  output:
+    received_allowances_dividend_income: 2_000
+
+- name: Dividend income greater than remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 11_000
+    received_allowances_savings_income: 1_000
+    taxable_dividend_income: 1_000
+  output:
+    received_allowances_dividend_income: 570
+
+- name: No remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 10_570
+    received_allowances_savings_income: 2_000
+    taxable_dividend_income: 1_000
+  output:
+    received_allowances_dividend_income: 0
+
+- name: Negative taxable dividend income
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 10_000
+    received_allowances_savings_income: 1_000
+    taxable_dividend_income: -500
+  output:
+    received_allowances_dividend_income: 0
+
+- name: Negative remaining allowance
+  period: 2024
+  input:
+    allowances: 12_570
+    received_allowances_earned_income: 11_000
+    received_allowances_savings_income: 2_000
+    taxable_dividend_income: 1_000
+  output:
+    received_allowances_dividend_income: 0

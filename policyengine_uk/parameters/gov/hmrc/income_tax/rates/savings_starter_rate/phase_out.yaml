@@ -1,0 +1,9 @@
+description: Starter Rate for Savings phase-out rate
+values:
+  2014-04-06: 1
+metadata:
+  unit: currency_GBP
+  description: Rate, above the max Personal Allowance, at which Starter Rate for Savings total amount phases out, for each additional pound of non-savings income
+  reference: 
+  - title: Tax on savings interest
+    href: https://www.gov.uk/apply-tax-free-interest-on-savings
