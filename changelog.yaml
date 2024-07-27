@@ -1156,3 +1156,16 @@
     changed:
     - Simplified uprating indices by moving OBR parameters to gov folder.
   date: 2024-07-26 08:35:13
+- bump: minor
+  changes:
+    added:
+    - Tax on excess pension contributions
+    fixed:
+    - Include Scottish income tax calculation within overall UK income tax calculation
+    - Apply allowances to all types of income
+    - Prevent negative income tax output
+    - Update Dividend Allowance values
+    - Correct Starter Rate for Savings taper structure
+    - Prevent calculation errors due to empty extra dividend bracket with conflicting
+      rates
+  date: 2024-07-27 10:02:38

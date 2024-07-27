@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2024-07-27 10:02:38
+
+### Added
+
+- Tax on excess pension contributions
+
+### Fixed
+
+- Include Scottish income tax calculation within overall UK income tax calculation
+- Apply allowances to all types of income
+- Prevent negative income tax output
+- Update Dividend Allowance values
+- Correct Starter Rate for Savings taper structure
+- Prevent calculation errors due to empty extra dividend bracket with conflicting rates
+
 ## [1.1.0] - 2024-07-26 08:35:13
 
 ### Changed
@@ -1384,6 +1399,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.2.0]: https://github.com/PolicyEngine/openfisca-uk/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/PolicyEngine/openfisca-uk/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.6...1.0.0
 [0.86.6]: https://github.com/PolicyEngine/openfisca-uk/compare/0.86.5...0.86.6
