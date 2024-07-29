@@ -1169,3 +1169,8 @@
     - Prevent calculation errors due to empty extra dividend bracket with conflicting
       rates
   date: 2024-07-27 10:02:38
+- bump: minor
+  changes:
+    added:
+    - Winter Fuel Allowance.
+  date: 2024-07-29 16:47:34
