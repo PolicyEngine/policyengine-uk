@@ -1,0 +1,9 @@
+description: Whether individuals must be State Pension Age to qualify for the Winter Fuel Payment.
+values:
+  2000-01-01: true
+metadata:
+  unit: bool
+  label: Winter Fuel Payment State Pension Age requirement
+  reference:
+    - href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2
+      title: The Social Fund Winter Fuel Payment Regulations 2000
