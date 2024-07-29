@@ -22,6 +22,7 @@
 				"	definition_period = ${5:YEAR}",
 				"	value_type = ${6:float}",
 				"	unit = ${7:GBP}",
+				"	quantity_type = ${8:FLOW}",
 				"",
 				""
 		 	],

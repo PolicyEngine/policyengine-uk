@@ -4,21 +4,6 @@ label = "Income"
 description = "Financial income received by individuals."
 
 
-class employment_income(Variable):
-    value_type = float
-    entity = Person
-    label = "employment income"
-    documentation = "Total income from employment. Include wages, bonuses, tips, etc. This should be gross of all private pension contributions."
-    definition_period = YEAR
-    unit = GBP
-    reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(a)"
-    quantity_type = FLOW
-    adds = [
-        "employment_income_before_lsr",
-        "employment_income_behavioral_response",
-    ]
-
-
 class employment_income_before_lsr(Variable):
     value_type = float
     entity = Person
@@ -26,29 +11,6 @@ class employment_income_before_lsr(Variable):
     unit = GBP
     definition_period = YEAR
     uprating = "gov.obr.average_earnings"
-
-
-class private_pension_income(Variable):
-    value_type = float
-    entity = Person
-    label = "pension income"
-    documentation = "Income from private or occupational pensions (not including the State Pension)"
-    definition_period = YEAR
-    unit = GBP
-    reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
-    quantity_type = FLOW
-    uprating = "gov.obr.non_labour_income"
-
-    def formula(person, period, parameters):
-        # Don't have data, use the old pension income
-        pension_income = person("pension_income", period)
-        if pension_income.sum() != 0:
-            logging.warn(
-                "`pension_income` is deprecated and will be removed- use `private_pension_income` instead"
-            )
-            return pension_income
-        else:
-            return 0
 
 
 class pension_income(Variable):
@@ -92,18 +54,6 @@ class state_pension(Variable):
         )
 
 
-class self_employment_income(Variable):
-    value_type = float
-    entity = Person
-    label = "self-employment income"
-    documentation = "Income from self-employment profits. This should be net of self-employment expenses."
-    definition_period = YEAR
-    unit = GBP
-    reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
-    quantity_type = FLOW
-    uprating = "gov.obr.mixed_income"
-
-
 class property_income(Variable):
     value_type = float
     entity = Person
@@ -126,18 +76,7 @@ class savings_interest_income(Variable):
     unit = GBP
     quantity_type = FLOW
     uprating = "gov.obr.non_labour_income"
-
-
-class dividend_income(Variable):
-    value_type = float
-    entity = Person
-    label = "dividend income"
-    documentation = "Total income from dividends, gross of tax"
-    definition_period = YEAR
-    reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
-    unit = GBP
-    quantity_type = FLOW
-    uprating = "gov.obr.non_labour_income"
+    adds = ["interest_income"]
 
 
 class sublet_income(Variable):
