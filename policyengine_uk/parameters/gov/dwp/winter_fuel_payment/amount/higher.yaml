@@ -1,0 +1,8 @@
+values:
+  2000-01-01: 300
+metadata:
+  unit: currency-GBP
+  label: Winter Fuel Payment higher amount
+  reference:
+    - href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2
+      title: The Social Fund Winter Fuel Payment Regulations 2000
