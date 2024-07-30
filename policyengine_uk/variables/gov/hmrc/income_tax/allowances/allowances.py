@@ -235,5 +235,4 @@ class allowances(Variable):
         "charitable_investment_gifts",
         "other_deductions",
         "pension_contributions_relief",
-        "marriage_allowance"
     ]
