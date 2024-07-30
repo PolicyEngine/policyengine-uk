@@ -4,7 +4,6 @@ values:
     - taxable_savings_interest_income
     - taxable_dividend_income
     - received_allowances_earned_income
-    - marriage_allowance
     
 metadata:
   unit: list
