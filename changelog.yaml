@@ -1174,3 +1174,8 @@
     added:
     - Winter Fuel Allowance.
   date: 2024-07-29 16:47:34
+- bump: minor
+  changes:
+    added:
+    - Winter Fuel Payment to household benefits.
+  date: 2024-07-30 13:05:05
