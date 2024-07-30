@@ -86,6 +86,7 @@ class household_benefits(Variable):
         "epg_subsidy",
         "cost_of_living_support_payment",
         "energy_bills_rebate",
+        "winter_fuel_allowance",
     ]
 
     def formula(household, period, parameters):
