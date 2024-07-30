@@ -58,7 +58,7 @@ brackets:
     values:
       2018-06-01: 12_150
       2020-03-04: 
-        value: 12_444
+        value: 12_658
         reference:
           - title: "Capture in full: Tax rates 2020/21; Spring Budget 2020"
             href: https://taxscape.deloitte.com/taxtables/deloitte-uk-tax-rates-2020-21--updated.pdf
@@ -80,6 +80,7 @@ brackets:
       unit: /1
     values:
       2018-06-01: 0.4
+      2020-03-04: 0.41
   threshold:
     description: The threshold at which an individual pays the Scottish higher rate
     metadata:
