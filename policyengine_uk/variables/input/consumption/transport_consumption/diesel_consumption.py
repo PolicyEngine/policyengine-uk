@@ -1,9 +1,9 @@
 from policyengine_uk.model_api import *
 
 
-class transport_consumption(Variable):
-    label = "transport consumption"
-    entity = Household
+class diesel_consumption(Variable):
+    label = "diesel consumption"
+    entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP

@@ -9,7 +9,20 @@ class age(Variable):
     entity = Person
     label = "age"
     unit = "year"
-    documentation = "Age in years"
+    value_type = float
+    documentation = "Age in years."
     definition_period = YEAR
     quantity_type = STOCK
     default_value = 40
+
+class Gender(Enum):
+    MALE = "male"
+    FEMALE = "female"
+
+class gender(Variable):
+    label = "gender"
+    entity = Person
+    definition_period = YEAR
+    value_type = Enum
+    possible_values = Gender
+

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class household_furnishings_consumption(Variable):
     label = "household furnishings consumption"
-    entity = Household
+    entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP

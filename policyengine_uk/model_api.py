@@ -7,5 +7,6 @@ from policyengine_uk.tools.baseline_variables import (
 )
 from policyengine_core import periods
 from microdf import MicroSeries, MicroDataFrame
+from policyengine_uk.tools.generic_categories import *
 
 GBP = "currency-GBP"
