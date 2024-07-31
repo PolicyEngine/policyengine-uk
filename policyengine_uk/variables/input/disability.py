@@ -1,5 +1,10 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.output.gov.dwp.pip.pip import PIPCategory
+
+
+class PIPCategory(Enum):
+    STANDARD = "Standard"
+    ENHANCED = "Enhanced"
+    NONE = "None"
 
 
 class dla_sc_category(Variable):
@@ -20,6 +25,7 @@ class dla_m_category(Variable):
     value_type = Enum
     possible_values = LowerOrHigher
     default_value = LowerOrHigher.NONE
+
 
 class pip_m_category(Variable):
     label = "PIP (mobility) category"

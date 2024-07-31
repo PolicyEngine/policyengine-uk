@@ -1,8 +1,0 @@
-description: Annual allowance for relief on pension contributions
-values:
-  2015-06-01: 40_000
-metadata:
-  unit: currency-GBP
-  reference: 
-  - title: Tax on your private pension contributions
-    href: https://www.gov.uk/tax-on-your-private-pension/annual-allowance

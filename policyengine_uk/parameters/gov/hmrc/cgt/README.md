@@ -1,1 +1,0 @@
-# Capital Gains Tax

@@ -5,52 +5,17 @@
 build
 dist
 
-# Editors
-
-.project
-.pydevproject
-.settings
-.spyderproject
-.vscode/settings.json
-.vscode/launch.json
-.vscode/dryrun.log
-.vscode/targets.log
-.vscode/configurationCache.log
-
-# OS stuff
-
-.DS_Store
-*~
-
-# Data storage
-
-person.csv
-benunit.csv
-household.csv
-
 # Jupyter book
 
 docs/book/_build/
-docs/book/.ipynb_checkpoints
 **/.ipynb_checkpoints
-Untitled.ipynb
-
-# Config files
-
-policyengine_uk/tools/datasets.yml
-
-# Temporary files
-policyengine_uk/calibration/*.csv
-policyengine_uk/calibration/*.yaml
-policyengine_uk/calibration/*.h5
 
 # Microdata
 
 **/*.h5
 **/*.csv
-**/*.pkl
-**/*.log
-**/ukmod.json
 *.ipynb
 
-!test9.ipynb
+# Refactoring
+
+old*/

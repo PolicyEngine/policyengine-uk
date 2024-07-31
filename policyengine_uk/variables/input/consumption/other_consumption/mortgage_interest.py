@@ -8,4 +8,3 @@ class mortgage_interest(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-

@@ -15,9 +15,11 @@ class age(Variable):
     quantity_type = STOCK
     default_value = 40
 
+
 class Gender(Enum):
     MALE = "male"
     FEMALE = "female"
+
 
 class gender(Variable):
     label = "gender"
@@ -25,4 +27,4 @@ class gender(Variable):
     definition_period = YEAR
     value_type = Enum
     possible_values = Gender
-
+    default_value = Gender.MALE

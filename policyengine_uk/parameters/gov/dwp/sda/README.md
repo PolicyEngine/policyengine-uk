@@ -1,1 +1,0 @@
-# Severe Disability Allowance

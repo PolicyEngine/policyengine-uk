@@ -1,3 +1,3 @@
 from pathlib import Path
 
-STORAGE_FOLDER = Path(__file__).parent
+STORAGE_FOLDER = Path(__file__)

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class other_transport_consumption(Variable):
     label = "other transport consumption"
     documentation = "Transport spending excluding petrol and diesel spending."
@@ -8,4 +9,3 @@ class other_transport_consumption(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-

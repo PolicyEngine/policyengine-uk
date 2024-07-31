@@ -9,4 +9,3 @@ class housing_maintenance_consumption(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-

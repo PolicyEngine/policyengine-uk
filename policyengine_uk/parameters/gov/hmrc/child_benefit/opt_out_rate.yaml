@@ -1,9 +1,0 @@
-description: Percentage of fully HITC-liable families who opt out of Child Benefit.
-values:
-  2019-01-01: 0.23 # 3m families have ANI over £60k in the 2023 FRS, 683k families opt out of CB.
-metadata:
-  unit: /1
-  label: Child Benefit HITC-liable opt-out rate
-  reference:
-    - title: "Child Benefit Statistics: Annual Releast, August 2022"
-      href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2022/child-benefit-statistics-annual-release-data-at-august-2022

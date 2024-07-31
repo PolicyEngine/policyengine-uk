@@ -9,4 +9,3 @@ class private_school_fees(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-

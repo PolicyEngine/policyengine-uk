@@ -9,4 +9,3 @@ class water_charges(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-

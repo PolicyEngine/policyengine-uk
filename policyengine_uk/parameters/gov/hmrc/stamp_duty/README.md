@@ -1,1 +1,0 @@
-# Stamp Duty Land Tax

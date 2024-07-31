@@ -1,1 +1,0 @@
-# Cost-of-living support

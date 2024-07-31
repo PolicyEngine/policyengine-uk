@@ -13,13 +13,3 @@ core:
   not_modelled:
     - Tax-free childcare
     - VAT
-filtered:
-  country:
-    SCOTLAND:
-      modelled:
-        - Scottish tax rates
-      not_modelled:
-        - Scottish Child Payment
-    NORTHERN_IRELAND:
-      modelled:
-        - Domestic rates

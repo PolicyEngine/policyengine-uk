@@ -1,6 +1,0 @@
-description: Total corporate wealth.
-values:
-  2021-01-01: 5_470_727_000_000
-metadata:
-  unit: currency-GBP
-  uprating: household.wealth.financial_assets

@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 
 
-class communication_consumption(Variable):
-    label = "communication consumption"
+class state_pension(Variable):
+    label = "State Pension"
     entity = Person
     definition_period = YEAR
     value_type = float

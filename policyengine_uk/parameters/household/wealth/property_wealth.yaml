@@ -1,6 +1,0 @@
-description: Total property wealth.
-values:
-  2021-01-01: 6_496_707_000_000
-metadata:
-  unit: currency-GBP
-  uprating: household.wealth.financial_assets

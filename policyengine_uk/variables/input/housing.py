@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 label = "Housing"
 
+
 class CouncilTaxBand(Enum):
     A = "A"
     B = "B"
