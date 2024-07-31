@@ -5,9 +5,7 @@ from policyengine_core.simulations import (
     Simulation as CoreSimulation,
     Microsimulation as CoreMicrosimulation,
 )
-from policyengine_uk.data.storage import STORAGE_FOLDER
 from policyengine_uk.data import *
-import pandas as pd
 
 COUNTRY_FOLDER = Path(__file__).parent
 
