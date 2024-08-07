@@ -16,6 +16,7 @@ parts:
       - file: programs/gov/dcms/bbc/tv-licence
       - file: programs/gov/revenue_scotland/land-and-buildings-transaction-tax
       - file: programs/gov/wra/land-transaction-tax
+      - file: model/spi-validation
   - caption: Using the model
     chapters:
       - file: usage/getting-started
