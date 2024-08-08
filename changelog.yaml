@@ -1179,3 +1179,10 @@
     added:
     - Winter Fuel Payment to household benefits.
   date: 2024-07-30 13:05:05
+- bump: minor
+  changes:
+    added:
+    - Docs page about SPI 2020/21 validation
+    fixed:
+    - Correct Scottish income tax rates for 2020/21
+  date: 2024-08-08 15:33:05

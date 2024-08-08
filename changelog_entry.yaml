@@ -1,6 +1,0 @@
-- bump: minor
-  changes:
-    fixed:
-    - Correct Scottish income tax rates for 2020/21
-    added:
-    - Docs page about SPI 2020/21 validation
