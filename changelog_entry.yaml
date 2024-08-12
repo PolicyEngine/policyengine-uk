@@ -1,5 +1,0 @@
-- bump: patch
-  changes:
-    changed:
-    - Corrected spelling on SPI validation documentation entry
-    - Corrected argparse version

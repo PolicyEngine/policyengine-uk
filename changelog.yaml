@@ -1186,3 +1186,9 @@
     fixed:
     - Correct Scottish income tax rates for 2020/21
   date: 2024-08-08 15:33:05
+- bump: patch
+  changes:
+    changed:
+    - Corrected spelling on SPI validation documentation entry
+    - Corrected argparse version
+  date: 2024-08-12 22:11:31
