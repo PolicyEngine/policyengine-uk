@@ -26,7 +26,7 @@ setup(
         ),
     ],
     install_requires=[
-        "argparse>=1.5.0",
+        "argparse>=1.4.0",
         "click>=8.0.0",
         "gif[plotly]>=3.0.0",
         "inquirer>=2.7.0",
