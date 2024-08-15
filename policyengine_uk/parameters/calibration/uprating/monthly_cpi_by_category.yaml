@@ -1,6 +1,6 @@
 description: Monthly CPI by consumption category (COICOP).
 metadata:
-  uprating: calibration.uprating.consumption
+  uprating: gov.obr.consumer_price_index
   propagate_metadata_to_children: true
   reference:
     - title: Consumer price inflation tables
