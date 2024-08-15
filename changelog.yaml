@@ -1197,3 +1197,8 @@
     fixed:
     - Updated inflation uprating for COICOP categories.
   date: 2024-08-15 11:09:56
+- bump: minor
+  changes:
+    added:
+    - CPI category forecasts.
+  date: 2024-08-15 11:36:14
