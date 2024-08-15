@@ -1,0 +1,17 @@
+description: OBR CPI category inflation projection for food, beverages and tobacco.
+values:
+  2018-01-01: 1
+  2019-01-01: 1.018
+  2020-01-01: 1.026
+  2021-01-01: 1.048
+  2022-01-01: 1.166
+  2023-01-01: 1.296
+  2024-01-01: 1.329
+  2025-01-01: 1.352
+  2026-01-01: 1.387
+  2027-01-01: 1.426
+  2028-01-01: 1.461
+metadata:
+  unit: currency-GBP
+  reference: OBR
+  label: Food and beverages inflation

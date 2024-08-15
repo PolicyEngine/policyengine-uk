@@ -14,7 +14,7 @@ class food_and_non_alcoholic_beverages_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.food_and_non_alcoholic_beverages"
+    uprating = "gov.obr.inflation.food_beverages_and_tobacco"
 
 
 class alcohol_and_tobacco_consumption(Variable):
@@ -25,9 +25,8 @@ class alcohol_and_tobacco_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = (
-        "calibration.uprating.monthly_cpi_by_category.alcohol_and_tobacco"
-    )
+    uprating = "gov.obr.consumer_price_index"
+    uprating = "gov.obr.inflation.food_beverages_and_tobacco"
 
 
 class clothing_and_footwear_consumption(Variable):
@@ -38,9 +37,7 @@ class clothing_and_footwear_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = (
-        "calibration.uprating.monthly_cpi_by_category.clothing_and_footwear"
-    )
+    uprating = "gov.obr.consumer_price_index"
 
 
 class housing_water_and_electricity_consumption(Variable):
@@ -53,7 +50,7 @@ class housing_water_and_electricity_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.housing_water_and_electricity"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class household_furnishings_consumption(Variable):
@@ -64,6 +61,7 @@ class household_furnishings_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
+    uprating = "gov.obr.consumer_price_index"
 
 
 class health_consumption(Variable):
@@ -74,7 +72,7 @@ class health_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.health"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class transport_consumption(Variable):
@@ -85,7 +83,7 @@ class transport_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.transport"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class communication_consumption(Variable):
@@ -96,7 +94,7 @@ class communication_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.communication"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class recreation_consumption(Variable):
@@ -107,7 +105,7 @@ class recreation_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.recreation"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class education_consumption(Variable):
@@ -118,7 +116,7 @@ class education_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.education"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class restaurants_and_hotels_consumption(Variable):
@@ -129,9 +127,7 @@ class restaurants_and_hotels_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = (
-        "calibration.uprating.monthly_cpi_by_category.restaurants_and_hotels"
-    )
+    uprating = "gov.obr.consumer_price_index"
 
 
 class miscellaneous_consumption(Variable):
@@ -142,7 +138,7 @@ class miscellaneous_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.miscellaneous"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class petrol_spending(Variable):
@@ -152,7 +148,7 @@ class petrol_spending(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.transport"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class diesel_spending(Variable):
@@ -162,7 +158,7 @@ class diesel_spending(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-    uprating = "calibration.uprating.monthly_cpi_by_category.transport"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class childcare_expenses(Variable):
@@ -172,6 +168,7 @@ class childcare_expenses(Variable):
     documentation = "Total amount spent on childcare"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.consumer_price_index"
 
 
 class private_pension_contributions(Variable):
@@ -181,6 +178,7 @@ class private_pension_contributions(Variable):
     documentation = "Total amount spent on private pension contributions"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.average_earnings"
 
 
 class occupational_pension_contributions(Variable):
