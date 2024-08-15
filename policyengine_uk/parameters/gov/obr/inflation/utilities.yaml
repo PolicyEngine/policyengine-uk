@@ -1,0 +1,17 @@
+description: OBR CPI category inflation projection for utilities
+values:
+  2018-01-01: 1
+  2019-01-01: 1.049
+  2020-01-01: 0.972
+  2021-01-01: 1.090
+  2022-01-01: 1.968
+  2023-01-01: 1.916
+  2024-01-01: 1.478
+  2025-01-01: 1.365
+  2026-01-01: 1.281
+  2027-01-01: 1.313
+  2028-01-01: 1.365
+metadata:
+  unit: currency-GBP
+  reference: OBR
+  label: Utilities inflation
