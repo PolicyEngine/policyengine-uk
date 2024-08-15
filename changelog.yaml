@@ -1192,3 +1192,8 @@
     - Corrected spelling on SPI validation documentation entry
     - Corrected argparse version
   date: 2024-08-12 22:11:31
+- bump: minor
+  changes:
+    fixed:
+    - Updated inflation uprating for COICOP categories.
+  date: 2024-08-15 11:09:56
