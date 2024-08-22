@@ -1202,3 +1202,9 @@
     added:
     - CPI category forecasts.
   date: 2024-08-15 11:36:14
+- bump: patch
+  changes:
+    added:
+    - Mask applied to private_school_vat to prevent calculation error when household
+      weights aren't provided
+  date: 2024-08-22 20:35:09
