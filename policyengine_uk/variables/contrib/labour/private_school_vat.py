@@ -34,8 +34,13 @@ class attends_private_school(Variable):
 
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(net_income, weights=household_weight)
-        percentile = (
-            weighted_income.percentile_rank()
+
+        percentile = np.zeros_like(weighted_income).astype(numpy.int64)
+        mask = household_weight > 0
+
+        percentile[mask] = (
+            weighted_income[mask]
+            .percentile_rank()
             .clip(0, 100)
             .values.astype(numpy.int64)
         )
