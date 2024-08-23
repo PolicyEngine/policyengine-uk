@@ -61,3 +61,25 @@
         ]
   output:
     attends_private_school: [False, False]
+
+- name: Correctly interpolates individual percentiles into ventiles
+  period: 2024
+  input:
+    gov.simulation.private_school_vat.private_school_attendance_rate.0: 0
+    gov.simulation.private_school_vat.private_school_attendance_rate.5: 1
+    people:
+      adult: 
+        age: 25
+      child:
+        age: 10
+    households:
+      household:
+        household_weight: 0.001
+        household_benefits: 0
+        household_market_income: 0
+        members: [
+          adult,
+          child
+        ]
+  output:
+    attends_private_school: [False, False]
