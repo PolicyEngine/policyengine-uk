@@ -34,7 +34,6 @@ class winter_fuel_allowance(Variable):
             > 0
         )
         meets_mtb_requirement = on_mtb | ~wfp.eligibility.require_benefits
-        print(wfp.eligibility.require_benefits)
         meets_spa_requirement = (
             household.any(is_SP_age)
             | ~wfp.eligibility.state_pension_age_requirement

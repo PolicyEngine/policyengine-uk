@@ -1,0 +1,65 @@
+- name: Returns 0 when no children
+  period: 2024
+  input:
+    # Set private school VAT rate to 25% to ensure correct testing
+    gov.contrib.labour.private_school_vat: 0.25
+    people:
+      adult: 
+        age: 25
+    households:
+      household:
+        members: [
+          adult,
+        ]
+  output:
+    private_school_vat: 0
+
+- name: Returns correctly with one child
+  period: 2024
+  input:
+    # Set private school VAT rate to 25% to ensure correct testing
+    gov.contrib.labour.private_school_vat: 0.25
+    # Override other default settings for easier testing
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    people:
+      adult: 
+        age: 25
+      child:
+        age: 10
+        attends_private_school: True
+    households:
+      household:
+        members: [
+          adult,
+          child
+        ]
+  output:
+    private_school_vat: 2_500
+
+- name: Returns correct value with 2+ children
+  period: 2024
+  input:
+    # Set private school VAT rate to 25% to ensure correct testing
+    gov.contrib.labour.private_school_vat: 0.25
+    # Override other default settings for easier testing
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    people:
+      adult: 
+        age: 25
+      child1:
+        age: 10
+        attends_private_school: True
+      child2:
+        age: 12
+        attends_private_school: True
+    households:
+      household:
+        members: [
+          adult,
+          child1,
+          child2
+        ]
+  output:
+    private_school_vat: 5_000
