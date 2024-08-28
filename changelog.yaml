@@ -1208,3 +1208,11 @@
     - Mask applied to private_school_vat to prevent calculation error when household
       weights aren't provided
   date: 2024-08-22 20:35:09
+- bump: patch
+  changes:
+    added:
+    - Test suite for private_school_vat
+    - Test suite for attends_private_school
+    removed:
+    - Unnecessary print statement in winter_fuel_allowance
+  date: 2024-08-28 23:37:22

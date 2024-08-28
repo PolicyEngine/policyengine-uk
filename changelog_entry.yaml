@@ -1,7 +1,0 @@
-- bump: patch
-  changes:
-    added:
-    - Test suite for private_school_vat
-    - Test suite for attends_private_school
-    removed:
-    - Unnecessary print statement in winter_fuel_allowance
