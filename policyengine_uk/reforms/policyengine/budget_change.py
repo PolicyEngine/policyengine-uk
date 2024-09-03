@@ -138,7 +138,7 @@ class pre_budget_change_ons_household_income_decile(Variable):
     def formula(household, period, parameters):
         income = household("pre_budget_change_household_net_income", period)
         equivalisation = household("household_equivalisation_bhc", period)
-        if hasattr(household.simulation, "dataset"):
+        if household.simulation.dataset is not None:
             household_weight = household("household_weight", period)
             weighted_income = MicroSeries(
                 income / equivalisation, weights=household_weight
@@ -201,7 +201,7 @@ class nhs_budget_change(Variable):
         budget_increase_per_decile = {
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
-        if hasattr(household.simulation, "dataset"):
+        if household.simulation.dataset is not None:
             households_per_decile = (
                 pd.Series(weight).groupby(decile).sum().to_dict()
             )
@@ -248,7 +248,7 @@ class education_budget_change(Variable):
         budget_increase_per_decile = {
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
-        if hasattr(household.simulation, "dataset"):
+        if household.simulation.dataset is not None:
             households_per_decile = (
                 pd.Series(weight).groupby(decile).sum().to_dict()
             )
@@ -298,7 +298,7 @@ class other_public_spending_budget_change(Variable):
         budget_increase_per_decile = {
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
-        if hasattr(household.simulation, "dataset"):
+        if household.simulation.dataset is not None:
             households_per_decile = (
                 pd.Series(weight).groupby(decile).sum().to_dict()
             )
@@ -459,7 +459,7 @@ class high_income_incident_tax_change(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        if not hasattr(household.simulation, "dataset"):
+        if not household.simulation.dataset is not None::
             return 0
 
         total_income = household.members("total_income", period)
@@ -482,7 +482,7 @@ class consumer_incident_tax_revenue_change(Variable):
     def formula(household, period, parameters):
         consumption = household("consumption", period)
         if (
-            hasattr(household.simulation, "dataset")
+            household.simulation.dataset is not None:
             and household("consumption", period).sum() != 0
         ):
             weight = household("household_weight", period)

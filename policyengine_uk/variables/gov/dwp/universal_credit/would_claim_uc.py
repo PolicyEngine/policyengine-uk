@@ -17,7 +17,7 @@ class would_claim_uc(Variable):
         brought_into_claim = benunit(
             "is_brought_into_uc_claimant_status", period
         )
-        is_in_microsimulation = hasattr(benunit.simulation, "dataset")
+        is_in_microsimulation = benunit.simulation.dataset is not None
         if is_in_microsimulation:
             return current_uc_claimant | brought_into_claim
         return True
