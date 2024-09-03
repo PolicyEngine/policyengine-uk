@@ -18,7 +18,7 @@ class BRMA(Variable):
 
     def formula(household, period, parameters):
         if (
-            hasattr(household.simulation, "dataset")
+            household.simulation.dataset is not None
             and household.simulation.dataset.name == "enhanced_frs"
         ):
             from policyengine_uk.data.gov import enhanced_frs_brmas

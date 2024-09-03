@@ -37,7 +37,7 @@ class child_benefit_opts_out(Variable):
     value_type = bool
 
     def formula(benunit, period, parameters):
-        if hasattr(benunit.simulation, "dataset"):
+        if benunit.simulation.dataset is not None:
             ani = benunit.members("adjusted_net_income", period)
             hmrc = parameters(period).gov.hmrc
             cb_hitc = hmrc.income_tax.charges.CB_HITC

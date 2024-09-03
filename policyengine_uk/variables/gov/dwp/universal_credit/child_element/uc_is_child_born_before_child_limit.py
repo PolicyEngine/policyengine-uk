@@ -12,7 +12,7 @@ class uc_is_child_born_before_child_limit(Variable):
         start_year = p.start_year
         birth_year = person("birth_year", period)
         if (
-            hasattr(person.simulation, "dataset")
+            person.simulation.dataset is not None
             and "frs" in person.simulation.dataset.name
         ):
             # FRS data is based on 2019 populations, so we should add (year - 2019) to the start year to account for

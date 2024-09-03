@@ -12,7 +12,7 @@ class shareholding(Variable):
     def formula(household, period, parameters):
         wealth = household("corporate_wealth", period)
         if (
-            hasattr(household.simulation, "dataset")
+            household.simulation.dataset is not None
             and household("corporate_wealth", period).sum() != 0
         ):
             weight = household("household_weight", period)

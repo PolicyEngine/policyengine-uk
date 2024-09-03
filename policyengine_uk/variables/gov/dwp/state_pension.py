@@ -71,7 +71,7 @@ class basic_state_pension(Variable):
 
     def formula(person, period, parameters):
         simulation = person.simulation
-        if not hasattr(simulation, "dataset"):
+        if simulation.dataset is None:
             return 0
 
         data_year = simulation.dataset.time_period
@@ -97,7 +97,7 @@ class additional_state_pension(Variable):
 
     def formula(person, period, parameters):
         simulation = person.simulation
-        if not hasattr(simulation, "dataset"):
+        if simulation.dataset is None:
             return 0
 
         data_year = simulation.dataset.time_period
@@ -123,7 +123,7 @@ class new_state_pension(Variable):
 
     def formula(person, period, parameters):
         simulation = person.simulation
-        if not hasattr(simulation, "dataset"):
+        if simulation.dataset is None:
             return 0
 
         return where(
@@ -142,5 +142,4 @@ class state_pension_reported(Variable):
     unit = GBP
 
     def formula_2022(person, period, parameters):
-        sp_ly = person("state_pension_reported", period.last_year)
-        return sp_ly
+        return person("state_pension_reported", period.last_year)

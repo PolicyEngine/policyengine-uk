@@ -33,7 +33,7 @@ setup(
         "microdf_python>=0.3.0",
         "pandas",
         "plotly>=4.14.3",
-        "PolicyEngine-Core>=2.19.0,<3",
+        "PolicyEngine-Core>=3.6.4",
         "pyyaml>=5.3.1",
         "pytest",
         "requests>=2.25.1",
