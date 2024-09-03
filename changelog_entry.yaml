@@ -1,5 +1,0 @@
-- bump: patch
-  changes:
-    changed:
-      - Update policyengine-core.
-      - Apply new approach to determine if in a microsimulation.

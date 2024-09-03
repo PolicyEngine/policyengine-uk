@@ -1216,3 +1216,9 @@
     removed:
     - Unnecessary print statement in winter_fuel_allowance
   date: 2024-08-28 23:37:22
+- bump: patch
+  changes:
+    changed:
+    - Update policyengine-core.
+    - Apply new approach to determine if in a microsimulation.
+  date: 2024-09-03 22:35:35
