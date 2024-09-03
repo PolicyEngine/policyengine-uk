@@ -482,7 +482,7 @@ class consumer_incident_tax_revenue_change(Variable):
     def formula(household, period, parameters):
         consumption = household("consumption", period)
         if (
-            household.simulation.dataset is not None:
+            household.simulation.dataset is not None
             and household("consumption", period).sum() != 0
         ):
             weight = household("household_weight", period)
