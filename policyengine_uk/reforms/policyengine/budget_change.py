@@ -459,7 +459,7 @@ class high_income_incident_tax_change(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        if not household.simulation.dataset is not None::
+        if not household.simulation.dataset is not None:
             return 0
 
         total_income = household.members("total_income", period)

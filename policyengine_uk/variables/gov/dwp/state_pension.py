@@ -97,7 +97,7 @@ class additional_state_pension(Variable):
 
     def formula(person, period, parameters):
         simulation = person.simulation
-        if not simulation.dataset is not None::
+        if not simulation.dataset is not None:
             return 0
 
         data_year = simulation.dataset.time_period
@@ -123,7 +123,7 @@ class new_state_pension(Variable):
 
     def formula(person, period, parameters):
         simulation = person.simulation
-        if not simulation.dataset is not None::
+        if not simulation.dataset is not None:
             return 0
 
         return where(
