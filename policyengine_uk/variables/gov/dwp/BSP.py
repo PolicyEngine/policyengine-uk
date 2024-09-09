@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class BSP(Variable):
+class bsp(Variable):
     value_type = float
     entity = Person
     label = "Bereavement Support Payment"
@@ -11,7 +11,7 @@ class BSP(Variable):
     adds = ["BSP_reported"]
 
 
-class BSP_reported(Variable):
+class bsp_reported(Variable):
     value_type = float
     entity = Person
     label = "Bereavement Support Payment (reported)"

@@ -2,10 +2,10 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 
 
-class PIP_DL_reported(Variable):
+class pip_dl_reported(Variable):
     value_type = float
     entity = Person
-    label = "PIP (self-care) (reported)"
+    label = "PIP (daily living) (reported)"
     definition_period = YEAR
     unit = GBP
 

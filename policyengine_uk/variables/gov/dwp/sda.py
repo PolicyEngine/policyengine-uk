@@ -17,7 +17,7 @@ class sda(Variable):
         return reported * rate * WEEKS_IN_YEAR
 
 
-class SDA_reported(Variable):
+class sda_reported(Variable):
     value_type = float
     entity = Person
     label = "Severe Disablement Allowance (reported)"
