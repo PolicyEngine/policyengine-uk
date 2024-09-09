@@ -12,8 +12,27 @@ class housing_benefit_applicable_income(Variable):
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",
-            "JSA_income",
-            "ESA_income",
+            "jsa_income",
+            "esa_income",
+        ]
+        PERSONAL_BENEFITS = [
+            "attendance_allowance",
+            "afcs",
+            "bsp",
+            "carers_allowance",
+            "dla",
+            "esa_contrib",
+            "iidb",
+            "incapacity_benefit",
+            "jsa_contrib",
+            "pip",
+            "sda",
+            "state_pension",
+            "student_payments",
+            "maternity_allowance",
+            "statutory_sick_pay",
+            "statutory_maternity_pay",
+            "ssmg",
         ]
         INCOME_COMPONENTS = [
             "employment_income",
@@ -25,7 +44,7 @@ class housing_benefit_applicable_income(Variable):
         # Add personal benefits, credits and total benefits to income
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = add(benunit, period, INCOME_COMPONENTS)
-        personal_benefits = add(benunit, period, ["personal_benefits"])
+        personal_benefits = add(benunit, period, PERSONAL_BENEFITS)
         credits = add(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefits + credits + benefits
 

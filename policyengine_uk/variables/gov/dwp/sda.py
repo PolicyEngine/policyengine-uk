@@ -9,7 +9,7 @@ class sda(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        reported = person("SDA_reported", period) > 0
+        reported = person("sda_reported", period) > 0
         # SDA recipients receive a basic rate, and potentially
         # an age-related addition. We assume they receive the highest
         # age-related addition.

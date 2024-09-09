@@ -9,5 +9,5 @@ metadata:
   unit: currency-GBP
 values:
   2002-01-01:
-  - JSA_contrib
-  - ESA_contrib
+  - jsa_contrib
+  - esa_contrib

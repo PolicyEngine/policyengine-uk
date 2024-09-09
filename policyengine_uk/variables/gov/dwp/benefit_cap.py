@@ -45,9 +45,9 @@ class is_benefit_cap_exempt(Variable):
         QUAL_PERSONAL_BENEFITS = [
             "carers_allowance",
             "dla",
-            "ESA_contrib",
+            "esa_contrib",
         ]
-        QUAL_BENUNIT_BENEFITS = ["working_tax_credit", "ESA_income"]
+        QUAL_BENUNIT_BENEFITS = ["working_tax_credit", "esa_income"]
         qualifying_benunit_benefits = add(
             benunit, period, QUAL_BENUNIT_BENEFITS
         )
@@ -68,14 +68,14 @@ class benefit_cap_reduction(Variable):
         CAPPED_BENEFITS = [
             "child_benefit",
             "child_tax_credit",
-            "JSA_income",
+            "jsa_income",
             "income_support",
-            "ESA_income",
+            "esa_income",
             "universal_credit_pre_benefit_cap",
             "housing_benefit_pre_benefit_cap",
-            "JSA_contrib",
+            "jsa_contrib",
             "incapacity_benefit",
-            "ESA_contrib",
+            "esa_contrib",
             "sda",
         ]
         return max_(

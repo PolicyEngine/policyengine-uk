@@ -8,7 +8,7 @@ class iidb(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["IIDB_reported"]
+    adds = ["iidb_reported"]
 
 
 class iidb_reported(Variable):

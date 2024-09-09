@@ -14,7 +14,7 @@ values:
   - universal_credit
   - pension_credit
   - housing_benefit
-  - JSA_income
+  - jsa_income
   - income_support
-  - ESA_income
+  - esa_income
   - pension_credit

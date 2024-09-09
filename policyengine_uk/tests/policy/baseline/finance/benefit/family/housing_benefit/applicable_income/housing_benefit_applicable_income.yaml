@@ -4,8 +4,8 @@
     # Benefits
     child_benefit: 1_000
     income_support: 0
-    JSA_income: 0
-    ESA_income: 0
+    jsa_income: 0
+    esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0
@@ -29,8 +29,8 @@
     # Benefits
     child_benefit: 1_000
     income_support: 0
-    JSA_income: 0
-    ESA_income: 0
+    jsa_income: 0
+    esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0
@@ -54,8 +54,8 @@
     # Benefits
     child_benefit: 1_000
     income_support: 2_250
-    JSA_income: 0
-    ESA_income: 0
+    jsa_income: 0
+    esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0
@@ -79,8 +79,8 @@
     # Benefits
     child_benefit: 1_000
     income_support: 2_250
-    JSA_income: 0
-    ESA_income: 0
+    jsa_income: 0
+    esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0
@@ -104,8 +104,8 @@
     # Benefits
     child_benefit: 1_000
     income_support: 2_250
-    JSA_income: 0
-    ESA_income: 0
+    jsa_income: 0
+    esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0

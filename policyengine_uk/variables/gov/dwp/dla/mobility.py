@@ -4,7 +4,7 @@ from policyengine_uk.variables.misc.categories.lower_or_higher import (
 )
 
 
-class DLA_M_reported(Variable):
+class dla_m_reported(Variable):
     value_type = float
     entity = Person
     label = "DLA (mobility) (reported)"

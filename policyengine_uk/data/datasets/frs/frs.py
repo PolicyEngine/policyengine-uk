@@ -659,10 +659,10 @@ def add_benefit_income(
         AA=12,
         DLA_SC=1,
         DLA_M=2,
-        IIDB=15,
+        iidb=15,
         carers_allowance=13,
         SDA=10,
-        AFCS=8,
+        afcs=8,
         maternity_allowance=21,
         ssmg=22,
         pension_credit=4,
@@ -686,7 +686,7 @@ def add_benefit_income(
             * 52
         )
 
-    frs["JSA_contrib_reported"] = (
+    frs["jsa_contrib_reported"] = (
         sum_to_entity(
             benefits.BENAMT
             * (benefits.VAR2.isin((1, 3)))
@@ -696,7 +696,7 @@ def add_benefit_income(
         )
         * 52
     )
-    frs["JSA_income_reported"] = (
+    frs["jsa_income_reported"] = (
         sum_to_entity(
             benefits.BENAMT
             * (benefits.VAR2.isin((2, 4)))
@@ -706,7 +706,7 @@ def add_benefit_income(
         )
         * 52
     )
-    frs["ESA_contrib_reported"] = (
+    frs["esa_contrib_reported"] = (
         sum_to_entity(
             benefits.BENAMT
             * (benefits.VAR2.isin((1, 3)))
@@ -716,7 +716,7 @@ def add_benefit_income(
         )
         * 52
     )
-    frs["ESA_income_reported"] = (
+    frs["esa_income_reported"] = (
         sum_to_entity(
             benefits.BENAMT
             * (benefits.VAR2.isin((2, 4)))
@@ -727,7 +727,7 @@ def add_benefit_income(
         * 52
     )
 
-    frs["BSP_reported"] = (
+    frs["bsp_reported"] = (
         sum_to_entity(
             benefits.BENAMT * (benefits.BENEFIT.isin((6, 9))),
             benefits.person_id,

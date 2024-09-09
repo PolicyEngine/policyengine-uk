@@ -9,7 +9,7 @@ class afcs(Variable):
     unit = GBP
     uprating = "calibration.uprating.september_cpi"
 
-    adds = ["AFCS_reported"]
+    adds = ["afcs_reported"]
 
 
 class afcs_reported(Variable):

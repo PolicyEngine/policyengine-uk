@@ -45,7 +45,7 @@ class tax_credits_applicable_income(Variable):
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
         income += add(benunit, period, STEP_2_COMPONENTS)
-        EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
+        EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
         on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
         return income * ~on_exempt_benefits
 

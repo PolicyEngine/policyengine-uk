@@ -27,8 +27,8 @@ class winter_fuel_allowance(Variable):
                 [
                     "pension_credit",
                     "income_support",
-                    "ESA_income",
-                    "JSA_income",
+                    "esa_income",
+                    "jsa_income",
                 ],
             )
             > 0

@@ -1254,7 +1254,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Apply Working Tax Credit old-age provision to 60-year-olds.
 - Qualify people working 30 hours for the Working Tax Credit.
-- Point AFCS to AFCS_reported instead of AA_reported.
+- Point afcs to afcs_reported instead of AA_reported.
 - Fix units on some variables.
 
 ## [0.7.17] - 2021-12-23 00:00:00
