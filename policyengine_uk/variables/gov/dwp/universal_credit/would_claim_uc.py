@@ -11,13 +11,8 @@ class would_claim_uc(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        current_uc_claimant = (
-            add(benunit, period, ["universal_credit_reported"]) > 0
-        )
-        brought_into_claim = benunit(
-            "is_brought_into_uc_claimant_status", period
-        )
+        takes_up = random(benunit) < parameters(period).gov.dwp.universal_credit.takeup_rate
         is_in_microsimulation = benunit.simulation.dataset is not None
         if is_in_microsimulation:
-            return current_uc_claimant | brought_into_claim
+            return takes_up
         return True

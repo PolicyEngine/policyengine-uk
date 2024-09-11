@@ -4,6 +4,7 @@ from policyengine_uk.model_api import *
 This file contains variables that are commonly used in benefit eligibility calculations.
 """
 
+
 class household_benefits(Variable):
     value_type = float
     entity = Household
@@ -14,8 +15,7 @@ class household_benefits(Variable):
     adds = [
         "child_benefit",
         "esa_income",
-        "esa_contrib"
-        "housing_benefit",
+        "esa_contrib" "housing_benefit",
         "income_support",
         "jsa_income",
         "jsa_contrib",
@@ -176,6 +176,7 @@ class is_single_person(Variable):
         family_type = benunit("family_type", period)
         families = family_type.possible_values
         return family_type == families.SINGLE
+
 
 class claims_all_entitled_benefits(Variable):
     value_type = bool

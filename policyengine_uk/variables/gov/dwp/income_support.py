@@ -23,14 +23,7 @@ class would_claim_IS(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_income_support_entitlement", period) > 0
-        eligible = benunit("income_support_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
-        return select(
-            [reported_is | claims_all_entitled_benefits, ~baseline & eligible],
-            [True, random(benunit) < takeup_rate],
-            default=False,
-        )
+        return reported_is | claims_all_entitled_benefits
 
 
 class income_support_applicable_income(Variable):

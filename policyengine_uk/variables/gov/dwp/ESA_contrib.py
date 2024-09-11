@@ -18,6 +18,7 @@ class esa_contrib_reported(Variable):
     definition_period = YEAR
     unit = GBP
 
+
 class esa(Variable):
     label = "ESA"
     entity = Person

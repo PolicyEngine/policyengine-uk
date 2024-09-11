@@ -1,7 +1,0 @@
-description: Universal Credit takeup rate
-values:
-  2019-01-01: 0.63 # From PolicyEngine microsimulation (UC claimants vs eligible households).
-metadata:
-  unit: /1
-  period: year
-  label: Universal Credit takeup rate

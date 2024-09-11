@@ -108,17 +108,7 @@ class would_claim_CTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_ctc_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return select(
-            [
-                reported_ctc | claims_all_entitled_benefits,
-                ~baseline & claims_legacy_benefits,
-            ],
-            [True, random(benunit) < takeup_rate],
-            default=False,
-        )
+        return reported_ctc | claims_all_entitled_benefits
 
 
 class CTC_maximum_rate(Variable):
@@ -304,17 +294,7 @@ class would_claim_WTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_wtc_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return select(
-            [
-                reported_wtc | claims_all_entitled_benefits,
-                ~baseline & claims_legacy_benefits,
-            ],
-            [True, random(benunit) < takeup_rate],
-            default=False,
-        )
+        return reported_wtc | claims_all_entitled_benefits
 
 
 class WTC_maximum_rate(Variable):

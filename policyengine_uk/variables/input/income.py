@@ -17,6 +17,7 @@ class employment_income(Variable):
         "employment_income_before_lsr",
         "employment_income_behavioral_response",
     ]
+    uprating = "gov.obr.average_earnings"
 
 
 class employment_income_before_lsr(Variable):
@@ -71,6 +72,7 @@ class state_pension(Variable):
     unit = GBP
     documentation = "Gross State Pension payments"
     quantity_type = FLOW
+    uprating = "gov.obr.consumer_price_index"
 
     def formula(person, period, parameters):
         gov = parameters(period).gov
