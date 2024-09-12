@@ -15,7 +15,8 @@ class household_benefits(Variable):
     adds = [
         "child_benefit",
         "esa_income",
-        "esa_contrib" "housing_benefit",
+        "esa_contrib",
+        "housing_benefit",
         "income_support",
         "jsa_income",
         "jsa_contrib",
