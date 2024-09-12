@@ -14,9 +14,9 @@ test:
 	pytest policyengine_uk/tests/
 
 documentation:
-	jb clean docs/book
-	jb build docs/book
-	python policyengine_uk/tools/add_plotly_to_book.py docs/book/_build
+	# jb clean docs/book
+	# jb build docs/book
+	# python policyengine_uk/tools/add_plotly_to_book.py docs/book/_build
 	python policyengine_uk/tools/convert_notebooks_to_json.py docs/book _build/json
 
 changelog:
