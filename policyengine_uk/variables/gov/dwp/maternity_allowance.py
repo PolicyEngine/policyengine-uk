@@ -25,6 +25,7 @@ class ssmg_reported(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class ssmg(Variable):

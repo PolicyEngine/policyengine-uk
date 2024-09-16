@@ -17,3 +17,4 @@ class bsp_reported(Variable):
     label = "Bereavement Support Payment (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"

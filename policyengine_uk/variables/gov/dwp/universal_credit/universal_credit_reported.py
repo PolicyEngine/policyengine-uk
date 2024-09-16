@@ -8,3 +8,4 @@ class universal_credit_reported(Variable):
     documentation = "Reported amount of Universal Credit"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"

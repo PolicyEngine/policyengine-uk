@@ -17,3 +17,4 @@ class iidb_reported(Variable):
     label = "Industrial Injuries Disablement Benefit (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"

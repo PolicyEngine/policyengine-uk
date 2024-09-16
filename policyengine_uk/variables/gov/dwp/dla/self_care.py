@@ -10,6 +10,7 @@ class dla_sc_reported(Variable):
     label = "DLA (self-care) (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class dla_sc(Variable):

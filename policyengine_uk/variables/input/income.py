@@ -40,17 +40,6 @@ class private_pension_income(Variable):
     quantity_type = FLOW
     uprating = "gov.obr.non_labour_income"
 
-    def formula(person, period, parameters):
-        # Don't have data, use the old pension income
-        pension_income = person("pension_income", period)
-        if pension_income.sum() != 0:
-            logging.warn(
-                "`pension_income` is deprecated and will be removed- use `private_pension_income` instead"
-            )
-            return pension_income
-        else:
-            return 0
-
 
 class pension_income(Variable):
     value_type = float

@@ -23,3 +23,4 @@ class sda_reported(Variable):
     label = "Severe Disablement Allowance (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"

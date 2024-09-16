@@ -8,6 +8,7 @@ class child_benefit_reported(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class would_claim_child_benefit(Variable):

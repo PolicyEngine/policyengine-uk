@@ -70,7 +70,7 @@ class tax_band(Variable):
         scottish_band = select(
             [
                 income < threshold
-                for threshold in rates.scotland.post_starter_rate.thresholds[
+                for threshold in rates.scotland.rates.thresholds[
                     :5
                 ]
             ],

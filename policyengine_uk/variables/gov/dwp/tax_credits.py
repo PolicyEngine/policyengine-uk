@@ -7,6 +7,7 @@ class working_tax_credit_reported(Variable):
     label = "Working Tax Credit"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class child_tax_credit_reported(Variable):
@@ -15,6 +16,7 @@ class child_tax_credit_reported(Variable):
     label = "Working Tax Credit"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class tax_credits_applicable_income(Variable):

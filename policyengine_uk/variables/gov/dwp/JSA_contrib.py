@@ -17,3 +17,4 @@ class jsa_contrib_reported(Variable):
     label = "Job Seeker's Allowance (contribution-based) (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"

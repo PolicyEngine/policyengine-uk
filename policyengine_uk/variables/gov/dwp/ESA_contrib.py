@@ -17,6 +17,7 @@ class esa_contrib_reported(Variable):
     label = "Employment and Support Allowance (contribution-based) (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class esa(Variable):
