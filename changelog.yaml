@@ -1222,3 +1222,8 @@
     - Update policyengine-core.
     - Apply new approach to determine if in a microsimulation.
   date: 2024-09-03 22:35:35
+- bump: patch
+  changes:
+    fixed:
+    - Ensure rent index is tracking CPI.
+  date: 2024-09-16 09:32:28

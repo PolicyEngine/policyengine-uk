@@ -108,7 +108,7 @@ values:
   2023-10-01: 122.6
 metadata:
   label: Private rental prices index
-  uprating: calibration.uprating.CPI
+  uprating: gov.obr.consumer_price_index
   reference:
     - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
       href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
