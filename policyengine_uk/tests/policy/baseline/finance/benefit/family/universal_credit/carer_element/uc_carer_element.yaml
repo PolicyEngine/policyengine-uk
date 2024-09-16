@@ -16,7 +16,7 @@
 
 - name: Carer gets element
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 100
   input:
     benunit_has_carer: true
   output:

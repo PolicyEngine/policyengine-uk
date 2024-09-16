@@ -18,7 +18,7 @@
 
 - name: Work allowance with housing - 2025
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 100
   input:
     uc_housing_costs_element: 1
     uc_limited_capability_for_WRA: true

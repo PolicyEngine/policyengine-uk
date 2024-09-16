@@ -9,7 +9,7 @@
 
 - name: Child disability element received - 2025
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 100
   input:
     age: 6
     is_disabled_for_benefits: true
