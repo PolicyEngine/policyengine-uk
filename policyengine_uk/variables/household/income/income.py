@@ -42,21 +42,6 @@ class market_income(Variable):
         return income - person("maintenance_expenses", period)
 
 
-class gross_income(Variable):
-    value_type = float
-    entity = Person
-    label = "Gross income, including benefits"
-    definition_period = YEAR
-    unit = GBP
-
-    def formula(person, period, parameters):
-        COMPONENTS = [
-            "market_income",
-            "benefits",
-        ]
-        return add(person, period, COMPONENTS)
-
-
 class household_gross_income(Variable):
     value_type = float
     entity = Household
@@ -71,18 +56,6 @@ class household_gross_income(Variable):
             period,
             ["household_market_income", "household_benefits"],
         )
-
-
-class net_income(Variable):
-    value_type = float
-    entity = Person
-    label = "Net income"
-    documentation = "Market income, minus taxes, plus benefits"
-    unit = GBP
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        return person("gross_income", period) - person("tax", period)
 
 
 class hours_worked(Variable):
