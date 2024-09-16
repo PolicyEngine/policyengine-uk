@@ -1,19 +1,20 @@
 from policyengine_uk.model_api import *
 
 
-class BSP(Variable):
+class bsp(Variable):
     value_type = float
     entity = Person
     label = "Bereavement Support Payment"
     definition_period = YEAR
     unit = GBP
 
-    adds = ["BSP_reported"]
+    adds = ["bsp_reported"]
 
 
-class BSP_reported(Variable):
+class bsp_reported(Variable):
     value_type = float
     entity = Person
     label = "Bereavement Support Payment (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"

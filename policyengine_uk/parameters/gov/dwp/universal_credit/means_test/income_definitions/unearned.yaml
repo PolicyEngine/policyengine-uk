@@ -13,7 +13,7 @@ metadata:
 values:
   2010-01-01:
   - carers_allowance
-  - JSA_contrib
+  - jsa_contrib
   - private_pension_income
   - savings_interest_income
   - dividend_income

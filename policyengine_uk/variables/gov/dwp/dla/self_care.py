@@ -4,12 +4,13 @@ from policyengine_uk.variables.misc.categories.lower_middle_or_higher import (
 )
 
 
-class DLA_SC_reported(Variable):
+class dla_sc_reported(Variable):
     value_type = float
     entity = Person
     label = "DLA (self-care) (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class dla_sc(Variable):

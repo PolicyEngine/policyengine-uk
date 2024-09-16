@@ -1,4 +1,4 @@
-JSA_income:
+jsa_income:
   description: Number of families claiming income-based JSA.
   values:
     2018-01-01: 274_000
@@ -129,7 +129,7 @@ child_benefit:
       - title: "Child Benefit Statistics: Annual Releast, August 2020"
         href: https://www.gov.uk/government/statistics/child-benefit-statistics-annual-release-august-2020
 
-ESA_income:
+esa_income:
   description: Number of families claiming income-based ESA.
   values:
     2019-01-01: 1_056_000

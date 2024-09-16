@@ -16,5 +16,5 @@ values:
   - state_pension
   - private_pension_income
   - capital_income
-  - ESA_contrib
-  - JSA_contrib
+  - esa_contrib
+  - jsa_contrib

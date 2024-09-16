@@ -7,6 +7,7 @@ class income_support_reported(Variable):
     label = "Income Support (reported amount)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class would_claim_IS(Variable):
@@ -23,14 +24,7 @@ class would_claim_IS(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_income_support_entitlement", period) > 0
-        eligible = benunit("income_support_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
-        return select(
-            [reported_is | claims_all_entitled_benefits, ~baseline & eligible],
-            [True, random(benunit) < takeup_rate],
-            default=False,
-        )
+        return reported_is | claims_all_entitled_benefits
 
 
 class income_support_applicable_income(Variable):
@@ -94,14 +88,14 @@ class income_support_eligible(Variable):
         lone_parent_with_young_child = lone_parent & youngest_child_5_or_under
         has_carers = add(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
-        has_ESA_income = benunit("ESA_income", period) > 0
+        has_esa_income = benunit("esa_income", period) > 0
         already_claiming = (
             add(benunit, period, ["income_support_reported"]) > 0
         )
         return (
             (has_carers | lone_parent_with_young_child)
             & none_SP_age
-            & ~has_ESA_income
+            & ~has_esa_income
             & already_claiming
         )
 

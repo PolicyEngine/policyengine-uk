@@ -6,7 +6,7 @@ metadata:
   - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
   unit: currency-GBP
-  uprating: gov.benefit_uprating_cpi
+  uprating: gov.obr.consumer_price_index
   label: NI Lower Earnings Limit
 values:
   2015-04-06: 112

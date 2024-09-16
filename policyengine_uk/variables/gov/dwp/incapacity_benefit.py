@@ -17,3 +17,4 @@ class incapacity_benefit_reported(Variable):
     label = "Incapacity Benefit (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"

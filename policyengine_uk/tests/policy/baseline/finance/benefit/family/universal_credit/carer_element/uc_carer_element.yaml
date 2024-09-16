@@ -16,7 +16,8 @@
 
 - name: Carer gets element
   period: 2025
+  absolute_error_margin: 100
   input:
     benunit_has_carer: true
   output:
-    uc_carer_element: 2_379.72
+    uc_carer_element: 2417

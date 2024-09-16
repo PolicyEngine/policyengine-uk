@@ -2,12 +2,13 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
 
 
-class PIP_M_reported(Variable):
+class pip_m_reported(Variable):
     value_type = float
     entity = Person
     label = "PIP (mobility) (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class pip_m(Variable):

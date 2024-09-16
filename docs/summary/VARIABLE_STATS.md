@@ -449,7 +449,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 31,491,391.659608364
 
 
-- ESA_income:
+- esa_income:
   - Type: float
   - Entity: household
   - Description: Household gross income
@@ -469,7 +469,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 27,594,714.97113228
 
 
-- ESA_income_reported:
+- esa_income_reported:
   - Type: float
   - Entity: household
   - Description: Household net income
@@ -479,7 +479,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 31,431,782.814266205
 
 
-- claims_ESA_income:
+- claims_esa_income:
   - Type: bool
   - Entity: person
   - Description: Worked some hours
@@ -489,7 +489,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 36,800,484.87847948
 
 
-- would_claim_ESA_income:
+- would_claim_esa_income:
   - Type: bool
   - Entity: benunit
   - Description: Would claim income-based ESA
@@ -499,7 +499,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 402,875.4299545288
 
 
-- IIDB:
+- iidb:
   - Type: float
   - Entity: person
   - Description: Lump sum income
@@ -509,7 +509,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 191,086.9439239502
 
 
-- IIDB_reported:
+- iidb_reported:
   - Type: float
   - Entity: person
   - Description: Maintenance payments
@@ -519,7 +519,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 722,952.5704650879
 
 
-- JSA_contrib:
+- jsa_contrib:
   - Type: float
   - Entity: person
   - Description: Market income
@@ -529,7 +529,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 45,137,423.94413638
 
 
-- JSA_contrib_reported:
+- jsa_contrib_reported:
   - Type: float
   - Entity: person
   - Description: Minimum wage
@@ -979,7 +979,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 19,360,939.249423504
 
 
-- JSA_income:
+- jsa_income:
   - Type: float
   - Entity: household
   - Description: Household furnishings
@@ -989,7 +989,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 30,109,011.32818985
 
 
-- JSA_income_applicable_amount:
+- jsa_income_applicable_amount:
   - Type: float
   - Entity: household
   - Description: Housing, water and electricity
@@ -999,7 +999,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 31,534,885.703243256
 
 
-- JSA_income_applicable_income:
+- jsa_income_applicable_income:
   - Type: float
   - Entity: household
   - Description: Miscellaneous
@@ -1019,7 +1019,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 15,787,098.954917908
 
 
-- JSA_income_reported:
+- jsa_income_reported:
   - Type: float
   - Entity: household
   - Description: Recreation
@@ -1059,7 +1059,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 12,678,011.265280724
 
 
-- BSP:
+- bsp:
   - Type: float
   - Entity: person
   - Description: Cost of childcare
@@ -1095,7 +1095,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 28,641,752.4251194
 
 
-- BSP_reported:
+- bsp_reported:
   - Type: float
   - Entity: household
   - Description: Domestic rates
@@ -1650,7 +1650,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 27,250,437.19493723
 
 
-- ESA_contrib:
+- esa_contrib:
   - Type: float
   - Entity: person
   - Description: Person's household ID
@@ -1660,7 +1660,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 67,106,864.33584666
 
 
-- ESA_contrib_reported:
+- esa_contrib_reported:
   - Type: float
   - Entity: person
   - Description: Employment and Support Allowance (contribution-based) (reported)
@@ -1670,7 +1670,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 331,941.6319360733
 
 
-- AFCS:
+- afcs:
   - Type: float
   - Entity: person
   - Description: Armed Forces Compensation Scheme
@@ -1680,7 +1680,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 57,022.80386734009
 
 
-- AFCS_reported:
+- afcs_reported:
   - Type: float
   - Entity: person
   - Description: Armed Forces Compensation Scheme (reported)
@@ -3270,7 +3270,7 @@ All statistics generated from the uprated (to 2022) 2019-20 Family Resources Sur
   - Non-zero count: 485,548.13566589355
 
 
-- ESA_income_eligible:
+- esa_income_eligible:
   - Type: bool
   - Entity: benunit
   - Description: ESA (income) eligible

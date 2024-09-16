@@ -1,0 +1,6 @@
+description: Take-up rate of Universal Credit.
+values:
+  2015-01-01: 0.55
+metadata:
+  unit: /1
+  label: Universal Credit take-up rate

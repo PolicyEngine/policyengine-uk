@@ -1,19 +1,29 @@
 from policyengine_uk.model_api import *
 
 
-class ESA_contrib(Variable):
+class esa_contrib(Variable):
     value_type = float
     entity = Person
     label = "ESA (contribution-based)"
     definition_period = YEAR
     unit = GBP
 
-    adds = ["ESA_contrib_reported"]
+    adds = ["esa_contrib_reported"]
 
 
-class ESA_contrib_reported(Variable):
+class esa_contrib_reported(Variable):
     value_type = float
     entity = Person
     label = "Employment and Support Allowance (contribution-based) (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
+
+
+class esa(Variable):
+    label = "ESA"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+    adds = ["esa_contrib", "esa_income"]

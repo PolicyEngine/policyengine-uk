@@ -27,12 +27,13 @@ class attendance_allowance(Variable):
         )
 
 
-class AA_reported(Variable):
+class attendance_allowance_reported(Variable):
     value_type = float
     entity = Person
     label = "Attendance Allowance (reported)"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class aa_category(Variable):
@@ -46,7 +47,9 @@ class aa_category(Variable):
     def formula(person, period, parameters):
         aa = parameters(period).gov.dwp.attendance_allowance
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
-        reported_weekly_aa = person("AA_reported", period) / WEEKS_IN_YEAR
+        reported_weekly_aa = (
+            person("attendance_allowance_reported", period) / WEEKS_IN_YEAR
+        )
         return select(
             [
                 reported_weekly_aa >= aa.higher * (1 - SAFETY_MARGIN),

@@ -6,9 +6,7 @@ from policyengine_uk.system import (
     CountryTaxBenefitSystem,
     Microsimulation,
     Simulation,
-    IndividualSim,
     COUNTRY_DIR,
-    BASELINE_VARIABLES,
     parameters,
     variables,
 )

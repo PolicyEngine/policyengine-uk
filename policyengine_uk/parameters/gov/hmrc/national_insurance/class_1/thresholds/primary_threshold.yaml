@@ -19,7 +19,7 @@ values:
       reference:
         - title: Spring Statement 2022
           href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1062486/Spring_Statement_2022_Web_Accessible.pdf
-  2026-04-01: 
+  2027-04-01: 
     value: 241.73
     metadata:
       reference:
@@ -29,7 +29,7 @@ metadata:
   label: NI Primary Threshold
   name: NI_PT
   unit: currency-GBP
-  uprating: gov.benefit_uprating_cpi
+  uprating: gov.obr.consumer_price_index
   period: week
   reference:
     - title: "GOV.UK | Rates and allowances: National Insurance contributions"

@@ -34,7 +34,7 @@ class social_security_income(Variable):
     adds = [
         "state_pension",
         "incapacity_benefit",
-        "JSA_contrib",
-        "ESA_contrib",
+        "jsa_contrib",
+        "esa_contrib",
         "carers_allowance",
     ]

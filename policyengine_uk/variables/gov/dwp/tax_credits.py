@@ -7,6 +7,7 @@ class working_tax_credit_reported(Variable):
     label = "Working Tax Credit"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class child_tax_credit_reported(Variable):
@@ -15,6 +16,7 @@ class child_tax_credit_reported(Variable):
     label = "Working Tax Credit"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class tax_credits_applicable_income(Variable):
@@ -45,7 +47,7 @@ class tax_credits_applicable_income(Variable):
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
         income += add(benunit, period, STEP_2_COMPONENTS)
-        EXEMPT_BENEFITS = ["income_support", "ESA_income", "JSA_income"]
+        EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
         on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
         return income * ~on_exempt_benefits
 
@@ -108,17 +110,7 @@ class would_claim_CTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_ctc_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return select(
-            [
-                reported_ctc | claims_all_entitled_benefits,
-                ~baseline & claims_legacy_benefits,
-            ],
-            [True, random(benunit) < takeup_rate],
-            default=False,
-        )
+        return reported_ctc | claims_all_entitled_benefits
 
 
 class CTC_maximum_rate(Variable):
@@ -304,17 +296,7 @@ class would_claim_WTC(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        baseline = benunit("baseline_wtc_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.housing_benefit.takeup
-        claims_legacy_benefits = benunit("claims_legacy_benefits", period)
-        return select(
-            [
-                reported_wtc | claims_all_entitled_benefits,
-                ~baseline & claims_legacy_benefits,
-            ],
-            [True, random(benunit) < takeup_rate],
-            default=False,
-        )
+        return reported_wtc | claims_all_entitled_benefits
 
 
 class WTC_maximum_rate(Variable):

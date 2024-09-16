@@ -9,6 +9,7 @@ class universal_credit_pre_benefit_cap(Variable):
     definition_period = YEAR
     unit = GBP
     category = BENEFIT
+    defined_for = "would_claim_uc"
 
     adds = ["uc_maximum_amount"]
     subtracts = ["uc_income_reduction"]

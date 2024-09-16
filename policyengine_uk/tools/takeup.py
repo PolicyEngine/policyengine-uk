@@ -11,7 +11,7 @@ BENEFITS = [
     "child_tax_credit",
     "income_support",
     "housing_benefit",
-    "JSA_income",
+    "jsa_income",
 ]
 
 YEARS = list(range(2022, 2026))

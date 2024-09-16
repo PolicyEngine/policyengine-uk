@@ -3,7 +3,7 @@
   absolute_error_margin: 0
   input:
     carers_allowance: 10_000
-    JSA_contrib: 1_000
+    jsa_contrib: 1_000
     private_pension_income: 100
     savings_interest_income: 10
     dividend_income: 1

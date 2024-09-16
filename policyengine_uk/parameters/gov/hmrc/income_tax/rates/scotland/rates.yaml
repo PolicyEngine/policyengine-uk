@@ -1,0 +1,49 @@
+description: Rates for Scottish Income Tax
+brackets:
+  - threshold:
+      2021-04-06: 0
+    rate:
+      2021-04-06: 0.19 # Starter rate
+  - threshold:
+      2021-04-06: 2_306
+      2022-04-06: 2_162
+      2023-04-06: 2_162
+      2024-04-06: 2_097
+    rate:
+      2021-04-06: 0.20 # Basic rate
+  - threshold:
+      2021-04-06: 13_991
+      2022-04-06: 13_118
+      2023-04-06: 13_118
+      2024-04-06: 12_726
+    rate:
+      2021-04-06: 0.21 # Intermediate rate
+  - threshold:
+      2021-04-06: 31_092
+      2022-04-06: 31_092
+      2023-04-06: 31_092
+      2024-04-06: 31_092
+    rate:
+      2021-04-06: 0.41 # Higher rate
+      2023-04-06: 0.42
+  - threshold:
+      2021-04-06: 150_000
+      2023-04-06: 125_140
+      2024-04-06: 62_430
+    rate:
+      2021-04-06: 0.46 # Additional rate
+      2023-04-06: 0.47
+      2024-04-06: 0.45
+  - threshold:
+      2021-04-06: null
+      2024-04-06: 125_140
+    rate:
+      2021-04-06: null
+      2024-04-06: 0.48
+metadata:
+  threshold_unit: currency-GBP
+  rate_unit: /1
+  label: Scottish Income Tax rates
+  reference:
+    - title: GOV.UK
+      href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

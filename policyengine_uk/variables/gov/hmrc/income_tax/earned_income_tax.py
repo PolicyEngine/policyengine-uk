@@ -14,12 +14,9 @@ class earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         rates = parameters(period).gov.hmrc.income_tax.rates
-        # return rates.uk.calc(person("earned_taxable_income", period))
 
         return where(
             person("pays_scottish_income_tax", period),
-            rates.scotland.post_starter_rate.calc(
-                person("earned_taxable_income", period)
-            ),
+            rates.scotland.rates.calc(person("earned_taxable_income", period)),
             rates.uk.calc(person("earned_taxable_income", period)),
         )

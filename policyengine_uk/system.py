@@ -4,7 +4,6 @@ from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.simulations import (
     Simulation as CoreSimulation,
     Microsimulation as CoreMicrosimulation,
-    IndividualSim as CoreIndividualSim,
 )
 from policyengine_uk.data import (
     DATASETS,
@@ -106,15 +105,3 @@ class Microsimulation(CoreMicrosimulation):
                     "employment_income_before_lsr", known_period, array
                 )
                 employment_income.delete_arrays(known_period)
-
-
-class IndividualSim(CoreIndividualSim):  # Deprecated
-    tax_benefit_system = CountryTaxBenefitSystem
-    entities = {entity.key: entity for entity in entities}
-    default_dataset = EnhancedFRS
-    required_entities = None
-
-
-BASELINE_VARIABLES = {
-    variable.name: variable for variable in system.variables.values()
-}

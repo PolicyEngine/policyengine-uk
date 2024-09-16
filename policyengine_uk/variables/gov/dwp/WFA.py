@@ -7,6 +7,7 @@ class winter_fuel_allowance_reported(Variable):
     label = "Winter fuel allowance"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.benefit_uprating_cpi"
 
 
 class winter_fuel_allowance(Variable):
@@ -27,8 +28,8 @@ class winter_fuel_allowance(Variable):
                 [
                     "pension_credit",
                     "income_support",
-                    "ESA_income",
-                    "JSA_income",
+                    "esa_income",
+                    "jsa_income",
                 ],
             )
             > 0

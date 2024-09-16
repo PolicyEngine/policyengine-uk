@@ -23,7 +23,7 @@ class dla_sc_category(Variable):
         dla_sc = parameters(period).gov.dwp.dla.self_care
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_dla_sc = (
-            person("DLA_SC_reported", period) / WEEKS_IN_YEAR
+            person("dla_sc_reported", period) / WEEKS_IN_YEAR
         )
         return select(
             [
@@ -54,7 +54,7 @@ class dla_m_category(Variable):
         dla_m = parameters(period).gov.dwp.dla.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_dla_m = (
-            person("DLA_M_reported", period) / WEEKS_IN_YEAR
+            person("dla_m_reported", period) / WEEKS_IN_YEAR
         )
         return select(
             [
@@ -83,7 +83,7 @@ class pip_m_category(Variable):
         pip_m = parameters(period).gov.dwp.pip.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_pip_m = (
-            person("PIP_M_reported", period) / WEEKS_IN_YEAR
+            person("pip_m_reported", period) / WEEKS_IN_YEAR
         )
         return select(
             [
@@ -112,7 +112,7 @@ class pip_dl_category(Variable):
         pip_dl = parameters(period).gov.dwp.pip.daily_living
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_pip_dl = (
-            person("PIP_DL_reported", period) / WEEKS_IN_YEAR
+            person("pip_dl_reported", period) / WEEKS_IN_YEAR
         )
         return select(
             [
