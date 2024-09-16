@@ -11,7 +11,7 @@ values:
 metadata:
   label: NI Upper Earnings Limit
   unit: currency-GBP
-  uprating: gov.benefit_uprating_cpi
+  uprating: gov.obr.consumer_price_index
   period: week
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

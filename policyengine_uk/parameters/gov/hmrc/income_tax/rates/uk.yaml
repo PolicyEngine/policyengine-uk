@@ -46,7 +46,7 @@ brackets:
       2019-06-01: 37500
       2020-06-01: 37500
       2021-06-01: 37700
-      2025-06-01: 37700
+      2028-06-01: 37700
 - rate:
     description: The additional rate is the highest tax bracket, with no upper bound
     metadata:
