@@ -11,7 +11,10 @@ class would_claim_uc(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        takes_up = random(benunit) < parameters(period).gov.dwp.universal_credit.takeup_rate
+        takes_up = (
+            random(benunit)
+            < parameters(period).gov.dwp.universal_credit.takeup_rate
+        )
         is_in_microsimulation = benunit.simulation.dataset is not None
         if is_in_microsimulation:
             return takes_up

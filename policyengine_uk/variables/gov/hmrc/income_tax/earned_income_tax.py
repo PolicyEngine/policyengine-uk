@@ -17,8 +17,6 @@ class earned_income_tax(Variable):
 
         return where(
             person("pays_scottish_income_tax", period),
-            rates.scotland.rates.calc(
-                person("earned_taxable_income", period)
-            ),
+            rates.scotland.rates.calc(person("earned_taxable_income", period)),
             rates.uk.calc(person("earned_taxable_income", period)),
         )
