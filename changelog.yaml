@@ -1227,3 +1227,10 @@
     fixed:
     - Ensure rent index is tracking CPI.
   date: 2024-09-16 09:32:28
+- bump: minor
+  changes:
+    fixed:
+    - Missing metadata in variables.
+    - Inflation uprating for some parameters.
+    - Inconsistent variable capitalisation.
+  date: 2024-09-16 11:41:10

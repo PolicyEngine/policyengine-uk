@@ -1,6 +1,0 @@
-- bump: minor
-  changes:
-    fixed:
-    - Missing metadata in variables.
-    - Inflation uprating for some parameters.
-    - Inconsistent variable capitalisation.
