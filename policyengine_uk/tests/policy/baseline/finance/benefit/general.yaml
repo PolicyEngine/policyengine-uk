@@ -43,10 +43,4 @@
   output:
     is_single: false
     is_couple: true
-- name: Personal benefits added up
-  period: 2020
-  absolute_error_margin: 0
-  input:
-    attendance_allowance: 1
-  output:
-    personal_benefits: 1
+

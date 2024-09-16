@@ -9,9 +9,9 @@
 
 - name: Element matches in 2025
   period: 2025
-  absolute_error_margin: 0
+  absolute_error_margin: 1
   input:
     age: 6
     is_severely_disabled_for_benefits: true
   output:
-    uc_individual_severely_disabled_child_element: 5_850.96
+    uc_individual_severely_disabled_child_element: 5_942

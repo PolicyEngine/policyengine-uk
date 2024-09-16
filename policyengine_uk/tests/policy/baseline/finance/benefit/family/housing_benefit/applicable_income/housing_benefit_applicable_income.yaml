@@ -15,7 +15,6 @@
     income_tax: 0
     national_insurance: 0
     # Other 
-    personal_benefits: 0
     tax_credits: 0
     pension_contributions: 0
     housing_benefit_applicable_income_disregard: 5_000
@@ -40,7 +39,6 @@
     income_tax: 0
     national_insurance: 0
     # Other 
-    personal_benefits: 0
     tax_credits: 0
     pension_contributions: 0
     housing_benefit_applicable_income_disregard: 0
@@ -65,7 +63,6 @@
     income_tax: 0
     national_insurance: 0
     # Other 
-    personal_benefits: 0
     tax_credits: 0
     pension_contributions: 1_500
     housing_benefit_applicable_income_disregard: 0
@@ -90,7 +87,6 @@
     income_tax: 0
     national_insurance: 0
     # Other 
-    personal_benefits: 0
     tax_credits: 1_000
     pension_contributions: 1_500
     housing_benefit_applicable_income_disregard: 0
@@ -115,7 +111,6 @@
     income_tax: 0
     national_insurance: 0
     # Other 
-    personal_benefits: 0
     tax_credits: 1_000
     pension_contributions: 100_000
     housing_benefit_applicable_income_disregard: 0

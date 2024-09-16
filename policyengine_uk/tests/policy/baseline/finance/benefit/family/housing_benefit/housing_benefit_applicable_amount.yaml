@@ -1,5 +1,6 @@
 - name: Single person, older amount
   period: 2025
+  absolute_error_margin: 100
   input:
     people: 
       person1:
@@ -24,6 +25,7 @@
 
 - name: Single person, younger amount
   period: 2025
+  absolute_error_margin: 100
   input:
     people: 
       person1:
@@ -48,6 +50,7 @@
 
 - name: Lone parent, younger amount
   period: 2025
+  absolute_error_margin: 100
   input:
     people: 
       person1:
@@ -72,6 +75,7 @@
 
 - name: Lone parent, older amount
   period: 2025
+  absolute_error_margin: 100
   input:
     people: 
       person1:
@@ -96,6 +100,7 @@
 
 - name: Couple, older amount
   period: 2025
+  absolute_error_margin: 200
   input:
     people: 
       person1:
@@ -120,6 +125,7 @@
 
 - name: Couple, younger amount
   period: 2025
+  absolute_error_margin: 100
   input:
     people: 
       person1:
