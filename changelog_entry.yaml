@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Ensure rent index is tracking CPI.
