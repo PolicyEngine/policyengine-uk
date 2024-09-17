@@ -27,6 +27,7 @@ setup(
     ],
     install_requires=[
         "PolicyEngine-Core>=3.6.4",
+        "PolicyEngine-UK-Data==1.2",
     ],
     extras_require={
         "dev": [
