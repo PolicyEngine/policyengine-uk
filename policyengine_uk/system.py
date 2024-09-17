@@ -5,9 +5,9 @@ from policyengine_core.simulations import (
     Simulation as CoreSimulation,
     Microsimulation as CoreMicrosimulation,
 )
-from policyengine_uk.data import (
+from policyengine_uk_data import (
     DATASETS,
-    EnhancedFRS,
+    EnhancedFRS_2024,
 )
 from policyengine_uk.data.storage import STORAGE_FOLDER
 import pandas as pd
@@ -78,7 +78,7 @@ class Simulation(CoreSimulation):
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
     default_tax_benefit_system_instance = system
-    default_dataset = EnhancedFRS
+    default_dataset = EnhancedFRS_2024
     default_dataset_year = 2024
     default_calculation_period = 2024
     default_input_period = 2024
