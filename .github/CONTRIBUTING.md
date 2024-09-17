@@ -8,6 +8,8 @@ We follow the [GitHub Flow](https://guides.github.com/introduction/flow/): all c
 
 Opening a Pull Request means you want that code to be merged. If you want to only discuss it, send a link to your branch along with your questions through whichever communication channel you prefer.
 
+Please make sure (if you're changing the package; you don't have to for documentation or package health changes) to add to changelog_entry.yaml and run 'make changelog', then commit the results.
+
 ### Peer reviews
 
 All pull requests must be reviewed by someone else than their original author.
