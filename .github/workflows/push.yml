@@ -2,53 +2,21 @@ name: Push
 on:
   push:
     branches: [ master ]
-env:
-  enhanced_frs: ${{ secrets.ENHANCED_FRS}}
 jobs:
   Lint:
     runs-on: ubuntu-latest
     if: |
       (github.repository == 'PolicyEngine/policyengine-uk')
-      && (github.event.head_commit.message == 'Update PolicyEngine UK')
     steps:
       - uses: actions/checkout@v2
       - name: Check formatting
         uses: "lgeiger/black-action@master"
         with:
           args: ". -l 79 --check"
-  versioning:
-    name: Update versioning
-    if: |
-      (github.repository == 'PolicyEngine/policyengine-uk')
-      && !(github.event.head_commit.message == 'Update PolicyEngine UK')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.POLICYENGINE_GITHUB }}
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Build changelog
-        run: pip install yaml-changelog && make changelog
-      - name: Preview changelog update
-        run: ".github/get-changelog-diff.sh"
-      - name: Update changelog
-        uses: EndBug/add-and-commit@v8
-        with:
-          add: "."
-          committer_name: Github Actions[bot]
-          author_name: Github Actions[bot]
-          message: Update PolicyEngine UK
   Test:
     runs-on: ${{ matrix.os }}
     if: |
       (github.repository == 'PolicyEngine/policyengine-uk')
-      && (github.event.head_commit.message == 'Update PolicyEngine UK')
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -82,7 +50,6 @@ jobs:
   Publish:
     if: |
       (github.repository == 'PolicyEngine/policyengine-uk')
-      && (github.event.head_commit.message == 'Update PolicyEngine UK')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -104,7 +71,6 @@ jobs:
   Deploy:
     if: |
       (github.repository == 'PolicyEngine/policyengine-uk')
-      && (github.event.head_commit.message == 'Update PolicyEngine UK')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
