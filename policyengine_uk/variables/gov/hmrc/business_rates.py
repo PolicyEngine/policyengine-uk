@@ -31,4 +31,3 @@ class business_rates(Variable):
     unit = GBP
 
     formula = baseline_business_rates.formula
-

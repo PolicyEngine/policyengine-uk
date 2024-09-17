@@ -11,7 +11,7 @@ from policyengine_uk_data import (
 )
 from policyengine_uk_data.storage import STORAGE_FOLDER
 import pandas as pd
-from policyengine_uk.tools.parameters import (
+from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
