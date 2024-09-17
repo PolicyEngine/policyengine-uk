@@ -13,7 +13,6 @@ from policyengine_uk.system import (
 from pathlib import Path
 import os
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
-from policyengine_uk.data import *
-from policyengine_uk.data import DATASETS
+from policyengine_uk_data import *
 
 REPO = Path(__file__).parent

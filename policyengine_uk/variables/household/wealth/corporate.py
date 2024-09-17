@@ -35,6 +35,6 @@ class corporate_tax_incidence(Variable):
     unit = GBP
 
     adds = [
-        "corporate_sdlt_change_incidence",
-        "business_rates_change_incidence",
+        "corporate_sdlt",
+        "business_rates",
     ]

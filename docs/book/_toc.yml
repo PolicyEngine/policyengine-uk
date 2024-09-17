@@ -1,6 +1,16 @@
 format: jb-book
 root: index
 parts:
+  - caption: Using the model
+    chapters:
+      - file: usage/getting-started
+      - file: usage/income-sources
+  - caption: Model
+    chapters:
+      - file: model/baseline
+  - caption: Validation
+    chapters:
+      - file: validation/spi-validation
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit
@@ -16,7 +26,3 @@ parts:
       - file: programs/gov/dcms/bbc/tv-licence
       - file: programs/gov/revenue_scotland/land-and-buildings-transaction-tax
       - file: programs/gov/wra/land-transaction-tax
-      - file: model/spi-validation
-  - caption: Using the model
-    chapters:
-      - file: usage/getting-started

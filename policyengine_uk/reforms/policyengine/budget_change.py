@@ -83,14 +83,14 @@ class pre_budget_change_household_tax(Variable):
     definition_period = YEAR
     unit = GBP
     adds = [
-        "change_in_expected_sdlt",
-        "change_in_expected_ltt",
-        "change_in_expected_lbtt",
-        "corporate_sdlt_change_incidence",
-        "business_rates_change_incidence",
+        "expected_sdlt",
+        "expected_ltt",
+        "expected_lbtt",
+        "corporate_sdlt_",
+        "business_rates",
         "council_tax",
         "domestic_rates",
-        "change_in_fuel_duty",
+        "fuel_duty",
         "tv_licence",
         "wealth_tax",
         "non_primary_residence_wealth_tax",
@@ -321,14 +321,14 @@ class household_tax(Variable):
     definition_period = YEAR
     unit = GBP
     adds = [
-        "change_in_expected_sdlt",
-        "change_in_expected_ltt",
-        "change_in_expected_lbtt",
-        "corporate_sdlt_change_incidence",
-        "business_rates_change_incidence",
+        "expected_sdlt",
+        "expected_ltt",
+        "expected_lbtt",
+        "corporate_sdlt",
+        "business_rates",
         "council_tax",
         "domestic_rates",
-        "change_in_fuel_duty",
+        "fuel_duty",
         "tv_licence",
         "wealth_tax",
         "non_primary_residence_wealth_tax",

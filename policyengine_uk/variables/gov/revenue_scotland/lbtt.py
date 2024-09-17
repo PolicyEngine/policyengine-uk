@@ -158,21 +158,3 @@ class expected_lbtt(Variable):
         property_sale_rate = household.state("property_sale_rate", period)
         lbtt = household("land_and_buildings_transaction_tax", period)
         return property_sale_rate * lbtt
-
-
-class baseline_expected_lbtt(Variable):
-    label = "LBTT (expected, baseline)"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class change_in_expected_lbtt(Variable):
-    label = "average per-year LBTT"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-    formula = change_over_baseline(expected_lbtt)

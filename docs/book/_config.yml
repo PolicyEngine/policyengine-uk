@@ -1,9 +1,10 @@
 title: PolicyEngine UK documentation
 author: PolicyEngine
-copyright: "2022"
+copyright: "2024"
+logo: logo.png
 
 execute:
-  execute_notebooks: force
+  execute_notebooks: off
 
 repository:
   url: https://github.com/policyengine/policyengine-uk
