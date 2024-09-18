@@ -1,6 +1,6 @@
 description: Whether receipt of means-tested benefits is required to qualify for the Winter Fuel Payment.
 values:
-  2000-01-01: false
+  2000-01-01: true
 metadata:
   unit: bool
   label: Winter Fuel Payment means-tested benefits requirement

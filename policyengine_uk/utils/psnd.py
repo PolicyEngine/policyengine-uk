@@ -21,6 +21,7 @@ def project_psnd():
         "housing_benefit",
         "pip",
         "dla",
+        "winter_fuel_allowance",
     ]
     tax_ben_revenues = (
         tax_ben[tax_ben.name.isin(REVENUES)].set_index("name").loc[REVENUES]
@@ -42,6 +43,7 @@ def project_psnd():
         "housing_benefit",
         "pip",
         "dla",
+        "winter_fuel_allowance",
     ]
     baseline = Microsimulation()
 
@@ -74,7 +76,7 @@ def project_psnd():
         }
     )
 
-    df["PE"] = df["PE"].round().astype(int)
+    df["PE"] = df["PE"].round(1)
 
     df.to_csv("psnd.csv", index=False)
 

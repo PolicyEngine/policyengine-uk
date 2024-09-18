@@ -33,3 +33,4 @@ compare_psnd:
 	pip install -e .
 	cd policyengine_uk/utils && python psnd.py
 	mv policyengine_uk/utils/psnd.csv psnd_new.csv
+	python .github/compare_psnd.py
