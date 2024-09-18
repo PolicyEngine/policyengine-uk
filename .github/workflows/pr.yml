@@ -34,3 +34,7 @@ jobs:
         run: make documentation
         env:
           POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
+      - name: Compare baseline change
+        run: make compare_psnd
+        env:
+          POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
