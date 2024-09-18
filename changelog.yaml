@@ -1239,3 +1239,8 @@
     changed:
     - Dataset handling outsourced to policyengine-uk-data.
   date: 2024-09-18 10:53:42
+- bump: minor
+  changes:
+    fixed:
+    - Add back recursive-include.
+  date: 2024-09-18 11:04:12

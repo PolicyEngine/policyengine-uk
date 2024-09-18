@@ -24,3 +24,12 @@ changelog:
 	bump-version changelog.yaml setup.py
 	rm changelog_entry.yaml || true
 	touch changelog_entry.yaml
+
+compare_psnd:
+	pip uninstall policyengine-uk -y
+	pip install policyengine-uk
+	cd policyengine_uk/utils && python psnd.py
+	mv policyengine_uk/utils/psnd.csv psnd_old.csv
+	pip install -e .
+	cd policyengine_uk/utils && python psnd.py
+	mv policyengine_uk/utils/psnd.csv psnd_new.csv
