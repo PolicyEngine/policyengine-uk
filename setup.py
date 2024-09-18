@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PolicyEngine-UK",
-    version="2.1.0",
+    version="2.1.1",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
     classifiers=[
@@ -41,7 +41,6 @@ setup(
             "setuptools",
             "sphinx-argparse>=0.3.2,<1",
             "sphinx-math-dollar>=1.2.1,<2",
-            "survey-enhance",
             "wheel",
             "yaml-changelog>=0.1.7",
         ]

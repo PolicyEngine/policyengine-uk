@@ -1244,3 +1244,8 @@
     fixed:
     - Add back recursive-include.
   date: 2024-09-18 11:04:12
+- bump: patch
+  changes:
+    removed:
+    - Survey-Enhance as a dependency.
+  date: 2024-09-18 11:12:23
