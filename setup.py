@@ -28,6 +28,7 @@ setup(
     install_requires=[
         "PolicyEngine-Core>=3.6.4",
         "PolicyEngine-UK-Data>=1.2.5,<1.3",
+        "microdf_python",
     ],
     extras_require={
         "dev": [
