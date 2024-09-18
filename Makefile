@@ -16,7 +16,7 @@ test:
 documentation:
 	jb clean docs/book
 	jb build docs/book
-	python policyengine_uk/tools/add_plotly_to_book.py docs/book/_build
+	python docs/book/add_plotly_to_book.py docs/book/_build
 
 changelog:
 	build-changelog changelog.yaml --output changelog.yaml --update-last-date --start-from 0.1.0 --append-file changelog_entry.yaml

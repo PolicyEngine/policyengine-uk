@@ -16,19 +16,6 @@ class BRMA(Variable):
     label = "Broad Rental Market Area"
     definition_period = YEAR
 
-    def formula(household, period, parameters):
-        if (
-            household.simulation.dataset is not None
-            and household.simulation.dataset.name == "enhanced_frs"
-        ):
-            from policyengine_uk.data.gov import enhanced_frs_brmas
-
-            return np.array(
-                [getattr(BRMAName, x) for x in enhanced_frs_brmas.brma.values]
-            )
-        else:
-            return np.array([BRMAName.MAIDSTONE] * household.count)
-
 
 class region(Variable):
     value_type = Enum

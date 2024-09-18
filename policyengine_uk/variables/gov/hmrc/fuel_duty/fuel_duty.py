@@ -26,21 +26,3 @@ class fuel_duty(Variable):
             / STATUTORY_CONSUMER_INCIDENCE
             * ECONOMIC_CONSUMER_INCIDENCE
         )
-
-
-class baseline_fuel_duty(Variable):
-    label = "Baseline fuel duty (cars only)"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-
-class change_in_fuel_duty(Variable):
-    label = "fuel duty"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-    formula = change_over_baseline(fuel_duty)

@@ -5,7 +5,7 @@ import numpy as np
 import plotly.express as px
 from policyengine_core.charts import format_fig, BLUE, BLUE_LIGHT
 from Home import STYLE
-from policyengine_uk.data.storage import STORAGE_FOLDER
+from policyengine_uk_data.storage import STORAGE_FOLDER
 
 # st.set_page_config(layout="wide")
 

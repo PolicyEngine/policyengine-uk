@@ -31,25 +31,3 @@ class business_rates(Variable):
     unit = GBP
 
     formula = baseline_business_rates.formula
-
-
-class change_in_business_rates(Variable):
-    label = "average per-year business rates"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-    formula = change_over_baseline(business_rates)
-
-
-class business_rates_change_incidence(Variable):
-    label = "Business rates changes"
-    documentation = "Total effect of policy changes to business rates"
-    entity = Household
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-
-    adds = ["business_rates"]
-    subtracts = ["baseline_business_rates"]

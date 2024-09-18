@@ -1,4 +1,3 @@
-from policyengine_uk.data.datasets import EnhancedFRS
 from policyengine_uk.model_api import *
 
 
