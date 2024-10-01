@@ -11,6 +11,7 @@ values:
   2026-01-01: 1.387
   2027-01-01: 1.426
   2028-01-01: 1.461
+  2029-01-01: 1.497 # Projected
 metadata:
   unit: currency-GBP
   reference: OBR

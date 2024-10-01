@@ -21,6 +21,7 @@ values:
   2026-01-01: 113.2
   2027-01-01: 119.7
   2028-01-01: 125.2
+  2029-01-01: 130.7 # Projected
 metadata:
   unit: currency-GBP
   reference:

@@ -1,6 +1,12 @@
 description: Whether receipt of means-tested benefits is required to qualify for the Winter Fuel Payment.
 values:
-  2000-01-01: true
+  2000-01-01: false
+  2024-01-01: 
+    value: true
+    metadata:
+      reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2024 regulation 2
+        href: https://www.legislation.gov.uk/uksi/2024/869/regulation/2
 metadata:
   unit: bool
   label: Winter Fuel Payment means-tested benefits requirement

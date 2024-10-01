@@ -17,6 +17,7 @@ values:
   2026-01-01: 193.5
   2027-01-01: 202.3
   2028-01-01: 211.8
+  2029-01-01: 221.9 # Projected
 metadata:
   reference:
     - title: OBR March 2024 EFO
