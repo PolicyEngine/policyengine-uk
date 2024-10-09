@@ -3,7 +3,7 @@ all: install
 	python setup.py sdist bdist_wheel
 
 install:
-	pip install -e .[dev]
+	pip install -e ".[dev]" --config-settings editable_mode=compat
 	pip install --upgrade jsonschema[format-nongpl]
 
 format:
