@@ -119,7 +119,6 @@ st.markdown(
 )
 
 with st.expander("Capital gains imputation test runner"):
-
     income = st.slider("Total income", 0, 500000, 50000, 1000)
 
     with st.spinner("Imputing capital gains..."):

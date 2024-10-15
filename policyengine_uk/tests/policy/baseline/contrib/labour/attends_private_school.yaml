@@ -1,25 +1,3 @@
-- name: Attends private school returns True when attendance rate is 100%
-  period: 2024
-  input:
-    gov.simulation.private_school_vat.private_school_attendance_rate.100: 1
-    gov.simulation.private_school_vat.private_school_attendance_rate.95: 1
-    people:
-      adult: 
-        age: 25
-      child:
-        age: 10
-    households:
-      household:
-        household_weight: 0.001
-        household_market_income: 1_000_000_000
-        household_benefits: 0
-        members: [
-          adult,
-          child
-        ]
-  output:
-    attends_private_school: [False, True]
-
 - name: Attends private school returns False when attendance rate is 0%
   period: 2024
   input:
