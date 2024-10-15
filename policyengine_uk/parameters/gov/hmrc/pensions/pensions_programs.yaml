@@ -1,8 +1,8 @@
 description: Pensions programs
 values:
   0000-01-01:
-    - private_pension_contributions
-    - occupational_pension_contributions
+    - personal_pension_contributions
+    - employee_pension_contributions
     
 metadata:
   unit: list

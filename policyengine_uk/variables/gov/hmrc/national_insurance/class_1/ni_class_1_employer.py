@@ -13,6 +13,12 @@ class ni_class_1_employer(Variable):
     def formula(person, period, parameters):
         class_1 = parameters(period).gov.hmrc.national_insurance.class_1
         earnings = person("ni_class_1_income", period)
+        if not parameters(
+            period
+        ).gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions:
+            earnings = earnings + person(
+                "employer_pension_contributions", period
+            )
         secondary_threshold = (
             class_1.thresholds.secondary_threshold
             * WEEKS_IN_YEAR

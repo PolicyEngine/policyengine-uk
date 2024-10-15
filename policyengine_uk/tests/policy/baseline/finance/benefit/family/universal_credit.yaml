@@ -6,7 +6,7 @@
       person:
         age: 30
         employment_income: 30_000
-        private_pension_contributions: 1_000
+        personal_pension_contributions: 1_000
         weekly_hours: 20
     benunits:
       benunit:
@@ -30,7 +30,7 @@
       person:
         age: 30
         employment_income: 3_000
-        private_pension_contributions: 1_000
+        personal_pension_contributions: 1_000
         weekly_hours: 20
     benunits:
       benunit:
@@ -85,7 +85,7 @@
         age: 20
         weekly_hours: 25
         employment_income: 12_000
-        private_pension_contributions: 57
+        personal_pension_contributions: 57
         dla_m: 62.55 * 52
         uc_limited_capability_for_WRA: true
       person_2:

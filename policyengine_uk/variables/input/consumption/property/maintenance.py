@@ -29,6 +29,24 @@ class employer_pension_contributions(Variable):
     unit = GBP
 
 
+class employee_pension_contributions(Variable):
+    label = "Label"
+    documentation = "Description"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+
+class personal_pension_contributions(Variable):
+    label = "Label"
+    documentation = "Description"
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+
 class maintenance_expenses(Variable):
     value_type = float
     entity = Person

@@ -16,6 +16,7 @@ class employment_income(Variable):
     adds = [
         "employment_income_before_lsr",
         "employment_income_behavioral_response",
+        "employer_ni_fixed_employer_cost_change",
     ]
     uprating = "gov.obr.average_earnings"
 

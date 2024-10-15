@@ -13,5 +13,5 @@ class ni_class_1_income(Variable):
         "household_statutory_sick_pay",
         "household_statutory_maternity_pay",
         "household_statutory_paternity_pay",
-    ]
+    ]  # Employee pension contributions are not deducted
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/3"

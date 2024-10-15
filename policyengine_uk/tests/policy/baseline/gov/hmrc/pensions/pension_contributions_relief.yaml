@@ -3,7 +3,7 @@
   absolute_error_margin: 0
   input:
     employment_income: 76000
-    private_pension_contributions: 40000
+    personal_pension_contributions: 40000
   output:
     pension_contributions_relief: 40000
 - name: Pension relief excessive
@@ -11,7 +11,7 @@
   absolute_error_margin: 0
   input:
     employment_income: 2000000
-    private_pension_contributions: 400000
+    personal_pension_contributions: 400000
   output:
     pension_contributions_relief: 4000
 - name: £30k self-employment income, no private pension contributions
@@ -27,7 +27,7 @@
   absolute_error_margin: 0.01
   input:
     self_employment_income: 30_000
-    private_pension_contributions: 3_000
+    personal_pension_contributions: 3_000
   output:
     pension_contributions_relief: 3_000
     income_tax: 3286 - 3000 * 0.2
@@ -45,7 +45,7 @@
   absolute_error_margin: 0.01
   input:
     self_employment_income: 60_000
-    private_pension_contributions: 6_000
+    personal_pension_contributions: 6_000
   output:
     pension_contributions_relief: 6_000
     income_tax: 11032 - 6000 * 0.4

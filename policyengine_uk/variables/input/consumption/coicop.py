@@ -171,25 +171,6 @@ class childcare_expenses(Variable):
     uprating = "gov.obr.consumer_price_index"
 
 
-class private_pension_contributions(Variable):
-    value_type = float
-    entity = Person
-    label = "private pension contributions"
-    documentation = "Total amount spent on private pension contributions"
-    definition_period = YEAR
-    unit = GBP
-    uprating = "gov.obr.average_earnings"
-
-
-class occupational_pension_contributions(Variable):
-    value_type = float
-    entity = Person
-    label = "occupational pension contributions"
-    documentation = "Total amount spent on occupational pension contributions"
-    definition_period = YEAR
-    unit = GBP
-
-
 class consumption(Variable):
     label = "consumption"
     entity = Household
