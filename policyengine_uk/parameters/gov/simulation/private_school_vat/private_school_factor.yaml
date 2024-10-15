@@ -1,0 +1,6 @@
+description: student polulation adjustment factor, tested by Vahid
+values:
+  2010-01-01: 0.77
+metadata:
+  unit: /1
+  label: student polulation adjustment factor

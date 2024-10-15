@@ -18,6 +18,10 @@ class attends_private_school(Variable):
             ps_vat_params.private_school_attendance_rate
         )
 
+        population_adjustment_factor = (
+            ps_vat_params.private_school_factor
+        )
+
         person = household.members
 
         is_child = person("is_child", period)
@@ -44,7 +48,8 @@ class attends_private_school(Variable):
             .clip(0, 100)
             .values.astype(numpy.int64)
         )
-        STUDENT_POPULATION_ADJUSTMENT_FACTOR = 1.1
+        # STUDENT_POPULATION_ADJUSTMENT_FACTOR = 0.78
+        STUDENT_POPULATION_ADJUSTMENT_FACTOR = population_adjustment_factor
 
         p_attends_private_school = (
             np.array(
