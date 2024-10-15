@@ -36,9 +36,9 @@ capital_gains = pd.read_csv(
     / "imputations"
     / "capital_gains_distribution_advani_summers.csv.gz"
 )
-capital_gains[
-    "maximum_total_income"
-] = capital_gains.minimum_total_income.shift(-1).fillna(np.inf)
+capital_gains["maximum_total_income"] = (
+    capital_gains.minimum_total_income.shift(-1).fillna(np.inf)
+)
 # Fit a spline to each income band's percentiles
 from scipy.interpolate import UnivariateSpline
 
