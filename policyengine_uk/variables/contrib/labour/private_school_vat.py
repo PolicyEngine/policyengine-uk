@@ -18,9 +18,7 @@ class attends_private_school(Variable):
             ps_vat_params.private_school_attendance_rate
         )
 
-        population_adjustment_factor = (
-            ps_vat_params.private_school_factor
-        )
+        population_adjustment_factor = ps_vat_params.private_school_factor
 
         person = household.members
 
