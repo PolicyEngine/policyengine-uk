@@ -88,8 +88,6 @@ class employer_ni_fixed_employer_cost_change(Variable):
         else:
             pen_con_subtracted_r = 0
 
-        print(c_b, r_r, pen_con_subtracted_r, t_r)
-
         new_ni_class_1_income = (c_b + r_r * (pen_con_subtracted_r + t_r)) / (
             1 + r_r
         )
