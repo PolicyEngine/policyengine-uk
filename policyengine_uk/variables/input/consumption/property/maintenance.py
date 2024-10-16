@@ -27,6 +27,7 @@ class employer_pension_contributions(Variable):
     documentation = "Total amount spent on employer pension contributions"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.average_earnings"
 
 
 class employee_pension_contributions(Variable):
@@ -36,6 +37,7 @@ class employee_pension_contributions(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    uprating = "gov.obr.average_earnings"
 
 
 class personal_pension_contributions(Variable):
@@ -45,6 +47,7 @@ class personal_pension_contributions(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    uprating = "gov.obr.average_earnings"
 
 
 class maintenance_expenses(Variable):

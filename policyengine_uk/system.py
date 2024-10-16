@@ -41,7 +41,6 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters.gov.hmrc = convert_to_fiscal_year_parameters(
             self.parameters.gov.hmrc
         )
-        self.parameters.baseline = self.parameters.clone()
 
 
 system = CountryTaxBenefitSystem()

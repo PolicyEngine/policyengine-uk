@@ -1,4 +1,4 @@
 - bump: minor
   changes:
     fixed:
-    - Set the Winter Fuel Allowance to only true in FY24-25.
+    - Add employer NI incidence.

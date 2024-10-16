@@ -43,10 +43,14 @@ class employer_ni_fixed_employer_cost_change(Variable):
                 "household_statutory_paternity_pay",
             ],
         )
+        employer_pension_contributions = person(
+            "employer_pension_contributions", period
+        )
         ni_class_1_income = (
             prior_employment_income
             + employment_income_behavioral_response
             + benefits
+            + employer_pension_contributions
         )
 
         # Calculate baseline employer cost
@@ -59,11 +63,9 @@ class employer_ni_fixed_employer_cost_change(Variable):
         p_b = (
             baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         )
-        pen_con_subtracted_b = person("employer_pension_contributions", period)
+        pen_con_subtracted_b = employer_pension_contributions
         if p_b:
-            pen_con_subtracted_b = person(
-                "employer_pension_contributions", period
-            )
+            pen_con_subtracted_b = employer_pension_contributions
         else:
             pen_con_subtracted_b = 0
 
@@ -81,11 +83,8 @@ class employer_ni_fixed_employer_cost_change(Variable):
         p_r = (
             reform_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         )
-        pen_con_subtracted_b = person("employer_pension_contributions", period)
         if p_r:
-            pen_con_subtracted_r = person(
-                "employer_pension_contributions", period
-            )
+            pen_con_subtracted_r = employer_pension_contributions
         else:
             pen_con_subtracted_r = 0
 
@@ -96,10 +95,10 @@ class employer_ni_fixed_employer_cost_change(Variable):
         # Find difference in employment income
 
         previous_employment_income = (
-            ni_class_1_income + pen_con_subtracted_b - benefits
-        )
+            ni_class_1_income - benefits
+        ) - employer_pension_contributions
         new_employment_income = (
-            new_ni_class_1_income + pen_con_subtracted_r - benefits
-        )
+            new_ni_class_1_income - benefits
+        ) - employer_pension_contributions
 
         return new_employment_income - previous_employment_income

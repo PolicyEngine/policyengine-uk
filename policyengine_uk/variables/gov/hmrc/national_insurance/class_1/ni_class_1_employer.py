@@ -16,16 +16,19 @@ class ni_class_1_employer(Variable):
         if not parameters(
             period
         ).gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions:
-            earnings = earnings + person(
+            added_pension_contributions = person(
                 "employer_pension_contributions", period
             )
+            taxed_earnings = earnings + added_pension_contributions
+        else:
+            taxed_earnings = earnings
         secondary_threshold = (
             class_1.thresholds.secondary_threshold
             * WEEKS_IN_YEAR
             / MONTHS_IN_YEAR
         )
         main_earnings = max_(
-            earnings - secondary_threshold,
+            taxed_earnings - secondary_threshold,
             0,
         )
         return class_1.rates.employer * main_earnings
