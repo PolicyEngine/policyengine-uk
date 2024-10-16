@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class private_pension_contributions_tax(Variable):
+class personal_pension_contributions_tax(Variable):
     value_type = float
     entity = Person
     label = "Reduction in taxable income from pension contributions to pensions other than the State Pension"
@@ -16,12 +16,12 @@ class private_pension_contributions_tax(Variable):
         p = parameters(period).gov.hmrc.income_tax.rates.uk
         taxed_income = person("taxed_income", period)
 
-        private_pension_contributions = person(
-            "private_pension_contributions", period
-        )
+        personal_pension_contributions = person(
+            "employee_pension_contributions", period
+        ) + person("personal_pension_contributions", period)
         pension_annual_allowance = person("pension_annual_allowance", period)
         taxable_contributions = (
-            private_pension_contributions - pension_annual_allowance
+            personal_pension_contributions - pension_annual_allowance
         )
 
         tax_rate = p.marginal_rates(taxed_income)

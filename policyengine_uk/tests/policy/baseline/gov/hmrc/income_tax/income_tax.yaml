@@ -10,6 +10,6 @@
   absolute_error_margin: 10
   input:
     employment_income: 34000
-    private_pension_contributions: 1200
+    personal_pension_contributions: 1200
   output:
     income_tax: (34000 - 1200 - 12500) * 0.2

@@ -13,7 +13,7 @@ class pension_contributions_relief(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        contributions = person("private_pension_contributions", period)
+        contributions = person("pension_contributions", period)
         pension_allowance = person("pension_annual_allowance", period)
         age_limit = parameters(
             period

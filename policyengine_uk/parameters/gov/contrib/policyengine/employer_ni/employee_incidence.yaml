@@ -1,0 +1,6 @@
+description: Assume that employers keep employment costs constant in response to employer NI changes.
+values:
+  2010-01-01: true
+metadata:
+  label: Employer NI employee incidence
+  unit: bool

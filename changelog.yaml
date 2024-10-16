@@ -1249,3 +1249,8 @@
     removed:
     - Survey-Enhance as a dependency.
   date: 2024-09-18 11:12:23
+- bump: minor
+  changes:
+    fixed:
+    - Add employer NI incidence.
+  date: 2024-10-16 11:52:07

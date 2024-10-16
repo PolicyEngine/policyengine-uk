@@ -1,0 +1,6 @@
+description: Whether to exempt employer pension contributions from employer NI.
+values:
+  2010-01-01: true
+metadata:
+  unit: bool
+  label: exempt employer pension contributions from employers' NI
