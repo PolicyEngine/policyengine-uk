@@ -88,6 +88,8 @@ class employer_ni_fixed_employer_cost_change(Variable):
         else:
             pen_con_subtracted_r = 0
 
+        print(c_b, r_r, pen_con_subtracted_r, t_r)
+
         new_ni_class_1_income = (c_b + r_r * (pen_con_subtracted_r + t_r)) / (
             1 + r_r
         )
@@ -101,4 +103,10 @@ class employer_ni_fixed_employer_cost_change(Variable):
             new_ni_class_1_income - benefits
         ) - employer_pension_contributions
 
-        return new_employment_income - previous_employment_income
+        pay_change = new_employment_income - previous_employment_income
+
+        # Where a person's prior employment income was below the secondary threshold, the formula doesn't hold, so assume no change.
+
+        below_threshold = previous_employment_income < t_b
+
+        return where(below_threshold, 0, pay_change)
