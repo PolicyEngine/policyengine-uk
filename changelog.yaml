@@ -1254,3 +1254,8 @@
     fixed:
     - Add employer NI incidence.
   date: 2024-10-16 11:52:07
+- bump: minor
+  changes:
+    changed:
+    - UK-data bumped to 1.5.
+  date: 2024-10-17 10:47:06
