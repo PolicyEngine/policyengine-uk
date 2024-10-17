@@ -22,9 +22,10 @@ class employer_ni_fixed_employer_cost_change(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        if not parameters(
+        employee_incidence = parameters(
             period
-        ).gov.contrib.policyengine.employer_ni.employee_incidence:
+        ).gov.contrib.policyengine.employer_ni.employee_incidence
+        if employee_incidence == 0:
             return 0
         # First, calculate baseline and reformed employer NI contributions.
 
@@ -103,8 +104,12 @@ class employer_ni_fixed_employer_cost_change(Variable):
 
         pay_change = new_employment_income - previous_employment_income
 
+        # Apply incidence percentage
+
+        interpolated_pay_change = pay_change * employee_incidence
+
         # Where a person's prior employment income was below the secondary threshold, the formula doesn't hold, so assume no change.
 
         below_threshold = previous_employment_income < t_b
 
-        return where(below_threshold, 0, pay_change)
+        return where(below_threshold, 0, interpolated_pay_change)

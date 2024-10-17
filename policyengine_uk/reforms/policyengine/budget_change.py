@@ -86,7 +86,7 @@ class pre_budget_change_household_tax(Variable):
         "expected_sdlt",
         "expected_ltt",
         "expected_lbtt",
-        "corporate_sdlt_",
+        "corporate_sdlt",
         "business_rates",
         "council_tax",
         "domestic_rates",

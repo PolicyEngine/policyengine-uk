@@ -1,6 +1,6 @@
-description: Assume that employers keep employment costs constant in response to employer NI changes.
+description: Fraction of employer NI that is borne by employees. The remaining is passed onto prices.
 values:
-  2010-01-01: true
+  2010-01-01: 1
 metadata:
   label: Employer NI employee incidence
-  unit: bool
+  unit: /1
