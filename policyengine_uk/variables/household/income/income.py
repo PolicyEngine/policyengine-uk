@@ -136,8 +136,46 @@ class hbai_household_net_income(Variable):
     unit = GBP
     definition_period = YEAR
 
-    adds = ["household_gross_income"]
-    subtracts = ["household_tax", "baseline_hbai_excluded_income"]
+    adds = [
+        "household_market_income",
+        "child_benefit",
+        "esa_income",
+        "esa_contrib",
+        "housing_benefit",
+        "income_support",
+        "jsa_income",
+        "jsa_contrib",
+        "pension_credit",
+        "universal_credit",
+        "working_tax_credit",
+        "child_tax_credit",
+        "attendance_allowance",
+        "afcs",
+        "bsp",
+        "carers_allowance",
+        "dla",
+        "iidb",
+        "incapacity_benefit",
+        "jsa_contrib",
+        "pip",
+        "sda",
+        "state_pension",
+        "maternity_allowance",
+        "statutory_sick_pay",
+        "statutory_maternity_pay",
+        "ssmg",
+        "basic_income",
+        "epg_subsidy",
+        "cost_of_living_support_payment",
+        "winter_fuel_allowance",
+    ]
+    subtracts = [
+        "council_tax",
+        "domestic_rates",
+        "wealth_tax",
+        "income_tax",
+        "national_insurance",
+    ]
 
 
 class household_net_income(Variable):
