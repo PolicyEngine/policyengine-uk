@@ -44,6 +44,9 @@ class household_benefits(Variable):
         "cost_of_living_support_payment",
         "energy_bills_rebate",
         "winter_fuel_allowance",
+        "nhs_budget_change",
+        "education_budget_change",
+        "other_public_spending_budget_change",
     ]
 
     def formula(household, period, parameters):
