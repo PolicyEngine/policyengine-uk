@@ -5,12 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.5.0] - 2024-10-19 19:53:35
+## [2.5.0] - 2024-10-19 09:27:21
 
-### Fixed
+### Changed
 
-- Budget change parameters moved to main codebase.
-- HBAI income is used for poverty rates.
+- UK data package bumped to 1.6.
 
 ## [2.4.0] - 2024-10-17 21:43:42
 
