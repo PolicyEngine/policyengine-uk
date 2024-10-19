@@ -1264,3 +1264,9 @@
     added:
     - Employee incidence percentage for employer NICs.
   date: 2024-10-17 21:43:42
+- bump: minor
+  changes:
+    fixed:
+    - Budget change parameters moved to main codebase.
+    - HBAI income is used for poverty rates.
+  date: 2024-10-19 19:53:35
