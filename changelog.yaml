@@ -1264,3 +1264,8 @@
     added:
     - Employee incidence percentage for employer NICs.
   date: 2024-10-17 21:43:42
+- bump: minor
+  changes:
+    changed:
+    - UK data package bumped to 1.6.
+  date: 2024-10-19 09:27:21
