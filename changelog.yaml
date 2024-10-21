@@ -1279,3 +1279,8 @@
     added:
     - Automatic allocation of post-employee-incidence employee to households (consumers/capital).
   date: 2024-10-21 10:09:01
+- bump: minor
+  changes:
+    fixed:
+    - Adjusted private school attendance factor to 0.85.
+  date: 2024-10-21 13:04:20
