@@ -165,7 +165,6 @@ class hbai_household_net_income(Variable):
         "statutory_maternity_pay",
         "ssmg",
         "basic_income",
-        "epg_subsidy",
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
     ]

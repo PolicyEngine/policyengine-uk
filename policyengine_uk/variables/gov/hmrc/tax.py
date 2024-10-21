@@ -40,6 +40,8 @@ class household_tax(Variable):
         "corporate_incident_tax_revenue_change",
         "consumer_incident_tax_revenue_change",
         "high_income_incident_tax_change",
+        "employer_ni_response_capital_incidence",
+        "employer_ni_response_consumer_incidence",
     ]
 
     def formula(household, period, parameters):

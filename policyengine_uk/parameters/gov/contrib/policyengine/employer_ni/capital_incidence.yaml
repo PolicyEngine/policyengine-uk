@@ -1,0 +1,6 @@
+description: Fraction of employer NI that is borne by capital.
+values:
+  2010-01-01: 0
+metadata:
+  label: Employer NI capital incidence
+  unit: /1
