@@ -37,6 +37,7 @@ class household_weight(Variable):
     label = "Weight factor for the household"
     definition_period = YEAR
     uprating = "gov.ons.population"
+    default_value = 1
 
 
 class Country(Enum):

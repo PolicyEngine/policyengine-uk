@@ -1,0 +1,6 @@
+description: Fraction of (remaining after employee incidence) employer NI that is borne by consumers.
+values:
+  2010-01-01: 0.5
+metadata:
+  label: Employer NI consumer incidence
+  unit: /1
