@@ -28,7 +28,7 @@ Our versioning is currently done manually. You should:
 
 * Add a new entry to the changelog_entry.yaml file. See below for an example.
 * Run 'make changelog' to update the changelog.md file.
-* Commit and push your changes.
+* Commit and push your changes (this will have changed `CHANGELOG.md`, `changelog.yaml` and `setup.py`).
 
 ### Example of a changelog entry
 
