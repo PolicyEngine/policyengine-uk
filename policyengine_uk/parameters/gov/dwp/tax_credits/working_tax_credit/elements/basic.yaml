@@ -20,7 +20,7 @@ values:
   2020-04-06: 3_040 # Coronavirus Act 2020, overrides 1_960 in WTC Regulations.
   2021-04-06: 2_005
   2022-04-01: 2_070
-  2022-04-01: 2_260
+  2025-04-01: 2_260
 metadata:
   period: year
   unit: currency-GBP
