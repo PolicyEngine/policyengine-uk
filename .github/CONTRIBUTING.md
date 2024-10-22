@@ -24,6 +24,25 @@ In case of breaking changes, you **must** give details about what features were 
 
 ## Advertising changes
 
+Our versioning is currently done manually. You should:
+
+* Add a new entry to the changelog_entry.yaml file. See below for an example.
+* Run 'make changelog' to update the changelog.md file.
+* Commit and push your changes (this will have changed `CHANGELOG.md`, `changelog.yaml` and `setup.py`).
+
+### Example of a changelog entry
+
+```yaml
+- bump: minor
+  changes:
+    added:
+    - Added this thing.
+    changed:
+    - Changed that thing.
+    fixed:
+    - Bug you fixed.
+```
+
 ### Version number
 
 We follow the [semantic versioning](http://semver.org/) spec: any change impacts the version number, and the version number conveys API compatibility information **only**.
