@@ -8,11 +8,13 @@ values:
   2020-04-01: 92.95
   2021-04-01: 93.40
   2022-04-01: 96.30
+  2025-04-01: 97.94
 metadata:
   period: week
   unit: currency-GBP
   name: sda_maximum
   label: Severe Disablement Allowance
+  uprating: gov.benefit_uprating_cpi
   reference: 
     - title: Benefits Uprating 2022/23
       href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

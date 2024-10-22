@@ -8,6 +8,7 @@ values:
   2021-04-06:
     value: 2845
   2022-04-01: 2_935
+  2025-04-01: 3_205
 metadata:
   period: year
   name: ctc_child

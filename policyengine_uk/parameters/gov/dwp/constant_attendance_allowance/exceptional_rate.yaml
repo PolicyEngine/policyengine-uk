@@ -5,5 +5,7 @@ metadata:
   reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
   unit: currency-GBP
   label: Constant Attendance Allowance exceptional rate
+  uprating: gov.benefit_uprating_cpi
 values:
   2015-06-01: 145.6
+  2025-04-01: 148.08

@@ -18,11 +18,13 @@ values:
     reference:
       - title: Benefits Uprating 2024/25 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+  2025-04-01: 29.19
 metadata:
   period: week
   unit: currency-GBP
   name: dla_m_lower
   label: DLA (mobility) (lower rate)
+  uprating: gov.benefit_uprating_cpi
   reference: 
     - title: Benefits Uprating 2022/23
       href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf

@@ -1,6 +1,7 @@
 description: Income Support applicable amount for couples aged over 18
 values:
   2015-06-01: 116.80
+  2025-04-01: 158.77
 metadata:
   period: week
   label: Income Support applicable amount (couples, both over 18)

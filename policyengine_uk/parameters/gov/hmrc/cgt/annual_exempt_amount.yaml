@@ -13,9 +13,11 @@ values:
     reference:
       - title: Finance Act 2023 s. 8(2)
         href: https://www.legislation.gov.uk/ukpga/2023/1/section/8
+  2025-04-01: 3_051
 metadata:
   unit: currency-GBP
   label: Annual Exempt Amount
+  uprating: gov.benefit_uprating_cpi
   reference:
     - title: Taxation of Chargeable Gains Act 1992 s. 1K(2) # Current law
       href: https://www.legislation.gov.uk/ukpga/1992/12/section/1K

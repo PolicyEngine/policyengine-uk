@@ -4,10 +4,12 @@ values:
   2022-04-01: 77.87
   2023-04-01: 85.73
   2024-04-01: 91.47
+  2025-04-01: 93.02
 metadata:
   unit: currency-GBP
   period: month
   label: Universal Credit housing element non-dependent deduction amount
+  uprating: gov.benefit_uprating_cpi
   reference:
     - title: The Universal Credit Regulations 2013 reg. 26(2), Schedule 4, Part 3, 14, (page 136)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
