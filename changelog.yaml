@@ -1284,3 +1284,8 @@
     fixed:
     - Adjusted private school attendance factor to 0.85.
   date: 2024-10-21 13:04:20
+- bump: minor
+  changes:
+    changed:
+    - UK data updated to 1.8.0.
+  date: 2024-10-22 08:36:24
