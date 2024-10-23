@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
 
 
-class relative_capital_gains_tax_change(Variable):
+class relative_capital_gains_mtr_change(Variable):
     value_type = float
     entity = Person
     label = "relative change in capital gains tax rate"
@@ -63,12 +63,7 @@ class capital_gains_elasticity(Variable):
 
     def formula(person, period, parameters):
         gov = parameters(period).gov
-        elasticities = gov.simulation.capital_gains_responses.elasticities
-
-        # Check if it's the first year of the policy
-        is_first_year = False
-
-        return elasticities.persistent
+        return gov.simulation.capital_gains_responses.elasticity
 
 
 class capital_gains_behavioural_response(Variable):
@@ -84,7 +79,7 @@ class capital_gains_behavioural_response(Variable):
             return 0
 
         capital_gains = person("capital_gains_before_response", period)
-        tax_rate_change = person("relative_capital_gains_tax_change", period)
+        tax_rate_change = person("relative_capital_gains_mtr_change", period)
         elasticity = person("capital_gains_elasticity", period)
 
         # Calculate response using log differences

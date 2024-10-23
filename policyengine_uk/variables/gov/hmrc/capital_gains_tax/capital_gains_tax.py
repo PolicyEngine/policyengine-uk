@@ -14,11 +14,6 @@ class capital_gains_tax(Variable):
         cgt = hmrc.cgt
         it = hmrc.income_tax
 
-        # If we've specified elasticities, run behavioural response.
-        elasticities = parameters(
-            period
-        ).gov.simulation.capital_gains_responses.elasticities
-
         ani = person("adjusted_net_income", period)
         gains = max_(0, person("capital_gains", period))
         aea = cgt.annual_exempt_amount
