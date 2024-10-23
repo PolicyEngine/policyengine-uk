@@ -430,3 +430,7 @@ class capital_gains(Variable):
     value_type = float
     unit = GBP
     uprating = "calibration.programs.capital_gains.total"
+    adds = [
+        "capital_gains_before_response",
+        "capital_gains_behavioural_response",
+    ]

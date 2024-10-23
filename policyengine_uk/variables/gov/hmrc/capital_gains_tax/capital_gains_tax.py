@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_core.holders import Holder
 
 
 class capital_gains_tax(Variable):
