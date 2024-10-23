@@ -1,8 +1,10 @@
 description: Disability premium for a couple
 values:
   2015-06-01: 49.80
+  2025-04-01: 50.65
 metadata:
   period: week
   unit: currency-GBP
   label: Legacy benefit disability premium (couple)
+  uprating: gov.benefit_uprating_cpi
   reference: https://www.gov.uk/disability-premiums/what-youll-get

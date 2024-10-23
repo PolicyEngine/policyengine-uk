@@ -1294,3 +1294,8 @@
     changed:
     - Data bumped to 1.9.0.
   date: 2024-10-22 11:24:42
+- bump: minor
+  changes:
+    added:
+    - Benefit uprating for 2025/26.
+  date: 2024-10-23 10:15:26

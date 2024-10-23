@@ -5,6 +5,7 @@ values:
   2020-04-06: 6_530
   2021-04-06: 6_565
   2022-04-01: 6_770
+  2025-04-01: 7_393
 metadata:
   period: year
   name: tc_income_threshold

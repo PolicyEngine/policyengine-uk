@@ -2,9 +2,11 @@ description: Working Tax Credit childcare element for one child
 values:
   2002-08-01: 135
   2005-04-06: 175
+  2025-04-01: 177.98
 metadata:
   period: week
   label: Working Tax Credit childcare element one child amount
+  uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference:
     title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002

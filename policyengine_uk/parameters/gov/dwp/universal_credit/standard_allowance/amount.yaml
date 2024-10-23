@@ -12,8 +12,10 @@ SINGLE_YOUNG:
       reference:
         - title: Benefits Uprating 2024/25 | Commons Library Briefing
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+    2025-04-01: 316.98
   metadata:
     label: Universal Credit single amount (under 25)
+    uprating: gov.benefit_uprating_cpi
     unit: currency-GBP
     period: month
 SINGLE_OLD:
@@ -29,8 +31,10 @@ SINGLE_OLD:
       reference:
         - title: Benefits Uprating 2024/25 | Commons Library Briefing
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+    2025-04-01: 400.14
   metadata:
     label: Universal Credit single amount (over 25)
+    uprating: gov.benefit_uprating_cpi
     unit: currency-GBP
     period: month
 COUPLE_YOUNG:
@@ -46,8 +50,10 @@ COUPLE_YOUNG:
       reference:
         - title: Benefits Uprating 2024/25 | Commons Library Briefing
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+    2025-04-01: 497.55
   metadata:
     label: Universal Credit couple amount (both under 25)
+    uprating: gov.benefit_uprating_cpi
     unit: currency-GBP
     period: month
 COUPLE_OLD:
@@ -64,6 +70,7 @@ COUPLE_OLD:
       reference:
         - title: Benefits Uprating 2024/25 | Commons Library Briefing
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+    2025-04-01: 628.10
   metadata:
     label: Universal Credit couple amount (one over 25)
     unit: currency-GBP

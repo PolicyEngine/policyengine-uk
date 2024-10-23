@@ -1,6 +1,7 @@
 description: Income Support applicable amount for lone parents aged over 18
 values:
   2015-06-01: 74.35
+  2025-04-01: 101.07
 metadata:
   period: week
   unit: currency-GBP

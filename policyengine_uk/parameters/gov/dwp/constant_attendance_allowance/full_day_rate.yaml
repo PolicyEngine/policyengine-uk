@@ -5,5 +5,7 @@ metadata:
   reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
   unit: currency-GBP
   label: Constant Attendance Allowance full day rate
+  uprating: gov.benefit_uprating_cpi
 values:
   2015-06-01: 72.8
+  2025-04-01: 74.04

@@ -4,6 +4,7 @@ values:
   2020-04-01: 37.50
   2021-04-01: 37.70
   2022-04-01: 38.85
+  2025-04-01: 42.43
 metadata:
   unit: currency-GBP
   period: week
