@@ -1,7 +1,6 @@
 description: Income sources which are deducted from Guarantee Credit income before
   Savings Credit calculations.
 metadata:
-  economy: false
   propagate_metadata_to_children: true
   reference:
   - href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/9
