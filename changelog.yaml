@@ -1299,3 +1299,8 @@
     added:
     - Benefit uprating for 2025/26.
   date: 2024-10-23 10:15:26
+- bump: minor
+  changes:
+    added:
+    - Capital Gains Tax elasticities.
+  date: 2024-10-23 14:47:21
