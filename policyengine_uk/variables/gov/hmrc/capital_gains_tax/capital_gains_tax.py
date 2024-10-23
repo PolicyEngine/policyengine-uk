@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_core.holders import Holder
 
 
 class capital_gains_tax(Variable):
@@ -12,6 +13,11 @@ class capital_gains_tax(Variable):
         hmrc = parameters(period).gov.hmrc
         cgt = hmrc.cgt
         it = hmrc.income_tax
+
+        # If we've specified elasticities, run behavioural response.
+        elasticities = parameters(
+            period
+        ).gov.simulation.capital_gains_responses.elasticities
 
         ani = person("adjusted_net_income", period)
         gains = max_(0, person("capital_gains", period))

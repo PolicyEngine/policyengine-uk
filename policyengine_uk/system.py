@@ -74,6 +74,16 @@ class Simulation(CoreSimulation):
             self.set_input("employment_income_before_lsr", known_period, array)
             employment_income.delete_arrays(known_period)
 
+        # Capital gains responses
+
+        cg_holder = self.get_holder("capital_gains")
+        for known_period in cg_holder.get_known_periods():
+            array = cg_holder.get_array(known_period)
+            self.set_input(
+                "capital_gains_before_response", known_period, array
+            )
+            employment_income.delete_arrays(known_period)
+
 
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
@@ -103,5 +113,16 @@ class Microsimulation(CoreMicrosimulation):
                 array = employment_income.get_array(known_period)
                 simulation.set_input(
                     "employment_income_before_lsr", known_period, array
+                )
+                employment_income.delete_arrays(known_period)
+
+        # Capital gains responses
+
+        for simulation in list(self.branches.values()) + [self]:
+            cg_holder = self.get_holder("capital_gains")
+            for known_period in cg_holder.get_known_periods():
+                array = cg_holder.get_array(known_period)
+                self.set_input(
+                    "capital_gains_before_response", known_period, array
                 )
                 employment_income.delete_arrays(known_period)
