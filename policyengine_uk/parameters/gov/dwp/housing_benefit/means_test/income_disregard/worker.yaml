@@ -1,7 +1,6 @@
 description: This amount of earnings is disreagrded for workers under the Housing Benefit.
 values:
   2015-06-01: 37.10
-  2025-04-01: 37.73
 metadata:
   period: week
   unit: currency-GBP

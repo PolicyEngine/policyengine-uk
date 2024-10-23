@@ -8,6 +8,7 @@ single:
     values:
       2016-11-07: 15_410
       2023-04-01: 16_967
+      2024-04-01: 16_967
       2025-04-01: 17_255
   outside_london:
     metadata:
@@ -15,6 +16,7 @@ single:
     values:
       2016-11-07: 13_400
       2023-04-01: 14_753
+      2024-04-01: 14_753
       2025-04-01: 15_004
 non_single:
   metadata:
@@ -25,6 +27,7 @@ non_single:
     values:
       2016-11-07: 23_000
       2023-04-01: 25_323
+      2024-04-01: 25_323
       2025-04-01: 25_753
   outside_london:
     metadata:
@@ -32,7 +35,8 @@ non_single:
     values:
       2016-11-07: 20_000
       2023-04-01: 22_020
-      2025-04-01: 22_394
+      2024-04-01: 22_020
+      2025-04-01: 22_020
 metadata:
   reference: 
     - title: The Universal Credit Regulations 2013 reg. 80A

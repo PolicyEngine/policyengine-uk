@@ -1,7 +1,6 @@
 description: Disability premium for a single person
 values:
   2015-06-01: 34.95
-  2025-04-01: 35.54
 metadata:
   period: week
   unit: currency-GBP

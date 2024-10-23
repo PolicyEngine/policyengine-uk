@@ -2,7 +2,6 @@ description: Child Tax Credit family element
 values:
   2016-04-06:
     value: 545
-  2025-04-01: 554.27
 metadata:
   period: year
   unit: currency-GBP

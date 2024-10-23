@@ -9,7 +9,9 @@ SINGLE:
     2020-04-06: 150.47
     2021-04-06: 153.70
     2022-04-01: 158.47
-    2025-04-01: 173.06
+    2023-04-01: 174.49
+    2024-04-01: 189.80
+    2025-04-01: 193.02
   metadata:
     name: pc_sc_income_threshold_single
     label: Pension Credit savings credit income threshold (single)
@@ -22,8 +24,10 @@ COUPLE:
     2019-04-06: 229.67
     2020-04-06: 239.17
     2021-04-06: 244.12
-    2022-04-01: 251.17
-    2025-04-01: 274.31
+    2022-04-01: 251.70
+    2023-04-01: 277.12
+    2024-04-01: 301.22
+    2025-04-01: 306.34
   metadata:
     name: pc_sc_income_threshold_couple
     label: Pension Credit savings credit income threshold (couple)
