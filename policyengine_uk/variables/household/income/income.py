@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 import datetime
+import numpy as np
 
 
 class earned_income(Variable):
@@ -184,8 +185,12 @@ class household_net_income(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    adds = ["household_market_income", "household_benefits"]
-    subtracts = ["household_tax"]
+
+    def formula(household, period, parameters):
+        market_income = household("household_market_income", period)
+        benefits = household("household_benefits", period)
+        tax = household("household_tax", period)
+        return np.round(market_income + benefits - tax)
 
 
 class inflation_adjustment(Variable):
