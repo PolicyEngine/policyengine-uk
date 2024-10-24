@@ -13,6 +13,5 @@ values:
   2028-01-01: 1.365
   2029-01-01: 1.418 # Projected
 metadata:
-  unit: currency-GBP
   reference: OBR
   label: Utilities inflation

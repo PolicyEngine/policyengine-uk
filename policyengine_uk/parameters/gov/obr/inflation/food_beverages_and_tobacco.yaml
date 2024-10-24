@@ -13,6 +13,5 @@ values:
   2028-01-01: 1.461
   2029-01-01: 1.497 # Projected
 metadata:
-  unit: currency-GBP
   reference: OBR
   label: Food and beverages inflation

@@ -23,7 +23,6 @@ values:
   2028-01-01: 159.5
   2029-01-01: 165.7 # Projected
 metadata:
-  unit: currency-GBP
   reference:
     - title: OBR March 2024 EFO
       href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2024/
