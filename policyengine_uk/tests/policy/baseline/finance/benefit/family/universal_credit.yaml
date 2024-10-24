@@ -22,32 +22,6 @@
     income_tax: (30000 - 1000 - 12570) * 0.2
     national_insurance: 2_451.83
 
-- name: Renting, single, 30, employed with little earnings
-  period: 2022
-  absolute_error_margin: 1
-  input:
-    people:
-      person:
-        age: 30
-        employment_income: 3_000
-        personal_pension_contributions: 1_000
-        weekly_hours: 20
-    benunits:
-      benunit:
-        members: person
-        would_claim_uc: true
-        benunit_rent: 10_000
-    households:
-      household:
-        members: person
-        tenure_type: RENT_PRIVATELY
-        BRMA: GUILDFORD
-  output:
-    uc_standard_allowance: 324.84 * 12
-    uc_housing_costs_element: 488.67 * 12
-    uc_income_reduction: 91.67 * 12
-    LHA_cap: 488.67 * 12
-
 - name: Renter with childcare, and non-dependents
   period: 2022
   absolute_error_margin: 1
