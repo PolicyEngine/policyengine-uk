@@ -78,6 +78,14 @@ class capital_gains_behavioural_response(Variable):
         if simulation.baseline is None:
             return 0
 
+        if (
+            parameters(
+                period
+            ).gov.simulation.capital_gains_responses.elasticity
+            == 0
+        ):
+            return 0
+
         capital_gains = person("capital_gains_before_response", period)
         tax_rate_change = person("relative_capital_gains_mtr_change", period)
         elasticity = person("capital_gains_elasticity", period)

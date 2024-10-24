@@ -1310,3 +1310,8 @@
     - Bug causing household app crashes.
     - Metadat for OBR parameters.
   date: 2024-10-24 11:42:25
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing capital gains responses to be calculated for every reform simulation.
+  date: 2024-10-24 13:24:27

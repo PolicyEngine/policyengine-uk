@@ -20,7 +20,7 @@ class dla_sc_category(Variable):
     default_value = LowerMiddleOrHigher.NONE
 
     def formula(person, period, parameters):
-        dla_sc = parameters(period).gov.dwp.dla.self_care
+        dla_sc = parameters(period).baseline.gov.dwp.dla.self_care
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_dla_sc = (
             person("dla_sc_reported", period) / WEEKS_IN_YEAR
@@ -51,7 +51,7 @@ class dla_m_category(Variable):
     default_value = LowerOrHigher.NONE
 
     def formula(person, period, parameters):
-        dla_m = parameters(period).gov.dwp.dla.mobility
+        dla_m = parameters(period).baseline.gov.dwp.dla.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_dla_m = (
             person("dla_m_reported", period) / WEEKS_IN_YEAR
@@ -80,7 +80,7 @@ class pip_m_category(Variable):
     default_value = PIPCategory.NONE
 
     def formula(person, period, parameters):
-        pip_m = parameters(period).gov.dwp.pip.mobility
+        pip_m = parameters(period).baseline.gov.dwp.pip.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_pip_m = (
             person("pip_m_reported", period) / WEEKS_IN_YEAR
@@ -109,7 +109,7 @@ class pip_dl_category(Variable):
     default_value = PIPCategory.NONE
 
     def formula(person, period, parameters):
-        pip_dl = parameters(period).gov.dwp.pip.daily_living
+        pip_dl = parameters(period).baseline.gov.dwp.pip.daily_living
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_pip_dl = (
             person("pip_dl_reported", period) / WEEKS_IN_YEAR

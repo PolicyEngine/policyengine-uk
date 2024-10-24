@@ -45,7 +45,7 @@ class aa_category(Variable):
     default_value = LowerOrHigher.NONE
 
     def formula(person, period, parameters):
-        aa = parameters(period).gov.dwp.attendance_allowance
+        aa = parameters(period).baseline.gov.dwp.attendance_allowance
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_aa = (
             person("attendance_allowance_reported", period) / WEEKS_IN_YEAR
