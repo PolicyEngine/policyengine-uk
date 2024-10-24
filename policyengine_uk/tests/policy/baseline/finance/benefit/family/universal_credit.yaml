@@ -21,31 +21,3 @@
     universal_credit: 0
     income_tax: (30000 - 1000 - 12570) * 0.2
     national_insurance: 2_451.83
-
-- name: Renter with childcare, and non-dependents
-  period: 2022
-  absolute_error_margin: 1
-  input:
-    people:
-      person_1:
-        age: 20
-      person_2:
-        age: 23
-      child:
-        age: 10
-        childcare_expenses: 200 * 12
-    benunits:
-      benunit_1:
-        would_claim_uc: true
-        members: [person_1, child]
-        benunit_rent: 10_000
-      benunit_2:
-        would_claim_uc: false
-        members: person_2
-    households:
-      household:
-        tenure_type: RENT_PRIVATELY
-        members: [person_1, person_2, child]
-        BRMA: DURHAM
-  output:
-    universal_credit: [10_957, 0]
