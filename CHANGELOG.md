@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.12.0] - 2024-10-23 14:47:21
+
+### Added
+
+- Capital Gains Tax elasticities.
+
+## [2.11.0] - 2024-10-23 10:15:26
+
+### Added
+
+- Benefit uprating for 2025/26.
+
+## [2.10.0] - 2024-10-22 11:24:42
+
+### Changed
+
+- Data bumped to 1.9.0.
+
+## [2.9.0] - 2024-10-22 08:36:24
+
+### Changed
+
+- UK data updated to 1.8.0.
+
 ## [2.8.0] - 2024-10-21 13:04:20
 
 ### Fixed
@@ -1530,6 +1554,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.12.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.11.0...2.12.0
+[2.11.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.10.0...2.11.0
+[2.10.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.9.0...2.10.0
+[2.9.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.8.0...2.9.0
 [2.8.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.7.0...2.8.0
 [2.7.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.6.0...2.7.0
 [2.6.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.5.0...2.6.0
