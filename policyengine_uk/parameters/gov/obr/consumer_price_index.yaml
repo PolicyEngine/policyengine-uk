@@ -1,5 +1,6 @@
 description: OBR forecast for CPI
 values:
+  2005-01-01: 90
   2014-01-01: 100
   2015-01-01: 100.1
   2016-01-01: 101.2

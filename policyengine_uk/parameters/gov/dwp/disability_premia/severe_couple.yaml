@@ -1,7 +1,6 @@
 description: Severe disability premium for a couple where both are eligible
 values:
   2015-06-01: 133.90
-  2025-04-01: 136.18
 metadata:
   period: week
   unit: currency-GBP

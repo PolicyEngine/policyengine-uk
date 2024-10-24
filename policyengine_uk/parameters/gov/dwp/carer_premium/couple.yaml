@@ -1,6 +1,7 @@
 description: Carer premium for two qualifying carers for legacy benefits.
 values:
   2010-01-01: 37.50
+  2023-04-01: 42.75
   2024-04-01: 
     value: 45.60
     reference:

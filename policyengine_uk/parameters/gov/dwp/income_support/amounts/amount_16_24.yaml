@@ -1,7 +1,6 @@
 description: Income Support applicable amount for single persons aged 18-24
 values:
   2015-06-01: 58.90
-  2025-04-01: 80.07
 metadata:
   period: week
   unit: currency-GBP
