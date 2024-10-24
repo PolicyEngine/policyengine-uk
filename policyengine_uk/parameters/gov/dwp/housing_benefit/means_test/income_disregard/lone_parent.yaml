@@ -1,7 +1,6 @@
 description: This amount of earnings is disreagrded for lone parents under the Housing Benefit.
 values:
   2015-06-01: 25
-  2025-04-01: 25.43
 metadata:
   period: week
   unit: currency-GBP

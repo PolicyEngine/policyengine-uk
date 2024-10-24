@@ -1,7 +1,6 @@
 description: This amount of earnings is disreagrded for couples under the Housing Benefit.
 values:
   2015-06-01: 10
-  2025-04-01: 10.17
 metadata:
   period: week
   unit: currency-GBP
