@@ -9,6 +9,8 @@ class attends_private_school(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
+        if not hasattr(person.simulation, "dataset"):
+            return 0
         household = person.household
         # To ensure that our model matches
         # total number of students actually enrolled
@@ -37,6 +39,9 @@ class attends_private_school(Variable):
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(net_income, weights=household_weight)
 
+        if household_weight.sum() < 1e6:
+            return 0
+
         percentile = np.zeros_like(weighted_income).astype(numpy.int64)
         mask = household_weight > 0
 
@@ -60,7 +65,9 @@ class attends_private_school(Variable):
             * is_child
         )
 
-        return random(person) < p_attends_private_school
+        value = random(person) < p_attends_private_school
+
+        return value
 
 
 class private_school_vat(Variable):
