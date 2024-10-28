@@ -3,6 +3,7 @@ description: National Insurance contribution rate by employers on earnings above
 metadata:
   label: NI Employer rate
   propagate_metadata_to_children: true
+  unit: /1
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
   unit: marginal-rate
 values:
