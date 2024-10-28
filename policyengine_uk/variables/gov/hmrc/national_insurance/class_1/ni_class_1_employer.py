@@ -5,7 +5,7 @@ class ni_class_1_employer(Variable):
     value_type = float
     entity = Person
     label = "NI Class 1 employer-side contributions"
-    definition_period = MONTH
+    definition_period = YEAR
     unit = GBP
     defined_for = "ni_liable"
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/9"
@@ -23,9 +23,7 @@ class ni_class_1_employer(Variable):
         else:
             taxed_earnings = earnings
         secondary_threshold = (
-            class_1.thresholds.secondary_threshold
-            * WEEKS_IN_YEAR
-            / MONTHS_IN_YEAR
+            class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
         )
         main_earnings = max_(
             taxed_earnings - secondary_threshold,

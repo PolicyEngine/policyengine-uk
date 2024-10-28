@@ -23,3 +23,9 @@ values:
           and National Insurance Funds Payments) Regulations 2022(6)
     value: 175
   2024-01-01: 175
+  2027-04-01:
+    value: 241.73
+    metadata:
+      reference:
+        - title: Spring Statement 2022
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1062486/Spring_Statement_2022_Web_Accessible.pdf

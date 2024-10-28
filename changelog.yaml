@@ -1315,3 +1315,8 @@
     fixed:
     - Bug causing capital gains responses to be calculated for every reform simulation.
   date: 2024-10-24 13:24:27
+- bump: patch
+  changes:
+    fixed:
+    - Threshold freeze for ST extended to 2027.
+  date: 2024-10-28 10:46:29
