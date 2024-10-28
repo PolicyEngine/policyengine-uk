@@ -159,11 +159,14 @@ class employer_ni_response_consumer_incidence(Variable):
         total_consumption = (consumption * person_weight).sum()
         share_of_total_consumption = consumption / total_consumption
 
-        return (
+        value = (
             amount_paid_by_employers
             * share_of_total_consumption
             * consumer_incidence
         )
+
+        if total_consumption == 0:
+            return 0
 
 
 class employer_ni_response_capital_incidence(Variable):
@@ -199,11 +202,14 @@ class employer_ni_response_capital_incidence(Variable):
         total_wealth = (wealth * person_weight).sum()
         share_of_total_wealth = wealth / total_wealth
 
-        return (
+        value = (
             amount_paid_by_employers
             * share_of_total_wealth
             * capital_incidence
         )
+
+        if total_wealth == 0:
+            return 0
 
 
 class employer_ni_fixed_employer_cost_change(Variable):

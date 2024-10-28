@@ -1320,3 +1320,8 @@
     fixed:
     - Threshold freeze for ST extended to 2027.
   date: 2024-10-28 10:46:29
+- bump: minor
+  changes:
+    fixed:
+    - Bugs affecting household app calculations.
+  date: 2024-10-28 12:09:01
