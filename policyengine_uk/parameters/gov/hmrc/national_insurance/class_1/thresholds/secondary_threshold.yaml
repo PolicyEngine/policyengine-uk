@@ -24,7 +24,7 @@ values:
     value: 175
   2024-01-01: 175
   2027-04-01:
-    value: 241.73
+    value: 175
     metadata:
       reference:
         - title: Spring Statement 2022
