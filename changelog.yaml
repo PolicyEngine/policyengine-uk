@@ -1330,3 +1330,8 @@
     fixed:
     - NI threshold in 2027.
   date: 2024-10-30 14:02:58
+- bump: minor
+  changes:
+    added:
+    - OBR Autumn 2024 EFO economic factors.
+  date: 2024-10-30 17:24:57
