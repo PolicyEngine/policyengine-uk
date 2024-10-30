@@ -1325,3 +1325,8 @@
     fixed:
     - Bugs affecting household app calculations.
   date: 2024-10-28 12:09:01
+- bump: patch
+  changes:
+    fixed:
+    - NI threshold in 2027.
+  date: 2024-10-30 14:02:58
