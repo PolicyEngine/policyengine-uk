@@ -1335,3 +1335,8 @@
     added:
     - OBR Autumn 2024 EFO economic factors.
   date: 2024-10-30 17:24:57
+- bump: patch
+  changes:
+    fixed:
+    - Bug in budget change reforms.
+  date: 2024-11-05 14:05:53
