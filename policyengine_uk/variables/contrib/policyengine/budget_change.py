@@ -176,6 +176,11 @@ class nhs_budget_change(Variable):
     value_type = float
 
     def formula(household, period, parameters):
+        budget_increase = (
+            parameters(period).gov.contrib.policyengine.budget.nhs * 1e9
+        )
+        if budget_increase == 0:
+            return 0
         decile = household(
             "pre_budget_change_ons_household_income_decile", period
         )
@@ -195,9 +200,6 @@ class nhs_budget_change(Variable):
 
         decile = pd.Series(decile)
 
-        budget_increase = (
-            parameters(period).gov.contrib.policyengine.budget.nhs * 1e9
-        )
         budget_increase_per_decile = {
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
@@ -223,6 +225,12 @@ class education_budget_change(Variable):
     value_type = float
 
     def formula(household, period, parameters):
+
+        budget_increase = (
+            parameters(period).gov.contrib.policyengine.budget.education * 1e9
+        )
+        if budget_increase == 0:
+            return 0
         decile = household(
             "pre_budget_change_ons_household_income_decile", period
         )
@@ -241,10 +249,6 @@ class education_budget_change(Variable):
         }
 
         decile = pd.Series(decile)
-
-        budget_increase = (
-            parameters(period).gov.contrib.policyengine.budget.education * 1e9
-        )
         budget_increase_per_decile = {
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
@@ -270,6 +274,15 @@ class other_public_spending_budget_change(Variable):
     value_type = float
 
     def formula(household, period, parameters):
+
+        budget_increase = (
+            parameters(
+                period
+            ).gov.contrib.policyengine.budget.other_public_spending
+            * 1e9
+        )
+        if budget_increase == 0:
+            return 0
         decile = household(
             "pre_budget_change_ons_household_income_decile", period
         )
@@ -288,13 +301,6 @@ class other_public_spending_budget_change(Variable):
         }
 
         decile = pd.Series(decile)
-
-        budget_increase = (
-            parameters(
-                period
-            ).gov.contrib.policyengine.budget.other_public_spending
-            * 1e9
-        )
         budget_increase_per_decile = {
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
