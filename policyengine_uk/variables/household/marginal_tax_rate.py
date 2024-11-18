@@ -16,7 +16,8 @@ class marginal_tax_rate(Variable):
         simulation = person.simulation
         adult_index_values = person("adult_index", period)
         delta = p.marginal_tax_rate_delta
-        for adult_index in [1, 2]:
+        adult_count = p.marginal_tax_rate_adults
+        for adult_index in range(1, 1 + adult_count):
             alt_simulation = simulation.get_branch(
                 f"adult_{adult_index}_pay_rise"
             )
