@@ -11,7 +11,9 @@ class cliff_evaluated(Variable):
 
     def formula(person, period, parameters):
         adult_index_values = person("adult_index", period)
-        cliff_adult_count = parameters(period).gov.simulation.marginal_tax_rate_adults
+        cliff_adult_count = parameters(
+            period
+        ).gov.simulation.marginal_tax_rate_adults
         return adult_index_values <= cliff_adult_count
 
 
