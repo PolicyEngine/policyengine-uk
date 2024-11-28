@@ -1,8 +1,0 @@
-- bump: patch
-  changes:
-    added:
-    - marginal_tax_rate_delta parameter
-    - marginal_tax_rate_adults parameter
-    changed:
-    - Refactored cliff_gap variable to use marginal_tax_rate_delta parameter
-    - Refactored marginal_tax_rate variable to use both new parameters
