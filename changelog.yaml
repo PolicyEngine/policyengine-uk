@@ -1340,3 +1340,8 @@
     fixed:
     - Bug in budget change reforms.
   date: 2024-11-05 14:05:53
+- bump: minor
+  changes:
+    changed:
+    - Pinned UK data to 1.9.0.
+  date: 2024-11-28 16:54:41
