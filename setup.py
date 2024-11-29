@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PolicyEngine-UK",
-    version="2.15.1",
+    version="2.16.0",
     author="PolicyEngine",
     author_email="nikhil@policyengine.org",
     classifiers=[
@@ -27,7 +27,7 @@ setup(
     ],
     install_requires=[
         "PolicyEngine-Core>=3.6.4",
-        "PolicyEngine-UK-Data>=1.9,<1.10",
+        "PolicyEngine-UK-Data==1.9.0",
         "microdf_python",
     ],
     extras_require={
