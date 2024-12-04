@@ -223,6 +223,7 @@ class household_net_income_ahc(Variable):
         housing_costs = household("housing_costs", period)
         return np.round(market_income + benefits - tax - housing_costs)
 
+
 class inflation_adjustment(Variable):
     label = (
         f"inflation multiplier to get {datetime.datetime.now().year} prices"
@@ -265,6 +266,7 @@ class real_household_net_income_ahc(Variable):
     def formula(household, period, parameters):
         net_income = household("household_net_income_ahc", period)
         return net_income * household("inflation_adjustment", period)
+
 
 class hbai_household_net_income_ahc(Variable):
     value_type = float
