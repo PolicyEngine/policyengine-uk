@@ -200,6 +200,30 @@ class household_net_income(Variable):
         return np.round(market_income + benefits - tax)
 
 
+class household_net_income_ahc(Variable):
+    label = "household net income"
+    documentation = "household net income"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+    adds = [
+        "household_market_income",
+        "household_benefits",
+    ]
+    subtracts = [
+        "household_tax",
+        "housing_costs",
+    ]
+
+    def formula(household, period, parameters):
+        market_income = household("household_market_income", period)
+        benefits = household("household_benefits", period)
+        tax = household("household_tax", period)
+        housing_costs = household("housing_costs", period)
+        return np.round(market_income + benefits - tax - housing_costs)
+
+
 class inflation_adjustment(Variable):
     label = (
         f"inflation multiplier to get {datetime.datetime.now().year} prices"
@@ -227,6 +251,20 @@ class real_household_net_income(Variable):
 
     def formula(household, period, parameters):
         net_income = household("household_net_income", period)
+        return net_income * household("inflation_adjustment", period)
+
+
+class real_household_net_income_ahc(Variable):
+    label = (
+        f"real household net income ({datetime.datetime.now().year} prices)"
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        net_income = household("household_net_income_ahc", period)
         return net_income * household("inflation_adjustment", period)
 
 
