@@ -1,0 +1,8 @@
+description: Amount paid to non-benefit-claiming pensioners for the PAWHP.
+values:
+  2024-01-01: 0
+  2025-01-01: 100
+metadata:
+  unit: currency-GBP
+  label: PAWHP base payment
+  uprating: gov.obr.consumer_price_index
