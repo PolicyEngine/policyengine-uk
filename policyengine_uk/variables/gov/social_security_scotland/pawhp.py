@@ -1,17 +1,8 @@
 from policyengine_uk.model_api import *
 
 
-class winter_fuel_allowance_reported(Variable):
-    value_type = float
-    entity = Person
-    label = "Winter fuel allowance"
-    definition_period = YEAR
-    unit = GBP
-    uprating = "gov.benefit_uprating_cpi"
-
-
-class winter_fuel_allowance(Variable):
-    label = "Winter Fuel Allowance"
+class pawhp(Variable):
+    label = "Pension Age Winter Heating Payment"
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -23,7 +14,7 @@ class winter_fuel_allowance(Variable):
         )
         age = household.members("age", period)
         is_SP_age = household.members("is_SP_age", period)
-        wfp = parameters(period).gov.dwp.winter_fuel_payment
+        wfp = parameters(period).gov.social_security_scotland.pawhp
         on_mtb = (
             add(
                 household,
@@ -56,7 +47,10 @@ class winter_fuel_allowance(Variable):
             & ~meets_higher_age_requirement
         )
 
-        return ~in_scotland * (
+        qualifies_for_base = ~meets_mtb_requirement & meets_spa_requirement
+
+        return in_scotland * (
             wfp.amount.higher * qualifies_for_higher
             + wfp.amount.lower * qualifies_for_lower
+            + wfp.amount.base * qualifies_for_base
         )
