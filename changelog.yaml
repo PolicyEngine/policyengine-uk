@@ -1350,3 +1350,8 @@
     fixed:
     - Scottish baseline matched with Scottish Fiscal Commission.
   date: 2024-12-04 16:48:42
+- bump: minor
+  changes:
+    added:
+    - Scottish Winter Fuel Payment equivalent.
+  date: 2024-12-05 12:43:06
