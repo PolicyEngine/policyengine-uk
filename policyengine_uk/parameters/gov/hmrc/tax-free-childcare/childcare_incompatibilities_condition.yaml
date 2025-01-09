@@ -1,0 +1,15 @@
+- name: Tax_Free_Childcare_Exclusions
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        tax_free_childcare_claim: true
+        receives_working_tax_credit: false AND receives_child_tax_credit: false AND receives_universal_credit: false
+    benefits:
+      mutually_exclusive:
+        - working_tax_credit
+        - child_tax_credit
+        - universal_credit
+  output:
+    incompatibilities_childcare_eligible: true

@@ -1,0 +1,38 @@
+- name: Single adult in work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        in_work: true
+  output:
+    childcare_work_condition: true
+
+
+- name: Single adult on leave
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        on_leave: true
+  output:
+    childcare_work_condition: true
+
+
+- name: Non-working partner eligibility
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person1:
+        in_work: false AND (receives_incapacity_benefit OR receives_severe_disablement_allowance OR receives_carers_allowance OR receives_contribution_based_esa)
+      person2:
+        in_work: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    childcare_work_condition: true
+
+

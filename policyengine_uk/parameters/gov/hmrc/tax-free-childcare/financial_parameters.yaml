@@ -1,0 +1,13 @@
+- name: Tax_Free_Childcare_Financial_Parameters
+  period: 2025
+  parameters:
+    standard_child:
+      yearly_max: 2000
+      quarterly_max: 500
+    disabled_child:
+      yearly_max: 4000
+      quarterly_max: 1000
+    government_contribution:
+      parent_contribution: 8
+      gov_contribution: 2
+    income_threshold: 100000
