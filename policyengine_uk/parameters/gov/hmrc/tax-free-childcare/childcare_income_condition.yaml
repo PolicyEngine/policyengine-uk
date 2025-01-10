@@ -1,0 +1,33 @@
+- name: Income requirements and calculations
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: age
+        conditions:
+          - age >= 21 AND (
+              yearly_eligible_income / 4 >= 2379 OR
+              (is_newly_self_employed AND business_age_months < 12)
+            )
+          - (age >= 18 AND age <= 20) AND (
+              yearly_eligible_income / 4 >= 1788 OR
+              (is_newly_self_employed AND business_age_months < 12)
+            )
+          - (age < 18 OR is_apprentice) AND (
+              yearly_eligible_income / 4 >= 1331 OR
+              (is_newly_self_employed AND business_age_months < 12)
+            )
+        yearly_eligible_income: > 
+          yearly_total_income - (
+            yearly_dividend_income +
+            yearly_interest_income +
+            yearly_property_income +
+            yearly_pension_income
+          )
+    benunits:
+      benunit:
+        members:
+          - person
+  output:
+    meets_income_requirements: true

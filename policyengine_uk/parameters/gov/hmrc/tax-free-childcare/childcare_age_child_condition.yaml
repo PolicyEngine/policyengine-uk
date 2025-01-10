@@ -1,0 +1,13 @@
+- name: Child age eligibility requirements
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      child:
+        age: (age < 12) OR (age < 17 AND (receives_disability_benefits OR is_blind OR is_severely_sight_impaired))
+        september_following_birthday: true
+    benunits:
+      benunit:
+        members: [child]
+  output:
+    child_age_eligible: true
