@@ -1,6 +1,5 @@
 from policyengine_uk.model_api import *
 
-
 class child_age_eligible(Variable):
     value_type = bool
     entity = Person
@@ -32,14 +31,15 @@ class child_age_eligible(Variable):
         standard_disability_benefits = gc.eligibility
         severe_disability_benefits = gc.severe.eligibility
 
-        is_disabled = (
-            add(person, period, standard_disability_benefits)
-            | add(person, period, severe_disability_benefits)
-        ) > 0
+        # Convert to boolean arrays before combining
+        standard_benefits = add(person, period, standard_disability_benefits).astype(bool)
+        severe_benefits = add(person, period, severe_disability_benefits).astype(bool)
+        is_disabled = (standard_benefits | severe_benefits)
 
         # Check age conditions using parameterized values
         basic_age_condition = age < standard_age_limit
         age_under_disability_limit = age < disability_age_limit
 
-        # Combine conditions
-        return basic_age_condition | (age_under_disability_limit & is_disabled)
+        # Convert to boolean before final combination
+        return (basic_age_condition.astype(bool) | 
+                (age_under_disability_limit.astype(bool) & is_disabled))
