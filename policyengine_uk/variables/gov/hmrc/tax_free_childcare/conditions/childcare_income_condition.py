@@ -33,36 +33,14 @@ class meets_income_requirements(Variable):
         )
 
         yearly_eligible_income = max_(total_income - investment_income, 0)
+        quarterly_income = yearly_eligible_income / 4
 
-        # Get income thresholds from parameters
+        # Get required income threshold based on age
         income_limits = parameters(
             period
         ).gov.hmrc.childcare_subsidies.tax_free_childcare.income_thresholds
-        quarterly_income = yearly_eligible_income / 4
-
-        # Age >= 21
-        meets_adult_condition = (age >= income_limits.adult.min_age.values) & (
-            quarterly_income >= income_limits.adult.quarterly_income.values
-        )
-
-        # Age 18-20
-        meets_young_adult_condition = (
-            (age >= income_limits.young_adult.min_age.values)
-            & (age <= income_limits.young_adult.max_age.values)
-            & (
-                quarterly_income
-                >= income_limits.young_adult.quarterly_income.values
-            )
-        )
-
-        # Age < 18
-        meets_youth_condition = (
-            age < income_limits.young_adult.min_age.values
-        ) & (quarterly_income >= income_limits.youth.quarterly_income.values)
-
-        # Combine all conditions
-        return (
-            meets_adult_condition
-            | meets_young_adult_condition
-            | meets_youth_condition
-        )
+        
+        required_threshold = income_limits.calc(age)
+        
+        # Compare quarterly income to required threshold
+        return quarterly_income >= required_threshold

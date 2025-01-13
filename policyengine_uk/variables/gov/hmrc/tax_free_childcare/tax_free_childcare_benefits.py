@@ -40,10 +40,14 @@ class tax_free_childcare(Variable):
         # Determine the maximum eligible childcare cost for a single child
         max_amount = 0
         for child in benunit.members("is_child", period):
-            if is_eligible[child]:
-                if child("is_disabled", period):
-                    max_amount = p.disabled_child.values
-                else:
-                    max_amount = p.standard_child.values
+            max_amount = where(
+                is_eligible[child],
+                where(
+                    child("is_disabled", period),
+                    p.disabled_child.values,
+                    p.standard_child.values
+                ),
+                max_amount
+            )
 
         return where(is_eligible, max_amount, 0)
