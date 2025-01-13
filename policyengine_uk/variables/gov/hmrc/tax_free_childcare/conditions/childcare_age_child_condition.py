@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class child_age_eligible(Variable):
     value_type = bool
     entity = Person
@@ -21,8 +22,8 @@ class child_age_eligible(Variable):
         age_limits = parameters(
             period
         ).gov.hmrc.childcare_subsidies.tax_free_childcare.age
-        standard_age_limit = age_limits.standard  
-        disability_age_limit = age_limits.disability 
+        standard_age_limit = age_limits.standard
+        disability_age_limit = age_limits.disability
 
         # Check disability conditions
         gc = parameters(

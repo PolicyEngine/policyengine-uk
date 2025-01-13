@@ -39,8 +39,8 @@ class meets_income_requirements(Variable):
         income_limits = parameters(
             period
         ).gov.hmrc.childcare_subsidies.tax_free_childcare.income_thresholds
-        
+
         required_threshold = income_limits.calc(age)
-        
+
         # Compare quarterly income to required threshold
         return quarterly_income >= required_threshold

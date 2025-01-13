@@ -45,9 +45,9 @@ class tax_free_childcare(Variable):
                 where(
                     child("is_disabled", period),
                     p.disabled_child.values,
-                    p.standard_child.values
+                    p.standard_child.values,
                 ),
-                max_amount
+                max_amount,
             )
 
         return where(is_eligible, max_amount, 0)
