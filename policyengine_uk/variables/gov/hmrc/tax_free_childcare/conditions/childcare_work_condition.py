@@ -5,9 +5,7 @@ class childcare_work_condition(Variable):
     value_type = bool
     entity = Person
     label = "Work conditions for tax-free childcare"
-    documentation = (
-        "Whether the person/couple meets work requirements for tax-free childcare"
-    )
+    documentation = "Whether the person/couple meets work requirements for tax-free childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):

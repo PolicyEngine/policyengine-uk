@@ -59,5 +59,7 @@ class meets_income_requirements(Variable):
 
         # Combine all conditions
         return (
-            meets_adult_condition | meets_young_adult_condition | meets_youth_condition
+            meets_adult_condition
+            | meets_young_adult_condition
+            | meets_youth_condition
         )

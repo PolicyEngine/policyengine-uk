@@ -51,7 +51,8 @@ class tax_free_childcare(Variable):
 
         # Calculate the government contribution
         government_contribution = min(
-            parents_contribution * p.contribution_rates.government_contribution_ratio,
+            parents_contribution
+            * p.contribution_rates.government_contribution_ratio,
             max_amount,
         )
 
