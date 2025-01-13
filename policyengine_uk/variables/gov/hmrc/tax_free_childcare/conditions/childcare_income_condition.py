@@ -49,13 +49,16 @@ class meets_income_requirements(Variable):
         meets_young_adult_condition = (
             (age >= income_limits.young_adult.min_age.values)
             & (age <= income_limits.young_adult.max_age.values)
-            & (quarterly_income >= income_limits.young_adult.quarterly_income.values)
+            & (
+                quarterly_income
+                >= income_limits.young_adult.quarterly_income.values
+            )
         )
 
         # Age < 18
-        meets_youth_condition = (age < income_limits.young_adult.min_age.values) & (
-            quarterly_income >= income_limits.youth.quarterly_income.values
-        )
+        meets_youth_condition = (
+            age < income_limits.young_adult.min_age.values
+        ) & (quarterly_income >= income_limits.youth.quarterly_income.values)
 
         # Combine all conditions
         return (

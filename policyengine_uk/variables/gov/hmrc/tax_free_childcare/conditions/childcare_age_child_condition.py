@@ -26,7 +26,9 @@ class child_age_eligible(Variable):
         disability_age_limit = age_limits.disability.values
 
         # Check disability conditions
-        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit.child.disability
+        gc = parameters(
+            period
+        ).gov.dwp.pension_credit.guarantee_credit.child.disability
         standard_disability_benefits = gc.eligibility
         severe_disability_benefits = gc.severe.eligibility
 
@@ -40,6 +42,4 @@ class child_age_eligible(Variable):
         age_under_disability_limit = age < disability_age_limit
 
         # Combine conditions
-        return basic_age_condition | (
-            age_under_disability_limit & is_disabled
-        )
+        return basic_age_condition | (age_under_disability_limit & is_disabled)
