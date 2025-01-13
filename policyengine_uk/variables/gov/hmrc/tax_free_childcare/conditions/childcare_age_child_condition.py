@@ -21,14 +21,14 @@ class child_age_eligible(Variable):
         # Get age thresholds from parameters
         age_limits = parameters(
             period
-        ).gov.hmrc.childcare_subsidies.tax_free_childcare.age_limits
-        standard_age_limit = age_limits.standard_age_limit
-        disability_age_limit = age_limits.disability_age_limit
+        ).gov.hmrc.childcare_subsidies.tax_free_childcare.age
+        standard_age_limit = age_limits.standard.values
+        disability_age_limit = age_limits.disability.values
 
         # Check disability conditions
-        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
-        standard_disability_benefits = gc.child.disability.eligibility
-        severe_disability_benefits = gc.child.disability.severe.eligibility
+        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit.child.disability
+        standard_disability_benefits = gc.eligibility
+        severe_disability_benefits = gc.severe.eligibility
 
         is_disabled = (
             add(person, period, standard_disability_benefits)
@@ -40,8 +40,6 @@ class child_age_eligible(Variable):
         age_under_disability_limit = age < disability_age_limit
 
         # Combine conditions
-        eligible = basic_age_condition | (
+        return basic_age_condition | (
             age_under_disability_limit & is_disabled
         )
-
-        return eligible

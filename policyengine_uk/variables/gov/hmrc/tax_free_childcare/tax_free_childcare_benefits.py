@@ -21,13 +21,10 @@ class tax_free_childcare(Variable):
         Returns:
             float: The calculated government contribution
         """
-        # Get parents contribution
-        parents_contribution = benunit("childcare_cost", period)
-
         # Get parameters from the parameter tree
         p = parameters(
             period
-        ).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution_parameters
+        ).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution
 
         # Check eligibility conditions
         meets_age_condition = benunit("child_age_eligible", period)
@@ -45,15 +42,8 @@ class tax_free_childcare(Variable):
         for child in benunit.members("is_child", period):
             if is_eligible[child]:
                 if child("is_disabled", period):
-                    max_amount = p.contribution_rates.disabled_child.yearly_max
+                    max_amount = p.disabled_child.values
                 else:
-                    max_amount = p.contribution_rates.standard_child.yearly_max
+                    max_amount = p.standard_child.values
 
-        # Calculate the government contribution
-        government_contribution = min(
-            parents_contribution
-            * p.contribution_rates.government_contribution_ratio,
-            max_amount,
-        )
-
-        return where(is_eligible, government_contribution, 0)
+        return where(is_eligible, max_amount, 0)

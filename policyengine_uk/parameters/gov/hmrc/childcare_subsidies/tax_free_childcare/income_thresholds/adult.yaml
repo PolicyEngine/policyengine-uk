@@ -1,0 +1,22 @@
+description: Income thresholds for tax-free childcare eligibility - adult category
+metadata:
+  period: year
+  label: Adult income thresholds for tax-free childcare eligibility
+  reference:
+    - title: Childcare Payments Act
+      href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
+    - title: Tax-Free Childcare Guidance
+      href: https://www.gov.uk/tax-free-childcare?step-by-step-nav=d78aeaf6-1747-4d72-9619-f16efb4dd89d
+
+quarterly_income:
+  values:
+    2015-01-01: 2379
+  metadata:
+    unit: currency-GBP
+
+min_age:
+  values:
+    2015-01-01: 21
+  metadata:
+    unit: year
+    period: year
