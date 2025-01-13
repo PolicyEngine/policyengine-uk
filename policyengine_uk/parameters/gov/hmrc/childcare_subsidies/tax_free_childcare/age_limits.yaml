@@ -1,8 +1,9 @@
 description: Age thresholds for tax-free childcare eligibility, including standard and disability-related limits.
 values:
   2025-01-01:
-    standard_age_limit: 12
-    disability_age_limit: 17
+    value:
+      standard_age_limit: 12
+      disability_age_limit: 17
     metadata:
       reference:
         - title: Tax-Free Childcare Guidance

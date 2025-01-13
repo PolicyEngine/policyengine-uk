@@ -1,12 +1,13 @@
-description: Parameters for tax-free childcare government contribution calculations
+description: Parameters for tax-free childcare government contribution calculations.
 values:
   2025-01-01:
-    contribution_rates:
-      standard_child:
-        yearly_max: 2000
-      disabled_child:
-        yearly_max: 4000
-      government_contribution_ratio: 0.25  # 2/8 expressed as decimal
+    value:
+      contribution_rates:
+        standard_child:
+          yearly_max: 2000
+        disabled_child:
+          yearly_max: 4000
+        government_contribution_ratio: 0.25  # 2/8 expressed as decimal
     metadata:
       reference:
         - title: Tax-Free Childcare Guidance
@@ -16,5 +17,5 @@ metadata:
   name: contribution_parameters
   label: Tax-free childcare contribution parameters
   reference:
-    - title: Childcare Payments Act 2014
+    - title: Childcare Payments Act
       href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
