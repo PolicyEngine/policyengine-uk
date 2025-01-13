@@ -24,7 +24,9 @@ class child_age_eligible(Variable):
         age = person("age", period)
 
         # Get age thresholds from parameters
-        age_limits = parameters(period).gov.hmrc.childcare_subsidies.tax_free_childcare.age_limits
+        age_limits = parameters(
+            period
+        ).gov.hmrc.childcare_subsidies.tax_free_childcare.age_limits
         standard_age_limit = age_limits.standard_age_limit
         disability_age_limit = age_limits.disability_age_limit
 
