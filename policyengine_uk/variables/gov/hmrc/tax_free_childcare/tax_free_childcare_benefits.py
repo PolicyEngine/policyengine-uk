@@ -10,7 +10,8 @@ class tax_free_childcare(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        """Calculate the government contribution for tax-free childcare.
+        """
+        Calculate the government contribution for tax-free childcare.
 
         Args:
             benunit: The benefit unit
@@ -24,7 +25,9 @@ class tax_free_childcare(Variable):
         parents_contribution = benunit("childcare_cost", period)
 
         # Get parameters from the parameter tree
-        p = parameters(period).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution_parameters
+        p = parameters(
+            period
+        ).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution_parameters
 
         # Check eligibility conditions
         meets_age_condition = benunit("child_age_eligible", period)
