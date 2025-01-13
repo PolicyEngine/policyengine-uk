@@ -8,10 +8,10 @@ class meets_income_requirements(Variable):
     documentation = "Whether this person meets the income requirements for tax-free childcare based on age and income thresholds"
     definition_period = YEAR
 
-    def formula(person, period):
+    def formula(person, period, parameters):
         """
         Calculate if a person meets income requirements based on their age and income.
-        
+
         Returns:
             bool: True if they meet the income conditions for their age group
         """
@@ -29,36 +29,35 @@ class meets_income_requirements(Variable):
                 "savings_interest_income",
                 "dividend_income",
                 "property_income",
-            ]
+            ],
         )
-        
+
         yearly_eligible_income = total_income - investment_income
 
-        # Income thresholds by age group
+        # Get income thresholds from parameters
+        income_limits = parameters(period).gov.hmrc.childcare_subsidies.tax_free_childcare.income_thresholds
         quarterly_income = yearly_eligible_income / 4
 
         # Age >= 21
         meets_adult_condition = (
-            (age >= 21) & 
-            (quarterly_income >= 2379)
+            (age >= income_limits.adult.min_age) & 
+            (quarterly_income >= income_limits.adult.quarterly_income)
         )
 
         # Age 18-20
         meets_young_adult_condition = (
-            (age >= 18) & 
-            (age <= 20) & 
-            (quarterly_income >= 1788)
+            (age >= income_limits.young_adult.min_age) & 
+            (age <= income_limits.young_adult.max_age) & 
+            (quarterly_income >= income_limits.young_adult.quarterly_income)
         )
 
         # Age < 18
         meets_youth_condition = (
-            (age < 18) &
-            (quarterly_income >= 1331)
+            (age < income_limits.young_adult.min_age) & 
+            (quarterly_income >= income_limits.youth.quarterly_income)
         )
 
         # Combine all conditions
         return (
-            meets_adult_condition |
-            meets_young_adult_condition |
-            meets_youth_condition
+            meets_adult_condition | meets_young_adult_condition | meets_youth_condition
         )

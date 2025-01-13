@@ -11,21 +11,17 @@ class incompatibilities_childcare_eligible(Variable):
     def formula(person, period, parameters):
         """
         Calculate eligibility based on incompatible benefits.
-        
+
         Returns:
             bool: True if eligible (no incompatible benefits received), False if receiving any incompatible benefits
         """
         # Get the benefit unit the person belongs to
         benunit = person.benunit
-        
+
         # Check if receiving any of the mutually exclusive benefits
         has_wtc = benunit("working_tax_credit", period) > 0
         has_ctc = benunit("child_tax_credit", period) > 0
         has_uc = benunit("universal_credit", period) > 0
 
         # Returns True when person's benefit unit does NOT receive any of these benefits
-        return ~(
-            has_wtc |
-            has_ctc |
-            has_uc
-        )
+        return ~(has_wtc | has_ctc | has_uc)

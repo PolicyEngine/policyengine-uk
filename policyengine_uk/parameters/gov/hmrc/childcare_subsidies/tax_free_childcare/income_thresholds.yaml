@@ -1,0 +1,23 @@
+description: Income thresholds for tax-free childcare eligibility by age group
+values:
+  2025-01-01:
+    adult:
+      min_age: 21
+      quarterly_income: 2379
+    young_adult:
+      min_age: 18
+      max_age: 20
+      quarterly_income: 1788
+    youth:
+      quarterly_income: 1331
+    metadata:
+      reference:
+        - title: Tax-Free Childcare Guidance
+          href: https://www.gov.uk/tax-free-childcare?step-by-step-nav=d78aeaf6-1747-4d72-9619-f16efb4dd89d
+metadata:
+  unit: currency-GBP
+  name: income_thresholds
+  label: Income thresholds for tax-free childcare eligibility
+  reference:
+    - title: Childcare Payments Act 2014
+      href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
