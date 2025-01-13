@@ -26,15 +26,19 @@ class tax_free_childcare(Variable):
             period
         ).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution
 
-        # Check eligibility conditions
-        meets_age_condition = benunit("child_age_eligible", period)
+        # Check eligibility conditions with explicit type conversion
+        meets_age_condition = benunit("child_age_eligible", period).astype(
+            bool
+        )
         meets_income_condition = benunit.any(
             benunit.members("meets_income_requirements", period)
-        )
+        ).astype(bool)
+        childcare_eligible = benunit(
+            "incompatibilities_childcare_eligible", period
+        ).astype(bool)
+
         is_eligible = (
-            meets_age_condition
-            & meets_income_condition
-            & benunit("incompatibilities_childcare_eligible", period)
+            meets_age_condition & meets_income_condition & childcare_eligible
         )
 
         # Determine the maximum eligible childcare cost for a single child
