@@ -5,14 +5,11 @@ class childcare_work_condition(Variable):
     value_type = bool
     entity = Person
     label = "Work conditions for tax-free childcare"
-    documentation = (
-        "Whether the person/couple meets work requirements for tax-free childcare"
-    )
+    documentation = "Whether the person/couple meets work requirements for tax-free childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        """
-        Calculate if person meets work conditions for:
+        """Calculate if person meets work conditions for:
         - Single working adult
         - Couple where either both work or one works and other has disability/incapacity
         """
@@ -48,9 +45,7 @@ class childcare_work_condition(Variable):
         is_partner_working_with_disabled_person = (
             is_couple & partner_in_work & (is_disabled | has_incapacity)
         )
-        is_person_working_with_disabled_partner = (
-            is_couple & in_work & partner_has_condition
-        )
+        is_person_working_with_disabled_partner = is_couple & in_work & partner_has_condition
 
         return (
             single_working

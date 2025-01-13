@@ -9,8 +9,7 @@ class meets_income_requirements(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        """
-        Calculate if a person meets income requirements based on their age and income.
+        """Calculate if a person meets income requirements based on their age and income.
 
         Returns:
             bool: True if they meet the income conditions for their age group
@@ -35,9 +34,7 @@ class meets_income_requirements(Variable):
         yearly_eligible_income = total_income - investment_income
 
         # Get income thresholds from parameters
-        income_limits = parameters(
-            period
-        ).gov.hmrc.childcare_subsidies.tax_free_childcare.income_thresholds
+        income_limits = parameters(period).gov.hmrc.childcare_subsidies.tax_free_childcare.income_thresholds
         quarterly_income = yearly_eligible_income / 4
 
         # Age >= 21
@@ -58,6 +55,4 @@ class meets_income_requirements(Variable):
         )
 
         # Combine all conditions
-        return (
-            meets_adult_condition | meets_young_adult_condition | meets_youth_condition
-        )
+        return meets_adult_condition | meets_young_adult_condition | meets_youth_condition
