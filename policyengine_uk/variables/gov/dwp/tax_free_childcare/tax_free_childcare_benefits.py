@@ -37,8 +37,9 @@ class tax_free_childcare(Variable):
             "incompatibilities_childcare_eligible", period
         ).astype(bool)
 
-        is_eligible = (
-            meets_age_condition & meets_income_condition & childcare_eligible
+        # Combine conditions using logical AND
+        is_eligible = np.logical_and.reduce(
+            [meets_age_condition, meets_income_condition, childcare_eligible]
         )
 
         # Calculate per-child amounts at the person level
