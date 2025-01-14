@@ -22,9 +22,13 @@ class tax_free_childcare(Variable):
             float: The calculated government contribution
         """
         # Get parameters from the parameter tree
-        p = parameters(
+        p_tfc = parameters(
             period
         ).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution
+
+        p_disabled = parameters(
+            period
+        ).gov.dwp.universal_credit.elements.child.disabled
 
         # Check eligibility conditions with explicit type conversion
         meets_age_condition = benunit("child_age_eligible", period).astype(
@@ -43,19 +47,15 @@ class tax_free_childcare(Variable):
 
         # Calculate maximum eligible childcare cost using vectorized operations
         child_mask = benunit.members("is_child", period)
-        disabled = benunit.members("is_disabled", period)
         max_amount = where(
-            child_mask,
+            child_mask
+            * p_disabled.amount,  # Use the disabled parameter amount
+            where(is_eligible, p_tfc.disabled_child.values, 0),
             where(
-                is_eligible,
-                where(
-                    disabled,
-                    p.disabled_child.values,
-                    p.standard_child.values,
-                ),
+                child_mask,
+                where(is_eligible, p_tfc.standard_child.values, 0),
                 0,
             ),
-            0,
         ).max(axis=0)
 
         return where(is_eligible, max_amount, 0)
