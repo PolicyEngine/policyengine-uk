@@ -42,5 +42,5 @@ class meets_income_requirements(Variable):
 
         required_threshold = income_limits.calc(age)
 
-        # Compare quarterly income to required threshold
-        return quarterly_income >= required_threshold
+        # Compare quarterly income to required threshold and convert to boolean
+        return (quarterly_income >= required_threshold).astype(bool)

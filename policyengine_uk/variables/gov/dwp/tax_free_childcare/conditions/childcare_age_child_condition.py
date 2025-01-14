@@ -39,13 +39,14 @@ class child_age_eligible(Variable):
         severe_benefits = add(
             person, period, severe_disability_benefits
         ).astype(bool)
-        is_disabled = standard_benefits | severe_benefits
+        is_disabled = (standard_benefits | severe_benefits).astype(bool)
 
         # Check age conditions using parameterized values
-        basic_age_condition = age < standard_age_limit
-        age_under_disability_limit = age < disability_age_limit
+        basic_age_condition = (age < standard_age_limit).astype(bool)
+        age_under_disability_limit = (age < disability_age_limit).astype(bool)
 
         # Convert to boolean before final combination
-        return basic_age_condition.astype(bool) | (
-            age_under_disability_limit.astype(bool) & is_disabled
+        combined_condition = (age_under_disability_limit & is_disabled).astype(
+            bool
         )
+        return (basic_age_condition | combined_condition).astype(bool)

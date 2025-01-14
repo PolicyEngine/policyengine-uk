@@ -19,9 +19,9 @@ class incompatibilities_childcare_eligible(Variable):
         benunit = person.benunit
 
         # Check if receiving any of the mutually exclusive benefits
-        has_wtc = benunit("working_tax_credit", period) > 0
-        has_ctc = benunit("child_tax_credit", period) > 0
-        has_uc = benunit("universal_credit", period) > 0
+        has_wtc = (benunit("working_tax_credit", period) > 0).astype(bool)
+        has_ctc = (benunit("child_tax_credit", period) > 0).astype(bool)
+        has_uc = (benunit("universal_credit", period) > 0).astype(bool)
 
         # Returns True when person's benefit unit does NOT receive any of these benefits
-        return ~(has_wtc | has_ctc | has_uc)
+        return ~(has_wtc | has_ctc | has_uc).astype(bool)

@@ -14,10 +14,10 @@ class childcare_work_condition(Variable):
         - Couple where either both work or one works and other has disability/incapacity
         """
         benunit = person.benunit
-        is_adult = person("is_adult", period)
+        is_adult = person("is_adult", period).astype(bool)
 
         # Basic work status
-        in_work = person("in_work", period)
+        in_work = person("in_work", period).astype(bool)
 
         # Get disability/incapacity conditions like we did in childcare age eligibility
         gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
@@ -25,33 +25,37 @@ class childcare_work_condition(Variable):
         severe_disability_benefits = gc.child.disability.severe.eligibility
 
         is_disabled = (
-            add(person, period, standard_disability_benefits)
-            | add(person, period, severe_disability_benefits)
-        ) > 0
+            (add(person, period, standard_disability_benefits) > 0)
+            | (add(person, period, severe_disability_benefits) > 0)
+        ).astype(bool)
 
-        has_incapacity = person("incapacity_benefit", period) > 0
+        has_incapacity = (person("incapacity_benefit", period) > 0).astype(
+            bool
+        )
 
         # Build conditions
         # Single adult conditions
-        is_single = benunit.sum(is_adult) == 1
-        single_working = is_single & in_work
+        is_single = (benunit.sum(is_adult) == 1).astype(bool)
+        single_working = (is_single & in_work).astype(bool)
 
         # Couple conditions
-        is_couple = benunit.sum(is_adult) == 2
+        is_couple = (benunit.sum(is_adult) == 2).astype(bool)
         partner_in_work = in_work
-        partner_has_condition = is_disabled | has_incapacity
+        partner_has_condition = (is_disabled | has_incapacity).astype(bool)
 
-        couple_both_working = is_couple & in_work & partner_in_work
+        couple_both_working = (is_couple & in_work & partner_in_work).astype(
+            bool
+        )
         is_partner_working_with_disabled_person = (
             is_couple & partner_in_work & (is_disabled | has_incapacity)
-        )
+        ).astype(bool)
         is_person_working_with_disabled_partner = (
             is_couple & in_work & partner_has_condition
-        )
+        ).astype(bool)
 
         return (
             single_working
             | couple_both_working
             | is_person_working_with_disabled_partner
             | is_partner_working_with_disabled_person
-        )
+        ).astype(bool)
