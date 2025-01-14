@@ -49,7 +49,7 @@ class tax_free_childcare(Variable):
         child_mask = benunit.members("is_child", period)
         max_amount = where(
             child_mask
-            * p_disabled.amount,  # Use the disabled parameter amount
+            * (p_disabled.amount > 0),  # Check if disabled amount exists
             where(is_eligible, p_tfc.disabled_child.values, 0),
             where(
                 child_mask,
