@@ -12,7 +12,7 @@ brackets:
   - threshold:
       2015-01-01: 0
     amount:
-      2015-01-01: 0
+      2015-01-01: 1_331
   - threshold:
       2015-01-01: 18
     amount:

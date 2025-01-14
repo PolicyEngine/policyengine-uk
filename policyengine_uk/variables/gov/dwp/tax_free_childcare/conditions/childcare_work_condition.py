@@ -5,7 +5,9 @@ class childcare_work_condition(Variable):
     value_type = bool
     entity = Person
     label = "Work conditions for tax-free childcare"
-    documentation = "Whether the person/couple meets work requirements for tax-free childcare"
+    documentation = (
+        "Whether the person/couple meets work requirements for tax-free childcare"
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -29,9 +31,8 @@ class childcare_work_condition(Variable):
             | (add(person, period, severe_disability_benefits) > 0)
         ).astype(bool)
 
-        has_incapacity = (person("incapacity_benefit", period) > 0).astype(
-            bool
-        )
+        has_incapacity = (person("incapacity_benefit", period) > 0).astype(bool)
+        has_condition = (is_disabled | has_incapacity).astype(bool)
 
         # Build conditions
         # Single adult conditions
@@ -40,22 +41,13 @@ class childcare_work_condition(Variable):
 
         # Couple conditions
         is_couple = (benunit.sum(is_adult) == 2).astype(bool)
-        partner_in_work = in_work
-        partner_has_condition = (is_disabled | has_incapacity).astype(bool)
-
-        couple_both_working = (is_couple & in_work & partner_in_work).astype(
-            bool
-        )
-        is_partner_working_with_disabled_person = (
-            is_couple & partner_in_work & (is_disabled | has_incapacity)
-        ).astype(bool)
-        is_person_working_with_disabled_partner = (
-            is_couple & in_work & partner_has_condition
+        benunit_has_condition = benunit.any(has_condition)
+        benunit_has_worker = benunit.any(in_work)
+        couple_both_working = (is_couple & benunit.all(in_work)).astype(bool)
+        couple_one_working_one_disabled = (
+            is_couple & benunit_has_worker & benunit_has_condition
         ).astype(bool)
 
         return (
-            single_working
-            | couple_both_working
-            | is_person_working_with_disabled_partner
-            | is_partner_working_with_disabled_person
+            single_working | couple_both_working | couple_one_working_one_disabled
         ).astype(bool)

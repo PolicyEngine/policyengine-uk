@@ -5,7 +5,9 @@ class child_age_eligible(Variable):
     value_type = bool
     entity = Person
     label = "Child age eligibility requirements"
-    documentation = "Whether this person meets the age and disability requirements for eligibility"
+    documentation = (
+        "Whether this person meets the age and disability requirements for eligibility"
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -25,28 +27,13 @@ class child_age_eligible(Variable):
         standard_age_limit = age_limits.standard
         disability_age_limit = age_limits.disability
 
-        # Check disability conditions
-        gc = parameters(
-            period
-        ).gov.dwp.pension_credit.guarantee_credit.child.disability
-        standard_disability_benefits = gc.eligibility
-        severe_disability_benefits = gc.severe.eligibility
-
-        # Convert to boolean arrays before combining
-        standard_benefits = add(
-            person, period, standard_disability_benefits
-        ).astype(bool)
-        severe_benefits = add(
-            person, period, severe_disability_benefits
-        ).astype(bool)
-        is_disabled = (standard_benefits | severe_benefits).astype(bool)
+        # Check disability status
+        is_disabled = person("is_disabled_for_benefits", period)
 
         # Check age conditions using parameterized values
         basic_age_condition = (age < standard_age_limit).astype(bool)
         age_under_disability_limit = (age < disability_age_limit).astype(bool)
 
-        # Convert to boolean before final combination
-        combined_condition = (age_under_disability_limit & is_disabled).astype(
-            bool
-        )
+        # Combine conditions
+        combined_condition = (age_under_disability_limit & is_disabled).astype(bool)
         return (basic_age_condition | combined_condition).astype(bool)
