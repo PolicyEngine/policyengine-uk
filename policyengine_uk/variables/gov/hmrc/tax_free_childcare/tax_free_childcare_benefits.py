@@ -47,15 +47,20 @@ class tax_free_childcare(Variable):
 
         # Calculate maximum eligible childcare cost using vectorized operations
         child_mask = benunit.members("is_child", period)
+        disabled = child_mask * (p_disabled.amount > 0)
+
         max_amount = where(
-            child_mask
-            * (p_disabled.amount > 0),  # Check if disabled amount exists
-            where(is_eligible, p_tfc.disabled_child.values, 0),
+            child_mask,
             where(
-                child_mask,
-                where(is_eligible, p_tfc.standard_child.values, 0),
+                is_eligible,
+                where(
+                    disabled,
+                    p_tfc.disabled_child,
+                    p_tfc.standard_child,
+                ),
                 0,
             ),
+            0,
         ).max(axis=0)
 
         return where(is_eligible, max_amount, 0)
