@@ -5,9 +5,7 @@ class childcare_work_condition(Variable):
     value_type = bool
     entity = Person
     label = "Work conditions for tax-free childcare"
-    documentation = (
-        "Whether the person/couple meets work requirements for tax-free childcare"
-    )
+    documentation = "Whether the person/couple meets work requirements for tax-free childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -31,7 +29,9 @@ class childcare_work_condition(Variable):
             | (add(person, period, severe_disability_benefits) > 0)
         ).astype(bool)
 
-        has_incapacity = (person("incapacity_benefit", period) > 0).astype(bool)
+        has_incapacity = (person("incapacity_benefit", period) > 0).astype(
+            bool
+        )
         has_condition = (is_disabled | has_incapacity).astype(bool)
 
         # Build conditions
@@ -49,5 +49,7 @@ class childcare_work_condition(Variable):
         ).astype(bool)
 
         return (
-            single_working | couple_both_working | couple_one_working_one_disabled
+            single_working
+            | couple_both_working
+            | couple_one_working_one_disabled
         ).astype(bool)

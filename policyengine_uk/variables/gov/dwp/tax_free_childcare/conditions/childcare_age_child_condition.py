@@ -5,9 +5,7 @@ class child_age_eligible(Variable):
     value_type = bool
     entity = Person
     label = "Child age eligibility requirements"
-    documentation = (
-        "Whether this person meets the age and disability requirements for eligibility"
-    )
+    documentation = "Whether this person meets the age and disability requirements for eligibility"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -35,5 +33,7 @@ class child_age_eligible(Variable):
         age_under_disability_limit = (age < disability_age_limit).astype(bool)
 
         # Combine conditions
-        combined_condition = (age_under_disability_limit & is_disabled).astype(bool)
+        combined_condition = (age_under_disability_limit & is_disabled).astype(
+            bool
+        )
         return (basic_age_condition | combined_condition).astype(bool)
