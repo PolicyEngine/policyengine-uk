@@ -21,42 +21,36 @@ class tax_free_childcare(Variable):
         Returns:
             float: The calculated government contribution
         """
-        # Get parameters from the parameter tree
+        # Get parameters
         p_tfc = parameters(
             period
         ).gov.dwp.childcare_subsidies.tax_free_childcare.contribution
 
-        p_disabled = parameters(period).gov.dwp.universal_credit.elements.child
-
-        # Check eligibility conditions with explicit type conversion
-        meets_age_condition = benunit("child_age_eligible", period).astype(
-            bool
-        )
+        # Check eligibility conditions
+        meets_age_condition = benunit("child_age_eligible", period)
         meets_income_condition = benunit.any(
             benunit.members("meets_income_requirements", period)
-        ).astype(bool)
+        )
         childcare_eligible = benunit(
             "incompatibilities_childcare_eligible", period
-        ).astype(bool)
+        )
 
         is_eligible = (
             meets_age_condition & meets_income_condition & childcare_eligible
         )
 
-        # Calculate maximum eligible childcare cost using vectorized operations
-        # Just check child and disability status directly in where conditions
-        max_amount = where(
-            benunit.members("is_child", period),
-            where(
-                is_eligible,
-                where(
-                    p_disabled.amount > 0,
-                    p_tfc.disabled_child,
-                    p_tfc.standard_child,
-                ),
-                0,
-            ),
-            0,
-        ).max(axis=0)
+        # Calculate per-child amounts at the person level
+        is_child = benunit.members("is_child", period)
+        is_disabled = benunit.members("is_disabled_for_benefits", period)
 
+        child_amounts = where(
+            is_child,
+            where(is_disabled, p_tfc.disabled_child, p_tfc.standard_child),
+            0,
+        )
+
+        # Reduce to benefit unit level by taking maximum
+        max_amount = benunit.max(child_amounts)
+
+        # Apply final eligibility check
         return where(is_eligible, max_amount, 0)
