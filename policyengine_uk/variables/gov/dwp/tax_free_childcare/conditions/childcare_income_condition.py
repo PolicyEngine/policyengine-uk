@@ -38,7 +38,7 @@ class meets_income_requirements(Variable):
         # Get required income threshold based on age
         income_limits = parameters(
             period
-        ).gov.hmrc.childcare_subsidies.tax_free_childcare.income_thresholds
+        ).gov.dwp.childcare_subsidies.tax_free_childcare.income_thresholds
 
         required_threshold = income_limits.calc(age)
 

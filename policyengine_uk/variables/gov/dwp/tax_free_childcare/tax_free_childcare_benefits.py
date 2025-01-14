@@ -24,7 +24,7 @@ class tax_free_childcare(Variable):
         # Get parameters from the parameter tree
         p_tfc = parameters(
             period
-        ).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution
+        ).gov.dwp.childcare_subsidies.tax_free_childcare.contribution
 
         p_disabled = parameters(period).gov.dwp.universal_credit.elements.child
 
