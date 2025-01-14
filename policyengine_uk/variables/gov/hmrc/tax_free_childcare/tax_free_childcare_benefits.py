@@ -26,9 +26,7 @@ class tax_free_childcare(Variable):
             period
         ).gov.hmrc.childcare_subsidies.tax_free_childcare.contribution
 
-        p_disabled = parameters(
-            period
-        ).gov.dwp.universal_credit.elements.child.disabled
+        p_disabled = parameters(period).gov.dwp.universal_credit.elements.child
 
         # Check eligibility conditions with explicit type conversion
         meets_age_condition = benunit("child_age_eligible", period).astype(
@@ -46,15 +44,13 @@ class tax_free_childcare(Variable):
         )
 
         # Calculate maximum eligible childcare cost using vectorized operations
-        child_mask = benunit.members("is_child", period)
-        disabled = child_mask * (p_disabled.amount > 0)
-
+        # Just check child and disability status directly in where conditions
         max_amount = where(
-            child_mask,
+            benunit.members("is_child", period),
             where(
                 is_eligible,
                 where(
-                    disabled,
+                    p_disabled.amount > 0,
                     p_tfc.disabled_child,
                     p_tfc.standard_child,
                 ),
