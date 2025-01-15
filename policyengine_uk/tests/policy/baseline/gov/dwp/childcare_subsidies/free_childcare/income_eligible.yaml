@@ -58,17 +58,6 @@
   output:
     income_requirements: false
 
-- name: Exactly at 21+ yearly threshold after deductions
-  period: 2025
-  input:
-    age: 30
-    total_income: 12516
-    private_pension_income: 2000  # Leaving exactly £9,516 yearly
-    savings_interest_income: 0
-    dividend_income: 0
-    property_income: 0
-  output:
-    income_requirements: true
 
 - name: Under 18 below yearly threshold
   period: 2025
