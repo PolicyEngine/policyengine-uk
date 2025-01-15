@@ -46,7 +46,10 @@ class income_requirements(Variable):
             period
         ).gov.dwp.childcare_subsidies.free_childcare.max_income_thresholds
 
-        # Check if they meet the conditions: 
+        # Check if they meet the conditions:
         # 1. Quarterly income is above the required threshold
         # 2. Yearly income is below the max threshold
-        return ((yearly_eligible_income > required_threshold) & (yearly_eligible_income < max_income_threshold)).astype(bool)
+        return (
+            (yearly_eligible_income > required_threshold)
+            & (yearly_eligible_income < max_income_threshold)
+        ).astype(bool)

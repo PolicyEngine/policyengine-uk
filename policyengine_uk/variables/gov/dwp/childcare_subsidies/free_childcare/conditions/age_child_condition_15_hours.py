@@ -26,7 +26,9 @@ class free_childcare_15_hours(Variable):
         upper_limit_3_years = age_limits.upper_limit_3_years
 
         # Check if the child is eligible for 15 hours (between 3 and 4 years old)
-        eligible_15_hours = (age >= lower_limit_9_months) & (age <= upper_limit_3_years)
+        eligible_15_hours = (age >= lower_limit_9_months) & (
+            age <= upper_limit_3_years
+        )
 
         # Return the eligibility status
         return eligible_15_hours.astype(bool)
