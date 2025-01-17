@@ -1,0 +1,12 @@
+description: Minimum age for universal free childcare eligibility (3 and 4 year olds)
+metadata:
+  unit: year
+  period: year
+  label: Minimum age for universal free childcare
+  reference:
+    - title: Childcare and early education
+      href: https://www.gov.uk/help-with-childcare-costs/free-childcare-and-education-for-3-to-4-year-olds?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b
+    - title: Parliamentary Research Briefing - Childcare
+      href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf.#:~:text=All%20three%20and%20four%2Dyear%2Dolds%20in%20England%20are%20eligible,and%20applies%20irrespective%20of%20income.
+values:
+  2015-01-01: 3
