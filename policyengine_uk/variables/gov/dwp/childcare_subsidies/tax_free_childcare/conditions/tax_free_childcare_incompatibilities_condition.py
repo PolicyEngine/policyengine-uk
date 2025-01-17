@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class incompatibilities_childcare_eligible(Variable):
+class tax_free_childcare_incompatibilities_childcare_eligible(Variable):
     value_type = bool
     entity = Person
     label = "Tax-Free Childcare Exclusions"

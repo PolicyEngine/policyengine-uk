@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class childcare_work_condition(Variable):
+class tax_free_childcare_work_condition(Variable):
     value_type = bool
     entity = Person
     label = "Work conditions for tax-free childcare"

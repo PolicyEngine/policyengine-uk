@@ -1,10 +1,10 @@
 from policyengine_uk.model_api import *
 
 
-class child_age_eligible(Variable):
+class tax_free_childcare_child_age_eligible(Variable):
     value_type = bool
     entity = Person
-    label = "Child age eligibility requirements"
+    label = "Child age eligibility requirements for tax-free childcare"
     documentation = "Whether this person meets the age and disability requirements for eligibility"
     definition_period = YEAR
 

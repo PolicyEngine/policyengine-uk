@@ -14,7 +14,7 @@
      benunit:
        members: [person, spouse]
   output:
-   childcare_work_condition: true
+   tax_free_childcare_work_condition: true
 
 - name: Couple neither working - ineligible
   period: 2025
@@ -32,7 +32,7 @@
      benunit:
        members: [person, spouse]
   output:
-   childcare_work_condition: false
+   tax_free_childcare_work_condition: false
 
 - name: Couple one working one with disability - eligible
   period: 2025
@@ -50,7 +50,7 @@
      benunit:
        members: [person, spouse]
   output:
-   childcare_work_condition: true
+   tax_free_childcare_work_condition: true
 
 - name: Couple one working one with incapacity - eligible
   period: 2025
@@ -68,7 +68,7 @@
      benunit:
        members: [person, spouse]
   output:
-   childcare_work_condition: true
+   tax_free_childcare_work_condition: true
 
 - name: Couple one working without qualifying condition - ineligible
   period: 2025
@@ -86,7 +86,7 @@
      benunit:
        members: [person, spouse]
   output:
-   childcare_work_condition: false
+   tax_free_childcare_work_condition: false
 
 - name: Single working adult - eligible
   period: 2025
@@ -100,7 +100,7 @@
      benunit:
        members: [person]
   output:
-   childcare_work_condition: true
+   tax_free_childcare_work_condition: true
 
 - name: Single non-working adult - ineligible
   period: 2025
@@ -114,7 +114,7 @@
      benunit:
        members: [person]
   output:
-   childcare_work_condition: false
+   tax_free_childcare_work_condition: false
 
 - name: Couple both with disability one working - eligible
   period: 2025
@@ -132,7 +132,7 @@
      benunit:
        members: [person, spouse]
   output:
-   childcare_work_condition: true
+   tax_free_childcare_work_condition: true
 
 - name: Single working adult with disability - eligible
   period: 2025
@@ -146,7 +146,7 @@
      benunit:
        members: [person]
   output:
-   childcare_work_condition: true
+   tax_free_childcare_work_condition: true
 
 - name: Single disabled non-working adult - ineligible
   period: 2025
@@ -160,4 +160,4 @@
      benunit:
        members: [person]
   output:
-   childcare_work_condition: false
+   tax_free_childcare_work_condition: false

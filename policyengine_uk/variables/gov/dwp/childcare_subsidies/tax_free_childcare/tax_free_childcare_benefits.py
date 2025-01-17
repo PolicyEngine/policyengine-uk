@@ -1,6 +1,55 @@
 from policyengine_uk.model_api import *
 
 
+class tax_free_childcare_overall_eligible(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = "Overall eligibility for tax-free childcare"
+    documentation = (
+        "Combined result of all tax-free childcare eligibility conditions"
+    )
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        """
+        Combines all eligibility conditions for tax-free childcare using logical AND.
+
+        Args:
+            benunit: The benefit unit
+            period: The time period
+            parameters: Policy parameters
+
+        Returns:
+            bool: Whether all eligibility conditions are met
+        """
+        meets_age_condition = benunit(
+            "tax_free_childcare_child_age_eligible", period
+        ).astype(bool)
+
+        meets_income_condition = benunit.any(
+            benunit.members(
+                "tax_free_childcare_meets_income_requirements", period
+            )
+        ).astype(bool)
+
+        childcare_eligible = benunit(
+            "tax_free_childcare_incompatibilities_childcare_eligible", period
+        ).astype(bool)
+
+        work_eligible = benunit(
+            "tax_free_childcare_work_condition", period
+        ).astype(bool)
+
+        return np.logical_and.reduce(
+            [
+                meets_age_condition,
+                meets_income_condition,
+                childcare_eligible,
+                work_eligible,
+            ]
+        )
+
+
 class tax_free_childcare(Variable):
     value_type = float
     entity = BenUnit
@@ -26,21 +75,8 @@ class tax_free_childcare(Variable):
             period
         ).gov.dwp.childcare_subsidies.tax_free_childcare.contribution
 
-        # Check eligibility conditions with explicit type conversion
-        meets_age_condition = benunit("child_age_eligible", period).astype(
-            bool
-        )
-        meets_income_condition = benunit.any(
-            benunit.members("meets_income_requirements", period)
-        ).astype(bool)
-        childcare_eligible = benunit(
-            "incompatibilities_childcare_eligible", period
-        ).astype(bool)
-
-        # Combine conditions using logical AND
-        is_eligible = np.logical_and.reduce(
-            [meets_age_condition, meets_income_condition, childcare_eligible]
-        )
+        # Get eligibility from separate class
+        is_eligible = benunit("tax_free_childcare_overall_eligible", period)
 
         # Calculate per-child amounts at the person level
         is_child = benunit.members("is_child", period)

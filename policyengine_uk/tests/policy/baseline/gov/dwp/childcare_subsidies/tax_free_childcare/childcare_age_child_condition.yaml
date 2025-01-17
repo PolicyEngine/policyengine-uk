@@ -4,7 +4,7 @@
     age: 10
     is_disabled_for_benefits: false
   output:
-    child_age_eligible: true
+    tax_free_childcare_child_age_eligible: true
 
 - name: Over standard age limit and not disabled - ineligible
   period: 2025
@@ -12,7 +12,7 @@
     age: 12
     is_disabled_for_benefits: false
   output:
-    child_age_eligible: false
+    tax_free_childcare_child_age_eligible: false
 
 - name: Over standard age but under disability limit and disabled - eligible
   period: 2025
@@ -20,7 +20,7 @@
     age: 15
     is_disabled_for_benefits: true
   output:
-    child_age_eligible: true
+    tax_free_childcare_child_age_eligible: true
 
 - name: Over disability age limit and disabled - ineligible
   period: 2025
@@ -28,4 +28,4 @@
     age: 17
     is_disabled_for_benefits: true
   output:
-    child_age_eligible: false
+    tax_free_childcare_child_age_eligible: false
