@@ -21,7 +21,7 @@ class tax_free_childcare_child_age_eligible(Variable):
         # Get age thresholds from parameters
         age_limits = parameters(
             period
-        ).gov.dwp.childcare_subsidies.tax_free_childcare.age
+        ).gov.hmrc.tax_free_childcare.age
         standard_age_limit = age_limits.standard
         disability_age_limit = age_limits.disability
 

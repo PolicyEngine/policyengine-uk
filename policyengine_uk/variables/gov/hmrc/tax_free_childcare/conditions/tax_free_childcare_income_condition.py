@@ -38,13 +38,13 @@ class tax_free_childcare_meets_income_requirements(Variable):
         # Get required income threshold based on age
         income_limits = parameters(
             period
-        ).gov.dwp.childcare_subsidies.tax_free_childcare.income_thresholds
+        ).gov.hmrc.tax_free_childcare.income_thresholds
 
         required_threshold = income_limits.calc(age)
 
         max_income_threshold = parameters(
             period
-        ).gov.dwp.childcare_subsidies.tax_free_childcare.max_income_thresholds
+        ).gov.hmrc.tax_free_childcare.max_income_thresholds
 
         max_income_threshold_quarterly = max_income_threshold / 4
 

@@ -1,0 +1,26 @@
+description: The HMRC department requires minimum earnings thresholds for tax-free childcare eligibility based on the age of parents or guardians.
+metadata:
+  period: year
+  type: single_amount 
+  amount_unit: currency-GBP
+  threshold_unit: year
+  label: Tax-free childcare minimum earnings threshold
+  reference:
+    - title: Childcare Payments Act 2014 - c. 28 - section 9 (national minimum wage for 8 hours a week)
+      href: https://www.legislation.gov.uk/ukpga/2014/28/notes/division/6/3/4
+    - title: Tax-free childcare guidance
+      href: https://www.gov.uk/tax-free-childcare?step-by-step-nav=d78aeaf6-1747-4d72-9619-f16efb4dd89d
+
+brackets:
+  - threshold:
+      2015-01-01: 0
+    amount:
+      2015-01-01: 1_331
+  - threshold:
+      2015-01-01: 18
+    amount:
+      2015-01-01: 1_788
+  - threshold:
+      2015-01-01: 21
+    amount:
+      2015-01-01: 2_379
