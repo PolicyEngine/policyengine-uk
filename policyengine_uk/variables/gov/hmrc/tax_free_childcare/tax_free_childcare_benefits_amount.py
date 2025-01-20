@@ -22,9 +22,7 @@ class tax_free_childcare_benefits_amount(Variable):
             float: The calculated government contribution
         """
         # Get parameters
-        p_tfc = parameters(
-            period
-        ).gov.hmrc.tax_free_childcare.contribution
+        p_tfc = parameters(period).gov.hmrc.tax_free_childcare.contribution
 
         # Get eligibility from separate class
         is_eligible = benunit("tax_free_childcare_eligible", period)
