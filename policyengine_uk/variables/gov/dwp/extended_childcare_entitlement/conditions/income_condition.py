@@ -37,14 +37,14 @@ class income_requirements(Variable):
         # Get required income threshold based on age
         income_limits = parameters(
             period
-        ).gov.dwp.childcare_subsidies.free_childcare.income_thresholds
+        ).gov.dwp.extended_childcare_entitlement.income_thresholds
 
         required_threshold = income_limits.calc(age) * 4
 
         # Get max income threshold to check if they exceed it
         max_income_threshold = parameters(
             period
-        ).gov.dwp.childcare_subsidies.free_childcare.max_income_thresholds
+        ).gov.dwp.extended_childcare_entitlement.max_income_thresholds
 
         # Check if they meet the conditions:
         # 1. Quarterly income is above the required threshold

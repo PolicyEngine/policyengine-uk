@@ -21,7 +21,7 @@ class free_childcare_30_hours(Variable):
         # Retrieve age thresholds for 30 hours eligibility
         age_limits = parameters(
             period
-        ).gov.dwp.childcare_subsidies.free_childcare.age
+        ).gov.dwp.extended_childcare_entitlement.age
         lower_limit_3_years = age_limits.lower_limit_3_years
         upper_limit_4_years = age_limits.upper_limit_4_years
 
