@@ -1,12 +1,12 @@
-description: max income threshold
+description: The department for education limits extended childcare entitlement eligibility to households where individual adjusted income does not exceed this yearly threshold.
 metadata:
-  unit: year
+  unit: currency-GBP
   period: year
-  label: max income threshold
+  label: Extended childcare entitlement maximum adjusted income threshold
   reference:
-    - title: Childcare Act
-      href: https://www.legislation.gov.uk/uksi/2017/1160/pdfs/uksiem_20171160_en.pdf
-    - title: Tax-Free Childcare Guidance
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 15
+      href: https://www.legislation.gov.uk/uksi/2015/448/regulation/15#commentary-key-e27c923eee152accd495af8425536e29
+    - title: Extended childcare entitlement guidance
       href: https://www.gov.uk/check-eligible-free-childcare-if-youre-working?step-by-step-nav=f517cd57-3c18-4bb9-aa8b-1b907e279bf9
 values:
   2015-01-01: 100_000
