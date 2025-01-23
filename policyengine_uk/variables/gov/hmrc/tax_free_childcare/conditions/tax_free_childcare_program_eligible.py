@@ -15,5 +15,9 @@ class tax_free_childcare_program_eligible(Variable):
         Returns:
             bool: True if eligible (no incompatible benefits received), False if receiving any incompatible benefits
         """
-        countable_programs = add(person.benunit, period, ["working_tax_credit", "child_tax_credit", "universal_credit"])
+        countable_programs = add(
+            person.benunit,
+            period,
+            ["working_tax_credit", "child_tax_credit", "universal_credit"],
+        )
         return countable_programs == 0
