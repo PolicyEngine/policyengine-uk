@@ -24,21 +24,19 @@ class tax_free_childcare_eligible(Variable):
         """
         meets_age_condition = benunit(
             "tax_free_childcare_child_age_eligible", period
-        ).astype(bool)
+        )
 
         meets_income_condition = benunit.any(
             benunit.members(
                 "tax_free_childcare_meets_income_requirements", period
             )
-        ).astype(bool)
+        )
 
         childcare_eligible = benunit(
-            "tax_free_childcare_incompatibilities_childcare_eligible", period
-        ).astype(bool)
+            "tax_free_childcare_program_eligible", period
+        )
 
-        work_eligible = benunit(
-            "tax_free_childcare_work_condition", period
-        ).astype(bool)
+        work_eligible = benunit("tax_free_childcare_work_condition", period)
 
         return np.logical_and.reduce(
             [

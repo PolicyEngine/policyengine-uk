@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class tax_free_childcare_child_age_eligible(Variable):
     value_type = bool
     entity = Person
-    label = "Child age eligibility requirements for tax-free childcare"
+    label = "Eligible child for the tax-free childcare"
     documentation = "Whether this person meets the age and disability requirements for eligibility"
     definition_period = YEAR
 
@@ -20,18 +20,14 @@ class tax_free_childcare_child_age_eligible(Variable):
 
         # Get age thresholds from parameters
         age_limits = parameters(period).gov.hmrc.tax_free_childcare.age
-        standard_age_limit = age_limits.standard
-        disability_age_limit = age_limits.disability
 
         # Check disability status
         is_disabled = person("is_disabled_for_benefits", period)
 
         # Check age conditions using parameterized values
-        basic_age_condition = (age < standard_age_limit).astype(bool)
-        age_under_disability_limit = (age < disability_age_limit).astype(bool)
+        basic_age_condition = age < age_limits.standard
+        age_under_disability_limit = age < age_limits.disability
 
         # Combine conditions
-        combined_condition = (age_under_disability_limit & is_disabled).astype(
-            bool
-        )
-        return (basic_age_condition | combined_condition).astype(bool)
+        combined_condition = age_under_disability_limit & is_disabled
+        return basic_age_condition | combined_condition

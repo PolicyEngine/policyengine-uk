@@ -8,6 +8,7 @@ class tax_free_childcare_benefits_amount(Variable):
     documentation = "The amount of government contribution provided through the tax-free childcare scheme"
     definition_period = YEAR
     unit = GBP
+    defined_for = "tax_free_childcare_eligible"
 
     def formula(benunit, period, parameters):
         """
@@ -28,17 +29,13 @@ class tax_free_childcare_benefits_amount(Variable):
         is_eligible = benunit("tax_free_childcare_eligible", period)
 
         # Calculate per-child amounts at the person level
-        is_child = benunit.members("is_child", period)
-        is_disabled = benunit.members("is_disabled_for_benefits", period)
+        person = benunit.members
+        is_child = person("is_child", period)
+        is_disabled = person("is_disabled_for_benefits", period)
 
-        child_amounts = where(
-            is_child,
-            where(is_disabled, p_tfc.disabled_child, p_tfc.standard_child),
-            0,
-        )
+        amount_per_child = (
+            where(is_disabled, p_tfc.disabled_child, p_tfc.standard_child)
+        ) * is_child
 
         # Reduce to benefit unit level by taking maximum
-        max_amount = benunit.max(child_amounts)
-
-        # Apply final eligibility check
-        return where(is_eligible, max_amount, 0)
+        return benunit.sum(amount_per_child)
