@@ -5,9 +5,7 @@ class extended_childcare_entitlement_30_hours_eligibility(Variable):
     value_type = bool
     entity = BenUnit
     label = "Extended childcare entitlement 30 hours eligibility"
-    documentation = (
-        "Whether the benefit unit is eligible for extended childcare entitlement 30 hours"
-    )
+    documentation = "Whether the benefit unit is eligible for extended childcare entitlement 30 hours"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -21,12 +19,16 @@ class extended_childcare_entitlement_30_hours_eligibility(Variable):
 
         # Income requirements
         meets_income = benunit.any(
-            benunit.members("extended_childcare_entitlement_income_requirements", period)
+            benunit.members(
+                "extended_childcare_entitlement_income_requirements", period
+            )
         )
 
         # Alternative eligibility
         alternative_eligible = benunit.any(
-            benunit.members("extended_childcare_entitlement_work_eligibility", period)
+            benunit.members(
+                "extended_childcare_entitlement_work_eligibility", period
+            )
         )
 
         return (age_eligible & meets_income & alternative_eligible).astype(

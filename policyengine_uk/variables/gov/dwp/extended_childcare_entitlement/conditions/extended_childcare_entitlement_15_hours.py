@@ -26,9 +26,7 @@ class extended_childcare_entitlement_15_hours(Variable):
         upper_limit = age_limits.upper_limit_for_first_entitlement
 
         # Check if the child is eligible
-        eligible_15_hours = (age >= lower_limit) & (
-            age <= upper_limit
-        )
+        eligible_15_hours = (age >= lower_limit) & (age <= upper_limit)
 
         # Return the eligibility status
         return eligible_15_hours.astype(bool)
