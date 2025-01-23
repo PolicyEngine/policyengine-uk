@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class extended_childcare_entitlement_15_hours(Variable):
     value_type = bool
     entity = Person
-    label = "Free childcare 15 hours eligibility"
+    label = "Extended childcare entitlement 15 hours eligibility"
     documentation = "Whether this child meets the age requirements for 15 hours of extended childcare entitlement"
     definition_period = YEAR  # Evaluate eligibility on a yearly basis
 

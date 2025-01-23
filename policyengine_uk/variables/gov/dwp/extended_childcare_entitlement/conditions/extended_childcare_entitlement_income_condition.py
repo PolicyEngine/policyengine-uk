@@ -1,11 +1,11 @@
 from policyengine_uk.model_api import *
 
 
-class income_requirements(Variable):
+class extended_childcare_entitlement_income_requirements(Variable):
     value_type = bool
     entity = Person
-    label = "Income requirements and calculations"
-    documentation = "Whether this person meets the income requirements for free childcare based on age and income thresholds"
+    label = "Extended childcare entitlement income requirements"
+    documentation = "Whether this person meets the income requirements for extended childcare entitlement based on age and income thresholds"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -32,7 +32,6 @@ class income_requirements(Variable):
         )
 
         yearly_eligible_income = max_(total_income - investment_income, 0)
-        # quarterly_income = yearly_eligible_income / 4
 
         # Get required income threshold based on age
         income_limits = parameters(

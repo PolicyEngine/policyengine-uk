@@ -1,10 +1,10 @@
 from policyengine_uk.model_api import *
 
 
-class work_eligibility_childcare(Variable):
+class extended_childcare_entitlement_work_eligibility(Variable):
     value_type = bool
     entity = Person
-    label = "Alternative Eligibility for Free Childcare"
+    label = "Extended childcare entitlement work eligibility"
     documentation = "Eligibility maintained for a single parent working or receiving incapacity benefit, or a couple with one or both working."
     definition_period = YEAR
 

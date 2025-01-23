@@ -8,7 +8,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    income_requirements: true
+    extended_childcare_entitlement_income_requirements: true
 
 - name: Just turning 18 with yearly threshold
   period: 2025
@@ -20,7 +20,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    income_requirements: true
+    extended_childcare_entitlement_income_requirements: true
 
 - name: Age 20 meeting 18-20 yearly threshold
   period: 2025
@@ -32,7 +32,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    income_requirements: true
+    extended_childcare_entitlement_income_requirements: true
 
 - name: Age 21+ meeting higher yearly threshold
   period: 2025
@@ -44,7 +44,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    income_requirements: true
+    extended_childcare_entitlement_income_requirements: true
 
 - name: Below yearly threshold after investment deductions
   period: 2025
@@ -56,7 +56,7 @@
     dividend_income: 500  # Leaving £8,500 yearly < £9,516 threshold
     property_income: 0
   output:
-    income_requirements: false
+    extended_childcare_entitlement_income_requirements: false
 
 
 - name: Under 18 below yearly threshold
@@ -69,7 +69,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    income_requirements: false
+    extended_childcare_entitlement_income_requirements: false
 
 - name: Age 18-20 with investment reducing below yearly threshold
   period: 2025
@@ -81,7 +81,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    income_requirements: false
+    extended_childcare_entitlement_income_requirements: false
 
 - name: All investment income
   period: 2025
@@ -93,7 +93,7 @@
     dividend_income: 3000
     property_income: 3000  # All income is investment = £0 eligible
   output:
-    income_requirements: false
+    extended_childcare_entitlement_income_requirements: false
 
 - name: At maximum threshold
   period: 2025
@@ -105,4 +105,4 @@
     dividend_income: 0
     property_income: 0
   output:
-    income_requirements: false
+    extended_childcare_entitlement_income_requirements: false

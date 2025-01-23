@@ -1,0 +1,89 @@
+- name: Family eligible for 15 hours - all conditions met
+  period: 2025
+  input:
+    extended_childcare_entitlement_15_hours: true
+    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_work_eligibility: true
+  output:
+    extended_childcare_entitlement_15_hours_eligibility: true
+
+- name: Family eligible for 30 hours - all conditions met
+  period: 2025
+  input:
+    extended_childcare_entitlement_30_hours: true
+    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_work_eligibility: true
+  output:
+    extended_childcare_entitlement_30_hours_eligibility: true
+
+- name: Family fails age test for 15 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_15_hours: false
+    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_work_eligibility: true
+  output:
+    extended_childcare_entitlement_15_hours_eligibility: false
+
+- name: Family fails age test for 30 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_30_hours: false
+    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_work_eligibility: true
+  output:
+    extended_childcare_entitlement_30_hours_eligibility: false
+
+- name: Family fails income test for 15 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_15_hours: true
+    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_work_eligibility: true
+  output:
+    extended_childcare_entitlement_15_hours_eligibility: false
+
+- name: Family fails income test for 30 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_30_hours: true
+    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_work_eligibility: true
+  output:
+    extended_childcare_entitlement_30_hours_eligibility: false
+
+- name: Family fails work test for 15 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_15_hours: true
+    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_work_eligibility: false
+  output:
+    extended_childcare_entitlement_15_hours_eligibility: false
+
+- name: Family fails work test for 30 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_30_hours: true
+    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_work_eligibility: false
+  output:
+    extended_childcare_entitlement_30_hours_eligibility: false
+
+- name: Family fails all tests for 15 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_15_hours: false
+    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_work_eligibility: false
+  output:
+    extended_childcare_entitlement_15_hours_eligibility: false
+
+- name: Family fails all tests for 30 hours
+  period: 2025
+  input:
+    extended_childcare_entitlement_30_hours: false
+    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_work_eligibility: false
+  output:
+    extended_childcare_entitlement_30_hours_eligibility: false
