@@ -1,12 +1,12 @@
-description: Maximum age for universal free childcare eligibility (3 and 4 year olds)
+description: The Department for Education provides universal childcare entitlement in England for children until a maximum age, when they reach compulsory school age.
 metadata:
   unit: year
   period: year
-  label: Maximum age for universal free childcare
+  label: Maximum age for universal childcare entitlement
   reference:
-    - title: Childcare and early education
+    - title: Childcare Act 2006 - section 7 & part of the regulation that says children are eligible under compulsory school age in the second link. 
+      href: https://www.legislation.gov.uk/ukpga/2006/21/section/7 & https://commonslibrary.parliament.uk/free-childcare-entitlements-for-three-and-four-year-olds-in-england/
+    - title: Ducment for 15 hours free childcare for 3 and 4-year-olds
       href: https://www.gov.uk/help-with-childcare-costs/free-childcare-and-education-for-3-to-4-year-olds?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b
-    - title: Parliamentary Research Briefing - Childcare
-      href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf.#:~:text=All%20three%20and%20four%2Dyear%2Dolds%20in%20England%20are%20eligible,and%20applies%20irrespective%20of%20income.
 values:
-  2015-01-01: 5
+  2015-01-01: 4

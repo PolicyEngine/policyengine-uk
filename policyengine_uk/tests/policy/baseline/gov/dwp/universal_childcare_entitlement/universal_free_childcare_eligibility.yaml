@@ -1,10 +1,10 @@
-- name: Eligible 3
+- name: non eligible
   period: 2025
   input:
-    age: 3
+    age: 2
     is_child: true
   output:
-    universal_free_childcare_eligibility: true
+    universal_childcare_entitlement_eligibility: false
 
 
 - name: Eligible 4
@@ -13,7 +13,7 @@
     age: 4
     is_child: true
   output:
-    universal_free_childcare_eligibility: true
+    universal_childcare_entitlement_eligibility: true
 
 
 - name: non Eligible 5
@@ -22,13 +22,13 @@
     age: 5
     is_child: true
   output:
-    universal_free_childcare_eligibility: false
+    universal_childcare_entitlement_eligibility: false
 
 
-- name: non Eligible 3
+- name: Eligible 3
   period: 2025
   input:
-    age: 3
-    is_child: false
+    age: 3.5
+    is_child: true
   output:
-    universal_free_childcare_eligibility: false
+    universal_childcare_entitlement_eligibility: true

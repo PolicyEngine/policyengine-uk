@@ -1,13 +1,13 @@
 - name: Eligible child gets full hours
   period: 2025
   input:
-    universal_free_childcare_eligibility: true
+    universal_childcare_entitlement_eligibility: true
   output:
-    universal_free_childcare_hours: 570
+    universal_childcare_entitlement_hours: 570
 
 - name: Non eligible child 
   period: 2025
   input:
-    universal_free_childcare_eligibility: false
+    universal_childcare_entitlement_eligibility: false
   output:
-    universal_free_childcare_hours: 0
+    universal_childcare_entitlement_hours: 0

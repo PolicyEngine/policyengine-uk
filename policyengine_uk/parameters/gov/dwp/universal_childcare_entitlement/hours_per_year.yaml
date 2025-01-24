@@ -1,0 +1,12 @@
+description: The Department for Education provides universal childcare entitlement in England, offering specific hours per year.
+metadata:
+  unit: hour
+  period: year
+  label: Annual universal childcare entitlement hours
+  reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 4
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/4/made
+    - title: Ducment for 15 hours free childcare for 3 and 4-year-olds
+      href: https://www.gov.uk/help-with-childcare-costs/free-childcare-and-education-for-3-to-4-year-olds?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b
+values:
+  2015-01-01: 570
