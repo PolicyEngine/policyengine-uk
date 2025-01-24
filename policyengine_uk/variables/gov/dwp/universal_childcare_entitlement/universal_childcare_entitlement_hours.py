@@ -5,9 +5,7 @@ class universal_childcare_entitlement_hours(Variable):
     value_type = float
     entity = BenUnit
     label = "universal childcare entitlement hours per year"
-    documentation = (
-        "Number of free childcare hours per year the benefit unit is entitled to"
-    )
+    documentation = "Number of free childcare hours per year the benefit unit is entitled to"
     definition_period = YEAR
     unit = "hour"
 
@@ -24,7 +22,9 @@ class universal_childcare_entitlement_hours(Variable):
             float: Number of free childcare hours per year
         """
         # Get eligibility status
-        is_eligible = benunit("universal_childcare_entitlement_eligibility", period)
+        is_eligible = benunit(
+            "universal_childcare_entitlement_eligibility", period
+        )
 
         # Use hours directly from parameters file
         hours = parameters(

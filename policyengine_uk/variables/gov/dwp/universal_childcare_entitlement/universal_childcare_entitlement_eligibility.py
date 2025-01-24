@@ -21,9 +21,7 @@ class universal_childcare_entitlement_eligibility(Variable):
             bool: Whether the benefit unit has any eligible children
         """
         # Get parameters
-        p = parameters(
-            period
-        ).gov.dwp.universal_childcare_entitlement.age
+        p = parameters(period).gov.dwp.universal_childcare_entitlement.age
 
         # Get ages of all members in the benefit unit
         age = benunit.members("age", period)
