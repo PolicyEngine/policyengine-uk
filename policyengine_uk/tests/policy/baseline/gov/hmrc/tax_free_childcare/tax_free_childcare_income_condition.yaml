@@ -118,7 +118,8 @@
   period: 2025
   input:
     age: 18
-    total_income: 117152  
+    total_income: 217152  
+    adjusted_net_income: 217152
     private_pension_income: 0
     savings_interest_income: 100
     dividend_income: 0

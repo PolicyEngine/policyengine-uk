@@ -23,7 +23,7 @@ class tax_free_childcare_benefits_amount(Variable):
             float: The calculated government contribution
         """
         # Get parameters
-        p_tfc = parameters(period).gov.hmrc.tax_free_childcare.contribution
+        p = parameters(period).gov.hmrc.tax_free_childcare.contribution
 
         # Get eligibility from separate class
         is_eligible = benunit("tax_free_childcare_eligible", period)
@@ -32,9 +32,13 @@ class tax_free_childcare_benefits_amount(Variable):
         person = benunit.members
         is_child = person("is_child", period)
         is_disabled = person("is_disabled_for_benefits", period)
+        is_blind = person("is_blind", period)
+
+        # Child gets higher amount if either disabled or blind
+        qualifies_for_higher_amount = is_disabled | is_blind
 
         amount_per_child = (
-            where(is_disabled, p_tfc.disabled_child, p_tfc.standard_child)
+            where(qualifies_for_higher_amount, p.disabled_child, p.standard_child)
         ) * is_child
 
         # Reduce to benefit unit level by taking maximum

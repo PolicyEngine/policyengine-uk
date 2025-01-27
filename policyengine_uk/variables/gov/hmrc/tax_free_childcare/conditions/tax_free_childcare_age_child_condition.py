@@ -23,11 +23,12 @@ class tax_free_childcare_child_age_eligible(Variable):
 
         # Check disability status
         is_disabled = person("is_disabled_for_benefits", period)
+        is_blind = person("is_blind", period)
 
         # Check age conditions using parameterized values
         basic_age_condition = age < age_limits.standard
         age_under_disability_limit = age < age_limits.disability
 
         # Combine conditions
-        combined_condition = age_under_disability_limit & is_disabled
+        combined_condition = age_under_disability_limit & (is_disabled | is_blind)
         return basic_age_condition | combined_condition
