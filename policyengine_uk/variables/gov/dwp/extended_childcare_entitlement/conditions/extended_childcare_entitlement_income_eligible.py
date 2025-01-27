@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class extended_childcare_entitlement_income_requirements(Variable):
+class extended_childcare_entitlement_income_eligible(Variable):
     value_type = bool
     entity = Person
     label = "Extended childcare entitlement income requirements"
@@ -9,15 +9,10 @@ class extended_childcare_entitlement_income_requirements(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        """
-        Calculate if a person meets income requirements based on their age and income.
-        Returns:
-            bool: True if they meet the income conditions for their age group, and do not exceed the max threshold.
-        """
         # Get person's characteristics
         age = person("age", period)
 
-        # Calculate eligible income
+        # for this part you can see the details in here: https://www.legislation.gov.uk/ukpga/2014/28/notes/division/6/3/4
         total_income = person("total_income", period)
         # Extract investment incomes to subtract
         investment_income = add(
@@ -45,10 +40,13 @@ class extended_childcare_entitlement_income_requirements(Variable):
             period
         ).gov.dwp.extended_childcare_entitlement.max_income_thresholds
 
+        # Get adjusted net income
+        ani = person("adjusted_net_income", period)
+
         # Check if they meet the conditions:
         # 1. Quarterly income is above the required threshold
-        # 2. Yearly income is below the max threshold
+        # 2. Adjusted net income is below the max threshold
         return (
             (yearly_eligible_income > required_threshold)
-            & (yearly_eligible_income < max_income_threshold)
+            & (ani < max_income_threshold)
         ).astype(bool)

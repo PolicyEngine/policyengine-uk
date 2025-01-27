@@ -1,0 +1,41 @@
+- name: Child too young - ineligible
+  period: 2025
+  input:
+    age: 1.1 
+  output:
+    extended_childcare_second_entitlement_age_condition: false
+
+- name: Child too young - ineligible
+  period: 2025
+  input:
+    age: 2.99  # Just under 3 years
+  output:
+    extended_childcare_second_entitlement_age_condition: false
+
+- name: Child exactly at minimum age - eligible
+  period: 2025
+  input:
+    age: 3.01  # Exactly 3 years
+  output:
+    extended_childcare_second_entitlement_age_condition: true
+
+- name: Child in late eligible range - eligible
+  period: 2025
+  input:
+    age: 3.8  # 3 years and ~10 months
+  output:
+    extended_childcare_second_entitlement_age_condition: true
+
+- name: eligible
+  period: 2025
+  input:
+    age: 4.0  
+  output:
+    extended_childcare_second_entitlement_age_condition: true
+
+- name: Child too old - ineligible
+  period: 2025
+  input:
+    age: 12 
+  output:
+    extended_childcare_second_entitlement_age_condition: false

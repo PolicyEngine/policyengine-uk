@@ -8,7 +8,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
 
 - name: Just turning 18 with yearly threshold
   period: 2025
@@ -20,7 +20,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
 
 - name: Age 20 meeting 18-20 yearly threshold
   period: 2025
@@ -32,7 +32,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
 
 - name: Age 21+ meeting higher yearly threshold
   period: 2025
@@ -44,7 +44,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
 
 - name: Below yearly threshold after investment deductions
   period: 2025
@@ -56,7 +56,7 @@
     dividend_income: 500  # Leaving £8,500 yearly < £9,516 threshold
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_income_eligible: false
 
 
 - name: Under 18 below yearly threshold
@@ -69,7 +69,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_income_eligible: false
 
 - name: Age 18-20 with investment reducing below yearly threshold
   period: 2025
@@ -81,7 +81,7 @@
     dividend_income: 0
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_income_eligible: false
 
 - name: All investment income
   period: 2025
@@ -93,16 +93,17 @@
     dividend_income: 3000
     property_income: 3000  # All income is investment = £0 eligible
   output:
-    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_income_eligible: false
 
 - name: At maximum threshold
   period: 2025
   input:
     age: 35
     total_income: 1000000  # At assumed maximum threshold
+    adjusted_net_income: 1000000
     private_pension_income: 0
     savings_interest_income: 0
     dividend_income: 0
     property_income: 0
   output:
-    extended_childcare_entitlement_income_requirements: false
+    extended_childcare_entitlement_income_eligible: false

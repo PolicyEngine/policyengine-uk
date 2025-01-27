@@ -1,51 +1,53 @@
 from policyengine_uk.model_api import *
 
 
-class extended_childcare_entitlement_work_eligibility(Variable):
+class extended_childcare_entitlement_work_condition(Variable):
     value_type = bool
     entity = Person
-    label = "Extended childcare entitlement work eligibility"
-    documentation = "Eligibility maintained for a single parent working or receiving incapacity benefit, or a couple with one or both working."
+    label = "Work conditions for extended childcare entitlement"
+    documentation = "Whether the person/couple meets work requirements for extended childcare entitlement"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        """
-        Calculate eligibility for free childcare based on the following conditions:
-        - Single parent: working or not working but receiving incapacity benefit
-        - Couple: both working or one working and one receiving incapacity benefit
-        """
-        # Get the benefit unit the person belongs to
         benunit = person.benunit
-        is_adult = person("is_adult", period).astype(bool)
+        is_adult = person("is_adult", period)
 
-        # Check work status (in_work)
+        # Basic work status
         in_work = person("in_work", period).astype(bool)
 
-        # Check if the person is receiving incapacity benefit (simplified condition)
-        has_incapacity_benefit = (
-            person("incapacity_benefit", period) > 0
+        # Get disability/incapacity conditions like we did in childcare age eligibility
+        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
+        standard_disability_benefits = gc.child.disability.eligibility
+        severe_disability_benefits = gc.child.disability.severe.eligibility
+
+        receive_disability_program = (
+            (add(person, period, standard_disability_benefits) > 0)
+            | (add(person, period, severe_disability_benefits) > 0)
         ).astype(bool)
 
-        # Build conditions for Single Parent
-        is_single = (benunit.sum(is_adult) == 1).astype(bool)
-        single_working = is_single & in_work
-        single_not_working_but_eligible = (
-            is_single & ~in_work & has_incapacity_benefit
+        has_incapacity = (person("incapacity_benefit", period) > 0).astype(
+            bool
         )
-
-        # Build conditions for Couples
-        is_couple = (benunit.sum(is_adult) == 2).astype(bool)
-        couple_both_working = is_couple & benunit.all(in_work)
-        couple_one_working_one_disabled = (
-            is_couple
-            & benunit.any(in_work)
-            & benunit.any(has_incapacity_benefit)
+        eligible_based_on_disability = (
+            receive_disability_program | has_incapacity
         ).astype(bool)
 
-        # Return eligibility for single working, single not working but eligible, couple both working, or couple one working one receiving benefit
+        # Build conditions
+        # Single adult conditions
+        is_single = person.benunit("is_single", period)
+        single_working = (is_single & in_work).astype(bool)
+
+        # Couple conditions
+        is_couple = person.benunit("is_couple", period)
+        benunit_has_condition = benunit.any(eligible_based_on_disability)
+        benunit_has_worker = benunit.any(in_work)
+        couple_both_working = (is_couple & benunit.all(in_work)).astype(bool)
+        couple_one_working_one_disabled = (
+            is_couple & benunit_has_worker & benunit_has_condition
+        ).astype(bool)
+
         return (
             single_working
-            | single_not_working_but_eligible
             | couple_both_working
             | couple_one_working_one_disabled
         ).astype(bool)
