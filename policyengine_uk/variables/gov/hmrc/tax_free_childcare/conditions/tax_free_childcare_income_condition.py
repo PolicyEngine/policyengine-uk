@@ -38,10 +38,12 @@ class tax_free_childcare_meets_income_requirements(Variable):
         # Get income thresholds from parameters
         p = parameters(period).gov.hmrc.tax_free_childcare
         required_threshold = p.income_thresholds.calc(age)
-        
+
         # Get adjusted net income for maximum threshold check
         ani = person("adjusted_net_income", period)
         max_income_threshold = p.max_income_thresholds
 
         # Check both minimum quarterly income and maximum adjusted net income
-        return (quarterly_income > required_threshold) & (ani < max_income_threshold)
+        return (quarterly_income > required_threshold) & (
+            ani < max_income_threshold
+        )

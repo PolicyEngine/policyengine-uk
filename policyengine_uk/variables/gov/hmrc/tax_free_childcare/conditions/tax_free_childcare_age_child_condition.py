@@ -30,5 +30,7 @@ class tax_free_childcare_child_age_eligible(Variable):
         age_under_disability_limit = age < age_limits.disability
 
         # Combine conditions
-        combined_condition = age_under_disability_limit & (is_disabled | is_blind)
+        combined_condition = age_under_disability_limit & (
+            is_disabled | is_blind
+        )
         return basic_age_condition | combined_condition

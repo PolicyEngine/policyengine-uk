@@ -38,7 +38,9 @@ class tax_free_childcare_benefits_amount(Variable):
         qualifies_for_higher_amount = is_disabled | is_blind
 
         amount_per_child = (
-            where(qualifies_for_higher_amount, p.disabled_child, p.standard_child)
+            where(
+                qualifies_for_higher_amount, p.disabled_child, p.standard_child
+            )
         ) * is_child
 
         # Reduce to benefit unit level by taking maximum
