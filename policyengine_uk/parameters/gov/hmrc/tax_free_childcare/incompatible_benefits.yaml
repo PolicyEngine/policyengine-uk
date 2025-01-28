@@ -1,0 +1,11 @@
+description: Benefits that make someone ineligible for Tax-Free Childcare
+metadata:
+  reference: none
+  period: year
+  unit: currency-GBP
+  label: none
+values:
+  2015-01-01:
+    - working_tax_credit
+    - child_tax_credit
+    - universal_credit

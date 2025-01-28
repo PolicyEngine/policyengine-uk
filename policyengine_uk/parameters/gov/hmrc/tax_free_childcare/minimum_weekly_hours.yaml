@@ -1,0 +1,9 @@
+description: Weekly hours of work required at minimum wage for tax-free childcare eligibility
+metadata:
+  period: year
+  unit: hour
+  reference:
+    - title: The Childcare Payments (Eligibility) (Amendment) Regulations 2016 - regulation 3
+      href: https://www.legislation.gov.uk/uksi/2016/793/regulation/3/made
+values:
+  2016-01-01: 16

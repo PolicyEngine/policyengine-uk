@@ -5,18 +5,16 @@ class tax_free_childcare_program_eligible(Variable):
     value_type = bool
     entity = Person
     label = "Tax-Free Childcare program eligibility"
-    documentation = "Whether the person's benefit unit meets the incompatibility conditions for tax-free childcare (not receiving WTC, CTC, or UC)"
+    documentation = "Whether the person's benefit unit meets the incompatibility conditions for tax-free childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        credits_list = [
-            "working_tax_credit",
-            "child_tax_credit",
-            "universal_credit",
-        ]
+        p = parameters(
+            period
+        ).gov.hmrc.tax_free_childcare.incompatible_benefits
         countable_programs = add(
             person.benunit,
             period,
-            credits_list,
+            p,
         )
         return countable_programs == 0

@@ -1,0 +1,12 @@
+description: Types of investment income excluded from Tax-Free Childcare eligible income calculation
+metadata:
+  reference: none
+  period: year
+  unit: currency-GBP
+  label: none
+values:
+  2015-01-01:
+    - private_pension_income
+    - savings_interest_income
+    - dividend_income
+    - property_income
