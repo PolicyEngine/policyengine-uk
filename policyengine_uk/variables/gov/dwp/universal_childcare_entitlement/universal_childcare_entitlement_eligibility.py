@@ -12,9 +12,9 @@ class universal_childcare_entitlement_eligibility(Variable):
         # Get parameters
         p = parameters(period).gov.dwp.universal_childcare_entitlement.age
         age = benunit.members("age", period)
-        
+
         return benunit.any(
-            benunit.members("is_child", period) & 
-            (age >= p.min_age) & 
-            (age < p.max_age)
+            benunit.members("is_child", period)
+            & (age >= p.min_age)
+            & (age < p.max_age)
         )
