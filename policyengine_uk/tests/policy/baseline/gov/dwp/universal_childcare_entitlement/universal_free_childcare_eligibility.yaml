@@ -10,7 +10,7 @@
 - name: Eligible 4
   period: 2025
   input:
-    age: 4
+    age: 4.1
     is_child: true
   output:
     universal_childcare_entitlement_eligibility: true
