@@ -9,15 +9,14 @@ class tax_free_childcare_program_eligible(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        """
-        Calculate eligibility based on incompatible benefits.
-
-        Returns:
-            bool: True if eligible (no incompatible benefits received), False if receiving any incompatible benefits
-        """
+        credits_list = [
+            "working_tax_credit",
+            "child_tax_credit",
+            "universal_credit",
+        ]
         countable_programs = add(
             person.benunit,
             period,
-            ["working_tax_credit", "child_tax_credit", "universal_credit"],
+            credits_list,
         )
         return countable_programs == 0

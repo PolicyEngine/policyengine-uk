@@ -9,49 +9,47 @@ class tax_free_childcare_work_condition(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        """Calculate if person meets work conditions for:
-        - Single working adult
-        - Couple where either both work or one works and other has disability/incapacity
-        """
         benunit = person.benunit
         is_adult = person("is_adult", period)
 
         # Basic work status
         in_work = person("in_work", period).astype(bool)
 
-        # Get disability/incapacity conditions like we did in childcare age eligibility
-        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
-        standard_disability_benefits = gc.child.disability.eligibility
-        severe_disability_benefits = gc.child.disability.severe.eligibility
-
-        receive_disability_program = (
-            (add(person, period, standard_disability_benefits) > 0)
-            | (add(person, period, severe_disability_benefits) > 0)
-        ).astype(bool)
-
-        has_incapacity = (person("incapacity_benefit", period) > 0).astype(
-            bool
+        # Get disability parameters and check eligibility
+        p_gc_disability = parameters(
+            period
+        ).gov.dwp.pension_credit.guarantee_credit.child.disability
+        receives_disability_programs = (
+            add(
+                person,
+                period,
+                p_gc_disability.eligibility
+                + p_gc_disability.severe.eligibility,
+            )
+            > 0
         )
+
+        has_incapacity = person("incapacity_benefit", period) > 0
         eligible_based_on_disability = (
-            receive_disability_program | has_incapacity
-        ).astype(bool)
+            receives_disability_programs | has_incapacity
+        )
 
         # Build conditions
         # Single adult conditions
         is_single = person.benunit("is_single", period)
-        single_working = (is_single & in_work).astype(bool)
+        single_working = is_single & in_work
 
         # Couple conditions
         is_couple = person.benunit("is_couple", period)
         benunit_has_condition = benunit.any(eligible_based_on_disability)
         benunit_has_worker = benunit.any(in_work)
-        couple_both_working = (is_couple & benunit.all(in_work)).astype(bool)
+        couple_both_working = is_couple & benunit.all(in_work)
         couple_one_working_one_disabled = (
             is_couple & benunit_has_worker & benunit_has_condition
-        ).astype(bool)
+        )
 
         return (
             single_working
             | couple_both_working
             | couple_one_working_one_disabled
-        ).astype(bool)
+        )

@@ -9,29 +9,24 @@ class tax_free_childcare_meets_income_requirements(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        """
-        Calculate if a person meets income requirements based on their age and income.
-
-        Returns:
-            bool: True if they meet the income conditions for their age group
-        """
         # Get person's characteristics
         age = person("age", period)
 
         # Calculate eligible income
         total_income = person("total_income", period)
-        # Extract investment incomes to subtract
-        investment_income = add(
-            person,
-            period,
-            [
-                "private_pension_income",
-                "savings_interest_income",
-                "dividend_income",
-                "property_income",
-            ],
-        )
 
+        # Define list of investment income types
+        investment_income_types = [
+            "private_pension_income",
+            "savings_interest_income",
+            "dividend_income",
+            "property_income",
+        ]
+
+        # Extract investment incomes to subtract
+        investment_income = add(person, period, investment_income_types)
+
+        # Calculate eligible income after removing investment income
         yearly_eligible_income = max_(total_income - investment_income, 0)
         quarterly_income = yearly_eligible_income / 4
 
@@ -39,11 +34,9 @@ class tax_free_childcare_meets_income_requirements(Variable):
         p = parameters(period).gov.hmrc.tax_free_childcare
         required_threshold = p.income_thresholds.calc(age)
 
-        # Get adjusted net income for maximum threshold check
+        # Get adjusted net income and check against thresholds
         ani = person("adjusted_net_income", period)
-        max_income_threshold = p.max_income_thresholds
 
-        # Check both minimum quarterly income and maximum adjusted net income
         return (quarterly_income > required_threshold) & (
-            ani < max_income_threshold
+            ani < p.max_income_thresholds
         )
