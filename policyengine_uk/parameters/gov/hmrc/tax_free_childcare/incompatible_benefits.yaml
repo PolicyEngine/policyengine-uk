@@ -1,9 +1,11 @@
-description: Benefits that make someone ineligible for Tax-Free Childcare
+description: HMRC limits Tax-Free Childcare to benefit units that do not receive any of these programs.
 metadata:
-  reference: none
+  reference: 
+  - title: The Childcare Payments (Eligibility) Regulations 2015 - Part 16 and 18
+    href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
   period: year
-  unit: currency-GBP
-  label: none
+  unit: GBP
+  label: Tax-free childcare disqualifying benefits
 values:
   2015-01-01:
     - working_tax_credit

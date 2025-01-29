@@ -16,12 +16,12 @@ class tax_free_childcare_meets_income_requirements(Variable):
         total_income = person("total_income", period)
 
         # Get investment income types from parameters
-        investment_income_types = parameters(
+        p_investment = parameters(
             period
         ).gov.hmrc.tax_free_childcare.investment_income_types
 
         # Extract investment incomes to subtract
-        investment_income = add(person, period, investment_income_types)
+        investment_income = add(person, period, p_investment)
 
         # Calculate eligible income after removing investment income
         yearly_eligible_income = max_(total_income - investment_income, 0)
@@ -36,12 +36,11 @@ class tax_free_childcare_meets_income_requirements(Variable):
         ).gov.hmrc.tax_free_childcare.minimum_weekly_hours
 
         # Calculate required threshold (weekly hours * 13 weeks (a quarter) * minimum wage)
+        # Reference for the quarterly logic: part 9.3 in https://www.legislation.gov.uk/uksi/2015/448/regulation/9
         required_threshold = min_wage_rate * weekly_hours * 13
 
         # Get adjusted net income and check against max threshold
         ani = person("adjusted_net_income", period)
         p = parameters(period).gov.hmrc.tax_free_childcare
 
-        return (quarterly_income > required_threshold) & (
-            ani < p.max_income_thresholds
-        )
+        return (quarterly_income > required_threshold) & (ani < p.income_limit)

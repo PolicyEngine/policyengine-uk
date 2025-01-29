@@ -9,12 +9,10 @@ class tax_free_childcare_program_eligible(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        p = parameters(
-            period
-        ).gov.hmrc.tax_free_childcare.incompatible_benefits
+        p = parameters(period).gov.hmrc.tax_free_childcare
         countable_programs = add(
             person.benunit,
             period,
-            p,
+            p.incompatible_benefits,
         )
         return countable_programs == 0
