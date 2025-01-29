@@ -1,0 +1,13 @@
+description: The Department for Education sets an income threshold for Universal Credit recipients to be eligible 15 hours free education and childcare for 2-year old.
+# The threshold is set by statutory guidance, not legislation. A 2018 Department for Education response introduced this net earnings limit for free childcare eligibility.
+metadata:
+  unit: GBP
+  period: year
+  label: Income threshold for Universal Credit recipients
+  reference:
+    - title: Document for Eligibility for free school meals, the early years pupil premium and the free early education entitlement for two-year-olds under Universal Credit - page 5
+      href: https://assets.publishing.service.gov.uk/media/5ab270baed915d4f2d097124/Government_response_FSM_and_EY_entitlements_under_Universal_Credit.pdf?utm_source=chatgpt.com
+    - title: Document for 15 hours free education and childcare for 2-year old
+      href: https://www.gov.uk/help-with-childcare-costs/free-childcare-2-year-olds-claim-benefits?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b
+values:
+  2015-01-01: 15_400

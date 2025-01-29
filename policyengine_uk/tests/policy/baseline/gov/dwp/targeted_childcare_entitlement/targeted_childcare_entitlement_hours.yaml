@@ -1,0 +1,31 @@
+- name: fully eligible
+  period: 2025
+  input:
+    targeted_childcare_entitlement_eligibility: true
+    targeted_childcare_entitlement_combine_benefits: true
+  output:
+    targeted_childcare_entitlement_hours: 570
+
+- name: age eligible only
+  period: 2025
+  input:
+    targeted_childcare_entitlement_eligibility: true
+    targeted_childcare_entitlement_combine_benefits: false
+  output:
+    targeted_childcare_entitlement_hours: 570
+
+- name: benefits eligible only
+  period: 2025
+  input:
+    targeted_childcare_entitlement_eligibility: false
+    targeted_childcare_entitlement_combine_benefits: true
+  output:
+    targeted_childcare_entitlement_hours: 570
+
+- name: not eligible
+  period: 2025
+  input:
+    targeted_childcare_entitlement_eligibility: false
+    targeted_childcare_entitlement_combine_benefits: false
+  output:
+    targeted_childcare_entitlement_hours: 0

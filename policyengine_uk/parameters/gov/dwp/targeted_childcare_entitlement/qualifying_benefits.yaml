@@ -1,0 +1,17 @@
+description: List of qualifying benefits for targeted childcare entitlement eligibility assessment
+metadata:
+  reference:
+    - title: Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - 1.a to 1.g
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/1/made#f00009
+  period: year
+  unit: program
+  label: Qualifying benefits for targeted childcare entitlement (childcare for 2 year olds)
+values:
+  2015-01-01:
+    - jsa_income
+    - esa_income
+    - universal_credit
+    - is_guarantee_credit_eligible
+    - child_tax_credit
+    - working_tax_credit
+    - dla
