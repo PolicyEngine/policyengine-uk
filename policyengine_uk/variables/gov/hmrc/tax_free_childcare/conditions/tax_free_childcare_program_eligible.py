@@ -13,6 +13,6 @@ class tax_free_childcare_program_eligible(Variable):
         countable_programs = add(
             person.benunit,
             period,
-            p.incompatible_benefits,
+            p.disqualifying_benefits,
         )
         return countable_programs == 0

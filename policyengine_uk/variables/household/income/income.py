@@ -168,6 +168,7 @@ class hbai_household_net_income(Variable):
         "basic_income",
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
+        "tax_free_childcare",
     ]
     subtracts = [
         "council_tax",
