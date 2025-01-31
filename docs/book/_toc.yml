@@ -26,4 +26,8 @@ parts:
       - file: programs/gov/dcms/bbc/tv-licence
       - file: programs/gov/revenue_scotland/land-and-buildings-transaction-tax
       - file: programs/gov/wra/land-transaction-tax
-      - file: programs/gov/dwp/childcare_subsidies
+      - file: programs/gov/dwp/tax-free-childcare
+      - file: programs/gov/dwp/extended-childcare-entitlement
+      - file: programs/gov/dwp/universal-childcare-entitlement
+      - file: programs/gov/dwp/targeted-childcare-entitlement
+      - file: programs/gov/dwp/study-childcare-entitlement
