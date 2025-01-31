@@ -1,7 +1,8 @@
 description: HMRC excludes these investment income sources when determining eligibility for Tax-Free Childcare.
 metadata:
   reference:
-  - title: The Childcare Payments (Eligibility) Regulations 2015 - Part 16 and 18
+  - title: The Childcare Payments (Eligibility) Regulations 2015 - Part 9 and 10
+  # This confirms that eligibility is based on earnings from work, meaning investment income is not included in determining whether a person meets the income threshold.
     href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
   period: year
   unit: program
