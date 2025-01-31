@@ -1,8 +1,8 @@
-description: Claimants must work sufficient hours to earn the equivalent of 16 hours per week at National Minimum Wage.
+description: HMRC limits tax-free childcare to benefit units in which each spouse earns at least the product of their minimum wage and this number of hours per week.
 metadata:
   period: year
   unit: hour
-  label: Minimum weekly working hours threshold at National Minimum Wage
+  label: Tax-free childcare weekly work hours minimum
   reference:
     - title: The Childcare Payments (Eligibility) (Amendment) Regulations 2016 - regulation 3
       href: https://www.legislation.gov.uk/uksi/2016/793/regulation/3/made

@@ -3,7 +3,7 @@
   period: 2025
   input:
     age: 15
-    total_income: 5000  
+    total_income: 5_000  
     private_pension_income: 0
     savings_interest_income: 500
     dividend_income: 0
@@ -16,7 +16,7 @@
   period: 2025
   input:
     age: 19
-    total_income: 7000  # £1,750 quarterly
+    total_income: 7_000  # £1,750 quarterly
     private_pension_income: 0
     savings_interest_income: 0
     dividend_income: 0
@@ -28,7 +28,7 @@
   period: 2025
   input:
     age: 18
-    total_income: 4152  
+    total_income: 4_152  
     private_pension_income: 0
     savings_interest_income: 0
     dividend_income: 0
@@ -41,7 +41,7 @@
   period: 2025
   input:
     age: 22
-    total_income: 9000  # £2,250 quarterly
+    total_income: 9_000  
     private_pension_income: 0
     savings_interest_income: 0
     dividend_income: 0
@@ -53,7 +53,7 @@
   period: 2025
   input:
     age: 18
-    total_income: 9516  # £2,379 quarterly
+    total_income: 9_516  
     private_pension_income: 0
     savings_interest_income: 0
     dividend_income: 0
@@ -66,10 +66,10 @@
   period: 2025
   input:
     age: 22
-    total_income: 12000
-    private_pension_income: 3000
+    total_income: 12_000
+    private_pension_income: 3_000
     savings_interest_income: 500
-    dividend_income: 1000
+    dividend_income: 1_000
     property_income: 500
     # Net eligible income: 7000 (£1,750 quarterly)
   output:
@@ -81,8 +81,8 @@
   period: 2025
   input:
     age: 18
-    total_income: 217152  
-    adjusted_net_income: 217152
+    total_income: 217_152  
+    adjusted_net_income: 217_152
     private_pension_income: 0
     savings_interest_income: 100
     dividend_income: 0

@@ -6,7 +6,7 @@
     is_child: true
     is_disabled_for_benefits: false
   output:
-    tax_free_childcare_benefits_amount: 2000
+    tax_free_childcare_benefits_amount: 2_000
 
 - name: Eligible disabled child
   period: 2025
@@ -15,7 +15,7 @@
     is_child: true
     is_disabled_for_benefits: true
   output:
-    tax_free_childcare_benefits_amount: 4000
+    tax_free_childcare_benefits_amount: 4_000
 
 - name: Not eligible due to not being child
   period: 2025
