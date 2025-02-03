@@ -13,16 +13,10 @@ from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
-from policyengine_uk_data import DATASETS
+from policyengine_uk_data import DATASETS, EnhancedFRS_2022_23
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
 COUNTRY_DIR = Path(__file__).parent
-
-
-EnhancedFRS_2022_23 = (
-    "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
-)
-FRS_2022_23 = "hf://policyengine/policyengine-uk-data/frs_2022_23.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
@@ -94,6 +88,8 @@ class Simulation(CoreSimulation):
 
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
+    default_dataset = EnhancedFRS_2022_23
+    default_dataset_year = 2022
     default_tax_benefit_system_instance = system
     default_calculation_period = 2025
     default_input_period = 2025

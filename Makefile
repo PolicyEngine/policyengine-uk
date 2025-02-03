@@ -5,6 +5,7 @@ all: install
 install:
 	pip install -e ".[dev]" --config-settings editable_mode=compat
 	pip install --upgrade jsonschema[format-nongpl]
+	pip install policyengine
 
 format:
 	black . -l 79

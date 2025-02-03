@@ -1,4 +1,4 @@
-from policyengine_uk import Microsimulation
+from policyengine import Simulation
 from policyengine_core.reforms import Reform
 from tqdm import tqdm
 
@@ -9,21 +9,26 @@ smallest_difference = float("inf")
 # Loop over values of private_school_factor from 0.7 to 0.8 in steps of 0.01
 for factor in tqdm([round(x * 0.01, 2) for x in range(70, 91)]):
     # Define the reform with the current private_school_factor value
-    reform = Reform.from_dict(
-        {
-            "gov.contrib.labour.private_school_vat": {
-                "2024-01-01.2100-12-31": 0.2
-            },
-            "gov.simulation.private_school_vat.private_school_factor": {
-                "2024-01-01.2100-12-31": factor
-            },
+    reform = {
+        "gov.contrib.labour.private_school_vat": {
+            "2024-01-01.2100-12-31": 0.2
         },
-        country_id="uk",
-    )
+        "gov.simulation.private_school_vat.private_school_factor": {
+            "2024-01-01.2100-12-31": factor
+        },
+    }
 
     # Run the reformed microsimulation
-    reformed = Microsimulation(reform=reform)
-    reformed.get_holder("attends_private_school").delete_arrays()
+    reformed = Simulation(
+        {
+            "scope": "macro",
+            "baseline": reform,
+            "country": "uk",
+        }
+    ).baseline_simulation
+    reformed.baseline_simulation.get_holder(
+        "attends_private_school"
+    ).delete_arrays()
 
     # Calculate the number of students attending private school in thousands
     private_school_attendance = (

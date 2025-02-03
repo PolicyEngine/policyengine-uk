@@ -1,8 +1,8 @@
-from policyengine_uk import Microsimulation
+from policyengine import Simulation
 import pytest
 
 YEARS = range(2024, 2026)
-baseline = Microsimulation()
+baseline = Simulation({"scope": "macro", "country": "uk"}).baseline_simulation
 
 
 @pytest.mark.parametrize("year", YEARS)
