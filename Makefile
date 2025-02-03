@@ -3,9 +3,9 @@ all: install
 	python setup.py sdist bdist_wheel
 
 install:
+	pip install policyengine
 	pip install -e ".[dev]" --config-settings editable_mode=compat
 	pip install --upgrade jsonschema[format-nongpl]
-	pip install policyengine
 	pip install huggingface_hub
 
 format:
