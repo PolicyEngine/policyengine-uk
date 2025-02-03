@@ -17,4 +17,4 @@ def test_not_nan(year):
             baseline.tax_benefit_system.variables[variable].definition_period
             == "year"
         ):
-            assert ~baseline.calc(variable, period=year).isna().any()
+            assert ~baseline.calculate(variable, period=year).isna().any()

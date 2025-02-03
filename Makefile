@@ -13,7 +13,7 @@ format:
 
 test:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
-	pytest policyengine_uk/tests/
+	pytest policyengine_uk/tests/ -v
 
 documentation:
 	jb clean docs/book
