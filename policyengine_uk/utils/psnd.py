@@ -50,7 +50,7 @@ def project_psnd():
             "country": "uk",
             "scope": "macro",
         }
-    )
+    ).baseline_simulation
 
     pe_psnd = []
 
