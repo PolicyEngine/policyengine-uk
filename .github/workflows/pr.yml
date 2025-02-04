@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.9
+          python-version: 3.10.16
       - name: Install Wheel and Pytest
         run: pip3 install wheel setuptools pytest==5.4.3
       - name: Install libyaml
@@ -30,11 +30,14 @@ jobs:
         run: make test
         env:
           POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
+          HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN}}
       - name: Generate documentation
         run: make documentation
         env:
           POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
+          HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN}}
       - name: Compare baseline change
         run: make compare_psnd
         env:
           POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN}}
+          HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN}}
