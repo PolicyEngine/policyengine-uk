@@ -1,21 +1,19 @@
 from pathlib import Path
 from policyengine_uk.entities import entities
+from policyengine_core.data import Dataset
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.simulations import (
     Simulation as CoreSimulation,
     Microsimulation as CoreMicrosimulation,
 )
-from policyengine_uk_data import (
-    DATASETS,
-    EnhancedFRS_2022_23,
-)
+
 from policyengine_uk_data.storage import STORAGE_FOLDER
 import pandas as pd
 from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
-
+from policyengine_uk_data import DATASETS, EnhancedFRS_2022_23
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
 COUNTRY_DIR = Path(__file__).parent
@@ -90,16 +88,16 @@ class Simulation(CoreSimulation):
 
 class Microsimulation(CoreMicrosimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
-    default_tax_benefit_system_instance = system
     default_dataset = EnhancedFRS_2022_23
-    default_dataset_year = 2024
-    default_calculation_period = 2024
-    default_input_period = 2024
+    default_dataset_year = 2022
+    default_tax_benefit_system_instance = system
+    default_calculation_period = 2025
+    default_input_period = 2025
     default_role = "member"
     max_spiral_loops = 10
     datasets = DATASETS
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, dataset=EnhancedFRS_2022_23, **kwargs):
         super().__init__(*args, **kwargs)
 
         reform = create_structural_reforms_from_parameters(

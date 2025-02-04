@@ -3,7 +3,7 @@ import pandas as pd
 
 def project_psnd():
     from policyengine_uk_data.storage import STORAGE_FOLDER
-    from policyengine_uk import Microsimulation
+    from policyengine import Simulation
 
     OBR_PSND = [2_540, 2_691, 2_793, 2_820, 2_903, 2_995, 3_078]
     tax_ben = pd.read_csv(STORAGE_FOLDER / "tax_benefit.csv")
@@ -45,7 +45,12 @@ def project_psnd():
         "dla",
         "winter_fuel_allowance",
     ]
-    baseline = Microsimulation()
+    baseline = Simulation(
+        {
+            "country": "uk",
+            "scope": "macro",
+        }
+    ).baseline_simulation
 
     pe_psnd = []
 
