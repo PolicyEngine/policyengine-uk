@@ -3,15 +3,17 @@ all: install
 	python setup.py sdist bdist_wheel
 
 install:
+	pip install policyengine
 	pip install -e ".[dev]" --config-settings editable_mode=compat
 	pip install --upgrade jsonschema[format-nongpl]
+	pip install huggingface_hub
 
 format:
 	black . -l 79
 
 test:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
-	pytest policyengine_uk/tests/
+	pytest policyengine_uk/tests/ -v
 
 documentation:
 	jb clean docs/book

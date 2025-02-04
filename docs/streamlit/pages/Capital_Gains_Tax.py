@@ -150,9 +150,9 @@ st.warning("**Again**- in progress.")
 
 @st.cache_resource
 def get_microsimulation():
-    from policyengine_uk import Microsimulation
+    from policyengine import Simulation
 
-    sim = Microsimulation()
+    sim = Simulation({"scope": "micro", "country": "uk"}).baseline_simulation
     sim.calculate("household_net_income")
     return sim
 
