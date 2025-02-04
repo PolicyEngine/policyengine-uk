@@ -2,7 +2,7 @@
   period: 2025
   input:
     extended_childcare_second_entitlement_age_condition: true
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
     extended_childcare_entitlement_work_condition: true
   output:
     extended_childcare_second_entitlement_eligibility: true
@@ -11,7 +11,7 @@
   period: 2025
   input:
     extended_childcare_second_entitlement_age_condition: false
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
     extended_childcare_entitlement_work_condition: true
   output:
     extended_childcare_second_entitlement_eligibility: false
@@ -21,7 +21,7 @@
   period: 2025
   input:
     extended_childcare_first_entitlement_age_condition: false
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
     extended_childcare_entitlement_work_condition: true
   output:
     extended_childcare_first_entitlement_eligibility: false
@@ -31,7 +31,7 @@
   period: 2025
   input:
     extended_childcare_first_entitlement_age_condition: true
-    extended_childcare_entitlement_income_requirements: true
+    extended_childcare_entitlement_income_eligible: true
     extended_childcare_entitlement_work_condition: true
   output:
     extended_childcare_first_entitlement_eligibility: true
