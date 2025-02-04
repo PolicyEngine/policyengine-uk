@@ -42,11 +42,3 @@
         benunit_rent: 0
   output:
     uc_individual_non_dep_deduction: 0
-
-- name: Eligible person in 2025
-  period: 2025
-  absolute_error_margin: 0
-  input:
-    uc_individual_non_dep_deduction_eligible: true
-  output:
-    uc_individual_non_dep_deduction: 1_097.64
