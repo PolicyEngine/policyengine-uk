@@ -168,7 +168,7 @@ class hbai_household_net_income(Variable):
         "basic_income",
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
-        "tax_free_childcare_benefits_amount",
+        "tax_free_childcare",
         # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
     ]
     subtracts = [

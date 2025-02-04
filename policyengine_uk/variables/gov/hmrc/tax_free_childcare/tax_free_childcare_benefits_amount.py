@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class tax_free_childcare_benefits_amount(Variable):
+class tax_free_childcare(Variable):
     value_type = float
     entity = BenUnit
     label = "Tax-free childcare government contribution"

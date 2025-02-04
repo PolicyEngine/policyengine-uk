@@ -47,7 +47,7 @@ class household_benefits(Variable):
         "nhs_budget_change",
         "education_budget_change",
         "other_public_spending_budget_change",
-        "tax_free_childcare_benefits_amount",
+        "tax_free_childcare",
     ]
 
     def formula(household, period, parameters):
