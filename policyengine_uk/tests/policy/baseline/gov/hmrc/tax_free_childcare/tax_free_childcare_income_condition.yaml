@@ -1,13 +1,10 @@
 # Tests for age under 18 bracket (threshold: £1,331 quarterly)
-- name: Under threshold for age 15 with low income and no other income sources - ineligible
+- name: Under threshold for age 15 with low income - ineligible
   period: 2025
   input:
     age: 15
-    total_income: 5_000  
-    private_pension_income: 0
-    savings_interest_income: 500
-    dividend_income: 0
-    property_income: 0
+    employment_income: 4_500
+    self_employment_income: 500
   output:
     tax_free_childcare_meets_income_requirements: false
 
@@ -16,11 +13,8 @@
   period: 2025
   input:
     age: 19
-    total_income: 7_000  # £1,750 quarterly
-    private_pension_income: 0
-    savings_interest_income: 0
-    dividend_income: 0
-    property_income: 0
+    employment_income: 7_000
+    self_employment_income: 0
   output:
     tax_free_childcare_meets_income_requirements: false
 
@@ -28,11 +22,8 @@
   period: 2025
   input:
     age: 18
-    total_income: 4_152  
-    private_pension_income: 0
-    savings_interest_income: 0
-    dividend_income: 0
-    property_income: 0
+    employment_income: 4_152
+    self_employment_income: 0
   output:
     tax_free_childcare_meets_income_requirements: false
 
@@ -41,51 +32,37 @@
   period: 2025
   input:
     age: 22
-    total_income: 9_000  
-    private_pension_income: 0
-    savings_interest_income: 0
-    dividend_income: 0
-    property_income: 0
+    employment_income: 9_000
+    self_employment_income: 0
   output:
     tax_free_childcare_meets_income_requirements: false
 
-- name: age 18 - eligible
+- name: age 19 - eligible
   period: 2025
   input:
-    age: 18
-    total_income: 9_516  
-    private_pension_income: 0
-    savings_interest_income: 0
-    dividend_income: 0
-    property_income: 0
+    age: 19
+    employment_income: 18_716
+    self_employment_income: 3_000
   output:
     tax_free_childcare_meets_income_requirements: true
 
-# Tests with investment income
-- name: Above threshold but with investment income making eligible income below threshold - ineligible
+# Tests with mixed income sources
+- name: Mixed employment and self-employment income
   period: 2025
   input:
     age: 22
-    total_income: 12_000
-    private_pension_income: 3_000
-    savings_interest_income: 500
-    dividend_income: 1_000
-    property_income: 500
-    # Net eligible income: 7000 (£1,750 quarterly)
+    employment_income: 8_000
+    self_employment_income: 4_000
   output:
-    tax_free_childcare_meets_income_requirements: false
+    tax_free_childcare_meets_income_requirements: true
 
-
-# Test age boundary cases
+# Test income limit
 - name: over 100k
   period: 2025
   input:
     age: 18
-    total_income: 217_152  
+    employment_income: 200_000
+    self_employment_income: 17_152
     adjusted_net_income: 217_152
-    private_pension_income: 0
-    savings_interest_income: 100
-    dividend_income: 0
-    property_income: 0
   output:
     tax_free_childcare_meets_income_requirements: false

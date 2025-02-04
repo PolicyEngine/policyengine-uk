@@ -8,21 +8,14 @@ class tax_free_childcare_meets_income_requirements(Variable):
     documentation = "Whether this person meets the income requirements for tax-free childcare based on age and income thresholds"
     definition_period = YEAR
 
-    # Legislation: https://www.legislation.gov.uk/ukdsi/2015/9780111127063 , part 9
-    # Also, you can check here: https://www.gov.uk/tax-free-childcare?step-by-step-nav=d78aeaf6-1747-4d72-9619-f16efb4dd89d , part "your income"
+    # Legislation: https://www.legislation.gov.uk/ukdsi/2015/9780111127063 , part 9 and 10
+    # Also, you can check here: https://www.gov.uk/tax-free-childcare
 
     def formula(person, period, parameters):
-        # Calculate eligible income
-        total_income = person("total_income", period)
-
-        # Get investment income types from parameters
         p = parameters(period).gov.hmrc.tax_free_childcare
 
-        # Extract investment incomes to subtract
-        investment_income = add(person, period, p.investment_income_types)
-
-        # Calculate eligible income after removing investment income
-        yearly_eligible_income = max_(total_income - investment_income, 0)
+        # Calculate eligible income by summing countable sources
+        yearly_eligible_income = add(person, period, p.income.countable_sources)
         quarterly_income = yearly_eligible_income / 4
 
         # Get minimum wage rate using existing variable
@@ -35,4 +28,4 @@ class tax_free_childcare_meets_income_requirements(Variable):
         # Get adjusted net income and check against max threshold
         ani = person("adjusted_net_income", period)
 
-        return (quarterly_income > required_threshold) & (ani < p.income_limit)
+        return (quarterly_income > required_threshold) & (ani < p.income.income_limit)
