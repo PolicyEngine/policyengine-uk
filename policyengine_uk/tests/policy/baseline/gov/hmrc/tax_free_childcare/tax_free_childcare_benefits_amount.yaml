@@ -1,0 +1,36 @@
+# Tests for tax_free_childcare
+- name: Eligible standard child
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: true
+    is_disabled_for_benefits: false
+  output:
+    tax_free_childcare: 2_000
+
+- name: Eligible disabled child
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: true
+    is_disabled_for_benefits: true
+  output:
+    tax_free_childcare: 4_000
+
+- name: Not eligible due to not being child
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: false
+    is_disabled_for_benefits: false
+  output:
+    tax_free_childcare: 0
+
+- name: Not eligible despite being disabled child
+  period: 2025
+  input:
+    tax_free_childcare_eligible: false
+    is_child: true
+    is_disabled_for_benefits: true
+  output:
+    tax_free_childcare: 0
