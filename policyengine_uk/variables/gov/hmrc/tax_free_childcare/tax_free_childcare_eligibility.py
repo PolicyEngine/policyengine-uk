@@ -11,14 +11,15 @@ class tax_free_childcare_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        meets_age_condition = benunit(
-            "tax_free_childcare_child_age_eligible", period
+        meets_age_condition = benunit.any(
+            benunit.members("tax_free_childcare_child_age_eligible", period),
         )
 
         meets_income_condition = benunit.all(
             benunit.members(
                 "tax_free_childcare_meets_income_requirements", period
             )
+            | benunit.members("is_child", period)
         )
 
         childcare_eligible = benunit(

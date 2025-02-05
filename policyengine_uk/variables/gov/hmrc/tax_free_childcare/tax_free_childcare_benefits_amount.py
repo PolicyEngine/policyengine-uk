@@ -29,5 +29,9 @@ class tax_free_childcare(Variable):
             )
         ) * is_child
 
+        capped_by_expense_amount = min_(
+            benunit.members("childcare_expenses", period), amount_per_child
+        )
+
         # Reduce to benefit unit level by taking maximum
-        return benunit.sum(amount_per_child)
+        return benunit.sum(capped_by_expense_amount)

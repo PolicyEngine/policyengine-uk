@@ -5,6 +5,7 @@
     tax_free_childcare_eligible: true
     is_child: true
     is_disabled_for_benefits: false
+    childcare_expenses: 10_000
   output:
     tax_free_childcare: 2_000
 
@@ -14,6 +15,7 @@
     tax_free_childcare_eligible: true
     is_child: true
     is_disabled_for_benefits: true
+    childcare_expenses: 10_000
   output:
     tax_free_childcare: 4_000
 
@@ -23,6 +25,7 @@
     tax_free_childcare_eligible: true
     is_child: false
     is_disabled_for_benefits: false
+    childcare_expenses: 10_000
   output:
     tax_free_childcare: 0
 
@@ -32,5 +35,6 @@
     tax_free_childcare_eligible: false
     is_child: true
     is_disabled_for_benefits: true
+    childcare_expenses: 10_000
   output:
     tax_free_childcare: 0
