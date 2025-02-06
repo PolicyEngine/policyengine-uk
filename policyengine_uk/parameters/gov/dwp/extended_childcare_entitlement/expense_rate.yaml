@@ -1,0 +1,9 @@
+description: Rates for extended childcare entitlement
+metadata:
+  type: single_amount
+  unit: GBP/hour
+  reference:
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022
+      href: https://www.legislation.gov.uk/uksi/2022/1134
+values:
+    2015-01-01: 10

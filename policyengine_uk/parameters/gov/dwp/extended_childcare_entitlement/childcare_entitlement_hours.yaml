@@ -1,0 +1,16 @@
+description: Hours of extended childcare entitlement for eligible children
+metadata:
+  type: single_amount
+  reference:
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022
+      href: https://www.legislation.gov.uk/uksi/2022/1134
+
+first_entitlement:
+  description: Hours of extended childcare first entitlement
+  values:
+    2015-01-01: 15.0
+
+second_entitlement:
+  description: Hours of extended childcare second entitlement
+  values:
+    2015-01-01: 30.0
