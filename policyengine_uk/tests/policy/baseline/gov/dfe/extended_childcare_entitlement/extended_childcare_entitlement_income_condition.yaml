@@ -2,7 +2,7 @@
   period: 2025
   input:
     age: 17
-    employment_income: 10400  
+    employment_income: 10_400  
   output:
     extended_childcare_entitlement_meets_income_requirements: true
 
@@ -10,7 +10,7 @@
   period: 2025
   input:
     age: 20
-    employment_income: 22000 
+    employment_income: 22_000 
   output:
     extended_childcare_entitlement_meets_income_requirements: true
 
@@ -18,7 +18,7 @@
   period: 2025
   input:
     age: 25
-    employment_income: 29600  # Above £2,379 * 4 = £9,516 yearly threshold
+    employment_income: 29_600  # Above £2,379 * 4 = £9,516 yearly threshold
   output:
     extended_childcare_entitlement_meets_income_requirements: true
 
@@ -26,7 +26,7 @@
   period: 2025
   input:
     age: 16
-    employment_income: 5000  # Below £5,324 yearly threshold
+    employment_income: 5_000  # Below £5,324 yearly threshold
   output:
     extended_childcare_entitlement_meets_income_requirements: false
 
@@ -34,7 +34,7 @@
   period: 2025
   input:
     age: 19
-    employment_income: 8000
+    employment_income: 8_000
   output:
     extended_childcare_entitlement_meets_income_requirements: false
 
@@ -42,7 +42,7 @@
   period: 2025
   input:
     age: 35
-    employment_income: 1000000  # At assumed maximum threshold
-    adjusted_net_income: 1000000
+    employment_income: 100_0000  # At assumed maximum threshold
+    adjusted_net_income: 100_0000
   output:
     extended_childcare_entitlement_meets_income_requirements: false

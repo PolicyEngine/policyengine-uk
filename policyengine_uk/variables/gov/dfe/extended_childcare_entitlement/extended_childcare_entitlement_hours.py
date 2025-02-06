@@ -12,7 +12,7 @@ class extended_childcare_entitlement_hours(Variable):
         # Get parameters
         p = parameters(
             period
-        ).gov.dwp.extended_childcare_entitlement.childcare_entitlement_hours
+        ).gov.dfe.extended_childcare_entitlement.childcare_entitlement_hours
 
         # Check age conditions
         meets_first_age_condition = benunit.any(

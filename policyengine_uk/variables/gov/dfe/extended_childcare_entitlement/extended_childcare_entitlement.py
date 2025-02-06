@@ -14,7 +14,7 @@ class extended_childcare_entitlement(Variable):
         weekly_hours = benunit("extended_childcare_entitlement_hours", period)
 
         # Get expense rate from parameters
-        p = parameters(period).gov.dwp.extended_childcare_entitlement
+        p = parameters(period).gov.dfe.extended_childcare_entitlement
 
         # Define constants
         weeks_per_year = 52

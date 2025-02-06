@@ -12,7 +12,7 @@ class extended_childcare_entitlement_meets_income_requirements(Variable):
     # Also, you can check here: https://www.gov.uk/tax-free-childcare
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.dwp.extended_childcare_entitlement
+        p = parameters(period).gov.dfe.extended_childcare_entitlement
 
         # Calculate eligible income by summing countable sources
         yearly_eligible_income = add(

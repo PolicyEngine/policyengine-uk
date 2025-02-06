@@ -7,7 +7,7 @@
     extended_childcare_entitlement_work_condition: true
     is_child: false
   output:
-    extended_childcare_entitlement_hours: 30.0
+    extended_childcare_entitlement_hours: 30
 
 - name: eligible for 15 hours - all first conditions met
   period: 2025
@@ -18,7 +18,7 @@
     extended_childcare_entitlement_work_condition: true
     is_child: false
   output:
-    extended_childcare_entitlement_hours: 15.0
+    extended_childcare_entitlement_hours: 15
 
 - name: non eligible - no age conditions met
   period: 2025
@@ -29,7 +29,7 @@
     extended_childcare_entitlement_work_condition: true
     is_child: false
   output:
-    extended_childcare_entitlement_hours: 0.0
+    extended_childcare_entitlement_hours: 0
 
 - name: non eligible - income requirements not met
   period: 2025
@@ -40,7 +40,7 @@
     extended_childcare_entitlement_work_condition: true
     is_child: false
   output:
-    extended_childcare_entitlement_hours: 0.0
+    extended_childcare_entitlement_hours: 0
 
 - name: non eligible - work condition not met
   period: 2025
@@ -51,7 +51,7 @@
     extended_childcare_entitlement_work_condition: false
     is_child: false
   output:
-    extended_childcare_entitlement_hours: 0.0
+    extended_childcare_entitlement_hours: 0
 
 - name: child is always considered to meet income requirements
   period: 2025
@@ -62,4 +62,4 @@
     extended_childcare_entitlement_work_condition: true
     is_child: true
   output:
-    extended_childcare_entitlement_hours: 30.0
+    extended_childcare_entitlement_hours: 30
