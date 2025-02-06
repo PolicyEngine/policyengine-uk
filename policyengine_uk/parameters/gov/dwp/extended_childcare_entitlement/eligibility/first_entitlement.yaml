@@ -1,4 +1,4 @@
-description: The Department for Education provides the extended childcare entitlement to children this age or older
+description: The Department for Education provides the extended childcare entitlement to children aged 9 months to 2 years.
 label: Age eligibility for extended childcare first entitlement
 metadata:
   type: single_amount
@@ -7,7 +7,7 @@ metadata:
     - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022 - Regulations 13
       href: https://www.legislation.gov.uk/uksi/2022/1134/regulation/13
     - title: Extended childcare entitlement guidance
-      href: https://www.gov.uk/check-eligible-free-childcare-if-youre-working?step-by-step-nav=f517cd57-3c18-4b...
+      href: https://www.gov.uk/check-eligible-free-childcare-if-youre-working?step-by-step-nav=f517cd57-3c18-4b
 
 brackets:
   - threshold:
@@ -15,7 +15,7 @@ brackets:
     amount:
       2015-01-01: false
   - threshold:
-      2015-01-01: 0.75
+      2015-01-01: 0.75 # 9 months
     amount:
       2015-01-01: true
   - threshold:

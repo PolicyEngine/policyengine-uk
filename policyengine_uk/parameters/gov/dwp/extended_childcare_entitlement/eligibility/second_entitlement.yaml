@@ -1,4 +1,4 @@
-description: The Department for Education provides the extended childcare entitlement to children this age or older
+description: The Department for Education provides the extended childcare entitlement to children aged 3 to 4 years.
 label: Age eligibility for extended childcare second entitlement
 metadata:
   type: single_amount
@@ -7,7 +7,7 @@ metadata:
     - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022 - Regulations 14 and section 7(1)(b) of the 2006 Act
       href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/3/made
     - title: Extended childcare entitlement guidance
-      href: https://www.gov.uk/check-eligible-free-childcare-if-youre-working?step-by-step-nav=f517cd57-3c18-4b...
+      href: https://www.gov.uk/check-eligible-free-childcare-if-youre-working?step-by-step-nav=f517cd57-3c18-4bb9-aa8b-1b907e279bf9
 
 brackets:
   - threshold:

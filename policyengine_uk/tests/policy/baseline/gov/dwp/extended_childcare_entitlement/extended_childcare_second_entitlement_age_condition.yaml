@@ -26,7 +26,7 @@
   output:
     extended_childcare_second_entitlement_age_condition: true
 
-- name: eligible
+- name: eligible - 4 years old
   period: 2025
   input:
     age: 4.0  

@@ -26,14 +26,14 @@
   output:
     extended_childcare_first_entitlement_age_condition: true
 
-- name: eligible
+- name: eligible - more than 2 years old
   period: 2025
   input:
     age: 2.1  # 25 months
   output:
     extended_childcare_first_entitlement_age_condition: true
 
-- name: eligible 1
+- name: eligible - 6 years old
   period: 2025
   input:
     age: 6  # 25 months

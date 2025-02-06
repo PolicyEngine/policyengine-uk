@@ -4,8 +4,8 @@ from policyengine_uk.model_api import *
 class extended_childcare_second_entitlement_eligibility(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Extended childcare entitlement eligibility"
-    documentation = "Whether the benefit unit is eligible for extended childcare entitlement"
+    label = "Extended childcare second entitlement total eligibility"
+    documentation = "Whether the benefit unit is eligible for extended childcare second entitlement"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
@@ -30,6 +30,4 @@ class extended_childcare_second_entitlement_eligibility(Variable):
             )
         )
 
-        return (age_eligible & meets_income & alternative_eligible).astype(
-            bool
-        )
+        return age_eligible & meets_income & alternative_eligible

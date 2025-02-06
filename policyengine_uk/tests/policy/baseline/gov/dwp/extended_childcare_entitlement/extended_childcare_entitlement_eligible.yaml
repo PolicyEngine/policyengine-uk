@@ -1,4 +1,4 @@
-- name: eligible 
+- name: eligible - all conditions met
   period: 2025
   input:
     extended_childcare_second_entitlement_age_condition: true
@@ -7,7 +7,7 @@
   output:
     extended_childcare_second_entitlement_eligibility: true
 
-- name: non eligible 
+- name: non eligible - age not met
   period: 2025
   input:
     extended_childcare_second_entitlement_age_condition: false
@@ -17,7 +17,7 @@
     extended_childcare_second_entitlement_eligibility: false
 
 
-- name: non eligible 
+- name: non eligible - age not met
   period: 2025
   input:
     extended_childcare_first_entitlement_age_condition: false
@@ -27,7 +27,7 @@
     extended_childcare_first_entitlement_eligibility: false
 
 
-- name: eligible
+- name: eligible - all conditions met
   period: 2025
   input:
     extended_childcare_first_entitlement_age_condition: true

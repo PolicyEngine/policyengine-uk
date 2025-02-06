@@ -46,7 +46,6 @@ class extended_childcare_entitlement_income_eligible(Variable):
         # Check if they meet the conditions:
         # 1. Quarterly income is above the required threshold
         # 2. Adjusted net income is below the max threshold
-        return (
-            (yearly_eligible_income > required_threshold)
-            & (ani < max_income_threshold)
-        ).astype(bool)
+        return (yearly_eligible_income > required_threshold) & (
+            ani < max_income_threshold
+        )
