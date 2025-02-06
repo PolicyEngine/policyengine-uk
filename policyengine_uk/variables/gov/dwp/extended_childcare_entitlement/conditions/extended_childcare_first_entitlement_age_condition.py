@@ -11,5 +11,5 @@ class extended_childcare_first_entitlement_age_condition(Variable):
     def formula(person, period, parameters):
         p = parameters(
             period
-        ).gov.dwp.extended_childcare_entitlement.eligibility
+        ).gov.dwp.extended_childcare_entitlement.age_eligibility
         return p.first_entitlement.calc(person("age", period))
