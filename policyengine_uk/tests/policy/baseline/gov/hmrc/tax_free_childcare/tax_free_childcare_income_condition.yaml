@@ -1,0 +1,68 @@
+# Tests for age under 18 bracket (threshold: £1,331 quarterly)
+- name: Under threshold for age 15 with low income - ineligible
+  period: 2025
+  input:
+    age: 15
+    employment_income: 4_500
+    self_employment_income: 500
+  output:
+    tax_free_childcare_meets_income_requirements: false
+
+# Tests for age 18-20 bracket (threshold: £1,788 quarterly)
+- name: Under threshold for age 19 - ineligible
+  period: 2025
+  input:
+    age: 19
+    employment_income: 7_000
+    self_employment_income: 0
+  output:
+    tax_free_childcare_meets_income_requirements: false
+
+- name: At threshold for age 18 - eligible
+  period: 2025
+  input:
+    age: 18
+    employment_income: 4_152
+    self_employment_income: 0
+  output:
+    tax_free_childcare_meets_income_requirements: false
+
+# Tests for age 21+ bracket (threshold: £2,379 quarterly)
+- name: Under threshold for age 22 - ineligible
+  period: 2025
+  input:
+    age: 22
+    employment_income: 9_000
+    self_employment_income: 0
+  output:
+    tax_free_childcare_meets_income_requirements: false
+
+- name: age 19 - eligible
+  period: 2025
+  input:
+    age: 19
+    employment_income: 18_716
+    self_employment_income: 3_000
+  output:
+    tax_free_childcare_meets_income_requirements: true
+
+# Tests with mixed income sources
+- name: Mixed employment and self-employment income
+  period: 2025
+  input:
+    age: 22
+    employment_income: 8_000
+    self_employment_income: 4_000
+  output:
+    tax_free_childcare_meets_income_requirements: true
+
+# Test income limit
+- name: over 100k
+  period: 2025
+  input:
+    age: 18
+    employment_income: 200_000
+    self_employment_income: 17_152
+    adjusted_net_income: 217_152
+  output:
+    tax_free_childcare_meets_income_requirements: false

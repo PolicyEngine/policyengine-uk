@@ -1,0 +1,38 @@
+- name: Eligible - does NOT receive any of these benefits
+  period: 2025
+  input:
+    working_tax_credit: 0
+    child_tax_credit: 0
+    universal_credit: 0
+  output:
+    tax_free_childcare_program_eligible: True
+
+
+- name: Non eligible - receives benefits
+  period: 2025
+  input:
+    working_tax_credit: 1
+    child_tax_credit: 0
+    universal_credit: 0
+  output:
+    tax_free_childcare_program_eligible: False
+
+
+- name: Non eligible - receives benefits
+  period: 2025
+  input:
+    working_tax_credit: 1
+    child_tax_credit: 1
+    universal_credit: 0
+  output:
+    tax_free_childcare_program_eligible: False
+
+
+- name: Non eligible - receives benefits
+  period: 2025
+  input:
+    working_tax_credit: 1
+    child_tax_credit: 1
+    universal_credit: 1
+  output:
+    tax_free_childcare_program_eligible: False
