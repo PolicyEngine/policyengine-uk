@@ -17,7 +17,9 @@ class extended_childcare_entitlement(Variable):
         p = parameters(period).gov.dfe.extended_childcare_entitlement
 
         # Define constants
-        weeks_per_year = 52
+        # information on this link: https://www.childcarechoices.gov.uk/15-and-30-hours-childcare-support/working-families/eligibility
+        # DfE considers 38 weeks per year (not whole year).
+        weeks_per_year = 38
 
         # Calculate annual expenses
         return weekly_hours * p.expense_rate * weeks_per_year

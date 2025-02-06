@@ -1,9 +1,9 @@
-description: Rates for extended childcare entitlement
+description: Rates for covert hours to expenses for extended childcare entitlement
 metadata:
   type: single_amount
   unit: GBP/hour
   reference:
-    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022
-      href: https://www.legislation.gov.uk/uksi/2022/1134
+    - title: different rates for extended childcare entitlement, please follow the links
+      href: https://www.nurseryworld.co.uk/content/news/dfe-confirms-extended-30-hours-funding-rates-but-sector-says-they-dont-reflect-the-real-delivery-cost/ and https://www.gov.uk/government/news/childcare-settings-receive-cash-boost-as-funding-rates-increase
 values:
-    2015-01-01: 10
+    2015-01-01: 8.5

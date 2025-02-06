@@ -3,18 +3,18 @@
   input:
     extended_childcare_entitlement_hours: 30
   output:
-    extended_childcare_entitlement: 15_600  # 30 hours * £10 * 52 weeks
+    extended_childcare_entitlement: 9_690  # 30 hours * £8.5 * 38 weeks
 
 - name: Annual expenses for 15 hours entitlement
   period: 2025
   input:
     extended_childcare_entitlement_hours: 15
   output:
-    extended_childcare_entitlement: 7_800  # 15 hours * £10 * 52 weeks
+    extended_childcare_entitlement: 4_845  # 15 hours * £8.5 * 38 weeks
 
 - name: No expenses for zero hours
   period: 2025
   input:
     extended_childcare_entitlement_hours: 0
   output:
-    extended_childcare_entitlement: 0  # 0 hours * £10 * 52 weeks
+    extended_childcare_entitlement: 0  # 0 hours
