@@ -19,7 +19,8 @@ class extended_childcare_first_entitlement_eligibility(Variable):
         # Income requirements
         meets_income = benunit.any(
             benunit.members(
-                "extended_childcare_entitlement_income_eligible", period
+                "extended_childcare_entitlement_meets_income_requirements",
+                period,
             )
         )
 
