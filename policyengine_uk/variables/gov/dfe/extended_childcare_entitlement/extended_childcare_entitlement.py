@@ -20,7 +20,7 @@ class extended_childcare_entitlement(Variable):
 
         # Get weeks per year from parameters instead of hard-coding
         weeks_per_year = p.weeks_per_year
-        
+
         age = benunit.members("age", period)
         subsidy_per_hour = p.expense_rate.calc(age)
         subsidy_per_child = weekly_hours_per_child * subsidy_per_hour
