@@ -1,16 +1,38 @@
 description: Hours of extended childcare entitlement for eligible children
 metadata:
   type: single_amount
+  threshold_unit: year
   reference:
     - title: Childcare Act 2016 - chapter 5.1
       href: https://www.legislation.gov.uk/ukpga/2016/5 and https://www.gov.uk/check-eligible-free-childcare-if-youre-working
 
-first_entitlement:
-  description: Hours of extended childcare first entitlement
-  values:
-    2015-01-01: 15.0
-
-second_entitlement:
-  description: Hours of extended childcare second entitlement
-  values:
-    2015-01-01: 30.0
+brackets:
+- threshold:
+    2015-01-01: 0
+  amount:
+    2015-01-01: 0
+- threshold:
+    2015-01-01: 1
+    2025-01-01: 0.75
+  amount:
+    2015-01-01: 0
+    2025-01-01: 15
+    2026-01-01: 30
+- threshold:
+    2015-01-01: 2
+  amount:
+    2015-01-01: 0
+    2024-01-01: 15
+    2026-01-01: 30
+- threshold:
+    2015-01-01: 3
+  amount:
+    2015-01-01: 30
+- threshold:
+    2015-01-01: 4
+  amount:
+    2015-01-01: 30
+- threshold:
+    2015-01-01: 5
+  amount:
+    2015-01-01: 0

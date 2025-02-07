@@ -14,19 +14,6 @@ class extended_childcare_entitlement_hours(Variable):
             period
         ).gov.dfe.extended_childcare_entitlement.childcare_entitlement_hours
 
-        # Check age conditions
-        meets_first_age_condition = benunit.any(
-            benunit.members(
-                "extended_childcare_first_entitlement_age_condition", period
-            ),
-        )
-
-        meets_second_age_condition = benunit.any(
-            benunit.members(
-                "extended_childcare_second_entitlement_age_condition", period
-            ),
-        )
-
         # Check income condition (same for both)
         meets_income_condition = benunit.all(
             benunit.members(
@@ -37,29 +24,14 @@ class extended_childcare_entitlement_hours(Variable):
         )
 
         # Check work condition (same for both)
-        work_eligible = benunit(
-            "extended_childcare_entitlement_work_condition", period
+        work_eligible = (
+            benunit("extended_childcare_entitlement_work_condition", period)
+            > 0
         )
 
-        # Calculate full eligibility for each entitlement
-        first_entitlement = np.logical_and.reduce(
-            [
-                meets_first_age_condition,
-                meets_income_condition,
-                work_eligible,
-            ]
-        )
+        child_ages = benunit.members("age", period)
 
-        second_entitlement = np.logical_and.reduce(
-            [
-                meets_second_age_condition,
-                meets_income_condition,
-                work_eligible,
-            ]
-        )
+        hours_per_child = p.calc(child_ages)
+        total_hours = benunit.sum(hours_per_child)
 
-        # Return hours based on eligibility
-        return select(
-            [second_entitlement, first_entitlement, True],
-            [p.second_entitlement, p.first_entitlement, 0.0],
-        )
+        return total_hours * meets_income_condition * work_eligible
