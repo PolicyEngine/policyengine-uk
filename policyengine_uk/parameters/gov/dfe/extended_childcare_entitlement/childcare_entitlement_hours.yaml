@@ -2,6 +2,7 @@ description: Hours of extended childcare entitlement for eligible children
 metadata:
   type: single_amount
   threshold_unit: year
+  amount_unit: hour
   reference:
     - title: Childcare Act 2016 - chapter 5.1
       href: https://www.legislation.gov.uk/ukpga/2016/5 and https://www.gov.uk/check-eligible-free-childcare-if-youre-working

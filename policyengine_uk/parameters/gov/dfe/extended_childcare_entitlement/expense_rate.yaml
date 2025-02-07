@@ -1,9 +1,24 @@
 description: Rates for covert hours to expenses for extended childcare entitlement
 metadata:
   type: single_amount
-  unit: GBP/hour
+  threshold_unit: year
+  amount_unit: currency-GBP
   reference:
     - title: different rates for extended childcare entitlement, please follow the links
       href: https://www.nurseryworld.co.uk/content/news/dfe-confirms-extended-30-hours-funding-rates-but-sector-says-they-dont-reflect-the-real-delivery-cost/ and https://www.gov.uk/government/news/childcare-settings-receive-cash-boost-as-funding-rates-increase
-values:
-    2015-01-01: 8.5
+    - title: Commons Library
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/
+
+brackets:
+- threshold:
+    2015-01-01: 0
+  amount:
+    2015-01-01: 11.22
+- threshold:
+    2015-01-01: 2
+  amount:
+    2015-01-01: 8.28
+- threshold:
+    2015-01-01: 3
+  amount:
+    2015-01-01: 5.88
