@@ -1,0 +1,59 @@
+- name: eligible for mixed hours - family with multiple children
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 35
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 1
+      parent2:
+        age: 33
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 1
+      child1:
+        age: 2
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 0
+      child2:
+        age: 3
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 0
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1, child2]
+  output:
+    extended_childcare_entitlement_hours: [0, 0, 15, 30]
+
+- name: not eligible - family with multiple children but conditions not met
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 35
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 1
+      parent2:
+        age: 33
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 1
+      child1:
+        age: 2
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 0
+      child2:
+        age: 3
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 0
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1, child2]
+  output:
+    extended_childcare_entitlement_hours: [0, 0, 0, 0]
