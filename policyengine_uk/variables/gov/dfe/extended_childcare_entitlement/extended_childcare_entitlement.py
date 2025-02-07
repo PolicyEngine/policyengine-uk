@@ -18,10 +18,9 @@ class extended_childcare_entitlement(Variable):
         # Get expense rate from parameters
         p = parameters(period).gov.dfe.extended_childcare_entitlement
 
-        # Define constants
-        # information on this link: https://www.childcarechoices.gov.uk/15-and-30-hours-childcare-support/working-families/eligibility
-        # DfE considers 38 weeks per year (not whole year).
-        weeks_per_year = 38
+        # Get weeks per year from parameters instead of hard-coding
+        weeks_per_year = p.weeks_per_year
+        
         age = benunit.members("age", period)
         subsidy_per_hour = p.expense_rate.calc(age)
         subsidy_per_child = weekly_hours_per_child * subsidy_per_hour
