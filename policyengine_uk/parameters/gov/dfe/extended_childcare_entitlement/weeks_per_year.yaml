@@ -1,4 +1,4 @@
-description: Number of weeks per year for which extended childcare entitlement is provided by the Department for Education
+description: The Department for Education provides extended childcare entitlement for specified weeks per year.
 metadata:
   period: year
   unit: week

@@ -11,15 +11,15 @@ metadata:
      href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/
 
 brackets:
-- threshold:
-   2015-01-01: 0
-  amount:
-   2015-01-01: 11.22
-- threshold:
-   2015-01-01: 2
-  amount:
-   2015-01-01: 8.28
-- threshold:
-   2015-01-01: 3
-  amount:
-   2015-01-01: 5.88
+ - threshold:
+     2015-01-01: 0
+   amount:
+     2015-01-01: 11.22
+ - threshold:
+     2015-01-01: 2
+   amount:
+     2015-01-01: 8.28
+ - threshold:
+     2015-01-01: 3
+   amount:
+     2015-01-01: 5.88
