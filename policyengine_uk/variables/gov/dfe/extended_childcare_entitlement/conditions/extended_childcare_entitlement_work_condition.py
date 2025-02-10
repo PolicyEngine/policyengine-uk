@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.benunit import FamilyType
 
 
 class extended_childcare_entitlement_work_condition(Variable):
@@ -10,49 +11,55 @@ class extended_childcare_entitlement_work_condition(Variable):
 
     def formula(person, period, parameters):
         benunit = person.benunit
-        is_adult = person("is_adult", period)
+        family_type = benunit("family_type", period)
+        age = person("age", period)
         is_child = person("is_child", period)
-
-        # Basic work status
         in_work = person("in_work", period)
 
-        # Get disability parameters and check eligibility
-        p_gc_disability = parameters(
-            period
-        ).gov.dwp.pension_credit.guarantee_credit.child.disability
-        receives_disability_programs = (
+        # Get disability status
+        eligible_based_on_disability = (
             add(
                 person,
                 period,
-                p_gc_disability.eligibility
-                + p_gc_disability.severe.eligibility,
+                parameters(
+                    period
+                ).gov.dwp.pension_credit.guarantee_credit.child.disability.eligibility
+                + parameters(
+                    period
+                ).gov.dwp.pension_credit.guarantee_credit.child.disability.severe.eligibility,
             )
             > 0
+        ) | (person("incapacity_benefit", period) > 0)
+
+        # Check if person is among two oldest
+        benunit_ages = benunit.members("age", period)
+        first_highest = benunit.max(benunit_ages)
+        is_among_two_oldest = (age == first_highest) | (
+            age
+            == benunit.max(
+                where(benunit_ages < first_highest, benunit_ages, -inf)
+            )
         )
 
-        has_incapacity = person("incapacity_benefit", period) > 0
-        eligible_based_on_disability = (
-            receives_disability_programs | has_incapacity
+        # Eligibility conditions
+        lone_parent_eligible = (
+            (family_type == FamilyType.LONE_PARENT)
+            & in_work
+            & (age == first_highest)
         )
 
-        # Build conditions
-        # Single adult conditions
-        is_single = person.benunit("is_single", period)
-        single_working = is_single & in_work
-
-        # Couple conditions
-        is_couple = person.benunit("is_couple", period)
-        benunit_has_condition = benunit.any(
-            eligible_based_on_disability & is_adult
-        )
-        benunit_has_worker = benunit.any(in_work & is_adult)
-        couple_both_working = is_couple & benunit.all(in_work | is_child)
-        couple_one_working_one_disabled = (
-            is_couple & benunit_has_worker & benunit_has_condition
+        couple_eligible = (
+            (family_type == FamilyType.COUPLE_WITH_CHILDREN)
+            & is_among_two_oldest
+            & (
+                benunit.all(where(is_among_two_oldest, in_work, True))
+                | (
+                    benunit.any(in_work & is_among_two_oldest)
+                    & benunit.any(
+                        eligible_based_on_disability & is_among_two_oldest
+                    )
+                )
+            )
         )
 
-        return (
-            single_working
-            | couple_both_working
-            | couple_one_working_one_disabled
-        )
+        return where(is_child, False, lone_parent_eligible | couple_eligible)

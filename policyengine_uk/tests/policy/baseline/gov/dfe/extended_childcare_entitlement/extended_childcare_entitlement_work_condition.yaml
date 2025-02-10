@@ -1,127 +1,120 @@
-- name: Couple both working - eligible
+- name: Lone parent working - eldest - eligible
   period: 2025
   input:
     people:
-      person:
+      parent:
+        age: 35
         is_adult: true
         in_work: true
         incapacity_benefit: 0
-      spouse:
-        is_adult: true
-        in_work: true
-        incapacity_benefit: 0
+      child:
+        age: 4
+        is_child: true
     benunits:
       benunit:
-        members: [person, spouse]
+        members: [parent, child]
   output:
-    extended_childcare_entitlement_work_condition: true
+    extended_childcare_entitlement_work_condition: [1, 0]
 
-- name: Couple neither working - ineligible
+- name: Lone parent working - younger adult - ineligible
   period: 2025
   input:
     people:
-      person:
+      parent1:
+        age: 40
         is_adult: true
         in_work: false
-        incapacity_benefit: 0
-      spouse:
-        is_adult: true
-        in_work: false
-        incapacity_benefit: 0
-    benunits:
-      benunit:
-        members: [person, spouse]
-  output:
-    extended_childcare_entitlement_work_condition: false
-
-- name: Couple one working one with disability - eligible
-  period: 2025
-  input:
-    people:
-      person:
+      parent2:
+        age: 35
         is_adult: true
         in_work: true
-        incapacity_benefit: 0
-      spouse:
-        is_adult: true
-        in_work: false
-        incapacity_benefit: 100
+      child:
+        age: 4
+        is_child: true
     benunits:
       benunit:
-        members: [person, spouse]
+        members: [parent1, parent2, child]
   output:
-    extended_childcare_entitlement_work_condition: true
+    extended_childcare_entitlement_work_condition: [0, 0, 0]
 
-- name: Couple one working without qualifying condition - ineligible
+- name: Couple with children both working - eligible
   period: 2025
   input:
     people:
-      person:
+      parent1:
+        age: 40
         is_adult: true
         in_work: true
-        incapacity_benefit: 0
-      spouse:
-        is_adult: true
-        in_work: false
-        incapacity_benefit: 0
-    benunits:
-      benunit:
-        members: [person, spouse]
-  output:
-    extended_childcare_entitlement_work_condition: false
-
-- name: Single working adult - eligible
-  period: 2025
-  input:
-    people:
-      person:
+      parent2:
+        age: 38
         is_adult: true
         in_work: true
-        incapacity_benefit: 0
+      child:
+        age: 4
+        is_child: true
     benunits:
       benunit:
-        members: [person]
+        members: [parent1, parent2, child]
   output:
-    extended_childcare_entitlement_work_condition: true
+    extended_childcare_entitlement_work_condition: [1, 1, 0]
 
-- name: Single non-working adult - ineligible
+- name: Couple with children one working (eldest) one not - ineligible
   period: 2025
   input:
     people:
-      person:
-        is_adult: true
-        in_work: false
-        incapacity_benefit: 0
-    benunits:
-      benunit:
-        members: [person]
-  output:
-    extended_childcare_entitlement_work_condition: false
-
-- name: Single working adult with disability - eligible
-  period: 2025
-  input:
-    people:
-      person:
+      parent1:
+        age: 40
         is_adult: true
         in_work: true
-        incapacity_benefit: 100
+      parent2:
+        age: 38
+        is_adult: true
+        in_work: false
+      child:
+        age: 4
+        is_child: true
     benunits:
       benunit:
-        members: [person]
+        members: [parent1, parent2, child]
   output:
-    extended_childcare_entitlement_work_condition: true
+    extended_childcare_entitlement_work_condition: [0, 0, 0]
 
-- name: Single disabled non-working adult - ineligible
+- name: Couple with children, one working one disabled - eligible
   period: 2025
   input:
     people:
-      person:
+      parent1:
+        age: 40
+        is_adult: true
+        in_work: true
+      parent2:
+        age: 38
         is_adult: true
         in_work: false
         incapacity_benefit: 100
+      child:
+        age: 4
+        is_child: true
     benunits:
       benunit:
-        members: [person]
+        members: [parent1, parent2, child]
   output:
-    extended_childcare_entitlement_work_condition: false
+    extended_childcare_entitlement_work_condition: [1, 1, 0]
+
+- name: Couple without children both working - ineligible
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_adult: true
+        in_work: true
+      person2:
+        age: 38
+        is_adult: true
+        in_work: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    extended_childcare_entitlement_work_condition: [0, 0]
