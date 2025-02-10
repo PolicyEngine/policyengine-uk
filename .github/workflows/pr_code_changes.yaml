@@ -1,0 +1,43 @@
+# Workflow that runs on code changes to a pull request.
+
+name: Code changes
+on:
+  pull_request:
+    branches:
+      - master
+
+    paths:
+      - policyengine_uk/**
+      - tests/**
+      - .github/**
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v4
+        - name: Check formatting
+          uses: "lgeiger/black-action@master"
+          with:
+              args: ". -l 79 --check"
+  Test:
+      runs-on: ubuntu-latest
+      steps:
+          - name: Checkout repo
+            uses: actions/checkout@v2
+          - name: Install uv
+            uses: astral-sh/setup-uv@v5
+
+          - name: Set up Python
+            uses: actions/setup-python@v2
+            with:
+                python-version: '3.12'
+              
+          - name: Install package
+            run: uv pip install -e .[dev] --system
+          - name: Run tests
+            run: pytest
+            env:
+              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+          - name: Test documentation builds
+            run: make documentation

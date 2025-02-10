@@ -476,7 +476,7 @@ class capital_gains(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "calibration.programs.capital_gains.total"
+    uprating = "gov.obr.non_labour_income"
     adds = [
         "capital_gains_before_response",
         "capital_gains_behavioural_response",
