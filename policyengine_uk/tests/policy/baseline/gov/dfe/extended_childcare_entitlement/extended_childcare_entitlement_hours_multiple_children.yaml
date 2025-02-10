@@ -1,4 +1,4 @@
-- name: eligible for mixed hours - family with multiple children
+- name: Eligible for mixed hours - Family with multiple children
   period: 2025
   input:
     people:
@@ -15,12 +15,12 @@
       child1:
         age: 2
         is_child: true
-        extended_childcare_entitlement_meets_income_requirements: true  # Changed to true
+        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: 0
       child2:
         age: 3
         is_child: true
-        extended_childcare_entitlement_meets_income_requirements: true  # Changed to true
+        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: 0
     benunits:
       benunit1:
@@ -28,7 +28,7 @@
   output:
     extended_childcare_entitlement_hours: [0, 0, 15, 30]
 
-- name: not eligible - family with multiple children but conditions not met
+- name: Not eligible - Family with multiple children but conditions not met
   period: 2025
   input:
     people:

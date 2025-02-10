@@ -1,4 +1,4 @@
-- name: eligible for 30 hours - all conditions met
+- name: Eligible for 30 hours - All conditions met
   period: 2025
   input:
     age: 3  # Age 3-4 gets 30 hours in 2025
@@ -8,7 +8,7 @@
   output:
     extended_childcare_entitlement_hours: 30
 
-- name: eligible for 15 hours - all first conditions met
+- name: Eligible for 15 hours - All first conditions met
   period: 2025
   input:
     age: 2  # Age 2-3 gets 15 hours in 2025
@@ -18,7 +18,7 @@
   output:
     extended_childcare_entitlement_hours: 15
 
-- name: eligible for 15 hours - one condition did not meet
+- name: Eligible for 15 hours - One condition did not meet
   period: 2025
   input:
     age: 2  
