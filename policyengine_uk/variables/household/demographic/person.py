@@ -377,9 +377,6 @@ class is_older_child(Variable):
         return (age >= 14) & (age < 18)
 
 
-from policyengine_uk.model_api import *
-
-
 class is_parent(Variable):
     value_type = bool
     entity = Person
