@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.benunit import FamilyType
 
 
 class extended_childcare_entitlement_work_condition(Variable):
@@ -11,10 +10,9 @@ class extended_childcare_entitlement_work_condition(Variable):
 
     def formula(person, period, parameters):
         benunit = person.benunit
-        family_type = benunit("family_type", period)
-        age = person("age", period)
         is_child = person("is_child", period)
         in_work = person("in_work", period)
+        is_parent = person("is_parent", period)
 
         # Get disability status
         eligible_based_on_disability = (
@@ -31,33 +29,24 @@ class extended_childcare_entitlement_work_condition(Variable):
             > 0
         ) | (person("incapacity_benefit", period) > 0)
 
-        # Check if person is among two oldest
-        benunit_ages = benunit.members("age", period)
-        first_highest = benunit.max(benunit_ages)
-        is_among_two_oldest = (age == first_highest) | (
-            age
-            == benunit.max(
-                where(benunit_ages < first_highest, benunit_ages, -inf)
-            )
-        )
+        # Count parents in benefit unit
+        parent_count = add(benunit, period, ["is_parent"])
+        has_children = benunit.any(benunit.members("is_child", period))
 
         # Eligibility conditions
         lone_parent_eligible = (
-            (family_type == FamilyType.LONE_PARENT)
-            & in_work
-            & (age == first_highest)
+            (parent_count == 1) & has_children & in_work & is_parent
         )
 
         couple_eligible = (
-            (family_type == FamilyType.COUPLE_WITH_CHILDREN)
-            & is_among_two_oldest
+            (parent_count == 2)
+            & has_children
+            & is_parent
             & (
-                benunit.all(where(is_among_two_oldest, in_work, True))
+                benunit.all(where(is_parent, in_work, True))
                 | (
-                    benunit.any(in_work & is_among_two_oldest)
-                    & benunit.any(
-                        eligible_based_on_disability & is_among_two_oldest
-                    )
+                    benunit.any(in_work & is_parent)
+                    & benunit.any(eligible_based_on_disability & is_parent)
                 )
             )
         )

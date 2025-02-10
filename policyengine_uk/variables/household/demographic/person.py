@@ -375,3 +375,43 @@ class is_older_child(Variable):
     def formula(person, period, parameters):
         age = person("age", period)
         return (age >= 14) & (age < 18)
+
+
+from policyengine_uk.model_api import *
+
+
+class is_parent(Variable):
+    value_type = bool
+    entity = Person
+    label = "Whether this person is a parent in the benefit unit"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        benunit = person.benunit
+        age = person("age", period)
+        has_children = benunit.any(benunit.members("is_child", period))
+
+        # Check if person is among two oldest
+        benunit_ages = benunit.members("age", period)
+        first_highest = benunit.max(benunit_ages)
+        is_among_two_oldest = (age == first_highest) | (
+            age
+            == benunit.max(
+                where(benunit_ages < first_highest, benunit_ages, -inf)
+            )
+        )
+
+        # Count adults to determine if lone parent or couple
+        adult_count = add(benunit, period, ["is_adult"])
+
+        # For lone parents, only eldest is parent
+        is_lone_parent = (
+            (adult_count == 1) & has_children & (age == first_highest)
+        )
+
+        # For couples with children, two eldest are parents
+        is_couple_parent = (
+            (adult_count == 2) & has_children & is_among_two_oldest
+        )
+
+        return is_lone_parent | is_couple_parent

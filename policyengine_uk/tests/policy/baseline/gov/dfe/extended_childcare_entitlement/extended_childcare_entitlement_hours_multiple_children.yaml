@@ -15,12 +15,12 @@
       child1:
         age: 2
         is_child: true
-        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_meets_income_requirements: true  # Changed to true
         extended_childcare_entitlement_work_condition: 0
       child2:
         age: 3
         is_child: true
-        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_meets_income_requirements: true  # Changed to true
         extended_childcare_entitlement_work_condition: 0
     benunits:
       benunit1:
