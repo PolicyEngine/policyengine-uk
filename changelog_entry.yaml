@@ -1,4 +1,4 @@
 - bump: minor
   changes:
-    fixed:
-    - Bugs in TFC logic.
+    removed:
+    - Unused parameters in the calibration folder.
