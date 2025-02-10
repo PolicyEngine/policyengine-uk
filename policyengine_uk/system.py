@@ -18,7 +18,7 @@ from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
 COUNTRY_DIR = Path(__file__).parent
 
-ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23"
+ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
