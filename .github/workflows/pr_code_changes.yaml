@@ -36,7 +36,7 @@ jobs:
           - name: Install package
             run: uv pip install -e .[dev] --system
           - name: Install policyengine
-            run: uv pip install policyengine
+            run: uv pip install policyengine --system
           - name: Run tests
             run: pytest
             env:
