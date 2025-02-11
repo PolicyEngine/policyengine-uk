@@ -1,0 +1,523 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Tax model validation" href="../validation/spi-validation.html" /><link rel="prev" title="Example: pensioner incomes" href="../usage/income-sources.html" />
+
+    <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
+        <title>Baseline forecast - PolicyEngine UK documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.4cbf315f70debaebd550c87a6162cf0f.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">PolicyEngine UK documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">PolicyEngine UK documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../usage/getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/income-sources.html">Example: pensioner incomes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Model</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Baseline forecast</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Validation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../validation/spi-validation.html">Tax model validation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Programs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/hmrc/child-benefit.html">Child Benefit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/dwp/universal-credit.html">Universal Credit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/dwp/PIP.html">PIP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/dwp/pension-credit.html">Pension Credit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/hmrc/national-insurance.html">National Insurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/hmrc/income-tax.html">Income Tax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/hmrc/fuel-duty.html">Fuel duty</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/hmrc/stamp-duty.html">SDLT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/contrib/ubi-center/carbon-tax.html">Carbon taxes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/ofgem/energy-price-guarantee.html">EPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/dcms/bbc/tv-licence.html">TV Licence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/revenue_scotland/land-and-buildings-transaction-tax.html">LBTT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../programs/gov/wra/land-transaction-tax.html">LTT</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="baseline-forecast">
+<h1>Baseline forecast<a class="headerlink" href="#baseline-forecast" title="Permalink to this heading">#</a></h1>
+<p>To anchor PolicyEngine to official forecasts, this page presents both the Office for Budget Responsibility (OBR)’s forecast for public sector net debt (PSND) and that implied by PolicyEngine.</p>
+<p>PSND is generally used as the key fiscal metric in the UK, and all talk of ‘headroom’ and ‘cost’ of fiscal measures is in relation to this metric. In calculating PolicyEngine’s projection for PSND, we use the OBR’s forecast and subtract the cost and revenue projections for benefits modelled in PolicyEngine:</p>
+<ul class="simple">
+<li><p>Income Tax</p></li>
+<li><p>National Insurance (all classes)</p></li>
+<li><p>VAT</p></li>
+<li><p>Stamp Duty Land Tax</p></li>
+<li><p>Fuel duties</p></li>
+<li><p>Universal Credit</p></li>
+<li><p>Child Benefit</p></li>
+<li><p>Working Tax Credit</p></li>
+<li><p>Child Tax Credit</p></li>
+<li><p>Housing Benefit</p></li>
+<li><p>Personal Independence Payment</p></li>
+<li><p>Disability Living Allowance</p></li>
+<li><p>TV Licence</p></li>
+</ul>
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">OBR_PSND</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2_540</span><span class="p">,</span> <span class="mi">2_691</span><span class="p">,</span> <span class="mi">2_793</span><span class="p">,</span> <span class="mi">2_820</span><span class="p">,</span> <span class="mi">2_903</span><span class="p">,</span> <span class="mi">2_995</span><span class="p">,</span> <span class="mi">3_078</span><span class="p">]</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk_data.storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">STORAGE_FOLDER</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">tax_ben</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">STORAGE_FOLDER</span> <span class="o">/</span> <span class="s2">&quot;tax_benefit.csv&quot;</span><span class="p">)</span>
+<span class="n">REVENUES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ni_employee&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ni_employer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fuel_duties&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tv_licence_fee&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">SPENDING</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tax_credits&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;housing_benefit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dla&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">tax_ben_revenues</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">tax_ben</span><span class="p">[</span><span class="n">tax_ben</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">REVENUES</span><span class="p">)]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">REVENUES</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">tax_ben_spending</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">tax_ben</span><span class="p">[</span><span class="n">tax_ben</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">SPENDING</span><span class="p">)]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">SPENDING</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
+
+<span class="n">PE_REVENUES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ni_employee&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ni_employer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fuel_duty&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tv_licence&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">PE_SPENDING</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tax_credits&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;housing_benefit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dla&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
+
+<span class="n">pe_psnd</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2022</span><span class="p">,</span> <span class="mi">2029</span><span class="p">):</span>
+    <span class="n">obr_psnd</span> <span class="o">=</span> <span class="n">OBR_PSND</span><span class="p">[</span><span class="n">year</span> <span class="o">-</span> <span class="mi">2022</span><span class="p">]</span>
+    <span class="n">obr_totals</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">tax_ben_spending</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">tax_ben_revenues</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">pe_revenues</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">year</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="o">/</span> <span class="mf">1e9</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">PE_REVENUES</span>
+    <span class="p">)</span>
+    <span class="n">pe_spending</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">year</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="o">/</span> <span class="mf">1e9</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">PE_SPENDING</span>
+    <span class="p">)</span>
+    <span class="n">pe_totals</span> <span class="o">=</span> <span class="n">pe_spending</span> <span class="o">-</span> <span class="n">pe_revenues</span>
+    <span class="n">pe_psnd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obr_psnd</span> <span class="o">+</span> <span class="n">pe_totals</span> <span class="o">-</span> <span class="n">obr_totals</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2022</span><span class="p">,</span> <span class="mi">2029</span><span class="p">),</span>
+        <span class="s2">&quot;OBR&quot;</span><span class="p">:</span> <span class="n">OBR_PSND</span><span class="p">,</span>
+        <span class="s2">&quot;PE&quot;</span><span class="p">:</span> <span class="n">pe_psnd</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;diff&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;PE&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;OBR&quot;</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;diff_pct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;diff&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;OBR&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;PE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;PE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;diff&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>year</th>
+      <th>OBR</th>
+      <th>PE</th>
+      <th>diff</th>
+      <th>diff_pct</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2022</td>
+      <td>2540</td>
+      <td>2538.0</td>
+      <td>-1.5</td>
+      <td>-0.001</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2023</td>
+      <td>2691</td>
+      <td>2693.0</td>
+      <td>2.2</td>
+      <td>0.001</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2024</td>
+      <td>2793</td>
+      <td>2800.0</td>
+      <td>7.5</td>
+      <td>0.003</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2025</td>
+      <td>2820</td>
+      <td>2831.0</td>
+      <td>10.5</td>
+      <td>0.004</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2026</td>
+      <td>2903</td>
+      <td>2915.0</td>
+      <td>12.2</td>
+      <td>0.004</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2027</td>
+      <td>2995</td>
+      <td>3013.0</td>
+      <td>18.1</td>
+      <td>0.006</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>2028</td>
+      <td>3078</td>
+      <td>3106.0</td>
+      <td>27.8</td>
+      <td>0.009</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>PolicyEngine appears to predict a higher PSND trend line than the OBR, increasing linearly through to 2028-29. This is over 90% explained by PolicyEngine projecting lower income tax receipts than the OBR. It’s unclear why this is the case, and it might not actually be a bug: PolicyEngine optimises household weights to fit targets <em>including</em> the income tax targets, as well as income statistics. This could be the model saying that income tax receipts being lower is more consistent with other projections for the UK household sector.</p>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./model"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../validation/spi-validation.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Tax model validation</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../usage/income-sources.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Example: pensioner incomes</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>
