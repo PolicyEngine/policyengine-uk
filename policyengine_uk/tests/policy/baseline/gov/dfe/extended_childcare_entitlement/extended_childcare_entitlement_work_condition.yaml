@@ -4,15 +4,14 @@
     people:
       parent:
         age: 35
-        is_adult: true
         in_work: true
         incapacity_benefit: 0
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: [parent, child]
+        family_type: LONE_PARENT
   output:
     extended_childcare_entitlement_work_condition: [1, 0]
 
@@ -22,18 +21,16 @@
     people:
       parent1:
         age: 40
-        is_adult: true
         in_work: false
       parent2:
         age: 35
-        is_adult: true
         in_work: true
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
   output:
     extended_childcare_entitlement_work_condition: [0, 0, 0]
 
@@ -43,18 +40,16 @@
     people:
       parent1:
         age: 40
-        is_adult: true
         in_work: true
       parent2:
         age: 38
-        is_adult: true
         in_work: true
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
   output:
     extended_childcare_entitlement_work_condition: [1, 1, 0]
 
@@ -64,18 +59,16 @@
     people:
       parent1:
         age: 40
-        is_adult: true
         in_work: true
       parent2:
         age: 38
-        is_adult: true
         in_work: false
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
   output:
     extended_childcare_entitlement_work_condition: [0, 0, 0]
 
@@ -85,19 +78,17 @@
     people:
       parent1:
         age: 40
-        is_adult: true
         in_work: true
       parent2:
         age: 38
-        is_adult: true
         in_work: false
         incapacity_benefit: 100
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
   output:
     extended_childcare_entitlement_work_condition: [1, 1, 0]
 
@@ -107,14 +98,13 @@
     people:
       person1:
         age: 40
-        is_adult: true
         in_work: true
       person2:
         age: 38
-        is_adult: true
         in_work: true
     benunits:
       benunit:
         members: [person1, person2]
+        family_type: COUPLE_NO_CHILDREN
   output:
     extended_childcare_entitlement_work_condition: [0, 0]

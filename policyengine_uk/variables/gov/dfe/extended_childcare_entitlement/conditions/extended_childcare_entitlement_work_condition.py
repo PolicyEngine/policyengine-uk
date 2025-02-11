@@ -7,34 +7,29 @@ class extended_childcare_entitlement_work_condition(Variable):
     label = "Work conditions for extended childcare entitlement"
     documentation = "Whether the person/couple meets work requirements for extended childcare entitlement"
     definition_period = YEAR
+    defined_for = "is_parent"
 
     def formula(person, period, parameters):
         benunit = person.benunit
-        is_child = person("is_child", period)
         in_work = person("in_work", period)
-        is_parent = person("is_parent", period)
-
+        
         # Get disability status
         p = parameters(period).gov.dfe.extended_childcare_entitlement
-
         eligible_based_on_disability = (
             add(person, period, p.disability_criteria) > 0
         )
 
         # Count parents in benefit unit
         parent_count = add(benunit, period, ["is_parent"])
-        has_children = benunit.any(benunit.members("is_child", period))
 
         # Eligibility conditions
-        lone_parent_eligible = (
-            (parent_count == 1) & has_children & in_work & is_parent
-        )
+        lone_parent_eligible = (parent_count == 1) & in_work
 
         # Break out the complex nested conditions
-        all_parents_working = benunit.all(in_work | ~is_parent)
-        some_parents_working = benunit.any(in_work & is_parent)
+        all_parents_working = benunit.all(in_work | ~person("is_parent", period))
+        some_parents_working = benunit.any(in_work & person("is_parent", period))
         some_parents_disability_eligible = benunit.any(
-            eligible_based_on_disability & is_parent
+            eligible_based_on_disability & person("is_parent", period)
         )
 
         # Create a separate work condition
@@ -42,11 +37,6 @@ class extended_childcare_entitlement_work_condition(Variable):
             some_parents_working & some_parents_disability_eligible
         )
 
-        couple_eligible = (
-            (parent_count == 2)
-            & has_children
-            & is_parent
-            & couple_work_condition
-        )
+        couple_eligible = (parent_count == 2) & couple_work_condition
 
-        return where(is_child, False, lone_parent_eligible | couple_eligible)
+        return lone_parent_eligible | couple_eligible

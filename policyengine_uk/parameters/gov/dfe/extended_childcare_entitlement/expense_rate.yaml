@@ -1,10 +1,9 @@
-description: The Department for Education sets hourly rates to convert childcare hours into expenses for extended childcare entitlement. These rates vary by child's age and are used to calculate the funding provided to childcare providers.
-
+description: The Department for Education converts childcare hours into expenses for extended childcare entitlement at these rates, depending on the child's age.
 metadata:
   type: single_amount
   threshold_unit: year
   amount_unit: currency-GBP
-  label: Extended childcare entitlement hourly funding rates by age
+  label: Extended childcare entitlement hourly rates
   reference:
     - title: Different Rates for Extended Childcare Entitlement
       href: 
