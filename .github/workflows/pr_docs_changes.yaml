@@ -1,14 +1,13 @@
 # Workflow that runs on code changes to a pull request.
 
-name: Code changes
+name: Docs changes
 on:
   pull_request:
     branches:
       - master
 
     paths:
-      - policyengine_uk/**
-      - tests/**
+      - docs/**
       - .github/**
 
 jobs:
@@ -22,6 +21,7 @@ jobs:
               args: ". -l 79 --check"
   Test:
       runs-on: ubuntu-latest
+      name: Test documentation builds
       steps:
           - name: Checkout repo
             uses: actions/checkout@v2
@@ -37,13 +37,5 @@ jobs:
             run: uv pip install -e .[dev] --system
           - name: Install policyengine
             run: uv pip install policyengine --system
-          - name: Run tests
-            run: pytest
-            env:
-              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
-          - name: Compare PSND
-            run: make compare_psnd
-            env:
-              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
           - name: Test documentation builds
             run: make documentation

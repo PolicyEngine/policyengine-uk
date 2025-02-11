@@ -37,10 +37,6 @@ jobs:
             run: uv pip install -e .[dev] --system
           - name: Install policyengine
             run: uv pip install policyengine --system
-          - name: Download data inputs
-            run: make download
-            env:
-              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}  
           - name: Run tests
             run: make test
           - name: Build documentation
