@@ -1,13 +1,67 @@
-- name: Eligible child gets full hours
-  period: 2025
+- name: "Child under 3 - no entitlement"
+  period: 2024
   input:
-    universal_childcare_entitlement_eligibility: true
+    people:
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: ["child"]
   output:
-    universal_childcare_entitlement_hours: 570
+    universal_childcare_entitlement_hours: [0]
 
-- name: Non eligible child 
-  period: 2025
+- name: "Child aged 3 - full entitlement"
+  period: 2024
   input:
-    universal_childcare_entitlement_eligibility: false
+    people:
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: ["child"]
   output:
-    universal_childcare_entitlement_hours: 0
+    universal_childcare_entitlement_hours: [570]
+
+- name: "Child aged 4 - full entitlement"
+  period: 2024
+  input:
+    people:
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: ["child"]
+  output:
+    universal_childcare_entitlement_hours: [570]
+
+- name: "Child aged 5 - no entitlement"
+  period: 2024
+  input:
+    people:
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: ["child"]
+  output:
+    universal_childcare_entitlement_hours: [0]
+
+- name: "Family with multiple children - mixed entitlement"
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 35
+      child1:
+        age: 2
+      child2:
+        age: 3
+      child3:
+        age: 4
+      child4:
+        age: 5
+    benunits:
+      benunit:
+        members: ["parent", "child1", "child2", "child3", "child4"]
+  output:
+    universal_childcare_entitlement_hours: [0, 0, 570, 570, 0]

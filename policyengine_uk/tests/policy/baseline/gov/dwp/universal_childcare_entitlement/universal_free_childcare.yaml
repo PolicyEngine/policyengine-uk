@@ -1,0 +1,90 @@
+- name: Single child under 3
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 30
+      child:
+        age: 2
+        universal_childcare_entitlement_hours: 0
+    benunits:
+      benunit:
+        members:
+        - adult
+        - child
+  output:
+    universal_childcare_entitlement:
+    - 0
+    - 0
+
+- name: Single child aged 3
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 30
+      child:
+        age: 3
+        universal_childcare_entitlement_hours: 570
+    benunits:
+      benunit:
+        members:
+        - adult
+        - child
+  output:
+    universal_childcare_entitlement:
+    - 0
+    - 3351.60
+
+- name: Single child aged 4
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 30
+      child:
+        age: 4
+        universal_childcare_entitlement_hours: 570
+    benunits:
+      benunit:
+        members:
+        - adult
+        - child
+  output:
+    universal_childcare_entitlement:
+    - 0
+    - 3351.60
+
+- name: Multiple children different ages
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 35
+      child1:
+        age: 2
+        universal_childcare_entitlement_hours: 0
+      child2:
+        age: 3
+        universal_childcare_entitlement_hours: 570
+      child3:
+        age: 4
+        universal_childcare_entitlement_hours: 570
+      child4:
+        age: 5
+        universal_childcare_entitlement_hours: 0
+    benunits:
+      benunit:
+        members:
+        - adult
+        - child1
+        - child2
+        - child3
+        - child4
+  output:
+    universal_childcare_entitlement:
+    - 0
+    - 0
+    - 3351.60
+    - 3351.60
+    - 0
