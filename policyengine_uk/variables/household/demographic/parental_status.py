@@ -18,7 +18,7 @@ class is_parent(Variable):
         is_among_two_oldest = (age == first_highest) | (
             age
             == benunit.max(
-                where(benunit_ages < first_highest, benunit_ages, -inf)
+                where(benunit_ages < first_highest, benunit_ages, -np.inf)
             )
         )
 
