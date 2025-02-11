@@ -12,7 +12,7 @@ class extended_childcare_entitlement_work_condition(Variable):
     def formula(person, period, parameters):
         benunit = person.benunit
         in_work = person("in_work", period)
-        
+
         # Get disability status
         p = parameters(period).gov.dfe.extended_childcare_entitlement
         eligible_based_on_disability = (
@@ -26,8 +26,12 @@ class extended_childcare_entitlement_work_condition(Variable):
         lone_parent_eligible = (parent_count == 1) & in_work
 
         # Break out the complex nested conditions
-        all_parents_working = benunit.all(in_work | ~person("is_parent", period))
-        some_parents_working = benunit.any(in_work & person("is_parent", period))
+        all_parents_working = benunit.all(
+            in_work | ~person("is_parent", period)
+        )
+        some_parents_working = benunit.any(
+            in_work & person("is_parent", period)
+        )
         some_parents_disability_eligible = benunit.any(
             eligible_based_on_disability & person("is_parent", period)
         )

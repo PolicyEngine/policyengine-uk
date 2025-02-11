@@ -11,12 +11,13 @@ class is_parent(Variable):
         benunit = person.benunit
         age = person("age", period)
         family_type = benunit("family_type", period)
-        
+
         # Find two oldest members
         benunit_ages = benunit.members("age", period)
         first_highest = benunit.max(benunit_ages)
         is_among_two_oldest = (age == first_highest) | (
-            age == benunit.max(
+            age
+            == benunit.max(
                 where(benunit_ages < first_highest, benunit_ages, -inf)
             )
         )
