@@ -15,18 +15,11 @@ class extended_childcare_entitlement_work_condition(Variable):
         is_parent = person("is_parent", period)
 
         # Get disability status
-        p = parameters(
-            period
-        ).gov.dwp.pension_credit.guarantee_credit.child.disability
+        p = parameters(period).gov.dfe.extended_childcare_entitlement
 
         eligible_based_on_disability = (
-            add(
-                person,
-                period,
-                p.eligibility + p.severe.eligibility,
-            )
-            > 0
-        ) | (person("incapacity_benefit", period) > 0)
+            add(person, period, p.disability_criteria) > 0
+        )
 
         # Count parents in benefit unit
         parent_count = add(benunit, period, ["is_parent"])
@@ -38,7 +31,7 @@ class extended_childcare_entitlement_work_condition(Variable):
         )
 
         # Break out the complex nested conditions
-        all_parents_working = benunit.all(where(is_parent, in_work, True))
+        all_parents_working = benunit.all(in_work | ~is_parent)
         some_parents_working = benunit.any(in_work & is_parent)
         some_parents_disability_eligible = benunit.any(
             eligible_based_on_disability & is_parent

@@ -1,0 +1,14 @@
+description: "Disability criteria for extended childcare entitlement work exemptions"
+metadata:
+  reference:
+    - title: "The Childcare Regulations 2022 - Regulation 11A"
+      href: "https://www.legislation.gov.uk/uksi/2022/1134/regulation/11A"
+  period: year
+  unit: program
+  label: Extended childcare entitlement disability criteria
+values:
+  2015-09-01:
+    - incapacity_benefit
+    - is_disabled_for_benefits
+    - is_enhanced_disabled_for_benefits
+    - is_severely_disabled_for_benefits

@@ -30,6 +30,4 @@ class extended_childcare_entitlement_meets_income_requirements(Variable):
         # Get adjusted net income and check against max threshold
         ani = person("adjusted_net_income", period)
 
-        return (quarterly_income > required_threshold) & (
-            ani < p.income.maximum_adjusted_income
-        )
+        return (quarterly_income > required_threshold) & (ani < p.income.limit)
