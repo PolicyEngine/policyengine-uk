@@ -1355,3 +1355,8 @@
     added:
     - Scottish Winter Fuel Payment equivalent.
   date: 2024-12-05 12:43:06
+- bump: minor
+  changes:
+    removed:
+    - Unused parameters in the calibration folder.
+  date: 2025-02-11 11:14:35

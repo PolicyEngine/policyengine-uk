@@ -103,7 +103,7 @@ class capital_gains_before_response(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "calibration.programs.capital_gains.total"
+    uprating = "gov.obr.non_labour_income"
 
 
 class adult_index_cg(Variable):
