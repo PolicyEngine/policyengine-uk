@@ -1,4 +1,0 @@
-- bump: minor
-  changes:
-    removed:
-    - Unused parameters in the calibration folder.
