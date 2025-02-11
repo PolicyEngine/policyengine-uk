@@ -85,4 +85,4 @@ class council_tax(Variable):
     definition_period = YEAR
     unit = GBP
     quantity_type = FLOW
-    uprating: str = "calibration.uprating.council_tax"
+    uprating: str = "gov.obr.consumer_price_index"
