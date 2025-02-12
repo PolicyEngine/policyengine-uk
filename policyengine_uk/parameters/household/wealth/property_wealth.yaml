@@ -3,4 +3,5 @@ values:
   2021-01-01: 6_496_707_000_000
 metadata:
   unit: currency-GBP
+  label: Property wealth
   uprating: household.wealth.financial_assets

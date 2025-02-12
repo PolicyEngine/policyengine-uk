@@ -7,4 +7,4 @@ metadata:
   reference:
     - title: Tax, private school fees and state school spending
       href: https://ifs.org.uk/publications/tax-private-school-fees-and-state-school-spending
-  uprating: calibration.uprating.CPI
+  uprating: gov.obr.consumer_price_index
