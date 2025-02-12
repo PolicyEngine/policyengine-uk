@@ -88,3 +88,24 @@
     - 3351.60
     - 3351.60
     - 0
+
+- name: "Family with twins - both eligible for full entitlement"
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 35
+      twin1:
+        age: 3
+        universal_childcare_entitlement_hours: 570
+      twin2:
+        age: 3
+        universal_childcare_entitlement_hours: 570
+    benunits:
+      benunit:
+        members:
+          - parent
+          - twin1
+          - twin2
+  output:
+    universal_childcare_entitlement: [0, 3351.60, 3351.60]
