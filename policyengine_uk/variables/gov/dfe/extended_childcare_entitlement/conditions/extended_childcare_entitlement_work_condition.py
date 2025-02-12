@@ -20,25 +20,25 @@ class extended_childcare_entitlement_work_condition(Variable):
         )
 
         # Count parents in benefit unit
-        parent_count = add(benunit, period, ["is_parent"])
+        parent_count = benunit.sum(person("is_parent", period))
 
-        # Eligibility conditions
+        # Eligibility conditions for lone parents
         lone_parent_eligible = (parent_count == 1) & in_work
 
-        # Break out the complex nested conditions
+        # Break out the complex nested conditions for couples
         all_parents_working = benunit.all(
             in_work | ~person("is_parent", period)
         )
         some_parents_working = benunit.any(
             in_work & person("is_parent", period)
         )
-        some_parents_disability_eligible = benunit.any(
+        any_parent_disability_eligible = benunit.any(
             eligible_based_on_disability & person("is_parent", period)
         )
 
-        # Create a separate work condition
+        # Work condition for couples - either both working or one working with other disabled
         couple_work_condition = all_parents_working | (
-            some_parents_working & some_parents_disability_eligible
+            some_parents_working & any_parent_disability_eligible
         )
 
         couple_eligible = (parent_count == 2) & couple_work_condition

@@ -5,7 +5,10 @@ class extended_childcare_entitlement(Variable):
     value_type = float
     entity = BenUnit
     label = "Annual extended childcare entitlement expenses"
-    documentation = "Annual expenses for extended childcare entitlement calculated as hours per week * hourly rate * weeks per year"
+    documentation = (
+        "Annual expenses for extended childcare entitlement calculated as "
+        "hours per week * hourly rate * weeks per year"
+    )
     definition_period = YEAR
     unit = GBP
 
@@ -17,9 +20,12 @@ class extended_childcare_entitlement(Variable):
 
         # Get expense rate from parameters
         p = parameters(period).gov.dfe.extended_childcare_entitlement
-
         age = benunit.members("age", period)
+
+        # Compute subsidy per child
         subsidy_per_child = weekly_hours_per_child * p.expense_rate.calc(age)
 
-        # Calculate annual expenses
-        return benunit.sum(subsidy_per_child) * p.weeks_per_year
+        # Compute total annual expenses
+        annual_expenses = benunit.sum(subsidy_per_child) * p.weeks_per_year
+
+        return annual_expenses
