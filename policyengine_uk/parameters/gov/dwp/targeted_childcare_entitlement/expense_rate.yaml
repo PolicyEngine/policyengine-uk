@@ -1,0 +1,15 @@
+description: The Department for Education converts childcare hours into expenses for targeted childcare entitlement at these rates.
+metadata:
+  type: single_amount
+  threshold_unit: year
+  amount_unit: currency-GBP
+  label: Targeted childcare entitlement hourly rates
+  reference:
+    - title: Different rates for targeted childcare entitlement
+      href:
+        - https://www.nurseryworld.co.uk/content/news/dfe-confirms-extended-30-hours-funding-rates-but-sector-says-they-dont-reflect-the-real-delivery-cost/
+        - https://www.gov.uk/government/news/childcare-settings-receive-cash-boost-as-funding-rates-increase
+    - title: Commons Library
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/
+values:
+  2015-01-01: 8.28

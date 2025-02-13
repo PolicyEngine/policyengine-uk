@@ -1,11 +1,11 @@
-description: List of qualifying benefits for targeted childcare entitlement eligibility assessment
+description: The Department for Education designates these programs as qualifying benefits for the targeted childcare entitlement eligibility.
 metadata:
   reference:
-    - title: Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - 1.a to 1.g
+    - title: Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - paragraphs 1.a to 1.g
       href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/1/made#f00009
   period: year
   unit: program
-  label: Qualifying benefits for targeted childcare entitlement (childcare for 2 year olds)
+  label: Qualifying benefits for targeted childcare entitlement
 values:
   2015-01-01:
     - jsa_income

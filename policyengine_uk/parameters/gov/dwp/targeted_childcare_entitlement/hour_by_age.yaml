@@ -1,0 +1,26 @@
+description: The Department for Education provides targeted childcare entitlement in England.
+metadata:
+  type: scale
+  threshold_unit: year
+  label: "Age eligibility for targeted 2-year-old childcare entitlement"
+  reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 3
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/3/made
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 4
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/4/made
+    - title: Document for 15 hours free education and childcare for 2-year-olds
+      href: https://www.gov.uk/help-with-childcare-costs/free-childcare-2-year-olds-claim-benefits?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b
+
+brackets:
+  - threshold:
+      2015-01-01: 0
+    amount:
+      2015-01-01: 0
+  - threshold:
+      2015-01-01: 2
+    amount:
+      2015-01-01: 570
+  - threshold:
+      2015-01-01: 3
+    amount:
+      2015-01-01: 0
