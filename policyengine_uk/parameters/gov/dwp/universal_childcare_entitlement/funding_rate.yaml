@@ -1,9 +1,9 @@
-description: The Department for Education converts childcare hours into expenses for extended childcare entitlement at these rates.
+description: The Department for Education converts childcare hours into expenses for universal childcare entitlement at this rate.
 metadata:
   type: single_amount
   threshold_unit: year
   amount_unit: currency-GBP
-  label: Extended childcare entitlement hourly rates
+  label: universal childcare entitlement hourly rates
   reference:
     - title: House of Commons Library
       href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/

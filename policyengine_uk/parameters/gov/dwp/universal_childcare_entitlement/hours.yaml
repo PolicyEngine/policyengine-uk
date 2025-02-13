@@ -3,10 +3,13 @@ metadata:
   type: single_amount
   threshold_unit: year
   amount_unit: hour
-  label: Universal childcare entitlement hours
+  label: universal childcare entitlement hours
   reference:
     - title: Childcare (Early Years Provision Free of Charge) (Extended Entitlement) Regulations 2016 - Regulation 35(3)
       href: https://www.legislation.gov.uk/uksi/2016/1257/part/4/made
+    - title: Education Act 1996 - Section 8 (Compulsory School Age)
+      href: https://www.legislation.gov.uk/ukpga/1996/56/section/8
+      # In England, children are eligible for universal childcare entitlement from age 3 until they reach compulsory school age, which is defined as the start of the term after their fifth birthday.
 brackets:
   - threshold:
       2015-01-01: 0

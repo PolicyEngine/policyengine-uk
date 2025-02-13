@@ -15,7 +15,4 @@ class universal_childcare_entitlement(Variable):
         # Get the funding rate from parameters
         p = parameters(period).gov.dwp.universal_childcare_entitlement
         rate = p.funding_rate
-
-        # Calculate total funding amount
-        total_entitlement = hours * rate
-        return total_entitlement
+        return hours * rate

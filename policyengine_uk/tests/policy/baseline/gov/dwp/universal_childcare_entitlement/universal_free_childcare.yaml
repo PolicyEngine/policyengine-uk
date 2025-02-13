@@ -36,7 +36,7 @@
   output:
     universal_childcare_entitlement: [3351.60]
 
-- name: Multiple children different ages
+- name: Multiple children different ages, some eligible
   period: 2024
   input:
     people:
