@@ -1,4 +1,4 @@
-- name: "Child under 3 - no entitlement"
+- name: Child under 3 - no entitlement
   period: 2024
   input:
     people:
@@ -10,7 +10,7 @@
   output:
     universal_childcare_entitlement_hours: [0]
 
-- name: "Child aged 3 - full entitlement"
+- name: Child aged 3 - full entitlement
   period: 2024
   input:
     people:
@@ -22,7 +22,7 @@
   output:
     universal_childcare_entitlement_hours: [570]
 
-- name: "Child aged 4 - full entitlement"
+- name: Child aged 4 - full entitlement
   period: 2024
   input:
     people:
@@ -34,7 +34,7 @@
   output:
     universal_childcare_entitlement_hours: [570]
 
-- name: "Child aged 5 - no entitlement"
+- name: Child aged 5 - no entitlement
   period: 2024
   input:
     people:
@@ -46,7 +46,7 @@
   output:
     universal_childcare_entitlement_hours: [0]
 
-- name: "Family with multiple children - mixed entitlement"
+- name: Family with multiple children - mixed entitlement
   period: 2024
   input:
     people:
