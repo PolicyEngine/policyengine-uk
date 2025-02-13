@@ -98,4 +98,4 @@
         family_type: COUPLE_WITH_CHILDREN
   output:
     extended_childcare_entitlement_hours: [0, 0, 15, 30, 30]
-    extended_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_meets_work_condition: true
