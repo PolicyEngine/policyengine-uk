@@ -5,10 +5,6 @@ metadata:
   amount_unit: currency-GBP
   label: Extended childcare entitlement hourly rates by age
   reference:
-    - title: Different Rates for Extended Childcare Entitlement
-      href: 
-        - https://www.nurseryworld.co.uk/content/news/dfe-confirms-extended-30-hours-funding-rates-but-sector-says-they-dont-reflect-the-real-delivery-cost/
-        - https://www.gov.uk/government/news/childcare-settings-receive-cash-boost-as-funding-rates-increase
     - title: Commons Library
       href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/
 
