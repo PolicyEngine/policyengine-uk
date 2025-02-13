@@ -10,13 +10,12 @@ class extended_childcare_entitlement_meets_work_condition(Variable):
 
     def formula(benunit, period, parameters):
         # Check income condition - must be true for all family members (except children)
-        meets_income_condition = benunit.all(
-            benunit.members(
-                "extended_childcare_entitlement_meets_income_requirements",
-                period,
-            )
-            | benunit.members("is_child", period)
-        )
+        person = benunit.members
+        person_meets_income_condition = person(
+            "extended_childcare_entitlement_meets_income_requirements",
+            period,
+        ) | person("is_child", period)
+        meets_income_condition = benunit.all(person_meets_income_condition)
 
         # Check work condition
         work_eligible = (

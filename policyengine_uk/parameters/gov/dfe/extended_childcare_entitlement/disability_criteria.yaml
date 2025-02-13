@@ -8,6 +8,7 @@ metadata:
   label: Extended childcare entitlement disability criteria
 values:
   2015-09-01:
+    - carers_allowance
     - incapacity_benefit
     - is_disabled_for_benefits
     - is_enhanced_disabled_for_benefits
