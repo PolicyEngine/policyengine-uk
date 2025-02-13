@@ -19,7 +19,7 @@ class extended_childcare_entitlement_work_condition(Variable):
             add(person, period, p.disability_criteria) > 0
         )
 
-        # Adjust eligibility based on the summed UC Carer Element
+        # Adjust eligibility based on the summed UC Carer Element: 11A(1)(c)
         eligible_based_on_disability_or_carer = (
             eligible_based_on_disability
             | (benunit("uc_carer_element", period) > 0)
