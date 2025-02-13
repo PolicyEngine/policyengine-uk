@@ -13,3 +13,6 @@ values:
     - is_disabled_for_benefits
     - is_enhanced_disabled_for_benefits
     - is_severely_disabled_for_benefits
+    - esa_contrib
+    - jsa_contrib
+    - sda
