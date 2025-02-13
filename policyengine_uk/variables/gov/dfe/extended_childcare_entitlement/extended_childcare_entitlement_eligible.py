@@ -4,8 +4,7 @@ from policyengine_uk.model_api import *
 class extended_childcare_entitlement_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether this benefit unit is eligible for extended childcare entitlement"
-    documentation = "Checks if the benefit unit meets all eligibility conditions (work and income requirements) for extended childcare entitlement"
+    label = "Eligiblity for extended childcare entitlement"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

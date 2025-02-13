@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class extended_childcare_entitlement(Variable):
     value_type = float
     entity = BenUnit
-    label = "Annual extended childcare entitlement expenses"
+    label = "annual extended childcare entitlement expenses"
     definition_period = YEAR
     unit = GBP
     defined_for = "extended_childcare_entitlement_eligible"
@@ -14,7 +14,6 @@ class extended_childcare_entitlement(Variable):
         # Get parameters
         p = parameters(period).gov.dfe.extended_childcare_entitlement
         age = benunit.members("age", period)
-
         # Compute weekly hours directly inside this function
         weekly_hours_per_child = p.hours.calc(age)
 

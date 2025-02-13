@@ -5,7 +5,7 @@ class extended_childcare_entitlement_work_condition(Variable):
     value_type = bool
     entity = Person
     label = "Work conditions for extended childcare entitlement"
-    documentation = "Whether the person/couple meets work requirements for extended childcare entitlement"
+    documentation = "Whether this person meets work requirements for extended childcare entitlement."
     definition_period = YEAR
     defined_for = "is_parent"
 
