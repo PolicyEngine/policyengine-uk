@@ -8,11 +8,11 @@ metadata:
   label: Extended childcare entitlement disability criteria
 values:
   2015-09-01:
-    - carers_allowance
-    - incapacity_benefit
-    - is_disabled_for_benefits
-    - is_enhanced_disabled_for_benefits
-    - is_severely_disabled_for_benefits
-    - esa_contrib
-    - jsa_contrib
-    - sda
+    - carers_allowance  # 11A(1)(a): Section 70 of the Social Security Contributions and Benefits Act 1992
+    - incapacity_benefit  # 11A(1)(f, g): Incapacity Benefit under Social Security Contributions and Benefits Act 1992
+    - is_disabled_for_benefits  # No direct match, but aligns with general disability-related eligibility
+    - is_enhanced_disabled_for_benefits  # No direct match, assumed to align with enhanced disability eligibility
+    - is_severely_disabled_for_benefits  # No direct match, assumed to align with severe disability eligibility
+    - esa_contrib  # 11A(1)(e): Employment and Support Allowance (ESA) under Welfare Reform Act 2007
+    - jsa_contrib  # Not explicitly listed in Regulation 11A, but likely relevant under other benefit schemes
+    - sda  # 11A(1)(h): Severe Disablement Allowance under Section 68 of Social Security Contributions and Benefits Act 1992
