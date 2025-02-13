@@ -1,7 +1,8 @@
 description: The Department for Education provides targeted childcare entitlement in England.
 metadata:
-  type: scale
+  type: single_amount
   threshold_unit: year
+  amount_unit: hour
   label: "Age eligibility for targeted 2-year-old childcare entitlement"
   reference:
     - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 3

@@ -1,0 +1,154 @@
+- name: Eligible with JSA - couple
+  period: 2025
+  input:
+    people:
+      adult1:
+        total_income: 10000
+        social_security_income: 0
+      adult2:
+        total_income: 5000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: ["adult1", "adult2"]
+        jsa_income: 100
+        esa_income: 0
+        universal_credit: 0
+        is_guarantee_credit_eligible: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+  output:
+    targeted_childcare_entitlement_meets_benefits: [true]
+
+- name: Eligible with UC under income threshold - family
+  period: 2025
+  input:
+    people:
+      parent:
+        total_income: 15000
+        social_security_income: 5000  # Makes adjusted income = 10000
+      child:
+        total_income: 0
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+        jsa_income: 0
+        esa_income: 0
+        universal_credit: 100
+        is_guarantee_credit_eligible: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+  output:
+    targeted_childcare_entitlement_meets_benefits: [true]
+
+- name: Eligible with tax credits under income threshold - large family
+  period: 2025
+  input:
+    people:
+      parent1:
+        total_income: 10000
+        social_security_income: 0
+      parent2:
+        total_income: 6000
+        social_security_income: 0
+      child1:
+        total_income: 0
+        social_security_income: 0
+      child2:
+        total_income: 0
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: ["parent1", "parent2", "child1", "child2"]
+        jsa_income: 0
+        esa_income: 0
+        universal_credit: 0
+        is_guarantee_credit_eligible: false
+        child_tax_credit: 100
+        working_tax_credit: 0
+  output:
+    targeted_childcare_entitlement_meets_benefits: [true]
+
+- name: Ineligible due to high income with UC
+  period: 2025
+  input:
+    people:
+      adult1:
+        total_income: 250000
+    benunits:
+      benunit:
+        members: ["adult1"]
+        universal_credit: 10000
+        jsa_income: 0
+  output:
+    targeted_childcare_entitlement_meets_benefits: [false]
+
+- name: Ineligible with no qualifying benefits - family
+  period: 2025
+  input:
+    people:
+      parent:
+        total_income: 10000
+        social_security_income: 0
+      child1:
+        total_income: 0
+        social_security_income: 0
+      child2:
+        total_income: 0
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: ["parent", "child1", "child2"]
+        jsa_income: 0
+        esa_income: 0
+        universal_credit: 0
+        is_guarantee_credit_eligible: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+  output:
+    targeted_childcare_entitlement_meets_benefits: [false]
+
+- name: Eligible with ESA - couple
+  period: 2025
+  input:
+    people:
+      adult1:
+        total_income: 8000
+        social_security_income: 0
+      adult2:
+        total_income: 7000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: ["adult1", "adult2"]
+        jsa_income: 0
+        esa_income: 100
+        universal_credit: 0
+        is_guarantee_credit_eligible: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+  output:
+    targeted_childcare_entitlement_meets_benefits: [true]
+
+- name: Eligible with pension credit - couple
+  period: 2025
+  input:
+    people:
+      adult1:
+        total_income: 8000
+        social_security_income: 0
+      adult2:
+        total_income: 7000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: ["adult1", "adult2"]
+        jsa_income: 0
+        esa_income: 0
+        universal_credit: 0
+        is_guarantee_credit_eligible: true
+        child_tax_credit: 0
+        working_tax_credit: 0
+  output:
+    targeted_childcare_entitlement_meets_benefits: [true]
