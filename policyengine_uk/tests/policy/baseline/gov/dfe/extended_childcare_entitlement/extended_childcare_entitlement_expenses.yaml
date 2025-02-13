@@ -1,20 +1,137 @@
-- name: Annual expenses for 30 hours entitlement
+- name: Eligible for 30 hours - All conditions met
   period: 2025
   input:
-    extended_childcare_entitlement_hours: 30
+    age: 3  # Age 3+ gets 30 hours
+    is_child: false
+    extended_childcare_entitlement_meets_income_requirements: true
+    extended_childcare_entitlement_work_condition: true
   output:
-    extended_childcare_entitlement: 6_703.2 
+    extended_childcare_entitlement: 6_703.2  
 
-- name: Annual expenses for 15 hours entitlement
+- name: Eligible for 15 hours - All first conditions met
   period: 2025
   input:
-    extended_childcare_entitlement_hours: 15
+    age: 2  # Age 2 gets 15 hours
+    is_child: false
+    extended_childcare_entitlement_meets_income_requirements: true
+    extended_childcare_entitlement_work_condition: true
   output:
-    extended_childcare_entitlement: 3_351.6 
+    extended_childcare_entitlement: 4_719.6  
+
+- name: Eligible for 15 hours - One condition did not meet
+  period: 2025
+  input:
+    age: 2  
+    is_child: false
+    extended_childcare_entitlement_meets_income_requirements: false
+    extended_childcare_entitlement_work_condition: true
+  output:
+    extended_childcare_entitlement: 0  # Not eligible
+
+- name: Eligible for mixed hours - Family with multiple children
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 35
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 1
+      parent2:
+        age: 33
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 1
+      child1:
+        age: 2  # 15 hours
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 0
+      child2:
+        age: 3  # 30 hours
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 0
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1, child2]
+  output:
+    extended_childcare_entitlement: 11_422.8 
+
+- name: Not eligible - Family with multiple children but conditions not met
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 35
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 1
+      parent2:
+        age: 33
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 1
+      child1:
+        age: 2
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 0
+      child2:
+        age: 3
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: 0
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1, child2]
+  output:
+    extended_childcare_entitlement: 0  # Not eligible
+
+- name: Eligible with one working parent and one disabled parent
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 35
+        is_child: false
+        in_work: true
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 1
+        incapacity_benefit: 0
+      parent2:
+        age: 33
+        is_child: false
+        in_work: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 1
+        incapacity_benefit: 100  # Has disability exemption
+      child1:
+        age: 2  # 15 hours
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 0
+      child2:
+        age: 3  # 30 hours
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 0
+      child3:
+        age: 3  # 30 hours
+        is_child: true
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: 0
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1, child2, child3]
+        family_type: COUPLE_WITH_CHILDREN
+  output:
+    extended_childcare_entitlement: 18_126.0
 
 - name: No expenses for zero hours
   period: 2025
   input:
-    extended_childcare_entitlement_hours: 0
+    extended_childcare_entitlement_meets_income_requirements: false
+    extended_childcare_entitlement_work_condition: false
   output:
-    extended_childcare_entitlement: 0  # 0 hours
+    extended_childcare_entitlement: 0  # Not eligible
