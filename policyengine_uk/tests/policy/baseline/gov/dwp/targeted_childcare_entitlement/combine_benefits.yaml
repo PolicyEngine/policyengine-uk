@@ -18,7 +18,7 @@
         child_tax_credit: 0
         working_tax_credit: 0
   output:
-    targeted_childcare_entitlement_meets_benefits: [true]
+    meets_targeted_childcare_entitlement_conditions: [true]
 
 - name: Eligible with UC under income threshold - family
   period: 2025
@@ -40,7 +40,7 @@
         child_tax_credit: 0
         working_tax_credit: 0
   output:
-    targeted_childcare_entitlement_meets_benefits: [true]
+    meets_targeted_childcare_entitlement_conditions: [true]
 
 - name: Eligible with tax credits under income threshold - large family
   period: 2025
@@ -68,7 +68,7 @@
         child_tax_credit: 100
         working_tax_credit: 0
   output:
-    targeted_childcare_entitlement_meets_benefits: [true]
+    meets_targeted_childcare_entitlement_conditions: [true]
 
 - name: Ineligible due to high income with UC
   period: 2025
@@ -82,7 +82,7 @@
         universal_credit: 10000
         jsa_income: 0
   output:
-    targeted_childcare_entitlement_meets_benefits: [false]
+    meets_targeted_childcare_entitlement_conditions: [false]
 
 - name: Ineligible with no qualifying benefits - family
   period: 2025
@@ -107,7 +107,7 @@
         child_tax_credit: 0
         working_tax_credit: 0
   output:
-    targeted_childcare_entitlement_meets_benefits: [false]
+    meets_targeted_childcare_entitlement_conditions: [false]
 
 - name: Eligible with ESA - couple
   period: 2025
@@ -129,7 +129,7 @@
         child_tax_credit: 0
         working_tax_credit: 0
   output:
-    targeted_childcare_entitlement_meets_benefits: [true]
+    meets_targeted_childcare_entitlement_conditions: [true]
 
 - name: Eligible with pension credit - couple
   period: 2025
@@ -151,4 +151,4 @@
         child_tax_credit: 0
         working_tax_credit: 0
   output:
-    targeted_childcare_entitlement_meets_benefits: [true]
+    meets_targeted_childcare_entitlement_conditions: [true]

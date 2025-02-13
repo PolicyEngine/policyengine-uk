@@ -1,12 +1,11 @@
 from policyengine_uk.model_api import *
 
 
-class targeted_childcare_entitlement_meets_benefits(Variable):
+class meets_targeted_childcare_entitlement_conditions(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Eligible for targeted childcare entitlement based on benefits"
+    label = "Eligibility for targeted childcare entitlement based on benefits"
     definition_period = YEAR
-    # https://www.gov.uk/help-with-childcare-costs/free-childcare-2-year-olds-claim-benefits
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.targeted_childcare_entitlement

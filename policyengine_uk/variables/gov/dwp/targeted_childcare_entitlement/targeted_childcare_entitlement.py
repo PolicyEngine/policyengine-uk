@@ -12,6 +12,5 @@ class targeted_childcare_entitlement(Variable):
         # Get the hours entitled for this child
         hours = person("targeted_childcare_entitlement_hours", period)
 
-        # Get the funding rate from parameters
         p = parameters(period).gov.dwp.targeted_childcare_entitlement
         return hours * p.funding_rate

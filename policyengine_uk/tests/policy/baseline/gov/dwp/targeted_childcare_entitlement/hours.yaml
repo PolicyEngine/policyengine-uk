@@ -1,4 +1,4 @@
-- name: fully eligible
+- name: Fully eligible
   period: 2025
   input:
     people:
@@ -7,11 +7,11 @@
     benunits:
       benunit:
         members: ["child"]
-        targeted_childcare_entitlement_meets_benefits: true
+        meets_targeted_childcare_entitlement_conditions: true
   output:
     targeted_childcare_entitlement_hours: [570]
 
-- name: not eligible due to benefits
+- name: Not eligible due to benefits
   period: 2025
   input:
     people:
@@ -20,11 +20,11 @@
     benunits:
       benunit:
         members: ["child"]
-        targeted_childcare_entitlement_meets_benefits: false
+        meets_targeted_childcare_entitlement_conditions: false
   output:
     targeted_childcare_entitlement_hours: [0]
 
-- name: not eligible due to age
+- name: Not eligible due to age
   period: 2025
   input:
     people:
@@ -33,11 +33,11 @@
     benunits:
       benunit:
         members: ["child"]
-        targeted_childcare_entitlement_meets_benefits: true
+        meets_targeted_childcare_entitlement_conditions: true
   output:
     targeted_childcare_entitlement_hours: [0]
 
-- name: multiple children with mixed eligibility
+- name: Multiple children with mixed eligibility
   period: 2025
   input:
     people:
@@ -50,11 +50,11 @@
     benunits:
       benunit:
         members: ["child1", "child2", "child3"]
-        targeted_childcare_entitlement_meets_benefits: true
+        meets_targeted_childcare_entitlement_conditions: true
   output:
     targeted_childcare_entitlement_hours: [570, 0, 0]
 
-- name: family with twins both eligible
+- name: Family with twins both eligible
   period: 2025
   input:
     people:
@@ -65,6 +65,6 @@
     benunits:
       benunit:
         members: ["twin1", "twin2"]
-        targeted_childcare_entitlement_meets_benefits: true
+        meets_targeted_childcare_entitlement_conditions: true
   output:
     targeted_childcare_entitlement_hours: [570, 570]
