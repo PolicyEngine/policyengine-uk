@@ -24,4 +24,4 @@ class extended_childcare_entitlement_eligible(Variable):
             > 0
         )
 
-        return meets_income_condition * work_eligible
+        return meets_income_condition & work_eligible

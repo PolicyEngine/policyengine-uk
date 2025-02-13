@@ -13,8 +13,8 @@ class extended_childcare_entitlement_hours(Variable):
         # Get parameters
         p = parameters(
             period
-        ).gov.dfe.extended_childcare_entitlement.childcare_entitlement_hours
+        ).gov.dfe.extended_childcare_entitlement
 
-        hours_per_child = p.calc(person("age", period))
+        hours_per_child = p.hours.calc(person("age", period))
 
         return hours_per_child
