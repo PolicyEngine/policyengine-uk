@@ -7,5 +7,6 @@ metadata:
   reference:
     - title: Commons Library
       href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/
+      # Rate for disadvantaged two-year-olds childcare entitlement - amount from "Funding rates" section.
 values:
   2015-01-01: 8.28
