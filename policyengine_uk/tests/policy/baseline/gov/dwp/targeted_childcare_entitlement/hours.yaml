@@ -8,6 +8,10 @@
       benunit:
         members: ["child"]
         meets_targeted_childcare_entitlement_conditions: true
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
   output:
     targeted_childcare_entitlement_hours: [570]
 
@@ -21,6 +25,10 @@
       benunit:
         members: ["child"]
         meets_targeted_childcare_entitlement_conditions: false
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
   output:
     targeted_childcare_entitlement_hours: [0]
 
@@ -34,6 +42,10 @@
       benunit:
         members: ["child"]
         meets_targeted_childcare_entitlement_conditions: true
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
   output:
     targeted_childcare_entitlement_hours: [0]
 
@@ -51,6 +63,10 @@
       benunit:
         members: ["child1", "child2", "child3"]
         meets_targeted_childcare_entitlement_conditions: true
+    households:
+      household:
+        members: ["child1", "child2", "child3"]
+        country: ENGLAND
   output:
     targeted_childcare_entitlement_hours: [570, 0, 0]
 
@@ -66,5 +82,9 @@
       benunit:
         members: ["twin1", "twin2"]
         meets_targeted_childcare_entitlement_conditions: true
+    households:
+      household:
+        members: ["twin1", "twin2"]
+        country: ENGLAND
   output:
     targeted_childcare_entitlement_hours: [570, 570]
