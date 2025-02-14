@@ -1,12 +1,12 @@
-description: The Department for Education sets an income threshold for Tax Credit recipients to be eligible for targeted childcare entitlement.
+description: Families claiming the Tax Credits with income over this amount are ineligible for the benefit-targeted free childcare entitlement.
 metadata:
-  unit: GBP
+  unit: currency-GBP  
   period: year
-  label: Income threshold for Tax Credit recipients
+  label: Income limit for tax credit recipients to access benefit-targeted free childcare
   reference:
     - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014, part 1.2.b
       href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/1/made
-    - title: Document for 15 hours free education and childcare for 2-year-olds
+    - title: 15 hours free education and childcare for 2-year-olds
       href: https://www.gov.uk/help-with-childcare-costs/free-childcare-2-year-olds-claim-benefits?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b
 values:
   2015-01-01: 16_190
