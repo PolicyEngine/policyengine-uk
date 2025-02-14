@@ -1,0 +1,24 @@
+from policyengine_uk.model_api import *
+
+
+class extended_childcare_entitlement(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "annual extended childcare entitlement expenses"
+    definition_period = YEAR
+    unit = GBP
+    defined_for = "extended_childcare_entitlement_eligible"
+
+    def formula(benunit, period, parameters):
+
+        # Get parameters
+        p = parameters(period).gov.dfe.extended_childcare_entitlement
+        age = benunit.members("age", period)
+        # Compute weekly hours directly inside this function
+        weekly_hours_per_child = p.hours.calc(age)
+
+        # Compute subsidy per child
+        subsidy_per_child = weekly_hours_per_child * p.expense_rate.calc(age)
+
+        # Compute total annual expenses
+        return benunit.sum(subsidy_per_child) * p.weeks_per_year

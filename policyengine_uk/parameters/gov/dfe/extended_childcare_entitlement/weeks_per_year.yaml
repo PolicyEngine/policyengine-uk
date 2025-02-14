@@ -1,0 +1,10 @@
+description: The Department for Education provides extended childcare entitlement for these weeks per year.
+metadata:
+  period: year
+  unit: week
+  label: Extended childcare entitlement weeks per year
+  reference:
+    - title: Childcare Choices document - 15 and 30 hours childcare support
+      href: https://www.childcarechoices.gov.uk/15-and-30-hours-childcare-support/working-families/eligibility
+values:
+  2016-01-01: 38
