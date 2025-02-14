@@ -1,0 +1,83 @@
+- name: Care to Learn amount - Outside London
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 19
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn_amount: [9360, 0]  # 180 * 52 for parent, 0 for child
+
+- name: Care to Learn amount - Inside London
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 19
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
+        region: LONDON
+  output:
+    care_to_learn_amount: [10140, 0]  # 195 * 52 for parent, 0 for child
+
+- name: Care to Learn amount - Ineligible person
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 21  # Too old to be eligible
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn_amount: [0, 0]
+
+- name: Care to Learn amount - Higher education
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 19
+        current_education: TERTIARY
+        is_apprentice: false
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn_amount: [0, 0]
