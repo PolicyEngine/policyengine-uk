@@ -1,0 +1,10 @@
+description: The Department for Education limits extended childcare entitlement to benefit units in which each spouse earns at least the product of their minimum wage and this number of hours per week.
+metadata:
+  period: year
+  unit: hour
+  label: Extended childcare entitlement weekly work hours minimum
+  reference:
+    - title: The Childcare Payments (Eligibility) (Amendment) Regulations 2016 - regulation 3
+      href: https://www.legislation.gov.uk/uksi/2016/793/regulation/3/made
+values:
+  2016-01-01: 16
