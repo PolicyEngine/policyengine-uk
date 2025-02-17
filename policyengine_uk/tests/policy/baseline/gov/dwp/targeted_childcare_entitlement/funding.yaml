@@ -9,7 +9,7 @@
       benunit:
         members: ["child"]
   output:
-    targeted_childcare_entitlement: [4719.60]
+    targeted_childcare_entitlement: 4_719.60
 
 - name: Child aged 3 not eligible
   period: 2024
@@ -22,7 +22,7 @@
       benunit:
         members: ["child"]
   output:
-    targeted_childcare_entitlement: [0]
+    targeted_childcare_entitlement: 0
 
 - name: Child aged 4 not eligible
   period: 2024
@@ -35,7 +35,7 @@
       benunit:
         members: ["child"]
   output:
-    targeted_childcare_entitlement: [0]
+    targeted_childcare_entitlement: 0
 
 - name: Multiple children different ages
   period: 2024
@@ -56,7 +56,7 @@
       benunit:
         members: ["parent", "child1", "child2", "child3"]
   output:
-    targeted_childcare_entitlement: [0, 4719.60, 0, 0]
+    targeted_childcare_entitlement: 4_719.60
 
 - name: Family with twins both age 2
   period: 2024
@@ -74,4 +74,4 @@
       benunit:
         members: ["parent", "twin1", "twin2"]
   output:
-    targeted_childcare_entitlement: [0, 4719.60, 4719.60]
+    targeted_childcare_entitlement: 9_439.20
