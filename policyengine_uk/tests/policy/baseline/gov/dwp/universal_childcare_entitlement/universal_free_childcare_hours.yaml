@@ -1,67 +1,64 @@
-- name: Child under 3 - no entitlement
-  period: 2024
-  input:
-    people:
-      child:
-        age: 2
-    benunits:
-      benunit:
-        members: ["child"]
-  output:
-    universal_childcare_entitlement_hours: [0]
-
-- name: Child aged 3 - full entitlement
+- name: Child aged 3 in England gets full entitlement
   period: 2024
   input:
     people:
       child:
         age: 3
-    benunits:
-      benunit:
+    households:
+      household:
         members: ["child"]
+        country: ENGLAND
   output:
     universal_childcare_entitlement_hours: [570]
 
-- name: Child aged 4 - full entitlement
+- name: Child aged 3 in Scotland gets no entitlement
   period: 2024
   input:
     people:
       child:
-        age: 4
-    benunits:
-      benunit:
+        age: 3
+    households:
+      household:
         members: ["child"]
-  output:
-    universal_childcare_entitlement_hours: [570]
-
-- name: Child aged 5 - no entitlement
-  period: 2024
-  input:
-    people:
-      child:
-        age: 5
-    benunits:
-      benunit:
-        members: ["child"]
+        country: SCOTLAND
   output:
     universal_childcare_entitlement_hours: [0]
 
-- name: Family with multiple children - mixed entitlement
+- name: Child aged 3 in Wales gets no entitlement
   period: 2024
   input:
     people:
-      parent:
-        age: 35
-      child1:
-        age: 2
-      child2:
+      child:
         age: 3
-      child3:
-        age: 4
-      child4:
-        age: 5
-    benunits:
-      benunit:
-        members: ["parent", "child1", "child2", "child3", "child4"]
+    households:
+      household:
+        members: ["child"]
+        country: WALES
   output:
-    universal_childcare_entitlement_hours: [0, 0, 570, 570, 0]
+    universal_childcare_entitlement_hours: [0]
+
+- name: Child aged 2 in England gets no entitlement
+  period: 2024
+  input:
+    people:
+      child:
+        age: 2
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_hours: [0]
+
+- name: Child aged 4 in England gets full entitlement
+  period: 2024
+  input:
+    people:
+      child:
+        age: 4
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_hours: [570]

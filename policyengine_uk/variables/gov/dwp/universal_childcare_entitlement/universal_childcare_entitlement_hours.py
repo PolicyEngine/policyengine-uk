@@ -9,9 +9,9 @@ class universal_childcare_entitlement_hours(Variable):
     unit = "hour"
 
     def formula(person, period, parameters):
-        # Get parameters with the correct path
         p = parameters(period).gov.dwp.universal_childcare_entitlement
-
-        # Calculate hours based on age using the brackets structure
         age = person("age", period)
-        return p.hours.calc(age)
+        country = person.household("country", period)
+        countries = country.possible_values
+        in_England = country == countries.ENGLAND
+        return where(in_England, p.hours.calc(age), 0)

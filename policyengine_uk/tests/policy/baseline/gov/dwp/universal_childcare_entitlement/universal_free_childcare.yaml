@@ -8,7 +8,7 @@
       benunit:
         members: ["child"]
   output:
-    universal_childcare_entitlement: [0]
+    universal_childcare_entitlement: 0
 
 - name: Child aged 3 is eligible
   period: 2024
@@ -21,7 +21,7 @@
       benunit:
         members: ["child"]
   output:
-    universal_childcare_entitlement: [3351.60]
+    universal_childcare_entitlement: 3_351.60
 
 - name: Child aged 4 is eligible
   period: 2024
@@ -34,7 +34,7 @@
       benunit:
         members: ["child"]
   output:
-    universal_childcare_entitlement: [3351.60]
+    universal_childcare_entitlement: 3_351.60
 
 - name: Multiple children different ages, some eligible
   period: 2024
@@ -56,7 +56,7 @@
       benunit:
         members: ["parent", "child1", "child2", "child3", "child4"]
   output:
-    universal_childcare_entitlement: [0, 0, 3351.60, 3351.60, 0]
+    universal_childcare_entitlement: 6_703.20
 
 - name: Family with twins - both eligible for full entitlement
   period: 2024
@@ -74,4 +74,4 @@
       benunit:
         members: ["parent", "twin1", "twin2"]
   output:
-    universal_childcare_entitlement: [0, 3351.60, 3351.60]
+    universal_childcare_entitlement: 6_703.20
