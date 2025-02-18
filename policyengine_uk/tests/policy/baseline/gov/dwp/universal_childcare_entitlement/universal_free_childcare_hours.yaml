@@ -1,64 +1,17 @@
-- name: Child aged 3 in England gets full entitlement
+- name: Eligible child gets full entitlement
   period: 2024
   input:
     people:
       child:
-        age: 3
-    households:
-      household:
-        members: ["child"]
-        country: ENGLAND
+        universal_childcare_entitlement_eligible: True
   output:
     universal_childcare_entitlement_hours: [570]
 
-- name: Child aged 3 in Scotland gets no entitlement
+- name: Ineligible child gets no entitlement
   period: 2024
   input:
     people:
       child:
-        age: 3
-    households:
-      household:
-        members: ["child"]
-        country: SCOTLAND
+        universal_childcare_entitlement_eligible: False
   output:
     universal_childcare_entitlement_hours: [0]
-
-- name: Child aged 3 in Wales gets no entitlement
-  period: 2024
-  input:
-    people:
-      child:
-        age: 3
-    households:
-      household:
-        members: ["child"]
-        country: WALES
-  output:
-    universal_childcare_entitlement_hours: [0]
-
-- name: Child aged 2 in England gets no entitlement
-  period: 2024
-  input:
-    people:
-      child:
-        age: 2
-    households:
-      household:
-        members: ["child"]
-        country: ENGLAND
-  output:
-    universal_childcare_entitlement_hours: [0]
-
-- name: Child aged 4 in England gets full entitlement
-  period: 2024
-  input:
-    people:
-      child:
-        age: 4
-    households:
-      household:
-        members: ["child"]
-        country: ENGLAND
-  output:
-    universal_childcare_entitlement_hours: [570]

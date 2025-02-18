@@ -10,8 +10,7 @@ class universal_childcare_entitlement_hours(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.universal_childcare_entitlement
-        age = person("age", period)
-        country = person.household("country", period)
-        countries = country.possible_values
-        in_England = country == countries.ENGLAND
-        return where(in_England, p.hours.calc(age), 0)
+        is_eligible = person(
+            "universal_childcare_entitlement_eligible", period
+        )
+        return where(is_eligible, p.hours, 0)

@@ -1,0 +1,64 @@
+- name: Child aged 3 in England is eligible
+  period: 2024
+  input:
+    people:
+      child:
+        age: 3
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_eligible: [True]
+
+- name: Child aged 3 in Scotland is not eligible
+  period: 2024
+  input:
+    people:
+      child:
+        age: 3
+    households:
+      household:
+        members: ["child"]
+        country: SCOTLAND
+  output:
+    universal_childcare_entitlement_eligible: [False]
+
+- name: Child aged 3 in Wales is not eligible
+  period: 2024
+  input:
+    people:
+      child:
+        age: 3
+    households:
+      household:
+        members: ["child"]
+        country: WALES
+  output:
+    universal_childcare_entitlement_eligible: [False]
+
+- name: Child aged 2 in England is not eligible
+  period: 2024
+  input:
+    people:
+      child:
+        age: 2
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_eligible: [False]
+
+- name: Child aged 4 in England is eligible
+  period: 2024
+  input:
+    people:
+      child:
+        age: 4
+    households:
+      household:
+        members: ["child"]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_eligible: [True]
