@@ -11,11 +11,13 @@ class universal_childcare_entitlement_eligible(Variable):
         country = person.household("country", period)
         countries = country.possible_values
         in_england = country == countries.ENGLAND
-        # Regulation 33 of The Childcare (Early Years Provision Free of Charge) (Extended Entitlement) Regulations 2016 requires an "English local authority" to secure early years provision, limiting the entitlement to England.
+        # Childcare (Early Years Provision Free of Charge) Regulations 2016 (part 33)
+        # The regulation above requires an "English local authority" to secure early years provision, limiting the entitlement to England.
 
         age = person("age", period)
         p = parameters(period).gov.dfe.universal_childcare_entitlement
         meets_min_age = age >= p.min_age
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
-        # Section 7 of the Childcare Act 2006 limits free early years provision to children under compulsory school age, making this check necessary for determining universal childcare entitlement eligibility.
+        # Section 7 of the Childcare Act 2006
+        # The regulation above limits free early years provision to children under compulsory school age.
         return in_england & meets_min_age & not_compulsory_age
