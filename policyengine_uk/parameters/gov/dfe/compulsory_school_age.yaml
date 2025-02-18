@@ -1,4 +1,4 @@
-description: The Education Act 1996 defines compulsory school age in England, setting the age range during which children must receive full-time education.
+description: The Department for Education requires children to receive full-time education in this age range.
 metadata:
   type: single_amount
   threshold_unit: year
@@ -7,17 +7,16 @@ metadata:
   reference:
     - title: Education Act 1996 - Section 8 (Compulsory school age)
       href: https://www.legislation.gov.uk/ukpga/1996/56/section/8
-    # In England, a person is of compulsory school age from the start of the term after their fifth birthday until they turn 16
 brackets:
   - threshold:
       2015-01-01: 0
     amount:
-      2015-01-01: 0
+      2015-01-01: False
   - threshold:
       2015-01-01: 5
     amount:
-      2015-01-01: 1
+      2015-01-01: True
   - threshold:
       2015-01-01: 16
     amount:
-      2015-01-01: 0
+      2015-01-01: False

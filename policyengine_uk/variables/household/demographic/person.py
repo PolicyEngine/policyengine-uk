@@ -375,15 +375,3 @@ class is_older_child(Variable):
     def formula(person, period, parameters):
         age = person("age", period)
         return (age >= 14) & (age < 18)
-
-
-class is_of_compulsory_school_age(Variable):
-    value_type = bool
-    entity = Person
-    label = "Whether the person is of compulsory school age"
-    definition_period = YEAR
-
-    def formula(person, period, parameters):
-        age = person("age", period)
-        p = parameters(period).gov.dfe
-        return p.compulsory_school_age.calc(age)
