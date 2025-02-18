@@ -18,5 +18,4 @@ class universal_childcare_entitlement_eligible(Variable):
         meets_min_age = age >= p.min_age
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
         # Section 7 of the Childcare Act 2006 limits free early years provision to children under compulsory school age, making this check necessary for determining universal childcare entitlement eligibility.
-
         return in_england & meets_min_age & not_compulsory_age
