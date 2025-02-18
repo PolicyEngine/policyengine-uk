@@ -9,7 +9,7 @@ class universal_childcare_entitlement_hours(Variable):
     unit = "hour"
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.dwp.universal_childcare_entitlement
+        p = parameters(period).gov.dfe.universal_childcare_entitlement
         is_eligible = person(
             "universal_childcare_entitlement_eligible", period
         )

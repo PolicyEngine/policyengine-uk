@@ -13,7 +13,7 @@ class universal_childcare_entitlement_eligible(Variable):
         in_England = country == countries.ENGLAND
 
         age = person("age", period)
-        p = parameters(period).gov.dwp.universal_childcare_entitlement
+        p = parameters(period).gov.dfe.universal_childcare_entitlement
         meets_min_age = age >= p.min_age
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
 
