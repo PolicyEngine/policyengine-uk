@@ -1,0 +1,22 @@
+description: The Department for Education requires children to receive full-time education in this age range.
+metadata:
+  type: single_amount
+  threshold_unit: year
+  amount_unit: bool
+  label: compulsory school age status
+  reference:
+    - title: Education Act 1996 - Section 8 (Compulsory school age)
+      href: https://www.legislation.gov.uk/ukpga/1996/56/section/8
+brackets:
+  - threshold:
+      2015-01-01: 0
+    amount:
+      2015-01-01: False
+  - threshold:
+      2015-01-01: 5
+    amount:
+      2015-01-01: True
+  - threshold:
+      2015-01-01: 16
+    amount:
+      2015-01-01: False
