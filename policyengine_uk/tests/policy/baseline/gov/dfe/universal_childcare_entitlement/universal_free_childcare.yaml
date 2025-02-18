@@ -4,6 +4,7 @@
     people:
       child:
         age: 2
+        universal_childcare_entitlement_eligible: False
     benunits:
       benunit:
         members: ["child"]
@@ -16,7 +17,7 @@
     people:
       child:
         age: 3
-        universal_childcare_entitlement_hours: 570
+        universal_childcare_entitlement_eligible: True
     benunits:
       benunit:
         members: ["child"]
@@ -29,7 +30,7 @@
     people:
       child:
         age: 4
-        universal_childcare_entitlement_hours: 570
+        universal_childcare_entitlement_eligible: True
     benunits:
       benunit:
         members: ["child"]
@@ -42,16 +43,19 @@
     people:
       parent:
         age: 35
+        universal_childcare_entitlement_eligible: False
       child1:
         age: 2
+        universal_childcare_entitlement_eligible: False
       child2:
         age: 3
-        universal_childcare_entitlement_hours: 570
+        universal_childcare_entitlement_eligible: True
       child3:
         age: 4
-        universal_childcare_entitlement_hours: 570
+        universal_childcare_entitlement_eligible: True
       child4:
         age: 5
+        universal_childcare_entitlement_eligible: False
     benunits:
       benunit:
         members: ["parent", "child1", "child2", "child3", "child4"]
@@ -64,12 +68,13 @@
     people:
       parent:
         age: 35
+        universal_childcare_entitlement_eligible: False
       twin1:
         age: 3
-        universal_childcare_entitlement_hours: 570
+        universal_childcare_entitlement_eligible: True
       twin2:
         age: 3
-        universal_childcare_entitlement_hours: 570
+        universal_childcare_entitlement_eligible: True
     benunits:
       benunit:
         members: ["parent", "twin1", "twin2"]

@@ -9,9 +9,10 @@ class universal_childcare_entitlement(Variable):
     unit = "currency-GBP"
 
     def formula(benunit, period, parameters):
-        hours = benunit.members(
-            "universal_childcare_entitlement_hours", period
+        p = parameters(period).gov.dfe
+        is_eligible = benunit.members(
+            "universal_childcare_entitlement_eligible", period
         )
         ages = benunit.members("age", period)
-        p = parameters(period).gov.dfe
+        hours = where(is_eligible, p.universal_childcare_entitlement.hours, 0)
         return benunit.sum(hours * p.childcare_funding_rate.calc(ages))
