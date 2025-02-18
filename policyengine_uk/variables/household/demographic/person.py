@@ -385,5 +385,5 @@ class is_of_compulsory_school_age(Variable):
 
     def formula(person, period, parameters):
         age = person("age", period)
-        p = parameters(period).gov.dfe.universal_childcare_entitlement
+        p = parameters(period).gov.dfe
         return p.compulsory_school_age.calc(age)

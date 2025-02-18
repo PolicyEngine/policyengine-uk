@@ -12,5 +12,6 @@ class universal_childcare_entitlement(Variable):
         hours = benunit.members(
             "universal_childcare_entitlement_hours", period
         )
-        p = parameters(period).gov.dfe.universal_childcare_entitlement
-        return benunit.sum(hours * p.funding_rate)
+        ages = benunit.members("age", period)
+        p = parameters(period).gov.dfe
+        return benunit.sum(hours * p.childcare_funding_rate.calc(ages))
