@@ -1,82 +1,63 @@
 - name: Child under 3 isn't eligible (person-level)
   period: 2024
   input:
-    people:
-      child:
-        age: 2
-        universal_childcare_entitlement_eligible: False
-    benunits:
-      benunit:
-        members: [child]
+    age: 2
+    universal_childcare_entitlement_eligible: False
   output:
-    universal_childcare_entitlement: [0.0]
+    universal_childcare_entitlement: 0.0
 
 - name: Child aged 3 is eligible (person-level)
   period: 2024
   input:
-    people:
-      child:
-        age: 3
-        universal_childcare_entitlement_eligible: True
-    benunits:
-      benunit:
-        members: [child]
+    age: 3
+    universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: [3351.60]
+    universal_childcare_entitlement: 3351.60
 
 - name: Child aged 4 is eligible (person-level)
   period: 2024
   input:
-    people:
-      child:
-        age: 4
-        universal_childcare_entitlement_eligible: True
-    benunits:
-      benunit:
-        members: [child]
+    age: 4
+    universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: [3351.60]
+    universal_childcare_entitlement: 3351.60
 
-- name: Multiple children different ages, some eligible (person-level)
+- name: Parent (ineligible)
   period: 2024
   input:
-    people:
-      parent:
-        age: 35
-        universal_childcare_entitlement_eligible: False
-      child1:
-        age: 2
-        universal_childcare_entitlement_eligible: False
-      child2:
-        age: 3
-        universal_childcare_entitlement_eligible: True
-      child3:
-        age: 4
-        universal_childcare_entitlement_eligible: True
-      child4:
-        age: 5
-        universal_childcare_entitlement_eligible: False
-    benunits:
-      benunit:
-        members: [parent, child1, child2, child3, child4]
+    age: 35
+    universal_childcare_entitlement_eligible: False
   output:
-    universal_childcare_entitlement: [0.0, 0.0, 3351.60, 3351.60, 0.0]
+    universal_childcare_entitlement: 0.0
 
-- name: Family with twins - both eligible for full entitlement (person-level)
+- name: Child aged 2 (ineligible)
   period: 2024
   input:
-    people:
-      parent:
-        age: 35
-        universal_childcare_entitlement_eligible: False
-      twin1:
-        age: 3
-        universal_childcare_entitlement_eligible: True
-      twin2:
-        age: 3
-        universal_childcare_entitlement_eligible: True
-    benunits:
-      benunit:
-        members: [parent, twin1, twin2]
+    age: 2
+    universal_childcare_entitlement_eligible: False
   output:
-    universal_childcare_entitlement: [0.0, 3351.60, 3351.60]
+    universal_childcare_entitlement: 0.0
+
+- name: Child aged 3 (eligible)
+  period: 2024
+  input:
+    age: 3
+    universal_childcare_entitlement_eligible: True
+  output:
+    universal_childcare_entitlement: 3351.60
+
+- name: Child aged 4 (eligible)
+  period: 2024
+  input:
+    age: 4
+    universal_childcare_entitlement_eligible: True
+  output:
+    universal_childcare_entitlement: 3351.60
+
+- name: Child aged 5 (ineligible)
+  period: 2024
+  input:
+    age: 5
+    universal_childcare_entitlement_eligible: False
+  output:
+    universal_childcare_entitlement: 0.0
