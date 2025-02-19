@@ -1,0 +1,70 @@
+# Tests for tax_free_childcare
+- name: Eligible standard child - below cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: true
+    is_disabled_for_benefits: false
+    childcare_expenses: 8_000  # Should get £2,000 (20% of £8,000)
+  output:
+    tax_free_childcare: 1_600
+
+- name: Eligible standard child - at cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: true
+    is_disabled_for_benefits: false
+    childcare_expenses: 10_000  # Should be capped at £2,000
+  output:
+    tax_free_childcare: 2_000
+
+- name: Eligible disabled child - below cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: true
+    is_disabled_for_benefits: true
+    childcare_expenses: 16_000  # Should get £3,200 (20% of £16,000)
+  output:
+    tax_free_childcare: 3_200
+
+- name: Eligible disabled child - at cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: true
+    is_disabled_for_benefits: true
+    childcare_expenses: 25_000  # Should be capped at £4,000
+  output:
+    tax_free_childcare: 4_000
+
+- name: Not eligible due to not being child
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: false
+    is_disabled_for_benefits: false
+    childcare_expenses: 10_000
+  output:
+    tax_free_childcare: 0
+
+- name: Not eligible despite being disabled child
+  period: 2025
+  input:
+    tax_free_childcare_eligible: false
+    is_child: true
+    is_disabled_for_benefits: true
+    childcare_expenses: 10_000
+  output:
+    tax_free_childcare: 0
+
+- name: Small childcare expense
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_child: true
+    is_disabled_for_benefits: false
+    childcare_expenses: 1_000  # Should get £200 (20% of £1,000)
+  output:
+    tax_free_childcare: 200

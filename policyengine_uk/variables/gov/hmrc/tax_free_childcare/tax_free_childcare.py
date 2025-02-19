@@ -23,11 +23,21 @@ class tax_free_childcare(Variable):
         # Child gets higher amount if either disabled or blind
         qualifies_for_higher_amount = is_disabled | is_blind
 
-        amount_per_child = (
+        # Get childcare expenses
+        childcare_expenses = benunit.members("childcare_expenses", period)
+
+        # Calculate contribution using rate from parameters
+        contribution = childcare_expenses * p.rate
+
+        # Cap the contribution at the maximum amounts
+        max_amounts = (
             where(
                 qualifies_for_higher_amount, p.disabled_child, p.standard_child
             )
-        ) * is_child
+            * is_child
+        )
 
-        # Reduce to benefit unit level by taking maximum
-        return benunit.sum(amount_per_child)
+        capped_contribution = min_(contribution, max_amounts)
+
+        # Sum across all children in the benefit unit
+        return benunit.sum(capped_contribution)
