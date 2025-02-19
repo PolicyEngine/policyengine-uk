@@ -1,4 +1,4 @@
-- name: Child under 3 isn't eligible
+- name: Child under 3 isn't eligible (person-level)
   period: 2024
   input:
     people:
@@ -7,11 +7,11 @@
         universal_childcare_entitlement_eligible: False
     benunits:
       benunit:
-        members: ["child"]
+        members: [child]
   output:
-    universal_childcare_entitlement: 0
+    universal_childcare_entitlement: [0.0]
 
-- name: Child aged 3 is eligible
+- name: Child aged 3 is eligible (person-level)
   period: 2024
   input:
     people:
@@ -20,11 +20,11 @@
         universal_childcare_entitlement_eligible: True
     benunits:
       benunit:
-        members: ["child"]
+        members: [child]
   output:
-    universal_childcare_entitlement: 3_351.60
+    universal_childcare_entitlement: [3351.60]
 
-- name: Child aged 4 is eligible
+- name: Child aged 4 is eligible (person-level)
   period: 2024
   input:
     people:
@@ -33,11 +33,11 @@
         universal_childcare_entitlement_eligible: True
     benunits:
       benunit:
-        members: ["child"]
+        members: [child]
   output:
-    universal_childcare_entitlement: 3_351.60
+    universal_childcare_entitlement: [3351.60]
 
-- name: Multiple children different ages, some eligible
+- name: Multiple children different ages, some eligible (person-level)
   period: 2024
   input:
     people:
@@ -58,11 +58,11 @@
         universal_childcare_entitlement_eligible: False
     benunits:
       benunit:
-        members: ["parent", "child1", "child2", "child3", "child4"]
+        members: [parent, child1, child2, child3, child4]
   output:
-    universal_childcare_entitlement: 6_703.20
+    universal_childcare_entitlement: [0.0, 0.0, 3351.60, 3351.60, 0.0]
 
-- name: Family with twins - both eligible for full entitlement
+- name: Family with twins - both eligible for full entitlement (person-level)
   period: 2024
   input:
     people:
@@ -77,6 +77,6 @@
         universal_childcare_entitlement_eligible: True
     benunits:
       benunit:
-        members: ["parent", "twin1", "twin2"]
+        members: [parent, twin1, twin2]
   output:
-    universal_childcare_entitlement: 6_703.20
+    universal_childcare_entitlement: [0.0, 3351.60, 3351.60]
