@@ -1,0 +1,103 @@
+- name: Lone parent working - eligible
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        in_work: true
+        is_parent: true
+      child:
+        age: 4
+        is_parent: false
+    benunits:
+      benunit:
+        members: [parent, child]
+        family_type: LONE_PARENT
+  output:
+    extended_childcare_entitlement_work_condition: [1, 0]
+
+- name: Couple with children both working - eligible
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        in_work: true
+        is_parent: true
+      parent2:
+        age: 38
+        in_work: true
+        is_parent: true
+      child:
+        age: 4
+        is_parent: false
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
+  output:
+    extended_childcare_entitlement_work_condition: [1, 1, 0]
+
+- name: Couple with children, one working one with carer element - eligible
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        in_work: true
+        is_parent: true
+      parent2:
+        age: 38
+        in_work: false
+        is_parent: true
+      child:
+        age: 4
+        is_parent: false
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
+        uc_carer_element: 100
+  output:
+    extended_childcare_entitlement_work_condition: [1, 1, 0]
+
+- name: Couple with children one working one not - ineligible
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        in_work: true
+        is_parent: true
+      parent2:
+        age: 38
+        in_work: false
+        is_parent: true
+      child:
+        age: 4
+        is_parent: false
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
+  output:
+    extended_childcare_entitlement_work_condition: [0, 0, 0]
+
+- name: Couple without children both working - ineligible
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        in_work: true
+        is_parent: false
+      person2:
+        age: 38
+        in_work: true
+        is_parent: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        family_type: COUPLE_NO_CHILDREN
+  output:
+    extended_childcare_entitlement_work_condition: [0, 0]

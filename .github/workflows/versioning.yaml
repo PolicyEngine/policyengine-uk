@@ -1,0 +1,36 @@
+# Workflow that runs on versioning metadata updates.
+
+name: Versioning updates
+on:
+  push:
+    branches:
+      - master
+
+    paths:
+      - changelog_entry.yaml
+      - .github/**
+
+jobs:
+    Versioning:
+      if: (github.event.head_commit.message != 'Update package version')
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+          with:
+            repository: ${{ github.event.pull_request.head.repo.full_name }}
+            ref: ${{ github.event.pull_request.head.ref }}
+            token: ${{ secrets.POLICYENGINE_GITHUB }}
+        - name: Setup Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: 3.12
+        - name: Build changelog
+          run: pip install yaml-changelog && make changelog
+        - name: Preview changelog update
+          run: ".github/get-changelog-diff.sh"
+        - name: Update changelog
+          uses: EndBug/add-and-commit@v9
+          with:
+            add: "."
+            message: Update package version
