@@ -4,11 +4,12 @@ from policyengine_uk.model_api import *
 class tax_free_childcare(Variable):
     value_type = float
     entity = Person
-    label = "Tax-Free Childcare government contribution"
+    label = "Government contribution through tax-free childcare"
     documentation = "The amount of government contribution provided through the Tax-Free Childcare scheme"
     definition_period = YEAR
     unit = GBP
     defined_for = "tax_free_childcare_eligible"
+    # Note: tax_free_childcare_eligible is a BenUnit variable implicitly cast to Person level
 
     def formula(person, period, parameters):
         # Get parameters
