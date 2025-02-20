@@ -1,0 +1,10 @@
+description: The Department for Education limits extended childcare entitlement eligibility to households where each parent's individual income is less than this amount.
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Extended childcare entitlement individual income limit
+  reference:
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 15
+      href: https://www.legislation.gov.uk/uksi/2015/448/regulation/15#commentary-key-e27c923eee152accd495af8425536e29
+values:
+  2015-01-01: 100_000

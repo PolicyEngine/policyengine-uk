@@ -1,0 +1,12 @@
+description: The Department for Education provides this number of hours per year of childcare for universal childcare entitlement in England.
+metadata:
+  unit: hour
+  threshold_unit: year
+  label: universal childcare entitlement hours
+  reference:
+    - title: Childcare (Early Years Provision Free of Charge) (Extended Entitlement) Regulations 2016 - Regulation 35(3)
+      href: https://www.legislation.gov.uk/uksi/2016/1257/part/4/made
+    - title: Childcare Act 2006 - Section 7.1 (Duty to secure free early years provision)
+      href: https://www.legislation.gov.uk/ukpga/2006/21/section/7
+values:
+  2015-01-01: 570

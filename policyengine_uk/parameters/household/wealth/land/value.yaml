@@ -10,6 +10,7 @@ aggregate_household_land_value:
     2020-01-01: 4_309_138_000_000
   metadata:
     unit: currency-GBP
+    label: Total direct household land value
     uprating: household.wealth.financial_assets
     reference:
       - title: ONS National Balance Sheet (Table 11)
@@ -26,6 +27,7 @@ aggregate_corporate_land_value:
     2020-01-01: 1_757_818_000_000
   metadata:
     unit: currency-GBP
+    label: Total corporate land value
     uprating: household.wealth.financial_assets
     reference:
       - title: ONS National Balance Sheet (Tables 3 and 6)
