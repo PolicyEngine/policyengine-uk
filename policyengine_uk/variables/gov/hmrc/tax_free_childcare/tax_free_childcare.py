@@ -16,7 +16,7 @@ class tax_free_childcare(Variable):
 
         # Calculate per-child amounts at the person level
         person = benunit.members
-        is_child = person("is_child", period)
+        is_parent = person("is_parent", period)
         is_disabled = person("is_disabled_for_benefits", period)
         is_blind = person("is_blind", period)
 
@@ -29,14 +29,14 @@ class tax_free_childcare(Variable):
         )
 
         # Calculate contribution using rate from parameters
-        contribution = childcare_expense_per_child * p.rate
+        contribution = (childcare_expense_per_child * p.rate) / (1 - p.rate)
 
         # Cap the contribution at the maximum amounts
         max_amounts_per_child = (
             where(
                 qualifies_for_higher_amount, p.disabled_child, p.standard_child
             )
-            * is_child
+            * ~is_parent
         )
 
         capped_contribution = min_(contribution, max_amounts_per_child)
