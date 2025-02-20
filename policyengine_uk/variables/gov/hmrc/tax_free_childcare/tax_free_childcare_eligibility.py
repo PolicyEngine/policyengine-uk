@@ -19,7 +19,7 @@ class tax_free_childcare_eligible(Variable):
             benunit.members(
                 "tax_free_childcare_meets_income_requirements", period
             )
-            | benunit.members("is_child", period)
+            | ~benunit.members("is_parent", period)
         )
 
         childcare_eligible = benunit(
