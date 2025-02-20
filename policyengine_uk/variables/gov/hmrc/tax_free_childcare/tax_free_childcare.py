@@ -4,8 +4,8 @@ from policyengine_uk.model_api import *
 class tax_free_childcare(Variable):
     value_type = float
     entity = BenUnit
-    label = "Tax-free childcare government contribution"
-    documentation = "The amount of government contribution provided through the tax-free childcare scheme"
+    label = "Tax-Free Childcare government contribution"
+    documentation = "The amount of government contribution provided through the Tax-Free Childcare scheme"
     definition_period = YEAR
     unit = GBP
     defined_for = "tax_free_childcare_eligible"
@@ -24,20 +24,22 @@ class tax_free_childcare(Variable):
         qualifies_for_higher_amount = is_disabled | is_blind
 
         # Get childcare expenses
-        childcare_expenses = benunit.members("childcare_expenses", period)
+        childcare_expense_per_child = benunit.members(
+            "childcare_expenses", period
+        )
 
         # Calculate contribution using rate from parameters
-        contribution = childcare_expenses * p.rate
+        contribution = childcare_expense_per_child * p.rate
 
         # Cap the contribution at the maximum amounts
-        max_amounts = (
+        max_amounts_per_child = (
             where(
                 qualifies_for_higher_amount, p.disabled_child, p.standard_child
             )
             * is_child
         )
 
-        capped_contribution = min_(contribution, max_amounts)
+        capped_contribution = min_(contribution, max_amounts_per_child)
 
         # Sum across all children in the benefit unit
         return benunit.sum(capped_contribution)
