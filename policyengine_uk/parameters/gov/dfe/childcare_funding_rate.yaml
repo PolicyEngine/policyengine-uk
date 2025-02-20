@@ -1,0 +1,24 @@
+description: The Department for Education converts childcare hours into expenses for childcare entitlement at these rates.
+metadata:
+  type: single_amount
+  threshold_unit: year
+  amount_unit: currency-GBP
+  label: Childcare entitlement hourly rates by age
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: House of Commons Library | Early years funding in England
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/
+
+brackets:
+  - threshold:
+      2015-01-01: 0
+    amount:
+      2024-04-01: 11.22
+  - threshold:
+      2015-01-01: 2
+    amount:
+      2024-04-01: 8.28
+  - threshold:
+      2015-01-01: 3
+    amount:
+      2024-04-01: 5.88
