@@ -9,7 +9,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6_703.2  # Matches expected calculation
+    extended_childcare_entitlement: 6_872.3975 
 
 - name: Eligible for 15 hours - All first conditions met
   period: 2025
@@ -22,7 +22,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4_719.6  # Matches expected calculation
+    extended_childcare_entitlement: 4_838.7285  
 
 - name: Not eligible (one condition not met)
   period: 2025
@@ -50,7 +50,7 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 11_422.8  # Matches expected calculation
+    extended_childcare_entitlement: 11_711.126  
 
 - name: Not eligible - Family with multiple children but conditions not met
   period: 2025
@@ -83,7 +83,7 @@
         family_type: COUPLE_WITH_CHILDREN
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 18_126.0  # Matches expected calculation
+    extended_childcare_entitlement: 18_583.523 
 
 - name: No expenses for zero hours
   period: 2025

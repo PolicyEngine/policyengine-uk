@@ -12,13 +12,20 @@ class extended_childcare_entitlement(Variable):
     def formula(benunit, period, parameters):
 
         # Get parameters
-        p = parameters(period).gov.dfe.extended_childcare_entitlement
+        p = parameters(period).gov.dfe
         age = benunit.members("age", period)
         # Compute weekly hours directly inside this function
-        weekly_hours_per_child = p.hours.calc(age)
+        weekly_hours_per_child = p.extended_childcare_entitlement.hours.calc(
+            age
+        )
 
         # Compute subsidy per child
-        subsidy_per_child = weekly_hours_per_child * p.expense_rate.calc(age)
+        subsidy_per_child = (
+            weekly_hours_per_child * p.childcare_funding_rate.calc(age)
+        )
 
         # Compute total annual expenses
-        return benunit.sum(subsidy_per_child) * p.weeks_per_year
+        return (
+            benunit.sum(subsidy_per_child)
+            * p.extended_childcare_entitlement.weeks_per_year
+        )
