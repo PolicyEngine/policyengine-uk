@@ -4,6 +4,7 @@ values:
   2020-01-01: 67_100_000
   2021-01-01: 67_400_000
   2022-01-01: 67_600_000
+  # Projections:
   2023-01-01: 68_500_000
   2024-01-01: 69_200_000
   2025-01-01: 69_900_000
@@ -33,4 +34,4 @@ metadata:
   unit: household
   reference:
     - title: National population projections (2020-based interim) | ONS | Figure 1
-      href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2020basedinterim
+      href: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2022based
