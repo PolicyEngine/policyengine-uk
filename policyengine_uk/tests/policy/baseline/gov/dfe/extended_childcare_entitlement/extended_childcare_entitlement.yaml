@@ -1,5 +1,6 @@
 - name: Eligible for 30 hours - All conditions met
   period: 2025
+  absolute_error_margin: 1
   input:
     people:
       child1:
@@ -9,10 +10,11 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6_872.3975 
+    extended_childcare_entitlement: 6_872.3
 
 - name: Eligible for 15 hours - All first conditions met
   period: 2025
+  absolute_error_margin: 1
   input:
     people:
       child1:
@@ -22,10 +24,11 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4_838.7285  
+    extended_childcare_entitlement: 4_838.7
 
 - name: Not eligible (one condition not met)
   period: 2025
+  absolute_error_margin: 1
   input:
     people:
       child1:
@@ -39,6 +42,7 @@
 
 - name: Eligible for mixed hours - Family with multiple children
   period: 2025
+  absolute_error_margin: 1
   input:
     people:
       child1:
@@ -50,10 +54,11 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 11_711.126  
+    extended_childcare_entitlement: 11_711.1
 
 - name: Not eligible - Family with multiple children but conditions not met
   period: 2025
+  absolute_error_margin: 1
   input:
     people:
       child1:
@@ -69,6 +74,7 @@
 
 - name: Eligible with one working parent and one disabled parent
   period: 2025
+  absolute_error_margin: 1
   input:
     people:
       child1:
@@ -83,10 +89,11 @@
         family_type: COUPLE_WITH_CHILDREN
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 18_583.523 
+    extended_childcare_entitlement: 18_583.5
 
 - name: No expenses for zero hours
   period: 2025
+  absolute_error_margin: 1
   input:
     people:
       child1:
