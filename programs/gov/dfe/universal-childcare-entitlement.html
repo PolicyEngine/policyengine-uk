@@ -3,10 +3,10 @@
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Tax-free childcare" href="../hmrc/tax-free-childcare.html" /><link rel="prev" title="LBTT" href="../revenue_scotland/land-and-buildings-transaction-tax.html" />
+<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="prev" title="Extended childcare entitlement" href="extended-childcare-entitlement.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
-        <title>LTT - PolicyEngine UK documentation</title>
+        <title>Universal childcare entitlement - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
@@ -191,10 +191,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../ofgem/energy-price-guarantee.html">EPG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dcms/bbc/tv-licence.html">TV Licence</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../revenue_scotland/land-and-buildings-transaction-tax.html">LBTT</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">LTT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../wra/land-transaction-tax.html">LTT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../hmrc/tax-free-childcare.html">Tax-free childcare</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dfe/extended-childcare-entitlement.html">Extended childcare entitlement</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dfe/universal-childcare-entitlement.html">Universal childcare entitlement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extended-childcare-entitlement.html">Extended childcare entitlement</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Universal childcare entitlement</a></li>
 </ul>
 
 </div>
@@ -229,115 +229,160 @@
           </label>
         </div>
         <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="ltt">
-<h1>LTT<a class="headerlink" href="#ltt" title="Permalink to this heading">#</a></h1>
-<p>Land Transaction Tax (LTT) is a property transaction tax administrated by the Welsh Revenue Authority (WRA) in Wales. It replaced the UK’s Stamp Duty Land Tax (SDLT) for property transactions in Wales starting from April 1, 2018. Similar to SDLT, LTT is imposed on property or land transactions, including purchases, transfers, and leases, with values over a certain threshold. It applies to both residential and non-residential (commercial) properties.</p>
-<p>Land Transaction Tax parameters can be found in <code class="docutils literal notranslate"><span class="pre">policyengine_uk/parameters/gov/wra/land_transaction_tax</span></code> and logic in <code class="docutils literal notranslate"><span class="pre">policyengine_uk/variables/gov/wra/land_transaction_tax.py</span></code>.</p>
-<section id="legislation">
-<h2>Legislation<a class="headerlink" href="#legislation" title="Permalink to this heading">#</a></h2>
-<p>The original regulation of LTT is defined in <a class="reference external" href="https://www.legislation.gov.uk/wsi/2018/128/schedule">The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018</a>. It was amended in 2020 by <a class="reference external" href="https://www.legislation.gov.uk/wsi/2020/1618/regulation/6/made">The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) (Amendment) Regulations 2020</a>. The Amendment revised the tax bands and tax rates defined in the 2018 Regulations.</p>
+          <section class="tex2jax_ignore mathjax_ignore" id="universal-childcare-entitlement">
+<h1>Universal childcare entitlement<a class="headerlink" href="#universal-childcare-entitlement" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://www.gov.uk/help-with-childcare-costs/free-childcare-and-education-for-3-to-4-year-olds?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b">Official government guidance</a> | <a class="reference external" href="https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf.#:~:text=All%20three%20and%20four%2Dyear%2Dolds%20in%20England%20are%20eligible,and%20applies%20irrespective%20of%20income.">Legislation</a></p>
+<section id="program-description">
+<h2>Program description<a class="headerlink" href="#program-description" title="Permalink to this heading">#</a></h2>
+<section id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h3>
+<p>A universal program providing free childcare for all <strong>3-4 year olds</strong> in England. Each eligible child receives <strong>570 hours</strong> of free childcare annually, typically delivered as <strong>15 hours</strong> per week across <strong>38 weeks</strong> of the year. Parents may arrange different hour distributions if their provider offers flexibility.</p>
 </section>
-<section id="rates">
-<h2>Rates<a class="headerlink" href="#rates" title="Permalink to this heading">#</a></h2>
-<p>Similar to SDLT, the rates of LTT are structured with different threshold and tax bands based on the price of the property. The LTT rates vary for each band, with higher rates applied to properties with prices that exceed a particular threshold. The rates and thresholds also differ for purchase of residential and non-residential properties and rent. Buyers will pay at a higher LTT rate for non-primary residential properties.</p>
-<p>But differing from SDLT. there is no first-time buyers’ relief in LTT. Therefore, we’re not plotting marginal LTT rate here.</p>
-<p>The rules and thresholds for LTT may change over time due to government policy adjustments. Here we show current rates and thresholds for LTT in 2023 below:</p>
+<section id="key-features">
+<h3>Key features<a class="headerlink" href="#key-features" title="Permalink to this heading">#</a></h3>
+<section id="provider-requirements">
+<h4>Provider requirements<a class="headerlink" href="#provider-requirements" title="Permalink to this heading">#</a></h4>
+<p>The free childcare must be delivered through an <strong>approved childcare provider</strong>.</p>
+</section>
+<section id="regional-scope">
+<h4>Regional scope<a class="headerlink" href="#regional-scope" title="Permalink to this heading">#</a></h4>
+<p>This program applies to <strong>England</strong> only. Scotland, Wales, and Northern Ireland operate their own distinct childcare support schemes.</p>
+</section>
+</section>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this heading">#</a></h2>
+<p>The universal childcare entitlement program is implemented through a combination of parameter definitions and variable calculations:</p>
+<section id="parameter-definition">
+<h3>1. Parameter Definition<a class="headerlink" href="#parameter-definition" title="Permalink to this heading">#</a></h3>
+<p>Located in <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/20ed1a9d77a3307b3e2bc4a0986ec606ab7fead9/policyengine_uk/parameters/gov/dfe"><code class="docutils literal notranslate"><span class="pre">parameters/gov/dfe/universal_childcare_entitlement/</span></code></a>, key parameters include:</p>
+<ul class="simple">
+<li><p>Program eligibility:</p>
 <ul>
-<li><p>Residential</p>
-<ul>
-<li><p>Primary</p>
-<p>Up to £180,000: 0%</p>
-<p>£180,000 to £250,000: 3.5%</p>
-<p>£250,000 to £400,000: 5%</p>
-<p>£400,000 to £750,000: 7.5%</p>
-<p>£750,000 to £1,500,000: 10%</p>
-<p>Over £1,500,000: 12%</p>
-</li>
-<li><p>Non-primary: An additional 4% on top of the rates for primary properties</p>
-<p>Up to £180,000: 4%</p>
-<p>£180,000 to £250,000: 7.5%</p>
-<p>£250,000 to £400,000: 9%</p>
-<p>£400,000 to £750,000: 11.5%</p>
-<p>£750,000 to £1,500,000: 14%</p>
-<p>Over £1,500,000: 16%</p>
-</li>
+<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/20ed1a9d77a3307b3e2bc4a0986ec606ab7fead9/policyengine_uk/parameters/gov/dfe/universal_childcare_entitlement"><code class="docutils literal notranslate"><span class="pre">min_age.yaml</span></code></a>: Defines the minimum eligible age (3 years)</p></li>
+<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/20ed1a9d77a3307b3e2bc4a0986ec606ab7fead9/policyengine_uk/parameters/gov/dfe"><code class="docutils literal notranslate"><span class="pre">compulsory_school_age.yaml</span></code></a>: Sets the upper age limit</p></li>
+<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/20ed1a9d77a3307b3e2bc4a0986ec606ab7fead9/policyengine_uk/parameters/gov/dfe/universal_childcare_entitlement"><code class="docutils literal notranslate"><span class="pre">hours.yaml</span></code></a>: Specifies the 15 hours per week entitlement</p></li>
 </ul>
 </li>
-<li><p>Non-residential</p>
-<p>Up to £225,000: 0%</p>
-<p>£225,000 to £250,000: 1%</p>
-<p>£250,000 to £1,000,000: 5%</p>
-<p>Over £1,000,000: 6%</p>
-</li>
-<li><p>Rent</p>
-<p>Up to £225,000: 0%</p>
-<p>£225,000 to £2,000,000: 1%</p>
-<p>Over £2,000,000: 2%</p>
+<li><p>Funding parameters:</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/20ed1a9d77a3307b3e2bc4a0986ec606ab7fead9/policyengine_uk/parameters/gov/dfe"><code class="docutils literal notranslate"><span class="pre">childcare_funding_rate.yaml</span></code></a>: Defines the hourly funding rates</p></li>
+</ul>
 </li>
 </ul>
-<div class="cell tag_hide-input docutils container">
-<details class="hide above-input">
-<summary aria-label="Toggle hidden content">
-<span class="collapsed">Show code cell source</span>
-<span class="expanded">Hide code cell source</span>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_core.charts</span><span class="w"> </span><span class="kn">import</span> <span class="n">format_fig</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">CountryTaxBenefitSystem</span>
-
-<span class="n">system</span> <span class="o">=</span> <span class="n">CountryTaxBenefitSystem</span><span class="p">()</span>
-<span class="n">wra</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">wra</span><span class="o">.</span><span class="n">land_transaction_tax</span>
-
-<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">wra</span><span class="o">.</span><span class="n">residential</span><span class="o">.</span><span class="n">primary</span><span class="p">,</span>
-    <span class="n">wra</span><span class="o">.</span><span class="n">residential</span><span class="o">.</span><span class="n">higher_rate</span><span class="p">,</span>
-    <span class="n">wra</span><span class="o">.</span><span class="n">non_residential</span><span class="p">,</span>
-    <span class="n">wra</span><span class="o">.</span><span class="n">rent</span><span class="p">,</span>
-<span class="p">]</span>
-<span class="n">thresholds</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">rates</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parameter</span><span class="o">.</span><span class="n">brackets</span><span class="p">:</span>
-        <span class="n">thresholds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">threshold</span><span class="o">.</span><span class="n">values_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="n">rates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">rate</span><span class="o">.</span><span class="n">values_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">))</span>
-
-<span class="c1"># add a row showing tax rate when property price is higher than the largest threshold for each property type</span>
-<span class="n">price</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">thresholds</span><span class="p">)</span> <span class="o">+</span> <span class="mi">200000</span>
-<span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-    <span class="n">thresholds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">price</span><span class="p">)</span>
-    <span class="n">rates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">brackets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rate</span><span class="o">.</span><span class="n">values_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-    <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">))</span>
-<span class="c1">#</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Threshold&quot;</span><span class="p">:</span> <span class="n">thresholds</span><span class="p">,</span> <span class="s2">&quot;Rate&quot;</span><span class="p">:</span> <span class="n">rates</span><span class="p">,</span> <span class="s2">&quot;Label&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">})</span>
-
-<span class="c1"># plot</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">px</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-        <span class="n">df</span><span class="p">,</span>
-        <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Threshold&quot;</span><span class="p">,</span>
-        <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Rate&quot;</span><span class="p">,</span>
-        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Label&quot;</span><span class="p">,</span>
-        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Land Transaction Tax (LTT) rates over property price thresholds&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
-        <span class="n">yaxis_tickformat</span><span class="o">=</span><span class="s2">&quot;,.0%&quot;</span><span class="p">,</span> <span class="n">xaxis_tickprefix</span><span class="o">=</span><span class="s2">&quot;£&quot;</span><span class="p">,</span> <span class="n">legend_title</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-    <span class="p">)</span>
-    <span class="o">.</span><span class="n">update_traces</span><span class="p">(</span><span class="n">line_shape</span><span class="o">=</span><span class="s2">&quot;hv&quot;</span><span class="p">)</span>
-<span class="p">)</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">format_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
-<span class="n">fig</span>
-</pre></div>
+</section>
+<section id="eligibility-determination">
+<h3>2. Eligibility Determination<a class="headerlink" href="#eligibility-determination" title="Permalink to this heading">#</a></h3>
+<p>Implemented in <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/20ed1a9d77a3307b3e2bc4a0986ec606ab7fead9/policyengine_uk/variables/gov/dfe/universal_childcare_entitlement"><code class="docutils literal notranslate"><span class="pre">universal_childcare_entitlement_eligible.py</span></code></a>, which checks:</p>
+<ul class="simple">
+<li><p>Geographic eligibility:</p>
+<ul>
+<li><p>Verifies residence in England using <code class="docutils literal notranslate"><span class="pre">country</span></code> variable</p></li>
+<li><p>Based on Childcare Regulations 2016 (part 33)</p></li>
+</ul>
+</li>
+<li><p>Age requirements:</p>
+<ul>
+<li><p>Checks child meets minimum age requirement</p></li>
+<li><p>Ensures child is below compulsory school age</p></li>
+<li><p>Referenced in Section 7 of Childcare Act 2006</p></li>
+</ul>
+</li>
+</ul>
+<p>Example table:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Child age</p></th>
+<th class="head"><p>Is under compulsory school age</p></th>
+<th class="head"><p>Meets minimum age</p></th>
+<th class="head"><p>Is age eligible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>True</p></td>
+<td><p>False</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>True</p></td>
+<td><p>False</p></td>
+</tr>
+</tbody>
+</table>
 </div>
+</section>
+<section id="entitlement-calculation">
+<h3>3. Entitlement Calculation<a class="headerlink" href="#entitlement-calculation" title="Permalink to this heading">#</a></h3>
+<p>Handled by <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/20ed1a9d77a3307b3e2bc4a0986ec606ab7fead9/policyengine_uk/variables/gov/dfe/universal_childcare_entitlement"><code class="docutils literal notranslate"><span class="pre">universal_childcare_entitlement.py</span></code></a>:</p>
+<ul class="simple">
+<li><p>Defined at the person level (<code class="docutils literal notranslate"><span class="pre">entity</span> <span class="pre">=</span> <span class="pre">Person</span></code>)</p></li>
+<li><p>Only calculated for eligible individuals (<code class="docutils literal notranslate"><span class="pre">defined_for</span> <span class="pre">=</span> <span class="pre">&quot;universal_childcare_entitlement_eligible&quot;</span></code>)</p></li>
+<li><p>Uses parameters to:</p>
+<ul>
+<li><p>Get weekly hours entitlement</p></li>
+<li><p>Apply appropriate funding rate based on age</p></li>
+<li><p>Calculate total annual value</p></li>
+</ul>
+</li>
+</ul>
+<p>Example table:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Child age</p></th>
+<th class="head"><p>Is eligible</p></th>
+<th class="head"><p>Weekly hours</p></th>
+<th class="head"><p>Funding rate</p></th>
+<th class="head"><p>Number of weeks</p></th>
+<th class="head"><p>Annual entitlement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>False</p></td>
+<td><p>0</p></td>
+<td><p>£11.22</p></td>
+<td><p>38</p></td>
+<td><p>£0</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>15</p></td>
+<td><p>£5.88</p></td>
+<td><p>38</p></td>
+<td><p>£3,351.6</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>15</p></td>
+<td><p>£5.88</p></td>
+<td><p>38</p></td>
+<td><p>£3,351.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>0</p></td>
+<td><p>£5.88</p></td>
+<td><p>38</p></td>
+<td><p>£0</p></td>
+</tr>
+</tbody>
+</table>
 </div>
-</details>
-<div class="cell_output docutils container">
-</div>
-</div>
+</section>
 </section>
 </section>
 
@@ -354,7 +399,7 @@
         },
         kernelOptions: {
             name: "python3",
-            path: "./programs/gov/wra"
+            path: "./programs/gov/dfe"
         },
         predefinedOutput: true
     }
@@ -365,23 +410,15 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../hmrc/tax-free-childcare.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">Tax-free childcare</div>
-              </div>
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-            </a>
-          <a class="prev-page" href="../revenue_scotland/land-and-buildings-transaction-tax.html">
+          
+          <a class="prev-page" href="extended-childcare-entitlement.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">LBTT</div>
+                <div class="title">Extended childcare entitlement</div>
                 
               </div>
             </a>
@@ -415,9 +452,22 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">LTT</a><ul>
-<li><a class="reference internal" href="#legislation">Legislation</a></li>
-<li><a class="reference internal" href="#rates">Rates</a></li>
+<li><a class="reference internal" href="#">Universal childcare entitlement</a><ul>
+<li><a class="reference internal" href="#program-description">Program description</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#key-features">Key features</a><ul>
+<li><a class="reference internal" href="#provider-requirements">Provider requirements</a></li>
+<li><a class="reference internal" href="#regional-scope">Regional scope</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation">Implementation</a><ul>
+<li><a class="reference internal" href="#parameter-definition">1. Parameter Definition</a></li>
+<li><a class="reference internal" href="#eligibility-determination">2. Eligibility Determination</a></li>
+<li><a class="reference internal" href="#entitlement-calculation">3. Entitlement Calculation</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
