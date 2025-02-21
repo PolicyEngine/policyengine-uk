@@ -43,6 +43,7 @@
     people:
       parent:
         age: 35
+        targeted_childcare_entitlement_hours: 0
       child1:
         age: 2
         targeted_childcare_entitlement_hours: 570
@@ -64,6 +65,7 @@
     people:
       parent:
         age: 35
+        targeted_childcare_entitlement_hours: 0
       twin1:
         age: 2
         targeted_childcare_entitlement_hours: 570

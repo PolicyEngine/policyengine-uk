@@ -6,10 +6,10 @@ class targeted_childcare_entitlement(Variable):
     entity = BenUnit
     label = "targeted childcare entitlement amount per year"
     definition_period = YEAR
-    unit = "currency-GBP"
+    unit = GBP
 
     def formula(benunit, period, parameters):
+        p = parameters(period).gov.dfe
+        ages = benunit.members("age", period)
         hours = benunit.members("targeted_childcare_entitlement_hours", period)
-        p = parameters(period).gov.dwp.targeted_childcare_entitlement
-        individual_subsidy = hours * p.funding_rate
-        return benunit.sum(individual_subsidy)
+        return benunit.sum(hours * p.childcare_funding_rate.calc(ages))

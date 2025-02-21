@@ -8,7 +8,7 @@ class meets_targeted_childcare_entitlement_conditions(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.targeted_childcare_entitlement
+        p = parameters(period).gov.dfe.targeted_childcare_entitlement
 
         # Check qualifying benefits
         qualifying_benefits = add(benunit, period, p.qualifying_benefits)

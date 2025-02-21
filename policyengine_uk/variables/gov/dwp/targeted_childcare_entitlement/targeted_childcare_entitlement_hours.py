@@ -10,8 +10,8 @@ class targeted_childcare_entitlement_hours(Variable):
     defined_for = "meets_targeted_childcare_entitlement_conditions"
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.dwp.targeted_childcare_entitlement
+        p = parameters(period).gov.dfe.targeted_childcare_entitlement
         country = person.household("country", period)
         countries = country.possible_values
-        in_England = country == countries.ENGLAND
-        return where(in_England, p.hours.calc(person("age", period)), 0)
+        in_england = country == countries.ENGLAND
+        return where(in_england, p.hours.calc(person("age", period)), 0)
