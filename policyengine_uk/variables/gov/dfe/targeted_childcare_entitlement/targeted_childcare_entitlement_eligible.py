@@ -40,8 +40,11 @@ class targeted_childcare_entitlement_eligible(Variable):
         )
 
         # Determine overall benefits eligibility
-        return where(
-            uc > 0,
-            meets_uc,
-            where(tax_credits > 0, meets_tc, has_qualifying_benefits),
-        ) & in_england
+        return (
+            where(
+                uc > 0,
+                meets_uc,
+                where(tax_credits > 0, meets_tc, has_qualifying_benefits),
+            )
+            & in_england
+        )
