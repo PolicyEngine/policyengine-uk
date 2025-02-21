@@ -4,10 +4,10 @@
     people:
       child:
         age: 2
-        targeted_childcare_entitlement_hours: 570
     benunits:
       benunit:
         members: ["child"]
+        targeted_childcare_entitlement_eligible: true
   output:
     targeted_childcare_entitlement: 4_719.60
 
@@ -17,10 +17,10 @@
     people:
       child:
         age: 3
-        targeted_childcare_entitlement_hours: 0
     benunits:
       benunit:
         members: ["child"]
+        targeted_childcare_entitlement_eligible: true
   output:
     targeted_childcare_entitlement: 0
 
@@ -30,10 +30,10 @@
     people:
       child:
         age: 4
-        targeted_childcare_entitlement_hours: 0
     benunits:
       benunit:
         members: ["child"]
+        targeted_childcare_entitlement_eligible: true
   output:
     targeted_childcare_entitlement: 0
 
@@ -43,21 +43,18 @@
     people:
       parent:
         age: 35
-        targeted_childcare_entitlement_hours: 0
       child1:
         age: 2
-        targeted_childcare_entitlement_hours: 570
       child2:
         age: 3
-        targeted_childcare_entitlement_hours: 0
       child3:
         age: 4
-        targeted_childcare_entitlement_hours: 0
     benunits:
       benunit:
         members: ["parent", "child1", "child2", "child3"]
+        targeted_childcare_entitlement_eligible: true
   output:
-    targeted_childcare_entitlement: 4_719.60
+    targeted_childcare_entitlement: [0, 4_719.60, 0, 0]
 
 - name: Family with twins both age 2
   period: 2024
@@ -65,15 +62,13 @@
     people:
       parent:
         age: 35
-        targeted_childcare_entitlement_hours: 0
       twin1:
         age: 2
-        targeted_childcare_entitlement_hours: 570
       twin2:
         age: 2
-        targeted_childcare_entitlement_hours: 570
     benunits:
       benunit:
         members: ["parent", "twin1", "twin2"]
+        targeted_childcare_entitlement_eligible: true
   output:
-    targeted_childcare_entitlement: 9_439.20
+    targeted_childcare_entitlement: [0, 4_719.60, 4_719.60]

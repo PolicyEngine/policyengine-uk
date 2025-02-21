@@ -3,13 +3,14 @@ from policyengine_uk.model_api import *
 
 class targeted_childcare_entitlement(Variable):
     value_type = float
-    entity = BenUnit
+    entity = Person
     label = "targeted childcare entitlement amount per year"
     definition_period = YEAR
     unit = GBP
+    defined_for = "targeted_childcare_entitlement_eligible"
 
-    def formula(benunit, period, parameters):
+    def formula(person, period, parameters):
         p = parameters(period).gov.dfe
-        ages = benunit.members("age", period)
-        hours = benunit.members("targeted_childcare_entitlement_hours", period)
-        return benunit.sum(hours * p.childcare_funding_rate.calc(ages))
+        age = person("age", period)
+        hours = p.targeted_childcare_entitlement.hours.calc(age)
+        return hours * p.childcare_funding_rate.calc(age)
