@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.19.1] - 2025-02-18 16:22:32
+
+### Fixed
+
+- Bug causing non-default datasets to not execute.
+
 ## [2.19.0] - 2025-02-11 11:14:35
 
 ## [2.18.0] - 2024-12-05 12:43:06
@@ -1617,6 +1623,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.19.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.0...2.19.1
 [2.19.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.18.0...2.19.0
 [2.18.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.17.0...2.18.0
 [2.17.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.16.0...2.17.0

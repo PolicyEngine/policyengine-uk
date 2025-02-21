@@ -45,5 +45,4 @@ class gov_spending(Variable):
         "education_budget_change",
         "other_public_spending_budget_change",
         "tax_free_childcare",
-        "targeted_childcare_entitlement",
     ]

@@ -100,7 +100,7 @@ class Microsimulation(CoreMicrosimulation):
     datasets = DATASETS
 
     def __init__(self, *args, dataset=EnhancedFRS_2022_23, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, dataset=dataset, **kwargs)
 
         reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters, "2023-01-01"
