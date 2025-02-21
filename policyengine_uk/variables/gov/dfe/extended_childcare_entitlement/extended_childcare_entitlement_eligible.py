@@ -4,10 +4,15 @@ from policyengine_uk.model_api import *
 class extended_childcare_entitlement_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Eligiblity for extended childcare entitlement"
+    label = "eligibility for extended childcare entitlement"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
+        # Check if household is in England
+        country = benunit.household("country", period)
+        countries = country.possible_values
+        in_england = country == countries.ENGLAND
+
         # Check income condition - must be true for all family members (except children)
         person = benunit.members
         person_meets_income_condition = person(
@@ -22,4 +27,4 @@ class extended_childcare_entitlement_eligible(Variable):
             > 0
         )
 
-        return meets_income_condition & work_eligible
+        return in_england & meets_income_condition & work_eligible
