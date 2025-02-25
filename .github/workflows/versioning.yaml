@@ -37,13 +37,24 @@ jobs:
   Publish:
     runs-on: ubuntu-latest
     if: (github.event.head_commit.message == 'Update package version')
+    env:
+      GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-      - name: Setup Python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+            python-version: '3.12'
+      - name: Install package
+        run: uv pip install -e .[dev] --system
+      - name: Install policyengine
+        run: uv pip install policyengine --system
+      - name: Install Wheel and Pytest
+        run: pip3 install wheel setuptools pytest==5.4.3
       - name: Publish a git tag
         run: ".github/publish-git-tag.sh"
       - name: Build package
@@ -54,3 +65,7 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI }}
           skip_existing: true
+      - name: Update API
+        run: python .github/update_api.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
