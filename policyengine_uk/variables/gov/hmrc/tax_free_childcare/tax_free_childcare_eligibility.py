@@ -4,10 +4,7 @@ from policyengine_uk.model_api import *
 class tax_free_childcare_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Overall eligibility for tax-free childcare"
-    documentation = (
-        "Combined result of all tax-free childcare eligibility conditions"
-    )
+    label = "overall eligibility for tax-free childcare"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

@@ -2,7 +2,7 @@ description: The government contribution to childcare expenses (as a percentage 
 metadata:
   unit: /1
   period: year
-  label: Tax-Free Childcare contribution rate
+  label: tax-free childcare contribution rate
   reference:
     - title: Childcare Payments Act 2014 - section 21
       href: https://www.legislation.gov.uk/ukpga/2014/28/notes/division/6/5/7

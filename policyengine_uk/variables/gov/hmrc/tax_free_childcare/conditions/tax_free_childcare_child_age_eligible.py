@@ -4,8 +4,7 @@ from policyengine_uk.model_api import *
 class tax_free_childcare_child_age_eligible(Variable):
     value_type = bool
     entity = Person
-    label = "Eligible child for the tax-free childcare"
-    documentation = "Whether this person meets the age and disability requirements for eligibility"
+    label = "eligible child for the tax-free childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):

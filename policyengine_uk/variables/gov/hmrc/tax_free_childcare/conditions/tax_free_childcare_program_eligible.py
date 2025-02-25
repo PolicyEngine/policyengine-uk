@@ -4,8 +4,7 @@ from policyengine_uk.model_api import *
 class tax_free_childcare_program_eligible(Variable):
     value_type = bool
     entity = Person
-    label = "Tax-Free Childcare program eligibility"
-    documentation = "Whether the person's benefit unit meets the incompatibility conditions for tax-free childcare"
+    label = "tax-free childcare program eligibility"
     definition_period = YEAR
 
     def formula(person, period, parameters):
