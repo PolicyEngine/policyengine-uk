@@ -22,11 +22,13 @@
    people:
      person:
        is_adult: true
+       is_parent: true
        in_work: false
        incapacity_benefit: 0
      spouse:
        is_adult: true
        in_work: false
+       is_parent: true
        incapacity_benefit: 0
    benunits:
      benunit:
@@ -77,10 +79,12 @@
      person:
        is_adult: true
        in_work: true
+       is_parent: true
        incapacity_benefit: 0
      spouse:
        is_adult: true
        in_work: false
+       is_parent: true
        incapacity_benefit: 0
    benunits:
      benunit:

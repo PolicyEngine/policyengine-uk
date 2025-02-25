@@ -26,6 +26,7 @@
     tax_free_childcare_meets_income_requirements: false
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: true
+    is_parent: true
   output:
     tax_free_childcare_eligible: false
 

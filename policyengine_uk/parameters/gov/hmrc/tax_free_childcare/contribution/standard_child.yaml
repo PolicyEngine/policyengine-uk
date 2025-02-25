@@ -2,7 +2,7 @@ description: HMRC provides tax-free childcare contribution up to this yearly amo
 metadata:
   unit: currency-GBP
   period: year
-  label: Tax-free childcare standard yearly limit
+  label: tax-free childcare standard yearly limit
   reference:
     - title: Childcare Payments Act 2014 - c. 28 - section 19
       href: https://www.legislation.gov.uk/ukpga/2014/28/notes/division/6/5/5

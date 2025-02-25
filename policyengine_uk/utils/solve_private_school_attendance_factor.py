@@ -20,11 +20,9 @@ for factor in tqdm([round(x * 0.01, 2) for x in range(70, 91)]):
 
     # Run the reformed microsimulation
     reformed = Simulation(
-        {
-            "scope": "macro",
-            "baseline": reform,
-            "country": "uk",
-        }
+        scope="macro",
+        baseline=reform,
+        country="uk",
     ).baseline_simulation
     reformed.baseline_simulation.get_holder(
         "attends_private_school"
