@@ -15,6 +15,11 @@ class relative_income_change(Variable):
         baseline_branch = simulation.get_branch("baseline").get_branch(
             "baseline_lsr_measurement"
         )
+        baseline_branch.set_input(
+            "capital_gains_before_response",
+            period,
+            person("capital_gains_before_response", period),
+        )
         measurement_person = measurement_branch.populations["person"]
         baseline_person = baseline_branch.populations["person"]
         baseline_net_income = baseline_person.household(
