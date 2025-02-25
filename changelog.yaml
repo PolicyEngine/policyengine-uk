@@ -1370,3 +1370,8 @@
     fixed:
     - Bug in LSRs.
   date: 2025-02-25 14:33:57
+- bump: patch
+  changes:
+    fixed:
+    - Capital gains LSRs bug.
+  date: 2025-02-25 16:13:06
