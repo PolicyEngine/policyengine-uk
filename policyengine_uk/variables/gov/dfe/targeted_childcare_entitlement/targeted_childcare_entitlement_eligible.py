@@ -15,6 +15,9 @@ class targeted_childcare_entitlement_eligible(Variable):
         in_england = country == country.possible_values.ENGLAND
 
         # Get benunit's income excluding social security
+        # For Universal Credit recipients, we calculate net earned income as
+        # specified in the Local Authority (Duty to Secure Early Years Provision Free of Charge) 
+        # (Amendment) Regulations 2018: https://www.legislation.gov.uk/uksi/2018/146/made
         total_income = benunit.sum(benunit.members("total_income", period))
         social_security_income = benunit.sum(
             benunit.members("social_security_income", period)
