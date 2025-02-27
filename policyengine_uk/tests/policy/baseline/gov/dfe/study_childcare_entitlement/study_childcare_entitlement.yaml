@@ -81,3 +81,47 @@
         region: EAST_OF_ENGLAND
   output:
     study_childcare_entitlement: [0, 0]
+
+- name: Care to Learn amount - Parent with multiple children in London
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 19
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child1:
+        age: 2
+      child2:
+        age: 4
+    benunits:
+      benunit:
+        members: ["parent", "child1", "child2"]
+    households:
+      household:
+        members: ["parent", "child1", "child2"]
+        country: ENGLAND
+        region: LONDON
+  output:
+    study_childcare_entitlement: [10140, 0, 0]  # 195 * 52 for parent, 0 for children
+
+- name: Care to Learn amount - Parent at age limit in Wales
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 19
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: WALES
+        region: WALES
+  output:
+    study_childcare_entitlement: [0, 0]  # Ineligible because not in England
