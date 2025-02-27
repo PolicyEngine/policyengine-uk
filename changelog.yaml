@@ -1375,3 +1375,8 @@
     fixed:
     - Capital gains LSRs bug.
   date: 2025-02-25 16:13:06
+- bump: patch
+  changes:
+    fixed:
+    - Bug in universal childcare entitlement.
+  date: 2025-02-27 14:23:28
