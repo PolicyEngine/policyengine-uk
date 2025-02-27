@@ -14,7 +14,9 @@ class care_to_learn_eligible(Variable):
 
         # Check basic eligibility conditions
         has_children = person.benunit.any(person("is_child", period))
-        p = parameters(period).gov.dfe.study_childcare_entitlement.care_to_learn
+        p = parameters(
+            period
+        ).gov.dfe.study_childcare_entitlement.care_to_learn
         age_eligible = person("age", period) < p.age_limit
 
         current_ed = person("current_education", period)

@@ -16,7 +16,9 @@ class care_to_learn_amount(Variable):
 
         # Get amounts from parameters
         region = person.household("region", period)
-        p = parameters(period).gov.dfe.study_childcare_entitlement.care_to_learn.amount
+        p = parameters(
+            period
+        ).gov.dfe.study_childcare_entitlement.care_to_learn.amount
         max_amount = where(
             region == region.possible_values.LONDON,
             p.in_london,
