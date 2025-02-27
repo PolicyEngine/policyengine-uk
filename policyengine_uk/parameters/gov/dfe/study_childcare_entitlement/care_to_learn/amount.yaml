@@ -6,8 +6,10 @@ in_london:
     period: week
     label: maximum weekly amount per child in london
     reference:
-      - title: Care to Learn scheme
+      - title: Documentation for Care to Learn scheme 
         href: https://www.gov.uk/care-to-learn
+      - title: House of Commons Library – Paying for Childcare in England (12 July 2024), p.43
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf
   values:
     2024-01-01: 195
 
@@ -18,7 +20,9 @@ outside_london:
     period: week
     label: maximum weekly amount per child outside london
     reference:
-      - title: Care to Learn scheme
+      - title: Documentation for Care to Learn scheme 
         href: https://www.gov.uk/care-to-learn
+      - title: House of Commons Library – Paying for Childcare in England (12 July 2024), p.43
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf
   values:
     2024-01-01: 180
