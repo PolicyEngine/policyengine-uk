@@ -87,7 +87,7 @@
   input:
     people:
       adult1:
-        total_income: 250000
+        earned_income: 250000
     benunits:
       benunit:
         members: ["adult1"]

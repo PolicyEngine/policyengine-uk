@@ -14,22 +14,19 @@ class targeted_childcare_entitlement_eligible(Variable):
         country = benunit.household("country", period)
         in_england = country == country.possible_values.ENGLAND
 
-        # Get benunit's income excluding social security
-        # For Universal Credit recipients, we calculate net earned income as
-        # specified in the Local Authority (Duty to Secure Early Years Provision Free of Charge)
-        # (Amendment) Regulations 2018: https://www.legislation.gov.uk/uksi/2018/146/made
-        total_income = benunit.sum(benunit.members("total_income", period))
-        social_security_income = benunit.sum(
-            benunit.members("social_security_income", period)
-        )
-        adjusted_income = total_income - social_security_income
+        # For Universal Credit recipients, we must use the definition of "earned income"
+        # The Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - part 2.c
+        # https://www.legislation.gov.uk/uksi/2018/146/made
+
+        earned_income = benunit.sum(benunit.members("earned_income", period))
 
         # Check Universal Credit eligibility
         uc = benunit("universal_credit", period)
         max_uc_income = p.max_income_uc_recipients
-        meets_uc = (uc > 0) & (adjusted_income <= max_uc_income)
+        meets_uc = (uc > 0) & (earned_income <= max_uc_income)
 
         # Check Tax Credits eligibility
+        total_income = benunit.sum(benunit.members("total_income", period))
         tax_credits = add(
             benunit, period, ["child_tax_credit", "working_tax_credit"]
         )
