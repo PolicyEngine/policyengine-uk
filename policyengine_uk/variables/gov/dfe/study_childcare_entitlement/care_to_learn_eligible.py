@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class care_to_learn_eligible(Variable):
     value_type = bool
     entity = Person
-    label = "eligible for care to learn childcare support"
+    label = "eligible for Care to Learn childcare support"
     documentation = "Whether the person is eligible for Care to Learn support."
     definition_period = YEAR
 

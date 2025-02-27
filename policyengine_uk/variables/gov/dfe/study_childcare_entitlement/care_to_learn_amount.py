@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class care_to_learn_amount(Variable):
     value_type = float
     entity = Person
-    label = "care to learn childcare support amount"
+    label = "Care to Learn childcare support amount"
     documentation = "Yearly childcare support amount for eligible young parents in education."
     definition_period = YEAR
     quantity_type = FLOW
