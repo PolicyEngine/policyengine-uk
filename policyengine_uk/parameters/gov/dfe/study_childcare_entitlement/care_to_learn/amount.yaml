@@ -4,7 +4,7 @@ in_london:
   metadata:
     unit: currency-GBP
     period: week
-    label: maximum weekly amount per child in london
+    label: maximum weekly amount per child in London
     reference:
       - title: Documentation for Care to Learn scheme 
         href: https://www.gov.uk/care-to-learn
@@ -18,7 +18,7 @@ outside_london:
   metadata:
     unit: currency-GBP
     period: week
-    label: maximum weekly amount per child outside london
+    label: maximum weekly amount per child outside London
     reference:
       - title: Documentation for Care to Learn scheme 
         href: https://www.gov.uk/care-to-learn

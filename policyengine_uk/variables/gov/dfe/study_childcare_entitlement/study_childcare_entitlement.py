@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class study_childcare_entitlement(Variable):
     value_type = float
     entity = Person
-    label = "study childcare entitlement amount per year through Care to Learn scheme"
+    label = "study childcare entitlement amount through Care to Learn scheme"
     definition_period = YEAR
     quantity_type = FLOW
     unit = GBP
