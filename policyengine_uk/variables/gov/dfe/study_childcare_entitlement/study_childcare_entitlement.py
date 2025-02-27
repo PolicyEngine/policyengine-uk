@@ -17,11 +17,11 @@ class study_childcare_entitlement(Variable):
         region = person.household("region", period)
         p = parameters(
             period
-        ).gov.dfe.study_childcare_entitlement.amount
+        ).gov.dfe.study_childcare_entitlement.care_to_learn
         max_amount = where(
             region == region.possible_values.LONDON,
-            p.in_london,
-            p.outside_london,
+            p.amount.in_london,
+            p.amount.outside_london,
         )
 
         return eligible * max_amount * WEEKS_IN_YEAR

@@ -8,6 +8,8 @@ class study_childcare_entitlement_eligible(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
+        # Link for instruction: https://www.gov.uk/care-to-learn/eligibility
+
         # Only parents can be eligible, not children
         is_child = person("is_child", period)
 
@@ -15,7 +17,7 @@ class study_childcare_entitlement_eligible(Variable):
         has_children = person.benunit.any(person("is_child", period))
         p = parameters(
             period
-        ).gov.dfe.study_childcare_entitlement
+        ).gov.dfe.study_childcare_entitlement.care_to_learn
         age_eligible = person("age", period) < p.age_limit
 
         current_ed = person("current_education", period)
@@ -31,7 +33,6 @@ class study_childcare_entitlement_eligible(Variable):
         countries = country.possible_values
         lives_in_england = country == countries.ENGLAND
 
-        # Return eligibility - must be a parent AND meet all other criteria
         return (
             ~is_child
             & has_children
