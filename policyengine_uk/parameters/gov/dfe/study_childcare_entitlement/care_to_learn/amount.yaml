@@ -9,7 +9,7 @@ in_london:
       - title: Care to Learn scheme
         href: https://www.gov.uk/care-to-learn
   values:
-    2024-01-01: 195.0
+    2024-01-01: 195
 
 outside_london:
   description: The Department for Education provides this amount of financial support through the Care to Learn scheme for those living outside London.
@@ -21,4 +21,4 @@ outside_london:
       - title: Care to Learn scheme
         href: https://www.gov.uk/care-to-learn
   values:
-    2024-01-01: 180.0
+    2024-01-01: 180

@@ -47,4 +47,5 @@ class gov_spending(Variable):
         "tax_free_childcare",
         "extended_childcare_entitlement",
         "universal_childcare_entitlement",
+        "study_childcare_entitlement",
     ]
