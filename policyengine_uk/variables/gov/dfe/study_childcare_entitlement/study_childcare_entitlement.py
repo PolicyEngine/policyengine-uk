@@ -1,24 +1,23 @@
 from policyengine_uk.model_api import *
 
 
-class care_to_learn_amount(Variable):
+class study_childcare_entitlement(Variable):
     value_type = float
     entity = Person
-    label = "Care to Learn childcare support amount"
-    documentation = "Yearly childcare support amount for eligible young parents in education."
+    label = "study childcare entitlement amount per year through Care to Learn scheme"
     definition_period = YEAR
     quantity_type = FLOW
     unit = GBP
     default_value = 0
 
     def formula(person, period, parameters):
-        eligible = person("care_to_learn_eligible", period)
+        eligible = person("study_childcare_entitlement_eligible", period)
 
         # Get amounts from parameters
         region = person.household("region", period)
         p = parameters(
             period
-        ).gov.dfe.study_childcare_entitlement.care_to_learn.amount
+        ).gov.dfe.study_childcare_entitlement.amount
         max_amount = where(
             region == region.possible_values.LONDON,
             p.in_london,

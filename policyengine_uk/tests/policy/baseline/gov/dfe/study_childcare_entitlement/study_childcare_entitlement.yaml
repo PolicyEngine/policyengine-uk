@@ -17,7 +17,7 @@
         country: ENGLAND
         region: EAST_OF_ENGLAND
   output:
-    care_to_learn_amount: [9360, 0]  # 180 * 52 for parent, 0 for child
+    study_childcare_entitlement: [9360, 0]  # 180 * 52 for parent, 0 for child
 
 - name: Care to Learn amount - Inside London
   period: 2024
@@ -38,7 +38,7 @@
         country: ENGLAND
         region: LONDON
   output:
-    care_to_learn_amount: [10140, 0]  # 195 * 52 for parent, 0 for child
+    study_childcare_entitlement: [10140, 0]  # 195 * 52 for parent, 0 for child
 
 - name: Care to Learn amount - Ineligible person
   period: 2024
@@ -59,7 +59,7 @@
         country: ENGLAND
         region: EAST_OF_ENGLAND
   output:
-    care_to_learn_amount: [0, 0]
+    study_childcare_entitlement: [0, 0]
 
 - name: Care to Learn amount - Higher education
   period: 2024
@@ -80,4 +80,4 @@
         country: ENGLAND
         region: EAST_OF_ENGLAND
   output:
-    care_to_learn_amount: [0, 0]
+    study_childcare_entitlement: [0, 0]
