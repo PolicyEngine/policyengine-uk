@@ -1,8 +1,6 @@
 description: The Department for Education limits universal childcare entitlement in England to children this age or older.
 metadata:
-  type: single_amount
-  threshold_unit: year
-  amount_unit: hour
+  unit: year
   label: universal childcare entitlement child's minimum age
   reference:
     - title: Childcare (Early Years Provision Free of Charge) (Extended Entitlement) Regulations 2016 - Regulation 35(3)
