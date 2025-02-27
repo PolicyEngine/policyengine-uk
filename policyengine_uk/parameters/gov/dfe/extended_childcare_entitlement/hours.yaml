@@ -1,0 +1,40 @@
+description: The Department for Education provides this number of free childcare hours per week through the extended childcare entitlement scheme, depending on the child's age.
+metadata:
+  type: single_amount
+  threshold_unit: year 
+  amount_unit: hour
+  label: Extended childcare entitlement hours by age
+  reference:
+    - title: Childcare Act 2016 - chapter 5.1
+      href: https://www.legislation.gov.uk/ukpga/2016/5 and https://www.gov.uk/check-eligible-free-childcare-if-youre-working
+
+brackets:
+  - threshold:
+      2015-01-01: 0
+    amount:
+      2015-01-01: 0
+  - threshold:
+      2015-01-01: 1
+      2025-01-01: 0.75
+    amount:
+      2015-01-01: 0
+      2025-01-01: 15
+      2026-01-01: 30
+  - threshold:
+      2015-01-01: 2
+    amount:
+      2015-01-01: 0
+      2024-01-01: 15
+      2026-01-01: 30
+  - threshold:
+      2015-01-01: 3
+    amount:
+      2015-01-01: 30
+  - threshold:
+      2015-01-01: 4
+    amount:
+      2015-01-01: 30
+  - threshold:
+      2015-01-01: 5
+    amount:
+      2015-01-01: 0

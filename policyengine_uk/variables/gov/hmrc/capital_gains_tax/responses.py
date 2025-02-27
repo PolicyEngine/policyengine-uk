@@ -14,6 +14,11 @@ class relative_capital_gains_mtr_change(Variable):
         baseline_branch = simulation.get_branch("baseline").get_branch(
             "baseline_cgr_measurement"
         )
+        baseline_branch.set_input(
+            "capital_gains_before_response",
+            period,
+            person("capital_gains_before_response", period),
+        )
         baseline_person = baseline_branch.populations["person"]
         baseline_branch.tax_benefit_system.neutralize_variable(
             "capital_gains_behavioural_response"
@@ -103,7 +108,7 @@ class capital_gains_before_response(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "calibration.programs.capital_gains.total"
+    uprating = "gov.obr.non_labour_income"
 
 
 class adult_index_cg(Variable):

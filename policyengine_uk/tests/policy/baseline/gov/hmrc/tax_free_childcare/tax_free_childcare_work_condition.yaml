@@ -1,0 +1,167 @@
+- name: Couple both working - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: true
+       incapacity_benefit: 0
+     spouse:
+       is_adult: true
+       in_work: true
+       incapacity_benefit: 0
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Couple neither working - ineligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       is_parent: true
+       in_work: false
+       incapacity_benefit: 0
+     spouse:
+       is_adult: true
+       in_work: false
+       is_parent: true
+       incapacity_benefit: 0
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: false
+
+- name: Couple one working one with disability - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: true
+       incapacity_benefit: 0
+     spouse:
+       is_adult: true
+       in_work: false
+       incapacity_benefit: 100
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Couple one working one with incapacity - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: true
+       incapacity_benefit: 0
+     spouse:
+       is_adult: true
+       in_work: false
+       incapacity_benefit: 100
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Couple one working without qualifying condition - ineligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: true
+       is_parent: true
+       incapacity_benefit: 0
+     spouse:
+       is_adult: true
+       in_work: false
+       is_parent: true
+       incapacity_benefit: 0
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: false
+
+- name: Single working adult - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: true
+       incapacity_benefit: 0
+   benunits:
+     benunit:
+       members: [person]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Single non-working adult - ineligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: false
+       incapacity_benefit: 0
+   benunits:
+     benunit:
+       members: [person]
+  output:
+   tax_free_childcare_work_condition: false
+
+- name: Couple both with disability one working - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: true
+       incapacity_benefit: 100
+     spouse:
+       is_adult: true
+       in_work: false
+       incapacity_benefit: 100
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Single working adult with disability - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: true
+       incapacity_benefit: 100
+   benunits:
+     benunit:
+       members: [person]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Single disabled non-working adult - ineligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: false
+       incapacity_benefit: 100
+   benunits:
+     benunit:
+       members: [person]
+  output:
+   tax_free_childcare_work_condition: false

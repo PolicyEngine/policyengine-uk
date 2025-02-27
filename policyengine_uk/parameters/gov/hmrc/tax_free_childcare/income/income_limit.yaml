@@ -1,0 +1,12 @@
+description: HMRC limits tax-free childcare eligibility to households where individual adjusted income does not exceed this yearly threshold.
+metadata:
+  unit: currency-GBP
+  period: year
+  label: tax-free childcare maximum adjusted income threshold
+  reference:
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 15
+      href: https://www.legislation.gov.uk/uksi/2015/448/regulation/15#commentary-key-e27c923eee152accd495af8425536e29
+    - title: Tax-free childcare guidance
+      href: https://www.gov.uk/tax-free-childcare?step-by-step-nav=d78aeaf6-1747-4d72-9619-f16efb4dd89d
+values:
+  2015-01-01: 100_000

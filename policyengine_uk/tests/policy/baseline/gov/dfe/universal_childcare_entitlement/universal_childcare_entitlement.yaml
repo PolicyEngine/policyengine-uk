@@ -1,0 +1,63 @@
+- name: Child under 3 isn't eligible (person-level)
+  period: 2024
+  input:
+    age: 2
+    universal_childcare_entitlement_eligible: False
+  output:
+    universal_childcare_entitlement: 0.0
+
+- name: Child aged 3 is eligible (person-level)
+  period: 2024
+  input:
+    age: 3
+    universal_childcare_entitlement_eligible: True
+  output:
+    universal_childcare_entitlement: 3351.60
+
+- name: Child aged 4 is eligible (person-level)
+  period: 2024
+  input:
+    age: 4
+    universal_childcare_entitlement_eligible: True
+  output:
+    universal_childcare_entitlement: 3351.60
+
+- name: Parent (ineligible)
+  period: 2024
+  input:
+    age: 35
+    universal_childcare_entitlement_eligible: False
+  output:
+    universal_childcare_entitlement: 0.0
+
+- name: Child aged 2 (ineligible)
+  period: 2024
+  input:
+    age: 2
+    universal_childcare_entitlement_eligible: False
+  output:
+    universal_childcare_entitlement: 0.0
+
+- name: Child aged 3 (eligible)
+  period: 2024
+  input:
+    age: 3
+    universal_childcare_entitlement_eligible: True
+  output:
+    universal_childcare_entitlement: 3351.60
+
+- name: Child aged 4 (eligible)
+  period: 2024
+  input:
+    age: 4
+    universal_childcare_entitlement_eligible: True
+  output:
+    universal_childcare_entitlement: 3351.60
+
+- name: Child aged 5 (ineligible)
+  period: 2024
+  input:
+    age: 5
+    universal_childcare_entitlement_eligible: False
+  output:
+    universal_childcare_entitlement: 0.0

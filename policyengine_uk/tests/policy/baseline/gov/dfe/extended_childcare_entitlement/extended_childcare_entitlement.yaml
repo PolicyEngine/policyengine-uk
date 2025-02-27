@@ -1,0 +1,106 @@
+- name: Eligible for 30 hours - All conditions met
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 3  # Age 3+ gets 30 hours
+    benunits:
+      benunit1:
+        members: [child1]
+        extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement: 6_872.3
+
+- name: Eligible for 15 hours - All first conditions met
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 2  # Age 2 gets 15 hours
+    benunits:
+      benunit1:
+        members: [child1]
+        extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement: 4_838.7
+
+- name: Not eligible (one condition not met)
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 2
+    benunits:
+      benunit1:
+        members: [child1]
+        extended_childcare_entitlement_eligible: false
+  output:
+    extended_childcare_entitlement: 0  # Not eligible
+
+- name: Eligible for mixed hours - Family with multiple children
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 2  # 15 hours
+      child2:
+        age: 3  # 30 hours
+    benunits:
+      benunit1:
+        members: [child1, child2]
+        extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement: 11_711.1
+
+- name: Not eligible - Family with multiple children but conditions not met
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 2
+      child2:
+        age: 3
+    benunits:
+      benunit1:
+        members: [child1, child2]
+        extended_childcare_entitlement_eligible: false
+  output:
+    extended_childcare_entitlement: 0  # Not eligible
+
+- name: Eligible with one working parent and one disabled parent
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 2  # 15 hours
+      child2:
+        age: 3  # 30 hours
+      child3:
+        age: 3  # 30 hours
+    benunits:
+      benunit1:
+        members: [child1, child2, child3]
+        family_type: COUPLE_WITH_CHILDREN
+        extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement: 18_583.5
+
+- name: No expenses for zero hours
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 3
+    benunits:
+      benunit1:
+        members: [child1]
+        extended_childcare_entitlement_eligible: false
+  output:
+    extended_childcare_entitlement: 0  # Not eligible

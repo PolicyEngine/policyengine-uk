@@ -1,0 +1,141 @@
+- name: Eligible - Lives in England with all conditions met
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, parent2, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: true
+      parent2:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: false
+      child1:
+        is_child: true
+        extended_childcare_entitlement_work_condition: false
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1]
+  output:
+    extended_childcare_entitlement_eligible: true
+
+- name: Not eligible - Lives in Scotland with all other conditions met
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, parent2, child1]
+        country: SCOTLAND
+    people:
+      parent1:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: true
+      parent2:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: false
+      child1:
+        is_child: true
+        extended_childcare_entitlement_work_condition: false
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+- name: Not eligible - Lives in England but income condition not met
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, parent2, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: false
+        extended_childcare_entitlement_work_condition: true
+      parent2:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: false
+      child1:
+        is_child: true
+        extended_childcare_entitlement_work_condition: false
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+- name: Not eligible - Lives in England but work condition not met
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, parent2, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: false
+      parent2:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: false
+      child1:
+        is_child: true
+        extended_childcare_entitlement_work_condition: false
+    benunits:
+      benunit1:
+        members: [parent1, parent2, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+- name: Eligible - Single parent in England meeting all conditions
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        is_child: true
+        extended_childcare_entitlement_work_condition: false
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: true
+
+- name: Not eligible - Lives in Wales with all other conditions met
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: WALES
+    people:
+      parent1:
+        is_child: false
+        extended_childcare_entitlement_meets_income_requirements: true
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        is_child: true
+        extended_childcare_entitlement_work_condition: false
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: false

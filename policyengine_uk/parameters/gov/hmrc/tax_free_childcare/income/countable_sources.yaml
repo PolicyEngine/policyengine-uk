@@ -1,0 +1,12 @@
+description: HMRC includes these income sources when determining eligibility for Tax-Free Childcare.
+metadata:
+  reference:
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Part 9 and 10
+      href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
+  period: year
+  unit: program
+  label: tax-free childcare countable income sources
+values:
+  2015-01-01:
+    - employment_income
+    - self_employment_income

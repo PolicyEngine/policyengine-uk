@@ -1,0 +1,52 @@
+# Tests for tax_free_childcare_overall_eligible
+- name: All conditions met
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    tax_free_childcare_meets_income_requirements: true
+    tax_free_childcare_program_eligible: true
+    tax_free_childcare_work_condition: true
+  output:
+    tax_free_childcare_eligible: true
+
+- name: Fails age condition only
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: false
+    tax_free_childcare_meets_income_requirements: true
+    tax_free_childcare_program_eligible: true
+    tax_free_childcare_work_condition: true
+  output:
+    tax_free_childcare_eligible: false
+
+- name: Fails income condition only
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    tax_free_childcare_meets_income_requirements: false
+    tax_free_childcare_program_eligible: true
+    tax_free_childcare_work_condition: true
+    is_parent: true
+  output:
+    tax_free_childcare_eligible: false
+
+- name: Fails work condition only
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    tax_free_childcare_meets_income_requirements: true
+    tax_free_childcare_program_eligible: true
+    tax_free_childcare_work_condition: false
+  output:
+    tax_free_childcare_eligible: false
+
+- name: Fails all conditions
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: false
+    tax_free_childcare_meets_income_requirements: false
+    tax_free_childcare_program_eligible: false
+    tax_free_childcare_work_condition: false
+  output:
+    tax_free_childcare_eligible: false
+

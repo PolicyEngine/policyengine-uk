@@ -1,0 +1,12 @@
+description: HMRC provides tax-free childcare contribution up to this yearly amount for households with children under standard eligibility.
+metadata:
+  unit: currency-GBP
+  period: year
+  label: tax-free childcare standard yearly limit
+  reference:
+    - title: Childcare Payments Act 2014 - c. 28 - section 19
+      href: https://www.legislation.gov.uk/ukpga/2014/28/notes/division/6/5/5
+    - title: Tax-free childcare guidance
+      href: https://www.gov.uk/tax-free-childcare?step-by-step-nav=d78aeaf6-1747-4d72-9619-f16efb4dd89d
+values:
+  2015-01-01: 2_000
