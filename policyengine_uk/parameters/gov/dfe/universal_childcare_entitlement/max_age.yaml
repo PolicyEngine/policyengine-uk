@@ -1,0 +1,9 @@
+description: The Department for Education limits universal childcare entitlement in England to children younger than this age.
+metadata:
+  unit: year
+  label: universal childcare entitlement child's maximum age
+  reference:
+    - title: Childcare Act 2006 - Section 7.19
+      href: https://www.legislation.gov.uk/ukpga/2006/21/section/19
+values:
+  2015-01-01: 5
