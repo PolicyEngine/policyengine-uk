@@ -65,7 +65,19 @@ class is_CTC_child_limit_exempt(Variable):
         ).gov.dwp.tax_credits.child_tax_credit.limit.start_year
         # Children must be born before April 2017.
         # We use < 2017 as the closer approximation than <= 2017.
-        return person("birth_year", period) < limit_year
+        born_before_limit = person("birth_year", period) < limit_year
+        
+        # Reform proposal
+        age_exemption = parameters.gov.contrib.two_child_limit.age_exemption(
+            period
+        )
+        if age_exemption > 0:
+            is_exempt = person.benunit.any(
+                person("age", period) < age_exemption
+            )
+            return born_before_limit | is_exempt
+            
+        return born_before_limit
 
 
 class is_child_for_CTC(Variable):
