@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.20.0] - 2025-02-28 15:38:29
+
+### Added
+
+- Two-child limit reform proposal.
+
 ## [2.19.4] - 2025-02-27 14:23:28
 
 ### Fixed
@@ -1641,6 +1647,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.20.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.4...2.20.0
 [2.19.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.3...2.19.4
 [2.19.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.2...2.19.3
 [2.19.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.1...2.19.2

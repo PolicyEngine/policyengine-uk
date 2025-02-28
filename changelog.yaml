@@ -1380,3 +1380,8 @@
     fixed:
     - Bug in universal childcare entitlement.
   date: 2025-02-27 14:23:28
+- bump: minor
+  changes:
+    added:
+    - Two-child limit reform proposal.
+  date: 2025-02-28 15:38:29
