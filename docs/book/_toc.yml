@@ -22,7 +22,7 @@ parts:
       - file: programs/gov/hmrc/fuel-duty
       - file: programs/gov/hmrc/stamp-duty
       - file: programs/contrib/ubi-center/carbon-tax
-      - file: programs/contrib/womens-budget-group/two-child-limit
+      - file: programs/contrib/reforms/two-child-limit
       - file: programs/gov/ofgem/energy-price-guarantee
       - file: programs/gov/dcms/bbc/tv-licence
       - file: programs/gov/revenue_scotland/land-and-buildings-transaction-tax
