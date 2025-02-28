@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class targeted_childcare_entitlement(Variable):
     value_type = float
     entity = Person
-    label = "targeted childcare entitlement amount per year"
+    label = "targeted childcare entitlement amount"
     definition_period = YEAR
     unit = GBP
     defined_for = "targeted_childcare_entitlement_eligible"
