@@ -1,12 +1,8 @@
 description: The Department for Education designates these programs as qualifying benefits for the targeted childcare entitlement eligibility (the 2-year-old entitlement) in England.
 metadata:
   reference:
-    - title: Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - Regulation 3 defining "eligible child"
-      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/3/made
-    - title: Education Act 1996 s.512ZB(4) - criteria for free school meals
-      href: https://www.legislation.gov.uk/ukpga/1996/56/section/512ZB
-    - title: Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018
-      href: https://www.legislation.gov.uk/uksi/2018/146/contents/made
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - part 2.a
+      href: https://www.legislation.gov.uk/uksi/2018/146/regulation/2/made
     - title: GOV.UK - Free education and childcare for 2-year-olds
       href: https://www.gov.uk/help-with-childcare-costs/free-childcare-2-year-olds
   period: year
@@ -14,11 +10,10 @@ metadata:
   label: qualifying benefits for targeted childcare entitlement
 values:
   2014-01-01:
-    - income_support
-    - jsa_income
-    - esa_income
-    - universal_credit
-    - is_guarantee_credit_eligible
-    - child_tax_credit
-    - working_tax_credit
+    - income_support_reported
+    - jsa_income_reported
+    - esa_income_reported
+    - universal_credit_reported
+    - child_tax_credit_reported
+    - working_tax_credit_reported
     - dla
