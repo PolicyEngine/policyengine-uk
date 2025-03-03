@@ -1390,3 +1390,9 @@
     added:
     - Two-child limit age exemption reform for Child Tax Credit.
   date: 2025-02-28 16:39:12
+- bump: minor
+  changes:
+    added:
+    - Separate reforms to exempt parents of under [x] from the UC child limit and
+      from CTC child limit.
+  date: 2025-03-03 12:11:29
