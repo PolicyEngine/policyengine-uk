@@ -23,7 +23,7 @@ class uc_individual_child_element(Variable):
         )
 
         # Reform proposal
-        age_exemption = parameters.gov.contrib.two_child_limit.age_exemption(
+        age_exemption = parameters.gov.contrib.two_child_limit.age_exemption.universal_credit(
             period
         )
         if age_exemption > 0:

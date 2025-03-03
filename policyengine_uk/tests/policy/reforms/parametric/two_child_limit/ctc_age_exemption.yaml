@@ -29,7 +29,7 @@
   period: 2023
   absolute_error_margin: 1
   input:
-    gov.contrib.two_child_limit.age_exemption: 3
+    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3
     people:
       parent:
         age: 30
@@ -57,7 +57,7 @@
   period: 2023
   absolute_error_margin: 1
   input:
-    gov.contrib.two_child_limit.age_exemption: 3
+    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3
     people:
       parent:
         age: 30
@@ -112,7 +112,7 @@
   period: 2023
   absolute_error_margin: 1
   input:
-    gov.contrib.two_child_limit.age_exemption: 3  # Exempt families with under-3s
+    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3  # Exempt families with under-3s
     people:
       parent:
         age: 30
