@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.22.0] - 2025-03-03 12:11:29
+
+### Added
+
+- Separate reforms to exempt parents of under [x] from the UC child limit and from CTC child limit.
+
+## [2.21.0] - 2025-02-28 16:39:12
+
+### Added
+
+- Two-child limit age exemption reform for Child Tax Credit.
+
+## [2.20.0] - 2025-02-28 15:38:29
+
+### Added
+
+- Two-child limit reform proposal.
+
+## [2.19.4] - 2025-02-27 14:23:28
+
+### Fixed
+
+- Bug in universal childcare entitlement.
+
+## [2.19.3] - 2025-02-25 16:13:06
+
+### Fixed
+
+- Capital gains LSRs bug.
+
+## [2.19.2] - 2025-02-25 14:33:57
+
+### Fixed
+
+- Bug in LSRs.
+
 ## [2.19.1] - 2025-02-18 16:22:32
 
 ### Fixed
@@ -1623,6 +1659,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.22.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.21.0...2.22.0
+[2.21.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.20.0...2.21.0
+[2.20.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.4...2.20.0
+[2.19.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.3...2.19.4
+[2.19.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.2...2.19.3
+[2.19.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.1...2.19.2
 [2.19.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.19.0...2.19.1
 [2.19.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.18.0...2.19.0
 [2.18.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.17.0...2.18.0

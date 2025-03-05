@@ -4,14 +4,12 @@ from policyengine_uk.model_api import *
 class tax_free_childcare_work_condition(Variable):
     value_type = bool
     entity = Person
-    label = "Work conditions for tax-free childcare"
-    documentation = "Whether the person/couple meets work requirements for tax-free childcare"
+    label = "work conditions for tax-free childcare"
     definition_period = YEAR
 
     def formula(person, period, parameters):
         benunit = person.benunit
         is_adult = person("is_adult", period)
-        is_child = person("is_child", period)
 
         # Basic work status
         in_work = person("in_work", period)
@@ -46,7 +44,9 @@ class tax_free_childcare_work_condition(Variable):
             eligible_based_on_disability & is_adult
         )
         benunit_has_worker = benunit.any(in_work & is_adult)
-        couple_both_working = is_couple & benunit.all(in_work | is_child)
+        couple_both_working = is_couple & benunit.all(
+            in_work | ~person("is_parent", period)
+        )
         couple_one_working_one_disabled = (
             is_couple & benunit_has_worker & benunit_has_condition
         )

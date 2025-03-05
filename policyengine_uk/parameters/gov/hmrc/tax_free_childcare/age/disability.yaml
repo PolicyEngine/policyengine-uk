@@ -2,7 +2,7 @@ description: HMRC extends the tax-free childcare program eligibility to children
 metadata:
   unit: year
   period: year
-  label: Tax-free childcare disability age limit
+  label: tax-free childcare disability age limit
   reference:
     - title: Childcare Payments Act 2014 - c. 28 - section 14
       href: https://www.legislation.gov.uk/ukpga/2014/28/notes/division/6/4/1

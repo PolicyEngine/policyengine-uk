@@ -4,8 +4,7 @@ from policyengine_uk.model_api import *
 class tax_free_childcare_meets_income_requirements(Variable):
     value_type = bool
     entity = Person
-    label = "Income eligible for the tax-free childcare"
-    documentation = "Whether this person meets the income requirements for tax-free childcare based on age and income thresholds"
+    label = "income eligible for the tax-free childcare"
     definition_period = YEAR
 
     # Legislation: https://www.legislation.gov.uk/ukdsi/2015/9780111127063 , part 9 and 10

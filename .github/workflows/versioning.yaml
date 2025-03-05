@@ -11,26 +11,61 @@ on:
       - .github/**
 
 jobs:
-    Versioning:
-      if: (github.event.head_commit.message == 'Update package version')
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout repo
-          uses: actions/checkout@v4
-          with:
-            repository: ${{ github.event.pull_request.head.repo.full_name }}
-            ref: ${{ github.event.pull_request.head.ref }}
-            token: ${{ secrets.POLICYENGINE_GITHUB }}
-        - name: Setup Python
-          uses: actions/setup-python@v5
-          with:
-            python-version: 3.12
-        - name: Build changelog
-          run: pip install yaml-changelog && make changelog
-        - name: Preview changelog update
-          run: ".github/get-changelog-diff.sh"
-        - name: Update changelog
-          uses: EndBug/add-and-commit@v9
-          with:
-            add: "."
-            message: Update package version
+  Versioning:
+    if: (github.event.head_commit.message != 'Update package version')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.POLICYENGINE_GITHUB }}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Build changelog
+        run: pip install yaml-changelog && make changelog
+      - name: Preview changelog update
+        run: ".github/get-changelog-diff.sh"
+      - name: Update changelog
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "."
+          message: Update package version
+  Publish:
+    runs-on: ubuntu-latest
+    if: (github.event.head_commit.message == 'Update package version')
+    env:
+      GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+            python-version: '3.12'
+      - name: Install package
+        run: uv pip install -e .[dev] --system
+      - name: Install policyengine
+        run: uv pip install policyengine --system
+      - name: Install Wheel and Pytest
+        run: pip3 install wheel setuptools pytest==5.4.3
+      - name: Publish a git tag
+        run: ".github/publish-git-tag.sh"
+      - name: Build package
+        run: make
+      - name: Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI }}
+          skip_existing: true
+      - name: Update API
+        run: python .github/update_api.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}

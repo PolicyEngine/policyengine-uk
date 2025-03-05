@@ -1365,3 +1365,34 @@
     fixed:
     - Bug causing non-default datasets to not execute.
   date: 2025-02-18 16:22:32
+- bump: patch
+  changes:
+    fixed:
+    - Bug in LSRs.
+  date: 2025-02-25 14:33:57
+- bump: patch
+  changes:
+    fixed:
+    - Capital gains LSRs bug.
+  date: 2025-02-25 16:13:06
+- bump: patch
+  changes:
+    fixed:
+    - Bug in universal childcare entitlement.
+  date: 2025-02-27 14:23:28
+- bump: minor
+  changes:
+    added:
+    - Two-child limit reform proposal.
+  date: 2025-02-28 15:38:29
+- bump: minor
+  changes:
+    added:
+    - Two-child limit age exemption reform for Child Tax Credit.
+  date: 2025-02-28 16:39:12
+- bump: minor
+  changes:
+    added:
+    - Separate reforms to exempt parents of under [x] from the UC child limit and
+      from CTC child limit.
+  date: 2025-03-03 12:11:29

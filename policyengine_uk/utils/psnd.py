@@ -46,10 +46,8 @@ def project_psnd():
         "winter_fuel_allowance",
     ]
     baseline = Simulation(
-        {
-            "country": "uk",
-            "scope": "macro",
-        }
+        country="uk",
+        scope="macro",
     ).baseline_simulation
 
     pe_psnd = []
