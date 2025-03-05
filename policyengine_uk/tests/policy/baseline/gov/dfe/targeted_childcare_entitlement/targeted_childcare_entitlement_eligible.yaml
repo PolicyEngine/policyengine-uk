@@ -3,10 +3,10 @@
   input:
     people:
       adult1:
-        total_income: 10000
+        total_income: 10_000
         social_security_income: 0
       adult2:
-        total_income: 5000
+        total_income: 5_000
         social_security_income: 0
     benunits:
       benunit:
@@ -29,8 +29,8 @@
   input:
     people:
       parent:
-        total_income: 15000
-        social_security_income: 5000  # Makes adjusted income = 10000
+        total_income: 15_000
+        social_security_income: 5_000  # Makes adjusted income = 10000
       child:
         total_income: 0
         social_security_income: 0
@@ -55,10 +55,10 @@
   input:
     people:
       parent1:
-        total_income: 10000
+        total_income: 10_000
         social_security_income: 0
       parent2:
-        total_income: 6000
+        total_income: 6_000
         social_security_income: 0
       child1:
         total_income: 0
@@ -87,11 +87,11 @@
   input:
     people:
       adult1:
-        earned_income: 250000
+        earned_income: 250_000
     benunits:
       benunit:
         members: ["adult1"]
-        universal_credit: 10000
+        universal_credit: 10_000
         jsa_income: 0
     households:
       household:
@@ -105,7 +105,7 @@
   input:
     people:
       parent:
-        total_income: 10000
+        total_income: 10_000
         social_security_income: 0
       child1:
         total_income: 0
@@ -134,10 +134,10 @@
   input:
     people:
       adult1:
-        total_income: 8000
+        total_income: 8_000
         social_security_income: 0
       adult2:
-        total_income: 7000
+        total_income: 7_000
         social_security_income: 0
     benunits:
       benunit:
@@ -160,10 +160,10 @@
   input:
     people:
       adult1:
-        total_income: 8000
+        total_income: 8_000
         social_security_income: 0
       adult2:
-        total_income: 7000
+        total_income: 7_000
         social_security_income: 0
     benunits:
       benunit:
@@ -186,10 +186,10 @@
   input:
     people:
       adult1:
-        total_income: 8000
+        total_income: 8_000
         social_security_income: 0
       adult2:
-        total_income: 7000
+        total_income: 7_000
         social_security_income: 0
     benunits:
       benunit:
