@@ -1,0 +1,137 @@
+- name: With no age exemption, only first 2 children get CTC
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 8000
+      child_1:
+        age: 5
+        birth_year: 2018
+      child_2:
+        age: 4
+        birth_year: 2019
+      child_3:
+        age: 2
+        birth_year: 2021
+      child_4:
+        age: 1
+        birth_year: 2022
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 6140  # CTC for only the first 2 children
+
+- name: With age exemption, all children get CTC when any child is below threshold
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 8000
+      child_1:
+        age: 5
+        birth_year: 2018
+      child_2:
+        age: 4
+        birth_year: 2019
+      child_3:
+        age: 2  # This child is under the threshold
+        birth_year: 2021
+      child_4:
+        age: 1
+        birth_year: 2022
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 12280  # CTC for all children
+
+- name: No exemption when all children above age threshold
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 8000
+      child_1:
+        age: 5
+        birth_year: 2018
+      child_2:
+        age: 4
+        birth_year: 2019
+      child_3:
+        age: 3  # No child below threshold
+        birth_year: 2020  
+      child_4:
+        age: 3
+        birth_year: 2020
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 6140  # CTC for only first 2 children
+
+- name: Shows baseline CTC for a family with children under age 3
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 8000
+      child_1:
+        age: 5
+        birth_year: 2018
+      child_2:
+        age: 4
+        birth_year: 2019
+      child_3:
+        age: 2  # This child is under the threshold
+        birth_year: 2021
+      child_4:
+        age: 1  # This child is under the threshold
+        birth_year: 2022
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 6140  # CTC for only first 2 children
+
+- name: Shows increased CTC after applying age exemption reform
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3  # Exempt families with under-3s
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 8000
+      child_1:
+        age: 5
+        birth_year: 2018
+      child_2:
+        age: 4
+        birth_year: 2019
+      child_3:
+        age: 2  # This child is under the threshold
+        birth_year: 2021
+      child_4:
+        age: 1  # This child is under the threshold
+        birth_year: 2022
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        claims_all_entitled_benefits: true
+  output:
+    CTC_child_element: 12280  # CTC for all children due to exemption

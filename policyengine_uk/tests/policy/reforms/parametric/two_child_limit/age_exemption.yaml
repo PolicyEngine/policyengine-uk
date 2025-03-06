@@ -1,0 +1,132 @@
+- name: With no age exemption, only first 2 children get element amounts 
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+        child_index: 1
+      child_2:
+        age: 4
+        child_index: 2
+      child_3:
+        age: 2
+        child_index: 3
+      child_4:
+        age: 1
+        child_index: 4
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: true
+  output:
+    universal_credit: 14130  # Standard allowance + child elements with 2-child limit
+
+- name: With age exemption, all children get element when any child is below threshold
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    gov.contrib.two_child_limit.age_exemption.universal_credit: 3
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+        child_index: 1
+      child_2:
+        age: 4
+        child_index: 2
+      child_3:
+        age: 2  # This child is under the threshold
+        child_index: 3
+      child_4:
+        age: 1
+        child_index: 4
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: true
+  output:
+    universal_credit: 14675  # All children get UC with exemption
+
+- name: No exemption when all children above age threshold
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    gov.contrib.two_child_limit.age_exemption.universal_credit: 3
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+        child_index: 1
+      child_2:
+        age: 4
+        child_index: 2
+      child_3:
+        age: 3  # No child below threshold
+        child_index: 3  
+      child_4:
+        age: 3
+        child_index: 4
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: true
+  output:
+    universal_credit: 14130  # Only first 2 children get UC
+
+- name: Shows baseline UC for a family with children under age 3
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+        child_index: 1
+      child_2:
+        age: 4
+        child_index: 2
+      child_3:
+        age: 2  # This child is under the threshold
+        child_index: 3
+      child_4:
+        age: 1  # This child is under the threshold
+        child_index: 4
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: true
+  output:
+    universal_credit: 14130  # Standard allowance + elements for only first 2 children
+
+- name: Shows increased UC after applying age exemption reform
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    gov.contrib.two_child_limit.age_exemption.universal_credit: 3  # Exempt families with under-3s
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+        child_index: 1
+      child_2:
+        age: 4
+        child_index: 2
+      child_3:
+        age: 2  # This child is under the threshold
+        child_index: 3
+      child_4:
+        age: 1  # This child is under the threshold
+        child_index: 4
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: true
+  output:
+    universal_credit: 14675  # Reform increases UC because 3rd and 4th children are now counted

@@ -1,0 +1,6 @@
+description: Parents of children under this age are exempt from the two-child limit under the Child Tax Credit.
+values:
+  2000-01-01: 0
+metadata:
+  unit: year
+  label: Child Tax Credit two-child limit age-based exemption
