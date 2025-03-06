@@ -13,7 +13,4 @@ values:
     - income_support_reported
     - jsa_income_reported
     - esa_income_reported
-    - universal_credit_reported
-    - child_tax_credit_reported
-    - working_tax_credit_reported
     - dla

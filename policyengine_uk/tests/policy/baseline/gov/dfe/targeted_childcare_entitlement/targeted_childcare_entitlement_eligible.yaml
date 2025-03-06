@@ -5,16 +5,17 @@
       adult1:
         total_income: 10_000
         social_security_income: 0
+        jsa_income_reported: 50
       adult2:
         total_income: 5_000
         social_security_income: 0
+        jsa_income_reported: 50
     benunits:
       benunit:
         members: ["adult1", "adult2"]
         jsa_income: 100
         esa_income: 0
         universal_credit: 0
-        is_guarantee_credit_eligible: false
         child_tax_credit: 0
         working_tax_credit: 0
     households:
@@ -30,7 +31,8 @@
     people:
       parent:
         total_income: 15_000
-        social_security_income: 5_000  # Makes adjusted income = 10000
+        social_security_income: 5_000
+        earned_income: 15_000
       child:
         total_income: 0
         social_security_income: 0
@@ -40,7 +42,6 @@
         jsa_income: 0
         esa_income: 0
         universal_credit: 100
-        is_guarantee_credit_eligible: false
         child_tax_credit: 0
         working_tax_credit: 0
     households:
@@ -49,6 +50,7 @@
         country: ENGLAND
   output:
     targeted_childcare_entitlement_eligible: [true]
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: [true]
 
 - name: Eligible with tax credits under income threshold - large family
   period: 2025
@@ -72,15 +74,16 @@
         jsa_income: 0
         esa_income: 0
         universal_credit: 0
-        is_guarantee_credit_eligible: false
         child_tax_credit: 100
         working_tax_credit: 0
+        tax_credits_applicable_income: 16_000
     households:
       household:
         members: ["parent1", "parent2", "child1", "child2"]
         country: ENGLAND
   output:
     targeted_childcare_entitlement_eligible: [true]
+    meets_tax_credit_criteria_for_targeted_childcare_entitlement: [true]
 
 - name: Ineligible due to high income with UC
   period: 2025
@@ -99,6 +102,7 @@
         country: ENGLAND
   output:
     targeted_childcare_entitlement_eligible: [false]
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: [false]
 
 - name: Ineligible with no qualifying benefits - family
   period: 2025
@@ -119,7 +123,6 @@
         jsa_income: 0
         esa_income: 0
         universal_credit: 0
-        is_guarantee_credit_eligible: false
         child_tax_credit: 0
         working_tax_credit: 0
     households:
@@ -136,42 +139,17 @@
       adult1:
         total_income: 8_000
         social_security_income: 0
+        esa_income_reported: 50
       adult2:
         total_income: 7_000
         social_security_income: 0
+        esa_income_reported: 50
     benunits:
       benunit:
         members: ["adult1", "adult2"]
         jsa_income: 0
         esa_income: 100
         universal_credit: 0
-        is_guarantee_credit_eligible: false
-        child_tax_credit: 0
-        working_tax_credit: 0
-    households:
-      household:
-        members: ["adult1", "adult2"]
-        country: ENGLAND
-  output:
-    targeted_childcare_entitlement_eligible: [true]
-
-- name: Eligible with pension credit - couple
-  period: 2025
-  input:
-    people:
-      adult1:
-        total_income: 8_000
-        social_security_income: 0
-      adult2:
-        total_income: 7_000
-        social_security_income: 0
-    benunits:
-      benunit:
-        members: ["adult1", "adult2"]
-        jsa_income: 0
-        esa_income: 0
-        universal_credit: 0
-        is_guarantee_credit_eligible: true
         child_tax_credit: 0
         working_tax_credit: 0
     households:
@@ -188,16 +166,17 @@
       adult1:
         total_income: 8_000
         social_security_income: 0
+        esa_income_reported: 50
       adult2:
         total_income: 7_000
         social_security_income: 0
+        esa_income_reported: 50
     benunits:
       benunit:
         members: ["adult1", "adult2"]
         jsa_income: 0
         esa_income: 100
         universal_credit: 0
-        is_guarantee_credit_eligible: false
         child_tax_credit: 0
         working_tax_credit: 0
     households:
