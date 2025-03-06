@@ -31,7 +31,9 @@ class targeted_childcare_entitlement_eligible(Variable):
 
         # Reference for applicable income: The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3
 
-        tax_credits_applicable_income = benunit("tax_credits_applicable_income", period)
+        tax_credits_applicable_income = benunit(
+            "tax_credits_applicable_income", period
+        )
         tax_credits = add(
             benunit, period, ["child_tax_credit", "working_tax_credit"]
         )
