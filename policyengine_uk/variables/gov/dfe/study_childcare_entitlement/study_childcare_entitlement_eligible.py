@@ -11,10 +11,10 @@ class study_childcare_entitlement_eligible(Variable):
         # Link for instruction: https://www.gov.uk/care-to-learn/eligibility
 
         # Only parents can be eligible, not children
-        is_child = person("is_child", period)
+        is_parent = person("is_parent", period)
 
         # Check basic eligibility conditions
-        has_children = person.benunit.any(person("is_child", period))
+        benunit_has_children = person.benunit.any(person("is_child", period))
         p = parameters(
             period
         ).gov.dfe.study_childcare_entitlement.care_to_learn
@@ -34,8 +34,8 @@ class study_childcare_entitlement_eligible(Variable):
         lives_in_england = country == countries.ENGLAND
 
         return (
-            ~is_child
-            & has_children
+            is_parent
+            & benunit_has_children
             & age_eligible
             & not_higher_education
             & lives_in_england

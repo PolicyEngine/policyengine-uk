@@ -9,10 +9,9 @@ class study_childcare_entitlement(Variable):
     quantity_type = FLOW
     unit = GBP
     default_value = 0
+    defined_for = "study_childcare_entitlement_eligible"
 
     def formula(person, period, parameters):
-        eligible = person("study_childcare_entitlement_eligible", period)
-
         # Get amounts from parameters
         region = person.household("region", period)
         p = parameters(
@@ -24,4 +23,4 @@ class study_childcare_entitlement(Variable):
             p.amount.outside_london,
         )
 
-        return eligible * max_amount * WEEKS_IN_YEAR
+        return max_amount * WEEKS_IN_YEAR

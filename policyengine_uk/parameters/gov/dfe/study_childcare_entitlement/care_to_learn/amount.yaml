@@ -8,8 +8,8 @@ in_london:
     reference:
       - title: Documentation for Care to Learn scheme 
         href: https://www.gov.uk/care-to-learn
-      - title: House of Commons Library – Paying for Childcare in England (12 July 2024), p.43
-        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf
+      - title: House of Commons Library – Paying for Childcare in England (12 July 2024)
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf#page=43
   values:
     2024-01-01: 195
 
@@ -22,7 +22,7 @@ outside_london:
     reference:
       - title: Documentation for Care to Learn scheme 
         href: https://www.gov.uk/care-to-learn
-      - title: House of Commons Library – Paying for Childcare in England (12 July 2024), p.43
-        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf
+      - title: House of Commons Library – Paying for Childcare in England (12 July 2024)
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf#page=43
   values:
     2024-01-01: 180
