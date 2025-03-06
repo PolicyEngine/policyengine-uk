@@ -26,15 +26,17 @@ class targeted_childcare_entitlement_eligible(Variable):
         meets_uc = (uc > 0) & (earned_income <= max_uc_income)
 
         # Check Tax Credits eligibility
-        # Legislation source for total income limit:The Local Authority Regulations 2014, part 1.2.b
+        # Legislation source for total (applicable) income limit:The Local Authority Regulations 2014, part 1.2.b
         # https://www.legislation.gov.uk/uksi/2014/2147/regulation/1/made
 
-        total_income = benunit.sum(benunit.members("total_income", period))
+        # Reference for applicable income: The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3
+
+        tax_credits_applicable_income = benunit("tax_credits_applicable_income", period)
         tax_credits = add(
             benunit, period, ["child_tax_credit", "working_tax_credit"]
         )
         meets_tc = (tax_credits > 0) & (
-            total_income <= p.max_income_tc_recipients
+            tax_credits_applicable_income <= p.max_income_tc_recipients
         )
 
         # Check other qualifying benefits
