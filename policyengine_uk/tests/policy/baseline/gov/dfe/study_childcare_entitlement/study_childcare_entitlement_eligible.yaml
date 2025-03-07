@@ -4,10 +4,12 @@
     people:
       parent:
         age: 19
+        is_parent: true
         current_education: UPPER_SECONDARY
         is_apprentice: false
       child:
         age: 2
+        is_child: true
     benunits:
       benunit:
         members: ["parent", "child"]
@@ -24,10 +26,12 @@
     people:
       parent:
         age: 21
+        is_parent: true
         current_education: UPPER_SECONDARY
         is_apprentice: false
       child:
         age: 2
+        is_child: true
     benunits:
       benunit:
         members: ["parent", "child"]
@@ -44,6 +48,7 @@
     people:
       person:
         age: 19
+        is_parent: true
         current_education: UPPER_SECONDARY
         is_apprentice: false
     benunits:
@@ -62,10 +67,12 @@
     people:
       parent:
         age: 19
+        is_parent: true
         current_education: TERTIARY
         is_apprentice: false
       child:
         age: 2
+        is_child: true
     benunits:
       benunit:
         members: ["parent", "child"]
@@ -82,10 +89,12 @@
     people:
       parent:
         age: 19
+        is_parent: true
         current_education: UPPER_SECONDARY
         is_apprentice: true
       child:
         age: 2
+        is_child: true
     benunits:
       benunit:
         members: ["parent", "child"]
@@ -102,10 +111,12 @@
     people:
       parent:
         age: 19
+        is_parent: true
         current_education: UPPER_SECONDARY
         is_apprentice: false
       child:
         age: 2
+        is_child: true
     benunits:
       benunit:
         members: ["parent", "child"]
@@ -122,12 +133,15 @@
     people:
       parent:
         age: 19
+        is_parent: true
         current_education: UPPER_SECONDARY
         is_apprentice: false
       child1:
         age: 2
+        is_child: true
       child2:
         age: 4
+        is_child: true
     benunits:
       benunit:
         members: ["parent", "child1", "child2"]
@@ -144,10 +158,12 @@
     people:
       parent:
         age: 20
+        is_parent: true
         current_education: UPPER_SECONDARY
         is_apprentice: false
       child:
         age: 2
+        is_child: true
     benunits:
       benunit:
         members: ["parent", "child"]
