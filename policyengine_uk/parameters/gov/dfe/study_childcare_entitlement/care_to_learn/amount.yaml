@@ -1,0 +1,28 @@
+description: The Department for Education provides this amount of financial support through the Care to Learn scheme.
+in_london:
+  description: The Department for Education provides this amount of financial support through the Care to Learn scheme for those living in London.
+  metadata:
+    unit: currency-GBP
+    period: week
+    label: maximum weekly amount per child in London
+    reference:
+      - title: Documentation for Care to Learn scheme 
+        href: https://www.gov.uk/care-to-learn
+      - title: House of Commons Library – Paying for Childcare in England (12 July 2024)
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf#page=43
+  values:
+    2024-01-01: 195
+
+outside_london:
+  description: The Department for Education provides this amount of financial support through the Care to Learn scheme for those living outside London.
+  metadata:
+    unit: currency-GBP
+    period: week
+    label: maximum weekly amount per child outside London
+    reference:
+      - title: Documentation for Care to Learn scheme 
+        href: https://www.gov.uk/care-to-learn
+      - title: House of Commons Library – Paying for Childcare in England (12 July 2024)
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf#page=43
+  values:
+    2024-01-01: 180
