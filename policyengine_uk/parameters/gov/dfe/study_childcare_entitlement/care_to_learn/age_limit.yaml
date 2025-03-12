@@ -1,0 +1,13 @@
+description: The Department for Education limits Care to Learn eligibility to carers younger than this age.
+metadata:
+  unit: year
+  period: year
+  label: maximum age to be eligible for the Care to Learn scheme
+  reference:
+    - title: Documentation for Care to Learn scheme 
+      href: https://www.gov.uk/care-to-learn
+    - title: Apprenticeships, Skills, Children and Learning Act 2009 – Explanatory Notes, paragraph 160​
+      href: https://publications.parliament.uk/pa/cm200809/cmbills/055/en/09055x-c.htm#:~:text=160,childcare%20when%20securing%20these%20grants
+  # There is no statutory reference for this specific age limit; we rely on the explanatory notes from House of Commons Parliament.   
+values:
+  2015-01-01: 20
