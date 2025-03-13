@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class targeted_childcare_entitlement_eligible(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Eligibility for targeted childcare entitlement"
+    label = "eligibility for targeted childcare entitlement"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
