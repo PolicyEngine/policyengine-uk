@@ -29,4 +29,5 @@ parts:
       - file: programs/gov/hmrc/tax-free-childcare
       - file: programs/gov/dfe/extended-childcare-entitlement
       - file: programs/gov/dfe/universal-childcare-entitlement
+      - file: programs/gov/dfe/study-childcare-entitlement
       
