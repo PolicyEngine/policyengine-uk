@@ -25,5 +25,5 @@ class meets_tax_credit_criteria_for_targeted_childcare_entitlement(Variable):
         # Reference for applicable income: The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3
 
         return (tax_credits > 0) & (
-            tax_credits_applicable_income <= p.max_income_tc_recipients
+            tax_credits_applicable_income <= p.income_limit.tax_credits
         )

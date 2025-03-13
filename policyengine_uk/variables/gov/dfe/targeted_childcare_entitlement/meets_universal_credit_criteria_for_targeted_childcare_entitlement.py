@@ -24,4 +24,4 @@ class meets_universal_credit_criteria_for_targeted_childcare_entitlement(
         # Check if earned income is below threshold
         earned_income = benunit.sum(benunit.members("earned_income", period))
 
-        return (uc > 0) & (earned_income <= p.max_income_uc_recipients)
+        return (uc > 0) & (earned_income <= p.income_limit.universal_credit)
