@@ -12,5 +12,11 @@ class targeted_childcare_entitlement(Variable):
     def formula(person, period, parameters):
         p = parameters(period).gov.dfe
         age = person("age", period)
-        hours = p.targeted_childcare_entitlement.hours.calc(age)
+        eligible_by_age = (
+            p.targeted_childcare_entitlement.age_eligibility.calc(age)
+        )
+        hours = (
+            p.targeted_childcare_entitlement.hours_entitlement
+            * eligible_by_age
+        )
         return hours * p.childcare_funding_rate.calc(age)
