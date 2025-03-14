@@ -11,4 +11,4 @@ values:
     - income_support_reported
     - jsa_income_reported
     - esa_income_reported
-    - dla
+    - guarantee_credit
