@@ -44,6 +44,7 @@
         universal_credit: 100
         child_tax_credit: 0
         working_tax_credit: 0
+        uc_earned_income: 15_000
     households:
       household:
         members: ["parent", "child"]
@@ -96,6 +97,7 @@
         members: ["adult1"]
         universal_credit: 10_000
         jsa_income: 0
+        uc_earned_income: 250_000
     households:
       household:
         members: ["adult1"]
@@ -111,6 +113,9 @@
       parent:
         total_income: 10_000
         social_security_income: 0
+        jsa_income_reported: 0
+        esa_income_reported: 0
+        income_support_reported: 0
       child1:
         total_income: 0
         social_security_income: 0
@@ -125,12 +130,16 @@
         universal_credit: 0
         child_tax_credit: 0
         working_tax_credit: 0
+        uc_earned_income: 10_000
+        guarantee_credit: 0
+        income_support: 0
     households:
       household:
         members: ["parent", "child1", "child2"]
         country: ENGLAND
   output:
     targeted_childcare_entitlement_eligible: [false]
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: [false]
 
 - name: Eligible with ESA - couple
   period: 2025

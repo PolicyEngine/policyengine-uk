@@ -22,8 +22,6 @@ class meets_universal_credit_criteria_for_targeted_childcare_entitlement(
         # https://www.legislation.gov.uk/uksi/2018/146/made
 
         # UC-specific earned income as specified by 2(c)(3)(a) of the Regulations
-        earned_income = benunit.sum(
-            benunit.members("uc_earned_income", period)
-        )
+        earned_income = benunit("uc_earned_income", period)
 
         return (uc > 0) & (earned_income <= p.income_limit.universal_credit)
