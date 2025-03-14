@@ -21,7 +21,9 @@ class meets_universal_credit_criteria_for_targeted_childcare_entitlement(
         # The Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - part 2.c
         # https://www.legislation.gov.uk/uksi/2018/146/made
 
-        # Check if earned income is below threshold
-        earned_income = benunit.sum(benunit.members("earned_income", period))
+        # UC-specific earned income as specified by 2(c)(3)(a) of the Regulations
+        earned_income = benunit.sum(
+            benunit.members("uc_earned_income", period)
+        )
 
         return (uc > 0) & (earned_income <= p.income_limit.universal_credit)
