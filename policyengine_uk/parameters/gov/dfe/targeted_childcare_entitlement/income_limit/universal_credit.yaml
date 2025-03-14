@@ -1,0 +1,13 @@
+description: The Department for Education qualifies Universal Credit recipients for targeted childcare entitlement if their income does not exceed this threshold.
+metadata:
+  unit: currency-GBP 
+  period: year
+  label: income limit for universal credit recipients to access benefit-targeted free childcare
+  reference:
+    - title: Document for the Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - page 3
+      href: https://www.legislation.gov.uk/uksi/2018/146/pdfs/uksi_20180146_en.pdf#:~:text=Coming%20into%20force%20,into%20force%20on%201st%20April
+    - title: Free early education entitlement for two-year-olds under Universal Credit (Page 5)
+      href: https://assets.publishing.service.gov.uk/media/5ab270baed915d4f2d097124/Government_response_FSM_and_EY_entitlements_under_Universal_Credit.pdf#page=5
+    
+values:
+  2018-01-01: 15_400

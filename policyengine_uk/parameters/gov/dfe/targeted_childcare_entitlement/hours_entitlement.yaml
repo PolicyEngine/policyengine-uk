@@ -1,0 +1,10 @@
+description: The Department for Education provides this number of hours of free childcare under the targeted childcare entitlement.
+metadata:
+  type: parameter
+  unit: hour
+  label: targeted childcare entitlement hours
+  reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 4
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/4/made
+values:
+  2014-01-01: 570
