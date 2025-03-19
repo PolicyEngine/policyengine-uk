@@ -9,7 +9,7 @@ brackets:
         title: Finance Act 2022 s. 2 (a)
       unit: /1
     values:
-      2015-06-01: 0.2
+      2015-04-01: 0.2
   threshold:
     description: The starting threshold for the basic rate, after allowances.
     metadata:
@@ -17,7 +17,7 @@ brackets:
       - title: Income Tax Act 2007, s. 6 (1)(b)
         href: https://www.legislation.gov.uk/ukpga/2007/3/section/6
     values:
-      2015-06-05: 0
+      2015-04-05: 0
 - rate:
     description: The higher rate is the middle tax bracket on earned income.
     metadata:
@@ -27,7 +27,7 @@ brackets:
         title: Finance Act 2022 s. 2 (b)
       unit: /1
     values:
-      2015-06-05: 0.4
+      2015-04-05: 0.4
   threshold:
     description: The lower threshold for the higher rate of income tax (and therefore
       the upper threshold of the basic rate)
@@ -40,13 +40,13 @@ brackets:
       unit: currency-GBP
       uprating: gov.benefit_uprating_cpi
     values:
-      2015-06-05: 32000
-      2017-06-01: 33500
-      2018-06-01: 34500
-      2019-06-01: 37500
-      2020-06-01: 37500
-      2021-06-01: 37700
-      2028-06-01: 37700
+      2015-04-05: 32000
+      2017-04-01: 33500
+      2018-04-01: 34500
+      2019-04-01: 37500
+      2020-04-01: 37500
+      2021-04-01: 37700
+      2027-04-01: 37700
 - rate:
     description: The additional rate is the highest tax bracket, with no upper bound
     metadata:
@@ -59,7 +59,7 @@ brackets:
         period: 2022
       unit: /1
     values:
-      2015-06-05: 0.45
+      2015-04-05: 0.45
   threshold:
     description: The lower threshold for the additional rate
     metadata:
@@ -70,7 +70,7 @@ brackets:
         title: Finance Act 2022 s. 2
       unit: currency-GBP
     values:
-      2015-06-05: 150_000
+      2015-04-05: 150_000
       2023-01-01: 
         value: 125_140 
         reference:
@@ -82,7 +82,7 @@ brackets:
       label: Extra tax bracket rate
       unit: /1
     values:
-      2015-06-05: 0.45
+      2015-04-05: 0.45
   threshold:
     description: The lower threshold for the extra bracket rate.
     metadata:
@@ -90,7 +90,7 @@ brackets:
       period: year
       unit: currency-GBP
     values:
-      2015-06-05: 10_000_000
+      2015-04-05: 10_000_000
 description: Income Tax scale
 metadata:
   label: Income tax main rates
