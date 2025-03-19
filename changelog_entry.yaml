@@ -1,4 +1,4 @@
-- bump: bug
+- bump: patch
   changes:
     fixed:
     - Bug in higher rate threshold timing.
