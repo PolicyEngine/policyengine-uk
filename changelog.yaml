@@ -1396,3 +1396,8 @@
     - Separate reforms to exempt parents of under [x] from the UC child limit and
       from CTC child limit.
   date: 2025-03-03 12:11:29
+- bump: patch
+  changes:
+    fixed:
+    - Bug in higher rate threshold timing.
+  date: 2025-03-19 20:33:18
