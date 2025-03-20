@@ -4,12 +4,10 @@
     people:
       adult1:
         total_income: 10_000
-        social_security_income: 0
-        jsa_income_reported: 50
+        jsa_income: 50
       adult2:
         total_income: 5_000
-        social_security_income: 0
-        jsa_income_reported: 50
+        jsa_income: 50
     benunits:
       benunit:
         members: ["adult1", "adult2"]
@@ -31,11 +29,9 @@
     people:
       parent:
         total_income: 15_000
-        social_security_income: 5_000
         earned_income: 15_000
       child:
         total_income: 0
-        social_security_income: 0
     benunits:
       benunit:
         members: ["parent", "child"]
@@ -59,16 +55,12 @@
     people:
       parent1:
         total_income: 10_000
-        social_security_income: 0
       parent2:
         total_income: 6_000
-        social_security_income: 0
       child1:
         total_income: 0
-        social_security_income: 0
       child2:
         total_income: 0
-        social_security_income: 0
     benunits:
       benunit:
         members: ["parent1", "parent2", "child1", "child2"]
@@ -112,16 +104,13 @@
     people:
       parent:
         total_income: 10_000
-        social_security_income: 0
-        jsa_income_reported: 0
-        esa_income_reported: 0
-        income_support_reported: 0
+        jsa_income: 0
+        esa_income: 0
+        income_support: 0
       child1:
         total_income: 0
-        social_security_income: 0
       child2:
         total_income: 0
-        social_security_income: 0
     benunits:
       benunit:
         members: ["parent", "child1", "child2"]
@@ -147,12 +136,10 @@
     people:
       adult1:
         total_income: 8_000
-        social_security_income: 0
-        esa_income_reported: 50
+        esa_income: 50
       adult2:
         total_income: 7_000
-        social_security_income: 0
-        esa_income_reported: 50
+        esa_income: 50
     benunits:
       benunit:
         members: ["adult1", "adult2"]
@@ -174,12 +161,10 @@
     people:
       adult1:
         total_income: 8_000
-        social_security_income: 0
-        esa_income_reported: 50
+        esa_income: 50
       adult2:
         total_income: 7_000
-        social_security_income: 0
-        esa_income_reported: 50
+        esa_income: 50
     benunits:
       benunit:
         members: ["adult1", "adult2"]

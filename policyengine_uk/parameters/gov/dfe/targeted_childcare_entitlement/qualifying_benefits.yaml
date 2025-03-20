@@ -8,7 +8,7 @@ metadata:
   label: qualifying benefits for targeted childcare entitlement
 values:
   2014-01-01:
-    - income_support_reported
-    - jsa_income_reported
-    - esa_income_reported
+    - income_support
+    - jsa_income
+    - esa_income
     - guarantee_credit
