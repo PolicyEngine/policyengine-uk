@@ -1,0 +1,22 @@
+description: The Department for Education considers these age conditions for eligibility for targeted childcare entitlement.
+metadata:
+  type: single_amount
+  threshold_unit: year
+  amount_unit: bool
+  label: age eligibility for targeted childcare entitlement
+  reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 3
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/3/made
+brackets:
+  - threshold:
+      2014-01-01: 0
+    amount:
+      2014-01-01: False
+  - threshold:
+      2014-01-01: 2
+    amount:
+      2014-01-01: True
+  - threshold:
+      2014-01-01: 3
+    amount:
+      2014-01-01: False

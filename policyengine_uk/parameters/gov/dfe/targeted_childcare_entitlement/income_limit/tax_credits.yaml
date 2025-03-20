@@ -1,0 +1,15 @@
+description: The Department for Education qualifies recipients of the Working Tax Credit or Child Tax Credit for targeted childcare entitlement if their income does not exceed this threshold.
+metadata:
+  unit: currency-GBP  
+  period: year
+  label: income limit for tax credit recipients to access benefit-targeted free childcare
+  reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014, part 1.2.b
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/1/made
+      # In part 1.2.b of regulation 2014, they mentioned "Part 1 of the Tax Credits Act 2002(8)" for tax credit criteria. Part 1.1 of the Tax Credits Act 2002(8) explains that tax credit is known as child tax credit and working tax credit. 
+    - title: Tax Credits Act 2002(8) - part 1
+      href: https://www.legislation.gov.uk/ukpga/2002/21/section/1
+    - title: 15 hours free education and childcare for 2-year-olds
+      href: https://www.gov.uk/help-with-childcare-costs/free-childcare-2-year-olds-claim-benefits?step-by-step-nav=f237ec8e-e82c-4ffa-8fba-2a88a739783b
+values:
+  2014-01-01: 16_190

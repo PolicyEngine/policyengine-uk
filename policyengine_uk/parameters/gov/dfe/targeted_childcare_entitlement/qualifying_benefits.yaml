@@ -1,0 +1,14 @@
+description: The Department for Education designates these programs as qualifying benefits for the targeted childcare entitlement eligibility (the 2-year-old entitlement) in England.
+metadata:
+  reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - part 2.a
+      href: https://www.legislation.gov.uk/uksi/2018/146/regulation/2/made
+  period: year
+  unit: program
+  label: qualifying benefits for targeted childcare entitlement
+values:
+  2014-01-01:
+    - income_support
+    - jsa_income
+    - esa_income
+    - guarantee_credit
