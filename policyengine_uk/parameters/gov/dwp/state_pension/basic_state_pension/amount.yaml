@@ -27,7 +27,7 @@ values:
 metadata:
   unit: currency-GBP
   label: basic State Pension amount
-  uprating: gov.dwp.state_pension.triple_lock
+  uprating: gov.dwp.state_pension.triple_lock.index
   reference:
     - title: House of Commons Library
       href: https://researchbriefings.files.parliament.uk/documents/SN05649/SN05649.pdf

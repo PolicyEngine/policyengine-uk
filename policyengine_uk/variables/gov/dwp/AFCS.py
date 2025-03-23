@@ -7,7 +7,7 @@ class afcs(Variable):
     label = "Armed Forces Compensation Scheme"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.benefit_uprating_cpi"
+    uprating = "gov.obr.consumer_price_index"
 
     adds = ["afcs_reported"]
 
@@ -18,4 +18,4 @@ class afcs_reported(Variable):
     label = "Armed Forces Compensation Scheme (reported)"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.benefit_uprating_cpi"
+    uprating = "gov.obr.consumer_price_index"

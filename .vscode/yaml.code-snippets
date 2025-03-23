@@ -17,7 +17,7 @@
 		"body": [
 			"description: ${1:Description}",
 			"values:",
-			"  2019-06-01:",
+			"  2019-04-01:",
 			"    value: ${2:0.00}",
 			"metadata:",
 			"  unit: currency-GBP",

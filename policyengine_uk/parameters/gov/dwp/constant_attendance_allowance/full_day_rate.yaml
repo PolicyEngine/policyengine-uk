@@ -7,5 +7,5 @@ metadata:
   label: Constant Attendance Allowance full day rate
   uprating: gov.benefit_uprating_cpi
 values:
-  2015-06-01: 72.8
+  2015-04-01: 72.8
 

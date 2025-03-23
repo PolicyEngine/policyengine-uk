@@ -1,6 +1,6 @@
 description: The Class 1 National Insurance main rate is paid on employment earnings between the Primary Threshold and the Upper Earnings Limit
 values:
-  2015-06-01: 0.12
+  2015-04-01: 0.12
   2022-04-01: 
     value: 0.1325
     metadata:

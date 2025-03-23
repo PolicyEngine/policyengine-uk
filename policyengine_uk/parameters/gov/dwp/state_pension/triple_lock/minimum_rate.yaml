@@ -1,0 +1,6 @@
+description: The triple lock is set to the highest of earnings growth, CPI inflation, or this rate.
+values:
+  2010-01-01: 0.025
+metadata:
+  unit: /1
+  label: Triple lock minimum rate

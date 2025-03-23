@@ -7,7 +7,7 @@ class income_support_reported(Variable):
     label = "Income Support (reported amount)"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.benefit_uprating_cpi"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class would_claim_IS(Variable):

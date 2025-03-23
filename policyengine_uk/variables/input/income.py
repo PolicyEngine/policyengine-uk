@@ -18,7 +18,7 @@ class employment_income(Variable):
         "employment_income_behavioral_response",
         "employer_ni_fixed_employer_cost_change",
     ]
-    uprating = "gov.obr.average_earnings"
+    uprating = "gov.obr.per_capita.employment_income"
 
 
 class employment_income_before_lsr(Variable):
@@ -27,7 +27,7 @@ class employment_income_before_lsr(Variable):
     label = "employment income before labor supply responses"
     unit = GBP
     definition_period = YEAR
-    uprating = "gov.obr.average_earnings"
+    uprating = "gov.obr.per_capita.employment_income"
 
 
 class private_pension_income(Variable):
@@ -39,7 +39,7 @@ class private_pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class pension_income(Variable):
@@ -51,7 +51,7 @@ class pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class state_pension(Variable):
@@ -93,7 +93,7 @@ class self_employment_income(Variable):
     unit = GBP
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"
     quantity_type = FLOW
-    uprating = "gov.obr.mixed_income"
+    uprating = "gov.obr.per_capita.mixed_income"
 
 
 class property_income(Variable):
@@ -105,7 +105,7 @@ class property_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class savings_interest_income(Variable):
@@ -117,7 +117,7 @@ class savings_interest_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(a)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class dividend_income(Variable):
@@ -129,7 +129,7 @@ class dividend_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 365(1)(b-d)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class sublet_income(Variable):
@@ -139,7 +139,7 @@ class sublet_income(Variable):
     documentation = "Income from subletting properties"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class miscellaneous_income(Variable):
@@ -149,7 +149,7 @@ class miscellaneous_income(Variable):
     documentation = "Income from any other source"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class private_transfer_income(Variable):
@@ -159,6 +159,7 @@ class private_transfer_income(Variable):
     documentation = "Income from private transfers"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class lump_sum_income(Variable):
@@ -168,6 +169,7 @@ class lump_sum_income(Variable):
     documentation = "Income from lump sums"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class maintenance_income(Variable):
@@ -177,6 +179,7 @@ class maintenance_income(Variable):
     documentation = "Income from maintenance payments to you"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.per_capita.non_labour_income"
 
 
 class other_investment_income(Variable):
@@ -186,3 +189,4 @@ class other_investment_income(Variable):
     documentation = "Investment income from sources other than dividends, property, and net interest on UK bank accounts; may include National Savings interest products, securities interest, interest from trusts or settlements, etc."
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.per_capita.non_labour_income"
