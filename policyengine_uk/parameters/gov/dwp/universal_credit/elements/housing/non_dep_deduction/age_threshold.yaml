@@ -1,6 +1,6 @@
 description: The non-dependent deduction is limited to filers over this age threshold under the housing element of the Universal Credit.
 values:
-  2017-06-01: 21
+  2017-04-01: 21
 metadata:
   unit: year
   period: year

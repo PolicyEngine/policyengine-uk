@@ -6,4 +6,4 @@ metadata:
   unit: hour
   label: "Carer's Allowance minimum hours"
 values:
-  2010-06-01: 35
+  2010-04-01: 35

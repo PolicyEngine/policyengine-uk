@@ -1,6 +1,6 @@
 description: Amount of income from property untaxed per year
 values:
-  2005-06-01: 1_000
+  2005-04-01: 1_000
 metadata:
   name: property_allowance
   label: Property Allowance

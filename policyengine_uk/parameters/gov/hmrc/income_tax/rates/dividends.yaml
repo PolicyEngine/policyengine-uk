@@ -8,7 +8,7 @@ brackets:
           - title: Finance Act 2022 s. 4
             href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
-        2015-06-01: 0.075
+        2015-04-01: 0.075
         2022-04-01:
           value: 0.0875
           metadata:
@@ -17,7 +17,7 @@ brackets:
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
       values:
-        2015-06-01: 0
+        2015-04-01: 0
       metadata:
         label: Dividends basic rate threshold
         reference:
@@ -31,7 +31,7 @@ brackets:
           - title: Finance Act 2022 s. 4
             href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
-        2015-06-01: 0.325
+        2015-04-01: 0.325
         2022-04-01:
           value: 0.3375
           metadata:
@@ -43,7 +43,7 @@ brackets:
         name: dividend_higher_threshold
         label: Dividends higher rate threshold
       values:
-        2015-06-01: 37_500
+        2015-04-01: 37_500
   - rate:
       metadata:
         label: Dividends additional rate
@@ -53,7 +53,7 @@ brackets:
           - title: Finance Act 2022 s. 4
             href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
-        2015-06-01: 0.381
+        2015-04-01: 0.381
         2022-04-01:
           value: 0.3935
           metadata:
@@ -62,7 +62,7 @@ brackets:
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
       values:
-        2015-06-01: 150_000
+        2015-04-01: 150_000
       metadata:
         period: year
         label: Dividends additional rate threshold
@@ -75,7 +75,7 @@ brackets:
         label: Extra dividend tax bracket rate
         unit: /1
       values:
-        2015-06-01: 0.381
+        2015-04-01: 0.381
         2022-06-05: 0.3935
     threshold:
       description: The lower threshold for the extra dividend bracket rate.
