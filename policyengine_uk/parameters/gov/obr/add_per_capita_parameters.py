@@ -26,7 +26,7 @@ def add_per_capita_parameters(parameters: ParameterNode) -> ParameterNode:
                 parameter_node(year) * 1e9 / population(year)
             )
             values[f"{year}-01-01"] = parameter_per_capita
-        name = f"{parameter}.per_capita.{parameter_node.name.split('.')[-1]}"
+        name = f"gov.obr.per_capita.{parameter_node.name.split('.')[-1]}"
         new_parameter = Parameter(
             name,
             data={
