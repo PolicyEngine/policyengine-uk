@@ -38,7 +38,7 @@ jobs:
           - name: Install policyengine
             run: uv pip install policyengine --system
           - name: Run tests
-            run: pytest
+            run: make test
             env:
               HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
           - name: Compare PSND
