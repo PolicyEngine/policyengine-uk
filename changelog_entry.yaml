@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - PRs now run tests fully.

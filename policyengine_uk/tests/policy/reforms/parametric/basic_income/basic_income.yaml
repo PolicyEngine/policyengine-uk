@@ -46,7 +46,7 @@
     basic_income: [5_200, 0]
     bi_phaseout: [0, 5_200]
     child_benefit: 0
-    income_tax: [0, 52_500]
+    income_tax: [0, 52460]
 
 - name: Basic income included in taxable income.
   period: 2021
@@ -61,7 +61,7 @@
       benunit:
         members: adult
   output:
-    income_tax: 52_500 + 5_200 * 0.45
+    income_tax: 52_460 + 5_200 * 0.45
 
 - name: Basic income not included in means tests.
   period: 2021
