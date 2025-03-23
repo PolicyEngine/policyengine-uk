@@ -1401,3 +1401,8 @@
     fixed:
     - Bug in higher rate threshold timing.
   date: 2025-03-19 20:33:18
+- bump: patch
+  changes:
+    fixed:
+    - PRs now run tests fully.
+  date: 2025-03-23 23:09:48
