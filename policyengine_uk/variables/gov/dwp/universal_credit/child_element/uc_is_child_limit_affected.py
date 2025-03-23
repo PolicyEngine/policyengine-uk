@@ -14,4 +14,3 @@ class uc_is_child_limit_affected(Variable):
             & person("is_child", period)
             & (person.benunit("universal_credit", period) > 0)
         )
-

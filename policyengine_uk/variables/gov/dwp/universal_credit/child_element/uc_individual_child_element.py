@@ -37,7 +37,7 @@ class uc_individual_child_element(Variable):
                 [
                     (child_index == 1) & born_before_limit & is_eligible,
                     (child_index == 2) & is_eligible,
-                    is_eligible &  born_before_limit,
+                    is_eligible & born_before_limit,
                 ],
                 [
                     p.first.higher_amount,
