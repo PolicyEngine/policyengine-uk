@@ -10,7 +10,7 @@ PARAMETERS_TO_ADD_FOR = [
     "gov.obr.non_labour_income",
 ]
 
-YEARS = list(range(2022, 2035))
+YEARS = list(range(2019, 2035))
 
 
 def add_per_capita_parameters(parameters: ParameterNode) -> ParameterNode:

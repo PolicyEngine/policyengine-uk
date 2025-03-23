@@ -27,27 +27,25 @@ class employer_pension_contributions(Variable):
     documentation = "Total amount spent on employer pension contributions"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.average_earnings"
+    uprating = "gov.obr.per_capita.employment_income"
 
 
 class employee_pension_contributions(Variable):
-    label = "Label"
-    documentation = "Description"
+    label = "employee pension contributions"
     entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.obr.average_earnings"
+    uprating = "gov.obr.per_capita.employment_income"
 
 
 class personal_pension_contributions(Variable):
-    label = "Label"
-    documentation = "Description"
+    label = "personal pension contributions"
     entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.obr.average_earnings"
+    uprating = "gov.obr.per_capita.employment_income"
 
 
 class maintenance_expenses(Variable):

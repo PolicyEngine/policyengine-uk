@@ -21,6 +21,9 @@ from policyengine_uk.parameters.gov.obr.add_per_capita_parameters import (
 from policyengine_uk.parameters.gov.obr.extend_forecast import (
     extend_obr_forecast,
 )
+from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
+    add_triple_lock,
+)
 from policyengine_core.parameters.operations.homogenize_parameters import (
     homogenize_parameter_structures,
 )
@@ -60,7 +63,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
         self.parameters = extend_obr_forecast(self.parameters)
         self.parameters = add_per_capita_parameters(self.parameters)
-
+        self.parameters = add_triple_lock(self.parameters)
         self.parameters.add_child("baseline", self.parameters.clone())
         if reform:
             self.apply_reform_set(reform)
