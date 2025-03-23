@@ -33,7 +33,7 @@ class attendance_allowance_reported(Variable):
     label = "Attendance Allowance (reported)"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.benefit_uprating_cpi"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class aa_category(Variable):

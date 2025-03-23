@@ -15,6 +15,24 @@ from policyengine_uk.utils.parameters import (
 )
 from policyengine_uk_data import DATASETS, EnhancedFRS_2022_23
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
+from policyengine_uk.parameters.gov.obr.add_per_capita_parameters import (
+    add_per_capita_parameters,
+)
+from policyengine_uk.parameters.gov.obr.extend_forecast import (
+    extend_obr_forecast,
+)
+from policyengine_core.parameters.operations.homogenize_parameters import (
+    homogenize_parameter_structures,
+)
+from policyengine_core.parameters.operations.interpolate_parameters import (
+    interpolate_parameters,
+)
+from policyengine_core.parameters.operations.propagate_parameter_metadata import (
+    propagate_parameter_metadata,
+)
+from policyengine_core.parameters.operations.uprate_parameters import (
+    uprate_parameters,
+)
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -22,7 +40,6 @@ ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
-    parameters_dir = COUNTRY_DIR / "parameters"
     variables_dir = COUNTRY_DIR / "variables"
     auto_carry_over_input_variables = True
     basic_inputs = [
@@ -36,6 +53,25 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def __init__(self, reform=None):
         super().__init__(entities, reform=reform)
+
+        self.parameters_dir = COUNTRY_DIR / "parameters"
+
+        self.load_parameters(self.parameters_dir)
+
+        self.parameters = extend_obr_forecast(self.parameters)
+        self.parameters = add_per_capita_parameters(self.parameters)
+
+        self.parameters.add_child("baseline", self.parameters.clone())
+        if reform:
+            self.apply_reform_set(reform)
+        self.parameters = homogenize_parameter_structures(
+            self.parameters, self.variables
+        )
+        self.parameters = propagate_parameter_metadata(self.parameters)
+        self.parameters = interpolate_parameters(self.parameters)
+        self.parameters = uprate_parameters(self.parameters)
+        self.parameters = propagate_parameter_metadata(self.parameters)
+        self.add_abolition_parameters()
 
         self.parameters = backdate_parameters(self.parameters, "2015-01-01")
         self.parameters.gov.hmrc = convert_to_fiscal_year_parameters(

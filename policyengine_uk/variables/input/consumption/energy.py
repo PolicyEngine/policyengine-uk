@@ -11,4 +11,4 @@ class domestic_energy_consumption(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.obr.inflation.utilities"
+    uprating = "gov.obr.consumer_price_index"
