@@ -30,4 +30,5 @@ parts:
       - file: programs/gov/dfe/extended-childcare-entitlement
       - file: programs/gov/dfe/universal-childcare-entitlement
       - file: programs/gov/dfe/study-childcare-entitlement
+      - file: programs/gov/dfe/targeted-childcare-entitlement
       
