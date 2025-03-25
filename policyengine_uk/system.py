@@ -36,6 +36,7 @@ from policyengine_core.parameters.operations.propagate_parameter_metadata import
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
+from policyengine_core.reforms import Reform
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -108,6 +109,22 @@ class Simulation(CoreSimulation):
         if reform is not None:
             self.apply_reform(reform)
 
+        if kwargs.get("reform") is not None:
+            if any(
+                [
+                    "obr" in param
+                    for param in kwargs["reform"]
+                    if isinstance(kwargs["reform"], dict)
+                ]
+            ):
+                self.tax_benefit_system.load_parameters(
+                    self.tax_benefit_system.parameters_dir
+                )
+                Reform.from_dict(kwargs["reform"]).apply(
+                    self.tax_benefit_system
+                )
+                self.tax_benefit_system.process_parameters()
+
         # Labor supply responses
 
         employment_income = self.get_holder("employment_income")
@@ -146,6 +163,22 @@ class Microsimulation(CoreMicrosimulation):
         )
         if reform is not None:
             self.apply_reform(reform)
+
+        if kwargs.get("reform") is not None:
+            if any(
+                [
+                    "obr" in param
+                    for param in kwargs["reform"]
+                    if isinstance(kwargs["reform"], dict)
+                ]
+            ):
+                self.tax_benefit_system.load_parameters(
+                    self.tax_benefit_system.parameters_dir
+                )
+                Reform.from_dict(kwargs["reform"]).apply(
+                    self.tax_benefit_system
+                )
+                self.tax_benefit_system.process_parameters()
 
         # Labor supply responses
 
