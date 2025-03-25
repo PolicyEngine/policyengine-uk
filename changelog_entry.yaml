@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - OBR forecast parameters now affect other parameters.

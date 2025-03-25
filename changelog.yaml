@@ -1406,3 +1406,8 @@
     fixed:
     - PRs now run tests fully.
   date: 2025-03-23 23:09:48
+- bump: patch
+  changes:
+    fixed:
+    - OBR forecast parameters now affect other parameters.
+  date: 2025-03-25 11:03:07
