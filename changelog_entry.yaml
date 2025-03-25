@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Baseline microsimulations break with no reform.

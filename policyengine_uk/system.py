@@ -37,6 +37,7 @@ from policyengine_core.parameters.operations.propagate_parameter_metadata import
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
+from policyengine_core.reforms import Reform
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -112,7 +113,7 @@ class Simulation(CoreSimulation):
         if reform is not None:
             self.apply_reform(reform)
 
-        if kwargs["reform"] is not None:
+        if kwargs.get("reform") is not None:
             if any(
                 [
                     "obr" in param
@@ -167,7 +168,7 @@ class Microsimulation(CoreMicrosimulation):
         if reform is not None:
             self.apply_reform(reform)
 
-        if kwargs["reform"] is not None:
+        if kwargs.get("reform") is not None:
             if any(
                 [
                     "obr" in param
