@@ -83,7 +83,7 @@ class basic_state_pension(Variable):
         amount_in_data_year = where(
             type == StatePensionType.BASIC, min_(reported, maximum_basic_sp), 0
         )
-        triple_lock = parameters.gov.dwp.state_pension.triple_lock
+        triple_lock = parameters.gov.dwp.state_pension.triple_lock.index
         uprating_since_data_year = triple_lock(period) / triple_lock(data_year)
         return amount_in_data_year * uprating_since_data_year * WEEKS_IN_YEAR
 
@@ -140,7 +140,7 @@ class state_pension_reported(Variable):
     label = "Reported income from the State Pension"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.benefit_uprating_cpi"
+    uprating = "gov.obr.consumer_price_index"
 
     def formula_2022(person, period, parameters):
         return person("state_pension_reported", period.last_year)

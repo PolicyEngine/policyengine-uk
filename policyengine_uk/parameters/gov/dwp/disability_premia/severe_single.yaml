@@ -1,6 +1,6 @@
 description: Severe disability premium for a single person
 values:
-  2015-06-01: 66.95
+  2015-04-01: 66.95
 metadata:
   period: week
   unit: currency-GBP

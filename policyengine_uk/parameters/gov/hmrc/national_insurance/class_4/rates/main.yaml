@@ -1,6 +1,6 @@
 description: The main National Insurance rate paid between the Lower and Upper Profits Limits for self-employed profits
 values:
-  2015-06-01: 0.09
+  2015-04-01: 0.09
   2022-04-01:
     value: 0.1025
     metadata:

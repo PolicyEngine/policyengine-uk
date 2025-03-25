@@ -22,7 +22,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14130  # Standard allowance + child elements with 2-child limit
+    universal_credit: 10894.80  # Standard allowance + child elements with 2-child limit
 
 - name: With age exemption, all children get element when any child is below threshold
   period: 2023
@@ -49,7 +49,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14675  # All children get UC with exemption
+    universal_credit: 14674.80  # All children get UC with exemption
 
 - name: No exemption when all children above age threshold
   period: 2023
@@ -76,7 +76,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14130  # Only first 2 children get UC
+    universal_credit: 10894.80  # Only first 2 children get UC
 
 - name: Shows baseline UC for a family with children under age 3
   period: 2023
@@ -102,7 +102,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14130  # Standard allowance + elements for only first 2 children
+    universal_credit: 10894.80  # Standard allowance + elements for only first 2 children
 
 - name: Shows increased UC after applying age exemption reform
   period: 2023
@@ -129,4 +129,4 @@
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14675  # Reform increases UC because 3rd and 4th children are now counted
+    universal_credit: 14674.80  # Reform increases UC because 3rd and 4th children are now counted

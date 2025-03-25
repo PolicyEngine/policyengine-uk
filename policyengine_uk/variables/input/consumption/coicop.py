@@ -14,7 +14,7 @@ class food_and_non_alcoholic_beverages_consumption(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = FLOW
-    uprating = "gov.obr.inflation.food_beverages_and_tobacco"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class alcohol_and_tobacco_consumption(Variable):
@@ -26,7 +26,6 @@ class alcohol_and_tobacco_consumption(Variable):
     value_type = float
     quantity_type = FLOW
     uprating = "gov.obr.consumer_price_index"
-    uprating = "gov.obr.inflation.food_beverages_and_tobacco"
 
 
 class clothing_and_footwear_consumption(Variable):

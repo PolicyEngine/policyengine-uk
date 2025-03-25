@@ -7,7 +7,7 @@ class jsa_income_reported(Variable):
     label = "JSA (income-based) (reported amount)"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.benefit_uprating_cpi"
+    uprating = "gov.obr.consumer_price_index"
 
 
 class jsa_income(Variable):

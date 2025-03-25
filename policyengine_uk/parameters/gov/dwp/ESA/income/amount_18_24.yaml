@@ -7,5 +7,5 @@ metadata:
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38
   unit: currency-GBP
 values:
-  2015-06-01: 57.9
-  2020-06-01: 58.9
+  2015-04-01: 57.9
+  2020-04-01: 58.9

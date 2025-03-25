@@ -1,0 +1,12 @@
+description: The Department for Education designates these variables that determine qualification for targeted childcare entitlement beyond qualifying benefits.
+metadata:
+  reference:
+    - title: Documenation for free education and childcare for 2-year-olds
+      href: https://www.gov.uk/help-with-childcare-costs/free-childcare-2-year-olds
+  period: year
+  unit: program
+  label: qualifying criteria for targeted childcare entitlement
+values:
+  2014-01-01:
+    - meets_universal_credit_criteria_for_targeted_childcare_entitlement
+    - meets_tax_credit_criteria_for_targeted_childcare_entitlement

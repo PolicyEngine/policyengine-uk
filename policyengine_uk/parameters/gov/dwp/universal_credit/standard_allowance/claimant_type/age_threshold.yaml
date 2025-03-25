@@ -1,6 +1,6 @@
 description: A higher Universal Credit standard allowance is provided to claimants over this age threshold.
 values:
-  2017-06-01: 25
+  2017-04-01: 25
 metadata:
   unit: year
   period: year

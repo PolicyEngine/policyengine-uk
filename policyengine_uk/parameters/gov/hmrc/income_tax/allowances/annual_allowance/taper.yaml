@@ -1,6 +1,6 @@
 description: Adjusted net income limit for tapering of the annual allowance
 values:
-  2015-06-01: 240_000
+  2015-04-01: 240_000
 metadata:
   unit: currency-GBP
   reference: 

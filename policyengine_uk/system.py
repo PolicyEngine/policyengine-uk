@@ -13,8 +13,31 @@ from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
+from policyengine_core.reforms import Reform
 from policyengine_uk_data import DATASETS, EnhancedFRS_2022_23
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
+from policyengine_uk.parameters.gov.obr.add_per_capita_parameters import (
+    add_per_capita_parameters,
+)
+from policyengine_uk.parameters.gov.obr.extend_forecast import (
+    extend_obr_forecast,
+)
+from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
+    add_triple_lock,
+)
+from policyengine_core.parameters.operations.homogenize_parameters import (
+    homogenize_parameter_structures,
+)
+from policyengine_core.parameters.operations.interpolate_parameters import (
+    interpolate_parameters,
+)
+from policyengine_core.parameters.operations.propagate_parameter_metadata import (
+    propagate_parameter_metadata,
+)
+from policyengine_core.parameters.operations.uprate_parameters import (
+    uprate_parameters,
+)
+from policyengine_core.reforms import Reform
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -22,7 +45,6 @@ ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
-    parameters_dir = COUNTRY_DIR / "parameters"
     variables_dir = COUNTRY_DIR / "variables"
     auto_carry_over_input_variables = True
     basic_inputs = [
@@ -34,8 +56,21 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     ]
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
 
-    def __init__(self, reform=None):
-        super().__init__(entities, reform=reform)
+    def process_parameters(self, reform=None):
+        self.parameters = extend_obr_forecast(self.parameters)
+        self.parameters = add_per_capita_parameters(self.parameters)
+        self.parameters = add_triple_lock(self.parameters)
+        self.parameters.add_child("baseline", self.parameters.clone())
+        if reform:
+            self.apply_reform_set(reform)
+        self.parameters = homogenize_parameter_structures(
+            self.parameters, self.variables
+        )
+        self.parameters = propagate_parameter_metadata(self.parameters)
+        self.parameters = interpolate_parameters(self.parameters)
+        self.parameters = uprate_parameters(self.parameters)
+        self.parameters = propagate_parameter_metadata(self.parameters)
+        self.add_abolition_parameters()
 
         self.parameters = backdate_parameters(self.parameters, "2015-01-01")
         self.parameters.gov.hmrc = convert_to_fiscal_year_parameters(
@@ -44,6 +79,15 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters.gov.dwp = convert_to_fiscal_year_parameters(
             self.parameters.gov.dwp
         )
+
+    def __init__(self, reform=None):
+        super().__init__(entities, reform=reform)
+
+        self.parameters_dir = COUNTRY_DIR / "parameters"
+
+        self.load_parameters(self.parameters_dir)
+
+        self.process_parameters(reform=reform)
 
 
 system = CountryTaxBenefitSystem()
@@ -68,6 +112,22 @@ class Simulation(CoreSimulation):
         )
         if reform is not None:
             self.apply_reform(reform)
+
+        if kwargs.get("reform") is not None:
+            if any(
+                [
+                    "obr" in param
+                    for param in kwargs["reform"]
+                    if isinstance(kwargs["reform"], dict)
+                ]
+            ):
+                self.tax_benefit_system.load_parameters(
+                    self.tax_benefit_system.parameters_dir
+                )
+                Reform.from_dict(kwargs["reform"]).apply(
+                    self.tax_benefit_system
+                )
+                self.tax_benefit_system.process_parameters()
 
         # Labor supply responses
 
@@ -107,6 +167,22 @@ class Microsimulation(CoreMicrosimulation):
         )
         if reform is not None:
             self.apply_reform(reform)
+
+        if kwargs.get("reform") is not None:
+            if any(
+                [
+                    "obr" in param
+                    for param in kwargs["reform"]
+                    if isinstance(kwargs["reform"], dict)
+                ]
+            ):
+                self.tax_benefit_system.load_parameters(
+                    self.tax_benefit_system.parameters_dir
+                )
+                Reform.from_dict(kwargs["reform"]).apply(
+                    self.tax_benefit_system
+                )
+                self.tax_benefit_system.process_parameters()
 
         # Labor supply responses
 

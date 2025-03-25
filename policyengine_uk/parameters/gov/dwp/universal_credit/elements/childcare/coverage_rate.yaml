@@ -1,6 +1,6 @@
 description: Proportion of childcare costs covered by Universal Credit.
 values:
-  2015-06-01: 0.85
+  2015-04-01: 0.85
 metadata:
   period: year
   unit: /1

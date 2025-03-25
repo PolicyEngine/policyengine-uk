@@ -1,0 +1,5 @@
+description: The triple lock is active if this value is true.
+values:
+  2010-01-01: true
+metadata:
+  label: Triple lock active

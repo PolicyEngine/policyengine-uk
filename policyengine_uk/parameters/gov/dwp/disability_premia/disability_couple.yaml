@@ -1,6 +1,6 @@
 description: Disability premium for a couple
 values:
-  2015-06-01: 49.80
+  2015-04-01: 49.80
 metadata:
   period: week
   unit: currency-GBP

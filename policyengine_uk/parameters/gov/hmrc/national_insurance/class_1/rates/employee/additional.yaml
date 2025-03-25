@@ -1,6 +1,6 @@
 description: The Class 1 National Insurance additional rate is paid on employment earnings above the Upper Earnings Limit
 values:
-  2015-06-01: 0.02
+  2015-04-01: 0.02
   2022-04-01:
     value: 0.0325
     metadata:
