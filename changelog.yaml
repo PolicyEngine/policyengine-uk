@@ -1421,3 +1421,8 @@
     fixed:
     - Bug causing UK API impacts to fail.
   date: 2025-03-26 14:42:25
+- bump: patch
+  changes:
+    changed:
+    - Updated with OBR forecast
+  date: 2025-03-26 17:50:04
