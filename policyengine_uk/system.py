@@ -113,20 +113,20 @@ class Simulation(CoreSimulation):
         if reform is not None:
             self.apply_reform(reform)
 
-        if kwargs.get("reform") is not None:
-            if any(
-                [
-                    "obr" in param
-                    for param in kwargs["reform"]
-                    if isinstance(kwargs["reform"], dict)
-                ]
-            ):
+        reform_dict = kwargs.get("reform")
+        if reform_dict is not None:
+            if isinstance(reform_dict, type):
+                try:
+                    reform_dict = reform_dict.parameter_values
+                except:
+                    reform_dict = None
+
+        if reform_dict is not None:
+            if any(["obr" in param for param in reform_dict]):
                 self.tax_benefit_system.load_parameters(
                     self.tax_benefit_system.parameters_dir
                 )
-                Reform.from_dict(kwargs["reform"]).apply(
-                    self.tax_benefit_system
-                )
+                Reform.from_dict(reform_dict).apply(self.tax_benefit_system)
                 self.tax_benefit_system.process_parameters()
 
         # Labor supply responses
@@ -168,20 +168,20 @@ class Microsimulation(CoreMicrosimulation):
         if reform is not None:
             self.apply_reform(reform)
 
-        if kwargs.get("reform") is not None:
-            if any(
-                [
-                    "obr" in param
-                    for param in kwargs["reform"]
-                    if isinstance(kwargs["reform"], dict)
-                ]
-            ):
+        reform_dict = kwargs.get("reform")
+        if reform_dict is not None:
+            if isinstance(reform_dict, type):
+                try:
+                    reform_dict = reform_dict.parameter_values
+                except:
+                    reform_dict = None
+
+        if reform_dict is not None:
+            if any(["obr" in param for param in reform_dict]):
                 self.tax_benefit_system.load_parameters(
                     self.tax_benefit_system.parameters_dir
                 )
-                Reform.from_dict(kwargs["reform"]).apply(
-                    self.tax_benefit_system
-                )
+                Reform.from_dict(reform_dict).apply(self.tax_benefit_system)
                 self.tax_benefit_system.process_parameters()
 
         # Labor supply responses

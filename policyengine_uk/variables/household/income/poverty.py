@@ -138,6 +138,21 @@ class in_relative_poverty_ahc(Variable):
         return income < (median_income * 0.6)
 
 
+class in_relative_poverty_bhc(Variable):
+    label = "in relative poverty (AHC)"
+    entity = Household
+    definition_period = YEAR
+    value_type = bool
+
+    def formula(household, period, parameters):
+        income = household("equiv_hbai_household_net_income", period)
+        # Less than 60% of median income
+        median_income = MicroSeries(
+            income, weights=household("household_weight", period)
+        ).median()
+        return income < (median_income * 0.6)
+
+
 class in_deep_poverty_bhc(Variable):
     value_type = bool
     entity = Household
