@@ -1,4 +1,4 @@
-bump: patch
-changes:
-  changed:
-  - Updated with OBR forecast
+- bump: patch
+  changes:
+    changed:
+    - Updated with OBR forecast
