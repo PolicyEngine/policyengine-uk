@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Bug causing UK API impacts to fail.

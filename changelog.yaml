@@ -1416,3 +1416,8 @@
     fixed:
     - Baseline microsimulations break with no reform.
   date: 2025-03-25 11:47:32
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing UK API impacts to fail.
+  date: 2025-03-26 14:42:25
