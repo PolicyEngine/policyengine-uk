@@ -1,6 +1,6 @@
 
 
-def test_pension_credit():
+def test_hnet():
     from policyengine_uk import Microsimulation
 
     sim = Microsimulation(dataset="hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5")
