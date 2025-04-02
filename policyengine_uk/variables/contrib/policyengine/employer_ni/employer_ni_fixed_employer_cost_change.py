@@ -167,7 +167,7 @@ class employer_ni_response_consumer_incidence(Variable):
 
         if total_consumption == 0:
             return 0
-        
+
         return value
 
 
@@ -212,7 +212,7 @@ class employer_ni_response_capital_incidence(Variable):
 
         if total_wealth == 0:
             return 0
-    
+
         return value
 
 

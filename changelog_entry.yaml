@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Uprating that fails on ubuntu.
