@@ -1426,3 +1426,8 @@
     changed:
     - Updated with OBR forecast
   date: 2025-03-26 17:50:04
+- bump: patch
+  changes:
+    fixed:
+    - Uprating that fails on ubuntu.
+  date: 2025-04-03 11:12:35

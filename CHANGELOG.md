@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.22.7] - 2025-04-03 11:12:35
+
+### Fixed
+
+- Uprating that fails on ubuntu.
+
 ## [2.22.6] - 2025-03-26 17:50:04
 
 ### Changed
@@ -1695,6 +1701,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.22.7]: https://github.com/PolicyEngine/openfisca-uk/compare/2.22.6...2.22.7
 [2.22.6]: https://github.com/PolicyEngine/openfisca-uk/compare/2.22.5...2.22.6
 [2.22.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.22.4...2.22.5
 [2.22.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.22.3...2.22.4
