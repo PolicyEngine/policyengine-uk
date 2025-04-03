@@ -36,14 +36,10 @@ class uc_individual_child_element(Variable):
             select(
                 [
                     (child_index == 1) & born_before_limit & is_eligible,
-                    (child_index == 1) & is_eligible,
-                    (child_index == 2) & is_eligible,
-                    is_eligible & born_before_limit,
+                    is_eligible,
                 ],
                 [
                     p.first.higher_amount,
-                    p.amount,
-                    p.amount,
                     p.amount,
                 ],
                 default=0,
