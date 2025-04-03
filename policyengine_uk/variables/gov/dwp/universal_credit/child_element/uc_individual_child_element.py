@@ -18,7 +18,6 @@ class uc_individual_child_element(Variable):
         child_limit_applying = where(
             ~born_before_limit, p.limit.child_count, inf
         )
-        print(child_limit_applying)
         is_eligible = (child_index != -1) & (
             child_index <= child_limit_applying
         )
