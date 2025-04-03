@@ -11,6 +11,7 @@ PARAMETERS_TO_EXTEND = [
     "gov.obr.house_prices",
     "gov.obr.consumer_price_index",
     "gov.obr.mortgage_interest",
+    "gov.obr.rent",
 ]
 
 YEARS = list(range(2030, 2035))
