@@ -14,22 +14,19 @@ class is_parent(Variable):
 
         # Find two oldest members
         benunit_ages = benunit.members("age", period)
-        first_highest = benunit.max(benunit_ages)
-        second_highest = benunit.max(
-            where(benunit_ages < first_highest, benunit_ages, -np.inf)
-        )
+        adult_index = person("adult_index", period)
 
         # Get family types enum
         family_types = family_type.possible_values
 
         # For lone parents (FamilyType.LONE_PARENT), only the eldest is parent
         is_lone_parent = (family_type == family_types.LONE_PARENT) & (
-            age == first_highest
+            adult_index == 1
         )
 
         # For couples with children (FamilyType.COUPLE_WITH_CHILDREN), two eldest are parents
         is_couple_parent = (
             family_type == family_types.COUPLE_WITH_CHILDREN
-        ) & ((age == first_highest) | (age == second_highest))
+        ) & ((adult_index == 1) | (adult_index == 2))
 
         return is_lone_parent | is_couple_parent
