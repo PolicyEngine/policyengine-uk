@@ -18,6 +18,7 @@ class uc_individual_child_element(Variable):
         child_limit_applying = where(
             ~born_before_limit, p.limit.child_count, inf
         )
+        print(child_limit_applying)
         is_eligible = (child_index != -1) & (
             child_index <= child_limit_applying
         )
@@ -36,14 +37,10 @@ class uc_individual_child_element(Variable):
             select(
                 [
                     (child_index == 1) & born_before_limit & is_eligible,
-                    (child_index == 1) & is_eligible,
-                    (child_index == 2) & is_eligible,
-                    is_eligible & born_before_limit,
+                    is_eligible,
                 ],
                 [
                     p.first.higher_amount,
-                    p.amount,
-                    p.amount,
                     p.amount,
                 ],
                 default=0,
