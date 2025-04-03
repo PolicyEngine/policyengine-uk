@@ -1431,3 +1431,8 @@
     fixed:
     - Uprating that fails on ubuntu.
   date: 2025-04-03 11:12:35
+- bump: patch
+  changes:
+    fixed:
+    - Bug in UC child limit calculation.
+  date: 2025-04-03 11:26:35
