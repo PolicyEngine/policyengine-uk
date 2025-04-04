@@ -26,8 +26,15 @@ class targeted_childcare_entitlement_eligible(Variable):
         meets_any_criteria = add(benunit, period, p.qualifying_criteria) > 0
 
         # Check that the household is not receiving any disqualifying benefits
+        # Priority: universal > extended > targeted
+        has_universal_childcare = benunit.any(
+            benunit.members("universal_childcare_entitlement_eligible", period)
+        )
+        has_extended_childcare = benunit(
+            "extended_childcare_entitlement_eligible", period
+        )
         has_disqualifying_benefits = (
-            add(benunit, period, p.disqualifying_benefits) > 0
+            has_universal_childcare | has_extended_childcare
         )
 
         return (
