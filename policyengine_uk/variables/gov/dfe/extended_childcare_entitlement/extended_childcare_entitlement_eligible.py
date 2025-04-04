@@ -27,4 +27,8 @@ class extended_childcare_entitlement_eligible(Variable):
             > 0
         )
 
-        return in_england & meets_income_condition & work_eligible
+        # Check that the household is not receiving any disqualifying benefits
+        p = parameters(period).gov.dfe.extended_childcare_entitlement
+        has_disqualifying_benefits = add(benunit, period, p.disqualifying_benefits) > 0
+
+        return in_england & meets_income_condition & work_eligible & ~has_disqualifying_benefits
