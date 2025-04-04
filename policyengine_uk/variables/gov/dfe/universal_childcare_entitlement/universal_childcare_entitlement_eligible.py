@@ -10,7 +10,7 @@ class universal_childcare_entitlement_eligible(Variable):
     def formula(person, period, parameters):
         # Check if person is not receiving tax-free childcare
         no_tax_free_childcare = person("tax_free_childcare", period) <= 0
-        
+
         country = person.household("country", period)
         countries = country.possible_values
         in_england = country == countries.ENGLAND
@@ -23,4 +23,9 @@ class universal_childcare_entitlement_eligible(Variable):
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
         # Section 7 of the Childcare Act 2006
         # The regulation above limits free early years provision to children under compulsory school age.
-        return in_england & meets_age_condition & not_compulsory_age & no_tax_free_childcare
+        return (
+            in_england
+            & meets_age_condition
+            & not_compulsory_age
+            & no_tax_free_childcare
+        )
