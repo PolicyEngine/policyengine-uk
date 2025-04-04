@@ -1,0 +1,5 @@
+# Population-wide aggregation test
+- name: Total universal childcare entitlement across UK
+  period: 2024
+  output:
+    universal_childcare_entitlement_total: 1_000_000_000  # Target: £1 billion
