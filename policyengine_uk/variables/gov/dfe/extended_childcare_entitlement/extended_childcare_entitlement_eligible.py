@@ -27,4 +27,17 @@ class extended_childcare_entitlement_eligible(Variable):
             > 0
         )
 
-        return in_england & meets_income_condition & work_eligible
+        # Check that the household is not receiving any disqualifying benefits
+        p = parameters(period).gov.dfe.extended_childcare_entitlement
+        # Priority: universal > extended > targeted
+        has_universal_childcare = benunit.any(
+            benunit.members("universal_childcare_entitlement_eligible", period)
+        )
+        has_disqualifying_benefits = has_universal_childcare
+
+        return (
+            in_england
+            & meets_income_condition
+            & work_eligible
+            & ~has_disqualifying_benefits
+        )
