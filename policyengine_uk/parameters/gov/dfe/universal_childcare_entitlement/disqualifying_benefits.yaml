@@ -1,0 +1,12 @@
+description: The Department for Education designates these programs as disqualifying benefits for the universal childcare entitlement.
+metadata:
+  reference:
+    - title: HM government - Combining schemes 
+      href: https://www.childcarechoices.gov.uk/combining-schemes
+  period: year
+  unit: program
+  label: disqualifying benefits for universal childcare entitlement
+values:
+  2014-01-01:
+    - targeted_childcare_entitlement
+    - extended_childcare_entitlement
