@@ -8,7 +8,6 @@ class universal_childcare_entitlement_eligible(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-
         country = person.household("country", period)
         countries = country.possible_values
         in_england = country == countries.ENGLAND
@@ -17,12 +16,8 @@ class universal_childcare_entitlement_eligible(Variable):
 
         age = person("age", period)
         p = parameters(period).gov.dfe.universal_childcare_entitlement
-        meets_age_condition = (age >= p.min_age) & (age < p.max_age)
+        meets_min_age = age >= p.min_age
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
         # Section 7 of the Childcare Act 2006
         # The regulation above limits free early years provision to children under compulsory school age.
-        return (
-            in_england
-            & meets_age_condition
-            & not_compulsory_age
-        )
+        return in_england & meets_min_age & not_compulsory_age
