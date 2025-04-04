@@ -6,7 +6,7 @@ def test_universal_childcare_entitlement_aggregate():
     """
     Test that the total universal childcare entitlement has a reasonable value.
     """
-    sim = Simulation(scope="macro", country="uk")
+    sim = Simulation(scope="macro", country="uk", time_period= "2025")
     sim = sim.baseline_simulation
     year = 2025
     
