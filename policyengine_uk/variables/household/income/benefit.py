@@ -51,7 +51,7 @@ class household_benefits(Variable):
         "extended_childcare_entitlement",
         "universal_childcare_entitlement",
         "targeted_childcare_entitlement",
-        "study_childcare_entitlement",
+        "care_to_learn",
     ]
 
     def formula(household, period, parameters):

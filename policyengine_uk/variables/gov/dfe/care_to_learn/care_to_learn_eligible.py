@@ -1,10 +1,10 @@
 from policyengine_uk.model_api import *
 
 
-class study_childcare_entitlement_eligible(Variable):
+class care_to_learn_eligible(Variable):
     value_type = bool
     entity = Person
-    label = "eligible for study childcare entitlement through Care to Learn childcare support"
+    label = "eligible for Care to Learn childcare support"
     definition_period = YEAR
 
     def formula(person, period, parameters):
@@ -17,7 +17,7 @@ class study_childcare_entitlement_eligible(Variable):
         benunit_has_children = person.benunit.any(person("is_child", period))
         p = parameters(
             period
-        ).gov.dfe.study_childcare_entitlement.care_to_learn
+        ).gov.dfe.care_to_learn
         age_eligible = person("age", period) < p.age_limit
 
         current_ed = person("current_education", period)
