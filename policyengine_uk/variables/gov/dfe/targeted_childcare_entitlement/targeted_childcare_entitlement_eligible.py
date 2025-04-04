@@ -24,4 +24,14 @@ class targeted_childcare_entitlement_eligible(Variable):
         # Check if household meets any additional qualifying criteria
         # from qualifying_criteria.yaml (UC/TC specific criteria)
         meets_any_criteria = add(benunit, period, p.qualifying_criteria) > 0
-        return in_england & (has_qualifying_benefits | meets_any_criteria)
+
+        # Check that the household is not receiving any disqualifying benefits
+        has_disqualifying_benefits = (
+            add(benunit, period, p.disqualifying_benefits) > 0
+        )
+
+        return (
+            in_england
+            & (has_qualifying_benefits | meets_any_criteria)
+            & ~has_disqualifying_benefits
+        )
