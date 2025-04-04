@@ -8,7 +8,7 @@ def test_universal_childcare_entitlement_aggregate():
     """
     sim = Simulation(scope="macro", country="uk")
     sim = sim.baseline_simulation
-    year = 2024
+    year = 2025
     
     # Calculate individual entitlements and sum them up
     individual_entitlements = sim.calculate("universal_childcare_entitlement", period=year)
@@ -18,6 +18,6 @@ def test_universal_childcare_entitlement_aggregate():
     upper_bound = 1_200_000_000
     
     assert lower_bound <= total_entitlement <= upper_bound, (
-        f"Universal childcare entitlement total (£{total_entitlement:,.0f}) "
-        f"is outside the expected range of £{lower_bound:,.0f} to £{upper_bound:,.0f}"
+        f"Universal childcare entitlement total (£{total_entitlement:,.1f}) "
+        f"is outside the expected range of £{lower_bound:,.1f} to £{upper_bound:,.1f}"
     )
