@@ -2,22 +2,22 @@
   period: 2024
   input:
     region: EAST_OF_ENGLAND
-    study_childcare_entitlement_eligible: true
+    care_to_learn_eligible: true
   output:
-    study_childcare_entitlement: 9_360  # 180 * 52
+    care_to_learn: 9_360  # 180 * 52
     
 - name: Care to Learn amount - Inside London
   period: 2024
   input:
     region: LONDON
-    study_childcare_entitlement_eligible: true
+    care_to_learn_eligible: true
   output:
-    study_childcare_entitlement: 10_140  # 195 * 52
+    care_to_learn: 10_140  # 195 * 52
 
 - name: Not eligible for Care to Learn
   period: 2024
   input:
     region: EAST_OF_ENGLAND
-    study_childcare_entitlement_eligible: false
+    care_to_learn_eligible: false
   output:
-    study_childcare_entitlement: 0
+    care_to_learn: 0
