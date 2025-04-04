@@ -9,7 +9,7 @@ class universal_childcare_entitlement_eligible(Variable):
 
     def formula(person, period, parameters):
         # Check if person is not receiving tax-free childcare
-        no_tax_free_childcare = person("tax_free_childcare", period) <= 0
+        no_tax_free_childcare = person("tax_free_childcare", period) == 0
 
         country = person.household("country", period)
         countries = country.possible_values
