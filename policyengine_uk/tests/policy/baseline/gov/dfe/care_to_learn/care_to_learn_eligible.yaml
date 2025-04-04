@@ -1,88 +1,175 @@
-- name: Eligible for Care to Learn
+- name: Care to Learn - Fully eligible person
   period: 2024
   input:
-    is_parent: true
-    age: 19
-    current_education: 0 # DEFAULT
-    is_apprentice: false
-    country: 0 # ENGLAND
-    benunit:
-      members:
-        - {}
-        - {is_child: true}
+    people:
+      parent:
+        age: 19
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
   output:
-    care_to_learn_eligible: true
+    care_to_learn_eligible: [true, false]
 
-- name: Not eligible for Care to Learn - No children
+- name: Care to Learn - Too old
   period: 2024
   input:
-    is_parent: true
-    age: 19
-    current_education: 0 # DEFAULT
-    is_apprentice: false
-    country: 0 # ENGLAND
-    benunit:
-      members:
-        - {}
+    people:
+      parent:
+        age: 21
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
   output:
-    care_to_learn_eligible: false
+    care_to_learn_eligible: [false, false]
 
-- name: Not eligible for Care to Learn - Over age
+- name: Care to Learn - No children
   period: 2024
   input:
-    is_parent: true
-    age: 20
-    current_education: 0 # DEFAULT
-    is_apprentice: false
-    country: 0 # ENGLAND
-    benunit:
-      members:
-        - {}
-        - {is_child: true}
+    people:
+      person:
+        age: 19
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+    benunits:
+      benunit:
+        members: ["person"]
+    households:
+      household:
+        members: ["person"]
+        country: ENGLAND
   output:
-    care_to_learn_eligible: false
+    care_to_learn_eligible: [false]
 
-- name: Not eligible for Care to Learn - Higher education
+- name: Care to Learn - Higher education
   period: 2024
   input:
-    is_parent: true
-    age: 19
-    current_education: 2 # TERTIARY
-    is_apprentice: false
-    country: 0 # ENGLAND
-    benunit:
-      members:
-        - {}
-        - {is_child: true}
+    people:
+      parent:
+        age: 19
+        is_parent: true
+        current_education: TERTIARY
+        is_apprentice: false
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
   output:
-    care_to_learn_eligible: false
+    care_to_learn_eligible: [false, false]
 
-- name: Not eligible for Care to Learn - Apprentice
+- name: Care to Learn - Is apprentice
   period: 2024
   input:
-    is_parent: true
-    age: 19
-    current_education: 0 # DEFAULT
-    is_apprentice: true
-    country: 0 # ENGLAND
-    benunit:
-      members:
-        - {}
-        - {is_child: true}
+    people:
+      parent:
+        age: 19
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: true
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
   output:
-    care_to_learn_eligible: false
+    care_to_learn_eligible: [false, false]
 
-- name: Not eligible for Care to Learn - Not in England
+- name: Care to Learn - Not in England
   period: 2024
   input:
-    is_parent: true
-    age: 19
-    current_education: 0 # DEFAULT
-    is_apprentice: false
-    country: 1 # SCOTLAND
-    benunit:
-      members:
-        - {}
-        - {is_child: true}
+    people:
+      parent:
+        age: 19
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: SCOTLAND
   output:
-    care_to_learn_eligible: false
+    care_to_learn_eligible: [false, false]
+
+- name: Care to Learn - Multiple children still eligible
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 19
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child1:
+        age: 2
+        is_child: true
+      child2:
+        age: 4
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "child1", "child2"]
+    households:
+      household:
+        members: ["parent", "child1", "child2"]
+        country: ENGLAND
+  output:
+    care_to_learn_eligible: [true, false, false]
+
+- name: Care to Learn - At age limit
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 20
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
+  output:
+    care_to_learn_eligible: [false, false]
