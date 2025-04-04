@@ -14,9 +14,7 @@ class care_to_learn(Variable):
     def formula(person, period, parameters):
         # Get amounts from parameters
         region = person.household("region", period)
-        p = parameters(
-            period
-        ).gov.dfe.care_to_learn
+        p = parameters(period).gov.dfe.care_to_learn
         max_amount = where(
             region == region.possible_values.LONDON,
             p.amount.in_london,
