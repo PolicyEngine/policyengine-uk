@@ -28,7 +28,7 @@ def test_universal_childcare_entitlement_aggregate():
     lower_bound = 1_500_000_000
     upper_bound = 2_000_000_000
 
-    print(f"Universal childcare entitlement total: £{total_entitlement:,.2f}")
+    print(f"Universal childcare entitlement total: £{total_entitlement:,.1f}")
 
     assert lower_bound <= total_entitlement <= upper_bound, (
         f"Universal childcare entitlement total (£{total_entitlement:,.1f}) "
@@ -61,7 +61,7 @@ def test_extended_childcare_entitlement_aggregate():
     lower_bound = 2_800_000_000
     upper_bound = 3_300_000_000
 
-    print(f"Extended childcare entitlement total: £{total_entitlement:,.2f}")
+    print(f"Extended childcare entitlement total: £{total_entitlement:,.1f}")
 
     assert lower_bound <= total_entitlement <= upper_bound, (
         f"Extended childcare entitlement total (£{total_entitlement:,.1f}) "
@@ -94,7 +94,7 @@ def test_targeted_childcare_entitlement_aggregate():
     lower_bound = 400_000_000
     upper_bound = 700_000_000
 
-    print(f"Targeted childcare entitlement total: £{total_entitlement:,.2f}")
+    print(f"Targeted childcare entitlement total: £{total_entitlement:,.1f}")
 
     assert lower_bound <= total_entitlement <= upper_bound, (
         f"Targeted childcare entitlement total (£{total_entitlement:,.1f}) "
@@ -127,7 +127,7 @@ def test_care_to_learn_childcare_entitlement_aggregate():
     upper_bound = 1_000_000
 
     print(
-        f"Care to Learn childcare entitlement total: £{total_entitlement:,.2f}"
+        f"Care to Learn childcare entitlement total: £{total_entitlement:,.1f}"
     )
 
     assert lower_bound <= total_entitlement <= upper_bound, (
@@ -159,7 +159,7 @@ def test_tax_free_childcare_aggregate():
     lower_bound = 300_000_000
     upper_bound = 600_000_000
 
-    print(f"Tax-free childcare entitlement total: £{total_entitlement:,.2f}")
+    print(f"Tax-free childcare entitlement total: £{total_entitlement:,.1f}")
 
     assert lower_bound <= total_entitlement <= upper_bound, (
         f"Tax-free childcare entitlement total (£{total_entitlement:,.1f}) "
