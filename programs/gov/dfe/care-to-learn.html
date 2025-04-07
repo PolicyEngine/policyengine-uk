@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Targeted childcare entitlement" href="targeted-childcare-entitlement.html" /><link rel="prev" title="Universal childcare entitlement" href="universal-childcare-entitlement.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
-        <title>Study childcare entitlement - PolicyEngine UK documentation</title>
+        <title>Care to Learn - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
@@ -195,7 +195,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../hmrc/tax-free-childcare.html">Tax-free childcare</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extended-childcare-entitlement.html">Extended childcare entitlement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="universal-childcare-entitlement.html">Universal childcare entitlement</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Study childcare entitlement</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Care to Learn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="targeted-childcare-entitlement.html">Targeted childcare entitlement</a></li>
 </ul>
 
@@ -231,14 +231,14 @@
           </label>
         </div>
         <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="study-childcare-entitlement">
-<h1>Study childcare entitlement<a class="headerlink" href="#study-childcare-entitlement" title="Permalink to this heading">#</a></h1>
+          <section class="tex2jax_ignore mathjax_ignore" id="care-to-learn">
+<h1>Care to Learn<a class="headerlink" href="#care-to-learn" title="Permalink to this heading">#</a></h1>
 <p><a class="reference external" href="https://www.gov.uk/care-to-learn">Official government guidance</a> | <a class="reference external" href="https://www.gov.uk/guidance/16-to-19-education-financial-support-for-students">Legislation</a></p>
 <section id="program-description">
 <h2>Program description<a class="headerlink" href="#program-description" title="Permalink to this heading">#</a></h2>
 <section id="overview">
 <h3>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h3>
-<p>The study childcare entitlement, specifically the <strong>Care to Learn</strong> scheme, provides financial support for <strong>young parents under 20</strong> who wish to continue their education while caring for children. This program covers childcare costs while the parent is in education or training.</p>
+<p>The <strong>Care to Learn</strong> scheme provides financial support for <strong>young parents under 20</strong> who wish to continue their education while caring for children. This program covers childcare costs while the parent is in education or training.</p>
 <p>The entitlement provides:</p>
 <ul class="simple">
 <li><p><strong>£180 per week</strong> for childcare costs outside London</p></li>
@@ -283,23 +283,23 @@
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this heading">#</a></h2>
 <section id="parameter-definition">
 <h3>1. Parameter definition<a class="headerlink" href="#parameter-definition" title="Permalink to this heading">#</a></h3>
-<p>Located in <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters/gov/dfe/study_childcare_entitlement/care_to_learn"><code class="docutils literal notranslate"><span class="pre">parameters/gov/dfe/study_childcare_entitlement/care_to_learn/</span></code></a>, key parameters include:</p>
+<p>Located in <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters/gov/dfe/care_to_learn/"><code class="docutils literal notranslate"><span class="pre">parameters/gov/dfe/care_to_learn/</span></code></a>, key parameters include:</p>
 <ul class="simple">
 <li><p>Program eligibility:</p>
 <ul>
-<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters/gov/dfe/study_childcare_entitlement/care_to_learn/age_limit.yaml"><code class="docutils literal notranslate"><span class="pre">age_limit.yaml</span></code></a>: Defines the maximum eligible age (20 years)</p></li>
+<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters/gov/dfe/care_to_learn/age_limit.yaml"><code class="docutils literal notranslate"><span class="pre">age_limit.yaml</span></code></a>: Defines the maximum eligible age (20 years)</p></li>
 </ul>
 </li>
 <li><p>Funding parameters:</p>
 <ul>
-<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters/gov/dfe/study_childcare_entitlement/care_to_learn/amount.yaml"><code class="docutils literal notranslate"><span class="pre">amount.yaml</span></code></a>: Specifies the weekly funding rates (£180 outside London, £195 in London)</p></li>
+<li><p><a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters/gov/dfe/care_to_learn/amount.yaml"><code class="docutils literal notranslate"><span class="pre">amount.yaml</span></code></a>: Specifies the weekly funding rates (£180 outside London, £195 in London)</p></li>
 </ul>
 </li>
 </ul>
 </section>
 <section id="eligibility-determination">
 <h3>2. Eligibility determination<a class="headerlink" href="#eligibility-determination" title="Permalink to this heading">#</a></h3>
-<p>Implemented in <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/variables/gov/dfe/study_childcare_entitlement/study_childcare_entitlement_eligible.py"><code class="docutils literal notranslate"><span class="pre">study_childcare_entitlement_eligible.py</span></code></a>, which checks:</p>
+<p>Implemented in <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/variables/gov/dfe/care_to_learn/care_to_learn_eligible.py"><code class="docutils literal notranslate"><span class="pre">care_to_learn_eligible.py</span></code></a>, which checks:</p>
 <ul class="simple">
 <li><p>Parental status:</p>
 <ul>
@@ -378,10 +378,10 @@
 </section>
 <section id="entitlement-calculation">
 <h3>3. Entitlement calculation<a class="headerlink" href="#entitlement-calculation" title="Permalink to this heading">#</a></h3>
-<p>Handled by <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/variables/gov/dfe/study_childcare_entitlement/study_childcare_entitlement.py"><code class="docutils literal notranslate"><span class="pre">study_childcare_entitlement.py</span></code></a>:</p>
+<p>Handled by <a class="reference external" href="https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/variables/gov/dfe/care_to_learn/care_to_learn.py"><code class="docutils literal notranslate"><span class="pre">care_to_learn.py</span></code></a>:</p>
 <ul class="simple">
 <li><p>Defined at the person level (<code class="docutils literal notranslate"><span class="pre">entity</span> <span class="pre">=</span> <span class="pre">Person</span></code>)</p></li>
-<li><p>Only calculated for eligible individuals (<code class="docutils literal notranslate"><span class="pre">defined_for</span> <span class="pre">=</span> <span class="pre">&quot;study_childcare_entitlement_eligible&quot;</span></code>)</p></li>
+<li><p>Only calculated for eligible individuals (<code class="docutils literal notranslate"><span class="pre">defined_for</span> <span class="pre">=</span> <span class="pre">&quot;care_to_learn_eligible&quot;</span></code>)</p></li>
 <li><p>Uses parameters to:</p>
 <ul>
 <li><p>Determine if the person lives in London</p></li>
@@ -489,7 +489,7 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Study childcare entitlement</a><ul>
+<li><a class="reference internal" href="#">Care to Learn</a><ul>
 <li><a class="reference internal" href="#program-description">Program description</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a></li>
 <li><a class="reference internal" href="#eligibility-requirements">Eligibility requirements</a><ul>
