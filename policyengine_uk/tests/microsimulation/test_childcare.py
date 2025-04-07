@@ -108,9 +108,7 @@ def test_care_to_learn_childcare_entitlement_aggregate():
     care_to_learn_take_up_rate = 0.6
 
     # Calculate individual entitlements and sum them up
-    individual_entitlements = sim.calculate(
-        "study_childcare_entitlement", period=year
-    )
+    individual_entitlements = sim.calculate("care_to_learn", period=year)
 
     # Apply the take-up rate to the total
     total_entitlement = (
