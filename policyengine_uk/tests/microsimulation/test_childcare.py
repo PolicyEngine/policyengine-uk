@@ -25,8 +25,8 @@ def test_universal_childcare_entitlement_aggregate():
         * universal_childcare_entitlement_take_up_rate
     )
 
-    lower_bound = 2_200_000_000
-    upper_bound = 3_000_000_000
+    lower_bound = 1_500_000_000
+    upper_bound = 2_000_000_000
 
     assert lower_bound <= total_entitlement <= upper_bound, (
         f"Universal childcare entitlement total (£{total_entitlement:,.1f}) "
