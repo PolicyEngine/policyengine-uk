@@ -114,8 +114,7 @@ def test_care_to_learn_childcare_entitlement_aggregate():
 
     # Apply the take-up rate to the total
     total_entitlement = (
-        individual_entitlements.sum()
-        * care_to_learn_take_up_rate
+        individual_entitlements.sum() * care_to_learn_take_up_rate
     )
 
     # Currently, the entitlement is zero, so we test for that
