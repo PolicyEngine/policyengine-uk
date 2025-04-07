@@ -1436,3 +1436,8 @@
     fixed:
     - Bug in UC child limit calculation.
   date: 2025-04-03 11:26:35
+- bump: minor
+  changes:
+    added:
+    - Rename 'study childcare entitlement' to 'care to learn'
+  date: 2025-04-07 09:00:36
