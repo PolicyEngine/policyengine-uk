@@ -1,5 +1,5 @@
-bump: minor
-changes:
-  fixed:
-  - Corrected the is_parent variable to properly identify parents.
-  - Fixed logic in childcare programs to ensure accurate calculations.
+- bump: patch
+  changes:
+    fixed:
+    - Corrected the is_parent variable to properly identify parents.
+    - Fixed logic in childcare programs to ensure accurate calculations.
