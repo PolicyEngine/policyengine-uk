@@ -1,0 +1,5 @@
+bump: minor
+changes:
+  added:
+  - is_parent variable correction
+  - childcare programs' logic correction
