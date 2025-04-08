@@ -16,7 +16,7 @@ class targeted_childcare_entitlement_eligible(Variable):
         # Get parameters
         p = parameters(period).gov.dfe.targeted_childcare_entitlement
 
-        # Check if household has extended childcare. If so, they are not eligible. Combining extended childcare and targeted childcare is not allowed. 
+        # Check if household has extended childcare. If so, they are not eligible. Combining extended childcare and targeted childcare is not allowed.
         # https://www.childcarechoices.gov.uk/combining-schemes
         has_extended_childcare = benunit(
             "extended_childcare_entitlement_eligible", period

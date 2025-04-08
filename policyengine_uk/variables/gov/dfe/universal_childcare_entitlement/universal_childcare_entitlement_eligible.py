@@ -19,7 +19,7 @@ class universal_childcare_entitlement_eligible(Variable):
         meets_age_condition = (age >= p.min_age) & (age < p.max_age)
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
 
-        # Check if person has extended childcare. If so, they are not eligible. Combining extended childcare and universal childcare is not allowed. 
+        # Check if person has extended childcare. If so, they are not eligible. Combining extended childcare and universal childcare is not allowed.
         # https://www.childcarechoices.gov.uk/combining-schemes
         has_extended_childcare = person.benunit(
             "extended_childcare_entitlement_eligible", period
