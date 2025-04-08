@@ -167,15 +167,10 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage/income-sources.html">Example: pensioner incomes</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="model/baseline.html">Baseline forecast</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Validation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="validation/spi-validation.html">Tax model validation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Programs</span></p>
 <ul>
@@ -240,133 +235,47 @@
 <h2>Short demo<a class="headerlink" href="#short-demo" title="Permalink to this heading">#</a></h2>
 <section id="baseline-estimation">
 <h3>Baseline estimation<a class="headerlink" href="#baseline-estimation" title="Permalink to this heading">#</a></h3>
-<p>Calculating, for example, the total tax (Income Tax and National Insurance) liability by region can be done with the following code:</p>
+<p>Calculating, for example, the total Income Tax liability by region can be done with the following code:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
+<span class="n">ENHANCED_FRS</span> <span class="o">=</span> <span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
 
-<span class="n">df</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">df</span><span class="p">([</span><span class="s2">&quot;national_insurance&quot;</span><span class="p">,</span> <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;people&quot;</span><span class="p">])</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">)</span>
 
-<span class="n">summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;person&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;people&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">summary</span><span class="o">.</span><span class="n">national_insurance</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">national_insurance</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate_dataframe</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;household_id&quot;</span><span class="p">,</span> <span class="c1"># If the first variable is household level, the dataframe will project everything to households. Same for people.</span>
+        <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;region&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">period</span><span class="o">=</span><span class="mi">2025</span>
 <span class="p">)</span>
-<span class="n">summary</span><span class="o">.</span><span class="n">income_tax</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="n">summary</span><span class="o">.</span><span class="n">people</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">people</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="n">summary</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;National Insurance (£bn)&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Income Tax (£bn)&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Population (millions)&quot;</span><span class="p">,</span>
-<span class="p">]</span>
-<span class="n">summary</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span> <span class="c1"># Weights automatically applied</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>National Insurance (£bn)</th>
-      <th>Income Tax (£bn)</th>
-      <th>Population (millions)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>SOUTH_EAST</th>
-      <td>10.1</td>
-      <td>38.3</td>
-      <td>9.1</td>
-    </tr>
-    <tr>
-      <th>LONDON</th>
-      <td>11.6</td>
-      <td>43.4</td>
-      <td>9.0</td>
-    </tr>
-    <tr>
-      <th>NORTH_WEST</th>
-      <td>6.2</td>
-      <td>17.5</td>
-      <td>7.2</td>
-    </tr>
-    <tr>
-      <th>EAST_OF_ENGLAND</th>
-      <td>6.0</td>
-      <td>19.7</td>
-      <td>6.1</td>
-    </tr>
-    <tr>
-      <th>WEST_MIDLANDS</th>
-      <td>5.2</td>
-      <td>19.2</td>
-      <td>5.8</td>
-    </tr>
-    <tr>
-      <th>SOUTH_WEST</th>
-      <td>4.6</td>
-      <td>17.9</td>
-      <td>5.5</td>
-    </tr>
-    <tr>
-      <th>YORKSHIRE</th>
-      <td>4.1</td>
-      <td>11.8</td>
-      <td>5.4</td>
-    </tr>
-    <tr>
-      <th>SCOTLAND</th>
-      <td>4.8</td>
-      <td>15.3</td>
-      <td>5.3</td>
-    </tr>
-    <tr>
-      <th>EAST_MIDLANDS</th>
-      <td>3.5</td>
-      <td>11.5</td>
-      <td>4.8</td>
-    </tr>
-    <tr>
-      <th>WALES</th>
-      <td>2.2</td>
-      <td>6.1</td>
-      <td>3.0</td>
-    </tr>
-    <tr>
-      <th>NORTH_EAST</th>
-      <td>2.1</td>
-      <td>5.1</td>
-      <td>2.6</td>
-    </tr>
-    <tr>
-      <th>NORTHERN_IRELAND</th>
-      <td>1.2</td>
-      <td>3.4</td>
-      <td>1.8</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>region
+LONDON              78.710210
+SOUTH_EAST          75.588976
+EAST_OF_ENGLAND     30.134433
+WEST_MIDLANDS       23.276691
+SCOTLAND            23.037309
+NORTH_WEST          20.306150
+SOUTH_WEST          17.589321
+YORKSHIRE           15.903155
+EAST_MIDLANDS       14.536368
+WALES               10.113785
+NORTH_EAST           7.983999
+NORTHERN_IRELAND     5.428561
+dtype: float64
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="reform-evaluation">
@@ -394,24 +303,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">modify_parameters</span><span class="p">(</span><span class="n">change_tax_parameters</span><span class="p">)</span>
 
 
-<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
-<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">reform</span><span class="o">=</span><span class="n">reform</span><span class="p">)</span>
-<span class="n">revenue</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;tax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;tax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">)</span>
+<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">,</span> <span class="n">reform</span><span class="o">=</span><span class="n">reform</span><span class="p">)</span>
+<span class="n">revenue</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;gov_balance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;gov_balance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 <span class="sa">f</span><span class="s2">&quot;Revenue: £</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">revenue</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e+9</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">bn&quot;</span>
 </pre></div>
 </div>
 </div>
 </details>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;Revenue: £15.5bn&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;Revenue: £21.3bn&#39;
 </pre></div>
 </div>
 </div>
 </div>
 </section>
 </section>
-<div class="toctree-wrapper compound">
-</div>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">

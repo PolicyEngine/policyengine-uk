@@ -3,7 +3,7 @@
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Example: pensioner incomes" href="income-sources.html" /><link rel="prev" title="PolicyEngine-UK" href="../index.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Baseline forecast" href="../model/baseline.html" /><link rel="prev" title="PolicyEngine-UK" href="../index.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
         <title>Getting started - PolicyEngine UK documentation</title>
@@ -167,15 +167,10 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="income-sources.html">Example: pensioner incomes</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../model/baseline.html">Baseline forecast</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Validation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../validation/spi-validation.html">Tax model validation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Programs</span></p>
 <ul>
@@ -240,7 +235,7 @@
 </ul>
 <p>Anyone can do the former in a few minutes of setup, but the UK’s large household surveys are only available to academics, researchers and nonprofits, so getting set up takes a bit longer (and you should <a class="reference external" href="https://policyengine.org/uk/contact">get in touch</a> so we can make it as fast as possible).</p>
 <p>If you can, please use Google Colab. It’s free, and more importantly, it enables everyone to use the same computing environment, saving all the trouble of fiddling around with bad Python installations, etc. It means that the below snippet is all you need to use the full microsimulation model:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!export POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN=your_token_if_running_microsimulations
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!export HUGGING_FACE_TOKEN=&lt;your_token&gt;
 !pip install policyengine-uk
 </pre></div>
 </div>
@@ -263,8 +258,8 @@
 <span class="n">situation</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;person&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2023</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span>
-            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2023</span><span class="p">:</span> <span class="mi">30_000</span><span class="p">},</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span>
+            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">30_000</span><span class="p">},</span>
         <span class="p">},</span>
     <span class="p">},</span>
     <span class="s2">&quot;benunits&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -281,12 +276,16 @@
 
 <span class="n">simulation</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">)</span>
 
-<span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)</span>
+<span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([3670.0005], dtype=float32)
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/nikhilwoodruff/policyengine/policyengine-uk/.venv/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([3486.], dtype=float32)
 </pre></div>
 </div>
 </div>
@@ -300,16 +299,14 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_core.model_api</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
 
-<span class="n">increase_basic_rate</span> <span class="o">=</span> <span class="n">Reform</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
-    <span class="p">{</span><span class="s2">&quot;gov.hmrc.income_tax.rates.uk[0].rate&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">}</span>
-<span class="p">)</span>
+<span class="n">increase_basic_rate</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;gov.hmrc.income_tax.rates.uk[0].rate&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">}</span>
 
 
 <span class="n">baseline</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">)</span>
 <span class="n">reformed</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">,</span> <span class="n">reform</span><span class="o">=</span><span class="n">increase_basic_rate</span><span class="p">)</span>
 
-<span class="n">baseline_income_tax</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">reformed_income_tax</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">baseline_income_tax</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">reformed_income_tax</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="nb">print</span><span class="p">(</span>
     <span class="sa">f</span><span class="s2">&quot;Raising the basic rate to 25% would increase this person&#39;s income tax by £</span><span class="si">{</span><span class="n">reformed_income_tax</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">baseline_income_tax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -318,7 +315,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Raising the basic rate to 25% would increase this person&#39;s income tax by £917.50
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Raising the basic rate to 25% would increase this person&#39;s income tax by £871.50
 </pre></div>
 </div>
 </div>
@@ -329,15 +326,15 @@
 <h2>Microsimulation analysis<a class="headerlink" href="#microsimulation-analysis" title="Permalink to this heading">#</a></h2>
 <p>PolicyEngine UK has all the code needed to actually generate the microsimulation datasets from the raw dataset files if you have them, but it’s easiest to download our final datasets. To do this, you’ll need to do the following:</p>
 <ul class="simple">
-<li><p>Make sure you’ve got a GitHub account.</p></li>
-<li><p>Have PolicyEngine grant you permissions to our data storage.</p></li>
-<li><p>Download a classic Personal Access Token (GitHub settings &gt; developer settings).</p></li>
-<li><p>Set it as the environment variable <code class="docutils literal notranslate"><span class="pre">POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN</span></code></p></li>
+<li><p>Make sure you’ve got a HuggingFace account.</p></li>
+<li><p>Get a personal access token via the settings.</p></li>
+<li><p>Set HUGGING_FACE_TOKEN as an environment variable.</p></li>
 </ul>
 <p>For example, in a bash shell:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">POLICYENGINE_GITHUB_MICRODATA_AUTH_TOKEN</span><span class="o">=</span>your_token_here
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">HUGGING_FACE_TOKEN</span><span class="o">=</span>your_token_here
 </pre></div>
 </div>
+<p>If you don’t want to set it, it’ll also just prompt you when you try to access the data.</p>
 <section id="getting-set-up">
 <h3>Getting set up<a class="headerlink" href="#getting-set-up" title="Permalink to this heading">#</a></h3>
 <p>Now the datasets will be downloaded automatically as you select them. Here’s an example:</p>
@@ -345,84 +342,22 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
 
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span><span class="p">)</span>
 
-<span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+<span class="c1"># The hf:// points to the private data-</span>
+<span class="c1"># hf:// &lt;- go get the data from huggingface</span>
+<span class="c1"># policyengine/policyengine-uk-data &lt;- the repo</span>
+<span class="c1"># enhanced_frs_2022_23.h5 &lt;- the file in the repo</span>
+
+<span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>65.42002904584271
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>79.42656804925272
 </pre></div>
 </div>
 </div>
-</div>
-<p>We passed a string to indicate that we’d like to use the enhanced FRS (PolicyEngine’s most extensive dataset, with consumption, wealth and VAT imputations and full calibration to external statistics). But here are the other options we could have used:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
-<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">dataset</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">Microsimulation</span><span class="o">.</span><span class="n">datasets</span><span class="p">]</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">dataset</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">Microsimulation</span><span class="o">.</span><span class="n">datasets</span><span class="p">]</span>
-
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Name&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;Label&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">})</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;Name&quot;</span><span class="p">,</span> <span class="s2">&quot;Label&quot;</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th></th>
-    </tr>
-    <tr>
-      <th>Name</th>
-      <th>Label</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>frs_2020_21</th>
-      <th>FRS (2020-21)</th>
-    </tr>
-    <tr>
-      <th>frs_2021_22</th>
-      <th>FRS (2021-22)</th>
-    </tr>
-    <tr>
-      <th>frs_2022_23</th>
-      <th>FRS (2022-23)</th>
-    </tr>
-    <tr>
-      <th>reweighted_frs_2022_23</th>
-      <th>Reweighted FRS (2022-23)</th>
-    </tr>
-    <tr>
-      <th>enhanced_frs_2022_23</th>
-      <th>Enhanced FRS (2022-23)</th>
-    </tr>
-    <tr>
-      <th>spi_2020_21</th>
-      <th>SPI 2020-21</th>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
 </div>
 </section>
 <section id="running-reform-analyses">
@@ -430,13 +365,15 @@
 <p>Reforms work in exactly the same way as in the household-level analysis above. Here’s the same example reform:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">()</span>  <span class="c1"># Enhanced FRS 2022 by default</span>
-<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">reform</span><span class="o">=</span><span class="n">increase_basic_rate</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ENHANCED_FRS</span> <span class="o">=</span> <span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
+
+<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">)</span>  <span class="c1"># Enhanced FRS 2022 by default</span>
+<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">,</span> <span class="n">reform</span><span class="o">=</span><span class="n">increase_basic_rate</span><span class="p">)</span>
 
 <span class="n">revenue</span> <span class="o">=</span> <span class="p">(</span>
     <span class="o">-</span><span class="p">(</span>
-        <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)</span>
-        <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2024</span><span class="p">)</span>
+        <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+        <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
     <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="o">/</span> <span class="mf">1e9</span>
 <span class="p">)</span>
@@ -448,7 +385,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Raising the basic rate to 25% would raise the UK £29.06bn per year
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Raising the basic rate to 25% would raise the UK £35.54bn per year
 </pre></div>
 </div>
 </div>
@@ -482,12 +419,12 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="income-sources.html">
+          <a class="next-page" href="../model/baseline.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Example: pensioner incomes</div>
+                <div class="title">Baseline forecast</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
