@@ -18,6 +18,16 @@ class universal_childcare_entitlement_eligible(Variable):
         p = parameters(period).gov.dfe.universal_childcare_entitlement
         meets_age_condition = (age >= p.min_age) & (age < p.max_age)
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
+
+        has_extended_childcare = person.benunit(
+            "extended_childcare_entitlement_eligible", period
+        )
+
         # Section 7 of the Childcare Act 2006
         # The regulation above limits free early years provision to children under compulsory school age.
-        return in_england & meets_age_condition & not_compulsory_age
+        return (
+            in_england
+            & meets_age_condition
+            & not_compulsory_age
+            & ~has_extended_childcare
+        )
