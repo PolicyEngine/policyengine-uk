@@ -6,6 +6,7 @@ class care_to_learn_eligible(Variable):
     entity = Person
     label = "eligible for Care to Learn childcare support"
     definition_period = YEAR
+    defined_for = "would_claim_care_to_learn"
 
     def formula(person, period, parameters):
         # Link for instruction: https://www.gov.uk/care-to-learn/eligibility

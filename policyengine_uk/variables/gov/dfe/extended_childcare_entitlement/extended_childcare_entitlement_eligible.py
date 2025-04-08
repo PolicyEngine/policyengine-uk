@@ -6,6 +6,7 @@ class extended_childcare_entitlement_eligible(Variable):
     entity = BenUnit
     label = "eligibility for extended childcare entitlement"
     definition_period = YEAR
+    defined_for = "would_claim_extended_childcare"
 
     def formula(benunit, period, parameters):
         # Check if household is in England
