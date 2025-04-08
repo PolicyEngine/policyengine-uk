@@ -6,6 +6,7 @@ class universal_childcare_entitlement_eligible(Variable):
     entity = Person
     label = "eligible for universal childcare entitlement"
     definition_period = YEAR
+    defined_for = "would_claim_universal_childcare"
 
     def formula(person, period, parameters):
         country = person.household("country", period)

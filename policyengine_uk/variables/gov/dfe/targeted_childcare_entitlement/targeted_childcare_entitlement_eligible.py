@@ -6,6 +6,7 @@ class targeted_childcare_entitlement_eligible(Variable):
     entity = BenUnit
     label = "eligibility for targeted childcare entitlement"
     definition_period = YEAR
+    defined_for = "would_claim_targeted_childcare"
 
     def formula(benunit, period, parameters):
 
