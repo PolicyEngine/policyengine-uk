@@ -6,4 +6,5 @@ class max_free_entitlement_hours_used(Variable):
     entity = Person
     label = "maximum hours of free childcare entitlement used"
     documentation = "The maximum weekly hours of free childcare entitlement used by the person"
+    definition_period = WEEK
     default_value = 30
