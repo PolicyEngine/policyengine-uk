@@ -16,7 +16,7 @@
         age: 3
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3351.60
+    universal_childcare_entitlement: 3_351.60
 
 - name: Child aged 4 is eligible (person-level)
   period: 2024
@@ -26,7 +26,7 @@
         age: 4
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3351.60
+    universal_childcare_entitlement: 3_351.60
 
 - name: Parent (ineligible)
   period: 2024
@@ -56,7 +56,7 @@
         age: 3
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3351.60
+    universal_childcare_entitlement: 3_351.60
 
 - name: Child aged 4 (eligible)
   period: 2024
@@ -66,7 +66,7 @@
         age: 4
         universal_childcare_entitlement_eligible: True
   output:
-    universal_childcare_entitlement: 3351.60
+    universal_childcare_entitlement: 3_351.60
 
 - name: Child aged 5 (ineligible)
   period: 2024
@@ -87,7 +87,7 @@
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 10
   output:
-    universal_childcare_entitlement: 2234.4  # 10 hours * 38 weeks * £5.88 per hour
+    universal_childcare_entitlement: 2_234.4  # 10 hours * 38 weeks * £5.88 per hour
 
 - name: Child using half of maximum entitlement
   period: 2024
@@ -98,7 +98,7 @@
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 15
   output:
-    universal_childcare_entitlement: 3351.6  # 15 hours * 38 weeks * £5.88 per hour
+    universal_childcare_entitlement: 3_351.6  # 15 hours * 38 weeks * £5.88 per hour
 
 - name: Child using exactly maximum entitlement
   period: 2024
@@ -109,7 +109,7 @@
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 15
   output:
-    universal_childcare_entitlement: 3351.6  # 15 hours * 38 weeks * £5.88 per hour
+    universal_childcare_entitlement: 3_351.6  # 15 hours * 38 weeks * £5.88 per hour
 
 - name: Child using more than maximum entitlement (capped)
   period: 2024
@@ -120,4 +120,4 @@
         universal_childcare_entitlement_eligible: True
         max_free_entitlement_hours_used: 20
   output:
-    universal_childcare_entitlement: 3351.6  # Capped at 15 hours * 38 weeks * £5.88 per hour
+    universal_childcare_entitlement: 3_351.6  # Capped at 15 hours * 38 weeks * £5.88 per hour

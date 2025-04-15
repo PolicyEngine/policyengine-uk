@@ -22,7 +22,7 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 4719.60  # 15 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 4_719.60  # 15 hours * 38 weeks * £8.28 per hour
 
 - name: Child aged 3 (not eligible by age, but has targeting)
   period: 2024
@@ -49,7 +49,7 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 3146.4  # 10 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 3_146.4  # 10 hours * 38 weeks * £8.28 per hour
 
 - name: Child using exactly maximum entitlement
   period: 2024
@@ -63,7 +63,7 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 4719.6  # 15 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 4_719.6  # 15 hours * 38 weeks * £8.28 per hour
 
 - name: Child using more than maximum entitlement (capped)
   period: 2024
@@ -77,4 +77,4 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 4719.6  # Capped at 15 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 4_719.6  # Capped at 15 hours * 38 weeks * £8.28 per hour
