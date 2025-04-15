@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.23.2] - 2025-04-15 14:14:21
+
+### Fixed
+
+- Corrected the is_parent variable to properly identify parents.
+- Fixed logic in childcare programs to ensure accurate calculations.
+
 ## [2.23.1] - 2025-04-15 08:32:54
 
 ### Fixed
@@ -1719,6 +1726,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.23.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.23.1...2.23.2
 [2.23.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.23.0...2.23.1
 [2.23.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.22.8...2.23.0
 [2.22.8]: https://github.com/PolicyEngine/openfisca-uk/compare/2.22.7...2.22.8

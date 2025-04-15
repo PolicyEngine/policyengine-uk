@@ -1446,3 +1446,9 @@
     fixed:
     - Removed uk-data as a dependency from the package.
   date: 2025-04-15 08:32:54
+- bump: patch
+  changes:
+    fixed:
+    - Corrected the is_parent variable to properly identify parents.
+    - Fixed logic in childcare programs to ensure accurate calculations.
+  date: 2025-04-15 14:14:21
