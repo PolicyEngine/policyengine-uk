@@ -20,8 +20,10 @@ class extended_childcare_entitlement(Variable):
         )
 
         # Get max hours used per child
-        max_hours_used = benunit.members("max_free_entitlement_hours_used", period)
-        
+        max_hours_used = benunit.members(
+            "max_free_entitlement_hours_used", period
+        )
+
         # Use the appropriate hours based on the condition
         weekly_hours_to_use = min_(max_hours_used, weekly_hours_per_child)
 
