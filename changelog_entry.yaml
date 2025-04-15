@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Removed uk-data as a dependency from the package.
