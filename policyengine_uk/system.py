@@ -7,14 +7,12 @@ from policyengine_core.simulations import (
     Microsimulation as CoreMicrosimulation,
 )
 
-from policyengine_uk_data.storage import STORAGE_FOLDER
 import pandas as pd
 from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
 from policyengine_core.reforms import Reform
-from policyengine_uk_data import DATASETS, EnhancedFRS_2022_23
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.obr.add_per_capita_parameters import (
     add_per_capita_parameters,
@@ -157,9 +155,8 @@ class Microsimulation(CoreMicrosimulation):
     default_input_period = 2025
     default_role = "member"
     max_spiral_loops = 10
-    datasets = DATASETS
 
-    def __init__(self, *args, dataset=EnhancedFRS_2022_23, **kwargs):
+    def __init__(self, *args, dataset=ENHANCED_FRS, **kwargs):
         super().__init__(*args, dataset=dataset, **kwargs)
 
         reform = create_structural_reforms_from_parameters(

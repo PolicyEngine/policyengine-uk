@@ -4,9 +4,6 @@ parts:
   - caption: Using the model
     chapters:
       - file: usage/getting-started
-  - caption: Model
-    chapters:
-      - file: model/baseline
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit
