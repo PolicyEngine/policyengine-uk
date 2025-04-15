@@ -6,6 +6,7 @@ class tax_free_childcare_eligible(Variable):
     entity = BenUnit
     label = "overall eligibility for tax-free childcare"
     definition_period = YEAR
+    defined_for = "would_claim_tfc"
 
     def formula(benunit, period, parameters):
         meets_age_condition = benunit.any(

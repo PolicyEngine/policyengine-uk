@@ -104,3 +104,36 @@
         extended_childcare_entitlement_eligible: false
   output:
     extended_childcare_entitlement: 0  # Not eligible
+
+- name: Child using fewer hours than maximum entitlement
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      child1:
+        age: 3
+        max_free_entitlement_hours_used: 20
+    benunits:
+      benunit1:
+        members: [child1]
+        extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement: 4611.457  # 20 hours * 38 weeks * £6.07 per hour (2025 rate)
+
+- name: Child using fewer hours than maximum entitlement - multiple children
+  period: 2025
+  absolute_error_margin: 100
+  input:
+    people:
+      child1:
+        age: 2
+        max_free_entitlement_hours_used: 10
+      child2:
+        age: 3
+        max_free_entitlement_hours_used: 15
+    benunits:
+      benunit1:
+        members: [child1, child2]
+        extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement: 6705.43  # (10 hours * 38 weeks * £8.58 per hour) + (15 hours * 38 weeks * £6.07 per hour) for 2025 rates

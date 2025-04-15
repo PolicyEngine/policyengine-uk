@@ -1,0 +1,14 @@
+description: The Department for Education provides targeted, extended, and universal childcare entitlement for these weeks per year.
+metadata:
+  period: year
+  unit: week
+  label: childcare entitlement weeks per year
+  reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 4
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/4/made
+    - title: Childcare Choices document - 15 and 30 hours childcare support
+      href: https://www.childcarechoices.gov.uk/15-and-30-hours-childcare-support/working-families/eligibility
+    - title: Childcare (Early Years Provision Free of Charge) (Extended Entitlement) Regulations 2016 - Regulation 35(3)
+      href: https://www.legislation.gov.uk/uksi/2016/1257/part/4/made    
+values:
+  2016-01-01: 38

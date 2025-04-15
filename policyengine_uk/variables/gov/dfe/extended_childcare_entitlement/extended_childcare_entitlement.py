@@ -19,13 +19,19 @@ class extended_childcare_entitlement(Variable):
             age
         )
 
+        # Get max hours used per child
+        max_hours_used = benunit.members(
+            "max_free_entitlement_hours_used", period
+        )
+
+        # Use the appropriate hours based on the condition
+        weekly_hours_to_use = min_(max_hours_used, weekly_hours_per_child)
+
         # Compute weekly subsidy per child
         weekly_subsidy_per_child = (
-            weekly_hours_per_child * p.childcare_funding_rate.calc(age)
+            weekly_hours_to_use * p.childcare_funding_rate.calc(age)
         )
 
         # Compute total annual expenses
-        return (
-            benunit.sum(weekly_subsidy_per_child)
-            * p.extended_childcare_entitlement.weeks_per_year
-        )
+        weeks = p.weeks_per_year
+        return benunit.sum(weekly_subsidy_per_child) * weeks

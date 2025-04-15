@@ -1,0 +1,80 @@
+- name: Child under 2 (ineligible) 
+  period: 2024
+  input:
+    people:
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: [child]
+        targeted_childcare_entitlement_eligible: False
+  output:
+    targeted_childcare_entitlement: 0.0
+
+- name: Child aged 2 (eligible)
+  period: 2024
+  input:
+    people:
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [child]
+        targeted_childcare_entitlement_eligible: True
+  output:
+    targeted_childcare_entitlement: 4_719.60  # 15 hours * 38 weeks * £8.28 per hour
+
+- name: Child aged 3 (not eligible by age, but has targeting)
+  period: 2024
+  input:
+    people:
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [child]
+        targeted_childcare_entitlement_eligible: True
+  output:
+    targeted_childcare_entitlement: 0.0  # Not eligible by age even if targeting criteria met
+
+- name: Child using fewer hours than maximum entitlement
+  period: 2024
+  input:
+    people:
+      child:
+        age: 2
+        max_free_entitlement_hours_used: 10
+    benunits:
+      benunit:
+        members: [child]
+        targeted_childcare_entitlement_eligible: True
+  output:
+    targeted_childcare_entitlement: 3_146.4  # 10 hours * 38 weeks * £8.28 per hour
+
+- name: Child using exactly maximum entitlement
+  period: 2024
+  input:
+    people:
+      child:
+        age: 2
+        max_free_entitlement_hours_used: 15
+    benunits:
+      benunit:
+        members: [child]
+        targeted_childcare_entitlement_eligible: True
+  output:
+    targeted_childcare_entitlement: 4_719.6  # 15 hours * 38 weeks * £8.28 per hour
+
+- name: Child using more than maximum entitlement (capped)
+  period: 2024
+  input:
+    people:
+      child:
+        age: 2
+        max_free_entitlement_hours_used: 20
+    benunits:
+      benunit:
+        members: [child]
+        targeted_childcare_entitlement_eligible: True
+  output:
+    targeted_childcare_entitlement: 4_719.6  # Capped at 15 hours * 38 weeks * £8.28 per hour
