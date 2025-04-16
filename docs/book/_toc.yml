@@ -4,13 +4,6 @@ parts:
   - caption: Using the model
     chapters:
       - file: usage/getting-started
-      - file: usage/income-sources
-  - caption: Model
-    chapters:
-      - file: model/baseline
-  - caption: Validation
-    chapters:
-      - file: validation/spi-validation
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit
