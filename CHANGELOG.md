@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.24.0] - 2025-04-16 13:04:31
+
+### Added
+
+- Child eligible variables for childcare programs.
+
 ## [2.23.2] - 2025-04-15 14:14:21
 
 ### Fixed
@@ -1726,6 +1732,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.24.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.23.2...2.24.0
 [2.23.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.23.1...2.23.2
 [2.23.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.23.0...2.23.1
 [2.23.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.22.8...2.23.0
