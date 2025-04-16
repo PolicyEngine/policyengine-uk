@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_eligible_child_for_universal_childcare(Variable):
+class is_child_receiving_universal_childcare(Variable):
     value_type = bool
     entity = Person
     label = "child is eligible for universal childcare entitlement based on age and entitlement"

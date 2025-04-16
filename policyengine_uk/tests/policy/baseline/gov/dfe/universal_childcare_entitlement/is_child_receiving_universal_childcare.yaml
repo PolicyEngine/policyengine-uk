@@ -5,7 +5,7 @@
       age: 3
       universal_childcare_entitlement: 2000
   output:
-    is_eligible_child_for_universal_childcare: true
+    is_child_receiving_universal_childcare: true
 
 - name: Child age 4 with positive entitlement - eligible
   period: 2025
@@ -14,7 +14,7 @@
       age: 4
       universal_childcare_entitlement: 3000
   output:
-    is_eligible_child_for_universal_childcare: true
+    is_child_receiving_universal_childcare: true
 
 - name: Child age 3 with zero entitlement - ineligible
   period: 2025
@@ -23,7 +23,7 @@
       age: 3
       universal_childcare_entitlement: 0
   output:
-    is_eligible_child_for_universal_childcare: false
+    is_child_receiving_universal_childcare: false
 
 - name: Child age 5 with positive entitlement - ineligible due to age
   period: 2025
@@ -32,7 +32,7 @@
       age: 5
       universal_childcare_entitlement: 2500
   output:
-    is_eligible_child_for_universal_childcare: false
+    is_child_receiving_universal_childcare: false
 
 - name: Child age 2 with positive entitlement - ineligible due to age
   period: 2025
@@ -41,7 +41,7 @@
       age: 2
       universal_childcare_entitlement: 1500
   output:
-    is_eligible_child_for_universal_childcare: false
+    is_child_receiving_universal_childcare: false
 
 - name: Child age 4.9 with positive entitlement - eligible
   period: 2025
@@ -50,4 +50,4 @@
       age: 4.9
       universal_childcare_entitlement: 2800
   output:
-    is_eligible_child_for_universal_childcare: true
+    is_child_receiving_universal_childcare: true
