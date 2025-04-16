@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_eligible_child_for_targeted_childcare(Variable):
+class is_child_receiving_targeted_childcare(Variable):
     value_type = bool
     entity = Person
     label = "child is eligible for targeted childcare entitlement based on age and entitlement"
