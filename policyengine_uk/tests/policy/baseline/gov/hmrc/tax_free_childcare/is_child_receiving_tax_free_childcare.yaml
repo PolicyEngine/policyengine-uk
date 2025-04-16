@@ -1,0 +1,59 @@
+- name: Child under 12 with positive TFC amount - eligible
+  period: 2025
+  input:
+    person:
+      age: 8
+      tax_free_childcare_child_age_eligible: true
+      tax_free_childcare: 2000
+  output:
+    is_child_receiving_tax_free_childcare: true
+
+- name: Child under 12 with zero TFC amount - ineligible
+  period: 2025
+  input:
+    person:
+      age: 7
+      tax_free_childcare_child_age_eligible: true
+      tax_free_childcare: 0
+  output:
+    is_child_receiving_tax_free_childcare: false
+
+- name: Disabled child under 17 with positive TFC amount - eligible
+  period: 2025
+  input:
+    person:
+      age: 15
+      tax_free_childcare_child_age_eligible: true
+      tax_free_childcare: 4000
+  output:
+    is_child_receiving_tax_free_childcare: true
+
+- name: Child over age limit with positive TFC amount - ineligible
+  period: 2025
+  input:
+    person:
+      age: 13
+      tax_free_childcare_child_age_eligible: false
+      tax_free_childcare: 2500
+  output:
+    is_child_receiving_tax_free_childcare: false
+
+- name: Young child with positive TFC amount - eligible
+  period: 2025
+  input:
+    person:
+      age: 3
+      tax_free_childcare_child_age_eligible: true
+      tax_free_childcare: 1000
+  output:
+    is_child_receiving_tax_free_childcare: true
+
+- name: Infant with positive TFC amount - eligible
+  period: 2025
+  input:
+    person:
+      age: 1
+      tax_free_childcare_child_age_eligible: true
+      tax_free_childcare: 900
+  output:
+    is_child_receiving_tax_free_childcare: true

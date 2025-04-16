@@ -1,0 +1,65 @@
+- name: Child age 2 with positive entitlement - eligible
+  period: 2025
+  input:
+    person:
+      age: 2
+    benunit:
+      members: [person]
+      extended_childcare_entitlement: 3000
+  output:
+    is_child_receiving_extended_childcare: true
+
+- name: Child age 4 with positive entitlement - eligible
+  period: 2025
+  input:
+    person:
+      age: 4
+    benunit:
+      members: [person]
+      extended_childcare_entitlement: 5000
+  output:
+    is_child_receiving_extended_childcare: true
+
+- name: Child age 3 with zero entitlement - ineligible
+  period: 2025
+  input:
+    person:
+      age: 3
+    benunit:
+      members: [person]
+      extended_childcare_entitlement: 0
+  output:
+    is_child_receiving_extended_childcare: false
+
+- name: Child age 5 with positive entitlement - ineligible due to age
+  period: 2025
+  input:
+    person:
+      age: 5
+    benunit:
+      members: [person]
+      extended_childcare_entitlement: 4000
+  output:
+    is_child_receiving_extended_childcare: false
+
+- name: Child age 0 with positive entitlement - ineligible due to age
+  period: 2025
+  input:
+    person:
+      age: 0
+    benunit:
+      members: [person]
+      extended_childcare_entitlement: 2000
+  output:
+    is_child_receiving_extended_childcare: false
+
+- name: Child age 0.75 with positive entitlement - eligible (2025 parameter)
+  period: 2025
+  input:
+    person:
+      age: 0.75
+    benunit:
+      members: [person]
+      extended_childcare_entitlement: 1500
+  output:
+    is_child_receiving_extended_childcare: true
