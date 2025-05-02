@@ -1,0 +1,4 @@
+bump: patch
+changes:
+  fixed:
+  - Bug in extended childcare entitlement eligibility calculation.
