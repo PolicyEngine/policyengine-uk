@@ -1,4 +1,4 @@
-bump: patch
-changes:
-  fixed:
-  - Bug in extended childcare entitlement eligibility calculation.
+- bump: patch
+  changes:
+    fixed:
+    - Delete redundant weeks_per_year file from extended childcare.
