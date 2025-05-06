@@ -1457,3 +1457,8 @@
     added:
     - Child eligible variables for childcare programs.
   date: 2025-04-16 13:04:31
+- bump: patch
+  changes:
+    fixed:
+    - Delete redundant weeks_per_year file from extended childcare.
+  date: 2025-05-06 15:36:49
