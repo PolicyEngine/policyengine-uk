@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Delete redundant weeks_per_year file from extended childcare.
