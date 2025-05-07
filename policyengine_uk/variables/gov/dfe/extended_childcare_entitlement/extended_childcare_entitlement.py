@@ -33,7 +33,9 @@ class extended_childcare_entitlement(Variable):
         )
 
         # Apply the fraction to the weekly hours
-        weekly_hours_to_use = weekly_hours_to_use * benunit.project(hours_usage_fraction)
+        weekly_hours_to_use = weekly_hours_to_use * benunit.project(
+            hours_usage_fraction
+        )
 
         # Compute weekly subsidy per child
         weekly_subsidy_per_child = (
