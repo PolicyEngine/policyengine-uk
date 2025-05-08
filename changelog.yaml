@@ -1462,3 +1462,11 @@
     fixed:
     - Delete redundant weeks_per_year file from extended childcare.
   date: 2025-05-06 15:36:49
+- bump: patch
+  changes:
+    added:
+    - Added variable to represent partial usage of extended childcare entitlement
+      hours
+    - Updated extended childcare entitlement calculation to account for partial hours
+      usage
+  date: 2025-05-08 12:42:28
