@@ -43,6 +43,7 @@ setup(
             "sphinx-math-dollar>=1.2.1,<2",
             "wheel",
             "yaml-changelog>=0.1.7",
+            "snowballstemmer>=2,<3",
         ]
     },
     # Windows CI requires Python 3.9.
