@@ -33,9 +33,9 @@ class extended_childcare_entitlement(Variable):
         )
 
         # Apply the maximum hours limit
-        weekly_hours_to_use = min_(weekly_hours_to_use, benunit.project(
-            maximum_hours_usage
-        ))
+        weekly_hours_to_use = min_(
+            weekly_hours_to_use, benunit.project(maximum_hours_usage)
+        )
 
         # Compute weekly subsidy per child
         weekly_subsidy_per_child = (
