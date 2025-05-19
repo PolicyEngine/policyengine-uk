@@ -159,48 +159,6 @@ class Microsimulation(CoreMicrosimulation):
     def __init__(self, *args, dataset=ENHANCED_FRS, **kwargs):
         super().__init__(*args, dataset=dataset, **kwargs)
 
-        df = pd.read_csv(
-            "~/policyengine/uk-public-services-imputation/data/data.csv"
-        )
-        household_df = df.groupby("household_id").sum().reset_index()
-        self.set_input("a_and_e_visits", 2025, df["a_and_e_visits"].values)
-        self.set_input(
-            "nhs_a_and_e_spending", 2025, df["nhs_a_and_e_spending"].values
-        )
-        self.set_input(
-            "outpatient_visits", 2025, df["outpatient_visits"].values
-        )
-        self.set_input(
-            "nhs_outpatient_spending",
-            2025,
-            df["nhs_outpatient_spending"].values,
-        )
-        self.set_input(
-            "admitted_patient_visits",
-            2025,
-            df["admitted_patient_visits"].values,
-        )
-        self.set_input(
-            "nhs_admitted_patient_spending",
-            2025,
-            df["nhs_admitted_patient_spending"].values,
-        )
-        self.set_input(
-            "dfe_education_spending",
-            2025,
-            household_df["education_service_in_kind_value"].values,
-        )
-        self.set_input(
-            "rail_subsidy_spending",
-            2025,
-            household_df["rail_subsidy_in_kind_value"].values,
-        )
-        self.set_input(
-            "bus_subsidy_spending",
-            2025,
-            household_df["bus_subsidy_in_kind_value"].values,
-        )
-
         reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters, "2023-01-01"
         )
