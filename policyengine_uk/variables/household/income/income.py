@@ -422,7 +422,7 @@ class household_income_decile(Variable):
     value_type = int
 
     def formula(household, period, parameters):
-        income = household("household_net_income", period)
+        income = household("equiv_hbai_household_net_income", period)
         count_people = household("household_count_people", period)
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(
