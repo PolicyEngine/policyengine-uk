@@ -1470,3 +1470,8 @@
     - Updated extended childcare entitlement calculation to account for partial hours
       usage
   date: 2025-05-08 12:42:28
+- bump: minor
+  changes:
+    added:
+    - Public service spending variables.
+  date: 2025-05-21 09:46:26
