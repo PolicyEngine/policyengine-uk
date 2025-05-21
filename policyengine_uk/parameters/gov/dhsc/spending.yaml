@@ -1,0 +1,12 @@
+description: Total spending by the Department for Health and Social Care. Includes both Resource Departmental Expenditure Limit and Capital Departmental Expenditure Limit, but excludes depreciation.
+values:
+  2023-01-01: 188.4
+  2024-01-01: 204.9
+  2025-01-01: 215.6
+metadata:
+  unit: currency-GBP
+  label: DHSC budget
+  uprating: self
+  reference:
+    - title: HM Treasury Spring Statement 2025
+      href: https://assets.publishing.service.gov.uk/media/67e3ec2df356a2dc0e39b488/E03274109_HMT_Spring_Statement_Mar_25_Web_Accessible_.pdf#page=48
