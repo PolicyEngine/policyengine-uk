@@ -8,10 +8,4 @@ class pension_credit_earnings(Variable):
     value_type = float
     unit = GBP
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A"
-
-    def formula(benunit, period, parameters):
-        # Get the list of earnings sources from parameters
-        earnings_sources = parameters(
-            period
-        ).gov.dwp.pension_credit.income.earnings_sources
-        return add(benunit, period, earnings_sources)
+    adds = "gov.dwp.pension_credit.income.earnings_sources"
