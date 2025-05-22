@@ -10,7 +10,10 @@ metadata:
   unit: list
 values:
   2002-01-01:
-  - earned_income
+  - employment_income
+  # https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A
+  - self_employment_income
+  # https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B
   - working_tax_credit
   - state_pension
   - private_pension_income
