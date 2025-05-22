@@ -1475,3 +1475,8 @@
     added:
     - Public service spending variables.
   date: 2025-05-21 09:46:26
+- bump: minor
+  changes:
+    fixed:
+    - Implemented 2016 Savings Credit eligibility restriction in Pension Credit.
+  date: 2025-05-22 11:02:05
