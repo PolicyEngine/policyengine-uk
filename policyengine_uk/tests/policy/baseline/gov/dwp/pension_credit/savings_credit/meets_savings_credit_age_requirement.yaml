@@ -1,0 +1,77 @@
+- name: Person born in 1948 reaches SPA before cutoff year
+  period: 2023
+  input:
+    people:
+      person:
+        age: 75  # Born in 1948, reached SPA around 2013-2014
+        state_pension_age: 65
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: Person born in 1952 reaches SPA before cutoff year
+  period: 2023
+  input:
+    people:
+      person:
+        age: 71  # Born in 1952, reached SPA around 2015
+        state_pension_age: 63
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: Person born in 1954 reaches SPA after cutoff year
+  period: 2023
+  input:
+    people:
+      person:
+        age: 69  # Born in 1954, reached SPA around 2017-2018
+        state_pension_age: 63.5
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: Person born in 1960 reaches SPA after cutoff year
+  period: 2023
+  input:
+    people:
+      person:
+        age: 63  # Born in 1960, will reach SPA around 2026-2027
+        state_pension_age: 66
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: Test in 2015 - Person born in 1950 reaches SPA before cutoff year
+  period: 2015
+  input:
+    people:
+      person:
+        age: 65  # Born in 1950, reached SPA around 2013
+        state_pension_age: 63
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: Test in 2017 - Person who reached SPA in 2015 is eligible
+  period: 2017
+  input:
+    people:
+      person:
+        age: 65  # Born in 1952, reached SPA in 2015
+        state_pension_age: 63
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: true

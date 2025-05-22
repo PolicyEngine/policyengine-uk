@@ -1,0 +1,70 @@
+- name: No one reached SPA before the cutoff year, ineligible for savings credit
+  period: 2023
+  input:
+    people:
+      person:
+        age: 68
+        is_male: true
+        state_pension_age: 66
+    benunits:
+      benunit:
+        members: [person]
+        savings_credit_income: 10000
+  output:
+    is_savings_credit_eligible: false
+
+- name: Has pre-cutoff year SPA member and income above threshold (single), eligible
+  period: 2023
+  input:
+    people:
+      person:
+        age: 78
+        is_male: false
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        savings_credit_income: 10200
+  output:
+    is_savings_credit_eligible: true
+
+- name: One member reached SPA before cutoff year and income above threshold (couple), eligible
+  period: 2023
+  input:
+    people:
+      person:
+        age: 73
+        is_male: true
+        state_pension_age: 65
+      spouse:
+        age: 66
+        is_male: false
+        state_pension_age: 66
+    benunits:
+      benunit:
+        members: [person, spouse]
+        relation_type: COUPLE
+        savings_credit_income: 16000
+  output:
+    is_savings_credit_eligible: true
+
+- name: No pre-cutoff year SPA member and income above threshold (couple), ineligible
+  period: 2023
+  input:
+    people:
+      person:
+        age: 67
+        is_male: true
+        state_pension_age: 66
+      spouse:
+        age: 65
+        is_male: false
+        state_pension_age: 66
+    benunits:
+      benunit:
+        members: [person, spouse]
+        relation_type: COUPLE
+        savings_credit_income: 16000
+  output:
+    is_savings_credit_eligible: false
