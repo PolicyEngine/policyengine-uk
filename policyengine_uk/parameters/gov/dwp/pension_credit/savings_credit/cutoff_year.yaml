@@ -1,6 +1,5 @@
-description: The year after which new pensioners are not eligible for Savings Credit.
+description: People reaching State Pension age after this year are not eligible for Savings Credit.
 metadata:
-  name: pc_sc_cutoff_year
   label: Savings Credit eligibility cutoff year
   reference:
     - title: State Pension Credit Act 2002

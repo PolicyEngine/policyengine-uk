@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class meets_savings_credit_age_requirement(Variable):
     value_type = bool
     entity = Person
-    label = "Whether the person reached State Pension Age before the Savings Credit cutoff year"
+    label = "whether the person reached State Pension Age before the Savings Credit cutoff year"
     definition_period = YEAR
 
     def formula(person, period, parameters):
