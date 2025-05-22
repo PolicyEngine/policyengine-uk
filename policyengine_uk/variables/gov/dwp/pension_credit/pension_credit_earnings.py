@@ -8,4 +8,4 @@ class pension_credit_earnings(Variable):
     value_type = float
     unit = GBP
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A"
-    adds = "gov.dwp.pension_credit.income.earnings_sources"
+    adds = "gov.dwp.pension_credit.guarantee_credit.earnings_sources"
