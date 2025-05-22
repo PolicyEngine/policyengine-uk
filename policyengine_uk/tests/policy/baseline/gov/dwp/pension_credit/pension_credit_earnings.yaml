@@ -1,0 +1,67 @@
+- name: Person with only employment income
+  period: 2023
+  input:
+    people:
+      person:
+        employment_income: 10000
+        self_employment_income: 0
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    pension_credit_earnings: 10000
+
+- name: Person with only self-employment income
+  period: 2023
+  input:
+    people:
+      person:
+        employment_income: 0
+        self_employment_income: 15000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    pension_credit_earnings: 15000
+
+- name: Person with both employment and self-employment income
+  period: 2023
+  input:
+    people:
+      person:
+        employment_income: 12000
+        self_employment_income: 8000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    pension_credit_earnings: 20000
+
+- name: Couple with mixed income sources
+  period: 2023
+  input:
+    people:
+      person:
+        employment_income: 5000
+        self_employment_income: 15000
+      partner:
+        employment_income: 10000
+        self_employment_income: 0
+    benunits:
+      benunit:
+        members: [person, partner]
+  output:
+    pension_credit_earnings: 30000
+
+- name: No income
+  period: 2023
+  input:
+    people:
+      person:
+        employment_income: 0
+        self_employment_income: 0
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    pension_credit_earnings: 0
