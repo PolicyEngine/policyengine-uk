@@ -1,0 +1,13 @@
+description: The DWP considers these sources of income as income for Pension Credit.
+metadata:
+  label: Pension Credit earnings sources
+  reference:
+  - title: State Pension Credit Act 2002
+    href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A
+  - title: State Pension Credit Act 2002
+    href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B
+  unit: list
+values:
+  2002-01-01:
+  - employment_income
+  - self_employment_income
