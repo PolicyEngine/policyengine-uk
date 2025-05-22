@@ -25,6 +25,25 @@ class is_SP_age(Variable):
         return age >= threshold
 
 
+class reached_SPA_before_2016(Variable):
+    value_type = bool
+    entity = Person
+    label = "Whether the person reached State Pension Age before 2016"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        # https://www.legislation.gov.uk/ukpga/2002/16/section/3
+        current_age = person("age", period)
+        # State pension age
+        spa = person("state_pension_age", period)
+        # The year we're evaluating
+        evaluation_year = period.start.year
+        # Calculate what year the person reached/will reach SPA
+        birth_year = evaluation_year - current_age
+        spa_year = birth_year + spa
+        return spa_year < 2016
+
+
 class StatePensionType(Enum):
     BASIC = "basic"
     NEW = "new"
