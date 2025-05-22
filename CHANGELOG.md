@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.27.0] - 2025-05-22 13:41:43
+
+### Fixed
+
+- Pension Credit income sources.
+
 ## [2.26.0] - 2025-05-22 11:02:05
 
 ### Fixed
@@ -1757,6 +1763,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.27.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.26.0...2.27.0
 [2.26.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.25.0...2.26.0
 [2.25.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.24.2...2.25.0
 [2.24.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.24.1...2.24.2

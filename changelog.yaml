@@ -1480,3 +1480,8 @@
     fixed:
     - Implemented 2016 Savings Credit eligibility restriction in Pension Credit.
   date: 2025-05-22 11:02:05
+- bump: minor
+  changes:
+    fixed:
+    - Pension Credit income sources.
+  date: 2025-05-22 13:41:43
