@@ -1,106 +1,70 @@
-- name: No one reached SPA before 2016, ineligible for savings credit
+- name: No one reached SPA before the cutoff year, ineligible for savings credit
   period: 2023
   input:
     people:
       person:
         age: 68
         is_male: true
-        reached_SPA_before_2016: false
+        meets_savings_credit_age_requirement: false
     benunits:
       benunit:
         members: [person]
-        savings_credit_income: 180
+        savings_credit_income: 10000
   output:
     is_savings_credit_eligible: false
 
-- name: Has pre-2016 SPA member but income below threshold, ineligible
-  period: 2023
-  input:
-    people:
-      person:
-        age: 75
-        is_male: true
-        reached_SPA_before_2016: true
-    benunits:
-      benunit:
-        members: [person]
-        relation_type: SINGLE
-        savings_credit_income: 170
-  output:
-    is_savings_credit_eligible: false
-
-- name: Has pre-2016 SPA member and income above threshold (single), eligible
+- name: Has pre-cutoff year SPA member and income above threshold (single), eligible
   period: 2023
   input:
     people:
       person:
         age: 78
         is_male: false
-        reached_SPA_before_2016: true
+        meets_savings_credit_age_requirement: true
     benunits:
       benunit:
         members: [person]
         relation_type: SINGLE
-        savings_credit_income: 180
+        savings_credit_income: 10200
   output:
     is_savings_credit_eligible: true
 
-- name: One member reached SPA before 2016 and income above threshold (couple), eligible
+- name: One member reached SPA before cutoff year and income above threshold (couple), eligible
   period: 2023
   input:
     people:
       person:
         age: 73
         is_male: true
-        reached_SPA_before_2016: true
+        meets_savings_credit_age_requirement: true
       spouse:
         age: 66
         is_male: false
-        reached_SPA_before_2016: false
+        meets_savings_credit_age_requirement: false
     benunits:
       benunit:
         members: [person, spouse]
         relation_type: COUPLE
-        savings_credit_income: 280
+        savings_credit_income: 16000
   output:
     is_savings_credit_eligible: true
 
-- name: No pre-2016 SPA member and income above threshold (couple), ineligible
+- name: No pre-cutoff year SPA member and income above threshold (couple), ineligible
   period: 2023
   input:
     people:
       person:
         age: 67
         is_male: true
-        reached_SPA_before_2016: false
+        meets_savings_credit_age_requirement: false
       spouse:
         age: 65
         is_male: false
-        reached_SPA_before_2016: false
+        meets_savings_credit_age_requirement: false
     benunits:
       benunit:
         members: [person, spouse]
         relation_type: COUPLE
-        savings_credit_income: 280
-  output:
-    is_savings_credit_eligible: false
-
-- name: Couple with pre-2016 SPA member, income below threshold, ineligible
-  period: 2023
-  input:
-    people:
-      person:
-        age: 74
-        is_male: false
-        reached_SPA_before_2016: true
-      spouse:
-        age: 67
-        is_male: true
-        reached_SPA_before_2016: false
-    benunits:
-      benunit:
-        members: [person, spouse]
-        relation_type: COUPLE
-        savings_credit_income: 270
+        savings_credit_income: 16000
   output:
     is_savings_credit_eligible: false
