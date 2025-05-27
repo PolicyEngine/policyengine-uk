@@ -1,5 +1,4 @@
-description: Income sources included in income used to determine Guarantee Credit
-  entitlement.
+description: Income sources included in income used to determine Pension Credit entitlement.
 metadata:
   label: Pension Credit income sources
   name: pc_income_sources
@@ -10,7 +9,7 @@ metadata:
   unit: list
 values:
   2002-01-01:
-  - earned_income
+  - pension_credit_earnings
   - working_tax_credit
   - state_pension
   - private_pension_income
