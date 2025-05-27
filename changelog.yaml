@@ -1495,3 +1495,8 @@
     fixed:
     - Pension Credit income sources.
   date: 2025-05-22 13:19:28
+- bump: patch
+  changes:
+    fixed:
+    - Removed duplicate parameters in Pension Credit.
+  date: 2025-05-27 10:44:15

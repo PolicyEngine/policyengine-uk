@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Removed duplicate parameters in Pension Credit.
