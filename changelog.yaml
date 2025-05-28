@@ -1500,3 +1500,8 @@
     fixed:
     - Removed duplicate parameters in Pension Credit.
   date: 2025-05-27 10:44:15
+- bump: patch
+  changes:
+    fixed:
+    - Bug in employer NI incidence parameters.
+  date: 2025-05-28 09:03:21
