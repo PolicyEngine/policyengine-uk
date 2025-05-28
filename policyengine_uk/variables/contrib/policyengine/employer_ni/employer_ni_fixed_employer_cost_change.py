@@ -134,10 +134,9 @@ class employer_ni_response_consumer_incidence(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        consumer_incidence = parameters(
-            period
-        ).gov.contrib.policyengine.employer_ni.consumer_incidence
-        if consumer_incidence == 0:
+        emp_ni = parameters(period).gov.contrib.policyengine.employer_ni
+        if emp_ni.consumer_incidence == 0 or emp_ni.employee_incidence == 1:
+            # If consumer incidence is zero, or if the employee incidence is 100%, then there is no capital incidence.:
             return 0
 
         if not hasattr(person.simulation, "dataset"):
@@ -179,10 +178,9 @@ class employer_ni_response_capital_incidence(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        capital_incidence = parameters(
-            period
-        ).gov.contrib.policyengine.employer_ni.capital_incidence
-        if capital_incidence == 0:
+        emp_ni = parameters(period).gov.contrib.policyengine.employer_ni
+        if emp_ni.capital_incidence == 0 or emp_ni.employee_incidence == 1:
+            # If capital incidence is zero, or if the employee incidence is 100%, then there is no capital incidence.:
             return 0
 
         if not hasattr(person.simulation, "dataset"):
