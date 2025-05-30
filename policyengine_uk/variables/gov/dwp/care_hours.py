@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class care_hours(Variable):
     label = "hours providing care"
     documentation = "Weekly hours providing care to others"

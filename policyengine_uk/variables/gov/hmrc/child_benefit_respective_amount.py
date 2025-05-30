@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class child_benefit_respective_amount(Variable):
     label = "Child Benefit (respective amount)"
     documentation = "The amount of this benefit unit's Child Benefit which is in respect of this person"

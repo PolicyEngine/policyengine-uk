@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class num_enhanced_disabled_adults(Variable):
     value_type = int
     entity = BenUnit

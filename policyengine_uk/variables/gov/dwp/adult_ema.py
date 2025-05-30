@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class adult_ema(Variable):
     label = "Adult EMA"
     documentation = "Educational Maintenance Allowance for adults"

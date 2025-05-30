@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class expected_sdlt(Variable):
     label = "Stamp Duty (expected)"
     documentation = "Expected value of Stamp Duty Land Tax"

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class property_sale_rate(Variable):
     label = "Residential property sale rate"
     documentation = "The percentage of residential property value owned by households sold in the year"

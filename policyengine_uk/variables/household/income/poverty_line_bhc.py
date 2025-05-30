@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class poverty_line_bhc(Variable):
     value_type = float
     entity = Household

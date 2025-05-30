@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
 
+
 class marginal_tax_rate_on_capital_gains(Variable):
     label = "capital gains marginal tax rate"
     documentation = "Percent of marginal capital gains that do not increase household net income."

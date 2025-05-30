@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import warnings
 
+
 class bi_household_phaseout(Variable):
     label = "Basic income phase-out (household)"
     documentation = (

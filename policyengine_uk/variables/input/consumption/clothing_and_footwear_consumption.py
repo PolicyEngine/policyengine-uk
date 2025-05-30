@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 # The below variables follow the COICOP MECE categories.
 
+
 class clothing_and_footwear_consumption(Variable):
     entity = Household
     label = "clothing and footwear consumption"

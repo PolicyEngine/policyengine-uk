@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 # The below variables follow the COICOP MECE categories.
 
+
 class diesel_spending(Variable):
     label = "diesel consumption"
     entity = Household

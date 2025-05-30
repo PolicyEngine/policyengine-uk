@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import pandas as pd
 
+
 class birth_year(Variable):
     value_type = int
     entity = Person

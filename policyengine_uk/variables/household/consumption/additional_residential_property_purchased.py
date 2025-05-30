@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class additional_residential_property_purchased(Variable):
     label = "Residential property bought (additional)"
     documentation = "The price paid for the purchase of a residential property in the year, for use as a second home or another non-main-residence purpose. Only include the value of a single purchase."

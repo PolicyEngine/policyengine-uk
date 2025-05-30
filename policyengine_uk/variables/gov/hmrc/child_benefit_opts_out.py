@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class child_benefit_opts_out(Variable):
     label = "opts out of Child Benefit"
     documentation = (

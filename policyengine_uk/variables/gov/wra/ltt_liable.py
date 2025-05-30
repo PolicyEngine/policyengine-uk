@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class ltt_liable(Variable):
     label = "Liable for Land Transaction Tax"
     documentation = (

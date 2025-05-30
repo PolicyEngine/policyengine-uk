@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class employer_ni_response_capital_incidence(Variable):
     label = "capital response to employer NI reform"
     entity = Person

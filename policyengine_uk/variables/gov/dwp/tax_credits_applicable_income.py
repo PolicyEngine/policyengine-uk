@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class tax_credits_applicable_income(Variable):
     value_type = float
     entity = BenUnit

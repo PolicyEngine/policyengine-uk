@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 import datetime
 import numpy as np
 
+
 class in_work(Variable):
     value_type = bool
     entity = Person

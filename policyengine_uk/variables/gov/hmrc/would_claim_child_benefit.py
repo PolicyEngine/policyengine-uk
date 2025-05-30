@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class would_claim_child_benefit(Variable):
     label = "Would claim Child Benefit"
     documentation = (

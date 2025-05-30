@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from numpy import ceil
 
+
 class partners_unused_personal_allowance(Variable):
     label = "Partner's unused personal allowance"
     documentation = "The personal tax allowance not used by this person's partner, if they exist"

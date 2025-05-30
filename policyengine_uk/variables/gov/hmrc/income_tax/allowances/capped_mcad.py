@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class capped_mcad(Variable):
     label = "capped Married Couples' Allowance deduction"
     entity = Person

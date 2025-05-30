@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class child_ema(Variable):
     label = "Child EMA"
     documentation = "Educational Maintenance Allowance for children"

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class state_pension(Variable):
     value_type = float
     entity = Person

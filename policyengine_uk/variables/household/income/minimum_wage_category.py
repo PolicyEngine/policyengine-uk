@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 import datetime
 import numpy as np
 
+
 class minimum_wage_category(Variable):
     value_type = Enum
     possible_values = MinimumWageCategory

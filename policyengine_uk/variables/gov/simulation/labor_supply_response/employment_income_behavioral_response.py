@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class employment_income_behavioral_response(Variable):
     value_type = float
     entity = Person

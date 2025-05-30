@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class income_support_eligible(Variable):
     value_type = bool
     entity = BenUnit

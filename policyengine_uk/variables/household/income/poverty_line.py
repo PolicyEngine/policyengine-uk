@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class poverty_line(Variable):
     label = "poverty line"
     documentation = "The line below which a household is in poverty."

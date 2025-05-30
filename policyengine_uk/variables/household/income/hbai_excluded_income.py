@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class hbai_excluded_income(Variable):
     label = "HBAI-excluded income"
     documentation = (

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class poverty_threshold_bhc(Variable):
     label = "Poverty threshold (BHC)"
     entity = Household

@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import pandas as pd
 
+
 class age_18_64(Variable):
     value_type = bool
     entity = Person

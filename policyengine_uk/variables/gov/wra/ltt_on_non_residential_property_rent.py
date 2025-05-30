@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class ltt_on_non_residential_property_rent(Variable):
     label = "LTT on non-residential property rent"
     documentation = "Land Transaction Tax charge on non-residential property rental agreements"

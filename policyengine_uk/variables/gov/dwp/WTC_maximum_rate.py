@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class WTC_maximum_rate(Variable):
     value_type = float
     entity = BenUnit

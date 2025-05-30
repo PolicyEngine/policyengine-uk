@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class wtc_entitlement(Variable):
     label = "WTC entitlement"
     entity = BenUnit

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class baseline_business_rates(Variable):
     label = "Baseline business rates incidence"
     documentation = (

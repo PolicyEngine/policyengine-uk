@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class benunit_has_carer(Variable):
     value_type = bool
     entity = BenUnit

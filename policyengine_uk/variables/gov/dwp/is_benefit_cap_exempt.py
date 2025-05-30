@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_benefit_cap_exempt(Variable):
     value_type = bool
     entity = BenUnit

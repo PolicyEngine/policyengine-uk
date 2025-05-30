@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class would_claim_IS(Variable):
     value_type = bool
     entity = BenUnit

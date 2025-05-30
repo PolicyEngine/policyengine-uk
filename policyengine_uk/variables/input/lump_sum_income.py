@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class lump_sum_income(Variable):
     value_type = float
     entity = Person

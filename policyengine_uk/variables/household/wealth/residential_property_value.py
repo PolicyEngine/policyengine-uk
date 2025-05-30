@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class residential_property_value(Variable):
     label = "Residential property value"
     documentation = "Total value of all owned residential property"

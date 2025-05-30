@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class winter_fuel_allowance_reported(Variable):
     value_type = float
     entity = Person

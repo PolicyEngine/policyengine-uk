@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
 
+
 class relative_capital_gains_mtr_change(Variable):
     value_type = float
     entity = Person

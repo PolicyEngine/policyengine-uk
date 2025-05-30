@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class baseline_employer_cost(Variable):
     label = "baseline employer cost"
     entity = Person

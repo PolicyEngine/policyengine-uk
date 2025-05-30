@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class benefit_cap_reduction(Variable):
     label = "benefit cap reduction"
     entity = BenUnit

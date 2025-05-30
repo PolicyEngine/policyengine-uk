@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class WTC_disabled_element(Variable):
     value_type = float
     entity = BenUnit

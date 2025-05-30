@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class charitable_investment_gifts(Variable):
     value_type = float
     entity = Person

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class council_tax_less_benefit(Variable):
     label = "Council Tax (less CTB)"
     documentation = "Council Tax minus the Council Tax Benefit"

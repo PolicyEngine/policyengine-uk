@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class lbtt_liable(Variable):
     label = "Liable for Land and Buildings Transaction Tax"
     documentation = "Whether the household is liable for Land and Buildings Transaction Tax"

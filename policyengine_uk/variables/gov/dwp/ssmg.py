@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class ssmg(Variable):
     label = "Sure Start Maternity Grant"
     entity = Person

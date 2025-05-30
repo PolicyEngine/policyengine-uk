@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class baseline_hbai_excluded_income(Variable):
     label = "HBAI-excluded income (baseline)"
     documentation = "Total value of income not included in HBAI household net income in the baseline"

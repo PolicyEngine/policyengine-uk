@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import pandas as pd
 
+
 class in_HE(Variable):
     value_type = bool
     entity = Person

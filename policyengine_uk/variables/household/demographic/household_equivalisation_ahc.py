@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.geography import Region
 
+
 class household_equivalisation_ahc(Variable):
     value_type = float
     entity = Household

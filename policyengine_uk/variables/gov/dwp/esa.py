@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class esa(Variable):
     label = "ESA"
     entity = Person

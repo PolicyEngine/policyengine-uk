@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class cliff_evaluated(Variable):
     value_type = bool
     entity = Person

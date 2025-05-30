@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class child_benefit_less_tax_charge(Variable):
     label = "Child Benefit (less tax charge)"
     documentation = (

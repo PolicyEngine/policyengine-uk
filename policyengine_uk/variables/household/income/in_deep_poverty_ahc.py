@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class in_deep_poverty_ahc(Variable):
     value_type = bool
     entity = Household

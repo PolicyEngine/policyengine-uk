@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
 
+
 class adult_index_cg(Variable):
     value_type = int
     entity = Person

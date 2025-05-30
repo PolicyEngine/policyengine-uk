@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 import datetime
 import numpy as np
 
+
 class inflation_adjustment(Variable):
     label = (
         f"inflation multiplier to get {datetime.datetime.now().year} prices"

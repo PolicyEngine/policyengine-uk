@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_couple(Variable):
     value_type = bool
     entity = BenUnit

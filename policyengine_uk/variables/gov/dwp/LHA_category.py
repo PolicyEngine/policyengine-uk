@@ -5,6 +5,7 @@ from policyengine_core.model_api import *
 
 warnings.filterwarnings("ignore")
 
+
 class LHA_category(Variable):
     value_type = Enum
     entity = BenUnit

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class main_residence_value(Variable):
     label = "main residence value"
     documentation = "Total value of the main residence"

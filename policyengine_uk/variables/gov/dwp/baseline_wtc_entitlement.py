@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class baseline_wtc_entitlement(Variable):
     label = "Baseline Working Tax Credit"
     entity = BenUnit

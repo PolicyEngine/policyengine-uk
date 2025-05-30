@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class other_public_spending_budget_change(Variable):
     label = "non- budget change"
     entity = Household

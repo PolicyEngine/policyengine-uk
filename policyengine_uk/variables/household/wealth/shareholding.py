@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class shareholding(Variable):
     label = "Share in the corporate sector"
     documentation = "Exposure to taxes on corporations"

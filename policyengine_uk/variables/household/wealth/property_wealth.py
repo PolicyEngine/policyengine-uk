@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class property_wealth(Variable):
     label = "Property wealth"
     documentation = "Total property wealth across all owned properties"

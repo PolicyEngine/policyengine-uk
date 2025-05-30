@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class consumer_incident_tax_revenue_change(Variable):
     label = "consumer-incident tax revenue change"
     entity = Household

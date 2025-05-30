@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import pandas as pd
 
+
 class is_benunit_eldest_child(Variable):
     value_type = bool
     entity = Person

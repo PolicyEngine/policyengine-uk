@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class hbai_excluded_income_change(Variable):
     label = "Change in HBAI-excluded income"
     documentation = "Effect of policy reforms on HBAI-excluded income"

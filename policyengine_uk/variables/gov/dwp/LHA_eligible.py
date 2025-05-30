@@ -5,6 +5,7 @@ from policyengine_core.model_api import *
 
 warnings.filterwarnings("ignore")
 
+
 class LHA_eligible(Variable):
     value_type = bool
     entity = BenUnit

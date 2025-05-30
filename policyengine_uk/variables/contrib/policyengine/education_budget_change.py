@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class education_budget_change(Variable):
     label = "education budget change"
     entity = Household

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class ctc_child_limit_affected(Variable):
     label = "affected by the CTC child limit"
     entity = BenUnit

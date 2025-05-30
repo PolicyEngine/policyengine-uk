@@ -4,6 +4,7 @@ from policyengine_uk.variables.household.demographic.geography import Region
 import pandas as pd
 import numpy as np
 
+
 class region(Variable):
     value_type = Enum
     possible_values = Region

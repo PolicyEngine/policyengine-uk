@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class tax_modelling(Variable):
     value_type = float
     entity = Person

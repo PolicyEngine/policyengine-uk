@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class winter_fuel_allowance(Variable):
     label = "Winter Fuel Allowance"
     entity = Household

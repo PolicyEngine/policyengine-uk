@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class corporate_land_value(Variable):
     entity = Household
     label = "Land value"

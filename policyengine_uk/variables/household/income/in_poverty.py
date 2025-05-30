@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class in_poverty(Variable):
     label = "in poverty"
     documentation = (

@@ -5,6 +5,7 @@ from policyengine_core.model_api import *
 
 warnings.filterwarnings("ignore")
 
+
 class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class corporate_tax_incidence(Variable):
     label = "Corporate tax incidence"
     documentation = (

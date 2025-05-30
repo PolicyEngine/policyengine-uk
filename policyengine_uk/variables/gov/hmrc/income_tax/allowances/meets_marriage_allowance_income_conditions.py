@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from numpy import ceil
 
+
 class meets_marriage_allowance_income_conditions(Variable):
     label = "Meets Marriage Allowance income conditions"
     documentation = "Whether this person (and their partner) meets the conditions for this person to be eligible for the Marriage Allowance, as set out in the Income Tax Act 2007 sections 55B and 55C"

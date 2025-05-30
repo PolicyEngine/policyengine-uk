@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class adjusted_employer_cost(Variable):
     label = "employer cost"
     entity = Person

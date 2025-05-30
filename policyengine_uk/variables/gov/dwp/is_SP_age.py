@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_SP_age(Variable):
     value_type = bool
     entity = Person

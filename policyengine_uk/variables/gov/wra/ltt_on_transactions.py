@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class ltt_on_transactions(Variable):
     label = "LTT on property transactions"
     documentation = "Land Transaction Tax on property transfers"

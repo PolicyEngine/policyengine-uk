@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 import datetime
 import numpy as np
 
+
 class household_net_income(Variable):
     label = "household net income"
     documentation = "household net income"

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class land_value(Variable):
     label = "Land value"
     documentation = (

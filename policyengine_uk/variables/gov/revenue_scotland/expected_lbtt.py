@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class expected_lbtt(Variable):
     label = "Land and Buildings Transaction Tax (expected)"
     documentation = "Expected value of LBTT"

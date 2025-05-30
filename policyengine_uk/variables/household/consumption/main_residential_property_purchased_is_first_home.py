@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class main_residential_property_purchased_is_first_home(Variable):
     label = "Residential property bought is first home"
     documentation = "Whether the residential property bought this year as a main residence was as a first-time buyer."

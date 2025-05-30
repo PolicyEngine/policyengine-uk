@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class housing_costs(Variable):
     value_type = float
     entity = Household

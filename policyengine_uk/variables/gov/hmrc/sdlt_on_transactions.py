@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class sdlt_on_transactions(Variable):
     label = "SDLT on property transactions"
     documentation = "Stamp Duty Land Tax on property transfers"

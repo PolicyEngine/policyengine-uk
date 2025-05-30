@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class epg_subsidy(Variable):
     label = "Energy price guarantee subsidy"
     documentation = "Reduction in energy bills due to offsetting the price cap and compensating energy firms."

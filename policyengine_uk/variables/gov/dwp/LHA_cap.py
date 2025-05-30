@@ -5,6 +5,7 @@ from policyengine_core.model_api import *
 
 warnings.filterwarnings("ignore")
 
+
 class LHA_cap(Variable):
     value_type = float
     entity = BenUnit

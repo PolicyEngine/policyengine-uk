@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class carer_premium(Variable):
     value_type = float
     entity = BenUnit

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class substitution_elasticity_lsr(Variable):
     value_type = float
     entity = Person

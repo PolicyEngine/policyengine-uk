@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class blind_persons_allowance(Variable):
     value_type = float
     entity = Person

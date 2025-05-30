@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class sdlt_on_non_residential_property_transactions(Variable):
     label = "Stamp Duty on non-residential property"
     documentation = "Tax charge from purchase of non-residential property"

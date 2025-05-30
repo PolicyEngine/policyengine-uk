@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 # The below variables follow the COICOP MECE categories.
 
+
 class food_and_non_alcoholic_beverages_consumption(Variable):
     entity = Household
     label = "food and alcoholic beverage consumption"

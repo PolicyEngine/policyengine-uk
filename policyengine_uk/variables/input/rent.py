@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class rent(Variable):
     label = "Rent"
     documentation = (

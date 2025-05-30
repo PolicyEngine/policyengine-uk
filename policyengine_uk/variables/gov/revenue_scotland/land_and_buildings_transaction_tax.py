@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class land_and_buildings_transaction_tax(Variable):
     label = "Land and Buildings Transaction Tax"
     documentation = "Total tax liability for Scotland's LBTT"

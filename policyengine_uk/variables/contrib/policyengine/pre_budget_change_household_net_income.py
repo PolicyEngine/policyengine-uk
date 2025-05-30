@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class pre_budget_change_household_net_income(Variable):
     label = "household net income"
     documentation = "household net income"

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_carer_for_benefits(Variable):
     value_type = bool
     entity = Person

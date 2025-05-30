@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class gross_financial_wealth(Variable):
     label = "Gross financial wealth"
     entity = Household

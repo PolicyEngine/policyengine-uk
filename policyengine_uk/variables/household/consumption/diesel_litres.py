@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class diesel_litres(Variable):
     label = "Diesel volume"
     documentation = "Total litres of diesel bought"

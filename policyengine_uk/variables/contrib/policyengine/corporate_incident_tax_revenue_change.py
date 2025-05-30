@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class corporate_incident_tax_revenue_change(Variable):
     label = "corporate-incident tax revenue change"
     entity = Household

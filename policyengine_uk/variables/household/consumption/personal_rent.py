@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class personal_rent(Variable):
     value_type = float
     entity = Person

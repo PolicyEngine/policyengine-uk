@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 # The below variables follow the COICOP MECE categories.
 
+
 class housing_water_and_electricity_consumption(Variable):
     entity = Household
     label = "housing, water and electricity consumption"

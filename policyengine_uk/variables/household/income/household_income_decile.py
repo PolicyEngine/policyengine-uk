@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 import datetime
 import numpy as np
 
+
 class household_income_decile(Variable):
     label = "household income decile"
     documentation = "Decile of household income (person-weighted)"

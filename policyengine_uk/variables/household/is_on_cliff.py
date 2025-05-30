@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_on_cliff(Variable):
     value_type = bool
     entity = Person

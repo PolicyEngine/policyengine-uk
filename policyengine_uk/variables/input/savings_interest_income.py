@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class savings_interest_income(Variable):
     value_type = float
     entity = Person

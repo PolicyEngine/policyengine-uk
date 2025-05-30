@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class in_original_frs(Variable):
     label = "In original FRS"
     entity = Household

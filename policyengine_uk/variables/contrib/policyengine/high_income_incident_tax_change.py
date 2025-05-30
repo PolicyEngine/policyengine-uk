@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class high_income_incident_tax_change(Variable):
     label = "high income-incident tax revenue change"
     entity = Household

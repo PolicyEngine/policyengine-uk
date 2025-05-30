@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class lbtt_on_residential_property_transactions(Variable):
     label = "LBTT on residential property"
     documentation = "LBTT charge on purchase of residential property"

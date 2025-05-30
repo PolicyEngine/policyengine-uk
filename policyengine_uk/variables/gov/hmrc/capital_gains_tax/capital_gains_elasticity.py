@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
 
+
 class capital_gains_elasticity(Variable):
     value_type = float
     entity = Person

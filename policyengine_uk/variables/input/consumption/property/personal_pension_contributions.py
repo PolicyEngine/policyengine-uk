@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class personal_pension_contributions(Variable):
     label = "personal pension contributions"
     entity = Person

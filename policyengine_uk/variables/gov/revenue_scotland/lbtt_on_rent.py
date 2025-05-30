@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class lbtt_on_rent(Variable):
     label = "LBTT on property rental"
     documentation = (

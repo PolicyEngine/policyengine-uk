@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class dividend_allowance(Variable):
     value_type = float
     entity = Person

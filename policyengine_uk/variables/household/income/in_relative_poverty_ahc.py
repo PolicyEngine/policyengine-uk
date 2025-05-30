@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class in_relative_poverty_ahc(Variable):
     label = "in relative poverty (AHC)"
     entity = Household

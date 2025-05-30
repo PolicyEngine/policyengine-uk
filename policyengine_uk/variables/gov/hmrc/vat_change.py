@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class vat_change(Variable):
     label = "change in VAT liability"
     entity = Household

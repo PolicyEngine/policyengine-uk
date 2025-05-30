@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class pre_budget_change_household_benefits(Variable):
     value_type = float
     entity = Household

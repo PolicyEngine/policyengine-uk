@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class full_rate_vat_consumption(Variable):
     label = "consumption of VAT full-rated goods and services"
     entity = Household

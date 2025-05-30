@@ -5,6 +5,7 @@ from policyengine_core.model_api import *
 
 warnings.filterwarnings("ignore")
 
+
 class LHA_allowed_bedrooms(Variable):
     value_type = float
     entity = BenUnit

@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import pandas as pd
 
+
 class child_index(Variable):
     value_type = int
     entity = Person

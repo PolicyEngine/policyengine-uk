@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 import datetime
 import numpy as np
 
+
 class capital_gains(Variable):
     label = "capital gains"
     entity = Person

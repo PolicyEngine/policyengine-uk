@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class expected_ltt(Variable):
     label = "Land Transaction Tax (expected)"
     documentation = "Expected value of Land Transaction Tax"

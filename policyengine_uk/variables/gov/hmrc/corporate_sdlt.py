@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class corporate_sdlt(Variable):
     label = "Stamp Duty (corporations)"
     documentation = (

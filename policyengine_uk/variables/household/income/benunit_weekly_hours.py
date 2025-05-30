@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class benunit_weekly_hours(Variable):
     value_type = float
     entity = BenUnit

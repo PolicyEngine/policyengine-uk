@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class petrol_price(Variable):
     label = "Price of petrol per litre"
     entity = Household

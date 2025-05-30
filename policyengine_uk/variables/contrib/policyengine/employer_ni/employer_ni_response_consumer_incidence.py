@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class employer_ni_response_consumer_incidence(Variable):
     label = "price response to employer NI reform"
     entity = Person

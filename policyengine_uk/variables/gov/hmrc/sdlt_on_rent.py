@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class sdlt_on_rent(Variable):
     label = "SDLT on property rental"
     documentation = "Stamp Duty Land Tax on property rental agreements"

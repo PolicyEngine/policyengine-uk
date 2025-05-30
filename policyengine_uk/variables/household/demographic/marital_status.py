@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 import pandas as pd
 
+
 class marital_status(Variable):
     value_type = Enum
     possible_values = MaritalStatus

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class non_residential_property_value(Variable):
     label = "non-residential property value"
     documentation = (

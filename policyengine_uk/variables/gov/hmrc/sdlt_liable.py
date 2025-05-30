@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class sdlt_liable(Variable):
     label = "Liable for Stamp Duty"
     documentation = "Whether the household is liable for Stamp Duty Land Tax"

@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from numpy import ceil
 
+
 class unused_personal_allowance(Variable):
     value_type = float
     entity = Person

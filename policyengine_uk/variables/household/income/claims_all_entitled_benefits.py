@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class claims_all_entitled_benefits(Variable):
     value_type = bool
     entity = BenUnit

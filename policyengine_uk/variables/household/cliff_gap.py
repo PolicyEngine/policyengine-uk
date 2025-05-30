@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class cliff_gap(Variable):
     value_type = float
     entity = Person

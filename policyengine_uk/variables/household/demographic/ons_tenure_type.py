@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.geography import Region
 
+
 class ons_tenure_type(Variable):
     label = "ONS tenure type"
     documentation = "Tenure type matching ONS_produced statistical breakdowns."

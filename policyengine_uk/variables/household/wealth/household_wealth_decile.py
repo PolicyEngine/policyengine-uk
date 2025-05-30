@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class household_wealth_decile(Variable):
     label = "household wealth decile"
     documentation = "Decile of wealth income (person-weighted)"

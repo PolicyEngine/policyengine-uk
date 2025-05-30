@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class social_security_income(Variable):
     value_type = float
     entity = Person

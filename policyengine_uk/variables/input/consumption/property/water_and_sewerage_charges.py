@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class water_and_sewerage_charges(Variable):
     value_type = float
     entity = Household

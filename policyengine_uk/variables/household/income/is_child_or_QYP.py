@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_child_or_QYP(Variable):
     value_type = bool
     entity = Person

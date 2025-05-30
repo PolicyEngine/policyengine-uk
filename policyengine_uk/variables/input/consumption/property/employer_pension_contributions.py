@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class employer_pension_contributions(Variable):
     value_type = float
     entity = Person

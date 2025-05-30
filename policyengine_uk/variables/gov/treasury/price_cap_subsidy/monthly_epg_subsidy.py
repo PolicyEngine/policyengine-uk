@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class monthly_epg_subsidy(Variable):
     label = "Monthly EPG subsidy"
     entity = Household

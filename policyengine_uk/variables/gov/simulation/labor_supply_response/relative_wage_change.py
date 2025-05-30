@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class relative_wage_change(Variable):
     value_type = float
     entity = Person

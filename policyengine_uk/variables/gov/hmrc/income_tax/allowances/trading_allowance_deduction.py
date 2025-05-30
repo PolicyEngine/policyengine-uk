@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class trading_allowance_deduction(Variable):
     value_type = float
     entity = Person

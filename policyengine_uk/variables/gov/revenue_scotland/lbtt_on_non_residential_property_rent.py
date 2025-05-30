@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class lbtt_on_non_residential_property_rent(Variable):
     label = "LBTT on non-residential property"
     documentation = (

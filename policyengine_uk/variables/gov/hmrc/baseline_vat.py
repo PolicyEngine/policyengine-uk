@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class baseline_vat(Variable):
     label = "baseline VAT"
     entity = Household

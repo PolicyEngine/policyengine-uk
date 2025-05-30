@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class nhs_budget_change(Variable):
     label = "NHS budget change"
     entity = Household

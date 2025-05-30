@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class pre_budget_change_ons_household_income_decile(Variable):
     label = "pre-budget change household income decile (ONS matched)"
     entity = Household

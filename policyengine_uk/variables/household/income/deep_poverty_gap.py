@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class deep_poverty_gap(Variable):
     label = "deep poverty gap"
     documentation = "The financial gap between net household income and the deep poverty line (before housing costs)."

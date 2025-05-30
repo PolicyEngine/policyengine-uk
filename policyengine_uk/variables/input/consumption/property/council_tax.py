@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class council_tax(Variable):
     value_type = float
     entity = Household

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_enhanced_disabled_for_benefits(Variable):
     value_type = bool
     entity = Person

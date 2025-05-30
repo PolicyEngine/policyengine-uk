@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class income_support_entitlement(Variable):
     label = "IS entitlement"
     entity = BenUnit

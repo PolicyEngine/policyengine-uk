@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class is_CTC_child_limit_exempt(Variable):
     value_type = bool
     entity = Person

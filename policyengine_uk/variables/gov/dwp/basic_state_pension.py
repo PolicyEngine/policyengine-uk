@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 
+
 class basic_state_pension(Variable):
     label = "basic State Pension"
     entity = Person
