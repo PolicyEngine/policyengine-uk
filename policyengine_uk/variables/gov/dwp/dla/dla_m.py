@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.misc.categories.lower_or_higher import (
+
 
 class dla_m(Variable):
     label = "DLA (mobility)"
@@ -11,12 +11,13 @@ class dla_m(Variable):
     def formula(person, period, parameters):
         dla_m = parameters(period).gov.dwp.dla.mobility
         category = person("dla_m_category", period)
+        categories = category.possible_values
         return (
             select(
                 [
-                    category == LowerOrHigher.HIGHER,
-                    category == LowerOrHigher.LOWER,
-                    category == LowerOrHigher.NONE,
+                    category == categories.HIGHER,
+                    category == categories.LOWER,
+                    category == categories.NONE,
                 ],
                 [
                     dla_m.higher,

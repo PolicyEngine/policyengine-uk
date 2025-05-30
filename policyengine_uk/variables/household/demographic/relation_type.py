@@ -1,4 +1,10 @@
-from policyengine_uk.variables.household.demographic.household import (
+from policyengine_uk.model_api import *
+
+
+class RelationType(Enum):
+    SINGLE = "Single"
+    COUPLE = "Couple"
+
 
 class relation_type(Variable):
     value_type = Enum

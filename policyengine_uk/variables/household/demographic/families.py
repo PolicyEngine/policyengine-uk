@@ -1,4 +1,5 @@
-from policyengine_uk.variables.household.demographic.household import (
+from policyengine_uk.model_api import *
+
 
 class families(Variable):
     value_type = float

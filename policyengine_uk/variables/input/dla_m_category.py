@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.misc.categories.lower_middle_or_higher import (
+from policyengine_uk.variables.misc.categories.lower_or_higher import (
+    LowerOrHigher,
+)
+
 
 class dla_m_category(Variable):
     label = "DLA (mobility) category"

@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.misc.categories.lower_middle_or_higher import (
+    LowerMiddleOrHigher,
+)
+
 
 class dla_sc_category(Variable):
     label = "DLA (Self-care) category"

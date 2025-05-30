@@ -1,4 +1,12 @@
-from policyengine_uk.variables.household.demographic.household import (
+from policyengine_uk.model_api import *
+
+
+class FamilyType(Enum):
+    SINGLE = "Single"
+    COUPLE_NO_CHILDREN = "Couple without children"
+    LONE_PARENT = "Lone parent"
+    COUPLE_WITH_CHILDREN = "Couple with children"
+
 
 class family_type(Variable):
     value_type = Enum

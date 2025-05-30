@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.misc.categories.lower_middle_or_higher import (
+from policyengine_uk.variables.gov.dwp.pip.pip import PIPCategory
+
 
 class pip_dl_category(Variable):
     label = "PIP (daily living) category"

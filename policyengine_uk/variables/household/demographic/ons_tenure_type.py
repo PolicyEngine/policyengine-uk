@@ -1,5 +1,15 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.geography import Region
+from policyengine_uk.variables.household.demographic.tenure_type import (
+    TenureType,
+)
+
+
+class ONSTenureType(Enum):
+    OWNER_OCCUPIED = "Owner occupied"
+    RENT_PRIVATELY = "Rent privately"
+    RENT_FROM_COUNCIL = "Rent from council"
+    RENT_FROM_HA = "Rent from housing association"
 
 
 class ons_tenure_type(Variable):
@@ -13,19 +23,19 @@ class ons_tenure_type(Variable):
 
     def formula(household, period, parameters):
         tenure = household("tenure_type", period)
+        tenure_types = tenure.possible_values
         return select(
             [
-                tenure == TenureType.RENT_FROM_HA,
-                tenure == TenureType.RENT_FROM_COUNCIL,
-                tenure == TenureType.RENT_PRIVATELY,
-                tenure == TenureType.OWNED_OUTRIGHT,
-                tenure == TenureType.OWNED_WITH_MORTGAGE,
+                tenure == tenure_types.RENT_FROM_HA,
+                tenure == tenure_types.RENT_FROM_COUNCIL,
+                tenure == tenure_types.RENT_PRIVATELY,
+                tenure == tenure_types.OWNER_OCCUPIED,
             ],
             [
                 ONSTenureType.RENT_FROM_HA,
                 ONSTenureType.RENT_FROM_COUNCIL,
                 ONSTenureType.RENT_PRIVATELY,
                 ONSTenureType.OWNER_OCCUPIED,
-                ONSTenureType.OWNER_OCCUPIED,
             ],
+            default=ONSTenureType.OWNER_OCCUPIED,
         )

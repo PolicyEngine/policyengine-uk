@@ -6,6 +6,14 @@ from policyengine_core.model_api import *
 warnings.filterwarnings("ignore")
 
 
+class LHACategory(Enum):
+    A = "Shared accommodation"
+    B = "One bedroom"
+    C = "Two bedrooms"
+    D = "Three bedrooms"
+    E = "Four or more bedrooms"
+
+
 class LHA_category(Variable):
     value_type = Enum
     entity = BenUnit

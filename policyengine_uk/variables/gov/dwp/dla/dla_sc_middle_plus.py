@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.misc.categories.lower_middle_or_higher import (
+
 
 class dla_sc_middle_plus(Variable):
     value_type = bool
@@ -8,7 +8,9 @@ class dla_sc_middle_plus(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
+        category = person("dla_sc_category", period)
+        categories = category.possible_values
         return is_in(
-            person("dla_sc_category", period),
-            [LowerMiddleOrHigher.MIDDLE, LowerMiddleOrHigher.HIGHER],
+            category,
+            [categories.MIDDLE, categories.HIGHER],
         )

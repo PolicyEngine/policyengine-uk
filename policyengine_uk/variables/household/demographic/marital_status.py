@@ -2,6 +2,14 @@ from policyengine_uk.model_api import *
 import pandas as pd
 
 
+class MaritalStatus(Enum):
+    SINGLE = "Single"
+    MARRIED = "Married"
+    SEPARATED = "Separated"
+    DIVORCED = "Divorced"
+    WIDOWED = "Widowed"
+
+
 class marital_status(Variable):
     value_type = Enum
     possible_values = MaritalStatus

@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.hmrc.tax import household_tax
 
 
 class attends_private_school(Variable):

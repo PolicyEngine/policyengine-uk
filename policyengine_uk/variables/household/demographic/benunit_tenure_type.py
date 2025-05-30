@@ -1,4 +1,8 @@
-from policyengine_uk.variables.household.demographic.household import (
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.tenure_type import (
+    TenureType,
+)
+
 
 class benunit_tenure_type(Variable):
     value_type = Enum

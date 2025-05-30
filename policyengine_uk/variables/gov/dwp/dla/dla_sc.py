@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.misc.categories.lower_middle_or_higher import (
+
 
 class dla_sc(Variable):
     label = "DLA (self-care)"
@@ -11,13 +11,14 @@ class dla_sc(Variable):
     def formula(person, period, parameters):
         dla_sc = parameters(period).gov.dwp.dla.self_care
         category = person("dla_sc_category", period)
+        categories = category.possible_values
         return (
             select(
                 [
-                    category == LowerMiddleOrHigher.HIGHER,
-                    category == LowerMiddleOrHigher.MIDDLE,
-                    category == LowerMiddleOrHigher.LOWER,
-                    category == LowerMiddleOrHigher.NONE,
+                    category == categories.HIGHER,
+                    category == categories.MIDDLE,
+                    category == categories.LOWER,
+                    category == categories.NONE,
                 ],
                 [
                     dla_sc.higher,

@@ -9,4 +9,5 @@ class is_female(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("gender", period) == Gender.FEMALE
+        gender = person("gender", period)
+        return gender == gender.possible_values.FEMALE

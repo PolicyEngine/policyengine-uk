@@ -2,6 +2,14 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.geography import Region
 
 
+class Country(Enum):
+    ENGLAND = "England"
+    NORTHERN_IRELAND = "Northern Ireland"
+    SCOTLAND = "Scotland"
+    WALES = "Wales"
+    UNKNOWN = "Unknown"
+
+
 class country(Variable):
     value_type = Enum
     possible_values = Country

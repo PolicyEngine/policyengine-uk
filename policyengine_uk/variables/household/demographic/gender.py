@@ -2,6 +2,11 @@ from policyengine_uk.model_api import *
 import pandas as pd
 
 
+class Gender(Enum):
+    MALE = "Male"
+    FEMALE = "Female"
+
+
 class gender(Variable):
     value_type = Enum
     possible_values = Gender

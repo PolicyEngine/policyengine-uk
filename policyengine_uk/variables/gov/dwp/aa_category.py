@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.misc.categories.lower_or_higher import (
+    LowerOrHigher,
+)
+
 
 class aa_category(Variable):
     label = "Attendance Allowance category"

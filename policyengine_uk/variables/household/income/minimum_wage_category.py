@@ -3,6 +3,15 @@ import datetime
 import numpy as np
 
 
+class MinimumWageCategory(Enum):
+    APPRENTICE = "Apprentice"
+    UNDER_18 = "Under 18"
+    BETWEEN_18_20 = "18-20"
+    BETWEEN_21_22 = "21-22"
+    BETWEEN_23_24 = "23-24"
+    OVER_24 = "Over 24"
+
+
 class minimum_wage_category(Variable):
     value_type = Enum
     possible_values = MinimumWageCategory

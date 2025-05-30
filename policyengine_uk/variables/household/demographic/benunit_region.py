@@ -1,4 +1,6 @@
-from policyengine_uk.variables.household.demographic.household import (
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.geography import Region
+
 
 class benunit_region(Variable):
     label = "benefit unit region"
