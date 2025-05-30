@@ -1,6 +1,18 @@
 from policyengine_uk.model_api import *
 
 
+def interpolate_percentile(param, percentile):
+    if str(percentile) in param:
+        return param[str(percentile)]
+    else:
+        idx = percentile - (percentile % 5)
+        p1 = idx
+        p2 = idx + 5
+        v1 = param[str(idx)]
+        v2 = param[str(idx + 5)]
+        return v1 + (v2 - v1) * (percentile - p1) / (p2 - p1)
+
+
 class attends_private_school(Variable):
     label = "attends private school"
     entity = Person

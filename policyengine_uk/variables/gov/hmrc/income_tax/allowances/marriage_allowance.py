@@ -26,7 +26,7 @@ class marriage_allowance(Variable):
         # Round up.
         rounding_increment = allowances.marriage_allowance.rounding_increment
         amount_if_eligible = (
-            ceil(amount_if_eligible_pre_rounding / rounding_increment)
+            np.ceil(amount_if_eligible_pre_rounding / rounding_increment)
             * rounding_increment
         )
         return eligible * amount_if_eligible * (random(person) < takeup_rate)
