@@ -2,15 +2,15 @@ from policyengine_uk.model_api import *
 
 
 class CouncilTaxBand(Enum):
-    A = "Band A"
-    B = "Band B"
-    C = "Band C"
-    D = "Band D"
-    E = "Band E"
-    F = "Band F"
-    G = "Band G"
-    H = "Band H"
-    I = "Band I"  # Used in Wales
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    F = "F"
+    G = "G"
+    H = "H"
+    I = "I"
 
 
 class council_tax_band(Variable):

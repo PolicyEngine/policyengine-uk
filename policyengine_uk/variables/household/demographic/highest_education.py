@@ -7,9 +7,9 @@ class EducationType(Enum):
     PRE_PRIMARY = "Pre-primary"
     NOT_COMPLETED_PRIMARY = "Not completed primary"
     PRIMARY = "Primary"
-    LOWER_SECONDARY = "Lower secondary"
-    UPPER_SECONDARY = "Upper secondary"
-    POST_SECONDARY = "Post secondary"
+    LOWER_SECONDARY = "Lower Secondary"
+    UPPER_SECONDARY = "Upper Secondary"
+    POST_SECONDARY = "Post Secondary"
     TERTIARY = "Tertiary"
 
 

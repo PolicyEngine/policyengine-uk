@@ -2,10 +2,10 @@ from policyengine_uk.model_api import *
 
 
 class FamilyType(Enum):
-    SINGLE = "Single"
-    COUPLE_NO_CHILDREN = "Couple without children"
-    LONE_PARENT = "Lone parent"
-    COUPLE_WITH_CHILDREN = "Couple with children"
+    SINGLE = "Single, with no children"
+    COUPLE_NO_CHILDREN = "Couple, with no children"
+    LONE_PARENT = "Lone parent, with children"
+    COUPLE_WITH_CHILDREN = "Couple, with children"
 
 
 class family_type(Variable):

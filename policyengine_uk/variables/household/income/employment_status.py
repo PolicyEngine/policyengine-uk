@@ -4,15 +4,18 @@ import numpy as np
 
 
 class EmploymentStatus(Enum):
-    CHILD = "Child"
+    FT_EMPLOYED = "Full-time employed"
+    PT_EMPLOYED = "Part-time employed"
+    FT_SELF_EMPLOYED = "Full-time self-employed"
+    PT_SELF_EMPLOYED = "Part-time self-employed"
     UNEMPLOYED = "Unemployed"
-    EMPLOYED = "Employed"
-    SELF_EMPLOYED = "Self-employed"
     RETIRED = "Retired"
     STUDENT = "Student"
     CARER = "Carer"
-    LONG_TERM_SICK = "Long-term sick"
-    SHORT_TERM_SICK = "Short-term sick"
+    LONG_TERM_DISABLED = "Long-term sick/disabled"
+    SHORT_TERM_DISABLED = "Short-term sick/disabled"
+    OTHER_INACTIVE = "Other inactive"
+    CHILD = "Child"
 
 
 class employment_status(Variable):

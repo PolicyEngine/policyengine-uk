@@ -3,11 +3,12 @@ from policyengine_uk.variables.household.demographic.geography import Region
 
 
 class AccommodationType(Enum):
-    HOUSE_DETACHED = "House - detached"
-    HOUSE_SEMI_DETACHED = "House - semi-detached"
-    HOUSE_TERRACED = "House - terraced"
-    FLAT = "Flat"
-    BEDSIT = "Bedsit"
+    HOUSE_DETACHED = "Detached house"
+    HOUSE_SEMI_DETACHED = "Semi-detached house"
+    HOUSE_TERRACED = "Terraced house"
+    FLAT = "Purpose-built flat or maisonette"
+    CONVERTED_HOUSE = "Converted house or building"
+    MOBILE = "Caravan/Mobile home or houseboat"
     OTHER = "Other"
     UNKNOWN = "Unknown"
 

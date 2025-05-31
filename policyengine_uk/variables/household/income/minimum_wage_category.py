@@ -6,10 +6,10 @@ import numpy as np
 class MinimumWageCategory(Enum):
     APPRENTICE = "Apprentice"
     UNDER_18 = "Under 18"
-    BETWEEN_18_20 = "18-20"
-    BETWEEN_21_22 = "21-22"
-    BETWEEN_23_24 = "23-24"
-    OVER_24 = "Over 24"
+    BETWEEN_18_20 = "18 to 20"
+    BETWEEN_21_22 = "21 to 22"
+    BETWEEN_23_24 = "23 to 24"
+    OVER_24 = "25 or over"
 
 
 class minimum_wage_category(Variable):
