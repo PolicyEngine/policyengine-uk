@@ -11,11 +11,12 @@ class attendance_allowance(Variable):
     def formula(person, period, parameters):
         aa = parameters(period).gov.dwp.attendance_allowance
         category = person("aa_category", period)
+        categories = category.possible_values
         return (
             select(
                 [
-                    category == LowerOrHigher.HIGHER,
-                    category == LowerOrHigher.LOWER,
+                    category == categories.HIGHER,
+                    category == categories.LOWER,
                 ],
                 [aa.higher, aa.lower],
                 default=0,
