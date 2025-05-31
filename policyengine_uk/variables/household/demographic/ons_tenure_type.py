@@ -25,13 +25,11 @@ class ons_tenure_type(Variable):
                 tenure == tenure_types.RENT_FROM_HA,
                 tenure == tenure_types.RENT_FROM_COUNCIL,
                 tenure == tenure_types.RENT_PRIVATELY,
-                tenure == tenure_types.OWNER_OCCUPIED,
             ],
             [
                 ONSTenureType.RENT_FROM_HA,
                 ONSTenureType.RENT_FROM_COUNCIL,
                 ONSTenureType.RENT_PRIVATELY,
-                ONSTenureType.OWNER_OCCUPIED,
             ],
             default=ONSTenureType.OWNER_OCCUPIED,
         )
