@@ -13,9 +13,7 @@ class new_state_pension(Variable):
         if simulation.dataset is None:
             return 0
 
-        return where(
-            person("state_pension_type", period) == StatePensionType.NEW,
-            parameters(period).gov.dwp.state_pension.new_state_pension.amount
-            * WEEKS_IN_YEAR,
-            0,
-        )
+        type = person("state_pension_type", period)
+        eligible = type == type.possible_values.NEW
+        p = parameters(period).gov.dwp.state_pension.new_state_pension
+        return eligible * p.amount * WEEKS_IN_YEAR

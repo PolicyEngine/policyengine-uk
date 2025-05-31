@@ -20,7 +20,7 @@ class additional_state_pension(Variable):
             data_year
         ).gov.dwp.state_pension.basic_state_pension.amount
         amount_in_data_year = where(
-            type == StatePensionType.BASIC,
+            type == type.possible_values.BASIC,
             max_(reported - maximum_basic_sp, 0),
             0,
         )
