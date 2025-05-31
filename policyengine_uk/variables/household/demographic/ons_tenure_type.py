@@ -1,8 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.geography import Region
-from policyengine_uk.variables.household.demographic.tenure_type import (
-    TenureType,
-)
 
 
 class ONSTenureType(Enum):

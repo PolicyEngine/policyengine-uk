@@ -1,12 +1,12 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.geography import Region
 
 
 class TenureType(Enum):
-    RENT_FROM_COUNCIL = "Rent from council"
-    RENT_FROM_HA = "Rent from housing association"
-    RENT_PRIVATELY = "Rent privately"
-    OWNER_OCCUPIED = "Owner occupied"
+    RENT_FROM_COUNCIL = "Rented from Council"
+    RENT_FROM_HA = "Rented from a Housing Association"
+    RENT_PRIVATELY = "Rented privately"
+    OWNED_OUTRIGHT = "Owned outright"
+    OWNED_WITH_MORTGAGE = "Owned with a mortgage"
 
 
 class tenure_type(Variable):
