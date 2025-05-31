@@ -23,7 +23,9 @@ def test_not_nan(year):
                 continue
             try:
                 values = baseline.calculate(variable, period=year)
-                assert not np.isnan(values).any(), f"NaN values found in {variable}"
+                assert not np.isnan(
+                    values
+                ).any(), f"NaN values found in {variable}"
             except:
                 # Some variables may fail to calculate without proper inputs
                 pass
