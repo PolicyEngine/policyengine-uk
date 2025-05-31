@@ -1,4 +1,4 @@
-from policyengine import Simulation
+from policyengine_uk import Simulation
 import pytest
 
 YEARS = range(2024, 2026)

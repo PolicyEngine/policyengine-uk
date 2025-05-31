@@ -2,9 +2,9 @@ from policyengine_uk.model_api import *
 
 
 class StatePensionType(Enum):
-    NONE = "None"
-    BASIC = "Basic"
-    NEW = "New"
+    BASIC = "basic"
+    NEW = "new"
+    NONE = "none"
 
 
 class state_pension_type(Variable):
