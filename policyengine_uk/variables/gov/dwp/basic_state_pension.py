@@ -20,7 +20,9 @@ class basic_state_pension(Variable):
             data_year
         ).gov.dwp.state_pension.basic_state_pension.amount
         amount_in_data_year = where(
-            type == StatePensionType.BASIC, min_(reported, maximum_basic_sp), 0
+            type == type.possible_values.BASIC,
+            min_(reported, maximum_basic_sp),
+            0,
         )
         triple_lock = parameters.gov.dwp.state_pension.triple_lock.index
         uprating_since_data_year = triple_lock(period) / triple_lock(data_year)
