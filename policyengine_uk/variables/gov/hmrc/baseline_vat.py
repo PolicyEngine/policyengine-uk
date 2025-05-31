@@ -14,7 +14,10 @@ class baseline_vat(Variable):
             "reduced_rate_vat_consumption", period
         )
         vat = parameters(period).baseline.gov.hmrc.vat
+        microdata_vat_coverage = parameters(
+            period
+        ).baseline.gov.simulation.microdata_vat_coverage
         return (
             full_rate_consumption * vat.standard_rate
             + reduced_rate_consumption * vat.reduced_rate
-        ) / MICRODATA_VAT_COVERAGE
+        ) / microdata_vat_coverage
