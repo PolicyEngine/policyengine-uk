@@ -1,0 +1,9 @@
+description: LCFS (from which ETB data is derived) microdata is known to under-report household consumption. We scale up the VAT liability to hit HMRC-reported VAT receipts (following the approach of IFS' TAXBEN, though they might have better coverage anyway from access to the non-EUL dataset). For HMRC statistics see https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics
+metadata:
+  unit: /1
+  period: year
+  reference:
+    - title: Value Added Tax (VAT) annual statistics
+      href: https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics
+values:
+  2010-01-01: 0.38

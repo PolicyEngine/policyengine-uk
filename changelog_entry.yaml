@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    changed:
+    - Refactored all Variable files to follow single-responsibility principle with one Variable class per file.
+    - Split approximately 70 multi-Variable Python files into individual files, improving code organization and maintainability.

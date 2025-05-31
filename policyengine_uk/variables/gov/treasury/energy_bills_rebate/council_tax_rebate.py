@@ -1,7 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.input.housing import (
-    CouncilTaxBand,
-)
 
 
 class ebr_council_tax_rebate(Variable):
@@ -17,10 +14,11 @@ class ebr_council_tax_rebate(Variable):
             period
         ).gov.treasury.energy_bills_rebate.council_tax_rebate
         ct_band = household("council_tax_band", period)
+        ct_band_values = ct_band.possible_values
         eligible = np.any(
             np.array(
                 [
-                    ct_band == getattr(CouncilTaxBand, band)
+                    ct_band == getattr(ct_band_values, band)
                     for band in ctr.bands
                 ]
             ),

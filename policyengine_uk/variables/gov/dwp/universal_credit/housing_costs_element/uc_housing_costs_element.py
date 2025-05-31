@@ -1,7 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.household import (
-    TenureType,
-)
 
 
 class uc_housing_costs_element(Variable):
@@ -15,14 +12,15 @@ class uc_housing_costs_element(Variable):
         tenure_type = benunit.value_from_first_person(
             benunit.members.household("tenure_type", period)
         )
+        tenure_types = tenure_type.possible_values
         rent = benunit("benunit_rent", period)
         rent_cap = benunit("LHA_cap", period)
         capped_rent_amount = min_(rent_cap, rent)
         max_housing_costs = select(
             [
-                (tenure_type == TenureType.RENT_FROM_COUNCIL)
-                | (tenure_type == TenureType.RENT_FROM_HA),
-                tenure_type == TenureType.RENT_PRIVATELY,
+                (tenure_type == tenure_types.RENT_FROM_COUNCIL)
+                | (tenure_type == tenure_types.RENT_FROM_HA),
+                tenure_type == tenure_types.RENT_PRIVATELY,
             ],
             [rent, capped_rent_amount],
             default=0,

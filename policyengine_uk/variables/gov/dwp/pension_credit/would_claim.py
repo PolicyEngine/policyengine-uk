@@ -1,7 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.pension_credit.pension_credit import (
-    pension_credit,
-)
 
 
 class would_claim_pc(Variable):

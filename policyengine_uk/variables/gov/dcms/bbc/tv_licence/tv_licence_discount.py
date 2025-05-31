@@ -21,7 +21,7 @@ class tv_licence_discount(Variable):
         has_aged = household.any(aged)
         claims_pc = add(household, period, ["pension_credit"]) > 0
         meets_pc_requirement = (
-            ~tv_licence.discount.aged.must_claim_pc | claims_pc
+            not_(tv_licence.discount.aged.must_claim_pc) | claims_pc
         )
         eligible_for_aged_discount = has_aged & meets_pc_requirement
         aged_discount = (

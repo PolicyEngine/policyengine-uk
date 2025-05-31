@@ -2,19 +2,10 @@ from policyengine_uk.model_api import *
 
 
 class incapacity_benefit(Variable):
-    value_type = float
-    entity = Person
     label = "Incapacity Benefit"
+    entity = Person
     definition_period = YEAR
+    value_type = float
     unit = GBP
 
     adds = ["incapacity_benefit_reported"]
-
-
-class incapacity_benefit_reported(Variable):
-    value_type = float
-    entity = Person
-    label = "Incapacity Benefit (reported)"
-    definition_period = YEAR
-    unit = GBP
-    uprating = "gov.obr.consumer_price_index"
