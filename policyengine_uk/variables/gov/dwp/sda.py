@@ -15,12 +15,3 @@ class sda(Variable):
         # age-related addition.
         rate = parameters(period).gov.dwp.sda.maximum
         return reported * rate * WEEKS_IN_YEAR
-
-
-class sda_reported(Variable):
-    value_type = float
-    entity = Person
-    label = "Severe Disablement Allowance (reported)"
-    definition_period = YEAR
-    unit = GBP
-    uprating = "gov.obr.consumer_price_index"
