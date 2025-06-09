@@ -1513,3 +1513,13 @@
     - Split approximately 70 multi-Variable Python files into individual files, improving
       code organization and maintainability.
   date: 2025-06-06 16:15:25
+- bump: minor
+  changes:
+    added:
+    - Council tax projection parameters from OBR data.
+  date: 2025-06-09 09:54:52
+- bump: minor
+  changes:
+    changed:
+    - Updated employer National Insurance contribution rate to 15% from April 6, 2025.
+  date: 2025-06-09 11:32:22
