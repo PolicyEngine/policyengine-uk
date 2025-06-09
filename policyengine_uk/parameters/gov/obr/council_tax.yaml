@@ -1,0 +1,15 @@
+description: OBR forecast for council tax.
+values:
+  2023-01-01: 44.5
+  2024-01-01: 47.7
+  2025-01-01: 50.2
+  2026-01-01: 52.8
+  2027-01-01: 55.6
+  2028-01-01: 58.5
+  2029-01-01: 61.5
+metadata:
+  label: Council tax uprating
+  reference:
+    - title: OBR March 2025 EFO
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+      # Table A.5: Current receipt
