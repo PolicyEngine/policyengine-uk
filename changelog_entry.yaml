@@ -1,0 +1,7 @@
+- bump: minor
+  changes:
+    added:
+    - ONS household population data from 2001-2043.
+    - Council tax per household projections from OBR data.
+    changed:
+    - Updated employer National Insurance contribution rate to 15% from April 6, 2025.
