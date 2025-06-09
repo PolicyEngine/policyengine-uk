@@ -4,8 +4,14 @@ metadata:
   label: NI Employer rate
   propagate_metadata_to_children: true
   unit: /1
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
-  # new rate: https://www.gov.uk/national-insurance-rates-letters
 values:
-  2015-04-01: 0.138
-  2025-04-06: 0.15
+  2015-04-01: 
+    value: 0.138
+    reference:
+      - title: National Insurance rates and thresholds
+        href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+  2025-04-06: 
+    value: 0.15
+    reference:
+      - title: National Insurance rates and letters
+        href: https://www.gov.uk/national-insurance-rates-letters
