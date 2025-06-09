@@ -1,12 +1,12 @@
-description: OBR forecast for council tax.
+description: OBR forecast for council tax per capita (millions of pounds).
 values:
-  2023-01-01: 44.5
-  2024-01-01: 47.7
-  2025-01-01: 50.2
-  2026-01-01: 52.8
-  2027-01-01: 55.6
-  2028-01-01: 58.5
-  2029-01-01: 61.5
+  2023-01-01: 44.5/68500000
+  2024-01-01: 47.7/69200000
+  2025-01-01: 50.2/69900000
+  2026-01-01: 52.8/70400000
+  2027-01-01: 55.6/70900000
+  2028-01-01: 58.5/71200000
+  2029-01-01: 61.5/71500000
 metadata:
   label: Council tax uprating
   reference:
