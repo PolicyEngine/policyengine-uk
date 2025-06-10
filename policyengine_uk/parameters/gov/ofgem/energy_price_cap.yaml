@@ -13,6 +13,8 @@ values:
   2023-04-01: 3_280
   2023-07-01: 2_362 # Forecast
   2023-10-01: 2_389
+  2025-04-01: 1_849
+  2025-05-30: 1_720
 metadata:
   unit: currency-GBP
   period: year
