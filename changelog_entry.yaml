@@ -1,4 +1,4 @@
 - bump: patch
   changes:
     fixed:
-      - Update OBR forecast parameters.
+      - Update UK parameters.
