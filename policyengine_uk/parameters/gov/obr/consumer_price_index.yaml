@@ -1,5 +1,6 @@
 description: OBR forecast for CPI
 values:
+  2005-01-01: 90
   2009-01-01: 87.3
   2010-01-01: 90.3
   2011-01-01: 94.2
