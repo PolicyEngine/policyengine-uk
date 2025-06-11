@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.32.1] - 2025-06-11 13:52:32
+
+### Added
+
+- Add test suite for abolition parameters functionality.
+
 ## [2.32.0] - 2025-06-11 08:59:43
 
 ### Added
@@ -1823,6 +1829,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.32.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.0...2.32.1
 [2.32.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.31.0...2.32.0
 [2.31.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.30.0...2.31.0
 [2.30.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.29.0...2.30.0

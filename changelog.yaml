@@ -1536,3 +1536,8 @@
     added:
     - Winter Fuel Allowance means-testing reform.
   date: 2025-06-11 08:59:43
+- bump: patch
+  changes:
+    added:
+    - Add test suite for abolition parameters functionality.
+  date: 2025-06-11 13:52:32
