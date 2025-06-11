@@ -105,7 +105,10 @@ values:
   2023-07-01: 120.4
   2023-08-01: 121.1
   2023-09-01: 121.8
-  2023-10-01: 122.6
+  2023-10-01: 122.7
+  2023-11-01: 123.4
+  2023-12-01: 123.9
+  2024-01-01: 124.6
 metadata:
   label: Private rental prices index
   uprating: gov.obr.consumer_price_index

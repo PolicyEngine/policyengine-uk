@@ -42,7 +42,11 @@ values:
     reference:
       - title: Benefits Uprating 2024/25 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
-  2025-04-01: 26.04
+  2025-04-01: 
+    value: 26.05
+    reference:
+      - title: Benefits Uprating 2025/26 | Commons Library Briefing
+        href: https://researchbriefings.files.parliament.uk/documents/CBP-10105/CBP-10105.pdf
 metadata:
   label: Child Benefit (eldest)
   name: CB_eldest
