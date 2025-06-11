@@ -1,0 +1,202 @@
+- name: 2024 baseline - pensioner without benefits gets no WFA
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    # In 2024, require_benefits defaults to true
+    age: 67
+    country: "ENGLAND"
+    total_income: 15000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 0
+
+- name: Enable income test - pensioner under threshold gets WFA despite no benefits
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 15000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+
+- name: Enable income test - pensioner over threshold gets no WFA
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 25000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 0
+
+- name: Enable income test - pensioner exactly at threshold gets no WFA
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 20000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 0
+
+- name: Enable income test - pensioner £1 under threshold gets WFA
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 19999
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+
+- name: Higher rate WFA for 80+ under threshold
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 82
+    country: "ENGLAND"
+    total_income: 15000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 300
+
+- name: Wales pensioner under threshold gets WFA
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "WALES"
+    total_income: 15000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+
+- name: Scotland pensioner unaffected by England/Wales income test
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "SCOTLAND"
+    total_income: 15000  # Would qualify in England/Wales
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 0  # Scotland handled separately
+
+- name: Northern Ireland pensioner unaffected by England/Wales income test
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "NORTHERN_IRELAND"
+    total_income: 15000  # Would qualify in England/Wales
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 0  # Northern Ireland handled separately
+
+- name: Income test provides alternative to benefits requirement
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    # require_benefits is true by default in 2024, but income test provides alternative
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 15000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+
+- name: Test different income threshold - £30k threshold
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 30000
+    age: 67
+    country: "ENGLAND"
+    total_income: 25000  # Under new threshold
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+
+- name: Test different income threshold - £30k threshold exceeded
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 30000
+    age: 67
+    country: "ENGLAND"
+    total_income: 35000  # Over new threshold
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 0
+
+- name: 2023 baseline - everyone gets WFA regardless of income (pre-reform)
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    # In 2023, require_benefits was false, so everyone eligible by age gets WFA
+    age: 67
+    country: "ENGLAND"
+    total_income: 50000
+  output:
+    winter_fuel_allowance: 200

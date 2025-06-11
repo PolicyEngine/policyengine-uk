@@ -1,0 +1,61 @@
+- name: Single pensioner aged 66+ gets lower rate WFA
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    age: 67
+    country: "ENGLAND"
+    total_income: 10000
+  output:
+    winter_fuel_allowance: 200
+
+- name: Single pensioner aged 80+ gets higher rate WFA
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    age: 82
+    country: "ENGLAND"
+    total_income: 10000
+  output:
+    winter_fuel_allowance: 300
+
+- name: Household in Scotland gets no WFA (handled by Scottish Government)
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    age: 67
+    country: "SCOTLAND"
+    total_income: 10000
+  output:
+    winter_fuel_allowance: 0
+
+- name: Person under pension age gets no WFA
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    age: 60
+    country: "ENGLAND"
+    total_income: 10000
+  output:
+    winter_fuel_allowance: 0
+
+- name: Pensioner with pension credit gets WFA regardless of income test
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    age: 67
+    country: "ENGLAND"
+    total_income: 50000
+    pension_credit: 100
+  output:
+    winter_fuel_allowance: 200
+
+- name: Pensioner with income support gets WFA regardless of income test
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    age: 67
+    country: "ENGLAND"
+    total_income: 50000
+    income_support: 80
+  output:
+    winter_fuel_allowance: 200
