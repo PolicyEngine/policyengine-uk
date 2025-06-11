@@ -1531,3 +1531,8 @@
     changed:
     - Updated employer National Insurance contribution rate to 15% from April 6, 2025.
   date: 2025-06-09 15:26:19
+- bump: minor
+  changes:
+    added:
+    - Winter Fuel Allowance means-testing reform.
+  date: 2025-06-11 08:59:43
