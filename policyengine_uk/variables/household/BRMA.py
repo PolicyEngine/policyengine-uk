@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-class BRMA(Variable):
+class brma(Variable):
     value_type = Enum
     possible_values = BRMAName
     default_value = BRMAName.MAIDSTONE

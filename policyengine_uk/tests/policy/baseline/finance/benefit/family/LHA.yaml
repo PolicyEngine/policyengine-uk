@@ -5,22 +5,22 @@
     age: 18
     LHA_category: C
   output:
-    BRMA: MAIDSTONE
+    brma: MAIDSTONE
     BRMA_LHA_rate: 9_771
 - name: BRMA inputs
   period: 2020
   absolute_error_margin: 0
   input:
-    BRMA: GUILDFORD
+    brma: GUILDFORD
   output:
-    BRMA: GUILDFORD
+    brma: GUILDFORD
 - name: BRMA and category
   period: 2020
   absolute_error_margin: 20
   input:
-    BRMA: GUILDFORD
+    brma: GUILDFORD
     LHA_category: C
   output:
-    BRMA: GUILDFORD
+    brma: GUILDFORD
     LHA_category: C
     BRMA_LHA_rate: 13_164

@@ -46,7 +46,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     variables_dir = COUNTRY_DIR / "variables"
     auto_carry_over_input_variables = True
     basic_inputs = [
-        "BRMA",
+        "brma",
         "local_authority",
         "region",
         "employment_income",
