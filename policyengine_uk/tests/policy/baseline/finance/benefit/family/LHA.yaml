@@ -13,7 +13,7 @@
   input:
     brma: GUILDFORD
   output:
-    BRMA: GUILDFORD
+    brma: GUILDFORD
 - name: BRMA and category
   period: 2020
   absolute_error_margin: 20
