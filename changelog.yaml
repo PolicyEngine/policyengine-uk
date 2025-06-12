@@ -1541,3 +1541,8 @@
     added:
     - Add test suite for abolition parameters functionality.
   date: 2025-06-11 13:52:32
+- bump: patch
+  changes:
+    fixed:
+    - Bug with BRMA variable name.
+  date: 2025-06-12 12:42:27
