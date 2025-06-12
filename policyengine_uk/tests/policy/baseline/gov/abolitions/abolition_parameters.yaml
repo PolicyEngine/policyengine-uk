@@ -97,7 +97,7 @@
       household:
         members: [claimant]
         rent: 500
-        BRMA: "CENTRAL_LONDON"
+        brma: "CENTRAL_LONDON"
         tenure_type: "RENT_PRIVATELY"
   output:
     housing_benefit: 0
