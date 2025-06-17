@@ -1546,3 +1546,8 @@
     fixed:
     - Bug with BRMA variable name.
   date: 2025-06-12 12:42:27
+- bump: patch
+  changes:
+    fixed:
+    - Update UK parameters.
+  date: 2025-06-17 12:37:38
