@@ -13,6 +13,8 @@ values:
   2023-04-01: 3_280
   2023-07-01: 2_362 # Forecast
   2023-10-01: 2_389
+  2025-04-01: 1_849
+  2025-07-01: 1_720
 metadata:
   unit: currency-GBP
   period: year
@@ -22,4 +24,5 @@ metadata:
       href: https://www.ofgem.gov.uk/energy-data-and-research/data-portal/all-available-charts?keyword=price%20cap&sort=relevance
     - title: Cornwall Insight price cap forecasts
       href: https://www.cornwall-insight.com/press/cornwall-insight-release-latest-price-cap-predictions/
-  
+    - title: Ofgem price cap forecasts - 2025
+      href: https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap
