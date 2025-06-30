@@ -1551,3 +1551,8 @@
     fixed:
     - Update UK parameters.
   date: 2025-06-17 12:37:38
+- bump: patch
+  changes:
+    fixed:
+    - Abolish Council Tax has no budgetary impact.
+  date: 2025-06-30 11:28:06
