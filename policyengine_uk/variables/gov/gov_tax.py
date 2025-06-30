@@ -34,3 +34,12 @@ class gov_tax(Variable):
         "high_income_incident_tax_change",
         "ni_employer",
     ]
+
+    def formula(household, period, parameters):
+        variables = list(gov_tax.adds)
+        if parameters(period).gov.contrib.abolish_council_tax:
+            variables = [
+                variable for variable in variables if variable != "council_tax"
+            ]
+
+        return add(household, period, variables)
