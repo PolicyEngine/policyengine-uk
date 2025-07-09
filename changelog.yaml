@@ -1556,3 +1556,8 @@
     fixed:
     - Abolish Council Tax has no budgetary impact.
   date: 2025-06-30 11:28:06
+- bump: minor
+  changes:
+    added:
+    - Growth factor documentation.
+  date: 2025-07-09 12:34:06
