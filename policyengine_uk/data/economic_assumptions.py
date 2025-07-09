@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-from .dataset_schema import UKDataset
+from policyengine_uk.data.dataset_schema import UKDataset
 
 START_YEAR = 2020
 END_YEAR = 2034
@@ -14,10 +14,13 @@ def create_policyengine_uprating_factors_table():
     variable_names = []
     years = []
     index_values = []
+    
+    parameter_by_variable = {}
 
     for variable in system.variables.values():
         if variable.uprating is not None:
             parameter = system.parameters.get_child(variable.uprating)
+            parameter_by_variable[variable.name] = parameter.name
             start_value = parameter(START_YEAR)
             for year in range(START_YEAR, END_YEAR + 1):
                 variable_names.append(variable.name)
@@ -41,6 +44,7 @@ def create_policyengine_uprating_factors_table():
     df_growth[START_YEAR] = 0
 
     file_path = Path(__file__).parent / "uprating_growth_factors.csv"
+    df_growth["Parameter"] = df.index.map(parameter_by_variable)
     df_growth.to_csv(file_path)
     return pd.read_csv(file_path)
 
