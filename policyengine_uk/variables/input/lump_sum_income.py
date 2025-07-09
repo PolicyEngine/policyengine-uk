@@ -8,4 +8,4 @@ class lump_sum_income(Variable):
     documentation = "Income from lump sums"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.per_capita.non_labour_income"
+    uprating = "gov.obr.per_capita.gdp"
