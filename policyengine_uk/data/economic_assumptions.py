@@ -3,7 +3,7 @@ from pathlib import Path
 from policyengine_uk.data.dataset_schema import UKDataset
 
 START_YEAR = 2020
-END_YEAR = 2034
+END_YEAR = 2029
 
 
 def create_policyengine_uprating_factors_table():
