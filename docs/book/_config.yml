@@ -21,7 +21,6 @@ sphinx:
       - style.css
   extra_extensions:
     - "sphinx.ext.autodoc"
-    - "sphinxarg.ext"
     - "sphinx.ext.viewcode"
     - "sphinx.ext.napoleon"
     - "sphinx_math_dollar"

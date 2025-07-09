@@ -28,8 +28,9 @@ class UKDataset:
             self.benunit = benunit
             self.household = household
 
-        self.data_format = "time_period_arrays"
+        self.data_format = "arrays"
         self.time_period = fiscal_year
+        self.tables = (self.person, self.benunit, self.household)
 
     def save(self, file_path: str):
         with pd.HDFStore(file_path) as f:
@@ -43,9 +44,7 @@ class UKDataset:
         data = {}
         for df in (self.person, self.benunit, self.household):
             for col in df.columns:
-                data[col] = {
-                    self.time_period: df[col].values,
-                }
+                data[col] = df[col].values
 
         return data
 

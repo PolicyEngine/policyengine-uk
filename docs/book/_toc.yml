@@ -4,6 +4,9 @@ parts:
   - caption: Using the model
     chapters:
       - file: usage/getting-started
+  - caption: Economic assumptions
+    chapters:
+      - file: assumptions/growthfactors
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit
