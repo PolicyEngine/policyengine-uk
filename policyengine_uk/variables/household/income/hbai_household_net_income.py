@@ -12,7 +12,15 @@ class hbai_household_net_income(Variable):
     definition_period = YEAR
 
     adds = [
-        "household_market_income",
+        "employment_income",
+        "self_employment_income",
+        "savings_interest_income",
+        "dividend_income",
+        "miscellaneous_income",
+        "property_income",
+        "private_pension_income",
+        "private_transfer_income",
+        "maintenance_income",
         "child_benefit",
         "esa_income",
         "esa_contrib",
@@ -43,6 +51,10 @@ class hbai_household_net_income(Variable):
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
         "tax_free_childcare",
+        "free_school_meals",
+        "free_school_fruit_veg",
+        "free_school_milk",
+        "tv_licence_discount",
         # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
     ]
     subtracts = [

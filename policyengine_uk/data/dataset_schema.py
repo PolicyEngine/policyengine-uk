@@ -1,4 +1,5 @@
 import pandas as pd
+from policyengine_uk import Microsimulation
 
 
 class UKDataset:
@@ -19,6 +20,7 @@ class UKDataset:
                 self.person = f["person"]
                 self.benunit = f["benunit"]
                 self.household = f["household"]
+                self.time_period = f["time_period"].iloc[0]
         else:
             if person is None or benunit is None or household is None:
                 raise ValueError(
@@ -39,6 +41,7 @@ class UKDataset:
             f.put(
                 "household", self.household, format="table", data_columns=True
             )
+            f.put("time_period", pd.Series([self.time_period]), format="table")
 
     def load(self):
         data = {}
@@ -53,4 +56,26 @@ class UKDataset:
             person=self.person.copy(),
             benunit=self.benunit.copy(),
             household=self.household.copy(),
+        )
+
+    @staticmethod
+    def from_simulation(simulation: Microsimulation, fiscal_year: int = 2025):
+        entity_dfs = {}
+
+        for entity in ["person", "benunit", "household"]:
+            input_variables = [
+                variable
+                for variable in simulation.input_variables
+                if simulation.tax_benefit_system.variables[variable].entity.key
+                == entity
+            ]
+            entity_dfs[entity] = simulation.calculate_dataframe(
+                input_variables, period=fiscal_year
+            )
+
+        return UKDataset(
+            person=entity_dfs["person"],
+            benunit=entity_dfs["benunit"],
+            household=entity_dfs["household"],
+            fiscal_year=fiscal_year,
         )
