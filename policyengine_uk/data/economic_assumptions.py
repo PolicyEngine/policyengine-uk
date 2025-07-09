@@ -45,9 +45,12 @@ def create_policyengine_uprating_factors_table():
 
     file_path = Path(__file__).parent / "uprating_growth_factors.csv"
     df_growth["Parameter"] = df.index.map(parameter_by_variable)
-    df_growth = df_growth[["Parameter"] + [year for year in range(START_YEAR, END_YEAR + 1)]]
+    df_growth = df_growth[
+        ["Parameter"] + [year for year in range(START_YEAR, END_YEAR + 1)]
+    ]
     df_growth.to_csv(file_path)
     return pd.read_csv(file_path)
+
 
 def convert_yoy_growth_to_index(
     growth_factors: pd.DataFrame,
@@ -61,6 +64,7 @@ def convert_yoy_growth_to_index(
         index *= 1 + growth_factors[year]
         growth_factors[year] = index
     return growth_factors
+
 
 def apply_growth_factors(
     dataset: UKDataset,
