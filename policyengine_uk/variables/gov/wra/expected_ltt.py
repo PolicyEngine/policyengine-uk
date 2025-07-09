@@ -9,7 +9,9 @@ class expected_ltt(Variable):
     value_type = float
     unit = GBP
 
-    def formula(household, period):
-        property_sale_rate = household.state("property_sale_rate", period)
+    def formula(household, period, parameters):
+        property_sale_rate = parameters(
+            period
+        ).gov.hmrc.stamp_duty.property_sale_rate
         land_transaction_tax = household("land_transaction_tax", period)
         return property_sale_rate * land_transaction_tax
