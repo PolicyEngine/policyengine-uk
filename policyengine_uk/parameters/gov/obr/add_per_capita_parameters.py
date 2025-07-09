@@ -8,6 +8,7 @@ PARAMETERS_TO_ADD_FOR = [
     "gov.obr.employment_income",
     "gov.obr.mixed_income",
     "gov.obr.non_labour_income",
+    "gov.obr.gdp",
 ]
 
 YEARS = list(range(2019, 2035))

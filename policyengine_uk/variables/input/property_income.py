@@ -10,4 +10,4 @@ class property_income(Variable):
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(b)"
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.obr.per_capita.non_labour_income"
+    uprating = "gov.obr.per_capita.gdp"

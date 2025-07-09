@@ -8,4 +8,4 @@ class sublet_income(Variable):
     documentation = "Income from subletting properties"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.per_capita.non_labour_income"
+    uprating = "gov.obr.per_capita.gdp"

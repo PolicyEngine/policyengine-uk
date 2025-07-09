@@ -3,7 +3,7 @@ from pathlib import Path
 from policyengine_uk.data.dataset_schema import UKDataset
 
 START_YEAR = 2020
-END_YEAR = 2034
+END_YEAR = 2029
 
 
 def create_policyengine_uprating_factors_table():
@@ -45,8 +45,25 @@ def create_policyengine_uprating_factors_table():
 
     file_path = Path(__file__).parent / "uprating_growth_factors.csv"
     df_growth["Parameter"] = df.index.map(parameter_by_variable)
+    df_growth = df_growth[
+        ["Parameter"] + [year for year in range(START_YEAR, END_YEAR + 1)]
+    ]
     df_growth.to_csv(file_path)
     return pd.read_csv(file_path)
+
+
+def convert_yoy_growth_to_index(
+    growth_factors: pd.DataFrame,
+):
+    """
+    Convert year-on-year growth factors to an index.
+    """
+    growth_factors = growth_factors.copy()
+    index = growth_factors[growth_factors.columns[2]] * 0 + 1
+    for year in growth_factors.columns[2:]:
+        index *= 1 + growth_factors[year]
+        growth_factors[year] = index
+    return growth_factors
 
 
 def apply_growth_factors(
@@ -55,17 +72,18 @@ def apply_growth_factors(
     start_year: int,
     end_year: int,
 ):
+    start_year = str(start_year)
+    end_year = str(end_year)
     dataset = dataset.copy()
+    growth_factors_indices = convert_yoy_growth_to_index(growth_factors)
     for i in range(len(growth_factors)):
-        index = 1
         variable = growth_factors["Variable"].values[i]
-        for year in range(start_year, end_year + 1):
-            growth_factor = growth_factors[str(year)].values[i]
-            index *= 1 + growth_factor
+        start_index = growth_factors_indices[start_year].values[i]
+        end_index = growth_factors_indices[end_year].values[i]
 
         for table in dataset.tables:
             if variable in table.columns:
-                table[variable] *= index
+                table[variable] *= end_index / start_index
 
     return dataset
 
