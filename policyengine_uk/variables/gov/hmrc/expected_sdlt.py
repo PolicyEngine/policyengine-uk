@@ -13,6 +13,6 @@ class expected_sdlt(Variable):
         if parameters(period).gov.hmrc.stamp_duty.abolish:
             return 0
         return (
-            household.state("property_sale_rate", period)
-            * household("stamp_duty_land_tax", period)
+            household("stamp_duty_land_tax", period)
+            + parameters(period).gov.hmrc.stamp_duty.property_sale_rate
         ) + household("corporate_sdlt", period)

@@ -52,3 +52,16 @@ class hbai_household_net_income(Variable):
         "income_tax",
         "national_insurance",
     ]
+
+
+class real_hbai_household_net_income(Variable):
+    label = "real household net income (HBAI definition)"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        return household("hbai_household_net_income", period) * household(
+            "inflation_adjustment", period
+        )
