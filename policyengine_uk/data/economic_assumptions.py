@@ -14,7 +14,7 @@ def create_policyengine_uprating_factors_table():
     variable_names = []
     years = []
     index_values = []
-    
+
     parameter_by_variable = {}
 
     for variable in system.variables.values():
@@ -48,7 +48,13 @@ def create_policyengine_uprating_factors_table():
     df_growth.to_csv(file_path)
     return pd.read_csv(file_path)
 
-def apply_growth_factors(dataset: UKDataset, growth_factors: pd.DataFrame, start_year: int, end_year: int):
+
+def apply_growth_factors(
+    dataset: UKDataset,
+    growth_factors: pd.DataFrame,
+    start_year: int,
+    end_year: int,
+):
     dataset = dataset.copy()
     for i in range(len(growth_factors)):
         index = 1
@@ -56,12 +62,13 @@ def apply_growth_factors(dataset: UKDataset, growth_factors: pd.DataFrame, start
         for year in range(start_year, end_year + 1):
             growth_factor = growth_factors[str(year)].values[i]
             index *= 1 + growth_factor
-        
+
         for table in dataset.tables:
             if variable in table.columns:
                 table[variable] *= index
-        
+
     return dataset
+
 
 BASELINE_GROWFACTORS = create_policyengine_uprating_factors_table()
 
