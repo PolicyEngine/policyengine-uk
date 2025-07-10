@@ -40,6 +40,7 @@ jsa_income_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032
 lump_sum_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 main_residence_value,household.wealth.financial_assets,0,0.014,-0.108,0.004,0.03,0.032,0.034,0.034,0.036,0.0
 maintenance_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
+maternity_allowance_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 miscellaneous_consumption,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 miscellaneous_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 mortgage_capital_repayment,gov.obr.house_prices,0,0.082,0.083,-0.01,0.027,0.024,0.025,0.026,0.023,0.024
@@ -55,7 +56,7 @@ personal_pension_contributions,gov.obr.per_capita.employment_income,0,0.072,0.07
 petrol_spending,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 pip_dl_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 pip_m_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
-private_pension_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
+private_pension_income,gov.obr.private_pension_index,0,0.05,0.05,0.033,0.041,0.031,0.029,0.029,0.028,0.0
 private_transfer_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 property_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 recreation_consumption,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
@@ -65,9 +66,12 @@ savings,household.wealth.financial_assets,0,0.014,-0.108,0.004,0.03,0.032,0.034,
 savings_interest_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 sda_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 self_employment_income,gov.obr.per_capita.mixed_income,0,0.06,0.063,0.024,0.048,0.047,0.031,0.031,0.036,0.038
-ssmg_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 state_pension,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 state_pension_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
+statutory_maternity_pay,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
+statutory_paternity_pay,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
+statutory_sick_pay,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
+student_loan_repayments,gov.obr.average_earnings,0,0.058,0.065,0.068,0.047,0.038,0.021,0.021,0.023,0.025
 sublet_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 transport_consumption,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 universal_credit_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02

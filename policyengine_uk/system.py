@@ -20,6 +20,9 @@ from policyengine_uk.parameters.gov.obr.add_per_capita_parameters import (
 from policyengine_uk.parameters.gov.obr.extend_forecast import (
     extend_obr_forecast,
 )
+from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
+    add_private_pension_uprating_factor,
+)
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
@@ -74,6 +77,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters.gov = convert_to_fiscal_year_parameters(
             self.parameters.gov
         )
+        self.parameters = add_private_pension_uprating_factor(self.parameters)
 
     def __init__(self, reform=None):
         super().__init__(entities, reform=reform)
