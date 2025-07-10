@@ -1,0 +1,8 @@
+description: Amount paid to recipients of the Sure Start Maternity Grant.
+values:
+  2022-01-01: 500
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: GOV.UK
+      href: https://www.gov.uk/sure-start-maternity-grant/what-youll-get

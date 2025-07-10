@@ -14,9 +14,9 @@ class adjusted_employer_cost(Variable):
             person,
             period,
             [
-                "household_statutory_sick_pay",
-                "household_statutory_maternity_pay",
-                "household_statutory_paternity_pay",
+                "statutory_sick_pay",
+                "statutory_maternity_pay",
+                "statutory_paternity_pay",
             ],
         )
         employer_pension_contributions = person(

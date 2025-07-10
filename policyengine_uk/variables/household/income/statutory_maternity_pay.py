@@ -3,9 +3,10 @@ import datetime
 import numpy as np
 
 
-class household_statutory_maternity_pay(Variable):
+class statutory_maternity_pay(Variable):
     label = "Statutory maternity pay"
     entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP
+    uprating = "gov.obr.consumer_price_index"
