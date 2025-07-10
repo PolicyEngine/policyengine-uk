@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Triple lock uses the average earnings index from the OBR.
