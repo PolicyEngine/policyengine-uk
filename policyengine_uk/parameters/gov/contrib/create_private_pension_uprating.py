@@ -3,7 +3,7 @@ from policyengine_core.parameters import (
     Parameter,
 )
 
-YEARS = list(range(2009, 2035))
+YEARS = list(range(2010, 2035))
 
 
 def add_private_pension_uprating_factor(
@@ -13,8 +13,8 @@ def add_private_pension_uprating_factor(
     rpi = parameters.gov.obr.rpi
     last_value = rpi(2008)
     for year in YEARS:
-        value = rpi(year)
-        rel_change = value / rpi(year - 1)
+        value = rpi(year - 1)
+        rel_change = value / rpi(year - 2)
         rel_change = min(rel_change, 1.05)
         new_index = last_value * rel_change
         last_value = new_index
