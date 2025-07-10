@@ -1584,3 +1584,8 @@
     fixed:
     - Bug in private pension income uprating.
   date: 2025-07-10 15:42:46
+- bump: patch
+  changes:
+    added:
+    - Missing HBAI variables.
+  date: 2025-07-10 16:12:40
