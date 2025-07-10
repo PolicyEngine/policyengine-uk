@@ -8,4 +8,6 @@ class ssmg(Variable):
     value_type = float
     unit = GBP
 
-    adds = ["ssmg_reported"]
+    def formula(person, period, parameters):
+        reported_receipt = person("ssmg_reported", period) > 0
+        return reported_receipt * parameters(period).gov.dwp.ssmg.rate

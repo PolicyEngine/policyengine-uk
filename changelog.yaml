@@ -1561,3 +1561,10 @@
     added:
     - Growth factor documentation.
   date: 2025-07-09 12:34:06
+- bump: minor
+  changes:
+    fixed:
+    - Statutory maternity, paternity, and sick pay variables now use the `gov.obr.consumer_price_index`
+      for uprating.
+    - SSMG no longer is uprated by inflation.
+  date: 2025-07-10 10:02:17
