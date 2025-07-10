@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.34.5] - 2025-07-10 16:14:53
+
+### Fixed
+
+- HBAI documentation updated to include Healthy Start vouchers and external child payments.
+
 ## [2.34.4] - 2025-07-10 16:12:40
 
 ### Added
@@ -1885,6 +1891,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.34.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.4...2.34.5
 [2.34.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.3...2.34.4
 [2.34.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.2...2.34.3
 [2.34.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.1...2.34.2

@@ -1589,3 +1589,9 @@
     added:
     - Missing HBAI variables.
   date: 2025-07-10 16:12:40
+- bump: patch
+  changes:
+    fixed:
+    - HBAI documentation updated to include Healthy Start vouchers and external child
+      payments.
+  date: 2025-07-10 16:14:53
