@@ -1568,3 +1568,8 @@
       for uprating.
     - SSMG no longer is uprated by inflation.
   date: 2025-07-10 10:02:17
+- bump: patch
+  changes:
+    fixed:
+    - Triple lock uses the average earnings index from the OBR.
+  date: 2025-07-10 12:10:52

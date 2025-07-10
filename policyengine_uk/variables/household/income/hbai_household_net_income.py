@@ -62,6 +62,7 @@ class hbai_household_net_income(Variable):
         "wealth_tax",
         "income_tax",
         "national_insurance",
+        "student_loan_repayments",
     ]
 
 
