@@ -8,4 +8,4 @@ class housing_costs(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["rent", "mortgage"]
+    adds = ["rent", "mortgage", "water_and_sewerage_charges"]

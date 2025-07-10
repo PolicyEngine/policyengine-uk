@@ -11,4 +11,8 @@ class hbai_household_net_income_ahc(Variable):
     unit = GBP
 
     adds = ["hbai_household_net_income"]
-    subtracts = ["housing_costs"]
+    subtracts = [
+        "rent",
+        "water_and_sewerage_charges",
+        "mortgage_interest_repayment",
+    ]

@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 
 
+# THIS VARIABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE. It has been replaced by `total_pension_income` to distinguish it from the `private_pension_income` variable.
 class pension_income(Variable):
     value_type = float
     entity = Person

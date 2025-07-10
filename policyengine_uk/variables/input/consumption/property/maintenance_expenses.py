@@ -7,3 +7,4 @@ class maintenance_expenses(Variable):
     label = "maintenance expenses"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.consumer_price_index"
