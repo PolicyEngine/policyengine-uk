@@ -15,4 +15,5 @@ class hbai_household_net_income_ahc(Variable):
         "rent",
         "water_and_sewerage_charges",
         "mortgage_interest_repayment",
+        "structural_insurance_payments",
     ]
