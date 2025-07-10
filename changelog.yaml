@@ -1573,3 +1573,9 @@
     fixed:
     - Triple lock uses the average earnings index from the OBR.
   date: 2025-07-10 12:10:52
+- bump: patch
+  changes:
+    fixed:
+    - Documentation improved for HBAI income concept.
+    - Restructured HBAI income variables to better match the official definition.
+  date: 2025-07-10 14:28:02
