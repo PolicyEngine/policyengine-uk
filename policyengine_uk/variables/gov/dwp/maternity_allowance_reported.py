@@ -7,3 +7,4 @@ class maternity_allowance_reported(Variable):
     label = "Maternity allowance"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.obr.consumer_price_index"
