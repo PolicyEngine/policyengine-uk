@@ -8,7 +8,7 @@ YEARS = list(range(2022, 2035))
 
 
 def add_triple_lock(parameters: ParameterNode) -> ParameterNode:
-    average_earnings = parameters.gov.obr.per_capita.employment_income
+    average_earnings = parameters.gov.obr.average_earnings
     cpi = parameters.gov.obr.consumer_price_index
     min_rate = parameters.gov.dwp.state_pension.triple_lock.minimum_rate
 
