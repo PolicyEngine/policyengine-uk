@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    fixed:
+    - Documentation improved for HBAI income concept.
+    - Restructured HBAI income variables to better match the official definition.

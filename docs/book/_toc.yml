@@ -7,6 +7,9 @@ parts:
   - caption: Economic assumptions
     chapters:
       - file: assumptions/growthfactors
+  - caption: Validation
+    chapters:
+      - file: validation/hbai
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit
