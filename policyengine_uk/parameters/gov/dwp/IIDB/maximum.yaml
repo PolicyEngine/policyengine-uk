@@ -9,4 +9,9 @@ metadata:
   uprating: gov.obr.consumer_price_index
 values:
   2015-04-01: 182
-  2025-04-01: 225.30
+  2025-04-01: 
+    value: 225.30
+    reference:
+    - title: GOV.UK
+      href: https://www.gov.uk/industrial-injuries-disablement-benefit/what-youll-get
+
