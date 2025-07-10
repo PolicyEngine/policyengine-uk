@@ -14,29 +14,29 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 | HBAI component | PolicyEngine variable/notes |
 |------|-------------|
 | **Income** |  |
-| usual net earnings from employment |`employment_income` |
-| profit or loss from self-employment (losses are treated as a negative income) | `self_employment_income`|
-| income received from dividends (from FYE 2022) |`dividend_income`|
-| state support - all benefits and tax credits |`hbai_benefits`|
-| income from occupational and private pensions |`private_pension_income` (includes occupational pension income)|
-| investment income |`dividend_income`, `savings_interest_income`, `property_income`|
-| maintenance payments |`maintenance_income`|
-| income from educational grants and scholarships (including, for students, student loans and parental contributions) |`student_payments`|
-| the cash value of certain forms of income in kind (free school meals, free school breakfast, free school milk, free school fruit and vegetables, Healthy Start vouchers and free TV licences for those aged 75 and over who receive Pension Credit) |`free_school_meals`, `free_school_fruit_veg`, `free_school_milk`, [Healthy Start vouchers currently to-add](https://github.com/PolicyEngine/policyengine-uk/issues/1193), `free_tv_licence_value`|
+| Usual net earnings from employment |`employment_income` |
+| Profit or loss from self-employment (losses are treated as a negative income) | `self_employment_income`|
+| Income received from dividends (from FYE 2022) |`dividend_income`|
+| State support - all benefits and tax credits |`hbai_benefits`|
+| Income from occupational and private pensions |`private_pension_income` (includes occupational pension income)|
+| Investment income |`dividend_income`, `savings_interest_income`, `property_income`|
+| Maintenance payments |`maintenance_income`|
+| Income from educational grants and scholarships (including, for students, student loans and parental contributions) |`student_payments`|
+| The cash value of certain forms of income in kind (free school meals, free school breakfast, free school milk, free school fruit and vegetables, Healthy Start vouchers and free TV licences for those aged 75 and over who receive Pension Credit) |`free_school_meals`, `free_school_fruit_veg`, `free_school_milk`, [Healthy Start vouchers currently to-add](https://github.com/PolicyEngine/policyengine-uk/issues/1193), `free_tv_licence_value`|
 | **Subtractions** | |
-| income tax payments |`income_tax`|
+| Income tax payments |`income_tax`|
 | National Insurance contributions |`national_insurance`|
-| domestic rates/council tax |`council_tax` and `domestic_rates`|
-| contributions to occupational pension schemes (including all additional voluntary contributions (AVCs) to occupational pension schemes, and any contributions to stakeholder and personal pensions) |`employee_pension_contributions`, `personal_pension_contributions`|
-| all maintenance and child support payments, which are deducted from the income of the person making the payment |`maintenance_expenses`|
-| parental contributions to students living away from home | [Missing](https://github.com/PolicyEngine/policyengine-uk/issues/1194)|
-| student loan repayments | `student_loan_repayments`|
+| Domestic rates/council tax |`council_tax` and `domestic_rates`|
+| Contributions to occupational pension schemes (including all additional voluntary contributions (AVCs) to occupational pension schemes, and any contributions to stakeholder and personal pensions) |`employee_pension_contributions`, `personal_pension_contributions`|
+| All maintenance and child support payments, which are deducted from the income of the person making the payment |`maintenance_expenses`|
+| Parental contributions to students living away from home | [Missing](https://github.com/PolicyEngine/policyengine-uk/issues/1194)|
+| Student loan repayments | `student_loan_repayments`|
 | **Housing costs** | |
-| rent (gross of housing benefit) | `rent`|
-| water rates, community water charges and council water charges | `water_and_sewerage_charges`|
-| mortgage interest payments | `mortgage_interest_repayment`|
-| structural insurance premiums (for owner occupiers) | [Missing](https://github.com/PolicyEngine/policyengine-uk/issues/1195) |
-| ground rent and service charges |`housing_service_charges`|
+| Rent (gross of housing benefit) | `rent`|
+| Water rates, community water charges and council water charges | `water_and_sewerage_charges`|
+| Mortgage interest payments | `mortgage_interest_repayment`|
+| Structural insurance premiums (for owner occupiers) | [Missing](https://github.com/PolicyEngine/policyengine-uk/issues/1195) |
+| Ground rent and service charges |`housing_service_charges`|
 
 ## Nowcasting/forecasting
 
