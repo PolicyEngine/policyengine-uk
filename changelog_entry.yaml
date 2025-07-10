@@ -1,5 +1,0 @@
-- bump: minor
-  changes:
-    fixed:
-    - Statutory maternity, paternity, and sick pay variables now use the `gov.obr.consumer_price_index` for uprating.
-    - SSMG no longer is uprated by inflation.

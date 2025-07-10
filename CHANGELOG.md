@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.34.0] - 2025-07-10 10:02:17
+
+### Fixed
+
+- Statutory maternity, paternity, and sick pay variables now use the `gov.obr.consumer_price_index` for uprating.
+- SSMG no longer is uprated by inflation.
+
 ## [2.33.0] - 2025-07-09 12:34:06
 
 ### Added
@@ -1853,6 +1860,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.34.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.33.0...2.34.0
 [2.33.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.4...2.33.0
 [2.32.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.3...2.32.4
 [2.32.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.2...2.32.3
