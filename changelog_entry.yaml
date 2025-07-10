@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - HBAI documentation updated to include Healthy Start vouchers and external child payments.
