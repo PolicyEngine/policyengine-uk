@@ -36,4 +36,5 @@ class hbai_benefits(Variable):
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
         "tax_free_childcare",
+        "healthy_start_vouchers",
     ]

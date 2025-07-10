@@ -37,6 +37,7 @@ class hbai_household_net_income(Variable):
         "employee_pension_contributions",
         "personal_pension_contributions",
         "maintenance_expenses",
+        "external_child_payments",
     ]
 
 

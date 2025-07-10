@@ -48,6 +48,7 @@ class household_benefits(Variable):
         "nhs_spending",
         "dfe_education_spending",
         "dft_subsidy_spending",
+        "healthy_start_vouchers",
     ]
 
     def formula(household, period, parameters):
