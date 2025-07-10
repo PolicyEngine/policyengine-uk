@@ -1579,3 +1579,8 @@
     - Documentation improved for HBAI income concept.
     - Restructured HBAI income variables to better match the official definition.
   date: 2025-07-10 14:28:02
+- bump: patch
+  changes:
+    fixed:
+    - Bug in private pension income uprating.
+  date: 2025-07-10 15:42:46
