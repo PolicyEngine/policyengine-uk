@@ -33,6 +33,7 @@ class gov_tax(Variable):
         "consumer_incident_tax_revenue_change",
         "high_income_incident_tax_change",
         "ni_employer",
+        "student_loan_repayments",
     ]
 
     def formula(household, period, parameters):
