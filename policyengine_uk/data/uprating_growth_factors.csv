@@ -60,7 +60,7 @@ personal_pension_contributions,gov.obr.average_earnings,0,0.058,0.065,0.068,0.04
 petrol_spending,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 pip_dl_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
 pip_m_reported,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02
-private_pension_income,gov.obr.per_capita.non_labour_income,0,0.068,0.134,0.052,0.069,0.057,0.049,0.038,0.029,0.03
+private_pension_income,gov.obr.private_pension_index,0,0.05,0.05,0.05,0.033,0.042,0.03,0.03,0.029,0.028
 private_transfer_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 property_income,gov.obr.per_capita.gdp,0,0.125,0.092,0.05,0.038,0.028,0.028,0.031,0.033,0.033
 recreation_consumption,gov.obr.consumer_price_index,0,0.039,0.101,0.057,0.023,0.032,0.02,0.02,0.02,0.02

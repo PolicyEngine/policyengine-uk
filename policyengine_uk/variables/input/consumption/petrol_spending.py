@@ -10,4 +10,4 @@ class petrol_spending(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.obr.consumer_price_index"
+    uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
