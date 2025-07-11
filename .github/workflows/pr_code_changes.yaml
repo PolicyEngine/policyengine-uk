@@ -51,5 +51,9 @@ jobs:
             run: make test
             env:
               HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+          - name: Update tests
+            run: make update-tests
+            env:
+              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
           - name: Test documentation builds
             run: make documentation

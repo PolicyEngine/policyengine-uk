@@ -12,10 +12,12 @@ format:
 	black . -l 79
 
 test:
-	python policyengine_uk/data/economic_assumptions.py
-	python policyengine_uk/tests/microsimulation/update_reform_impacts.py
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
 	pytest policyengine_uk/tests/ -v
+
+update-tests:
+	python policyengine_uk/data/economic_assumptions.py
+	python policyengine_uk/tests/microsimulation/update_reform_impacts.py
 
 documentation:
 	jb clean docs/book
