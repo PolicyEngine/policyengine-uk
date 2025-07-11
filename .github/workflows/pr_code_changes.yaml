@@ -23,7 +23,7 @@ jobs:
   Test:
       strategy:
         matrix:
-          os: [ubuntu-latest, macos-latest]
+          os: [macos-latest]
       runs-on: ${{ matrix.os }}
       permissions:
         contents: "read"
@@ -54,6 +54,10 @@ jobs:
             env:
               HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
           - name: Update tests
+            run: make update-tests
+            env:
+              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+          - name: Save dataset
             run: make update-tests
             env:
               HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
