@@ -7,4 +7,4 @@ class employee_pension_contributions(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.obr.average_earnings"
+    uprating = "gov.economic_assumptions.indices.obr.average_earnings"

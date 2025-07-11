@@ -8,4 +8,4 @@ class capital_gains_before_response(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.obr.non_labour_income"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"

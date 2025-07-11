@@ -5,7 +5,9 @@ from policyengine_core.parameters import (
 )
 
 
-def create_economic_assumption_indices(parameters: ParameterNode) -> ParameterNode:
+def create_economic_assumption_indices(
+    parameters: ParameterNode,
+) -> ParameterNode:
     econ_assumptions: ParameterNode = parameters.gov.economic_assumptions
     yoy_growth: ParameterNode = econ_assumptions.yoy_growth
     indices = ParameterNode(
@@ -18,7 +20,9 @@ def create_economic_assumption_indices(parameters: ParameterNode) -> ParameterNo
     )
 
     for descendant in yoy_growth.get_descendants():
-        parent_node = parameters.get_child(descendant.parent.name.replace("yoy_growth", "indices"))
+        parent_node = parameters.get_child(
+            descendant.parent.name.replace("yoy_growth", "indices")
+        )
         full_name = descendant.name
         child_name = full_name.split(".")[-1]
         if isinstance(descendant, ParameterNode):
@@ -32,9 +36,7 @@ def create_economic_assumption_indices(parameters: ParameterNode) -> ParameterNo
             )
         else:
             start_year = int(descendant.values_list[-1].instant_str[:4])
-            values = {
-                start_year: 1.0
-            }
+            values = {start_year: 1.0}
 
             for year in range(start_year + 1, 2030):
                 yoy_growth = descendant(year)
@@ -43,7 +45,7 @@ def create_economic_assumption_indices(parameters: ParameterNode) -> ParameterNo
                     5,
                 )
                 values[year] = indices_value
-            
+
             mirror_parameter = Parameter(
                 name=descendant.name.replace("yoy_growth", "indices"),
                 data={
@@ -59,5 +61,6 @@ def create_economic_assumption_indices(parameters: ParameterNode) -> ParameterNo
                 mirror_parameter,
             )
 
-    print(parameters.gov.economic_assumptions.indices)
+    print(indices)
+
     return parameters

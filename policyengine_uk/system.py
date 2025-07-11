@@ -12,7 +12,9 @@ from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
-from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import create_economic_assumption_indices
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    create_economic_assumption_indices,
+)
 from policyengine_core.reforms import Reform
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
@@ -56,6 +58,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     def process_parameters(self, reform=None):
         self.parameters = create_economic_assumption_indices(self.parameters)
         self.parameters = add_triple_lock(self.parameters)
+        self.parameters = add_private_pension_uprating_factor(self.parameters)
         self.parameters.add_child("baseline", self.parameters.clone())
         if reform:
             self.apply_reform_set(reform)

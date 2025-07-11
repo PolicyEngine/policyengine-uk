@@ -7,4 +7,4 @@ class mortgage_capital_repayment(Variable):
     label = "mortgage capital repayments"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.house_prices"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"

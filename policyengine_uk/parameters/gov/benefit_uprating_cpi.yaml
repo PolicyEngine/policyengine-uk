@@ -1,6 +1,7 @@
 description: Most recent September CPIH index value, updated for each uprating occurrence (2005=100)
 values:
   2005-01-01: 100
+  2010-01-01: 114.48
 metadata:
   label: Benefit uprating index
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

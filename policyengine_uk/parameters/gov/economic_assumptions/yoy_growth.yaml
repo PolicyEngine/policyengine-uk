@@ -1,4 +1,34 @@
 obr:
+  rpi:
+    description: Retail price index year-on-year growth.
+    values:
+      2009-01-01: 0.018
+      2010-01-01: 0.008
+      2011-01-01: 0.016
+      2012-01-01: 0.007
+      2013-01-01: 0.047
+      2014-01-01: 0.006
+      2015-01-01: 0.020
+      2016-01-01: 0.024
+      2017-01-01: 0.032
+      2018-01-01: 0.026
+      2019-01-01: 0.022
+      2020-01-01: 0.003
+      2021-01-01: 0.059
+      2022-01-01: 0.064
+      2023-01-01: 0.069
+      2024-01-01: 0.047
+      2025-01-01: 0.037
+      2026-01-01: 0.022
+      2027-01-01: 0.021
+      2028-01-01: 0.023
+      2029-01-01: 0.025
+    metadata:
+      unit: /1
+      label: retail price index growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
   average_earnings:
     description: Average earnings year-on-year growth.
     values:
