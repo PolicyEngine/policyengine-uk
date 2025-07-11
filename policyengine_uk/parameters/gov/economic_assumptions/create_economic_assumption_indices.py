@@ -61,6 +61,4 @@ def create_economic_assumption_indices(
                 mirror_parameter,
             )
 
-    print(indices)
-
     return parameters
