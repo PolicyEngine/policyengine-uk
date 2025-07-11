@@ -1595,3 +1595,9 @@
     - HBAI documentation updated to include Healthy Start vouchers and external child
       payments.
   date: 2025-07-10 16:14:53
+- bump: minor
+  changes:
+    changed:
+    - Earnings uprated with OBR average earnings rather than per-capita employment
+      income.
+  date: 2025-07-11 13:43:26
