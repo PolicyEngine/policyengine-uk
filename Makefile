@@ -1,6 +1,6 @@
 all: install
-	pip install wheel
-	python setup.py sdist bdist_wheel
+	pip install build
+	python -m build
 
 install:
 	pip install policyengine
