@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Private pension income index set to RPI<=5%
