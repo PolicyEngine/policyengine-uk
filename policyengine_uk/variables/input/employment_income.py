@@ -15,4 +15,4 @@ class employment_income(Variable):
         "employment_income_behavioral_response",
         "employer_ni_fixed_employer_cost_change",
     ]
-    uprating = "gov.obr.per_capita.employment_income"
+    uprating = "gov.obr.average_earnings"

@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    changed:
+    - Earnings uprated with OBR average earnings rather than per-capita employment income.
