@@ -102,6 +102,9 @@ def update_impacts(
             with open(config_path, "r") as original:
                 f.write(original.read())
 
+        # Remove backup
+        backup_path.unlink(missing_ok=True)
+
         # Write updated config
         with open(config_path, "w") as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
