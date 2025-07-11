@@ -9,6 +9,8 @@ from policyengine_uk import Microsimulation
 import argparse
 from datetime import datetime
 
+baseline = Microsimulation()
+
 
 def get_fiscal_impact(reform: dict) -> float:
     """
@@ -20,15 +22,15 @@ def get_fiscal_impact(reform: dict) -> float:
     Returns:
         Fiscal impact in billions (positive = revenue increase)
     """
-    baseline = Microsimulation()
+
     baseline_revenue = baseline.calculate("gov_balance", 2029).sum()
     reform_simulation = Microsimulation(reform=reform)
     reform_revenue = reform_simulation.calculate("gov_balance", 2029).sum()
-    return (reform_revenue - baseline_revenue) / 1e9
+    return float((reform_revenue - baseline_revenue) / 1e9)
 
 
 def update_impacts(
-    config_path: Path, dry_run: bool = False, verbose: bool = False
+    config_path: Path, dry_run: bool = False, verbose: bool = True
 ):
     """
     Update the expected impacts in the configuration file with current model values.
@@ -51,6 +53,7 @@ def update_impacts(
 
     # Update each reform's expected impact
     for reform in config["reforms"]:
+        print(f"Processing reform: {reform['name']}") if verbose else None
         old_impact = reform["expected_impact"]
         new_impact = round(get_fiscal_impact(reform["parameters"]), 1)
 
@@ -130,6 +133,7 @@ def main():
         "--verbose",
         "-v",
         action="store_true",
+        default=True,
         help="Show detailed output for each reform",
     )
 
