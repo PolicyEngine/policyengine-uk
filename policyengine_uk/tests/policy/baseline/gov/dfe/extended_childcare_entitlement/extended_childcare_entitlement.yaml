@@ -89,7 +89,7 @@
         family_type: COUPLE_WITH_CHILDREN
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 18_704.633
+    extended_childcare_entitlement: 18706.
 
 - name: No expenses for zero hours
   period: 2025
@@ -155,7 +155,7 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 40 
   output:
-    extended_childcare_entitlement: 13_834.37  
+    extended_childcare_entitlement: 13835.381
 
 
 - name: Benefit unit without maximum hours cap applied

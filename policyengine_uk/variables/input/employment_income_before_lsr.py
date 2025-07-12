@@ -7,4 +7,4 @@ class employment_income_before_lsr(Variable):
     label = "employment income before labor supply responses"
     unit = GBP
     definition_period = YEAR
-    uprating = "gov.obr.average_earnings"
+    uprating = "gov.economic_assumptions.indices.obr.average_earnings"

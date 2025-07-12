@@ -10,4 +10,4 @@ class private_pension_income(Variable):
     unit = GBP
     reference = "Income Tax (Earnings and Pensions) Act 2003 s. 1(1)(b)"
     quantity_type = FLOW
-    uprating = "gov.obr.private_pension_index"
+    uprating = "gov.economic_assumptions.indices.obr.private_pension_index"

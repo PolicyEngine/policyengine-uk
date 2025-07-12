@@ -13,7 +13,9 @@ class inflation_adjustment(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        cpi = parameters.gov.obr.consumer_price_index
+        cpi = (
+            parameters.gov.economic_assumptions.indices.obr.consumer_price_index
+        )
         current_period_cpi = cpi(period)
         now_cpi = cpi(datetime.datetime.now().strftime("%Y-01-01"))
         return now_cpi / current_period_cpi

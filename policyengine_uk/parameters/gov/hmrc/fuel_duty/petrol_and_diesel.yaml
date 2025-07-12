@@ -30,7 +30,7 @@ metadata:
   unit: currency-GBP
   name: fuel_duty_rate
   label: Fuel duty rate (petrol and diesel)
-  uprating: gov.ons.rpi
+  uprating: gov.economic_assumptions.indices.obr.rpi
   reference:
     - title: Hydrocarbon Oil Duties Act 1979 s. 6
       href: https://www.legislation.gov.uk/ukpga/1979/5/section/6

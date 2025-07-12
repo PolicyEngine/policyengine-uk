@@ -2,8 +2,12 @@ from policyengine_uk.system import system
 
 # Run this script to generate the triple lock parameter for updated CPI and average earnings forecasts from the OBR.
 
-cpi = system.parameters.gov.obr.consumer_price_index
-average_earnings = system.parameters.gov.obr.average_earnings
+cpi = (
+    system.parameters.gov.economic_assumptions.indices.obr.consumer_price_index
+)
+average_earnings = (
+    system.parameters.gov.economic_assumptions.indices.obr.average_earnings
+)
 
 START_YEAR = 2021
 
