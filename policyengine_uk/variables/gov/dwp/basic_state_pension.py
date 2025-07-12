@@ -10,11 +10,16 @@ class basic_state_pension(Variable):
 
     def formula(person, period, parameters):
         simulation = person.simulation
-        if simulation.dataset is None:
-            return 0
+        has_dataset = simulation.dataset is not None
 
-        data_year = simulation.dataset.time_period
-        reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
+        data_year = simulation.dataset.time_period if has_dataset else period
+
+        reported = where(
+            has_dataset,
+            person("state_pension_reported", data_year) / WEEKS_IN_YEAR,
+            person("state_pension_reported", period) / WEEKS_IN_YEAR,
+        )
+
         type = person("state_pension_type", period)
         maximum_basic_sp = parameters(
             data_year
@@ -22,8 +27,14 @@ class basic_state_pension(Variable):
         amount_in_data_year = where(
             type == type.possible_values.BASIC,
             min_(reported, maximum_basic_sp),
-            0,
+            reported,
         )
-        triple_lock = parameters.gov.dwp.state_pension.triple_lock.index
-        uprating_since_data_year = triple_lock(period) / triple_lock(data_year)
-        return amount_in_data_year * uprating_since_data_year * WEEKS_IN_YEAR
+
+        uprating_factor = where(
+            has_dataset,
+            parameters.gov.dwp.state_pension.triple_lock.index(period)
+            / parameters.gov.dwp.state_pension.triple_lock.index(data_year),
+            1,
+        )
+
+        return amount_in_data_year * uprating_factor * WEEKS_IN_YEAR
