@@ -157,7 +157,6 @@ class Microsimulation(CoreMicrosimulation):
     max_spiral_loops = 10
 
     def __init__(self, *args, dataset=ENHANCED_FRS, **kwargs):
-
         if dataset is not None:
             if isinstance(dataset, str):
                 if "hf://" in dataset:
@@ -176,7 +175,8 @@ class Microsimulation(CoreMicrosimulation):
                 if Path(dataset_file_path).exists():
                     if dataset_file_path.endswith(".h5"):
                         try:
-                            dataset = UKDataset(dataset_file_path)
+                            UKDataset.validate_file_path(dataset_file_path)
+                            dataset = UKDataset(file_path=dataset_file_path)
                         except:
                             dataset = Dataset.from_file(dataset_file_path)
 
