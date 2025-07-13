@@ -57,9 +57,9 @@ class UKDataset:
             self.person = person
             self.benunit = benunit
             self.household = household
+            self.time_period = fiscal_year
 
         self.data_format = "arrays"
-        self.time_period = fiscal_year
         self.tables = (self.person, self.benunit, self.household)
 
     def save(self, file_path: str):
