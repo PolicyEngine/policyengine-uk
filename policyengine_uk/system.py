@@ -175,7 +175,10 @@ class Microsimulation(CoreMicrosimulation):
 
                 if Path(dataset_file_path).exists():
                     if dataset_file_path.endswith(".h5"):
-                        dataset = UKDataset(dataset_file_path)
+                        try:
+                            dataset = UKDataset(dataset_file_path)
+                        except:
+                            dataset = Dataset.from_file(dataset_file_path)
 
         super().__init__(*args, dataset=dataset, **kwargs)
 
