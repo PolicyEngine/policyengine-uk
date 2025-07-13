@@ -1,11 +1,38 @@
 import pandas as pd
-from policyengine_uk import Microsimulation
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from policyengine_uk import Microsimulation
+
+from pathlib import Path
+import h5py
 
 
 class UKDataset:
     person: pd.DataFrame
     benunit: pd.DataFrame
     household: pd.DataFrame
+
+    @staticmethod
+    def validate_file_path(file_path: str):
+        if not file_path.endswith(".h5"):
+            raise ValueError("File path must end with '.h5' for UKDataset.")
+        if not Path(file_path).exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        # Check if the file contains time_period, person, benunit, and household datasets
+        with h5py.File(file_path, "r") as f:
+            required_datasets = [
+                "time_period",
+                "person",
+                "benunit",
+                "household",
+            ]
+            for dataset in required_datasets:
+                if dataset not in f:
+                    raise ValueError(
+                        f"Dataset '{dataset}' not found in the file: {file_path}"
+                    )
 
     def __init__(
         self,
@@ -16,6 +43,7 @@ class UKDataset:
         fiscal_year: int = 2025,
     ):
         if file_path is not None:
+            self.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
                 self.person = f["person"]
                 self.benunit = f["benunit"]
@@ -59,7 +87,9 @@ class UKDataset:
         )
 
     @staticmethod
-    def from_simulation(simulation: Microsimulation, fiscal_year: int = 2025):
+    def from_simulation(
+        simulation: "Microsimulation", fiscal_year: int = 2025
+    ):
         entity_dfs = {}
 
         for entity in ["person", "benunit", "household"]:

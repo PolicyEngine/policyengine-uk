@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 from policyengine_uk.data.dataset_schema import UKDataset
 
-START_YEAR = 2020
+START_YEAR = 2022
 END_YEAR = 2029
 
 
@@ -13,39 +13,28 @@ def create_policyengine_uprating_factors_table(print_diff=True):
 
     variable_names = []
     years = []
-    index_values = []
+    yoy_values = []
 
     parameter_by_variable = {}
 
     for variable in system.variables.values():
         if variable.uprating is not None:
-            parameter = system.parameters.get_child(variable.uprating)
+            parameter = system.parameters.get_child(
+                variable.uprating.replace("indices", "yoy_growth")
+            )
             parameter_by_variable[variable.name] = parameter.name
-            start_value = parameter(START_YEAR)
             for year in range(START_YEAR, END_YEAR + 1):
                 variable_names.append(variable.name)
-                years.append(str(year))  # Convert to string here
-                growth = parameter(year) / start_value
-                index_values.append(round(growth, 3))
+                years.append(str(year))
+                yoy_values.append(round(parameter(year), 3))
 
     df["Variable"] = variable_names
     df["Year"] = years
-    df["Value"] = index_values
+    df["Value"] = yoy_values
 
     # Convert to there is a column for each year
     df = df.pivot(index="Variable", columns="Year", values="Value")
     df = df.sort_values("Variable")
-
-    # Create a table with growth factors by year
-
-    df_growth = df.copy()
-    for year in range(END_YEAR, START_YEAR, -1):
-        year_str = str(year)
-        prev_year_str = str(year - 1)
-        df_growth[year_str] = round(
-            df_growth[year_str] / df_growth[prev_year_str] - 1, 3
-        )
-    df_growth[str(START_YEAR)] = 0
 
     file_path = Path(__file__).parent / "uprating_growth_factors.csv"
 
@@ -57,16 +46,16 @@ def create_policyengine_uprating_factors_table(print_diff=True):
         old_df.columns = old_df.columns.astype(str)
 
     # Prepare new dataframe
-    df_growth["Parameter"] = df.index.map(parameter_by_variable)
-    df_growth = df_growth[
+    df["Parameter"] = df.index.map(parameter_by_variable)
+    df = df[
         ["Parameter"] + [str(year) for year in range(START_YEAR, END_YEAR + 1)]
     ]
 
     # Print diff if old CSV existed and print_diff is True
     if old_df is not None and print_diff:
-        print_csv_diff(old_df, df_growth)
+        print_csv_diff(old_df, df)
         # Save new CSV
-        df_growth.to_csv(file_path)
+        df.to_csv(file_path)
 
     return pd.read_csv(file_path)
 

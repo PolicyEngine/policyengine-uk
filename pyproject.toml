@@ -51,6 +51,11 @@ packages = ["policyengine_uk"]
 "LICENSE" = "share/openfisca/openfisca-country-template/LICENSE"
 "README.md" = "share/openfisca/openfisca-country-template/README.md"
 
+[dependency-groups]
+dev = [
+    "tables>=3.10.1",
+]
+
 [project.optional-dependencies]
 dev = [
     "black",

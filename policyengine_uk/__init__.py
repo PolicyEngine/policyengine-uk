@@ -13,5 +13,9 @@ from policyengine_uk.system import (
 from pathlib import Path
 import os
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
+from policyengine_uk.data.economic_assumptions import (
+    BASELINE_GROWFACTORS,
+    apply_growth_factors,
+)
 
 REPO = Path(__file__).parent

@@ -7,4 +7,4 @@ class net_financial_wealth(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "household.wealth.financial_assets"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"

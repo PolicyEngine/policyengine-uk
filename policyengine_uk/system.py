@@ -6,6 +6,8 @@ from policyengine_core.simulations import (
     Simulation as CoreSimulation,
     Microsimulation as CoreMicrosimulation,
 )
+from policyengine_uk.data.dataset_schema import UKDataset
+from policyengine_core.tools.hugging_face import download_huggingface_dataset
 
 import pandas as pd
 from policyengine_uk.utils.parameters import (
@@ -56,12 +58,12 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
 
     def process_parameters(self, reform=None):
-        self.parameters = create_economic_assumption_indices(self.parameters)
-        self.parameters = add_triple_lock(self.parameters)
-        self.parameters = add_private_pension_uprating_factor(self.parameters)
-        self.parameters.add_child("baseline", self.parameters.clone())
         if reform:
             self.apply_reform_set(reform)
+        self.parameters = add_private_pension_uprating_factor(self.parameters)
+        self.parameters = add_triple_lock(self.parameters)
+        self.parameters = create_economic_assumption_indices(self.parameters)
+        self.parameters.add_child("baseline", self.parameters.clone())
         self.parameters = homogenize_parameter_structures(
             self.parameters, self.variables
         )
@@ -155,6 +157,29 @@ class Microsimulation(CoreMicrosimulation):
     max_spiral_loops = 10
 
     def __init__(self, *args, dataset=ENHANCED_FRS, **kwargs):
+        if dataset is not None:
+            if isinstance(dataset, str):
+                if "hf://" in dataset:
+                    owner, repo, filename = dataset.split("/")[-3:]
+                    if "@" in filename:
+                        version = filename.split("@")[-1]
+                        filename = filename.split("@")[0]
+                    else:
+                        version = None
+                    dataset_file_path = download_huggingface_dataset(
+                        repo=f"{owner}/{repo}",
+                        repo_filename=filename,
+                        version=version,
+                    )
+
+                if Path(dataset_file_path).exists():
+                    if dataset_file_path.endswith(".h5"):
+                        try:
+                            UKDataset.validate_file_path(dataset_file_path)
+                            dataset = UKDataset(file_path=dataset_file_path)
+                        except:
+                            dataset = Dataset.from_file(dataset_file_path)
+
         super().__init__(*args, dataset=dataset, **kwargs)
 
         reform = create_structural_reforms_from_parameters(

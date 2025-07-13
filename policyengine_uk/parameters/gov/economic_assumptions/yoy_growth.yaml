@@ -113,9 +113,9 @@ obr:
   council_tax:
     description: Council tax year-on-year growth.
     values:
-      2021-01-01: 0.0
-      2022-01-01: 0.0
-      2023-01-01: 0.0
+      2021-01-01: 0.078
+      2022-01-01: 0.053
+      2023-01-01: 0.056
       2024-01-01: 0.064
       2025-01-01: 0.046
       2026-01-01: 0.045
@@ -263,43 +263,3 @@ ons:
       reference:
         - title: ONS Population Projections
           href: https://www.ons.gov.uk/
-
-household:
-  wealth:
-    corporate_wealth:
-      description: Corporate wealth year-on-year growth.
-      values:
-        2021-01-01: 0.0
-        2022-01-01: -0.109
-        2023-01-01: 0.004
-        2024-01-01: 0.03
-        2025-01-01: 0.031
-        2026-01-01: 0.035
-        2027-01-01: 0.035
-        2028-01-01: 0.035
-        2029-01-01: 0.0
-      metadata:
-        unit: /1
-        label: corporate wealth growth
-        reference:
-          - title: Household wealth estimates
-            href: https://www.ons.gov.uk/
-    
-    financial_assets:
-      description: Financial assets year-on-year growth.
-      values:
-        2021-01-01: 0.014
-        2022-01-01: -0.108
-        2023-01-01: 0.004
-        2024-01-01: 0.03
-        2025-01-01: 0.032
-        2026-01-01: 0.034
-        2027-01-01: 0.034
-        2028-01-01: 0.036
-        2029-01-01: 0.0
-      metadata:
-        unit: /1
-        label: financial assets growth
-        reference:
-          - title: Household wealth estimates
-            href: https://www.ons.gov.uk/
