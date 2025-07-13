@@ -1,7 +1,0 @@
-- bump: minor
-  changes:
-    added:
-    - Documentation on growth factors.
-    - Cleaned up non-standard uprating factors for wealth variables.
-    - Added triple lock uprating detail and reform switches.
-    - Added ability to download entity datasets from HuggingFace.

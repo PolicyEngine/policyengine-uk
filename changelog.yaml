@@ -1606,3 +1606,11 @@
     fixed:
     - Private pension income index set to RPI<=5%
   date: 2025-07-11 14:15:07
+- bump: minor
+  changes:
+    added:
+    - Documentation on growth factors.
+    - Cleaned up non-standard uprating factors for wealth variables.
+    - Added triple lock uprating detail and reform switches.
+    - Added ability to download entity datasets from HuggingFace.
+  date: 2025-07-13 13:11:45
