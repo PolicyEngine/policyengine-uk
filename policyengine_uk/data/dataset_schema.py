@@ -48,7 +48,7 @@ class UKDataset:
                 self.person = f["person"]
                 self.benunit = f["benunit"]
                 self.household = f["household"]
-                self.time_period = f["time_period"].iloc[0]
+                self.time_period = str(f["time_period"].iloc[0])
         else:
             if person is None or benunit is None or household is None:
                 raise ValueError(
@@ -57,9 +57,9 @@ class UKDataset:
             self.person = person
             self.benunit = benunit
             self.household = household
+            self.time_period = str(fiscal_year)
 
         self.data_format = "arrays"
-        self.time_period = fiscal_year
         self.tables = (self.person, self.benunit, self.household)
 
     def save(self, file_path: str):
