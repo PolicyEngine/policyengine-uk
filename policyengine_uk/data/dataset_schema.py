@@ -1,5 +1,8 @@
 import pandas as pd
-from policyengine_uk import Microsimulation
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from policyengine_uk import Microsimulation
 
 
 class UKDataset:
@@ -59,7 +62,9 @@ class UKDataset:
         )
 
     @staticmethod
-    def from_simulation(simulation: Microsimulation, fiscal_year: int = 2025):
+    def from_simulation(
+        simulation: "Microsimulation", fiscal_year: int = 2025
+    ):
         entity_dfs = {}
 
         for entity in ["person", "benunit", "household"]:

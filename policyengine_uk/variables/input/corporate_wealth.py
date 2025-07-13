@@ -8,5 +8,5 @@ class corporate_wealth(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "household.wealth.corporate_wealth"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
     quantity_type = STOCK

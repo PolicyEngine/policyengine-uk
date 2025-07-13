@@ -1,0 +1,8 @@
+description: Whether the triple lock should include average earnings.
+values:
+  2012-01-01: true
+  2022-01-01: false
+  2023-01-01: true
+metadata:
+  unit: bool
+  label: include average earnings in triple lock
