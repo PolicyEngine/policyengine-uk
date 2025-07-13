@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="HBAI" href="../validation/hbai.html" /><link rel="prev" title="Getting started" href="../usage/getting-started.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
-        <title>Growth factors - PolicyEngine UK documentation</title>
+        <title>Economic assumptions - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
@@ -141,7 +141,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -170,7 +170,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Growth factors</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Economic assumptions</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
@@ -224,150 +224,317 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="growth-factors">
-<h1>Growth factors<a class="headerlink" href="#growth-factors" title="Permalink to this heading">#</a></h1>
-<p>This page contains the growth factors used to uprate values in the model. These are used to uprate values from one year to the next, for example, to increase employment incomes in line with average earnings growth.</p>
-<div class="cell tag_hide-input docutils container">
-<details class="hide above-input">
-<summary aria-label="Toggle hidden content">
-<span class="collapsed">Show code cell source</span>
-<span class="expanded">Hide code cell source</span>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk.data.economic_assumptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">BASELINE_GROWFACTORS</span>
-
-<span class="n">BASELINE_GROWFACTORS</span> <span class="o">=</span> <span class="n">BASELINE_GROWFACTORS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">BASELINE_GROWFACTORS</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">2</span><span class="p">:]:</span>
-    <span class="n">BASELINE_GROWFACTORS</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">100</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">itables</span>
-
-<span class="n">BASELINE_GROWFACTORS</span>
-
-<span class="c1"># show in itables</span>
-<span class="n">itables</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">BASELINE_GROWFACTORS</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Baseline growth factors&quot;</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-</pre></div>
+          <section class="tex2jax_ignore mathjax_ignore" id="economic-assumptions">
+<h1>Economic assumptions<a class="headerlink" href="#economic-assumptions" title="Permalink to this heading">#</a></h1>
+<p>We project economic variables using year-over-year growth rates stored in <code class="docutils literal notranslate"><span class="pre">parameters/gov/economic_assumptions/yoy_growth.yaml</span></code>. We generate index values from these rates to update household variables. We source all values from the OBR’s Economic and Fiscal Outlook (March 2025) unless we specify otherwise.</p>
+<section id="consumer-price-index">
+<h2>Consumer price index<a class="headerlink" href="#consumer-price-index" title="Permalink to this heading">#</a></h2>
+<p>We use the OBR’s CPI projections to drive most benefit and consumption variables.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>10.0%</p></td>
+<td><p>5.7%</p></td>
+<td><p>2.3%</p></td>
+<td><p>3.2%</p></td>
+<td><p>1.9%</p></td>
+<td><p>2.0%</p></td>
+<td><p>2.0%</p></td>
+<td><p>2.0%</p></td>
+</tr>
+</tbody>
+</table>
 </div>
+<p>We apply CPI to these variables:</p>
+<ul class="simple">
+<li><p>All reported benefits– <code class="docutils literal notranslate"><span class="pre">attendance_allowance_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">carers_allowance_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">child_benefit_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">child_tax_credit_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">dla_m_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">dla_sc_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">esa_contrib_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">esa_income_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">housing_benefit_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">iidb_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">incapacity_benefit_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">income_support_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">jsa_contrib_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">jsa_income_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">maternity_allowance_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">pension_credit_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">pip_dl_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">pip_m_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">sda_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">state_pension_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">universal_credit_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">winter_fuel_allowance_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">working_tax_credit_reported</span></code></p></li>
+<li><p>All consumption categories– <code class="docutils literal notranslate"><span class="pre">alcohol_and_tobacco_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">clothing_and_footwear_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">communication_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">domestic_energy_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">education_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">food_and_non_alcoholic_beverages_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">health_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">household_furnishings_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">housing_water_and_electricity_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">miscellaneous_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">recreation_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">restaurants_and_hotels_consumption</span></code>, <code class="docutils literal notranslate"><span class="pre">transport_consumption</span></code></p></li>
+<li><p>Other variables– <code class="docutils literal notranslate"><span class="pre">afcs_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">bsp_reported</span></code>, <code class="docutils literal notranslate"><span class="pre">childcare_expenses</span></code>, <code class="docutils literal notranslate"><span class="pre">diesel_spending</span></code>, <code class="docutils literal notranslate"><span class="pre">free_school_fruit_veg</span></code>, <code class="docutils literal notranslate"><span class="pre">free_school_meals</span></code>, <code class="docutils literal notranslate"><span class="pre">free_school_milk</span></code>, <code class="docutils literal notranslate"><span class="pre">maintenance_expenses</span></code>, <code class="docutils literal notranslate"><span class="pre">petrol_spending</span></code>, <code class="docutils literal notranslate"><span class="pre">statutory_maternity_pay</span></code>, <code class="docutils literal notranslate"><span class="pre">statutory_paternity_pay</span></code>, <code class="docutils literal notranslate"><span class="pre">statutory_sick_pay</span></code>, <code class="docutils literal notranslate"><span class="pre">state_pension</span></code></p></li>
+</ul>
+</section>
+<section id="average-earnings">
+<h2>Average earnings<a class="headerlink" href="#average-earnings" title="Permalink to this heading">#</a></h2>
+<p>We apply the OBR’s wage growth forecasts to employment-related variables.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>6.4%</p></td>
+<td><p>6.9%</p></td>
+<td><p>4.7%</p></td>
+<td><p>3.7%</p></td>
+<td><p>2.2%</p></td>
+<td><p>2.1%</p></td>
+<td><p>2.3%</p></td>
+<td><p>2.5%</p></td>
+</tr>
+</tbody>
+</table>
 </div>
-</details>
-<div class="cell_output docutils container">
-<div class="output text_html"><!--| quarto-html-table-processing: none -->
-<table id="itables_f9e0cdd0_dfc1_4e29_a0ba_6a7bf948f956"><tbody><tr>
-    <td style="vertical-align:middle; text-align:left">
-    <a href=https://mwouts.github.io/itables/><svg class="main-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-width="64" viewBox="0 0 500 400" style="font-family: 'Droid Sans', sans-serif;">
-    <g style="fill:#d9d7fc">
-        <path d="M100,400H500V357H100Z" />
-        <path d="M100,300H400V257H100Z" />
-        <path d="M0,200H400V157H0Z" />
-        <path d="M100,100H500V57H100Z" />
-        <path d="M100,350H500V307H100Z" />
-        <path d="M100,250H400V207H100Z" />
-        <path d="M0,150H400V107H0Z" />
-        <path d="M100,50H500V7H100Z" />
-    </g>
-    <g style="fill:#1a1366;stroke:#1a1366;">
-   <rect x="100" y="7" width="400" height="43">
-    <animate
-      attributeName="width"
-      values="0;400;0"
-      dur="5s"
-      repeatCount="indefinite" />
-      <animate
-      attributeName="x"
-      values="100;100;500"
-      dur="5s"
-      repeatCount="indefinite" />
-  </rect>
-        <rect x="0" y="107" width="400" height="43">
-    <animate
-      attributeName="width"
-      values="0;400;0"
-      dur="3.5s"
-      repeatCount="indefinite" />
-    <animate
-      attributeName="x"
-      values="0;0;400"
-      dur="3.5s"
-      repeatCount="indefinite" />
-  </rect>
-        <rect x="100" y="207" width="300" height="43">
-    <animate
-      attributeName="width"
-      values="0;300;0"
-      dur="3s"
-      repeatCount="indefinite" />
-    <animate
-      attributeName="x"
-      values="100;100;400"
-      dur="3s"
-      repeatCount="indefinite" />
-  </rect>
-        <rect x="100" y="307" width="400" height="43">
-    <animate
-      attributeName="width"
-      values="0;400;0"
-      dur="4s"
-      repeatCount="indefinite" />
-      <animate
-      attributeName="x"
-      values="100;100;500"
-      dur="4s"
-      repeatCount="indefinite" />
-  </rect>
-        <g style="fill:transparent;stroke-width:8; stroke-linejoin:round" rx="5">
-            <g transform="translate(45 50) rotate(-45)">
-                <circle r="33" cx="0" cy="0" />
-                <rect x="-8" y="32" width="16" height="30" />
-            </g>
-
-            <g transform="translate(450 152)">
-                <polyline points="-15,-20 -35,-20 -35,40 25,40 25,20" />
-                <rect x="-15" y="-40" width="60" height="60" />
-            </g>
-
-            <g transform="translate(50 352)">
-                <polygon points="-35,-5 0,-40 35,-5" />
-                <polygon points="-35,10 0,45 35,10" />
-            </g>
-
-            <g transform="translate(75 250)">
-                <polyline points="-30,30 -60,0 -30,-30" />
-                <polyline points="0,30 -30,0 0,-30" />
-            </g>
-
-            <g transform="translate(425 250) rotate(180)">
-                <polyline points="-30,30 -60,0 -30,-30" />
-                <polyline points="0,30 -30,0 0,-30" />
-            </g>
-        </g>
-    </g>
-</svg>
-</a>
-    Loading ITables v2.4.2 from the internet...
-    (need <a href=https://mwouts.github.io/itables/troubleshooting.html>help</a>?)</td>
-    </tr></tbody></table>
-<link href="https://www.unpkg.com/dt_for_itables@2.3.3/dt_bundle.css" rel="stylesheet">
-<script type="module">
-    import { ITable, jQuery as $ } from 'https://www.unpkg.com/dt_for_itables@2.3.3/dt_bundle.js';
-
-    document.querySelectorAll("#itables_f9e0cdd0_dfc1_4e29_a0ba_6a7bf948f956:not(.dataTable)").forEach(table => {
-        if (!(table instanceof HTMLTableElement))
-            return;
-
-        let dt_args = {"name": "Baseline growth factors", "max_rows": 1000, "layout": {"topStart": "pageLength", "topEnd": "search", "bottomStart": "info", "bottomEnd": "paging"}, "text_in_header_can_be_selected": true, "style": {"table-layout": "auto", "width": "auto", "margin": "auto", "caption-side": "bottom"}, "classes": ["display", "nowrap"], "order": [], "table_html": "<table><thead>\n    <tr style=\"text-align: right;\">\n      \n      <th>Variable</th>\n      <th>Parameter</th>\n      <th>2020</th>\n      <th>2021</th>\n      <th>2022</th>\n      <th>2023</th>\n      <th>2024</th>\n      <th>2025</th>\n      <th>2026</th>\n      <th>2027</th>\n      <th>2028</th>\n      <th>2029</th>\n      <th>2030</th>\n      <th>2031</th>\n      <th>2032</th>\n      <th>2033</th>\n      <th>2034</th>\n    </tr>\n  </thead></table>", "data_json": "[[\"afcs\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"afcs_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"alcohol_and_tobacco_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"attendance_allowance_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"bsp_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"capital_gains\", \"gov.economic_assumptions.indices.obr.per_capita.gdp\", 0, 7.2, 13.8, 6.6, 8.0, 6.8, 5.6, 4.5, 3.4, 3.5, 3.0, 3.0, 2.9, 2.8, 2.7], [\"capital_gains_before_response\", \"gov.economic_assumptions.indices.obr.per_capita.gdp\", 0, 7.2, 13.8, 6.6, 8.0, 6.8, 5.6, 4.5, 3.4, 3.5, 3.0, 3.0, 2.9, 2.8, 2.7], [\"carers_allowance_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"child_benefit_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"child_tax_credit_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"childcare_expenses\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"clothing_and_footwear_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"communication_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"corporate_wealth\", \"household.wealth.corporate_wealth\", 0, 0.0, -10.9, 0.4, 3.0, 3.1, 3.5, 3.5, 3.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"council_tax\", \"gov.obr.council_tax\", 0, 0.0, 0.0, 0.0, 6.4, 4.6, 4.5, 4.6, 4.5, 4.5, 0.0, 0.0, 0.0, 0.0, 0.0], [\"diesel_spending\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"dividend_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"dla_m_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"dla_sc_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"domestic_energy_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"education_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"employee_pension_contributions\", \"gov.obr.per_capita.employment_income\", 0, 7.2, 7.4, 6.2, 5.0, 3.3, 2.0, 1.9, 2.3, 2.6, 1.5, 1.6, 1.5, 1.5, 1.5], [\"employer_pension_contributions\", \"gov.obr.per_capita.employment_income\", 0, 7.2, 7.4, 6.2, 5.0, 3.3, 2.0, 1.9, 2.3, 2.6, 1.5, 1.6, 1.5, 1.5, 1.5], [\"employment_income\", \"gov.obr.per_capita.employment_income\", 0, 7.2, 7.4, 6.2, 5.0, 3.3, 2.0, 1.9, 2.3, 2.6, 1.5, 1.6, 1.5, 1.5, 1.5], [\"employment_income_before_lsr\", \"gov.obr.per_capita.employment_income\", 0, 7.2, 7.4, 6.2, 5.0, 3.3, 2.0, 1.9, 2.3, 2.6, 1.5, 1.6, 1.5, 1.5, 1.5], [\"esa_contrib_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"esa_income_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"food_and_non_alcoholic_beverages_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"gross_financial_wealth\", \"household.wealth.financial_assets\", 0, 1.4, -10.8, 0.4, 3.0, 3.2, 3.4, 3.4, 3.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"health_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"household_furnishings_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"household_weight\", \"gov.ons.population\", 0, 0.4, 0.3, 1.4, 1.0, 1.1, 0.7, 0.8, 0.4, 0.5, 0.6, 0.4, 0.4, 0.5, 0.4], [\"housing_benefit_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"housing_water_and_electricity_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"iidb_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"incapacity_benefit_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"income_support_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"jsa_contrib_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"jsa_income_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"lump_sum_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"main_residence_value\", \"household.wealth.financial_assets\", 0, 1.4, -10.8, 0.4, 3.0, 3.2, 3.4, 3.4, 3.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"maintenance_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"miscellaneous_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"miscellaneous_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"mortgage_capital_repayment\", \"gov.obr.house_prices\", 0, 8.2, 8.3, -1.0, 2.7, 2.4, 2.5, 2.6, 2.3, 2.4, 1.9, 1.9, 1.8, 1.8, 1.7], [\"mortgage_interest_repayment\", \"gov.obr.mortgage_interest\", 0, 0.3, 26.2, 48.5, 22.1, 13.6, 12.6, 8.2, 4.2, 4.7, 5.0, 4.7, 4.5, 4.3, 4.1], [\"net_financial_wealth\", \"household.wealth.financial_assets\", 0, 1.4, -10.8, 0.4, 3.0, 3.2, 3.4, 3.4, 3.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"non_residential_property_value\", \"household.wealth.financial_assets\", 0, 1.4, -10.8, 0.4, 3.0, 3.2, 3.4, 3.4, 3.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"other_investment_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"other_residential_property_value\", \"household.wealth.financial_assets\", 0, 1.4, -10.8, 0.4, 3.0, 3.2, 3.4, 3.4, 3.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"owned_land\", \"household.wealth.financial_assets\", 0, 1.4, -10.8, 0.4, 3.0, 3.2, 3.4, 3.4, 3.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"pension_credit_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"pension_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"personal_pension_contributions\", \"gov.obr.per_capita.employment_income\", 0, 7.2, 7.4, 6.2, 5.0, 3.3, 2.0, 1.9, 2.3, 2.6, 1.5, 1.6, 1.5, 1.5, 1.5], [\"petrol_spending\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"pip_dl_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"pip_m_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"private_pension_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"private_transfer_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"property_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"recreation_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"rent\", \"gov.obr.rent\", 0, 1.8, 4.0, 6.3, 7.4, 5.7, 3.6, 2.7, 2.3, 2.4, 2.0, 2.1, 2.0, 2.0, 1.9], [\"restaurants_and_hotels_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"savings\", \"household.wealth.financial_assets\", 0, 1.4, -10.8, 0.4, 3.0, 3.2, 3.4, 3.4, 3.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [\"savings_interest_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"sda_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"self_employment_income\", \"gov.obr.per_capita.mixed_income\", 0, 6.0, 6.3, 2.4, 4.8, 4.7, 3.1, 3.1, 3.6, 3.8, 2.3, 2.4, 2.2, 2.3, 2.2], [\"ssmg_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"state_pension\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"state_pension_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"sublet_income\", \"gov.obr.per_capita.non_labour_income\", 0, 6.8, 13.4, 5.2, 6.9, 5.7, 4.9, 3.8, 2.9, 3.0, 2.5, 2.5, 2.5, 2.4, 2.3], [\"transport_consumption\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"universal_credit_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"winter_fuel_allowance_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4], [\"working_tax_credit_reported\", \"gov.obr.consumer_price_index\", 0, 3.9, 10.1, 5.7, 2.3, 3.2, 2.0, 2.0, 2.0, 2.0, 1.5, 1.5, 1.5, 1.5, 1.4]]"};
-        new ITable(table, dt_args);
-    });
-</script>
-</div></div>
+<p>We use average earnings for these variables: <code class="docutils literal notranslate"><span class="pre">employee_pension_contributions</span></code>, <code class="docutils literal notranslate"><span class="pre">employer_pension_contributions</span></code>, <code class="docutils literal notranslate"><span class="pre">employment_income</span></code>, <code class="docutils literal notranslate"><span class="pre">employment_income_before_lsr</span></code>, <code class="docutils literal notranslate"><span class="pre">personal_pension_contributions</span></code>, <code class="docutils literal notranslate"><span class="pre">student_loan_repayments</span></code></p>
+</section>
+<section id="per-capita-gdp">
+<h2>Per capita GDP<a class="headerlink" href="#per-capita-gdp" title="Permalink to this heading">#</a></h2>
+<p>We derive these rates from OBR GDP growth and ONS population projections.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>9.2%</p></td>
+<td><p>5.0%</p></td>
+<td><p>3.8%</p></td>
+<td><p>2.8%</p></td>
+<td><p>2.8%</p></td>
+<td><p>3.1%</p></td>
+<td><p>3.3%</p></td>
+<td><p>3.3%</p></td>
+</tr>
+</tbody>
+</table>
 </div>
+<p>We use per capita GDP for these variables: <code class="docutils literal notranslate"><span class="pre">capital_gains</span></code>, <code class="docutils literal notranslate"><span class="pre">capital_gains_before_response</span></code>, <code class="docutils literal notranslate"><span class="pre">corporate_wealth</span></code>, <code class="docutils literal notranslate"><span class="pre">dividend_income</span></code>, <code class="docutils literal notranslate"><span class="pre">gross_financial_wealth</span></code>, <code class="docutils literal notranslate"><span class="pre">lump_sum_income</span></code>, <code class="docutils literal notranslate"><span class="pre">main_residence_value</span></code>, <code class="docutils literal notranslate"><span class="pre">maintenance_income</span></code>, <code class="docutils literal notranslate"><span class="pre">miscellaneous_income</span></code>, <code class="docutils literal notranslate"><span class="pre">mortgage_capital_repayment</span></code>, <code class="docutils literal notranslate"><span class="pre">net_financial_wealth</span></code>, <code class="docutils literal notranslate"><span class="pre">non_residential_property_value</span></code>, <code class="docutils literal notranslate"><span class="pre">other_investment_income</span></code>, <code class="docutils literal notranslate"><span class="pre">other_residential_property_value</span></code>, <code class="docutils literal notranslate"><span class="pre">owned_land</span></code>, <code class="docutils literal notranslate"><span class="pre">pension_income</span></code>, <code class="docutils literal notranslate"><span class="pre">private_transfer_income</span></code>, <code class="docutils literal notranslate"><span class="pre">property_income</span></code>, <code class="docutils literal notranslate"><span class="pre">savings</span></code>, <code class="docutils literal notranslate"><span class="pre">savings_interest_income</span></code>, <code class="docutils literal notranslate"><span class="pre">sublet_income</span></code></p>
+</section>
+<section id="council-tax">
+<h2>Council tax<a class="headerlink" href="#council-tax" title="Permalink to this heading">#</a></h2>
+<p>We use the OBR’s Council Tax receipts and projections.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>5.3%</p></td>
+<td><p>5.6%</p></td>
+<td><p>6.4%</p></td>
+<td><p>4.6%</p></td>
+<td><p>4.5%</p></td>
+<td><p>4.6%</p></td>
+<td><p>4.5%</p></td>
+<td><p>4.5%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We apply this to: <code class="docutils literal notranslate"><span class="pre">council_tax</span></code></p>
+</section>
+<section id="mortgage-interest">
+<h2>Mortgage interest<a class="headerlink" href="#mortgage-interest" title="Permalink to this heading">#</a></h2>
+<p>We use the OBR’s mortgage interest rate index growth rates.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>26.2%</p></td>
+<td><p>48.5%</p></td>
+<td><p>22.1%</p></td>
+<td><p>13.6%</p></td>
+<td><p>12.6%</p></td>
+<td><p>8.2%</p></td>
+<td><p>4.2%</p></td>
+<td><p>4.7%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We apply this to: <code class="docutils literal notranslate"><span class="pre">mortgage_interest_repayment</span></code></p>
+</section>
+<section id="private-pension-index">
+<h2>Private pension index<a class="headerlink" href="#private-pension-index" title="Permalink to this heading">#</a></h2>
+<p>We use RPI year-on-year change from the previous year, capped at 5%.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>5.0%</p></td>
+<td><p>5.0%</p></td>
+<td><p>5.0%</p></td>
+<td><p>4.7%</p></td>
+<td><p>3.7%</p></td>
+<td><p>2.2%</p></td>
+<td><p>2.1%</p></td>
+<td><p>2.3%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We apply this to: <code class="docutils literal notranslate"><span class="pre">private_pension_income</span></code></p>
+</section>
+<section id="rent">
+<h2>Rent<a class="headerlink" href="#rent" title="Permalink to this heading">#</a></h2>
+<p>We use the OBR’s rental growth projections.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>4.0%</p></td>
+<td><p>6.3%</p></td>
+<td><p>7.4%</p></td>
+<td><p>5.7%</p></td>
+<td><p>3.6%</p></td>
+<td><p>2.7%</p></td>
+<td><p>2.3%</p></td>
+<td><p>2.4%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We apply this to: <code class="docutils literal notranslate"><span class="pre">rent</span></code></p>
+</section>
+<section id="per-capita-mixed-income">
+<h2>Per capita mixed income<a class="headerlink" href="#per-capita-mixed-income" title="Permalink to this heading">#</a></h2>
+<p>We derive these rates from OBR mixed income growth and ONS population projections.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>6.3%</p></td>
+<td><p>2.4%</p></td>
+<td><p>4.8%</p></td>
+<td><p>4.7%</p></td>
+<td><p>3.1%</p></td>
+<td><p>3.1%</p></td>
+<td><p>3.6%</p></td>
+<td><p>3.8%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We apply this to: <code class="docutils literal notranslate"><span class="pre">self_employment_income</span></code></p>
+</section>
+<section id="population">
+<h2>Population<a class="headerlink" href="#population" title="Permalink to this heading">#</a></h2>
+<p>We use ONS population projections.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fiscal year</p></th>
+<th class="head"><p>2022</p></th>
+<th class="head"><p>2023</p></th>
+<th class="head"><p>2024</p></th>
+<th class="head"><p>2025</p></th>
+<th class="head"><p>2026</p></th>
+<th class="head"><p>2027</p></th>
+<th class="head"><p>2028</p></th>
+<th class="head"><p>2029</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Growth rate</p></td>
+<td><p>0.3%</p></td>
+<td><p>1.4%</p></td>
+<td><p>1.0%</p></td>
+<td><p>1.1%</p></td>
+<td><p>0.7%</p></td>
+<td><p>0.8%</p></td>
+<td><p>0.4%</p></td>
+<td><p>0.5%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We apply this to: <code class="docutils literal notranslate"><span class="pre">household_weight</span></code></p>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -432,8 +599,35 @@ width="64" viewBox="0 0 500 400" style="font-family: 'Droid Sans', sans-serif;">
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Economic assumptions</a><ul>
+<li><a class="reference internal" href="#consumer-price-index">Consumer price index</a></li>
+<li><a class="reference internal" href="#average-earnings">Average earnings</a></li>
+<li><a class="reference internal" href="#per-capita-gdp">Per capita GDP</a></li>
+<li><a class="reference internal" href="#council-tax">Council tax</a></li>
+<li><a class="reference internal" href="#mortgage-interest">Mortgage interest</a></li>
+<li><a class="reference internal" href="#private-pension-index">Private pension index</a></li>
+<li><a class="reference internal" href="#rent">Rent</a></li>
+<li><a class="reference internal" href="#per-capita-mixed-income">Per capita mixed income</a></li>
+<li><a class="reference internal" href="#population">Population</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
