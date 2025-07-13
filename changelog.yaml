@@ -1614,3 +1614,8 @@
     - Added triple lock uprating detail and reform switches.
     - Added ability to download entity datasets from HuggingFace.
   date: 2025-07-13 13:11:45
+- bump: patch
+  changes:
+    fixed:
+    - Bug in loading entity tables.
+  date: 2025-07-13 19:47:46
