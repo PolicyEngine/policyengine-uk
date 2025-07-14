@@ -1,6 +1,6 @@
 # Economic assumptions
 
-We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's Economic and Fiscal Outlook (March 2025) unless we specify otherwise.
+We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's Economic and Fiscal Outlook ([March 2025](https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/)) unless we specify otherwise.
 
 ## Consumer price index
 
@@ -95,7 +95,7 @@ We apply this to: `self_employment_income`
 
 ## Population
 
-We use ONS population projections.
+We use ONS population [projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2022based).
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------|------|------|------|------|------|------|------|------|
