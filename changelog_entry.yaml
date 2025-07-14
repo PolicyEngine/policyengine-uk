@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Fixed BASELINE_GROWFACTORS computation that caused different results on different platforms.

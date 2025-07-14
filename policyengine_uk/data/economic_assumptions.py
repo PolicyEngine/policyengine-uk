@@ -88,7 +88,33 @@ def apply_growth_factors(
     return dataset
 
 
-BASELINE_GROWFACTORS = create_policyengine_uprating_factors_table()
+# Deferred initialization to avoid initialization order issues between Ubuntu and macOS
+_BASELINE_GROWFACTORS = None
+
+def get_baseline_growfactors():
+    """
+    Get baseline growth factors, creating them if they don't exist.
+    Uses deferred initialization to avoid initialization order issues on different OS.
+    """
+    global _BASELINE_GROWFACTORS
+    if _BASELINE_GROWFACTORS is None:
+        _BASELINE_GROWFACTORS = create_policyengine_uprating_factors_table()
+    return _BASELINE_GROWFACTORS
+
+# Proxy object that maintains backward compatibility
+class GrowthFactorsProxy:
+    def __call__(self):
+        return get_baseline_growfactors()
+    
+    def __getattr__(self, name):
+        # Delegate DataFrame methods/properties to the actual DataFrame
+        return getattr(get_baseline_growfactors(), name)
+    
+    def copy(self):
+        return get_baseline_growfactors().copy()
+
+# For backward compatibility - BASELINE_GROWFACTORS acts like the DataFrame but initializes on demand
+BASELINE_GROWFACTORS = GrowthFactorsProxy()
 
 
 if __name__ == "__main__":
