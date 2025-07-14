@@ -20,6 +20,9 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumpt
 from policyengine_uk.parameters.gov.economic_assumptions.lag_average_earnings import (
     add_lagged_earnings,
 )
+from policyengine_uk.parameters.gov.economic_assumptions.lag_cpi import (
+    add_lagged_cpi,
+)
 from policyengine_core.reforms import Reform
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
@@ -65,6 +68,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             self.apply_reform_set(reform)
         self.parameters = add_private_pension_uprating_factor(self.parameters)
         self.parameters = add_lagged_earnings(self.parameters)
+        self.parameters = add_lagged_cpi(self.parameters)
         self.parameters = add_triple_lock(self.parameters)
         self.parameters = create_economic_assumption_indices(self.parameters)
         self.parameters.add_child("baseline", self.parameters.clone())
