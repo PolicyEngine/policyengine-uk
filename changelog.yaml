@@ -1624,3 +1624,8 @@
     added:
     - Water bills projections.
   date: 2025-07-14 10:36:08
+- bump: minor
+  changes:
+    fixed:
+    - Uprating for rent split by private and social rented sectors.
+  date: 2025-07-14 14:10:31
