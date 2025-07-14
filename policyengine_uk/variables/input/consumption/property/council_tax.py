@@ -23,7 +23,6 @@ class council_tax(Variable):
 
         def get_growth(country):
             param = getattr(ct, country)
-            print(country, param(period.start.year), param(data_year))
             return param(period.start.year) / param(data_year)
 
         country = household("country", period).decode_to_str()
