@@ -1629,3 +1629,8 @@
     fixed:
     - Uprating for rent split by private and social rented sectors.
   date: 2025-07-14 14:10:31
+- bump: patch
+  changes:
+    fixed:
+    - Lag CPI correctly for benefit uprating.
+  date: 2025-07-14 15:03:33

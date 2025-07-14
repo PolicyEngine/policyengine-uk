@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Lag CPI correctly for benefit uprating.

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.38.1] - 2025-07-14 15:03:33
+
+### Fixed
+
+- Lag CPI correctly for benefit uprating.
+
 ## [2.38.0] - 2025-07-14 14:10:31
 
 ### Fixed
@@ -1930,6 +1936,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.38.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.0...2.38.1
 [2.38.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.37.0...2.38.0
 [2.37.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.1...2.37.0
 [2.36.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.0...2.36.1
