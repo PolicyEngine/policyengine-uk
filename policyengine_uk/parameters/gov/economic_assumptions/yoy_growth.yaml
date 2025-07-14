@@ -263,3 +263,21 @@ ons:
       reference:
         - title: ONS Population Projections
           href: https://www.ons.gov.uk/
+ofwat:
+  water_bills:
+    description: Water and sewerage bills year-on-year growth.
+    values:
+      2022-01-01: 0.052
+      2023-01-01: 0.092
+      2024-01-01: 0.044
+      2025-01-01: 0.061
+      2026-01-01: 0.061
+      2027-01-01: 0.051
+      2028-01-01: 0.038
+      2029-01-01: 0.043
+    metadata:
+      unit: /1
+      label: water bills growth
+      reference:
+        - title: Ofwat (and custom projections)
+          href: https://www.ofwat.gov.uk/price-review/
