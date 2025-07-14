@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.37.0] - 2025-07-14 10:36:08
+
+### Added
+
+- Water bills projections.
+
 ## [2.36.1] - 2025-07-13 19:47:46
 
 ### Fixed
@@ -1918,6 +1924,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.37.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.1...2.37.0
 [2.36.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.0...2.36.1
 [2.36.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.35.1...2.36.0
 [2.35.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.35.0...2.35.1

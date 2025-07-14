@@ -1619,3 +1619,8 @@
     fixed:
     - Bug in loading entity tables.
   date: 2025-07-13 19:47:46
+- bump: minor
+  changes:
+    added:
+    - Water bills projections.
+  date: 2025-07-14 10:36:08
