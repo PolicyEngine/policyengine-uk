@@ -17,6 +17,9 @@ class rent(Variable):
             # We don't have growth rates for rent before this.
             return 0
 
+        if household.simulation.dataset is None:
+            return 0
+
         data_year = household.simulation.dataset.time_period
         original_rent = household("rent", data_year)
         tenure_type = household("tenure_type", period).decode_to_str()

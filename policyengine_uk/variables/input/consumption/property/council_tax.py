@@ -15,6 +15,9 @@ class council_tax(Variable):
             # We don't have growth rates for council tax by nation before this.
             return 0
 
+        if household.simulation.dataset is None:
+            return 0
+
         data_year = household.simulation.dataset.time_period
 
         original_ct = household("council_tax", data_year)
