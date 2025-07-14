@@ -86,6 +86,13 @@ class UKDataset:
             household=self.household.copy(),
         )
 
+    def validate(self):
+        # Check for NaNs in the tables
+        for df in self.tables:
+            for col in df.columns:
+                if df[col].isna().any():
+                    raise ValueError(f"Column '{col}' contains NaN values.")
+
     @staticmethod
     def from_simulation(
         simulation: "Microsimulation", fiscal_year: int = 2025
