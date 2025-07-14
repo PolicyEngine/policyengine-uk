@@ -111,23 +111,52 @@ obr:
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
   
   council_tax:
-    description: Council tax year-on-year growth.
-    values:
-      2021-01-01: 0.078
-      2022-01-01: 0.053
-      2023-01-01: 0.056
-      2024-01-01: 0.064
-      2025-01-01: 0.046
-      2026-01-01: 0.045
-      2027-01-01: 0.046
-      2028-01-01: 0.045
-      2029-01-01: 0.045
-    metadata:
-      unit: /1
-      label: council tax growth
-      reference:
+    england:
+      description: Growth in the level (adjusted for household growth) of council tax receipts in England.
+      values:
+        2023-01-01: 0.051
+        2024-01-01: 0.051
+        2025-01-01: 0.043
+        2026-01-01: 0.043
+        2027-01-01: 0.043
+        2028-01-01: 0.043
+        2029-01-01: 0.043
+      metadata:
+        unit: /1
+        reference:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+    scotland:
+      description: Growth in the level (adjusted for household growth) of council tax receipts in Scotland.
+      values:
+        2023-01-01: 0.026
+        2024-01-01: 0.027
+        2025-01-01: 0.027
+        2026-01-01: 0.027
+        2027-01-01: 0.027
+        2028-01-01: 0.027
+        2029-01-01: 0.027
+      metadata:
+        unit: /1
+        reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+    wales:
+      description: Growth in the level (adjusted for household growth) of council tax receipts in Wales.
+      values:
+        2023-01-01: 0.038
+        2024-01-01: 0.041
+        2025-01-01: 0.041
+        2026-01-01: 0.041
+        2027-01-01: 0.041
+        2028-01-01: 0.041
+        2029-01-01: 0.041
+      metadata:
+        unit: /1
+        reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
   
   per_capita:
     gdp:
