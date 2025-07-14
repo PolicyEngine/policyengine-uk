@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.36.1] - 2025-07-13 19:47:46
+
+### Fixed
+
+- Bug in loading entity tables.
+
+## [2.36.0] - 2025-07-13 13:11:45
+
+### Added
+
+- Documentation on growth factors.
+- Cleaned up non-standard uprating factors for wealth variables.
+- Added triple lock uprating detail and reform switches.
+- Added ability to download entity datasets from HuggingFace.
+
+## [2.35.1] - 2025-07-11 14:15:07
+
+### Fixed
+
+- Private pension income index set to RPI<=5%
+
+## [2.35.0] - 2025-07-11 13:43:26
+
+### Changed
+
+- Earnings uprated with OBR average earnings rather than per-capita employment income.
+
 ## [2.34.5] - 2025-07-10 16:14:53
 
 ### Fixed
@@ -1891,6 +1918,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.36.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.0...2.36.1
+[2.36.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.35.1...2.36.0
+[2.35.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.35.0...2.35.1
+[2.35.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.5...2.35.0
 [2.34.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.4...2.34.5
 [2.34.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.3...2.34.4
 [2.34.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.2...2.34.3

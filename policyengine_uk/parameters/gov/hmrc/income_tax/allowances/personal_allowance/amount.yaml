@@ -11,7 +11,7 @@ metadata:
   name: personal_allowance
   label: Personal allowance
   unit: currency-GBP
-  uprating: gov.obr.consumer_price_index
+  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:
     - title: Income Tax Act 2007 s. 35
       href: https://www.legislation.gov.uk/ukpga/2007/3/section/35

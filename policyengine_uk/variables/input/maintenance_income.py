@@ -8,4 +8,4 @@ class maintenance_income(Variable):
     documentation = "Income from maintenance payments to you"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.per_capita.gdp"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"

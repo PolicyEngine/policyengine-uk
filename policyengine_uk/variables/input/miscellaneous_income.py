@@ -8,4 +8,4 @@ class miscellaneous_income(Variable):
     documentation = "Income from any other source"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.per_capita.gdp"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"

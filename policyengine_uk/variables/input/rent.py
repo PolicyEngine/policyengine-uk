@@ -11,4 +11,4 @@ class rent(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.obr.rent"
+    uprating = "gov.economic_assumptions.indices.obr.rent"

@@ -1,0 +1,33 @@
+reforms:
+- name: Raise basic rate by 1pp
+  expected_impact: 7.7
+  parameters:
+    gov.hmrc.income_tax.rates.uk[0].rate: 0.21
+- name: Raise higher rate by 1pp
+  expected_impact: 4.9
+  parameters:
+    gov.hmrc.income_tax.rates.uk[1].rate: 0.42
+- name: Raise personal allowance by ~800GBP/year
+  expected_impact: 0.8
+  parameters:
+    gov.hmrc.income_tax.allowances.personal_allowance.amount: 13000
+- name: Raise child benefit by 25GBP/week per additional child
+  expected_impact: -1.3
+  parameters:
+    gov.hmrc.child_benefit.amount.additional: 25
+- name: Reduce Universal Credit taper rate to 20%
+  expected_impact: -38.3
+  parameters:
+    gov.dwp.universal_credit.means_test.reduction_rate: 0.2
+- name: Raise Class 1 main employee NICs rate to 10%
+  expected_impact: 12.4
+  parameters:
+    gov.hmrc.national_insurance.class_1.rates.employee.main: 0.1
+- name: Raise VAT standard rate by 2pp
+  expected_impact: 19.5
+  parameters:
+    gov.hmrc.vat.standard_rate: 0.22
+- name: Raise additional rate by 3pp
+  expected_impact: 4.4
+  parameters:
+    gov.hmrc.income_tax.rates.uk[2].rate: 0.48

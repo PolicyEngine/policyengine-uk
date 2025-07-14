@@ -47,12 +47,12 @@ Each of the variables above is either derived from other variables, or is a dire
 |----------|-------|-------|
 | `employment_income` | gov.obr.per_capita.employment_income | Uprated based on OBR per capita employment income projections |
 | `self_employment_income` | gov.obr.per_capita.mixed_income | Uprated based on OBR per capita mixed income projections |
-| `dividend_income` | gov.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
+| `dividend_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
 | `hbai_benefits` | Various | Different benefits use different uprating indices, mostly gov.obr.consumer_price_index |
 | `private_pension_income` | gov.obr.private_pension_index | Uprated based on OBR private pension index |
-| `savings_interest_income` | gov.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
-| `property_income` | gov.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
-| `maintenance_income` | gov.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
+| `savings_interest_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
+| `property_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
+| `maintenance_income` | gov.economic_assumptions.indices.obr.per_capita.gdp | Uprated based on OBR per capita GDP projections |
 | `student_payments` | Not uprated directly | Currently no specific uprating for student payments |
 | `free_school_meals` |gov.obr.consumer_price_index | Uprated based on CPI inflation |
 | `free_school_fruit_veg` | gov.obr.consumer_price_index | Uprated based on CPI inflation |
@@ -65,7 +65,7 @@ Each of the variables above is either derived from other variables, or is a dire
 | `employee_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
 | `personal_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
 | `maintenance_expenses` | gov.obr.consumer_price_index | Uprated based on CPI inflation |
-| `student_loan_repayments` | gov.obr.average_earnings | Uprated based on OBR average earnings projections |
+| `student_loan_repayments` | gov.economic_assumptions.indices.obr.average_earnings | Uprated based on OBR average earnings projections |
 | `rent` | gov.obr.rent | Uprated based on OBR rent projections |
 | `water_and_sewerage_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |
 | `mortgage_interest_repayment` | gov.obr.mortgage_interest | Uprated based on OBR mortgage interest projections |
