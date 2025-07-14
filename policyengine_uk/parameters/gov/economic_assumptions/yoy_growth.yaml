@@ -254,21 +254,20 @@ obr:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
   
-  rent:
-    description: Rent year-on-year growth.
+  social_rent:
+    description: Rent year-on-year growth (CPI+1%, one year lagged).
     values:
-      2021-01-01: 0.018
-      2022-01-01: 0.04
-      2023-01-01: 0.063
-      2024-01-01: 0.074
-      2025-01-01: 0.057
-      2026-01-01: 0.036
-      2027-01-01: 0.027
-      2028-01-01: 0.023
-      2029-01-01: 0.024
+      2022-01-01: 0.050
+      2023-01-01: 0.110
+      2024-01-01: 0.067
+      2025-01-01: 0.033
+      2026-01-01: 0.042
+      2027-01-01: 0.029
+      2028-01-01: 0.030
+      2029-01-01: 0.030
     metadata:
       unit: /1
-      label: rent growth
+      label: social rent growth
       reference:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
