@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    fixed:
+    - Uprating for rent split by private and social rented sectors.
