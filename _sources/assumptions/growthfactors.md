@@ -25,6 +25,14 @@ We apply the OBR's wage growth forecasts to employment-related variables.
 
 We use average earnings for these variables: `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `personal_pension_contributions`, `student_loan_repayments`
 
+## Lagged average earnings
+
+We lag earnings growth by one year and use that to uprate housing service charges (including ground rent).
+
+| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
+|-------------|------|------|------|------|------|------|------|------|
+| Growth rate | 5.9% | 6.4% | 6.9% | 4.7% | 3.7% | 2.2% | 2.1% | 2.3% |
+
 ## Per capita GDP
 
 We derive these rates from OBR GDP growth and ONS population projections.
