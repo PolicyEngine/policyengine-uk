@@ -14,7 +14,7 @@ def add_lagged_cpi(
         "gov.economic_assumptions.yoy_growth.obr.lagged_cpi",
         data={
             "values": {
-                f"{year}-01-01": cpi(year - 1) for year in range(2022, 2030)
+                f"{year}-01-01": cpi(year - 1) for year in range(2010, 2030)
             },
         },
     )
