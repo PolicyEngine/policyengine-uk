@@ -170,8 +170,10 @@ def apply_growth_factors(
 
     return dataset
 
+
 # Deferred initialization to avoid initialization order issues between Ubuntu and macOS
 _BASELINE_GROWFACTORS = None
+
 
 def get_baseline_growfactors():
     """
@@ -183,17 +185,19 @@ def get_baseline_growfactors():
         _BASELINE_GROWFACTORS = create_policyengine_uprating_factors_table()
     return _BASELINE_GROWFACTORS
 
+
 # Proxy object that maintains backward compatibility
 class GrowthFactorsProxy:
     def __call__(self):
         return get_baseline_growfactors()
-    
+
     def __getattr__(self, name):
         # Delegate DataFrame methods/properties to the actual DataFrame
         return getattr(get_baseline_growfactors(), name)
-    
+
     def copy(self):
         return get_baseline_growfactors().copy()
+
 
 # For backward compatibility - BASELINE_GROWFACTORS acts like the DataFrame but initializes on demand
 BASELINE_GROWFACTORS = GrowthFactorsProxy()
