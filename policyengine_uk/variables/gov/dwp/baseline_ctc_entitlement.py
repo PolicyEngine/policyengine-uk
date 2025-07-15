@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class baseline_ctc_entitlement(Variable):
     label = "Receives Child Tax Credit (baseline)"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
 

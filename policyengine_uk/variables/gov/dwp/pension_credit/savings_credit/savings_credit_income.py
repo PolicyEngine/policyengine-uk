@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class savings_credit_income(Variable):
     label = "Income for Savings Credit"
     documentation = "Savings Credit (Pension Credit) excludes certain income sources from the calculation of the amount."
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP

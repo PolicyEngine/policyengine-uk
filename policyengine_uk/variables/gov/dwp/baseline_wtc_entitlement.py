@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class baseline_wtc_entitlement(Variable):
     label = "Baseline Working Tax Credit"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
 

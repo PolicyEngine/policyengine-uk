@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class extended_childcare_entitlement(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "annual extended childcare entitlement expenses"
     definition_period = YEAR
     unit = GBP

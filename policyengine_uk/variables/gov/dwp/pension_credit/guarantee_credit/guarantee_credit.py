@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class guarantee_credit(Variable):
     label = "Guarantee Credit"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP

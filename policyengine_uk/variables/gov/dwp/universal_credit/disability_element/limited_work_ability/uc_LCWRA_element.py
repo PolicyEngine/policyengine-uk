@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_LCWRA_element(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = (
         "Universal Credit limited capability for work-related-activity element"
     )

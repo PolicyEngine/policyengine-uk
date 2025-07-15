@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_work_allowance(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Universal Credit work allowance"
     definition_period = YEAR
     unit = GBP

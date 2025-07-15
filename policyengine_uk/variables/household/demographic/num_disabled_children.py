@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class num_disabled_children(Variable):
     value_type = int
-    entity = ben_unit
+    entity = BenUnit
     label = "Number of disabled children"
     definition_period = YEAR
 

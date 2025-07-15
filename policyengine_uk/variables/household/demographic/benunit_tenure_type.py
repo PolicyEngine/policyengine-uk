@@ -8,7 +8,7 @@ class benunit_tenure_type(Variable):
     value_type = Enum
     possible_values = TenureType
     default_value = TenureType.RENT_PRIVATELY
-    entity = ben_unit
+    entity = BenUnit
     label = "Tenure type of the family's household"
     definition_period = YEAR
 

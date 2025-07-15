@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_income_reduction(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "reduction from income for Universal Credit"
     definition_period = YEAR
     unit = GBP

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_carer_element(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Universal Credit carer element"
     definition_period = YEAR
     unit = GBP

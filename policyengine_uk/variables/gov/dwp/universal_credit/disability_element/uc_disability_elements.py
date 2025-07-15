@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_disability_elements(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Universal Credit disability elements"
     definition_period = YEAR
     unit = GBP

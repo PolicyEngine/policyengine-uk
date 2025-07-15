@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class claims_all_entitled_benefits(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "Claims all eligible benefits"
     definition_period = YEAR
     documentation = (

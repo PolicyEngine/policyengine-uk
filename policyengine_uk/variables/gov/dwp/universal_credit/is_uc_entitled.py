@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class is_uc_entitled(Variable):
     label = "meets the means test for Universal Credit"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = bool
 

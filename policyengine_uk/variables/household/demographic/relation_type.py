@@ -8,7 +8,7 @@ class RelationType(Enum):
 
 class relation_type(Variable):
     value_type = Enum
-    entity = ben_unit
+    entity = BenUnit
     default_value = RelationType.SINGLE
     possible_values = RelationType
     label = "Whether single or a couple"

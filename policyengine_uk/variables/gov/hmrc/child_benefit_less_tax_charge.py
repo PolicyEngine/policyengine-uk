@@ -6,7 +6,7 @@ class child_benefit_less_tax_charge(Variable):
     documentation = (
         "Child Benefit, minus the Child Benefit High-Income Tax Charge"
     )
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class pension_credit_earnings(Variable):
     label = "earnings for Pension Credit"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP

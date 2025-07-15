@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class benefit_cap_reduction(Variable):
     label = "benefit cap reduction"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP

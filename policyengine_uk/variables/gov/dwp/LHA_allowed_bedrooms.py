@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 
 class LHA_allowed_bedrooms(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "The number of bedrooms covered by LHA for the benefit unit"
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/10/2021-04-06"

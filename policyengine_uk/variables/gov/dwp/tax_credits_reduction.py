@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class tax_credits_reduction(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Reduction in Tax Credits from means-tested income"
     definition_period = YEAR
     unit = GBP

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class would_claim_housing_benefit(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "Would claim the Housing Benefit"
     documentation = (
         "Whether this family would claim Housing Benefit if eligible"

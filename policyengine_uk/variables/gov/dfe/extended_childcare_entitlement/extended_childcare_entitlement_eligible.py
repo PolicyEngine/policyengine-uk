@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class extended_childcare_entitlement_eligible(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "eligibility for extended childcare entitlement"
     definition_period = YEAR
     defined_for = "would_claim_extended_childcare"

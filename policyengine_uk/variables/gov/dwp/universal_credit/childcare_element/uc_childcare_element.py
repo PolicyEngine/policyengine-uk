@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_childcare_element(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Universal Credit childcare element"
     definition_period = YEAR
     unit = GBP

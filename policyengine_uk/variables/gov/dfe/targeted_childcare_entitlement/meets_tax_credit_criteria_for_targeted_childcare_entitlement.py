@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class meets_tax_credit_criteria_for_targeted_childcare_entitlement(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "meets Tax Credit criteria for targeted childcare entitlement"
     definition_period = YEAR
 

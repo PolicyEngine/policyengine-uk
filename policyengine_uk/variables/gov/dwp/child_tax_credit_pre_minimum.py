@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class child_tax_credit_pre_minimum(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Child Tax Credit pre-minimum"
     documentation = (
         "Child Tax Credit amount before the minimum tax credit is applied"

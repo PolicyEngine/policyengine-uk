@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_maximum_amount(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "maximum Universal Credit amount"
     documentation = (
         "This is your total entitlement, before reduction due to income."

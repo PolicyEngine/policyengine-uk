@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class is_uc_work_allowance_eligible(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "Family receives a Universal Credit Work Allowance"
     definition_period = YEAR
 

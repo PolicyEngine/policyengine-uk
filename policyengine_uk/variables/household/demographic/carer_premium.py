@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class carer_premium(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Carer premium"
     definition_period = YEAR
     reference = (

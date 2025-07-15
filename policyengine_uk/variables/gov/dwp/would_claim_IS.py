@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class would_claim_IS(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "Would claim Income Support"
     documentation = (
         "Whether this family would claim Income Support if eligible"

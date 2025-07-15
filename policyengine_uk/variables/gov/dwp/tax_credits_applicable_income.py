@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class tax_credits_applicable_income(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Applicable income for Tax Credits"
     definition_period = YEAR
     unit = GBP

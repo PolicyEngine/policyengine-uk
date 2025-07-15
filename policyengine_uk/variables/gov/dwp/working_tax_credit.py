@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class working_tax_credit(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Working Tax Credit"
     definition_period = YEAR
     unit = GBP

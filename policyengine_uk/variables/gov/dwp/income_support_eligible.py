@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class income_support_eligible(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "Whether eligible for Income Support"
     definition_period = YEAR
 

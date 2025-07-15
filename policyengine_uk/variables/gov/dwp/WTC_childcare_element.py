@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class WTC_childcare_element(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Working Tax Credit childcare element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"

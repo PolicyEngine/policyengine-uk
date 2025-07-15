@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class would_claim_WTC(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "Would claim Working Tax Credit"
     documentation = (
         "Whether this family would claim Working Tax Credit if eligible"

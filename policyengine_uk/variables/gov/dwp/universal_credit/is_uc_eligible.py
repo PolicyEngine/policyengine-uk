@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class is_uc_eligible(Variable):
     value_type = bool
-    entity = ben_unit
+    entity = BenUnit
     label = "Eligible for the Universal Credit"
     documentation = "Whether this family is eligible for Universal Credit"
     definition_period = YEAR

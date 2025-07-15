@@ -6,7 +6,7 @@ class would_claim_child_benefit(Variable):
     documentation = (
         "Whether this benefit unit would claim Child Benefit if eligible"
     )
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = bool
 

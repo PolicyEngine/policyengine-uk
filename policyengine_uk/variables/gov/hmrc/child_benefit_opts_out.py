@@ -6,7 +6,7 @@ class child_benefit_opts_out(Variable):
     documentation = (
         "Whether this family would opt out of receiving Child Benefit payments"
     )
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = bool
 

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class CTC_severely_disabled_child_element(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "CTC entitlement from severely disabled child elements"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 9"

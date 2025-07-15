@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class would_claim_pc(Variable):
     label = "Would claim Pension Credit"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = bool
 

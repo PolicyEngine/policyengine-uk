@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class standard_minimum_guarantee(Variable):
     label = "Standard Minimum Guarantee"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class youngest_child_age(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "Eldest adult age"
     definition_period = YEAR
 

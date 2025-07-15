@@ -19,7 +19,7 @@ Household = build_entity(
     containing_entities=["state"],
 )
 
-ben_unit = build_entity(
+BenUnit = build_entity(
     key="benunit",
     plural="benunits",
     label="Benefit unit",
@@ -43,4 +43,4 @@ Person = build_entity(
     is_person=True,
 )
 
-entities = [Household, ben_unit, Person]
+entities = [Household, BenUnit, Person]

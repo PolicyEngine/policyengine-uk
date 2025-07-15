@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 
 class BRMA_LHA_rate(Variable):
     value_type = float
-    entity = ben_unit
+    entity = BenUnit
     label = "LHA rate"
     documentation = "Local Housing Allowance rate"
     definition_period = YEAR

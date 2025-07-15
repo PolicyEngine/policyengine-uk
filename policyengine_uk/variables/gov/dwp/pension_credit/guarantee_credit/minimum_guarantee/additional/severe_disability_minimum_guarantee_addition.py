@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class severe_disability_minimum_guarantee_addition(Variable):
     label = "Severe disability-related increase"
-    entity = ben_unit
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP
