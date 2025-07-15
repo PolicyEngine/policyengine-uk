@@ -63,6 +63,7 @@ dev = [
     "furo<2023",
     "tqdm",
     "pytest",
+    "pytest-cov",
     "setuptools",
     "sphinx-argparse>=0.3.2,<1",
     "sphinx-math-dollar>=1.2.1,<2",
