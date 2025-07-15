@@ -6,7 +6,6 @@ by ensuring that BASELINE_GROWFACTORS is consistently accessible and contains
 the expected data structure regardless of when it's accessed.
 """
 
-import pytest
 import pandas as pd
 from policyengine_uk.data.economic_assumptions import (
     BASELINE_GROWFACTORS,
