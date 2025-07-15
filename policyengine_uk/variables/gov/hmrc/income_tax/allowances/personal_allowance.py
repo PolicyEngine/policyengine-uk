@@ -14,6 +14,6 @@ class personal_allowance(Variable):
         PA = params.gov.hmrc.income_tax.allowances.personal_allowance
         personal_allowance = PA.amount
         ANI = person("adjusted_net_income", period)
-        excess = max_(0, ANI - PA.maximum_ANI)
+        excess = max_(0, ANI - PA.maximum_ani)
         reduction = excess * PA.reduction_rate
         return max_(0, personal_allowance - reduction)

@@ -3,6 +3,6 @@
   absolute_error_margin: 100
   input:
     uc_housing_costs_element: 1
-    uc_limited_capability_for_WRA: true
+    uc_limited_capability_for_wra: true
   output:
     uc_work_allowance: 4_924

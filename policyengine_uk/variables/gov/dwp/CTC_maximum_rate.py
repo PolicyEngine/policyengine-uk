@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class CTC_maximum_rate(Variable):
+class ctc_maximum_rate(Variable):
     value_type = float
     entity = BenUnit
     label = "Maximum Child Tax Credit"
@@ -10,8 +10,8 @@ class CTC_maximum_rate(Variable):
     unit = GBP
 
     adds = [
-        "CTC_family_element",
+        "ctc_family_element",
         "CTC_child_element",
         "CTC_disabled_child_element",
-        "CTC_severely_disabled_child_element",
+        "ctc_severely_disabled_child_element",
     ]

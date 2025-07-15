@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class would_claim_WTC(Variable):
+class would_claim_wtc(Variable):
     value_type = bool
     entity = BenUnit
     label = "Would claim Working Tax Credit"

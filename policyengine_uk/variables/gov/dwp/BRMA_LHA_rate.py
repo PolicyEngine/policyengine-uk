@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 import pandas as pd
 import warnings
 from policyengine_core.model_api import *
-from policyengine_uk.variables.gov.dwp.LHA_category import (
+from policyengine_uk.variables.gov.dwp.lha_category import (
     find_freeze_start,
     time_shift_dataset,
 )
@@ -10,7 +10,7 @@ from policyengine_uk.variables.gov.dwp.LHA_category import (
 warnings.filterwarnings("ignore")
 
 
-class BRMA_LHA_rate(Variable):
+class brma_lha_rate(Variable):
     value_type = float
     entity = BenUnit
     label = "LHA rate"
@@ -22,7 +22,7 @@ class BRMA_LHA_rate(Variable):
         brma = benunit.value_from_first_person(
             benunit.members.household("brma", period).decode_to_str()
         )
-        category = benunit("LHA_category", period).decode_to_str()
+        category = benunit("lha_category", period).decode_to_str()
 
         from policyengine_uk.parameters.gov.dwp.LHA import lha_list_of_rents
 

@@ -8,13 +8,13 @@ class working_tax_credit_pre_minimum(Variable):
     documentation = (
         "Working Tax Credit amount before the minimum tax credit is applied"
     )
-    defined_for = "would_claim_WTC"
+    defined_for = "would_claim_wtc"
     definition_period = YEAR
     unit = GBP
 
     def formula(benunit, period, parameters):
         return max_(
             0,
-            benunit("WTC_maximum_rate", period)
+            benunit("wtc_maximum_rate", period)
             - benunit("tax_credits_reduction", period),
         )

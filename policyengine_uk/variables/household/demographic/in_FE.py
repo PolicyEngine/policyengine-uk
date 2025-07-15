@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 import pandas as pd
 
 
-class in_FE(Variable):
+class in_fe(Variable):
     value_type = bool
     entity = Person
     label = "Whether this person is in Further Education"

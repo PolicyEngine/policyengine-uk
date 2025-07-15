@@ -14,7 +14,7 @@ class child_benefit_opts_out(Variable):
         if benunit.simulation.dataset is not None:
             ani = benunit.members("adjusted_net_income", period)
             hmrc = parameters(period).gov.hmrc
-            cb_hitc = hmrc.income_tax.charges.CB_HITC
+            cb_hitc = hmrc.income_tax.charges.cb_hitc
             cb = hmrc.child_benefit
             in_phase_out = ani > cb_hitc.phase_out_end
             return where(

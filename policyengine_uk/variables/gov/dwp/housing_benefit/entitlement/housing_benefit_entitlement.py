@@ -19,8 +19,8 @@ class housing_benefit_entitlement(Variable):
         ).gov.dwp.housing_benefit.means_test.withdrawal_rate
         reduced_income = max_(0, income - applicable_amount)
         final_amount = max_(0, rent - reduced_income * withdrawal_rate)
-        capped_final_amount = min_(final_amount, benunit("LHA_cap", period))
-        lha_eligible = benunit("LHA_eligible", period.this_year)
+        capped_final_amount = min_(final_amount, benunit("lha_cap", period))
+        lha_eligible = benunit("lha_eligible", period.this_year)
         amount = where(lha_eligible, capped_final_amount, final_amount)
         return max_(
             0, amount - benunit("housing_benefit_non_dep_deductions", period)

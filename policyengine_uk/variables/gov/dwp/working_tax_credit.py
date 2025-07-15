@@ -7,5 +7,5 @@ class working_tax_credit(Variable):
     label = "Working Tax Credit"
     definition_period = YEAR
     unit = GBP
-    defined_for = "would_claim_WTC"
+    defined_for = "would_claim_wtc"
     adds = ["wtc_entitlement"]

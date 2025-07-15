@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class WTC_severely_disabled_element(Variable):
+class wtc_severely_disabled_element(Variable):
     value_type = float
     entity = BenUnit
     label = "Working Tax Credit severely disabled element"
@@ -15,4 +15,4 @@ class WTC_severely_disabled_element(Variable):
             benunit("num_severely_disabled_adults", period)
             * WTC.elements.severely_disabled
         )
-        return benunit("is_WTC_eligible", period) * amount
+        return benunit("is_wtc_eligible", period) * amount

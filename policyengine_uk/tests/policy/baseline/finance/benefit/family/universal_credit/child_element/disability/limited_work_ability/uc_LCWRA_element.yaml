@@ -4,9 +4,9 @@
   input:
     people:
       person:
-        uc_limited_capability_for_WRA: false
+        uc_limited_capability_for_wra: false
     benunits:
       benunit:
         members: person
   output:
-    uc_LCWRA_element: 0
+    uc_lcwra_element: 0

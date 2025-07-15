@@ -41,8 +41,8 @@
     working_tax_credit_reported: true
     child_tax_credit_reported: true
   output:
-    is_WTC_eligible: true
-    is_CTC_eligible: false
+    is_wtc_eligible: true
+    is_ctc_eligible: false
 - name: WTC eligibility for worker under hours requirement
   period: 2020
   absolute_error_margin: 0
@@ -52,8 +52,8 @@
     working_tax_credit_reported: true
     child_tax_credit_reported: true
   output:
-    is_WTC_eligible: false
-    is_CTC_eligible: false
+    is_wtc_eligible: false
+    is_ctc_eligible: false
 - name: 60-year-old only needs to meet the lower hours requirement (16)
   period: 2020
   absolute_error_margin: 0
@@ -62,7 +62,7 @@
     weekly_hours: 16
     working_tax_credit_reported: true
   output:
-    is_WTC_eligible: true
+    is_wtc_eligible: true
 - name: 59-year-old needs to meet the default hours requirement (30)
   period: 2020
   absolute_error_margin: 0
@@ -70,25 +70,25 @@
     age: 59
     weekly_hours: 16
   output:
-    is_WTC_eligible: false
+    is_wtc_eligible: false
 - name: 29 hours does not qualify someone for worker element
   period: 2022
   absolute_error_margin: 0
   input:
-    is_WTC_eligible: true
+    is_wtc_eligible: true
     working_tax_credit_reported: true
     weekly_hours: 29
   output:
-    WTC_worker_element: 0
+    wtc_worker_element: 0
 - name: 30 hours qualifies someone for worker element
   period: 2022
   absolute_error_margin: 100
   input:
-    is_WTC_eligible: true
+    is_wtc_eligible: true
     working_tax_credit_reported: true
     weekly_hours: 30
   output:
-    WTC_worker_element: 870
+    wtc_worker_element: 870
 - name: Tax credits under £26.00 are not paid
   period: 2022
   absolute_error_margin: 0

@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class WTC_maximum_rate(Variable):
+class wtc_maximum_rate(Variable):
     value_type = float
     entity = BenUnit
     label = "Working Tax Credit maximum rate"
@@ -10,11 +10,11 @@ class WTC_maximum_rate(Variable):
     unit = GBP
 
     adds = [
-        "WTC_basic_element",
-        "WTC_couple_element",
-        "WTC_lone_parent_element",
-        "WTC_disabled_element",
-        "WTC_severely_disabled_element",
-        "WTC_worker_element",
-        "WTC_childcare_element",
+        "wtc_basic_element",
+        "wtc_couple_element",
+        "wtc_lone_parent_element",
+        "wtc_disabled_element",
+        "wtc_severely_disabled_element",
+        "wtc_worker_element",
+        "wtc_childcare_element",
     ]

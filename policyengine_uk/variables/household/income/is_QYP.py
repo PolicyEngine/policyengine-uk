@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_QYP(Variable):
+class is_qyp(Variable):
     value_type = bool
     entity = Person
     label = "Whether this person is a qualifying young person for benefits purposes"

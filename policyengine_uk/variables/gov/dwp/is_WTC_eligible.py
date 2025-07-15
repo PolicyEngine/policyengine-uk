@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_WTC_eligible(Variable):
+class is_wtc_eligible(Variable):
     value_type = bool
     entity = BenUnit
     label = "Working Tax Credit eligibility"

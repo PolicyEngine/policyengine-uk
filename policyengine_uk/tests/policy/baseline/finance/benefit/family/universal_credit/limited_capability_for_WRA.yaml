@@ -4,7 +4,7 @@
   input:
     is_disabled_for_benefits: false
   output:
-    uc_limited_capability_for_WRA: false
+    uc_limited_capability_for_wra: false
 
 - name: Disabled
   period: 2020
@@ -12,4 +12,4 @@
   input:
     is_disabled_for_benefits: true
   output:
-    uc_limited_capability_for_WRA: true
+    uc_limited_capability_for_wra: true

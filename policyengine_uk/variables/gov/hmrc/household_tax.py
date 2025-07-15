@@ -22,7 +22,7 @@ class household_tax(Variable):
         "non_primary_residence_wealth_tax",
         "income_tax",
         "national_insurance",
-        "LVT",
+        "lvt",
         "carbon_tax",
         "vat_change",
         "capital_gains_tax",

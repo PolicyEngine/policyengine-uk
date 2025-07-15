@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 import pandas as pd
 
 
-class is_WA_adult(Variable):
+class is_wa_adult(Variable):
     value_type = bool
     entity = Person
     label = "Whether is a working-age adult"

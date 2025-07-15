@@ -7,5 +7,5 @@ class child_tax_credit(Variable):
     label = "Child Tax Credit"
     definition_period = YEAR
     unit = GBP
-    defined_for = "would_claim_CTC"
+    defined_for = "would_claim_ctc"
     adds = ["ctc_entitlement"]

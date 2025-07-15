@@ -12,7 +12,7 @@ class child_benefit_respective_amount(Variable):
         "https://www.legislation.gov.uk/ukpga/1992/4/part/IX",
         "https://www.legislation.gov.uk/uksi/2006/965/regulation/2",
     )
-    defined_for = "is_child_or_QYP"
+    defined_for = "is_child_or_qyp"
 
     def formula(person, period, parameters):
         eligible = True

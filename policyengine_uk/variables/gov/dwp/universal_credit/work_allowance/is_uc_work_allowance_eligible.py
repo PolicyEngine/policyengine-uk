@@ -10,7 +10,7 @@ class is_uc_work_allowance_eligible(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         has_lcwra = benunit.any(
-            person("uc_limited_capability_for_WRA", period)
+            person("uc_limited_capability_for_wra", period)
         )
         has_children = benunit.any(person("is_child", period))
         return has_lcwra | has_children

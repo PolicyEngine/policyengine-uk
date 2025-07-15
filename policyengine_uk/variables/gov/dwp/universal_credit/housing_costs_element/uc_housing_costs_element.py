@@ -14,7 +14,7 @@ class uc_housing_costs_element(Variable):
         )
         tenure_types = tenure_type.possible_values
         rent = benunit("benunit_rent", period)
-        rent_cap = benunit("LHA_cap", period)
+        rent_cap = benunit("lha_cap", period)
         capped_rent_amount = min_(rent_cap, rent)
         max_housing_costs = select(
             [

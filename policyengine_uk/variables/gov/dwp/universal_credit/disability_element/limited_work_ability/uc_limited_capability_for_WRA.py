@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class uc_limited_capability_for_WRA(Variable):
+class uc_limited_capability_for_wra(Variable):
     value_type = bool
     entity = Person
     label = "Assessed to have limited capability for work-related activity"

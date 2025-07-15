@@ -6,7 +6,7 @@ from policyengine_core.model_api import *
 warnings.filterwarnings("ignore")
 
 
-class LHACategory(Enum):
+class lha_category_enum(Enum):
     A = "Shared accommodation"
     B = "One bedroom"
     C = "Two bedrooms"
@@ -14,16 +14,16 @@ class LHACategory(Enum):
     E = "Four or more bedrooms"
 
 
-class LHA_category(Variable):
+class lha_category(Variable):
     value_type = Enum
     entity = BenUnit
     label = "LHA category for the benefit unit, taking into account LHA rules on the number of LHA-covered bedrooms"
     definition_period = YEAR
-    possible_values = LHACategory
-    default_value = LHACategory.C
+    possible_values = lha_category_enum
+    default_value = lha_category_enum.C
 
     def formula(benunit, period, parameters):
-        num_rooms = benunit("LHA_allowed_bedrooms", period.this_year)
+        num_rooms = benunit("lha_allowed_bedrooms", period.this_year)
         person = benunit.members
         household = person.household
         is_shared = benunit.any(
@@ -52,11 +52,11 @@ class LHA_category(Variable):
                 num_rooms > 3,
             ],
             [
-                LHACategory.A,
-                LHACategory.B,
-                LHACategory.C,
-                LHACategory.D,
-                LHACategory.E,
+                lha_category_enum.A,
+                lha_category_enum.B,
+                lha_category_enum.C,
+                lha_category_enum.D,
+                lha_category_enum.E,
             ],
         )
 

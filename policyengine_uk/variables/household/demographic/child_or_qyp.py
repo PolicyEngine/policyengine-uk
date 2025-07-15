@@ -10,4 +10,4 @@ class count_children_and_qyp(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        return add(benunit, period, ["is_child_or_QYP"])
+        return add(benunit, period, ["is_child_or_qyp"])

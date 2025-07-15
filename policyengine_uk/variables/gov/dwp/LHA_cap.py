@@ -6,7 +6,7 @@ from policyengine_core.model_api import *
 warnings.filterwarnings("ignore")
 
 
-class LHA_cap(Variable):
+class lha_cap(Variable):
     value_type = float
     entity = BenUnit
     label = "Applicable amount for LHA"
@@ -16,5 +16,5 @@ class LHA_cap(Variable):
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
-        cap = benunit("BRMA_LHA_rate", period)
+        cap = benunit("brma_lha_rate", period)
         return min_(rent, cap)

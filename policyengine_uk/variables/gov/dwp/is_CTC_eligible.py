@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_CTC_eligible(Variable):
+class is_ctc_eligible(Variable):
     value_type = bool
     entity = BenUnit
     label = "Child Tax Credit eligibility"

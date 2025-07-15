@@ -10,7 +10,7 @@ class capped_mcad(Variable):
 
     def formula(person, period, parameters):
         capping_value = add(
-            person, period, ["income_tax_pre_charges", "CB_HITC"]
+            person, period, ["income_tax_pre_charges", "cb_hitc"]
         )
         return min_(
             person("married_couples_allowance_deduction", period),

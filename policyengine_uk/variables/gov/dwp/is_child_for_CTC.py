@@ -9,4 +9,4 @@ class is_child_for_ctc(Variable):
     reference = "Tax Credits Act 2002 s. 8"
 
     def formula(person, period, parameters):
-        return person("is_child_or_QYP", period)
+        return person("is_child_or_qyp", period)
