@@ -48,7 +48,7 @@ from policyengine_core.reforms import Reform
 
 COUNTRY_DIR = Path(__file__).parent
 
-ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
+ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
@@ -105,8 +105,8 @@ variables = system.variables
 class Simulation(CoreSimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
     default_tax_benefit_system_instance = system
-    default_calculation_period = 2022
-    default_input_period = 2022
+    default_calculation_period = 2023
+    default_input_period = 2023
     default_role = "member"
     max_spiral_loops = 10
 
