@@ -1,5 +1,4 @@
 - bump: minor
   changes:
     added:
-    - Codecov coverage.
-    - Expanded .gitignore.
+    - Renaming variables to lowercase.
