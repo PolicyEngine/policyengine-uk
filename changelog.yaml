@@ -1634,3 +1634,9 @@
     fixed:
     - Lag CPI correctly for benefit uprating.
   date: 2025-07-14 15:03:33
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in
+      the baseline.
+  date: 2025-07-15 08:50:48

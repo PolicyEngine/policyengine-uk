@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in the baseline.
