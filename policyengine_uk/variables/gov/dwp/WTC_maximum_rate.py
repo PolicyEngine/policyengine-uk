@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class WTC_maximum_rate(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Working Tax Credit maximum rate"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"

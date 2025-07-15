@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_maximum_childcare_element_amount(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Maximum Universal Credit childcare element"
     definition_period = YEAR
 

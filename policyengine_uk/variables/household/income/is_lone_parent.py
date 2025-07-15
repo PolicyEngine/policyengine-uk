@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class is_lone_parent(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Whether the family is a lone parent family"
     definition_period = YEAR
 

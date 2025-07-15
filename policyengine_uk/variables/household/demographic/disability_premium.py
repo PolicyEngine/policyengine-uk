@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class disability_premium(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Disability premium"
     definition_period = YEAR
     reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"

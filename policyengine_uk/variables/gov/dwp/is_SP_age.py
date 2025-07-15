@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_SP_age(Variable):
+class is_sp_age(Variable):
     value_type = bool
     entity = Person
     label = "Whether the person is State Pension Age"

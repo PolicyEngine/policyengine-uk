@@ -16,7 +16,7 @@ class LHACategory(Enum):
 
 class LHA_category(Variable):
     value_type = Enum
-    entity = BenUnit
+    entity = ben_unit
     label = "LHA category for the benefit unit, taking into account LHA rules on the number of LHA-covered bedrooms"
     definition_period = YEAR
     possible_values = LHACategory

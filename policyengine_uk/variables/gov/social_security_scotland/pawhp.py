@@ -13,7 +13,7 @@ class pawhp(Variable):
             household("country", period).decode_to_str() == "SCOTLAND"
         )
         age = household.members("age", period)
-        is_SP_age = household.members("is_SP_age", period)
+        is_sp_age = household.members("is_sp_age", period)
         wfp = parameters(period).gov.social_security_scotland.pawhp
         on_mtb = (
             add(
@@ -30,7 +30,7 @@ class pawhp(Variable):
         )
         meets_mtb_requirement = on_mtb | ~wfp.eligibility.require_benefits
         meets_spa_requirement = (
-            household.any(is_SP_age)
+            household.any(is_sp_age)
             | ~wfp.eligibility.state_pension_age_requirement
         )
         meets_higher_age_requirement = household.any(

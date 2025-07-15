@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class working_tax_credit_pre_minimum(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Working Tax Credit pre-minimum"
     documentation = (
         "Working Tax Credit amount before the minimum tax credit is applied"

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class claims_legacy_benefits(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Claims legacy benefits"
     documentation = "Whether this family is currently receiving legacy benefits (overrides UC claimant status)"
     definition_period = YEAR

@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 
 class LHA_eligible(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Eligibility for Local Housing Allowance"
     documentation = (
         "Whether benefit unit is eligible for Local Housing Allowance"

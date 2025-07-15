@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class universal_credit_pre_benefit_cap(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Universal Credit before benefit cap"
     documentation = "Total entitlement to Universal Credit"
     definition_period = YEAR

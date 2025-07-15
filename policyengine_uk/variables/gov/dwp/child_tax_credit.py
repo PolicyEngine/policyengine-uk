@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class child_tax_credit(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Child Tax Credit"
     definition_period = YEAR
     unit = GBP

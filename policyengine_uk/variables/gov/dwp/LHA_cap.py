@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 
 class LHA_cap(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Applicable amount for LHA"
     documentation = "Applicable amount for Local Housing Allowance"
     definition_period = YEAR

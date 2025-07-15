@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class housing_benefit_applicable_income_childcare_element(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Housing Benefit applicable income childcare element"
     definition_period = YEAR
     unit = GBP

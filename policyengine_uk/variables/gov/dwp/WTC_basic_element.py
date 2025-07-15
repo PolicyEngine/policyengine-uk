@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class WTC_basic_element(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Working Tax Credit basic element"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 11"

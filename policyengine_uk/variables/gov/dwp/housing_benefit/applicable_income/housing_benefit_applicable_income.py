@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class housing_benefit_applicable_income(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "relevant income for Housing Benefit means test"
     definition_period = YEAR
     unit = GBP

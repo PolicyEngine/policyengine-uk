@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class benefits_premiums(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Value of premiums for disability and carer status"
     definition_period = YEAR
     unit = GBP

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class is_single_person(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Whether the family is a single person"
     definition_period = YEAR
 

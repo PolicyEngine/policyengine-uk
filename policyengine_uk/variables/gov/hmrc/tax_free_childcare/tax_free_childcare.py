@@ -8,7 +8,7 @@ class tax_free_childcare(Variable):
     definition_period = YEAR
     unit = GBP
     defined_for = "tax_free_childcare_eligible"
-    # Note: tax_free_childcare_eligible is a BenUnit variable implicitly cast to Person level
+    # Note: tax_free_childcare_eligible is a ben_unit variable implicitly cast to Person level
 
     def formula(person, period, parameters):
         # Get parameters

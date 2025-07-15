@@ -19,7 +19,7 @@ class state_pension(Variable):
         uprating = 1 + relative_increase
         sp = gov.dwp.state_pension
         gender = person("gender", period).decode_to_str()
-        is_sp_age = person("is_SP_age", period)
+        is_sp_age = person("is_sp_age", period)
         return add(
             person,
             period,

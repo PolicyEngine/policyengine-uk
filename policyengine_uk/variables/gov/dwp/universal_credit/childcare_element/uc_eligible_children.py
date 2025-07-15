@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_childcare_element_eligible_children(Variable):
     value_type = int
-    entity = BenUnit
+    entity = ben_unit
     label = "Universal Credit childcare element eligible children"
     documentation = "Number of eligible children eligible for the childcare element of the Universal Credit"
     definition_period = YEAR

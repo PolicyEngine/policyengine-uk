@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class benunit_is_renting(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Whether this family is renting"
     definition_period = YEAR
 

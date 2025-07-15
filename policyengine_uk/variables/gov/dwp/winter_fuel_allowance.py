@@ -13,7 +13,7 @@ class winter_fuel_allowance(Variable):
             household("country", period).decode_to_str() == "SCOTLAND"
         )
         age = household.members("age", period)
-        is_SP_age = household.members("is_SP_age", period)
+        is_sp_age = household.members("is_sp_age", period)
         wfp = parameters(period).gov.dwp.winter_fuel_payment
         on_mtb = (
             add(
@@ -29,12 +29,12 @@ class winter_fuel_allowance(Variable):
             > 0
         )
         taxable_income = household.members("total_income", period)
-        is_SP_age = household.members("is_SP_age", period)
+        is_sp_age = household.members("is_sp_age", period)
         country = household("country", period).decode_to_str()
         in_england_or_wales = (country == "ENGLAND") | (country == "WALES")
         meets_income_passport = (
             household.any(
-                is_SP_age
+                is_sp_age
                 & (
                     taxable_income
                     < wfp.eligibility.taxable_income_test.maximum_taxable_income
@@ -48,7 +48,7 @@ class winter_fuel_allowance(Variable):
             on_mtb | ~wfp.eligibility.require_benefits | meets_income_passport
         )
         meets_spa_requirement = (
-            household.any(is_SP_age)
+            household.any(is_sp_age)
             | ~wfp.eligibility.state_pension_age_requirement
         )
         meets_higher_age_requirement = household.any(

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class income_support_applicable_income(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Relevant income for Income Support means test"
     definition_period = YEAR
     unit = GBP

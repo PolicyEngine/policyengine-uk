@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class num_carers(Variable):
     value_type = int
-    entity = BenUnit
+    entity = ben_unit
     label = "Number of carers in the family"
     definition_period = YEAR
 

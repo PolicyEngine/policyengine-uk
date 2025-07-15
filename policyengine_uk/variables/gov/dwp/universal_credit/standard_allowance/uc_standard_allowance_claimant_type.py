@@ -12,7 +12,7 @@ class uc_standard_allowance_claimant_type(Variable):
     value_type = Enum
     possible_values = UCClaimantType
     default_value = UCClaimantType.SINGLE_YOUNG
-    entity = BenUnit
+    entity = ben_unit
     label = "Universal Credit claimant type"
     documentation = (
         "The category of the UC claimant, assuming their eligibilty to UC"

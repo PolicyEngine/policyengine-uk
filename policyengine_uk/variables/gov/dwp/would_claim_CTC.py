@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class would_claim_CTC(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Would claim Child Tax Credit"
     documentation = (
         "Whether this family would claim Child Tax Credit if eligible"

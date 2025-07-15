@@ -5,7 +5,7 @@ class meets_universal_credit_criteria_for_targeted_childcare_entitlement(
     Variable
 ):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = (
         "meets Universal Credit criteria for targeted childcare entitlement"
     )

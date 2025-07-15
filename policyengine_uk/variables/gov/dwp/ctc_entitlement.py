@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class ctc_entitlement(Variable):
     label = "CTC entitlement"
-    entity = BenUnit
+    entity = ben_unit
     definition_period = YEAR
     value_type = float
     unit = GBP

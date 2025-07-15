@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class jsa_income(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "JSA (income-based)"
     definition_period = YEAR
     unit = GBP

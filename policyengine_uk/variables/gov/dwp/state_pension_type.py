@@ -19,7 +19,7 @@ class state_pension_type(Variable):
         sp = parameters.gov.dwp.state_pension
         male = person("is_male", period)
         last_entry = sp.new_state_pension.active.values_list[0]
-        is_sp_age = person("is_SP_age", period)
+        is_sp_age = person("is_sp_age", period)
         if not last_entry:
             values_if_sp_age = where(
                 is_sp_age, StatePensionType.BASIC, StatePensionType.NONE

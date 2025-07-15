@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class tax_credits(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Tax Credits"
     documentation = "Value of the Tax Credits (benefits) for this family"
     definition_period = YEAR

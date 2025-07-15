@@ -4,7 +4,7 @@ from policyengine_uk.variables.household.demographic.geography import Region
 
 class benunit_region(Variable):
     label = "benefit unit region"
-    entity = BenUnit
+    entity = ben_unit
     definition_period = YEAR
     value_type = Enum
     possible_values = Region

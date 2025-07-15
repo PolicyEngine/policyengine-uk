@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_childcare_work_condition(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Meets Universal Credit childcare work condition"
     definition_period = YEAR
     reference = (

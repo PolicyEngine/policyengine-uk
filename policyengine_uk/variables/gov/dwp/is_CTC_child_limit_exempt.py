@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class is_CTC_child_limit_exempt(Variable):
+class is_ctc_child_limit_exempt(Variable):
     value_type = bool
     entity = Person
     label = "Exemption from Child Tax Credit child limit"

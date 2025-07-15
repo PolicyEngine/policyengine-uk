@@ -9,4 +9,4 @@ class is_WA_adult(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("is_adult", period) & ~person("is_SP_age", period)
+        return person("is_adult", period) & ~person("is_sp_age", period)

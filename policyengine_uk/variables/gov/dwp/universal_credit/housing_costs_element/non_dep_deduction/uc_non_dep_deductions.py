@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_non_dep_deductions(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Universal Credit non-dependent deductions"
     definition_period = YEAR
     unit = GBP

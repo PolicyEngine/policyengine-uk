@@ -10,7 +10,7 @@ class FamilyType(Enum):
 
 class family_type(Variable):
     value_type = Enum
-    entity = BenUnit
+    entity = ben_unit
     default_value = FamilyType.SINGLE
     possible_values = FamilyType
     label = "Family composition"

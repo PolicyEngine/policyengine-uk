@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_earned_income(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Universal Credit earned income (after disregards and tax)"
     definition_period = YEAR
     unit = GBP

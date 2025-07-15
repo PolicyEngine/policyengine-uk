@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class income_support(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Income Support"
     definition_period = YEAR
     unit = GBP

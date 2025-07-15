@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class is_CTC_eligible(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Child Tax Credit eligibility"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 8"
@@ -13,6 +13,6 @@ class is_CTC_eligible(Variable):
             add(benunit, period, ["child_tax_credit_reported"]) > 0
         )
         return (
-            benunit.any(benunit.members("is_child_for_CTC", period))
+            benunit.any(benunit.members("is_child_for_ctc", period))
             & already_claiming
         )

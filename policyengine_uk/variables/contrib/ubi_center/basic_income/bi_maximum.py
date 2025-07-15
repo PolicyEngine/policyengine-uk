@@ -11,7 +11,7 @@ class bi_maximum(Variable):
     def formula(person, period, parameters):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         weekly_flat_amount = bi.amount.flat
-        is_senior_for_bi = person("is_SP_age", period)
+        is_senior_for_bi = person("is_sp_age", period)
         age = person("age", period)
         is_child_for_bi = (age < bi.amount.adult_age) * (
             age >= bi.amount.child_min_age

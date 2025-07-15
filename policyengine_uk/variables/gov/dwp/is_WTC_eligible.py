@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class is_WTC_eligible(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "Working Tax Credit eligibility"
     definition_period = YEAR
     reference = "Tax Credits Act 2002 s. 10"

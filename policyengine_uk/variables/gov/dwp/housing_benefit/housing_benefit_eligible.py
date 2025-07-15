@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class housing_benefit_eligible(Variable):
     value_type = bool
-    entity = BenUnit
+    entity = ben_unit
     label = "eligible for the Housing Benefit"
     definition_period = YEAR
 

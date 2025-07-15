@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class uc_unearned_income(Variable):
     value_type = float
-    entity = BenUnit
+    entity = ben_unit
     label = "Universal Credit unearned income"
     definition_period = YEAR
     unit = GBP

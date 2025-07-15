@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class additional_minimum_guarantee(Variable):
     label = "Additional Minimum Guarantee"
-    entity = BenUnit
+    entity = ben_unit
     definition_period = YEAR
     value_type = float
     unit = GBP

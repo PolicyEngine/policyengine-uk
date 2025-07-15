@@ -11,14 +11,14 @@
   input:
     age: 14
   output:
-    is_CTC_child_limit_exempt: true
+    is_ctc_child_limit_exempt: true
 - name: CTC two-child limit non-exemption
   period: 2020
   absolute_error_margin: 0
   input:
     age: 0
   output:
-    is_CTC_child_limit_exempt: false
+    is_ctc_child_limit_exempt: false
 - name: CTC children
   period: 2020
   absolute_error_margin: 0
@@ -31,7 +31,7 @@
       child3:
         age: 1
   output:
-    is_child_for_CTC: [true, true, true]
+    is_child_for_ctc: [true, true, true]
 - name: WTC eligibility for worker
   period: 2020
   absolute_error_margin: 0
