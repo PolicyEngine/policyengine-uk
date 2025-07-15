@@ -1,6 +1,6 @@
 # Economic assumptions
 
-We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's Economic and Fiscal Outlook (March 2025) unless we specify otherwise.
+We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's Economic and Fiscal Outlook ([March 2025](https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/)) unless we specify otherwise.
 
 ## Consumer price index
 
@@ -24,6 +24,14 @@ We apply the OBR's wage growth forecasts to employment-related variables.
 | Growth rate | 6.4% | 6.9% | 4.7% | 3.7% | 2.2% | 2.1% | 2.3% | 2.5% |
 
 We use average earnings for these variables: `employee_pension_contributions`, `employer_pension_contributions`, `employment_income`, `employment_income_before_lsr`, `personal_pension_contributions`, `student_loan_repayments`
+
+## Lagged average earnings
+
+We lag earnings growth by one year and use that to uprate housing service charges (including ground rent).
+
+| Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
+|-------------|------|------|------|------|------|------|------|------|
+| Growth rate | 5.9% | 6.4% | 6.9% | 4.7% | 3.7% | 2.2% | 2.1% | 2.3% |
 
 ## Per capita GDP
 
@@ -87,7 +95,7 @@ We apply this to: `self_employment_income`
 
 ## Population
 
-We use ONS population projections.
+We use ONS population [projections](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/nationalpopulationprojections/2022based).
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------|------|------|------|------|------|------|------|------|

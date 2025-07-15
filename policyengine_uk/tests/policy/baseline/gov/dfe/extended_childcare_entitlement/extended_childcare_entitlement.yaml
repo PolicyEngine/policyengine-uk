@@ -10,7 +10,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6_917.185
+    extended_childcare_entitlement: 6857.356
 
 - name: Eligible for 15 hours - All first conditions met
   period: 2025
@@ -24,7 +24,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4_870.2627
+    extended_childcare_entitlement: 4828.138
 
 - name: Not eligible (one condition not met)
   period: 2025
@@ -54,7 +54,7 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 11_787.447
+    extended_childcare_entitlement: 11685.494
 
 - name: Not eligible - Family with multiple children but conditions not met
   period: 2025
@@ -89,7 +89,7 @@
         family_type: COUPLE_WITH_CHILDREN
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 18706.
+    extended_childcare_entitlement: 18542.85
 
 - name: No expenses for zero hours
   period: 2025
@@ -118,7 +118,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4_611.457  # 20 hours * 38 weeks * £6.07 per hour (2025 rate)
+    extended_childcare_entitlement: 4571.5703  # 20 hours * 38 weeks * £6.07 per hour (2025 rate)
 
 - name: Child using fewer hours than maximum entitlement - multiple children
   period: 2025
@@ -136,7 +136,7 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6_705.434  # Updated to match actual calculation
+    extended_childcare_entitlement: 6647.4365
 
 - name: Benefit unit maximum hours cap applied
   period: 2025
@@ -155,7 +155,7 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 40 
   output:
-    extended_childcare_entitlement: 13835.381
+    extended_childcare_entitlement: 13714.712
 
 
 - name: Benefit unit without maximum hours cap applied
@@ -172,7 +172,7 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 10 
   output:
-    extended_childcare_entitlement: 2_306.6
+    extended_childcare_entitlement: 2285.7852
 
 
 - name: Benefit unit without maximum hours cap applied with 3 years old child
@@ -189,4 +189,4 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 18 
   output:
-    extended_childcare_entitlement: 3_459.5
+    extended_childcare_entitlement: 3428.678

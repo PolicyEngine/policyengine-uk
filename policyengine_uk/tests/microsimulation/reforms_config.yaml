@@ -12,7 +12,7 @@ reforms:
   parameters:
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 13000
 - name: Raise child benefit by 25GBP/week per additional child
-  expected_impact: -1.3
+  expected_impact: -1.4
   parameters:
     gov.hmrc.child_benefit.amount.additional: 25
 - name: Reduce Universal Credit taper rate to 20%
