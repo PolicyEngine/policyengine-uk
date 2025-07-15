@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.39.0] - 2025-07-15 11:58:59
+
+### Added
+
+- Codecov coverage.
+- Expanded .gitignore.
+
 ## [2.38.2] - 2025-07-15 08:50:48
 
 ### Fixed
@@ -1942,6 +1949,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.39.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.2...2.39.0
 [2.38.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.1...2.38.2
 [2.38.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.0...2.38.1
 [2.38.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.37.0...2.38.0
