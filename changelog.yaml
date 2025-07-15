@@ -1640,3 +1640,9 @@
     - Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in
       the baseline.
   date: 2025-07-15 08:50:48
+- bump: minor
+  changes:
+    added:
+    - Codecov coverage.
+    - Expanded .gitignore.
+  date: 2025-07-15 11:58:59
