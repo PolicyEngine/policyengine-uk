@@ -46,7 +46,13 @@ jobs:
             run: uv pip install policyengine --system
           - name: UV sync
             run: uv sync
-          - name: Run tests
+          - name: Run tests with coverage
             run: make test
             env:
               HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+          - name: Upload coverage to Codecov
+            uses: codecov/codecov-action@v3
+            with:
+              file: ./coverage.xml
+              fail_ci_if_error: false
+              verbose: true
