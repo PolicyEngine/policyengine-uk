@@ -9,6 +9,6 @@ class reduced_rate_vat_consumption(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        vat = parameters(period).gov.hmrc.vat
+        p = parameters(period).gov.hmrc.vat
         consumption = household("consumption", period)
-        return consumption * vat.reduced_rate_share
+        return consumption * p.reduced_rate_share

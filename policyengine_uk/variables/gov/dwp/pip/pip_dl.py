@@ -10,7 +10,7 @@ class pip_dl(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        pip_dl = parameters(period).gov.dwp.pip.daily_living
+        p = parameters(period).gov.dwp.pip.daily_living
         category = person("pip_dl_category", period)
         return (
             select(
@@ -20,8 +20,8 @@ class pip_dl(Variable):
                     category == PIPCategory.NONE,
                 ],
                 [
-                    pip_dl.enhanced,
-                    pip_dl.standard,
+                    p.enhanced,
+                    p.standard,
                     0,
                 ],
             )

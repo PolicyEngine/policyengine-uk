@@ -10,5 +10,5 @@ class capital_gains_elasticity(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        gov = parameters(period).gov
-        return gov.simulation.capital_gains_responses.elasticity
+        p = parameters(period).gov
+        return p.simulation.capital_gains_responses.elasticity

@@ -10,9 +10,9 @@ class ltt_on_non_residential_property_rent(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ltt = parameters(period).gov.wra.land_transaction_tax
+        p = parameters(period).gov.wra.land_transaction_tax
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
-        ltt_on_cumulative_rent = ltt.rent.calc(cumulative_rent)
-        ltt_on_total_rent = ltt.rent.calc(cumulative_rent + rent)
+        ltt_on_cumulative_rent = p.rent.calc(cumulative_rent)
+        ltt_on_total_rent = p.rent.calc(cumulative_rent + rent)
         return ltt_on_total_rent - ltt_on_cumulative_rent

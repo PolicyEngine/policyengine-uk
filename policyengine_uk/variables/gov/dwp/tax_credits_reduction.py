@@ -10,11 +10,11 @@ class tax_credits_reduction(Variable):
 
     def formula(benunit, period, parameters):
         means_test = parameters(period).gov.dwp.tax_credits.means_test
-        CTC_amount = benunit("ctc_maximum_rate", period)
-        WTC_amount = benunit("wtc_maximum_rate", period)
-        CTC_only = (CTC_amount > 0) & (WTC_amount == 0)
+        ctc_amount = benunit("ctc_maximum_rate", period)
+        wtc_amount = benunit("wtc_maximum_rate", period)
+        ctc_only = (ctc_amount > 0) & (wtc_amount == 0)
         threshold = where(
-            CTC_only,
+            ctc_only,
             means_test.income_threshold_ctc_only,
             means_test.income_threshold,
         )

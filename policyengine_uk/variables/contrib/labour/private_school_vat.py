@@ -11,9 +11,9 @@ class private_school_vat(Variable):
     def formula(household, period, parameters):
         num_children = add(household, period, ["attends_private_school"])
 
-        ps_vat_params = parameters(period).gov.simulation.private_school_vat
-        private_school_vat_basis = ps_vat_params.private_school_vat_basis
-        avg_yearly_private_school_cost = ps_vat_params.private_school_fees
+        p = parameters(period).gov.simulation.private_school_vat
+        private_school_vat_basis = p.private_school_vat_basis
+        avg_yearly_private_school_cost = p.private_school_fees
 
         private_school_vat_rate = parameters(
             period

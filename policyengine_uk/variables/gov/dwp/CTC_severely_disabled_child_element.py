@@ -20,7 +20,5 @@ class ctc_severely_disabled_child_element(Variable):
             is_child_for_ctc & is_severely_disabled_for_benefits
         )
         severely_disabled_children = benunit.sum(is_severely_disabled_child)
-        CTC = parameters(period).gov.dwp.tax_credits.child_tax_credit
-        return (
-            CTC.elements.severe_dis_child_element * severely_disabled_children
-        )
+        p = parameters(period).gov.dwp.tax_credits.child_tax_credit
+        return p.elements.severe_dis_child_element * severely_disabled_children

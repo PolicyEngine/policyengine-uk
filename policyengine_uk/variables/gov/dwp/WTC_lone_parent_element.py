@@ -11,8 +11,8 @@ class wtc_lone_parent_element(Variable):
     defined_for = "is_wtc_eligible"
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        p = parameters(period).gov.dwp.tax_credits.working_tax_credit
         family_type = benunit("family_type", period)
         families = family_type.possible_values
         lone_parent = family_type == families.LONE_PARENT
-        return lone_parent * WTC.elements.lone_parent
+        return lone_parent * p.elements.lone_parent

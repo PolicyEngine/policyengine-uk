@@ -35,14 +35,12 @@ class baseline_employer_cost(Variable):
         )
 
         # Calculate baseline employer cost
-        baseline_parameters = parameters(period).baseline
-        baseline_class_1 = (
-            baseline_parameters.gov.hmrc.national_insurance.class_1
-        )
+        p = parameters(period).baseline
+        baseline_class_1 = p.gov.hmrc.national_insurance.class_1
         r_b = baseline_class_1.rates.employer
         t_b = baseline_class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
         p_b = (
-            baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
+            p.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         )
         pen_con_subtracted_b = employer_pension_contributions
         if p_b:

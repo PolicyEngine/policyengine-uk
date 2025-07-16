@@ -15,6 +15,6 @@ class ctc_disabled_child_element(Variable):
         is_disabled_for_benefits = person("is_disabled_for_benefits", period)
         is_disabled_child = is_child_for_ctc & is_disabled_for_benefits
         disabled_children = benunit.sum(is_disabled_child)
-        ctc = parameters(period).gov.dwp.tax_credits.child_tax_credit
-        amount = ctc.elements.dis_child_element * disabled_children
+        p = parameters(period).gov.dwp.tax_credits.child_tax_credit
+        amount = p.elements.dis_child_element * disabled_children
         return benunit("is_ctc_eligible", period) * amount

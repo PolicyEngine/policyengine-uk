@@ -9,8 +9,7 @@ class income_support_applicable_amount(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        IS = parameters(period).gov.dwp.income_support
-        amounts = IS.amounts
+        p = parameters(period).gov.dwp.income_support.amounts
         younger_age = benunit("youngest_adult_age", period)
         older_age = benunit("eldest_adult_age", period)
         younger_under_18 = younger_age < 18
@@ -36,13 +35,13 @@ class income_support_applicable_amount(Variable):
                 couple_old,
             ],
             [
-                amounts.amount_16_24,
-                amounts.amount_over_25,
-                amounts.amount_lone_16_17,
-                amounts.amount_lone_over_18,
-                amounts.amount_couples_16_17,
-                amounts.amount_couples_age_gap,
-                amounts.amount_couples_over_18,
+                p.amount_16_24,
+                p.amount_over_25,
+                p.amount_lone_16_17,
+                p.amount_lone_over_18,
+                p.amount_couples_16_17,
+                p.amount_couples_age_gap,
+                p.amount_couples_over_18,
             ],
         )
         personal_allowance = personal_allowance_weekly * WEEKS_IN_YEAR

@@ -10,6 +10,6 @@ class lbtt_on_non_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        lbtt = parameters(period).gov.revenue_scotland.lbtt
+        p = parameters(period).gov.revenue_scotland.lbtt
         price = household("non_residential_property_purchased", period)
-        return lbtt.non_residential.calc(price)
+        return p.non_residential.calc(price)

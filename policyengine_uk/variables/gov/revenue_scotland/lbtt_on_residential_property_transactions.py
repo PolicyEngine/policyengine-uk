@@ -10,7 +10,7 @@ class lbtt_on_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        lbtt = parameters(period).gov.revenue_scotland.lbtt
+        p = parameters(period).gov.revenue_scotland.lbtt
         # Tax on main-home purchases
         price = household("main_residential_property_purchased", period)
         residential_purchase_qualifies_as_first_buy = household(
@@ -18,16 +18,16 @@ class lbtt_on_residential_property_transactions(Variable):
         )
         main_residential_purchase_tax = where(
             residential_purchase_qualifies_as_first_buy,
-            lbtt.residential.first_time_buyer_rate.calc(price),
-            lbtt.residential.rate.calc(price),
+            p.residential.first_time_buyer_rate.calc(price),
+            p.residential.rate.calc(price),
         )
         # Tax on second-home purchases
         second_home_price = household(
             "additional_residential_property_purchased", period
         )
-        lbtt2 = lbtt.residential.rate.calc(second_home_price)
+        lbtt2 = p.residential.rate.calc(second_home_price)
         surcharge = (
-            lbtt.residential.additional_residence_surcharge * second_home_price
+            p.residential.additional_residence_surcharge * second_home_price
         )
         additional_residential_purchase_tax = lbtt2 + surcharge
         return (

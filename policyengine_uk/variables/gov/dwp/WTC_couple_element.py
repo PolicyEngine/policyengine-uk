@@ -11,7 +11,7 @@ class wtc_couple_element(Variable):
     defined_for = "is_wtc_eligible"
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        p = parameters(period).gov.dwp.tax_credits.working_tax_credit
         relation_type = benunit("relation_type", period)
         relations = relation_type.possible_values
-        return (relation_type == relations.COUPLE) * WTC.elements.couple
+        return (relation_type == relations.COUPLE) * p.elements.couple

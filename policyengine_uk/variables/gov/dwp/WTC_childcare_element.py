@@ -11,11 +11,11 @@ class wtc_childcare_element(Variable):
     defined_for = "is_wtc_eligible"
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        p = parameters(period).gov.dwp.tax_credits.working_tax_credit
         num_children = benunit("num_children", period)
-        childcare_1 = (num_children == 1) * WTC.elements.childcare_1
-        childcare_2 = (num_children > 1) * WTC.elements.childcare_2
+        childcare_1 = (num_children == 1) * p.elements.childcare_1
+        childcare_2 = (num_children > 1) * p.elements.childcare_2
         max_childcare_amount = (childcare_1 + childcare_2) * WEEKS_IN_YEAR
         expenses = add(benunit, period, ["childcare_expenses"])
         eligible_expenses = min_(max_childcare_amount, expenses)
-        return WTC.elements.childcare_coverage * eligible_expenses
+        return p.elements.childcare_coverage * eligible_expenses

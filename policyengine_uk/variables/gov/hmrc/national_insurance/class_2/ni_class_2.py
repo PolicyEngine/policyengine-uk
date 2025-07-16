@@ -12,7 +12,7 @@ class ni_class_2(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/11"
 
     def formula(person, period, parameters):
-        class_2 = parameters(period).gov.hmrc.national_insurance.class_2
+        p = parameters(period).gov.hmrc.national_insurance.class_2
         profits = person("self_employment_income", period)
-        over_threshold = profits >= class_2.small_profits_threshold
-        return over_threshold * class_2.flat_rate * WEEKS_IN_YEAR
+        over_threshold = profits >= p.small_profits_threshold
+        return over_threshold * p.flat_rate * WEEKS_IN_YEAR

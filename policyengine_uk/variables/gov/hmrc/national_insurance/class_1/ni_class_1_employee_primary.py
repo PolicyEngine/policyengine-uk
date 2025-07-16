@@ -11,18 +11,14 @@ class ni_class_1_employee_primary(Variable):
 
     def formula(person, period, parameters):
         income = person("ni_class_1_income", period)
-        parameters = parameters(period).gov.hmrc.national_insurance.class_1
+        p = parameters(period).gov.hmrc.national_insurance.class_1
 
         # Thresholds are weekly, so multiply by weeks in year and divide by months in year
         primary_threshold = (
-            parameters.thresholds.primary_threshold
-            * WEEKS_IN_YEAR
-            / MONTHS_IN_YEAR
+            p.thresholds.primary_threshold * WEEKS_IN_YEAR / MONTHS_IN_YEAR
         )
         upper_earnings_limit = (
-            parameters.thresholds.upper_earnings_limit
-            * WEEKS_IN_YEAR
-            / MONTHS_IN_YEAR
+            p.thresholds.upper_earnings_limit * WEEKS_IN_YEAR / MONTHS_IN_YEAR
         )
 
         upper_earnings_limit_income = max_(income - upper_earnings_limit, 0)
@@ -30,4 +26,4 @@ class ni_class_1_employee_primary(Variable):
             max_(income - primary_threshold, 0) - upper_earnings_limit_income
         )
 
-        return parameters.rates.employee.main * primary_threshold_income
+        return p.rates.employee.main * primary_threshold_income

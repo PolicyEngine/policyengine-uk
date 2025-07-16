@@ -17,8 +17,8 @@ class shareholding(Variable):
         ):
             weight = household("household_weight", period)
             return wealth / (wealth * weight).sum()
-        wealth = parameters(period).household.wealth
-        nbs = wealth.national_balance_sheet
+        p = parameters(period).household.wealth
+        nbs = p.national_balance_sheet
         wealth = household("corporate_wealth", period)
         total_wealth = nbs.household.financial_net_worth
         return wealth / total_wealth

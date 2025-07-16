@@ -11,5 +11,5 @@ class minimum_wage(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        MW = parameters(period).gov.hmrc.minimum_wage
-        return MW[person("minimum_wage_category", period)]
+        p = parameters(period).gov.hmrc.minimum_wage
+        return p[person("minimum_wage_category", period)]

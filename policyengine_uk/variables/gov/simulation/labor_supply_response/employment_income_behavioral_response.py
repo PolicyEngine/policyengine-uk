@@ -9,11 +9,11 @@ class employment_income_behavioral_response(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        lsr = parameters(period).gov.simulation.labor_supply_responses
+        p = parameters(period).gov.simulation.labor_supply_responses
         simulation = person.simulation
         if simulation.baseline is None:
             return 0  # No reform, no impact
-        if lsr.income_elasticity == 0 and lsr.substitution_elasticity == 0:
+        if p.income_elasticity == 0 and p.substitution_elasticity == 0:
             return 0
 
         measurement_branch = simulation.get_branch(

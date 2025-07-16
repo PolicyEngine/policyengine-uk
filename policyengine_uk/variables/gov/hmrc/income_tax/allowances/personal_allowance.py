@@ -10,10 +10,11 @@ class personal_allowance(Variable):
     reference = "Income Tax Act 2007 s. 35"
 
     def formula(person, period, parameters):
-        params = parameters(period)
-        PA = params.gov.hmrc.income_tax.allowances.personal_allowance
-        personal_allowance = PA.amount
-        ANI = person("adjusted_net_income", period)
-        excess = max_(0, ANI - PA.maximum_ani)
-        reduction = excess * PA.reduction_rate
+        p = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.personal_allowance
+        personal_allowance = p.amount
+        ani = person("adjusted_net_income", period)
+        excess = max_(0, ani - p.maximum_ani)
+        reduction = excess * p.reduction_rate
         return max_(0, personal_allowance - reduction)

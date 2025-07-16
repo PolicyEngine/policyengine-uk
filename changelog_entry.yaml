@@ -2,3 +2,4 @@
   changes:
     added:
     - Renaming variables to lowercase.
+    - Extending the use of "p" for "parameter" in variable formulas.

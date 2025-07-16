@@ -14,7 +14,7 @@ class pawhp(Variable):
         )
         age = household.members("age", period)
         is_sp_age = household.members("is_sp_age", period)
-        wfp = parameters(period).gov.social_security_scotland.pawhp
+        p = parameters(period).gov.social_security_scotland.pawhp
         on_mtb = (
             add(
                 household,
@@ -28,13 +28,13 @@ class pawhp(Variable):
             )
             > 0
         )
-        meets_mtb_requirement = on_mtb | ~wfp.eligibility.require_benefits
+        meets_mtb_requirement = on_mtb | ~p.eligibility.require_benefits
         meets_spa_requirement = (
             household.any(is_sp_age)
-            | ~wfp.eligibility.state_pension_age_requirement
+            | ~p.eligibility.state_pension_age_requirement
         )
         meets_higher_age_requirement = household.any(
-            age >= wfp.eligibility.higher_age_requirement
+            age >= p.eligibility.higher_age_requirement
         )
         qualifies_for_higher = (
             meets_mtb_requirement
@@ -50,7 +50,7 @@ class pawhp(Variable):
         qualifies_for_base = ~meets_mtb_requirement & meets_spa_requirement
 
         return in_scotland * (
-            wfp.amount.higher * qualifies_for_higher
-            + wfp.amount.lower * qualifies_for_lower
-            + wfp.amount.base * qualifies_for_base
+            p.amount.higher * qualifies_for_higher
+            + p.amount.lower * qualifies_for_lower
+            + p.amount.base * qualifies_for_base
         )

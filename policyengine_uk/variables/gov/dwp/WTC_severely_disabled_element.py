@@ -10,9 +10,9 @@ class wtc_severely_disabled_element(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        p = parameters(period).gov.dwp.tax_credits.working_tax_credit
         amount = (
             benunit("num_severely_disabled_adults", period)
-            * WTC.elements.severely_disabled
+            * p.elements.severely_disabled
         )
         return benunit("is_wtc_eligible", period) * amount

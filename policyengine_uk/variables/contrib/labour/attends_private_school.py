@@ -26,12 +26,10 @@ class attends_private_school(Variable):
         # To ensure that our model matches
         # total number of students actually enrolled
 
-        ps_vat_params = parameters(period).gov.simulation.private_school_vat
-        private_school_attendance_rate = (
-            ps_vat_params.private_school_attendance_rate
-        )
+        p = parameters(period).gov.simulation.private_school_vat
+        private_school_attendance_rate = p.private_school_attendance_rate
 
-        population_adjustment_factor = ps_vat_params.private_school_factor
+        population_adjustment_factor = p.private_school_factor
 
         person = household.members
 

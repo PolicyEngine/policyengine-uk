@@ -9,7 +9,7 @@ class housing_benefit_applicable_income_disregard(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        wtc = parameters(period).gov.dwp.tax_credits.working_tax_credit
         p = parameters(
             period
         ).gov.dwp.housing_benefit.means_test.income_disregard
@@ -22,7 +22,7 @@ class housing_benefit_applicable_income_disregard(Variable):
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_disregard = lone_parent * p.lone_parent
         hour_requirement = where(
-            lone_parent, WTC.min_hours.lower, p.worker_hours
+            lone_parent, wtc.min_hours.lower, p.worker_hours
         )
         worker = hours > hour_requirement
         worker_disregard = worker * p.worker

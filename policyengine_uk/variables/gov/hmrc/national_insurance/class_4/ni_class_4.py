@@ -10,24 +10,24 @@ class ni_class_4(Variable):
     defined_for = "ni_liable"
 
     def formula(person, period, parameters):
-        class_4 = parameters(period).gov.hmrc.national_insurance.class_4
+        p = parameters(period).gov.hmrc.national_insurance.class_4
         self_employment_income = person("self_employment_income", period)
         employee_ni = person("ni_class_1_employee", period)
         profits = self_employment_income - employee_ni
         add_rate_income = max_(
-            profits - class_4.thresholds.upper_profits_limit,
+            profits - p.thresholds.upper_profits_limit,
             0,
         )
         main_rate_income = (
             max_(
-                profits - class_4.thresholds.lower_profits_limit,
+                profits - p.thresholds.lower_profits_limit,
                 0,
             )
             - add_rate_income
         )
         pre_maximum_amount = (
-            main_rate_income * class_4.rates.main
-            + add_rate_income * class_4.rates.additional
+            main_rate_income * p.rates.main
+            + add_rate_income * p.rates.additional
         )
         maximum_amount = person("ni_class_4_maximum", period)
         return max_(

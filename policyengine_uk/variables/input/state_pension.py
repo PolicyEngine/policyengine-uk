@@ -12,12 +12,12 @@ class state_pension(Variable):
     uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
 
     def formula(person, period, parameters):
-        gov = parameters(period).gov
-        if gov.contrib.abolish_state_pension:
+        p = parameters(period).gov
+        if p.contrib.abolish_state_pension:
             return 0
-        relative_increase = gov.contrib.cec.state_pension_increase
+        relative_increase = p.contrib.cec.state_pension_increase
         uprating = 1 + relative_increase
-        sp = gov.dwp.state_pension
+        sp = p.dwp.state_pension
         gender = person("gender", period).decode_to_str()
         is_sp_age = person("is_sp_age", period)
         return add(

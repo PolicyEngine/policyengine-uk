@@ -11,7 +11,7 @@ class ctc_maximum_rate(Variable):
 
     adds = [
         "ctc_family_element",
-        "CTC_child_element",
-        "CTC_disabled_child_element",
+        "ctc_child_element",
+        "ctc_disabled_child_element",
         "ctc_severely_disabled_child_element",
     ]

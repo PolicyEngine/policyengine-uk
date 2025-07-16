@@ -9,7 +9,7 @@ class is_wtc_eligible(Variable):
     reference = "Tax Credits Act 2002 s. 10"
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        p = parameters(period).gov.dwp.tax_credits.working_tax_credit
         person = benunit.members
         person_hours = person("weekly_hours", period)
         total_hours = benunit.sum(person_hours)
@@ -17,7 +17,7 @@ class is_wtc_eligible(Variable):
         has_disabled_adults = benunit("num_disabled_adults", period) > 0
         family_type = benunit("family_type", period)
         families = family_type.possible_values
-        old = person("age", period.this_year) >= WTC.min_hours.old_age
+        old = person("age", period.this_year) >= p.min_hours.old_age
         has_old = benunit.any(old)
         lone_parent = family_type == families.LONE_PARENT
         couple_with_children = family_type == families.COUPLE_WITH_CHILDREN
@@ -28,13 +28,13 @@ class is_wtc_eligible(Variable):
         medium_req = couple_with_children & ~lower_req
         higher_req = eldest_25_plus & youngest_under_60
         # Calculate eligibility for each WTC group.
-        meets_lower = total_hours >= WTC.min_hours.lower
+        meets_lower = total_hours >= p.min_hours.lower
         meets_medium_total_hours = (
-            total_hours >= WTC.min_hours.couple_with_children
+            total_hours >= p.min_hours.couple_with_children
         )
-        meets_medium_person_hours = max_person_hours >= WTC.min_hours.lower
+        meets_medium_person_hours = max_person_hours >= p.min_hours.lower
         meets_medium = meets_medium_total_hours & meets_medium_person_hours
-        meets_higher = total_hours >= WTC.min_hours.default
+        meets_higher = total_hours >= p.min_hours.default
         already_claiming = (
             add(benunit, period, ["working_tax_credit_reported"]) > 0
         )

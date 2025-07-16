@@ -15,10 +15,10 @@ class severe_disability_minimum_guarantee_addition(Variable):
         # 1. At least one adult receives a qualifying benefit
         # 2. No children (except children receiving qualifying benefits)
         # 3. Nobody receives Carer's Allowance (technically 'for one of the claimants', but we assume this is true)
-        severe_disability = parameters(
+        p = parameters(
             period
         ).gov.dwp.pension_credit.guarantee_credit.severe_disability
-        relevant_benefits = severe_disability.relevant_benefits
+        relevant_benefits = p.relevant_benefits
         person = benunit.members
         person_receives_qualifying_benefits = (
             add(person, period, relevant_benefits) > 0
@@ -34,9 +34,4 @@ class severe_disability_minimum_guarantee_addition(Variable):
             add(benunit, period, ["carers_allowance"]) > 0
         )
         eligible = ~any_children_without_benefits & ~carers_allowance_received
-        return (
-            eligible
-            * count_eligible_adults
-            * severe_disability.addition
-            * WEEKS_IN_YEAR
-        )
+        return eligible * count_eligible_adults * p.addition * WEEKS_IN_YEAR

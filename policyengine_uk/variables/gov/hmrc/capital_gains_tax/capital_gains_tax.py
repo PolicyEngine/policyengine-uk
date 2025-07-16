@@ -10,9 +10,9 @@ class capital_gains_tax(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        hmrc = parameters(period).gov.hmrc
-        cgt = hmrc.cgt
-        it = hmrc.income_tax
+        p = parameters(period).gov.hmrc
+        cgt = p.cgt
+        it = p.income_tax
 
         ani = person("adjusted_net_income", period)
         gains = max_(0, person("capital_gains", period))

@@ -9,8 +9,8 @@ class employer_ni_response_consumer_incidence(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        emp_ni = parameters(period).gov.contrib.policyengine.employer_ni
-        if emp_ni.consumer_incidence == 0 or emp_ni.employee_incidence == 1:
+        p = parameters(period).gov.contrib.policyengine.employer_ni
+        if p.consumer_incidence == 0 or p.employee_incidence == 1:
             # If consumer incidence is zero, or if the employee incidence is 100%, then there is no capital incidence.:
             return 0
 
@@ -36,7 +36,7 @@ class employer_ni_response_consumer_incidence(Variable):
         value = (
             amount_paid_by_employers
             * share_of_total_consumption
-            * consumer_incidence
+            * p.consumer_incidence
         )
 
         if total_consumption == 0:

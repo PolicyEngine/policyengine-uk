@@ -11,10 +11,10 @@ class wtc_disabled_element(Variable):
     defined_for = "is_wtc_eligible"
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
+        p = parameters(period).gov.dwp.tax_credits.working_tax_credit
         person = benunit.members
         person_meets_hours = (
-            person("weekly_hours", period) >= WTC.min_hours.lower
+            person("weekly_hours", period) >= p.min_hours.lower
         )
         person_qualifies = (
             person_meets_hours
@@ -22,4 +22,4 @@ class wtc_disabled_element(Variable):
             & person("is_adult", period)
         )
         qualifies = benunit.any(person_qualifies)
-        return qualifies * WTC.elements.disabled
+        return qualifies * p.elements.disabled

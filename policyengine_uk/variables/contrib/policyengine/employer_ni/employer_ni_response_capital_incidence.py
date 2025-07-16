@@ -9,8 +9,8 @@ class employer_ni_response_capital_incidence(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        emp_ni = parameters(period).gov.contrib.policyengine.employer_ni
-        if emp_ni.capital_incidence == 0 or emp_ni.employee_incidence == 1:
+        p = parameters(period).gov.contrib.policyengine.employer_ni
+        if p.capital_incidence == 0 or p.employee_incidence == 1:
             # If capital incidence is zero, or if the employee incidence is 100%, then there is no capital incidence.:
             return 0
 
@@ -36,7 +36,7 @@ class employer_ni_response_capital_incidence(Variable):
         value = (
             amount_paid_by_employers
             * share_of_total_wealth
-            * capital_incidence
+            * p.capital_incidence
         )
 
         if total_wealth == 0:

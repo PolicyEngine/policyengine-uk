@@ -24,8 +24,6 @@ class child_benefit_respective_amount(Variable):
                 == 0
             )
         is_eldest = person("is_eldest_child", period.this_year)
-        child_benefit = parameters(period).gov.hmrc.child_benefit.amount
-        amount = where(
-            is_eldest, child_benefit.eldest, child_benefit.additional
-        )
+        p = parameters(period).gov.hmrc.child_benefit.amount
+        amount = where(is_eldest, p.eldest, p.additional)
         return eligible * amount * WEEKS_IN_YEAR / MONTHS_IN_YEAR

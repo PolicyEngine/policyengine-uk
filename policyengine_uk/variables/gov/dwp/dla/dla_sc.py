@@ -9,7 +9,7 @@ class dla_sc(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        dla_sc = parameters(period).gov.dwp.dla.self_care
+        p = parameters(period).gov.dwp.dla.self_care
         category = person("dla_sc_category", period)
         categories = category.possible_values
         return (
@@ -21,9 +21,9 @@ class dla_sc(Variable):
                     category == categories.NONE,
                 ],
                 [
-                    dla_sc.higher,
-                    dla_sc.middle,
-                    dla_sc.lower,
+                    p.higher,
+                    p.middle,
+                    p.lower,
                     0,
                 ],
             )

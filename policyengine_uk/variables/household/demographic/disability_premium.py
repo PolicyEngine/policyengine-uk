@@ -10,11 +10,11 @@ class disability_premium(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).gov.dwp.disability_premia
+        p = parameters(period).gov.dwp.disability_premia
         single = benunit("is_single", period.this_year)
         couple = benunit("is_couple", period.this_year)
-        single_premium = single * dis.disability_single
-        couple_premium = couple * dis.disability_couple
+        single_premium = single * p.disability_single
+        couple_premium = couple * p.disability_couple
         has_disabled_adults = (
             benunit("num_disabled_adults", period.this_year) > 0
         )

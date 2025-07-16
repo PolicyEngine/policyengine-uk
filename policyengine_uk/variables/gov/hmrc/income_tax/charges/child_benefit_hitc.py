@@ -12,9 +12,9 @@ class cb_hitc(Variable):
 
     def formula(person, period, parameters):
         CB_received = person.benunit("child_benefit", period)
-        hitc = parameters(period).gov.hmrc.income_tax.charges.cb_hitc
+        p = parameters(period).gov.hmrc.income_tax.charges.cb_hitc
         income = person("adjusted_net_income", period)
-        percentage = max_(income - hitc.phase_out_start, 0) / (
-            hitc.phase_out_end - hitc.phase_out_start
+        percentage = max_(income - p.phase_out_start, 0) / (
+            p.phase_out_end - p.phase_out_start
         )
         return min_(percentage, 1) * CB_received

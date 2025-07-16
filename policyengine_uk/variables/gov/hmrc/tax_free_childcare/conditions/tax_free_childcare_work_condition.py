@@ -15,15 +15,14 @@ class tax_free_childcare_work_condition(Variable):
         in_work = person("in_work", period)
 
         # Get disability parameters and check eligibility
-        p_gc_disability = parameters(
+        p = parameters(
             period
         ).gov.dwp.pension_credit.guarantee_credit.child.disability
         receives_disability_programs = (
             add(
                 person,
                 period,
-                p_gc_disability.eligibility
-                + p_gc_disability.severe.eligibility,
+                p.eligibility + p.severe.eligibility,
             )
             > 0
         )

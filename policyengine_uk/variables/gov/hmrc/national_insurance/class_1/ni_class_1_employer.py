@@ -11,7 +11,7 @@ class ni_class_1_employer(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/9"
 
     def formula(person, period, parameters):
-        class_1 = parameters(period).gov.hmrc.national_insurance.class_1
+        p = parameters(period).gov.hmrc.national_insurance.class_1
         earnings = person("ni_class_1_income", period)
         if not parameters(
             period
@@ -22,11 +22,9 @@ class ni_class_1_employer(Variable):
             taxed_earnings = earnings + added_pension_contributions
         else:
             taxed_earnings = earnings
-        secondary_threshold = (
-            class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
-        )
+        secondary_threshold = p.thresholds.secondary_threshold * WEEKS_IN_YEAR
         main_earnings = max_(
             taxed_earnings - secondary_threshold,
             0,
         )
-        return class_1.rates.employer * main_earnings
+        return p.rates.employer * main_earnings
