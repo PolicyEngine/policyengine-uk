@@ -298,14 +298,16 @@ ofwat:
       2022-01-01: 0.052
       2023-01-01: 0.092
       2024-01-01: 0.044
-      2025-01-01: 0.061
-      2026-01-01: 0.061
-      2027-01-01: 0.051
-      2028-01-01: 0.038
-      2029-01-01: 0.043
+      2025-01-01: 0.260
+      2026-01-01: 0.055
+      2027-01-01: 0.046
+      2028-01-01: 0.045
+      2029-01-01: 0.045
     metadata:
       unit: /1
       label: water bills growth
       reference:
         - title: Ofwat (and custom projections)
           href: https://www.ofwat.gov.uk/price-review/
+        - title: Ofwat 2025-26 media statement
+          href: https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/

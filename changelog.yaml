@@ -1646,3 +1646,8 @@
     - Codecov coverage.
     - Expanded .gitignore.
   date: 2025-07-15 11:58:59
+- bump: patch
+  changes:
+    fixed:
+    - Improved water bills projections.
+  date: 2025-07-16 11:08:29
