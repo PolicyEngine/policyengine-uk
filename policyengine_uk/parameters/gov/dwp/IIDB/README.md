@@ -1,1 +1,0 @@
-# Industrial Injuries Disablement Benefit
