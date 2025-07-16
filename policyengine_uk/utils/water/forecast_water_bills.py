@@ -1,5 +1,6 @@
 import pandas as pd
 from pathlib import Path
+from microdf import MicroDataFrame
 
 
 def project_water_bills():
@@ -26,14 +27,15 @@ def project_water_bills():
     proposed_increases = pd.read_csv(
         Path(__file__).parent / "ofwat_increases.csv"
     )
+    proposed_increases = MicroDataFrame(proposed_increases, weights="Customers")
     avg_bills_2025_onwards = (
-        proposed_increases[proposed_increases.columns[1:]].mean()[1:].values
+        proposed_increases[proposed_increases.columns[2:]].mean().values
     )
 
     df_post_2025 = pd.DataFrame(
         {
-            "Year": [2025, 2026, 2027, 2028, 2029],
-            "CPIH": [139.0, 142.2, 145.2, 148.2, 151.3],
+            "Year": [2024, 2025, 2026, 2027, 2028, 2029],
+            "CPIH": [134.0, 139.0, 142.2, 145.2, 148.2, 151.3],
             "Pre-inflation avg bills (nominal)": avg_bills_2025_onwards,
         }
     )
@@ -45,7 +47,7 @@ def project_water_bills():
     ].values
     df_post_2025["CPIH change"] = df_post_2025["CPIH"].pct_change() * 100
 
-    for year in range(2026, 2030):
+    for year in range(2025, 2030):
         row = df_post_2025[df_post_2025["Year"] == year].iloc[0]
         cpi_change = (
             row["CPIH"]
@@ -65,6 +67,8 @@ def project_water_bills():
         df_post_2025["Avg bills (nominal)"].pct_change() * 100
     ).round(1)
 
+    df_post_2025.to_csv("test.csv")
+
     df_post_2025
 
     combined_water_forecast = pd.DataFrame(
@@ -72,9 +76,12 @@ def project_water_bills():
             "Year": list(range(2022, 2030)),
             "Average nominal bills YoY change": df_pre_2025[
                 "Nominal YoY change"
-            ].tolist()[1:]
+            ].tolist()[1:-1]
             + df_post_2025["Relative change"].tolist()[1:],
         }
     )
 
     print(combined_water_forecast.to_markdown(index=False))
+
+if __name__ == "__main__":
+    project_water_bills()
