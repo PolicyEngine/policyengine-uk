@@ -1,0 +1,11 @@
+description: Income-based Employment and Support Allowance personal allowance for
+  couples
+metadata:
+  economy: false
+  period: week
+  label: Income-based ESA personal allowance (couples)
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38
+  unit: currency-GBP
+values:
+  2015-04-01: 57.9
+  2020-04-01: 116.8

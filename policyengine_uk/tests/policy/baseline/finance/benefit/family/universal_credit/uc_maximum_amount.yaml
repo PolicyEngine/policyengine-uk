@@ -1,0 +1,11 @@
+- name: All elements are summed
+  period: 2020
+  input:
+    uc_standard_allowance: 1
+    uc_child_element: 1
+    uc_disability_elements: 1
+    uc_carer_element: 1
+    uc_housing_costs_element: 1
+    uc_childcare_element: 1
+  output:
+    uc_maximum_amount: 6

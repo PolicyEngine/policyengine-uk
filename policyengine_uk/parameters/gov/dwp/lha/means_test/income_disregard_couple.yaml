@@ -1,0 +1,10 @@
+description: Threshold in income for a couple, above which the Housing Benefit (LHA)
+  amount is reduced
+metadata:
+  economy: false
+  period: week
+  label: Housing Benefit (LHA) income disregard (couple)
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33
+  unit: currency-GBP
+values:
+  2015-04-01: 10.0

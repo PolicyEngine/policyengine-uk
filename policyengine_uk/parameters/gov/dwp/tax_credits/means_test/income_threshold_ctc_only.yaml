@@ -1,0 +1,19 @@
+description: Income threshold for benefit units only entitled to Child Tax Credit
+values:
+  2016-04-06: 16_105
+  # NB: EUROMOD reports 16_435 for 2020. This is the gov.uk value.
+  2020-04-06: 16_385
+  2021-04-06: 16_480
+  2022-04-01: 17_005
+  2023-04-01: 18_725
+  2024-04-01: 19_995
+  2025-04-01: 20_335
+metadata:
+  period: year
+  uprating: gov.benefit_uprating_cpi
+  unit: currency-GBP
+  name: ctc_income_threshold
+  label: "CTC income threshold"
+  reference:
+    - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
+    - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance

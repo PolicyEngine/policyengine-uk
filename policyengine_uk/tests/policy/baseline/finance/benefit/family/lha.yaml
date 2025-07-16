@@ -1,0 +1,26 @@
+- name: BRMA default value
+  period: 2020
+  absolute_error_margin: 20
+  input:
+    age: 18
+    lha_category: C
+  output:
+    brma: MAIDSTONE
+    brma_lha_rate: 9_771
+- name: BRMA inputs
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    brma: GUILDFORD
+  output:
+    brma: GUILDFORD
+- name: BRMA and category
+  period: 2020
+  absolute_error_margin: 20
+  input:
+    brma: GUILDFORD
+    lha_category: C
+  output:
+    brma: GUILDFORD
+    lha_category: C
+    brma_lha_rate: 13_164

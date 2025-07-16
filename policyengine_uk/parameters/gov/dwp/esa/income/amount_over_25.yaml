@@ -1,0 +1,11 @@
+description: Income-based Employment and Support Allowance personal allowance for
+  persons aged over 25
+metadata:
+  economy: false
+  period: week
+  label: Income-based ESA personal allowance (over 25)
+  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=38
+  unit: currency-GBP
+values:
+  2015-04-01: 73.1
+  2020-04-01: 74.35

@@ -1,0 +1,10 @@
+description: Default hours requirement for the Working-Tax-Credit-related worker element
+  of Housing Benefit (LHA)
+metadata:
+  economy: false
+  period: week
+  label: LHA worker hours requirement
+  reference: https://www.gov.uk/working-tax-credit
+  unit: hour
+values:
+  2015-04-01: 30
