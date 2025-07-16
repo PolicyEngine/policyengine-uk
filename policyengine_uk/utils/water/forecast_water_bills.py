@@ -27,7 +27,9 @@ def project_water_bills():
     proposed_increases = pd.read_csv(
         Path(__file__).parent / "ofwat_increases.csv"
     )
-    proposed_increases = MicroDataFrame(proposed_increases, weights="Customers")
+    proposed_increases = MicroDataFrame(
+        proposed_increases, weights="Customers"
+    )
     avg_bills_2025_onwards = (
         proposed_increases[proposed_increases.columns[2:]].mean().values
     )
@@ -82,6 +84,7 @@ def project_water_bills():
     )
 
     print(combined_water_forecast.to_markdown(index=False))
+
 
 if __name__ == "__main__":
     project_water_bills()
