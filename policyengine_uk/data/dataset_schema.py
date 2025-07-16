@@ -43,6 +43,7 @@ class UKDataset:
         fiscal_year: int = 2025,
     ):
         if file_path is not None:
+            file_path = str(file_path)
             self.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
                 self.person = f["person"]
@@ -84,6 +85,7 @@ class UKDataset:
             person=self.person.copy(),
             benunit=self.benunit.copy(),
             household=self.household.copy(),
+            fiscal_year=self.time_period,
         )
 
     def validate(self):

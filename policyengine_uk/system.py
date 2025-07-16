@@ -185,6 +185,9 @@ class Microsimulation(CoreMicrosimulation):
                         try:
                             UKDataset.validate_file_path(dataset_file_path)
                             dataset = UKDataset(file_path=dataset_file_path)
+                            self.default_calculation_period = (
+                                dataset.time_period
+                            )
                         except:
                             dataset = Dataset.from_file(dataset_file_path)
 
