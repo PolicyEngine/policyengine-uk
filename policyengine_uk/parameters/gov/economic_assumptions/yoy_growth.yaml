@@ -59,7 +59,7 @@ obr:
       reference:
         - title: OBR EFO March 2025 (detailed forecast tables, economy, Table 1.6, Row Q)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-  
+
   consumer_price_index:
     description: Consumer price index year-on-year growth.
     values:
@@ -90,7 +90,7 @@ obr:
       reference:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-  
+
   non_labour_income:
     description: Non-labour income year-on-year growth.
     values:
@@ -109,14 +109,14 @@ obr:
       reference:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-  
+
   council_tax:
     england:
-      description: Growth in the level (adjusted for household growth) of council tax receipts in England.
+      description: Growth in the level of council tax receipts in England.
       values:
         2023-01-01: 0.051
         2024-01-01: 0.051
-        2025-01-01: 0.043
+        2025-01-01: 0.050
         2026-01-01: 0.043
         2027-01-01: 0.043
         2028-01-01: 0.043
@@ -124,14 +124,14 @@ obr:
       metadata:
         unit: /1
         reference:
-        - title: OBR EFO March 2025
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+          - title: OBR EFO March 2025 (2023-2025 based on outturn)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
     scotland:
-      description: Growth in the level (adjusted for household growth) of council tax receipts in Scotland.
+      description: Growth in the level of council tax receipts in Scotland.
       values:
-        2023-01-01: 0.026
-        2024-01-01: 0.027
-        2025-01-01: 0.027
+        2023-01-01: 0.052
+        2024-01-01: 0.001
+        2025-01-01: 0.088
         2026-01-01: 0.027
         2027-01-01: 0.027
         2028-01-01: 0.027
@@ -139,14 +139,14 @@ obr:
       metadata:
         unit: /1
         reference:
-        - title: OBR EFO March 2025
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+          - title: OBR EFO March 2025 (2023-2025 based on outturn)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
     wales:
-      description: Growth in the level (adjusted for household growth) of council tax receipts in Wales.
+      description: Growth in the level of council tax receipts in Wales.
       values:
-        2023-01-01: 0.038
-        2024-01-01: 0.041
-        2025-01-01: 0.041
+        2023-01-01: 0.058
+        2024-01-01: 0.077
+        2025-01-01: 0.072
         2026-01-01: 0.041
         2027-01-01: 0.041
         2028-01-01: 0.041
@@ -154,10 +154,9 @@ obr:
       metadata:
         unit: /1
         reference:
-        - title: OBR EFO March 2025
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+          - title: OBR EFO March 2025 (2023-2025 based on outturn)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
 
-  
   per_capita:
     gdp:
       description: Per capita GDP year-on-year growth.
@@ -177,7 +176,7 @@ obr:
         reference:
           - title: OBR EFO March 2025
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-    
+
     mixed_income:
       description: Per capita mixed income year-on-year growth.
       values:
@@ -196,7 +195,7 @@ obr:
         reference:
           - title: OBR EFO March 2025
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-    
+
     non_labour_income:
       description: Per capita non-labour income year-on-year growth.
       values:
@@ -215,7 +214,7 @@ obr:
         reference:
           - title: OBR EFO March 2025
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-  
+
   house_prices:
     description: House prices year-on-year growth.
     values:
@@ -234,7 +233,7 @@ obr:
       reference:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-  
+
   mortgage_interest:
     description: Mortgage interest year-on-year growth.
     values:
@@ -253,7 +252,7 @@ obr:
       reference:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-  
+
   social_rent:
     description: Rent year-on-year growth (CPI+1%, one year lagged).
     values:
