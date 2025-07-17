@@ -1,4 +1,4 @@
-[project]
+[project] 
 name = "policyengine-uk"
 version = "2.39.2"
 description = "PolicyEngine tax and benefit system for the UK"
