@@ -10,18 +10,15 @@ class ebr_council_tax_rebate(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ctr = parameters(
+        p = parameters(
             period
         ).gov.treasury.energy_bills_rebate.council_tax_rebate
         ct_band = household("council_tax_band", period)
         ct_band_values = ct_band.possible_values
         eligible = np.any(
             np.array(
-                [
-                    ct_band == getattr(ct_band_values, band)
-                    for band in ctr.bands
-                ]
+                [ct_band == getattr(ct_band_values, band) for band in p.bands]
             ),
             axis=0,
         )
-        return eligible * ctr.amount
+        return eligible * p.amount

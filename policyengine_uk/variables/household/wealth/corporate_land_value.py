@@ -11,10 +11,9 @@ class corporate_land_value(Variable):
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        wealth = parameters(period).household.wealth
+        p = parameters(period).household.wealth
         corporate_wealth = household("corporate_wealth", period)
         corporate_wealth_intensity = (
-            wealth.land.value.aggregate_corporate_land_value
-            / wealth.corporate_wealth
+            p.land.value.aggregate_corporate_land_value / p.corporate_wealth
         )
         return corporate_wealth * corporate_wealth_intensity

@@ -9,15 +9,15 @@ class income_support_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        IS = parameters(period).gov.dwp.income_support
+        p = parameters(period).gov.dwp.income_support
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",
             "property_income",
             "private_pension_income",
         ]
-        bi = parameters(period).gov.contrib.ubi_center.basic_income
-        if bi.interactions.include_in_means_tests:
+        p2 = parameters(period).gov.contrib.ubi_center.basic_income
+        if p2.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
         income = add(benunit, period, INCOME_COMPONENTS)
         tax = add(
@@ -31,7 +31,7 @@ class income_support_applicable_income(Variable):
         family_type = benunit("family_type", period)
         families = family_type.possible_values
         # Calculate income disregards for each family type.
-        mt = IS.means_test
+        mt = p.means_test
         single = family_type == families.SINGLE
         income_disregard_single = single * mt.income_disregard_single
         single = family_type == families.SINGLE

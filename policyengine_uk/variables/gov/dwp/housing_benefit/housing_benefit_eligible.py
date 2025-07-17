@@ -13,5 +13,5 @@ class housing_benefit_eligible(Variable):
             add(benunit, period, ["housing_benefit_reported"]) > 0
         )
         claiming_uc = benunit("would_claim_uc", period)
-        lha_eligible = benunit("LHA_eligible", period)
+        lha_eligible = benunit("lha_eligible", period)
         return already_claiming & (social | lha_eligible) & ~claiming_uc

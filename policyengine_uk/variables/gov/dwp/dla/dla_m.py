@@ -9,7 +9,7 @@ class dla_m(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        dla_m = parameters(period).gov.dwp.dla.mobility
+        p = parameters(period).gov.dwp.dla.mobility
         category = person("dla_m_category", period)
         categories = category.possible_values
         return (
@@ -20,8 +20,8 @@ class dla_m(Variable):
                     category == categories.NONE,
                 ],
                 [
-                    dla_m.higher,
-                    dla_m.lower,
+                    p.higher,
+                    p.lower,
                     0,
                 ],
             )

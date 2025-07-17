@@ -12,4 +12,4 @@ class child_benefit_less_tax_charge(Variable):
     unit = GBP
 
     adds = ["child_benefit"]
-    subtracts = ["CB_HITC"]
+    subtracts = ["cb_hitc"]

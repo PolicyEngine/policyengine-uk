@@ -3,7 +3,7 @@
   input:
     people:
       person:
-        is_SP_age: false
+        is_sp_age: false
   output:
     is_pension_credit_eligible: false
 
@@ -12,9 +12,9 @@
   input:
     people:
       person:
-        is_SP_age: false
+        is_sp_age: false
       spouse:
-        is_SP_age: true
+        is_sp_age: true
     benunits:
       benunit:
         members: [person, spouse]

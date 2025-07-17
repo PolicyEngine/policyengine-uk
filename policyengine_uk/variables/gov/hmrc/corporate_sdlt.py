@@ -12,8 +12,8 @@ class corporate_sdlt(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        sd = parameters(period).gov.hmrc.stamp_duty.statistics
+        p = parameters(period).gov.hmrc.stamp_duty.statistics
         return household("shareholding", period) * (
-            sd.residential.corporate.revenue
-            + sd.non_residential.corporate.revenue
+            p.residential.corporate.revenue
+            + p.non_residential.corporate.revenue
         )

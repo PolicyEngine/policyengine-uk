@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class CB_HITC(Variable):
+class cb_hitc(Variable):
     value_type = float
     entity = Person
     label = "Child Benefit High-Income Tax Charge"
@@ -12,7 +12,7 @@ class CB_HITC(Variable):
 
     def formula(person, period, parameters):
         CB_received = person.benunit("child_benefit", period)
-        hitc = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
+        hitc = parameters(period).gov.hmrc.income_tax.charges.cb_hitc
         personal_income = person("adjusted_net_income", period)
         income = person.benunit.sum(personal_income)
         percentage = max_(income - hitc.phase_out_start, 0) / (
@@ -23,7 +23,7 @@ class CB_HITC(Variable):
 
 class make_cb_hitc_household_based(Variable):
     def apply(self):
-        self.update_variable(CB_HITC)
+        self.update_variable(cb_hitc)
 
 
 def create_household_based_hitc_reform(parameters, period):

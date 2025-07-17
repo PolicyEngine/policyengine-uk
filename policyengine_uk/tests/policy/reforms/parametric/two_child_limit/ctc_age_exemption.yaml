@@ -23,7 +23,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         claims_all_entitled_benefits: true
   output:
-    CTC_child_element: 6470  # CTC for only the first 2 children
+    ctc_child_element: 6470  # CTC for only the first 2 children
 
 - name: With age exemption, all children get CTC when any child is below threshold
   period: 2023
@@ -51,7 +51,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         claims_all_entitled_benefits: true
   output:
-    CTC_child_element: 12940  # CTC for all children
+    ctc_child_element: 12940  # CTC for all children
 
 - name: No exemption when all children above age threshold
   period: 2023
@@ -79,7 +79,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         claims_all_entitled_benefits: true
   output:
-    CTC_child_element: 6470  # CTC for only first 2 children
+    ctc_child_element: 6470  # CTC for only first 2 children
 
 - name: Shows baseline CTC for a family with children under age 3
   period: 2023
@@ -106,7 +106,7 @@
         members: [parent, child_1, child_2, child_3, child_4]
         claims_all_entitled_benefits: true
   output:
-    CTC_child_element: 6470  # CTC for only first 2 children
+    ctc_child_element: 6470  # CTC for only first 2 children
 
 - name: Shows increased CTC after applying age exemption reform
   period: 2023
@@ -134,4 +134,4 @@
         members: [parent, child_1, child_2, child_3, child_4]
         claims_all_entitled_benefits: true
   output:
-    CTC_child_element: 12940  # CTC for all children due to exemption
+    ctc_child_element: 12940  # CTC for all children due to exemption

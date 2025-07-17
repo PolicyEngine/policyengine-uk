@@ -52,10 +52,10 @@ class household_benefits(Variable):
     ]
 
     def formula(household, period, parameters):
-        contrib = parameters(period).gov.contrib
-        uprating = contrib.benefit_uprating
+        p = parameters(period).gov.contrib
+        uprating = p.benefit_uprating
         benefits = household_benefits.adds
-        if contrib.abolish_council_tax:
+        if p.abolish_council_tax:
             benefits = [
                 benefit
                 for benefit in benefits

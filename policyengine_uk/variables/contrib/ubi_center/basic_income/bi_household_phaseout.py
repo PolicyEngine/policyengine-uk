@@ -16,19 +16,17 @@ class bi_household_phaseout(Variable):
         income = person("total_income", period)
         household = person.household
         household_income = household.sum(income)
-        bi = parameters(period).gov.contrib.ubi_center.basic_income
+        p = parameters(period).gov.contrib.ubi_center.basic_income
         remaining_bi = person("bi_maximum", period) - person(
             "bi_individual_phaseout", period
         )  # Basic income remaining after individual-level phaseouts
 
         household_bi = household.sum(remaining_bi)
         income_over_threshold = max_(
-            household_income - bi.phase_out.household.threshold,
+            household_income - p.phase_out.household.threshold,
             0,
         )
-        uncapped_deduction = (
-            bi.phase_out.household.rate * income_over_threshold
-        )
+        uncapped_deduction = p.phase_out.household.rate * income_over_threshold
         capped_deduction = min_(household_bi, uncapped_deduction)
 
         warnings.filterwarnings("ignore")

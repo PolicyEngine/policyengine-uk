@@ -10,15 +10,14 @@ class main_residential_property_purchased_is_first_home(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        residential_sd = parameters(
+        p = parameters(
             period
         ).gov.hmrc.stamp_duty.statistics.residential.household
         age = household.sum(
             household.members("is_household_head", period)
             * household.members("age", period)
         )
-        percentage_claiming_ftbr = (
-            residential_sd.first_time_buyers_relief.calc(age)
-            / residential_sd.transactions_by_age.calc(age)
-        )
+        percentage_claiming_ftbr = p.first_time_buyers_relief.calc(
+            age
+        ) / p.transactions_by_age.calc(age)
         return random(household) < percentage_claiming_ftbr

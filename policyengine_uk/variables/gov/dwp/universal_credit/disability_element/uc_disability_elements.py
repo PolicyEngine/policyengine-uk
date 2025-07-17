@@ -11,5 +11,5 @@ class uc_disability_elements(Variable):
     adds = [
         "uc_individual_disabled_child_element",
         "uc_individual_severely_disabled_child_element",
-        "uc_LCWRA_element",
+        "uc_lcwra_element",
     ]

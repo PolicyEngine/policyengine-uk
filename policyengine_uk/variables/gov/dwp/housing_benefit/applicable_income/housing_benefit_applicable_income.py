@@ -31,7 +31,7 @@ class housing_benefit_applicable_income(Variable):
             "property_income",
             "private_pension_income",
         ]
-        bi = parameters(period).gov.contrib.ubi_center.basic_income
+        p = parameters(period).gov.contrib.ubi_center.basic_income
         # Add personal benefits, credits and total benefits to income
         benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
         income = add(benunit, period, INCOME_COMPONENTS)
@@ -39,7 +39,7 @@ class housing_benefit_applicable_income(Variable):
         credits = add(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefits + credits + benefits
 
-        if not bi.interactions.include_in_means_tests:
+        if not p.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
             increased_income -= add(benunit, period, ["basic_income"])
         # Reduce increased income by pension contributions and tax
