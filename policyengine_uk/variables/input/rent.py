@@ -32,9 +32,31 @@ class rent(Variable):
 
         obr = parameters.gov.economic_assumptions.indices.obr
 
-        private_rent_uprating = obr.lagged_average_earnings(
-            period
-        ) / obr.lagged_average_earnings(data_year)
+        # Get regional private rent indices
+        region_str = household("region", period).decode_to_str()
+        regional_private_rent = (
+            parameters.gov.economic_assumptions.indices.ons.private_rental_prices
+        )
+
+        # Default to OBR private rent growth for all households
+        private_rent_uprating = obr.private_rent(period) / obr.private_rent(data_year)
+
+        # Try to use regional data where available
+        region_name = region_str.item()
+        if region_name == "UNKNOWN":
+            region_name = "UNITED_KINGDOM"
+        if hasattr(regional_private_rent, region_name):
+            regional_index = getattr(regional_private_rent, region_name)
+            
+            # We don't have ONS private rental price indices beyond 2024
+            if period.start.year > 2024:
+                # Splice regional indices (data_year to 2024) with private rent forecast (2024 to period)
+                regional_uprating = regional_index(2024) / regional_index(data_year)
+                forecast_uprating = obr.private_rent(period) / obr.private_rent(2024)
+                private_rent_uprating = regional_uprating * forecast_uprating
+            else:
+                private_rent_uprating = regional_index(period) / regional_index(data_year)
+
         social_rent_uprating = obr.social_rent(period) / obr.social_rent(
             data_year
         )
