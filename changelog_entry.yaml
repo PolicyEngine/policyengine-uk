@@ -1,0 +1,6 @@
+- bump: patch
+  changes:
+    changed:
+      - Add ONS private rental indices by region
+      - Nowcast private rentals using ONS regional indices up until 2024
+      - Decompose OBR rent forecast to get private rents component
