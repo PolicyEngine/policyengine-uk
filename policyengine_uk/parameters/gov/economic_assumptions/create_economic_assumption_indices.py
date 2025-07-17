@@ -15,14 +15,9 @@ def create_economic_assumption_indices(
         data={},
     )
     econ_assumptions.add_child("indices", indices)
-
-    # Process both yoy_growth and regional_private_rent_yoy_growth
+    
     source_nodes = [
         (econ_assumptions.yoy_growth, "yoy_growth"),
-        (
-            econ_assumptions.regional_private_rent_yoy_growth,
-            "regional_private_rent_yoy_growth",
-        ),
     ]
 
     for source_node, source_name in source_nodes:
