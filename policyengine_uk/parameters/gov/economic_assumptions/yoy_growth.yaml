@@ -257,7 +257,7 @@ obr:
     description: Rent year-on-year growth (CPI+1%, one year lagged).
     values:
       2022-01-01: 0.050
-      2023-01-01: 0.110
+      2023-01-01: 0.700
       2024-01-01: 0.067
       2025-01-01: 0.033
       2026-01-01: 0.042
