@@ -44,8 +44,9 @@ class rent(Variable):
         private_rent_uprating = obr.private_rent(period) / obr.private_rent(data_year)
 
         # Try to use regional data where available
-        if hasattr(regional_private_rent, region_str):
-            regional_index = getattr(regional_private_rent, region_str)
+        region_name = region_str.item()
+        if hasattr(regional_private_rent, region_name):
+            regional_index = getattr(regional_private_rent, region_name)
             
             # We don't have ONS private rental price indices beyond 2024
             if period.start.year > 2024:
