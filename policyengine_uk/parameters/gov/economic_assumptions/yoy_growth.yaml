@@ -271,6 +271,24 @@ obr:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
 
+  rent:
+    description: Rent year-on-year growth, private and social (ONS series D7GQ).
+    values:
+      2022-01-01: 0.041
+      2023-01-01: 0.063
+      2024-01-01: 0.074
+      2025-01-01: 0.057
+      2026-01-01: 0.036
+      2027-01-01: 0.027
+      2028-01-01: 0.023
+      2029-01-01: 0.024
+    metadata:
+      unit: /1
+      label: rent growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
 ons:
   population:
     description: Population year-on-year growth.
