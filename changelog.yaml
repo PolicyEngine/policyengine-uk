@@ -1651,3 +1651,9 @@
     fixed:
     - Improved water bills projections.
   date: 2025-07-16 11:08:29
+- bump: patch
+  changes:
+    fixed:
+    - Use outturn data for council tax growth in England, Scotland, and Wales for
+      2023-2025.
+  date: 2025-07-17 10:41:08
