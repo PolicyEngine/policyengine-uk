@@ -310,3 +310,20 @@ ofwat:
           href: https://www.ofwat.gov.uk/price-review/
         - title: Ofwat 2025-26 media statement
           href: https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/
+finance_ni:
+  domestic_rates:
+    description: Domestic rates year-on-year growth.
+    values:
+      2024-01-01: 0.050
+      2025-01-01: 0.047
+      2026-01-01: 0.05
+      2027-01-01: 0.05
+      2028-01-01: 0.05
+      2029-01-01: 0.05
+      2020-01-01: 0.05
+    metadata:
+      unit: /1
+      label: domestic rates growth
+      reference:
+        - title: Finance NI (based on outturn)
+          href: https://www.finance-ni.gov.uk/
