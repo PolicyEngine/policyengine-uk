@@ -38,13 +38,13 @@ class rent(Variable):
             parameters.gov.economic_assumptions.indices.ons.private_rental_prices
         )
 
-        region_str = where(region_str == "UNKNOWN", "UNITED_KINGDOM", region_str)
-
         # Default to OBR private rent growth for all households
         private_rent_uprating = obr.private_rent(period) / obr.private_rent(data_year)
 
         # Try to use regional data where available
         region_name = region_str.item()
+        if region_name == "UNKNOWN":
+            region_name = "UNITED_KINGDOM"
         if hasattr(regional_private_rent, region_name):
             regional_index = getattr(regional_private_rent, region_name)
             
