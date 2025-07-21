@@ -12,8 +12,8 @@ format:
 	black . -l 79
 
 test:
-	python -m policyengine_core.scripts.policyengine_command test policyengine_uk/tests/policy -c policyengine_uk
-	pytest policyengine_uk/tests/ -v
+	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
+	pytest policyengine_uk/tests/ --cov=policyengine_uk --cov-report=xml --maxfail=0 -v
 
 update-tests:
 	python policyengine_uk/data/economic_assumptions.py
