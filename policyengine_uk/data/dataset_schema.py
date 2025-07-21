@@ -119,8 +119,12 @@ class UKSingleYearDataset:
 
 
 class UKMultiYearDataset:
-    def __init__(self, file_path: str = None, datasets: list[UKSingleYearDataset] | None = None):
-        if datasets is None:
+    def __init__(
+        self,
+        file_path: str = None,
+        datasets: list[UKSingleYearDataset] | None = None,
+    ):
+        if datasets is not None:
             self.datasets = {}
             for dataset in datasets:
                 if not isinstance(dataset, UKSingleYearDataset):
@@ -129,7 +133,7 @@ class UKMultiYearDataset:
                     )
                 year = int(dataset.time_period[:4])
                 self.datasets[year] = dataset
-        
+
         if file_path is not None:
             UKSingleYearDataset.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
@@ -146,23 +150,77 @@ class UKMultiYearDataset:
                             household=household_df,
                             fiscal_year=fiscal_year,
                         )
-        
+
+        self.data_format = "time_period_arrays"
+        self.time_period = list(sorted(self.datasets.keys()))[0]
 
     def get_year(self, fiscal_year: int) -> UKSingleYearDataset:
         if fiscal_year in self.datasets:
             return self.datasets[fiscal_year]
         else:
             raise ValueError(f"No dataset found for year {fiscal_year}.")
-    
-    def __getattr__(self, fiscal_year: int):
+
+    def __getitem__(self, fiscal_year: int):
         return self.get_year(fiscal_year)
-    
+
     def save(self, file_path: str):
         with pd.HDFStore(file_path) as f:
-            for i, dataset in enumerate(self.datasets):
-                year = dataset.time_period[:4]
-                f.put(f"person/{year}", dataset.person, format="table", data_columns=True)
-                f.put(f"benunit/{year}", dataset.benunit, format="table", data_columns=True)
-                f.put(f"household/{year}", dataset.household, format="table", data_columns=True)
-                f.put(f"time_period/{year}", pd.Series([dataset.time_period]), format="table", data_columns=True)
-                
+            for year, dataset in self.datasets.items():
+                f.put(
+                    f"person/{year}",
+                    dataset.person,
+                    format="table",
+                    data_columns=True,
+                )
+                f.put(
+                    f"benunit/{year}",
+                    dataset.benunit,
+                    format="table",
+                    data_columns=True,
+                )
+                f.put(
+                    f"household/{year}",
+                    dataset.household,
+                    format="table",
+                    data_columns=True,
+                )
+                f.put(
+                    f"time_period/{year}",
+                    pd.Series([year]),
+                    format="table",
+                    data_columns=True,
+                )
+
+    def copy(self):
+        new_datasets = {
+            year: dataset.copy() for year, dataset in self.datasets.items()
+        }
+        return UKMultiYearDataset(datasets=list(new_datasets.values()))
+
+    @staticmethod
+    def validate_file_path(file_path: str):
+        if not file_path.endswith(".h5"):
+            raise ValueError(
+                "File path must end with '.h5' for UKMultiYearDataset."
+            )
+        if not Path(file_path).exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        # Check if the file contains datasets for multiple years
+        with h5py.File(file_path, "r") as f:
+            if not any(key.startswith("/person/") for key in f.keys()):
+                raise ValueError("No person dataset found in the file.")
+            if not any(key.startswith("/benunit/") for key in f.keys()):
+                raise ValueError("No benunit dataset found in the file.")
+            if not any(key.startswith("/household/") for key in f.keys()):
+                raise ValueError("No household dataset found in the file.")
+
+    def load(self):
+        data = {}
+        for year, dataset in self.datasets.items():
+            for df in (dataset.person, dataset.benunit, dataset.household):
+                for col in df.columns:
+                    if col not in data:
+                        data[col] = {}
+                    data[col][year] = df[col].values
+        return data

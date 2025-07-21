@@ -6,7 +6,10 @@ from policyengine_core.simulations import (
     Simulation as CoreSimulation,
     Microsimulation as CoreMicrosimulation,
 )
-from policyengine_uk.data.dataset_schema import UKSingleYearDataset
+from policyengine_uk.data.dataset_schema import (
+    UKSingleYearDataset,
+    UKMultiYearDataset,
+)
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 
 import pandas as pd
@@ -183,10 +186,25 @@ class Microsimulation(CoreMicrosimulation):
                 if Path(dataset_file_path).exists():
                     if dataset_file_path.endswith(".h5"):
                         try:
-                            UKSingleYearDataset.validate_file_path(dataset_file_path)
-                            dataset = UKSingleYearDataset(file_path=dataset_file_path)
+                            UKSingleYearDataset.validate_file_path(
+                                dataset_file_path
+                            )
+                            dataset = UKSingleYearDataset(
+                                file_path=dataset_file_path
+                            )
                         except:
-                            dataset = Dataset.from_file(dataset_file_path)
+                            pass
+
+                        try:
+                            UKMultiYearDataset.validate_file_path(
+                                dataset_file_path
+                            )
+                            dataset = UKMultiYearDataset(
+                                file_path=dataset_file_path
+                            )
+                        except:
+                            pass
+                        dataset = Dataset.from_file(dataset_file_path)
 
         super().__init__(*args, dataset=dataset, **kwargs)
 
