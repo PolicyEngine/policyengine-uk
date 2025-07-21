@@ -1,5 +1,0 @@
-- bump: minor
-  changes:
-    added:
-    - UKMultiYearDataset class to handle multiple fiscal years.
-    - Uprating of datasets using the `uprate` method.
