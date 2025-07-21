@@ -4,20 +4,20 @@ brackets:
       unit: /1
       label: First wealth tax rate
     values:
-      2000-01-01: 0
+      2000-01-01: 0.0
   threshold:
     metadata:
       period: year
       unit: currency-GBP
       label: First wealth tax threshold
     values:
-      2000-01-01: 0
+      2000-01-01: 0.0
 - rate:
     metadata:
       unit: /1
       label: Second wealth tax rate
     values:
-      2000-01-01: 0
+      2000-01-01: 0.0
   threshold:
     metadata:
       period: year
@@ -30,7 +30,7 @@ brackets:
       unit: /1
       label: Third wealth tax rate
     values:
-      2000-01-01: 0
+      2000-01-01: 0.0
   threshold:
     metadata:
       period: year

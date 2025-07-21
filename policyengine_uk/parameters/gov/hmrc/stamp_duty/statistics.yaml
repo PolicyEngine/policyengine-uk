@@ -48,7 +48,7 @@ residential:
       - amount:
           2020-01-01: 400
         threshold:
-          2018-01-01: 0
+          2018-01-01: 0.0
       - amount:
           2020-01-01: 12500
         threshold:
@@ -120,7 +120,7 @@ residential:
       - amount:
           2020-01-01: 2100
         threshold:
-          2018-01-01: 0
+          2018-01-01: 0.0
       - amount:
           2020-01-01: 34300
         threshold:

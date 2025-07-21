@@ -3,4 +3,4 @@ metadata:
   unit: year
   label: Child basic income minimum threshold
 values:
-  2010-01-01: 0
+  2010-01-01: 0.0

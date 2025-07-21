@@ -17,7 +17,7 @@ brackets:
       - title: Income Tax Act 2007, s. 6 (1)(b)
         href: https://www.legislation.gov.uk/ukpga/2007/3/section/6
     values:
-      2015-04-05: 0
+      2015-04-05: 0.0
 - rate:
     description: The higher rate is the middle tax bracket on earned income.
     metadata:

@@ -2,7 +2,7 @@ description: The following amount is provided for individuals under the Housing 
 
 brackets:
 - threshold:
-    2018-06-18: 0
+    2018-06-18: 0.0
   amount:
     2018-06-18: 15.25
     2021-04-01: 15.95

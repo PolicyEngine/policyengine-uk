@@ -1,8 +1,8 @@
 description: Council Tax rebate paid to households in qualifying Council Tax bands under the Energy Bills Rebate.
 values:
-  0001-01-01: 0
+  0001-01-01: 0.0
   2022-01-01: 150
-  2023-10-01: 0
+  2023-10-01: 0.0
 metadata:
   unit: currency-GBP
   period: year
