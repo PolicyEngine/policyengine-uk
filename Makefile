@@ -16,7 +16,6 @@ test:
 	pytest policyengine_uk/tests/ --cov=policyengine_uk --cov-report=xml --maxfail=0 -v
 
 update-tests:
-	python policyengine_uk/data/economic_assumptions.py
 	python policyengine_uk/tests/microsimulation/update_reform_impacts.py
 
 documentation:
