@@ -1,7 +1,7 @@
 description: ONS National Balance Sheet statistics on wealth
 household:
   metadata:
-    uprating: gov.obr.non_labor_income
+    uprating: gov.economic_assumptions.indices.obr.per_capita.gdp
   financial_net_worth:
     values:
       2019-01-01: 4_556_770_000_000

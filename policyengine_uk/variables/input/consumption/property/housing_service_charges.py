@@ -8,3 +8,4 @@ class housing_service_charges(Variable):
     documentation = "Total amount spent on housing service charges"
     definition_period = YEAR
     unit = GBP
+    uprating = "gov.economic_assumptions.indices.obr.lagged_average_earnings"

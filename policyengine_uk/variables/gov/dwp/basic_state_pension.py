@@ -29,7 +29,6 @@ class basic_state_pension(Variable):
             min_(reported, maximum_basic_sp),
             reported,
         )
-
         uprating_factor = where(
             has_dataset,
             parameters.gov.dwp.state_pension.triple_lock.index(period)
