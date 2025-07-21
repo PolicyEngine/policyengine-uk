@@ -1595,3 +1595,70 @@
     - HBAI documentation updated to include Healthy Start vouchers and external child
       payments.
   date: 2025-07-10 16:14:53
+- bump: minor
+  changes:
+    changed:
+    - Earnings uprated with OBR average earnings rather than per-capita employment
+      income.
+  date: 2025-07-11 13:43:26
+- bump: patch
+  changes:
+    fixed:
+    - Private pension income index set to RPI<=5%
+  date: 2025-07-11 14:15:07
+- bump: minor
+  changes:
+    added:
+    - Documentation on growth factors.
+    - Cleaned up non-standard uprating factors for wealth variables.
+    - Added triple lock uprating detail and reform switches.
+    - Added ability to download entity datasets from HuggingFace.
+  date: 2025-07-13 13:11:45
+- bump: patch
+  changes:
+    fixed:
+    - Bug in loading entity tables.
+  date: 2025-07-13 19:47:46
+- bump: minor
+  changes:
+    added:
+    - Water bills projections.
+  date: 2025-07-14 10:36:08
+- bump: minor
+  changes:
+    fixed:
+    - Uprating for rent split by private and social rented sectors.
+  date: 2025-07-14 14:10:31
+- bump: patch
+  changes:
+    fixed:
+    - Lag CPI correctly for benefit uprating.
+  date: 2025-07-14 15:03:33
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in
+      the baseline.
+  date: 2025-07-15 08:50:48
+- bump: minor
+  changes:
+    added:
+    - Codecov coverage.
+    - Expanded .gitignore.
+  date: 2025-07-15 11:58:59
+- bump: patch
+  changes:
+    fixed:
+    - Improved water bills projections.
+  date: 2025-07-16 11:08:29
+- bump: patch
+  changes:
+    fixed:
+    - Use outturn data for council tax growth in England, Scotland, and Wales for
+      2023-2025.
+  date: 2025-07-17 10:41:08
+- bump: patch
+  changes:
+    fixed:
+    - NI domestic rates taken as reported.
+  date: 2025-07-17 12:45:26

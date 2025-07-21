@@ -8,4 +8,4 @@ class universal_credit_reported(Variable):
     documentation = "Reported amount of Universal Credit"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.consumer_price_index"
+    uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"

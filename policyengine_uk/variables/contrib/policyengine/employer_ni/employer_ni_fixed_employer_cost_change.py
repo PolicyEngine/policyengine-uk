@@ -9,6 +9,7 @@ class employer_ni_fixed_employer_cost_change(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        return 0
         employee_incidence = parameters(
             period
         ).gov.contrib.policyengine.employer_ni.employee_incidence

@@ -7,5 +7,5 @@ class household_weight(Variable):
     entity = Household
     label = "Weight factor for the household"
     definition_period = YEAR
-    uprating = "gov.ons.population"
+    uprating = "gov.economic_assumptions.indices.ons.population"
     default_value = 1

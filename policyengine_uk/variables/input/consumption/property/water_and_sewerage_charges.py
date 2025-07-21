@@ -7,3 +7,4 @@ class water_and_sewerage_charges(Variable):
     label = "water and sewerage charges"
     documentation = "Total amount spent on water and sewerage charges"
     definition_period = YEAR
+    uprating = "gov.economic_assumptions.indices.ofwat.water_bills"

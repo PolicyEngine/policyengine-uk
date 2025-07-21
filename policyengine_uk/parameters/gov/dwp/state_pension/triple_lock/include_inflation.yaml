@@ -1,0 +1,6 @@
+description: Whether the triple lock should include inflation.
+values:
+  2012-01-01: true
+metadata:
+  unit: bool
+  label: include inflation in triple lock
