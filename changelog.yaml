@@ -1668,3 +1668,8 @@
     - UKMultiYearDataset class to handle multiple fiscal years.
     - Uprating of datasets using the `uprate` method.
   date: 2025-07-21 13:23:31
+- bump: patch
+  changes:
+    fixed:
+    - Bug in handling downloads of UKMultiYearDataset from HuggingFace.
+  date: 2025-07-21 15:37:49
