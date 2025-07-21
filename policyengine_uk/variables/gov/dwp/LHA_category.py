@@ -36,13 +36,13 @@ class LHA_category(Variable):
             household.max(person("age", period))
         )
         has_children = benunit.any(person("is_child", period))
-        # Households with only one adult, if under age threshold, can only claim shared if without children:
+        # Households with only one adult, if under age threshold, can only
+        # claim shared if without children:
         # https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28
-        p = parameters(period)
-        age_threshold = p.gov.dwp.LHA.shared_accommodation_age_threshold
+        p = parameters(period).gov.dwp.LHA
         can_only_claim_shared = (
             (num_adults_in_hh == 1)
-            & (eldest_adult_age_in_hh < age_threshold)
+            & (eldest_adult_age_in_hh < p.shared_accommodation_age_threshold)
             & ~has_children
         )
         return select(
