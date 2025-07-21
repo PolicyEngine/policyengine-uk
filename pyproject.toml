@@ -23,6 +23,7 @@ dependencies = [
     "policyengine-core>=3.6.4",
     "microdf-python",
     "matplotlib",
+    "taxcalc",
 ]
 
 [project.urls]
