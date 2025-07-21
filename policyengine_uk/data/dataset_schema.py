@@ -61,6 +61,7 @@ class UKSingleYearDataset:
 
         self.data_format = "arrays"
         self.tables = (self.person, self.benunit, self.household)
+        self.table_names = ("person", "benunit", "household")
 
     def save(self, file_path: str):
         with pd.HDFStore(file_path) as f:
@@ -84,6 +85,7 @@ class UKSingleYearDataset:
             person=self.person.copy(),
             benunit=self.benunit.copy(),
             household=self.household.copy(),
+            fiscal_year=self.time_period,
         )
 
     def validate(self):
@@ -164,6 +166,9 @@ class UKMultiYearDataset:
         return self.get_year(fiscal_year)
 
     def save(self, file_path: str):
+        Path(file_path).unlink(
+            missing_ok=True
+        )  # Remove existing file if it exists
         with pd.HDFStore(file_path) as f:
             for year, dataset in self.datasets.items():
                 f.put(
