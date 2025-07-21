@@ -213,12 +213,11 @@ class UKMultiYearDataset:
 
         # Check if the file contains datasets for multiple years
         with h5py.File(file_path, "r") as f:
-            if not any(key.startswith("/person/") for key in f.keys()):
-                raise ValueError("No person dataset found in the file.")
-            if not any(key.startswith("/benunit/") for key in f.keys()):
-                raise ValueError("No benunit dataset found in the file.")
-            if not any(key.startswith("/household/") for key in f.keys()):
-                raise ValueError("No household dataset found in the file.")
+            for required_dataset in ["person", "benunit", "household"]:
+                if not any(f"{required_dataset}" in key for key in f.keys()):
+                    raise ValueError(
+                        f"Dataset '{required_dataset}' not found in the file: {file_path}"
+                    )
 
     def load(self):
         data = {}

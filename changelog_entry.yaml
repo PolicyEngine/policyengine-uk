@@ -1,5 +1,4 @@
-- bump: minor
+- bump: patch
   changes:
-    added:
-    - UKMultiYearDataset class to handle multiple fiscal years.
-    - Uprating of datasets using the `uprate` method.
+    fixed:
+    - Bug in handling downloads of UKMultiYearDataset from HuggingFace.

@@ -202,9 +202,13 @@ class Microsimulation(CoreMicrosimulation):
                             dataset = UKMultiYearDataset(
                                 file_path=dataset_file_path
                             )
-                        except:
+                        except Exception as e:
                             pass
-                        dataset = Dataset.from_file(dataset_file_path)
+
+                        if not isinstance(
+                            dataset, (UKSingleYearDataset, UKMultiYearDataset)
+                        ):
+                            dataset = Dataset.from_file(dataset_file_path)
 
         super().__init__(*args, dataset=dataset, **kwargs)
 
