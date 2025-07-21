@@ -8,7 +8,7 @@ from pathlib import Path
 import h5py
 
 
-class UKDataset:
+class UKSingleYearDataset:
     person: pd.DataFrame
     benunit: pd.DataFrame
     household: pd.DataFrame
@@ -80,7 +80,7 @@ class UKDataset:
         return data
 
     def copy(self):
-        return UKDataset(
+        return UKSingleYearDataset(
             person=self.person.copy(),
             benunit=self.benunit.copy(),
             household=self.household.copy(),
@@ -110,9 +110,59 @@ class UKDataset:
                 input_variables, period=fiscal_year
             )
 
-        return UKDataset(
+        return UKSingleYearDataset(
             person=entity_dfs["person"],
             benunit=entity_dfs["benunit"],
             household=entity_dfs["household"],
             fiscal_year=fiscal_year,
         )
+
+
+class UKMultiYearDataset:
+    def __init__(self, file_path: str = None, datasets: list[UKSingleYearDataset] | None = None):
+        if datasets is None:
+            self.datasets = {}
+            for dataset in datasets:
+                if not isinstance(dataset, UKSingleYearDataset):
+                    raise TypeError(
+                        "All items in datasets must be of type UKSingleYearDataset."
+                    )
+                year = int(dataset.time_period[:4])
+                self.datasets[year] = dataset
+        
+        if file_path is not None:
+            UKSingleYearDataset.validate_file_path(file_path)
+            with pd.HDFStore(file_path) as f:
+                self.datasets = {}
+                for year in f.keys():
+                    if year.startswith("/person/"):
+                        fiscal_year = int(year.split("/")[2])
+                        person_df = f[year]
+                        benunit_df = f[f"/benunit/{fiscal_year}"]
+                        household_df = f[f"/household/{fiscal_year}"]
+                        self.datasets[fiscal_year] = UKSingleYearDataset(
+                            person=person_df,
+                            benunit=benunit_df,
+                            household=household_df,
+                            fiscal_year=fiscal_year,
+                        )
+        
+
+    def get_year(self, fiscal_year: int) -> UKSingleYearDataset:
+        if fiscal_year in self.datasets:
+            return self.datasets[fiscal_year]
+        else:
+            raise ValueError(f"No dataset found for year {fiscal_year}.")
+    
+    def __getattr__(self, fiscal_year: int):
+        return self.get_year(fiscal_year)
+    
+    def save(self, file_path: str):
+        with pd.HDFStore(file_path) as f:
+            for i, dataset in enumerate(self.datasets):
+                year = dataset.time_period[:4]
+                f.put(f"person/{year}", dataset.person, format="table", data_columns=True)
+                f.put(f"benunit/{year}", dataset.benunit, format="table", data_columns=True)
+                f.put(f"household/{year}", dataset.household, format="table", data_columns=True)
+                f.put(f"time_period/{year}", pd.Series([dataset.time_period]), format="table", data_columns=True)
+                

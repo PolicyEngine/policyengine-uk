@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-from policyengine_uk.data.dataset_schema import UKDataset
+from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 
 START_YEAR = 2022
 END_YEAR = 2029
@@ -150,7 +150,7 @@ def convert_yoy_growth_to_index(
 
 
 def apply_growth_factors(
-    dataset: UKDataset,
+    dataset: UKSingleYearDataset,
     growth_factors: pd.DataFrame,
     start_year: int,
     end_year: int,
