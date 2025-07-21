@@ -39,7 +39,7 @@ class LHA_category(Variable):
         # Households with only one adult, if under age threshold, can only
         # claim shared if without children:
         # https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28
-        p = parameters(period).gov.dwp.LHA
+        p = parameters(period).gov.dwp.lha
         can_only_claim_shared = (
             (num_adults_in_hh == 1)
             & (eldest_adult_age_in_hh < p.shared_accommodation_age_threshold)
