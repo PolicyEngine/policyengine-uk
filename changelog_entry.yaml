@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    changed:
+    - Add Python 3.13 support and update CI workflows
