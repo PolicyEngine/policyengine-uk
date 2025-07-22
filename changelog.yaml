@@ -1683,3 +1683,8 @@
     changed:
     - Standardize decimals in parameters.
   date: 2025-07-22 19:49:35
+- bump: patch
+  changes:
+    changed:
+    - Update microdf_python dependency to >=1.0.0.
+  date: 2025-07-22 20:55:35
