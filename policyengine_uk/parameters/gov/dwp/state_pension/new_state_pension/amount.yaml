@@ -3,17 +3,17 @@ values:
   2016-01-01: 155.65
   2017-01-01: 159.55
   2018-01-01: 164.35
-  2019-01-01: 168.60
-  2020-01-01: 175.20
-  2021-01-01: 179.60
+  2019-01-01: 168.6
+  2020-01-01: 175.2
+  2021-01-01: 179.6
   2022-01-01: 185.15
   2023-01-01: 203.85
-  2024-01-01: 221.20
+  2024-01-01: 221.2
   2025-04-01: 224.96
 metadata:
   unit: currency-GBP
   label: New State Pension amount
-  uprating: gov.dwp.state_pension.triple_lock.index
+  uprating: gov.economic_assumptions.indices.triple_lock
   reference:
     - title: House of Commons Library
       href: https://researchbriefings.files.parliament.uk/documents/SN05649/SN05649.pdf

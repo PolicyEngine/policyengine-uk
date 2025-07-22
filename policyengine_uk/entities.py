@@ -3,20 +3,6 @@
 # This file defines the entities needed by our legislation.
 from policyengine_core.entities import build_entity
 
-State = build_entity(
-    key="state",
-    plural="states",
-    label="State",
-    roles=[
-        {
-            "key": "member",
-            "plural": "members",
-            "label": "Member",
-            "doc": "A person who is a citizen of a country.",
-        }
-    ],
-)
-
 Household = build_entity(
     key="household",
     plural="households",
@@ -57,4 +43,4 @@ Person = build_entity(
     is_person=True,
 )
 
-entities = [State, Household, BenUnit, Person]
+entities = [Household, BenUnit, Person]

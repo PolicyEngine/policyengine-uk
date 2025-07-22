@@ -5,6 +5,211 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.41.0] - 2025-07-22 19:49:35
+
+### Changed
+
+- Standardize decimals in parameters.
+
+## [2.40.2] - 2025-07-22 09:37:07
+
+### Fixed
+
+- Bug in uprating.
+
+## [2.40.1] - 2025-07-21 15:37:49
+
+### Fixed
+
+- Bug in handling downloads of UKMultiYearDataset from HuggingFace.
+
+## [2.40.0] - 2025-07-21 13:23:31
+
+### Added
+
+- UKMultiYearDataset class to handle multiple fiscal years.
+- Uprating of datasets using the `uprate` method.
+
+## [2.39.3] - 2025-07-17 12:45:26
+
+### Fixed
+
+- NI domestic rates taken as reported.
+
+## [2.39.2] - 2025-07-17 10:41:08
+
+### Fixed
+
+- Use outturn data for council tax growth in England, Scotland, and Wales for 2023-2025.
+
+## [2.39.1] - 2025-07-16 11:08:29
+
+### Fixed
+
+- Improved water bills projections.
+
+## [2.39.0] - 2025-07-15 11:58:59
+
+### Added
+
+- Codecov coverage.
+- Expanded .gitignore.
+
+## [2.38.2] - 2025-07-15 08:50:48
+
+### Fixed
+
+- Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in the baseline.
+
+## [2.38.1] - 2025-07-14 15:03:33
+
+### Fixed
+
+- Lag CPI correctly for benefit uprating.
+
+## [2.38.0] - 2025-07-14 14:10:31
+
+### Fixed
+
+- Uprating for rent split by private and social rented sectors.
+
+## [2.37.0] - 2025-07-14 10:36:08
+
+### Added
+
+- Water bills projections.
+
+## [2.36.1] - 2025-07-13 19:47:46
+
+### Fixed
+
+- Bug in loading entity tables.
+
+## [2.36.0] - 2025-07-13 13:11:45
+
+### Added
+
+- Documentation on growth factors.
+- Cleaned up non-standard uprating factors for wealth variables.
+- Added triple lock uprating detail and reform switches.
+- Added ability to download entity datasets from HuggingFace.
+
+## [2.35.1] - 2025-07-11 14:15:07
+
+### Fixed
+
+- Private pension income index set to RPI<=5%
+
+## [2.35.0] - 2025-07-11 13:43:26
+
+### Changed
+
+- Earnings uprated with OBR average earnings rather than per-capita employment income.
+
+## [2.34.5] - 2025-07-10 16:14:53
+
+### Fixed
+
+- HBAI documentation updated to include Healthy Start vouchers and external child payments.
+
+## [2.34.4] - 2025-07-10 16:12:40
+
+### Added
+
+- Missing HBAI variables.
+
+## [2.34.3] - 2025-07-10 15:42:46
+
+### Fixed
+
+- Bug in private pension income uprating.
+
+## [2.34.2] - 2025-07-10 14:28:02
+
+### Fixed
+
+- Documentation improved for HBAI income concept.
+- Restructured HBAI income variables to better match the official definition.
+
+## [2.34.1] - 2025-07-10 12:10:52
+
+### Fixed
+
+- Triple lock uses the average earnings index from the OBR.
+
+## [2.34.0] - 2025-07-10 10:02:17
+
+### Fixed
+
+- Statutory maternity, paternity, and sick pay variables now use the `gov.obr.consumer_price_index` for uprating.
+- SSMG no longer is uprated by inflation.
+
+## [2.33.0] - 2025-07-09 12:34:06
+
+### Added
+
+- Growth factor documentation.
+
+## [2.32.4] - 2025-06-30 11:28:06
+
+### Fixed
+
+- Abolish Council Tax has no budgetary impact.
+
+## [2.32.3] - 2025-06-17 12:37:38
+
+### Fixed
+
+- Update UK parameters.
+
+## [2.32.2] - 2025-06-12 12:42:27
+
+### Fixed
+
+- Bug with BRMA variable name.
+
+## [2.32.1] - 2025-06-11 13:52:32
+
+### Added
+
+- Add test suite for abolition parameters functionality.
+
+## [2.32.0] - 2025-06-11 08:59:43
+
+### Added
+
+- Winter Fuel Allowance means-testing reform.
+
+## [2.31.0] - 2025-06-09 15:26:19
+
+### Added
+
+- ONS household population data from 2001-2043.
+- Council tax per household projections from OBR data.
+
+### Changed
+
+- Updated employer National Insurance contribution rate to 15% from April 6, 2025.
+
+## [2.30.0] - 2025-06-09 11:32:22
+
+### Changed
+
+- Updated employer National Insurance contribution rate to 15% from April 6, 2025.
+
+## [2.29.0] - 2025-06-09 09:54:52
+
+### Added
+
+- Council tax projection parameters from OBR data.
+
+## [2.28.3] - 2025-06-06 16:15:25
+
+### Changed
+
+- Refactored all Variable files to follow single-responsibility principle with one Variable class per file.
+- Split approximately 70 multi-Variable Python files into individual files, improving code organization and maintainability.
+
 ## [2.28.2] - 2025-05-28 09:03:21
 
 ### Fixed
@@ -1787,6 +1992,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.41.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.2...2.41.0
+[2.40.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.1...2.40.2
+[2.40.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.0...2.40.1
+[2.40.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.3...2.40.0
+[2.39.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.2...2.39.3
+[2.39.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.1...2.39.2
+[2.39.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.0...2.39.1
+[2.39.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.2...2.39.0
+[2.38.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.1...2.38.2
+[2.38.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.0...2.38.1
+[2.38.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.37.0...2.38.0
+[2.37.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.1...2.37.0
+[2.36.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.0...2.36.1
+[2.36.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.35.1...2.36.0
+[2.35.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.35.0...2.35.1
+[2.35.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.5...2.35.0
+[2.34.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.4...2.34.5
+[2.34.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.3...2.34.4
+[2.34.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.2...2.34.3
+[2.34.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.1...2.34.2
+[2.34.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.34.0...2.34.1
+[2.34.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.33.0...2.34.0
+[2.33.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.4...2.33.0
+[2.32.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.3...2.32.4
+[2.32.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.2...2.32.3
+[2.32.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.1...2.32.2
+[2.32.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.32.0...2.32.1
+[2.32.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.31.0...2.32.0
+[2.31.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.30.0...2.31.0
+[2.30.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.29.0...2.30.0
+[2.29.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.28.3...2.29.0
+[2.28.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.28.2...2.28.3
 [2.28.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.28.1...2.28.2
 [2.28.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.28.0...2.28.1
 [2.28.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.27.0...2.28.0

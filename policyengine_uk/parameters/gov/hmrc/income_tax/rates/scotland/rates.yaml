@@ -6,7 +6,7 @@ brackets:
         2018-04-06: 0
         2021-04-06: 0
       metadata:
-        uprating: gov.obr.consumer_price_index
+        uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
       2017-04-01: null
       2018-04-06: 0.19 # Starter rate
@@ -19,9 +19,9 @@ brackets:
         2023-04-06: 2_162
         2024-04-06: 2_306
       metadata:
-        uprating: gov.obr.consumer_price_index
+        uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
-      2017-04-06: 0.20 # Basic rate
+      2017-04-06: 0.2  # Basic rate
   - threshold:
       values:
         2017-04-06: null
@@ -31,7 +31,7 @@ brackets:
         2023-04-06: 13_118
         2024-04-06: 13_991
       metadata:
-        uprating: gov.obr.consumer_price_index
+        uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
       2017-04-06: null
       2018-04-06: 0.21 # Intermediate rate
@@ -43,9 +43,9 @@ brackets:
         2023-04-06: 31_092
         2024-04-06: 31_092
       metadata:
-        uprating: gov.obr.consumer_price_index
+        uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
-      2017-04-06: 0.40
+      2017-04-06: 0.4
       2021-04-06: 0.41 # Higher rate
       2023-04-06: 0.42
   - threshold:
@@ -54,7 +54,7 @@ brackets:
         2023-04-06: 125_140
         2024-04-06: 62_430
       metadata:
-        uprating: gov.obr.consumer_price_index
+        uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
       2017-04-06: 0.45
       2018-04-06: 0.46 # Additional rate
@@ -65,7 +65,7 @@ brackets:
         2017-04-06: null
         2024-04-06: 125_140
       metadata:
-        uprating: gov.obr.consumer_price_index
+        uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
       2017-04-06: null
       2024-04-06: 0.48

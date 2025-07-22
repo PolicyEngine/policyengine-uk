@@ -1505,3 +1505,181 @@
     fixed:
     - Bug in employer NI incidence parameters.
   date: 2025-05-28 09:03:21
+- bump: patch
+  changes:
+    changed:
+    - Refactored all Variable files to follow single-responsibility principle with
+      one Variable class per file.
+    - Split approximately 70 multi-Variable Python files into individual files, improving
+      code organization and maintainability.
+  date: 2025-06-06 16:15:25
+- bump: minor
+  changes:
+    added:
+    - Council tax projection parameters from OBR data.
+  date: 2025-06-09 09:54:52
+- bump: minor
+  changes:
+    changed:
+    - Updated employer National Insurance contribution rate to 15% from April 6, 2025.
+  date: 2025-06-09 11:32:22
+- bump: minor
+  changes:
+    added:
+    - ONS household population data from 2001-2043.
+    - Council tax per household projections from OBR data.
+    changed:
+    - Updated employer National Insurance contribution rate to 15% from April 6, 2025.
+  date: 2025-06-09 15:26:19
+- bump: minor
+  changes:
+    added:
+    - Winter Fuel Allowance means-testing reform.
+  date: 2025-06-11 08:59:43
+- bump: patch
+  changes:
+    added:
+    - Add test suite for abolition parameters functionality.
+  date: 2025-06-11 13:52:32
+- bump: patch
+  changes:
+    fixed:
+    - Bug with BRMA variable name.
+  date: 2025-06-12 12:42:27
+- bump: patch
+  changes:
+    fixed:
+    - Update UK parameters.
+  date: 2025-06-17 12:37:38
+- bump: patch
+  changes:
+    fixed:
+    - Abolish Council Tax has no budgetary impact.
+  date: 2025-06-30 11:28:06
+- bump: minor
+  changes:
+    added:
+    - Growth factor documentation.
+  date: 2025-07-09 12:34:06
+- bump: minor
+  changes:
+    fixed:
+    - Statutory maternity, paternity, and sick pay variables now use the `gov.obr.consumer_price_index`
+      for uprating.
+    - SSMG no longer is uprated by inflation.
+  date: 2025-07-10 10:02:17
+- bump: patch
+  changes:
+    fixed:
+    - Triple lock uses the average earnings index from the OBR.
+  date: 2025-07-10 12:10:52
+- bump: patch
+  changes:
+    fixed:
+    - Documentation improved for HBAI income concept.
+    - Restructured HBAI income variables to better match the official definition.
+  date: 2025-07-10 14:28:02
+- bump: patch
+  changes:
+    fixed:
+    - Bug in private pension income uprating.
+  date: 2025-07-10 15:42:46
+- bump: patch
+  changes:
+    added:
+    - Missing HBAI variables.
+  date: 2025-07-10 16:12:40
+- bump: patch
+  changes:
+    fixed:
+    - HBAI documentation updated to include Healthy Start vouchers and external child
+      payments.
+  date: 2025-07-10 16:14:53
+- bump: minor
+  changes:
+    changed:
+    - Earnings uprated with OBR average earnings rather than per-capita employment
+      income.
+  date: 2025-07-11 13:43:26
+- bump: patch
+  changes:
+    fixed:
+    - Private pension income index set to RPI<=5%
+  date: 2025-07-11 14:15:07
+- bump: minor
+  changes:
+    added:
+    - Documentation on growth factors.
+    - Cleaned up non-standard uprating factors for wealth variables.
+    - Added triple lock uprating detail and reform switches.
+    - Added ability to download entity datasets from HuggingFace.
+  date: 2025-07-13 13:11:45
+- bump: patch
+  changes:
+    fixed:
+    - Bug in loading entity tables.
+  date: 2025-07-13 19:47:46
+- bump: minor
+  changes:
+    added:
+    - Water bills projections.
+  date: 2025-07-14 10:36:08
+- bump: minor
+  changes:
+    fixed:
+    - Uprating for rent split by private and social rented sectors.
+  date: 2025-07-14 14:10:31
+- bump: patch
+  changes:
+    fixed:
+    - Lag CPI correctly for benefit uprating.
+  date: 2025-07-14 15:03:33
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in
+      the baseline.
+  date: 2025-07-15 08:50:48
+- bump: minor
+  changes:
+    added:
+    - Codecov coverage.
+    - Expanded .gitignore.
+  date: 2025-07-15 11:58:59
+- bump: patch
+  changes:
+    fixed:
+    - Improved water bills projections.
+  date: 2025-07-16 11:08:29
+- bump: patch
+  changes:
+    fixed:
+    - Use outturn data for council tax growth in England, Scotland, and Wales for
+      2023-2025.
+  date: 2025-07-17 10:41:08
+- bump: patch
+  changes:
+    fixed:
+    - NI domestic rates taken as reported.
+  date: 2025-07-17 12:45:26
+- bump: minor
+  changes:
+    added:
+    - UKMultiYearDataset class to handle multiple fiscal years.
+    - Uprating of datasets using the `uprate` method.
+  date: 2025-07-21 13:23:31
+- bump: patch
+  changes:
+    fixed:
+    - Bug in handling downloads of UKMultiYearDataset from HuggingFace.
+  date: 2025-07-21 15:37:49
+- bump: patch
+  changes:
+    fixed:
+    - Bug in uprating.
+  date: 2025-07-22 09:37:07
+- bump: minor
+  changes:
+    changed:
+    - Standardize decimals in parameters.
+  date: 2025-07-22 19:49:35

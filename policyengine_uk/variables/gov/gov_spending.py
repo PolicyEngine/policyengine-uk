@@ -27,7 +27,6 @@ class gov_spending(Variable):
         "dla",
         "iidb",
         "incapacity_benefit",
-        "jsa_contrib",
         "pip",
         "sda",
         "state_pension",

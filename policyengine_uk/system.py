@@ -6,19 +6,31 @@ from policyengine_core.simulations import (
     Simulation as CoreSimulation,
     Microsimulation as CoreMicrosimulation,
 )
+from policyengine_uk.data.dataset_schema import (
+    UKSingleYearDataset,
+    UKMultiYearDataset,
+)
+from policyengine_core.tools.hugging_face import download_huggingface_dataset
 
 import pandas as pd
 from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    create_economic_assumption_indices,
+)
+from policyengine_uk.parameters.gov.economic_assumptions.lag_average_earnings import (
+    add_lagged_earnings,
+)
+from policyengine_uk.parameters.gov.economic_assumptions.lag_cpi import (
+    add_lagged_cpi,
+)
 from policyengine_core.reforms import Reform
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
-from policyengine_uk.parameters.gov.obr.add_per_capita_parameters import (
-    add_per_capita_parameters,
-)
-from policyengine_uk.parameters.gov.obr.extend_forecast import (
-    extend_obr_forecast,
+
+from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
+    add_private_pension_uprating_factor,
 )
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
@@ -39,14 +51,14 @@ from policyengine_core.reforms import Reform
 
 COUNTRY_DIR = Path(__file__).parent
 
-ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
+ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
     variables_dir = COUNTRY_DIR / "variables"
     auto_carry_over_input_variables = True
     basic_inputs = [
-        "BRMA",
+        "brma",
         "local_authority",
         "region",
         "employment_income",
@@ -55,12 +67,14 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
 
     def process_parameters(self, reform=None):
-        self.parameters = extend_obr_forecast(self.parameters)
-        self.parameters = add_per_capita_parameters(self.parameters)
-        self.parameters = add_triple_lock(self.parameters)
-        self.parameters.add_child("baseline", self.parameters.clone())
         if reform:
             self.apply_reform_set(reform)
+        self.parameters = add_private_pension_uprating_factor(self.parameters)
+        self.parameters = add_lagged_earnings(self.parameters)
+        self.parameters = add_lagged_cpi(self.parameters)
+        self.parameters = add_triple_lock(self.parameters)
+        self.parameters = create_economic_assumption_indices(self.parameters)
+        self.parameters.add_child("baseline", self.parameters.clone())
         self.parameters = homogenize_parameter_structures(
             self.parameters, self.variables
         )
@@ -94,8 +108,8 @@ variables = system.variables
 class Simulation(CoreSimulation):
     default_tax_benefit_system = CountryTaxBenefitSystem
     default_tax_benefit_system_instance = system
-    default_calculation_period = 2022
-    default_input_period = 2022
+    default_calculation_period = 2023
+    default_input_period = 2023
     default_role = "member"
     max_spiral_loops = 10
 
@@ -154,6 +168,48 @@ class Microsimulation(CoreMicrosimulation):
     max_spiral_loops = 10
 
     def __init__(self, *args, dataset=ENHANCED_FRS, **kwargs):
+        if dataset is not None:
+            if isinstance(dataset, str):
+                if "hf://" in dataset:
+                    owner, repo, filename = dataset.split("/")[-3:]
+                    if "@" in filename:
+                        version = filename.split("@")[-1]
+                        filename = filename.split("@")[0]
+                    else:
+                        version = None
+                    dataset_file_path = download_huggingface_dataset(
+                        repo=f"{owner}/{repo}",
+                        repo_filename=filename,
+                        version=version,
+                    )
+
+                if Path(dataset_file_path).exists():
+                    if dataset_file_path.endswith(".h5"):
+                        try:
+                            UKSingleYearDataset.validate_file_path(
+                                dataset_file_path
+                            )
+                            dataset = UKSingleYearDataset(
+                                file_path=dataset_file_path
+                            )
+                        except:
+                            pass
+
+                        try:
+                            UKMultiYearDataset.validate_file_path(
+                                dataset_file_path
+                            )
+                            dataset = UKMultiYearDataset(
+                                file_path=dataset_file_path
+                            )
+                        except Exception as e:
+                            pass
+
+                        if not isinstance(
+                            dataset, (UKSingleYearDataset, UKMultiYearDataset)
+                        ):
+                            dataset = Dataset.from_file(dataset_file_path)
+
         super().__init__(*args, dataset=dataset, **kwargs)
 
         reform = create_structural_reforms_from_parameters(

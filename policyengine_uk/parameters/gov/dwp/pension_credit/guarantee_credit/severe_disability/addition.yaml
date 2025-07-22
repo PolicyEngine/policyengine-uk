@@ -1,10 +1,10 @@
 description: Addition to the Minimum Guarantee for each severely disabled adult.
 values:
-  2018-04-01: 64.30
+  2018-04-01: 64.3
   2019-04-01: 65.85
   2020-04-01: 66.95
-  2021-04-01: 67.30
-  2022-04-01: 69.40
+  2021-04-01: 67.3
+  2022-04-01: 69.4
 metadata:
   unit: currency-GBP
   period: week

@@ -4,6 +4,13 @@ parts:
   - caption: Using the model
     chapters:
       - file: usage/getting-started
+  - caption: Economic assumptions
+    chapters:
+      - file: assumptions/growthfactors
+      - file: assumptions/water-bills
+  - caption: Validation
+    chapters:
+      - file: validation/hbai
   - caption: Programs
     chapters:
       - file: programs/gov/hmrc/child-benefit

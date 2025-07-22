@@ -1,6 +1,7 @@
 description: Absolute poverty threshold for equivalised household net income, before housing costs
 values:
   2010-01-01: 251.4
+  2020-01-01: 305.7
 metadata:
   period: week
   unit: currency-GBP
@@ -9,4 +10,4 @@ metadata:
   reference:
     - title: Households Below Average income, 2010/11
       href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/200720/full_hbai12.pdf#page=35
-  uprating: gov.obr.consumer_price_index
+  uprating: gov.economic_assumptions.indices.obr.consumer_price_index

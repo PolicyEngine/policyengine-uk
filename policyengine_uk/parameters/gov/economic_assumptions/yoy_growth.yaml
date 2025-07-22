@@ -1,0 +1,519 @@
+obr:
+  rpi:
+    description: Retail price index year-on-year growth.
+    values:
+      2009-01-01: 0.018
+      2010-01-01: 0.008
+      2011-01-01: 0.016
+      2012-01-01: 0.007
+      2013-01-01: 0.047
+      2014-01-01: 0.006
+      2015-01-01: 0.020
+      2016-01-01: 0.024
+      2017-01-01: 0.032
+      2018-01-01: 0.026
+      2019-01-01: 0.022
+      2020-01-01: 0.003
+      2021-01-01: 0.059
+      2022-01-01: 0.064
+      2023-01-01: 0.069
+      2024-01-01: 0.047
+      2025-01-01: 0.037
+      2026-01-01: 0.022
+      2027-01-01: 0.021
+      2028-01-01: 0.023
+      2029-01-01: 0.025
+    metadata:
+      unit: /1
+      label: retail price index growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+  average_earnings:
+    description: Average earnings year-on-year growth.
+    values:
+      2009-01-01: 0.018
+      2010-01-01: 0.008
+      2011-01-01: 0.016
+      2012-01-01: 0.007
+      2013-01-01: 0.047
+      2014-01-01: 0.006
+      2015-01-01: 0.020
+      2016-01-01: 0.024
+      2017-01-01: 0.032
+      2018-01-01: 0.026
+      2019-01-01: 0.022
+      2020-01-01: 0.003
+      2021-01-01: 0.059
+      2022-01-01: 0.064
+      2023-01-01: 0.069
+      2024-01-01: 0.047
+      2025-01-01: 0.037
+      2026-01-01: 0.022
+      2027-01-01: 0.021
+      2028-01-01: 0.023
+      2029-01-01: 0.025
+    metadata:
+      unit: /1
+      label: average earnings growth
+      reference:
+        - title: OBR EFO March 2025 (detailed forecast tables, economy, Table 1.6, Row Q)
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+  consumer_price_index:
+    description: Consumer price index year-on-year growth.
+    values:
+      2009-01-01: 0.022
+      2010-01-01: 0.035
+      2011-01-01: 0.043
+      2012-01-01: 0.027
+      2013-01-01: 0.023
+      2014-01-01: 0.011
+      2015-01-01: 0.001
+      2016-01-01: 0.011
+      2017-01-01: 0.028
+      2018-01-01: 0.023
+      2019-01-01: 0.017
+      2020-01-01: 0.006
+      2021-01-01: 0.04
+      2022-01-01: 0.1
+      2023-01-01: 0.057
+      2024-01-01: 0.023
+      2025-01-01: 0.032
+      2026-01-01: 0.019
+      2027-01-01: 0.02
+      2028-01-01: 0.02
+      2029-01-01: 0.02
+    metadata:
+      unit: /1
+      label: consumer price index growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+  non_labour_income:
+    description: Non-labour income year-on-year growth.
+    values:
+      2021-01-01: 0.072
+      2022-01-01: 0.138
+      2023-01-01: 0.066
+      2024-01-01: 0.08
+      2025-01-01: 0.068
+      2026-01-01: 0.056
+      2027-01-01: 0.045
+      2028-01-01: 0.034
+      2029-01-01: 0.035
+    metadata:
+      unit: /1
+      label: non-labour income growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+  council_tax:
+    england:
+      description: Growth in the level of council tax receipts in England.
+      values:
+        2023-01-01: 0.051
+        2024-01-01: 0.051
+        2025-01-01: 0.05
+        2026-01-01: 0.043
+        2027-01-01: 0.043
+        2028-01-01: 0.043
+        2029-01-01: 0.043
+      metadata:
+        unit: /1
+        reference:
+          - title: OBR EFO March 2025 (2023-2025 based on outturn)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+    scotland:
+      description: Growth in the level of council tax receipts in Scotland.
+      values:
+        2023-01-01: 0.052
+        2024-01-01: 0.001
+        2025-01-01: 0.088
+        2026-01-01: 0.027
+        2027-01-01: 0.027
+        2028-01-01: 0.027
+        2029-01-01: 0.027
+      metadata:
+        unit: /1
+        reference:
+          - title: OBR EFO March 2025 (2023-2025 based on outturn)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+    wales:
+      description: Growth in the level of council tax receipts in Wales.
+      values:
+        2023-01-01: 0.058
+        2024-01-01: 0.077
+        2025-01-01: 0.072
+        2026-01-01: 0.041
+        2027-01-01: 0.041
+        2028-01-01: 0.041
+        2029-01-01: 0.041
+      metadata:
+        unit: /1
+        reference:
+          - title: OBR EFO March 2025 (2023-2025 based on outturn)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+  per_capita:
+    gdp:
+      description: Per capita GDP year-on-year growth.
+      values:
+        2021-01-01: 0.125
+        2022-01-01: 0.092
+        2023-01-01: 0.05
+        2024-01-01: 0.038
+        2025-01-01: 0.028
+        2026-01-01: 0.028
+        2027-01-01: 0.031
+        2028-01-01: 0.033
+        2029-01-01: 0.033
+      metadata:
+        unit: /1
+        label: per capita GDP growth
+        reference:
+          - title: OBR EFO March 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+    mixed_income:
+      description: Per capita mixed income year-on-year growth.
+      values:
+        2021-01-01: 0.06
+        2022-01-01: 0.063
+        2023-01-01: 0.024
+        2024-01-01: 0.048
+        2025-01-01: 0.047
+        2026-01-01: 0.031
+        2027-01-01: 0.031
+        2028-01-01: 0.036
+        2029-01-01: 0.038
+      metadata:
+        unit: /1
+        label: per capita mixed income growth
+        reference:
+          - title: OBR EFO March 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+    non_labour_income:
+      description: Per capita non-labour income year-on-year growth.
+      values:
+        2021-01-01: 0.068
+        2022-01-01: 0.134
+        2023-01-01: 0.052
+        2024-01-01: 0.069
+        2025-01-01: 0.057
+        2026-01-01: 0.049
+        2027-01-01: 0.038
+        2028-01-01: 0.029
+        2029-01-01: 0.03
+      metadata:
+        unit: /1
+        label: per capita non-labour income growth
+        reference:
+          - title: OBR EFO March 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+  house_prices:
+    description: House prices year-on-year growth.
+    values:
+      2021-01-01: 0.082
+      2022-01-01: 0.083
+      2023-01-01: -0.01
+      2024-01-01: 0.027
+      2025-01-01: 0.024
+      2026-01-01: 0.025
+      2027-01-01: 0.026
+      2028-01-01: 0.023
+      2029-01-01: 0.024
+    metadata:
+      unit: /1
+      label: house prices growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+  mortgage_interest:
+    description: Mortgage interest year-on-year growth.
+    values:
+      2021-01-01: 0.003
+      2022-01-01: 0.262
+      2023-01-01: 0.485
+      2024-01-01: 0.221
+      2025-01-01: 0.136
+      2026-01-01: 0.126
+      2027-01-01: 0.082
+      2028-01-01: 0.042
+      2029-01-01: 0.047
+    metadata:
+      unit: /1
+      label: mortgage interest growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+  social_rent:
+    description: Rent year-on-year growth (CPI+1%, one year lagged).
+    values:
+      2022-01-01: 0.05
+      2023-01-01: 0.07
+      2024-01-01: 0.067
+      2025-01-01: 0.033
+      2026-01-01: 0.042
+      2027-01-01: 0.029
+      2028-01-01: 0.03
+      2029-01-01: 0.03
+    metadata:
+      unit: /1
+      label: social rent growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+  rent:
+    description: Rent year-on-year growth, private and social (ONS series D7GQ).
+
+    values:
+      2022-01-01: 0.041
+      2023-01-01: 0.063
+      2024-01-01: 0.074
+      2025-01-01: 0.057
+      2026-01-01: 0.036
+      2027-01-01: 0.027
+      2028-01-01: 0.023
+      2029-01-01: 0.024
+
+    metadata:
+      unit: /1
+      label: rent growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+
+ons:
+  population:
+    description: Population year-on-year growth.
+    values:
+      2021-01-01: 0.004
+      2022-01-01: 0.003
+      2023-01-01: 0.014
+      2024-01-01: 0.01
+      2025-01-01: 0.011
+      2026-01-01: 0.007
+      2027-01-01: 0.008
+      2028-01-01: 0.004
+      2029-01-01: 0.005
+    metadata:
+      unit: /1
+      label: population growth
+      reference:
+        - title: ONS Population Projections
+          href: https://www.ons.gov.uk/
+  private_rental_prices:
+    UNITED_KINGDOM:
+      description: Private rental prices year-on-year growth in United Kingdom.
+      values:
+        2022-01-01: 0.050398
+        2023-01-01: 0.080953
+        2024-01-01: 0.086137
+      metadata:
+        unit: /1
+        label: united kingdom private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    ENGLAND:
+      description: Private rental prices year-on-year growth in England.
+      values:
+        2022-01-01: 0.048965
+        2023-01-01: 0.078981
+        2024-01-01: 0.08694
+      metadata:
+        unit: /1
+        label: england private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    WALES:
+      description: Private rental prices year-on-year growth in Wales.
+      values:
+        2022-01-01: 0.049352
+        2023-01-01: 0.090369
+        2024-01-01: 0.082778
+      metadata:
+        unit: /1
+        label: wales private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    SCOTLAND:
+      description: Private rental prices year-on-year growth in Scotland.
+      values:
+        2022-01-01: 0.062296
+        2023-01-01: 0.107356
+        2024-01-01: 0.073967
+      metadata:
+        unit: /1
+        label: scotland private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    NORTHERN_IRELAND:
+      description: Private rental prices year-on-year growth in Northern Ireland.
+      values:
+        2022-01-01: 0.08965
+        2023-01-01: 0.089197
+        2024-01-01: 0.090822
+      metadata:
+        unit: /1
+        label: northern ireland private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    NORTH_EAST:
+      description: Private rental prices year-on-year growth in North East.
+      values:
+        2022-01-01: 0.042495
+        2023-01-01: 0.055804
+        2024-01-01: 0.073116
+      metadata:
+        unit: /1
+        label: north east private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    NORTH_WEST:
+      description: Private rental prices year-on-year growth in North West.
+      values:
+        2022-01-01: 0.062822
+        2023-01-01: 0.07947
+        2024-01-01: 0.094498
+      metadata:
+        unit: /1
+        label: north west private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    YORKSHIRE:
+      description:
+        Private rental prices year-on-year growth in Yorkshire and The
+        Humber.
+      values:
+        2022-01-01: 0.05625
+        2023-01-01: 0.072295
+        2024-01-01: 0.063506
+      metadata:
+        unit: /1
+        label: yorkshire and the humber private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    EAST_MIDLANDS:
+      description: Private rental prices year-on-year growth in East Midlands.
+      values:
+        2022-01-01: 0.053405
+        2023-01-01: 0.067085
+        2024-01-01: 0.087371
+      metadata:
+        unit: /1
+        label: east midlands private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    WEST_MIDLANDS:
+      description: Private rental prices year-on-year growth in West Midlands.
+      values:
+        2022-01-01: 0.043415
+        2023-01-01: 0.077504
+        2024-01-01: 0.084456
+      metadata:
+        unit: /1
+        label: west midlands private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    EAST_OF_ENGLAND:
+      description: Private rental prices year-on-year growth in East of England.
+      values:
+        2022-01-01: 0.044759
+        2023-01-01: 0.058668
+        2024-01-01: 0.077271
+      metadata:
+        unit: /1
+        label: east of england private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    LONDON:
+      description: Private rental prices year-on-year growth in London.
+      values:
+        2022-01-01: 0.042829
+        2023-01-01: 0.095307
+        2024-01-01: 0.103031
+      metadata:
+        unit: /1
+        label: london private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    SOUTH_EAST:
+      description: Private rental prices year-on-year growth in South East.
+      values:
+        2022-01-01: 0.050307
+        2023-01-01: 0.071938
+        2024-01-01: 0.077617
+      metadata:
+        unit: /1
+        label: south east private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    SOUTH_WEST:
+      description: Private rental prices year-on-year growth in South West.
+      values:
+        2022-01-01: 0.059055
+        2023-01-01: 0.069351
+        2024-01-01: 0.06671
+      metadata:
+        unit: /1
+        label: south west private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+ofwat:
+  water_bills:
+    description: Water and sewerage bills year-on-year growth.
+    values:
+      2022-01-01: 0.052
+      2023-01-01: 0.092
+      2024-01-01: 0.044
+      2025-01-01: 0.26
+      2026-01-01: 0.055
+      2027-01-01: 0.046
+      2028-01-01: 0.045
+      2029-01-01: 0.045
+    metadata:
+      unit: /1
+      label: water bills growth
+      reference:
+        - title: Ofwat (and custom projections)
+          href: https://www.ofwat.gov.uk/price-review/
+        - title: Ofwat 2025-26 media statement
+          href: https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/
+finance_ni:
+  domestic_rates:
+    description: Domestic rates year-on-year growth.
+    values:
+      2024-01-01: 0.05
+      2025-01-01: 0.047
+      2026-01-01: 0
+      2027-01-01: 0
+      2028-01-01: 0
+      2029-01-01: 0
+      2020-01-01: 0
+    metadata:
+      unit: /1
+      label: domestic rates growth
+      reference:
+        - title: Finance NI (based on outturn)
+          href: https://www.finance-ni.gov.uk/

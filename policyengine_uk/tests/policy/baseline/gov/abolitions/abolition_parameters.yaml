@@ -1,0 +1,250 @@
+- name: Child benefit abolition test
+  period: 2025
+  input:
+    gov.abolitions.child_benefit: true
+    people:
+      parent:
+        age: 35
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_child_benefit: true
+  output:
+    child_benefit: [0, 0]
+
+- name: State pension abolition test
+  period: 2025
+  input:
+    gov.abolitions.state_pension: true
+    people:
+      pensioner:
+        age: 67
+        state_pension_age: 67
+  output:
+    state_pension: 0
+
+- name: Employment income abolition test
+  period: 2025
+  input:
+    gov.abolitions.employment_income: true
+    people:
+      worker:
+        age: 30
+        employment_income: 50000
+  output:
+    employment_income: 0
+
+- name: Universal credit abolition test
+  period: 2025
+  input:
+    gov.abolitions.universal_credit: true
+    people:
+      claimant:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+  output:
+    universal_credit: 0
+
+- name: Income tax abolition test
+  period: 2025
+  input:
+    gov.abolitions.income_tax: true
+    people:
+      taxpayer:
+        age: 30
+        employment_income: 50000
+  output:
+    income_tax: 0
+
+- name: National insurance abolition test
+  period: 2025
+  input:
+    gov.abolitions.national_insurance: true
+    people:
+      worker:
+        age: 30
+        employment_income: 50000
+  output:
+    national_insurance: 0
+
+- name: Carers allowance abolition test
+  period: 2025
+  input:
+    gov.abolitions.carers_allowance: true
+    people:
+      carer:
+        age: 30
+        care_hours: 40
+  output:
+    carers_allowance: 0
+
+- name: Housing benefit abolition test
+  period: 2025
+  input:
+    gov.abolitions.housing_benefit: true
+    people:
+      claimant:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        rent: 500
+        brma: "CENTRAL_LONDON"
+        tenure_type: "RENT_PRIVATELY"
+  output:
+    housing_benefit: 0
+
+- name: Pension credit abolition test
+  period: 2025
+  input:
+    gov.abolitions.pension_credit: true
+    people:
+      pensioner:
+        age: 67
+        state_pension_age: 67
+  output:
+    pension_credit: 0
+
+- name: Working tax credit abolition test
+  period: 2025
+  input:
+    gov.abolitions.working_tax_credit: true
+    people:
+      worker:
+        age: 30
+        employment_income: 15000
+        weekly_hours: 35
+  output:
+    working_tax_credit: 0
+
+- name: Child tax credit abolition test
+  period: 2025
+  input:
+    gov.abolitions.child_tax_credit: true
+    people:
+      parent:
+        age: 30
+        employment_income: 15000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    child_tax_credit: 0
+
+- name: Income support abolition test
+  period: 2025
+  input:
+    gov.abolitions.income_support: true
+    people:
+      claimant:
+        age: 25
+  output:
+    income_support: 0
+
+- name: JSA income abolition test
+  period: 2025
+  input:
+    gov.abolitions.jsa_income: true
+    people:
+      claimant:
+        age: 25
+  output:
+    jsa_income: 0
+
+- name: ESA income abolition test
+  period: 2025
+  input:
+    gov.abolitions.esa_income: true
+    people:
+      claimant:
+        age: 25
+  output:
+    esa_income: 0
+
+- name: Attendance allowance abolition test
+  period: 2025
+  input:
+    gov.abolitions.attendance_allowance: true
+    people:
+      claimant:
+        age: 70
+        aa_category: "LOWER"
+  output:
+    attendance_allowance: 0
+
+- name: Council tax benefit abolition test
+  period: 2025
+  input:
+    gov.abolitions.council_tax_benefit: true
+    people:
+      claimant:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        council_tax_band: "A"
+        region: "LONDON"
+  output:
+    council_tax_benefit: 0
+
+- name: Stamp duty land tax abolition test
+  period: 2025
+  input:
+    gov.abolitions.stamp_duty_land_tax: true
+    people:
+      buyer:
+        age: 30
+    households:
+      household:
+        members: [buyer]
+        main_residential_property_purchased: 300000
+  output:
+    stamp_duty_land_tax: 0
+
+- name: VAT abolition test
+  period: 2025
+  input:
+    gov.abolitions.vat: true
+    people:
+      consumer:
+        age: 30
+    households:
+      household:
+        members: [consumer]
+        full_rate_vat_consumption: 1000
+  output:
+    vat: 0
+
+- name: Capital gains tax abolition test
+  period: 2025
+  input:
+    gov.abolitions.capital_gains_tax: true
+    people:
+      investor:
+        age: 30
+        capital_gains: 50000
+  output:
+    capital_gains_tax: 0
+
+- name: Business rates abolition test
+  period: 2025
+  input:
+    gov.abolitions.business_rates: true
+    people:
+      business_owner:
+        age: 30
+  output:
+    business_rates: 0
