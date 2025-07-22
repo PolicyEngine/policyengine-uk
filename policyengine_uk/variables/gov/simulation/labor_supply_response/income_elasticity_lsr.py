@@ -10,8 +10,8 @@ class income_elasticity_lsr(Variable):
     requires_computation_after = "employment_income_behavioral_response"
 
     def formula(person, period, parameters):
-        lsr = parameters(period).gov.simulation.labor_supply_responses
+        p = parameters(period).gov.simulation.labor_supply_responses
         employment_income = person("employment_income_before_lsr", period)
         income_change = person("relative_income_change", period)
 
-        return employment_income * income_change * lsr.income_elasticity
+        return employment_income * income_change * p.income_elasticity

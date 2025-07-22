@@ -13,4 +13,4 @@ class ctc_entitlement(Variable):
             benunit("tax_credits", period) > 0,
             benunit("child_tax_credit_pre_minimum", period),
             0,
-        ) * (benunit("is_CTC_eligible", period))
+        ) * (benunit("is_ctc_eligible", period))

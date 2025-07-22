@@ -24,12 +24,11 @@ class carbon_consumption(Variable):
             "restaurants_and_hotels_consumption",
             "miscellaneous_consumption",
         ]
-        consumption = parameters(period).household.consumption
+        p = parameters(period).household.consumption
         aggregate_spending_by_sector = [
-            consumption.total_by_category[category]
-            for category in CONSUMPTION_VARIABLES
+            p.total_by_category[category] for category in CONSUMPTION_VARIABLES
         ]
-        carbon = consumption.carbon
+        carbon = p.carbon
         aggregate_emissions_by_sector = [
             carbon.emissions[category.replace("_consumption", "")]
             for category in CONSUMPTION_VARIABLES

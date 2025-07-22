@@ -12,9 +12,9 @@ class lbtt_on_non_residential_property_rent(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        lbtt = parameters(period).gov.revenue_scotland.lbtt
+        p = parameters(period).gov.revenue_scotland.lbtt
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
-        lbtt_cumulative_rent = lbtt.rent.calc(cumulative_rent)
-        lbtt_total_rent = lbtt.rent.calc(cumulative_rent + rent)
+        lbtt_cumulative_rent = p.rent.calc(cumulative_rent)
+        lbtt_total_rent = p.rent.calc(cumulative_rent + rent)
         return lbtt_total_rent - lbtt_cumulative_rent

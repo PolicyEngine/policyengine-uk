@@ -9,7 +9,7 @@ class attendance_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        aa = parameters(period).gov.dwp.attendance_allowance
+        p = parameters(period).gov.dwp.attendance_allowance
         category = person("aa_category", period)
         categories = category.possible_values
         return (
@@ -18,7 +18,7 @@ class attendance_allowance(Variable):
                     category == categories.HIGHER,
                     category == categories.LOWER,
                 ],
-                [aa.higher, aa.lower],
+                [p.higher, p.lower],
                 default=0,
             )
             * WEEKS_IN_YEAR

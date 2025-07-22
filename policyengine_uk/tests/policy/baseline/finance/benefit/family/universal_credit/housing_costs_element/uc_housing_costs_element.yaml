@@ -58,7 +58,7 @@
     benunits:
       benunit:
         benunit_rent: 5_000
-        LHA_cap: 6_000
+        lha_cap: 6_000
         members: person
     households:
       household:
@@ -76,7 +76,7 @@
     benunits:
       benunit:
         benunit_rent: 6_000
-        LHA_cap: 5_000
+        lha_cap: 5_000
         members: person
     households:
       household:
@@ -95,7 +95,7 @@
       benunit:
         benunit_rent: 6_000
         uc_non_dep_deductions: 10 * 52
-        LHA_cap: 5_000
+        lha_cap: 5_000
         members: person
     households:
       household:

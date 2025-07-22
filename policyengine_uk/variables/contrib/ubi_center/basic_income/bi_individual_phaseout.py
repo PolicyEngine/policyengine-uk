@@ -14,12 +14,12 @@ class bi_individual_phaseout(Variable):
 
     def formula(person, period, parameters):
         income = person("total_income", period)
-        bi = parameters(period).gov.contrib.ubi_center.basic_income
+        p = parameters(period).gov.contrib.ubi_center.basic_income
         max_bi = person("bi_maximum", period)
         income_over_threshold = max_(
-            income - bi.phase_out.individual.threshold, 0
+            income - p.phase_out.individual.threshold, 0
         )
         uncapped_deduction = (
-            bi.phase_out.individual.rate * income_over_threshold
+            p.phase_out.individual.rate * income_over_threshold
         )
         return min_(max_bi, uncapped_deduction)

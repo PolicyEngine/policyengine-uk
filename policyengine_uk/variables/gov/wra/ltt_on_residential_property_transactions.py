@@ -12,17 +12,17 @@ class ltt_on_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ltt = parameters(period).gov.wra.land_transaction_tax
+        p = parameters(period).gov.wra.land_transaction_tax
         main_home_price = household(
             "main_residential_property_purchased", period
         )
-        primary_residential_purchase_tax = ltt.residential.primary.calc(
+        primary_residential_purchase_tax = p.residential.primary.calc(
             main_home_price
         )
         second_home_price = household(
             "additional_residential_property_purchased", period
         )
-        additional_residential_purchase_tax = ltt.residential.higher_rate.calc(
+        additional_residential_purchase_tax = p.residential.higher_rate.calc(
             second_home_price
         )
         return (

@@ -11,9 +11,9 @@ class sdlt_on_non_residential_property_rent(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/schedule/5"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).gov.hmrc.stamp_duty
+        p = parameters(period).gov.hmrc.stamp_duty
         cumulative_rent = household("cumulative_non_residential_rent", period)
         rent = household("non_residential_rent", period)
-        return stamp_duty.non_residential.rent.calc(
+        return p.non_residential.rent.calc(
             cumulative_rent + rent
-        ) - stamp_duty.non_residential.rent.calc(cumulative_rent)
+        ) - p.non_residential.rent.calc(cumulative_rent)

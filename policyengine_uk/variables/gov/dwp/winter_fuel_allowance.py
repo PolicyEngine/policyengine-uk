@@ -13,8 +13,8 @@ class winter_fuel_allowance(Variable):
             household("country", period).decode_to_str() == "SCOTLAND"
         )
         age = household.members("age", period)
-        is_SP_age = household.members("is_SP_age", period)
-        wfp = parameters(period).gov.dwp.winter_fuel_payment
+        is_sp_age = household.members("is_sp_age", period)
+        p = parameters(period).gov.dwp.winter_fuel_payment
         on_mtb = (
             add(
                 household,
@@ -29,30 +29,30 @@ class winter_fuel_allowance(Variable):
             > 0
         )
         taxable_income = household.members("total_income", period)
-        is_SP_age = household.members("is_SP_age", period)
+        is_sp_age = household.members("is_sp_age", period)
         country = household("country", period).decode_to_str()
         in_england_or_wales = (country == "ENGLAND") | (country == "WALES")
         meets_income_passport = (
             household.any(
-                is_SP_age
+                is_sp_age
                 & (
                     taxable_income
-                    < wfp.eligibility.taxable_income_test.maximum_taxable_income
+                    < p.eligibility.taxable_income_test.maximum_taxable_income
                 )
             )
             & in_england_or_wales
-            & wfp.eligibility.taxable_income_test.use_maximum_taxable_income
+            & p.eligibility.taxable_income_test.use_maximum_taxable_income
         )
 
         meets_mtb_requirement = (
-            on_mtb | ~wfp.eligibility.require_benefits | meets_income_passport
+            on_mtb | ~p.eligibility.require_benefits | meets_income_passport
         )
         meets_spa_requirement = (
-            household.any(is_SP_age)
-            | ~wfp.eligibility.state_pension_age_requirement
+            household.any(is_sp_age)
+            | ~p.eligibility.state_pension_age_requirement
         )
         meets_higher_age_requirement = household.any(
-            age >= wfp.eligibility.higher_age_requirement
+            age >= p.eligibility.higher_age_requirement
         )
         qualifies_for_higher = (
             meets_mtb_requirement
@@ -66,6 +66,6 @@ class winter_fuel_allowance(Variable):
         )
 
         return ~in_scotland * (
-            wfp.amount.higher * qualifies_for_higher
-            + wfp.amount.lower * qualifies_for_lower
+            p.amount.higher * qualifies_for_higher
+            + p.amount.lower * qualifies_for_lower
         )

@@ -3,10 +3,10 @@
   input:
     people:   
       person1:
-        uc_limited_capability_for_WRA: false
+        uc_limited_capability_for_wra: false
         is_child: false
       person2:
-        uc_limited_capability_for_WRA: false
+        uc_limited_capability_for_wra: false
         is_child: true
     benunits:
       benunit:
@@ -19,10 +19,10 @@
   input:
     people:   
       person1:
-        uc_limited_capability_for_WRA: false
+        uc_limited_capability_for_wra: false
         is_child: false
       person2:
-        uc_limited_capability_for_WRA: false
+        uc_limited_capability_for_wra: false
         is_child: false
     benunits:
       benunit:

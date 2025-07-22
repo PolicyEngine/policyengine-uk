@@ -8,7 +8,7 @@ class is_enhanced_disabled_for_benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        DLA_requirement = (
+        dla_requirement = (
             parameters(period).gov.dwp.dla.self_care.higher * WEEKS_IN_YEAR
         )
-        return person("dla_sc", period) >= DLA_requirement
+        return person("dla_sc", period) >= dla_requirement

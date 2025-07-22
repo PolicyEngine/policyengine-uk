@@ -14,15 +14,15 @@ class dla_m_category(Variable):
     default_value = LowerOrHigher.NONE
 
     def formula(person, period, parameters):
-        dla_m = parameters(period).baseline.gov.dwp.dla.mobility
+        p = parameters(period).baseline.gov.dwp.dla.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
         reported_weekly_dla_m = (
             person("dla_m_reported", period) / WEEKS_IN_YEAR
         )
         return select(
             [
-                reported_weekly_dla_m >= dla_m.higher * (1 - SAFETY_MARGIN),
-                reported_weekly_dla_m >= dla_m.lower * (1 - SAFETY_MARGIN),
+                reported_weekly_dla_m >= p.higher * (1 - SAFETY_MARGIN),
+                reported_weekly_dla_m >= p.lower * (1 - SAFETY_MARGIN),
                 True,
             ],
             [

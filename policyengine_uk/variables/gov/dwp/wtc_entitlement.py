@@ -7,7 +7,7 @@ class wtc_entitlement(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    defined_for = "is_WTC_eligible"
+    defined_for = "is_wtc_eligible"
 
     def formula(benunit, period, parameters):
         return where(

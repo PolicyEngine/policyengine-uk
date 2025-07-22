@@ -2,10 +2,10 @@
   period: 2025
   input:
     benunit_rent: 8_000
-    LHA_eligible: false
+    lha_eligible: false
     housing_benefit_applicable_amount: 1_000
     housing_benefit_applicable_income: 11_000
-    LHA_cap: 1_000
+    lha_cap: 1_000
     housing_benefit_non_dep_deductions: 0
   output:
     housing_benefit_entitlement: 1_500
@@ -14,10 +14,10 @@
   period: 2025
   input:
     benunit_rent: 8_000
-    LHA_eligible: true
+    lha_eligible: true
     housing_benefit_applicable_amount: 1_000
     housing_benefit_applicable_income: 11_000
-    LHA_cap: 1_000
+    lha_cap: 1_000
     housing_benefit_non_dep_deductions: 0
   output:
     housing_benefit_entitlement: 1_000
@@ -26,10 +26,10 @@
   period: 2025
   input:
     benunit_rent: 8_000
-    LHA_eligible: false
+    lha_eligible: false
     housing_benefit_applicable_amount: 1_000
     housing_benefit_applicable_income: 11_000
-    LHA_cap: 1_000
+    lha_cap: 1_000
     housing_benefit_non_dep_deductions: 2_000
   output:
     housing_benefit_entitlement: 0
@@ -38,10 +38,10 @@
   period: 2025
   input:
     benunit_rent: 6_000
-    LHA_eligible: false
+    lha_eligible: false
     housing_benefit_applicable_amount: 1_000
     housing_benefit_applicable_income: 11_000
-    LHA_cap: 1_000
+    lha_cap: 1_000
     housing_benefit_non_dep_deductions: 0
   output:
     housing_benefit_entitlement: 0

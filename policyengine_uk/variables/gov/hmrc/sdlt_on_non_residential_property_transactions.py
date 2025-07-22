@@ -11,6 +11,6 @@ class sdlt_on_non_residential_property_transactions(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
 
     def formula(household, period, parameters):
-        stamp_duty = parameters(period).gov.hmrc.stamp_duty
+        p = parameters(period).gov.hmrc.stamp_duty
         price = household("non_residential_property_purchased", period)
-        return stamp_duty.non_residential.purchase.calc(price)
+        return p.non_residential.purchase.calc(price)

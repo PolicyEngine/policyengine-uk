@@ -27,12 +27,12 @@ class adjusted_employer_cost(Variable):
         )
 
         # Calculate employer cost
-        parameters = parameters(period)
-        class_1 = parameters.gov.hmrc.national_insurance.class_1
+        p = parameters(period)
+        class_1 = p.gov.hmrc.national_insurance.class_1
         r_r = class_1.rates.employer
         t_r = class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
         p_r = (
-            parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
+            p.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         )
         pen_con_subtracted_r = employer_pension_contributions
         if p_r:

@@ -8,7 +8,7 @@ class child_tax_credit_pre_minimum(Variable):
     documentation = (
         "Child Tax Credit amount before the minimum tax credit is applied"
     )
-    defined_for = "would_claim_CTC"
+    defined_for = "would_claim_ctc"
     definition_period = YEAR
     unit = GBP
 
@@ -16,9 +16,9 @@ class child_tax_credit_pre_minimum(Variable):
         reduction_left = max_(
             0,
             benunit("tax_credits_reduction", period)
-            - benunit("WTC_maximum_rate", period),
+            - benunit("wtc_maximum_rate", period),
         )
         return max_(
             0,
-            benunit("CTC_maximum_rate", period) - reduction_left,
+            benunit("ctc_maximum_rate", period) - reduction_left,
         )

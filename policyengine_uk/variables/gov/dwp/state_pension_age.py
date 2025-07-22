@@ -9,5 +9,5 @@ class state_pension_age(Variable):
     unit = "year"
 
     def formula(person, period, parameters):
-        SP = parameters(period).gov.dwp.state_pension
-        return where(person("is_male", period), SP.age.male, SP.age.female)
+        p = parameters(period).gov.dwp.state_pension
+        return where(person("is_male", period), p.age.male, p.age.female)

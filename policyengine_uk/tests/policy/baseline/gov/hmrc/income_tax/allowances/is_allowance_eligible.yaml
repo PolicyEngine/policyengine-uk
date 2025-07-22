@@ -23,7 +23,7 @@
   input:
     married_couples_allowance_deduction: 800.0
     income_tax_pre_charges: 500.0
-    CB_HITC: 200.0
+    cb_hitc: 200.0
   output:
     capped_mcad: 700.0
 

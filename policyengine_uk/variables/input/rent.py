@@ -30,14 +30,12 @@ class rent(Variable):
 
         is_private_rent = tenure_type == "RENT_PRIVATELY"
 
-        obr = parameters.gov.economic_assumptions.indices.obr
+        p = parameters.gov.economic_assumptions.indices.obr
 
-        private_rent_uprating = obr.lagged_average_earnings(
+        private_rent_uprating = p.lagged_average_earnings(
             period
-        ) / obr.lagged_average_earnings(data_year)
-        social_rent_uprating = obr.social_rent(period) / obr.social_rent(
-            data_year
-        )
+        ) / p.lagged_average_earnings(data_year)
+        social_rent_uprating = p.social_rent(period) / p.social_rent(data_year)
 
         return select(
             [
