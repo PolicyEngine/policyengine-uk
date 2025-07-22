@@ -1678,3 +1678,8 @@
     fixed:
     - Bug in uprating.
   date: 2025-07-22 09:37:07
+- bump: minor
+  changes:
+    changed:
+    - Standardize decimals in parameters.
+  date: 2025-07-22 19:49:35
