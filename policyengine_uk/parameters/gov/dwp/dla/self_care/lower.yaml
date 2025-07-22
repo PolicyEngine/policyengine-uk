@@ -1,20 +1,20 @@
 description: Lower rate for Disability Living Allowance (self-care component).
 values:
-  2015-04-01: 21.80
-  2016-04-01: 21.80
-  2017-04-01: 22.00
+  2015-04-01: 21.8
+  2016-04-01: 21.8
+  2017-04-01: 22
   2018-04-01: 22.65
-  2019-04-01: 23.20
-  2020-04-01: 23.60
-  2021-04-01: 23.70
+  2019-04-01: 23.2
+  2020-04-01: 23.6
+  2021-04-01: 23.7
   2022-04-01: 24.45
   2023-04-01: 
-    value: 26.90
+    value: 26.9
     reference:
       - title: Benefits Uprating 2024/25 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
   2024-04-01: 
-    value: 28.70
+    value: 28.7
     reference:
       - title: Benefits Uprating 2024/25 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
