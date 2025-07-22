@@ -3,8 +3,8 @@ brackets:
   - threshold:
       values:
         2017-04-06: null
-        2018-04-06: 0.0
-        2021-04-06: 0.0
+        2018-04-06: 0
+        2021-04-06: 0
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -12,7 +12,7 @@ brackets:
       2018-04-06: 0.19 # Starter rate
   - threshold:
       values:
-        2017-04-06: 0.0
+        2017-04-06: 0
         2018-04-06: 2_000
         2021-04-06: 2_306
         2022-04-06: 2_162
@@ -21,7 +21,7 @@ brackets:
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
-      2017-04-06: 0.20 # Basic rate
+      2017-04-06: 0.2  # Basic rate
   - threshold:
       values:
         2017-04-06: null
@@ -45,7 +45,7 @@ brackets:
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
-      2017-04-06: 0.40
+      2017-04-06: 0.4
       2021-04-06: 0.41 # Higher rate
       2023-04-06: 0.42
   - threshold:

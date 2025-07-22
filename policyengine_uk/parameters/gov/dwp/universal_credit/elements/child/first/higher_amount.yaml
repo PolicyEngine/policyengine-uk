@@ -2,11 +2,11 @@ description: Child element for the first child in Universal Credit.
 values:
   2017-04-10: 277.08
   2020-04-06: 281.25
-  2021-04-12: 282.50
-  2022-04-06: 290.00
-  2023-04-01: 315.00
+  2021-04-12: 282.5
+  2022-04-06: 290
+  2023-04-01: 315
   2024-04-01: 333.33
-  2025-04-01: 339.00
+  2025-04-01: 339
 metadata:
   unit: currency-GBP
   period: month

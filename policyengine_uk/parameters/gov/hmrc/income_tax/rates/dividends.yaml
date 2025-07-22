@@ -17,7 +17,7 @@ brackets:
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
     threshold:
       values:
-        2015-04-01: 0.0
+        2015-04-01: 0
       metadata:
         label: Dividends basic rate threshold
         reference:

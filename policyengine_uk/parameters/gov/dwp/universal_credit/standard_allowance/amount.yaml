@@ -3,7 +3,7 @@ SINGLE_YOUNG:
   description: Standard allowance for single claimants under 25
   values:
     2015-04-01: 251.77
-    2020-04-06: 344.00 # From gov.uk and entitledto
+    2020-04-06: 344    # From gov.uk and entitledto
     2021-10-06: 257.33
     2022-04-06: 265.31
     2023-04-01: 292.11
@@ -40,8 +40,8 @@ SINGLE_OLD:
 COUPLE_YOUNG:
   description: Standard allowance for couples where both are under 25.
   values:
-    2015-04-01: 395.20
-    2020-04-06: 490.60 # From gov.uk and entitledto
+    2015-04-01: 395.2
+    2020-04-06: 490.6  # From gov.uk and entitledto
     2021-10-06: 403.93
     2022-04-06: 416.45
     2023-04-01: 458.51
@@ -66,11 +66,11 @@ COUPLE_OLD:
     2022-04-06: 525.72
     2023-04-01: 578.82
     2024-04-01: 
-      value: 617.60
+      value: 617.6
       reference:
         - title: Benefits Uprating 2024/25 | Commons Library Briefing
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
-    2025-04-01: 628.10
+    2025-04-01: 628.1
   metadata:
     label: Universal Credit couple amount (one over 25)
     unit: currency-GBP
