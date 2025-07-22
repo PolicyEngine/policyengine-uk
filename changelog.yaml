@@ -1673,3 +1673,8 @@
     fixed:
     - Bug in handling downloads of UKMultiYearDataset from HuggingFace.
   date: 2025-07-21 15:37:49
+- bump: patch
+  changes:
+    fixed:
+    - Bug in uprating.
+  date: 2025-07-22 09:37:07
