@@ -48,7 +48,9 @@ def apply_single_year_uprating(
                     prev_year_value = getattr(previous_year, table_name)[
                         variable
                     ]
-                    current_year_value = prev_year_value * index_rel_change
+                    current_year_value = prev_year_value * (
+                        1 + index_rel_change
+                    )
                     getattr(current_year, table_name)[
                         variable
                     ] = current_year_value
@@ -158,11 +160,6 @@ def uprate_rent(
         private_rent_growth = (
             aggregate_growth - social_weight * social_rent_growth
         ) / private_weight
-        print(
-            f"Backed out private rent growth: {private_rent_growth:.1%} in {year}"
-        )
-        print(f"OBR aggregate rent growth: {aggregate_growth:.1%} in {year}")
-        print(f"Social rent growth: {social_rent_growth:.1%} in {year}")
 
         current_year.household["rent"] = np.where(
             is_private_rented,
@@ -182,3 +179,6 @@ def reset_uprating(
     for year in dataset.datasets:
         if year != first_year:
             dataset.datasets[year] = dataset.datasets[first_year].copy()
+            dataset.datasets[year].time_period = str(year)
+
+    return dataset
