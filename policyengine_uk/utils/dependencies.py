@@ -61,7 +61,7 @@ def calculate_dependency_contributions(sim, variable_name, year, top_n=None):
 
 
 def calculate_dependency_contribution_change(
-    baseline_sim, reform_sim, variable_name, year, reform_year = None, top_n=5
+    baseline_sim, reform_sim, variable_name, year, reform_year=None, top_n=5
 ):
     baseline_dependency = calculate_dependency_contributions(
         baseline_sim, variable_name, year
@@ -117,7 +117,9 @@ def create_waterfall_chart(sim, variable_name, year, top_n=5):
     )
 
 
-def create_waterfall_change_chart(sim_1, sim_2, variable_name, year, sim_2_year = None, top_n=5):
+def create_waterfall_change_chart(
+    sim_1, sim_2, variable_name, year, sim_2_year=None, top_n=5
+):
     df = calculate_dependency_contribution_change(
         sim_1, sim_2, variable_name, year, reform_year=sim_2_year, top_n=top_n
     )
