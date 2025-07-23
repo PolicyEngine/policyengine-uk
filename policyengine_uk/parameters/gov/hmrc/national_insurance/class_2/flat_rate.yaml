@@ -1,9 +1,9 @@
 description: Flat rate National Insurance contribution for self-employed earners
 values:
-  2015-04-01: 2.80
+  2015-04-01: 2.8
   2017-04-01: 2.85
   2018-04-01: 2.95
-  2019-04-01: 3.00
+  2019-04-01: 3
   2020-04-01: 3.05
   2022-04-06:
     value: 3.15

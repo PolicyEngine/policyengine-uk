@@ -1662,3 +1662,29 @@
     fixed:
     - NI domestic rates taken as reported.
   date: 2025-07-17 12:45:26
+- bump: minor
+  changes:
+    added:
+    - UKMultiYearDataset class to handle multiple fiscal years.
+    - Uprating of datasets using the `uprate` method.
+  date: 2025-07-21 13:23:31
+- bump: patch
+  changes:
+    fixed:
+    - Bug in handling downloads of UKMultiYearDataset from HuggingFace.
+  date: 2025-07-21 15:37:49
+- bump: patch
+  changes:
+    fixed:
+    - Bug in uprating.
+  date: 2025-07-22 09:37:07
+- bump: minor
+  changes:
+    changed:
+    - Standardize decimals in parameters.
+  date: 2025-07-22 19:49:35
+- bump: patch
+  changes:
+    changed:
+    - Update microdf_python dependency to >=1.0.0.
+  date: 2025-07-22 20:55:35

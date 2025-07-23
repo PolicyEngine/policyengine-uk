@@ -7,7 +7,7 @@ brackets:
   - threshold:
       2022-01-01: 1
     amount:
-      2022-01-01: 0.80
+      2022-01-01: 0.8
   - threshold:
       2022-01-01: 2
     amount:
