@@ -46,8 +46,19 @@ def extract_variables_regex(formula_source):
     return matches
 
 
-def calculate_dependency_contributions(sim, variable_name, year, top_n=None):
+def calculate_dependency_contributions(sim, variable_name, year, top_n=None, filter=None, map_to=None):
     original_values = sim.calculate(variable_name, year)
+    
+    if map_to is not None:
+        source_entity = sim.tax_benefit_system.get_variable(
+            variable_name
+        ).entity.key
+        original_values_mapped = sim.map_result(
+            original_values, source_entity, map_to,
+        )
+    else:
+        original_values_mapped = original_values
+
     dependency_contributions = {}
     first_level_dependencies = get_variable_dependencies(variable_name, sim)
     for variable in first_level_dependencies:
@@ -59,8 +70,11 @@ def calculate_dependency_contributions(sim, variable_name, year, top_n=None):
         if value_type == float:
             sim.set_input(variable, year, (current_values * 0).astype(float))
 
-        new_values = sim.calculate(variable_name, year)
-        contribution = original_values.mean() - new_values.mean()
+        new_values_mapped = sim.calculate(variable_name, year, map_to=map_to)
+        if filter is not None:
+            contribution = (original_values_mapped[filter] - new_values_mapped[filter]).mean()
+        else:
+            contribution = (original_values_mapped - new_values_mapped).mean()
         dependency_contributions[variable] = contribution
         sim.set_input(variable_name, year, original_values)
         sim.set_input(variable, year, current_values)
