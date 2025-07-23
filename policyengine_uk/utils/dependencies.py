@@ -5,21 +5,35 @@ import pandas as pd
 from plotly import graph_objects as go
 
 
-def find_variable_in_tree(variable_name, node, depth=0):
+def find_variable_in_trees(variable_name, tracer):
+    for tree in tracer.trees:
+        try:
+            node = find_variable_in_tree_recursive(variable_name, tree)
+            if node:
+                return node
+        except ValueError:
+            continue  # Variable not in this tree, try next
+
+    raise ValueError(
+        f"Variable '{variable_name}' not found in any simulation tree. "
+        f"Make sure you've calculated this variable or a parent variable that depends on it."
+    )
+
+
+def find_variable_in_tree_recursive(variable_name, node):
     if node.name == variable_name:
         return node
+
     for child in node.children:
-        result = find_variable_in_tree(variable_name, child, depth + 1)
+        result = find_variable_in_tree_recursive(variable_name, child)
         if result:
             return result
-    if depth == 0:
-        raise ValueError(
-            f"Variable '{variable_name}' not found in the simulation tree. The *first thing* you asked the simulation to calculate needs to include your target variable in its computation tree."
-        )
+
+    return None
 
 
 def get_variable_dependencies(variable_name, sim):
-    node = find_variable_in_tree(variable_name, sim.tracer.trees[0])
+    node = find_variable_in_trees(variable_name, sim.tracer)
     if not node:
         return []
     return [child.name for child in node.children]
@@ -32,8 +46,19 @@ def extract_variables_regex(formula_source):
     return matches
 
 
-def calculate_dependency_contributions(sim, variable_name, year, top_n=None):
+def calculate_dependency_contributions(sim, variable_name, year, top_n=None, filter=None, map_to=None):
     original_values = sim.calculate(variable_name, year)
+    
+    if map_to is not None:
+        source_entity = sim.tax_benefit_system.get_variable(
+            variable_name
+        ).entity.key
+        original_values_mapped = sim.map_result(
+            original_values, source_entity, map_to,
+        )
+    else:
+        original_values_mapped = original_values
+
     dependency_contributions = {}
     first_level_dependencies = get_variable_dependencies(variable_name, sim)
     for variable in first_level_dependencies:
@@ -45,8 +70,11 @@ def calculate_dependency_contributions(sim, variable_name, year, top_n=None):
         if value_type == float:
             sim.set_input(variable, year, (current_values * 0).astype(float))
 
-        new_values = sim.calculate(variable_name, year)
-        contribution = original_values.mean() - new_values.mean()
+        new_values_mapped = sim.calculate(variable_name, year, map_to=map_to)
+        if filter is not None:
+            contribution = (original_values_mapped[filter] - new_values_mapped[filter]).mean()
+        else:
+            contribution = (original_values_mapped - new_values_mapped).mean()
         dependency_contributions[variable] = contribution
         sim.set_input(variable_name, year, original_values)
         sim.set_input(variable, year, current_values)
@@ -93,9 +121,7 @@ def create_waterfall_chart(sim, variable_name, year, top_n=5):
             "Simulation must have trace enabled to create a waterfall chart."
         )
 
-    df = calculate_dependency_contributions(
-        sim, variable_name, year, top_n=top_n
-    )
+    df = calculate_dependency_contributions(sim, variable_name, year, top_n=top_n)
 
     # make a waterfall chart
 
