@@ -75,15 +75,15 @@ obr:
       2018-01-01: 0.023
       2019-01-01: 0.017
       2020-01-01: 0.006
-      2021-01-01: 0.040
-      2022-01-01: 0.100
+      2021-01-01: 0.04
+      2022-01-01: 0.1
       2023-01-01: 0.057
       2024-01-01: 0.023
       2025-01-01: 0.032
       2026-01-01: 0.019
-      2027-01-01: 0.020
-      2028-01-01: 0.020
-      2029-01-01: 0.020
+      2027-01-01: 0.02
+      2028-01-01: 0.02
+      2029-01-01: 0.02
     metadata:
       unit: /1
       label: consumer price index growth
@@ -116,7 +116,7 @@ obr:
       values:
         2023-01-01: 0.051
         2024-01-01: 0.051
-        2025-01-01: 0.050
+        2025-01-01: 0.05
         2026-01-01: 0.043
         2027-01-01: 0.043
         2028-01-01: 0.043
@@ -256,17 +256,36 @@ obr:
   social_rent:
     description: Rent year-on-year growth (CPI+1%, one year lagged).
     values:
-      2022-01-01: 0.050
-      2023-01-01: 0.110
+      2022-01-01: 0.05
+      2023-01-01: 0.07
       2024-01-01: 0.067
       2025-01-01: 0.033
       2026-01-01: 0.042
       2027-01-01: 0.029
-      2028-01-01: 0.030
-      2029-01-01: 0.030
+      2028-01-01: 0.03
+      2029-01-01: 0.03
     metadata:
       unit: /1
       label: social rent growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+  rent:
+    description: Rent year-on-year growth, private and social (ONS series D7GQ).
+
+    values:
+      2022-01-01: 0.041
+      2023-01-01: 0.063
+      2024-01-01: 0.074
+      2025-01-01: 0.057
+      2026-01-01: 0.036
+      2027-01-01: 0.027
+      2028-01-01: 0.023
+      2029-01-01: 0.024
+
+    metadata:
+      unit: /1
+      label: rent growth
       reference:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
@@ -290,6 +309,177 @@ ons:
       reference:
         - title: ONS Population Projections
           href: https://www.ons.gov.uk/
+  private_rental_prices:
+    UNITED_KINGDOM:
+      description: Private rental prices year-on-year growth in United Kingdom.
+      values:
+        2022-01-01: 0.050398
+        2023-01-01: 0.080953
+        2024-01-01: 0.086137
+      metadata:
+        unit: /1
+        label: united kingdom private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    ENGLAND:
+      description: Private rental prices year-on-year growth in England.
+      values:
+        2022-01-01: 0.048965
+        2023-01-01: 0.078981
+        2024-01-01: 0.08694
+      metadata:
+        unit: /1
+        label: england private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    WALES:
+      description: Private rental prices year-on-year growth in Wales.
+      values:
+        2022-01-01: 0.049352
+        2023-01-01: 0.090369
+        2024-01-01: 0.082778
+      metadata:
+        unit: /1
+        label: wales private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    SCOTLAND:
+      description: Private rental prices year-on-year growth in Scotland.
+      values:
+        2022-01-01: 0.062296
+        2023-01-01: 0.107356
+        2024-01-01: 0.073967
+      metadata:
+        unit: /1
+        label: scotland private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    NORTHERN_IRELAND:
+      description: Private rental prices year-on-year growth in Northern Ireland.
+      values:
+        2022-01-01: 0.08965
+        2023-01-01: 0.089197
+        2024-01-01: 0.090822
+      metadata:
+        unit: /1
+        label: northern ireland private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    NORTH_EAST:
+      description: Private rental prices year-on-year growth in North East.
+      values:
+        2022-01-01: 0.042495
+        2023-01-01: 0.055804
+        2024-01-01: 0.073116
+      metadata:
+        unit: /1
+        label: north east private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    NORTH_WEST:
+      description: Private rental prices year-on-year growth in North West.
+      values:
+        2022-01-01: 0.062822
+        2023-01-01: 0.07947
+        2024-01-01: 0.094498
+      metadata:
+        unit: /1
+        label: north west private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    YORKSHIRE:
+      description:
+        Private rental prices year-on-year growth in Yorkshire and The
+        Humber.
+      values:
+        2022-01-01: 0.05625
+        2023-01-01: 0.072295
+        2024-01-01: 0.063506
+      metadata:
+        unit: /1
+        label: yorkshire and the humber private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    EAST_MIDLANDS:
+      description: Private rental prices year-on-year growth in East Midlands.
+      values:
+        2022-01-01: 0.053405
+        2023-01-01: 0.067085
+        2024-01-01: 0.087371
+      metadata:
+        unit: /1
+        label: east midlands private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    WEST_MIDLANDS:
+      description: Private rental prices year-on-year growth in West Midlands.
+      values:
+        2022-01-01: 0.043415
+        2023-01-01: 0.077504
+        2024-01-01: 0.084456
+      metadata:
+        unit: /1
+        label: west midlands private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    EAST_OF_ENGLAND:
+      description: Private rental prices year-on-year growth in East of England.
+      values:
+        2022-01-01: 0.044759
+        2023-01-01: 0.058668
+        2024-01-01: 0.077271
+      metadata:
+        unit: /1
+        label: east of england private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    LONDON:
+      description: Private rental prices year-on-year growth in London.
+      values:
+        2022-01-01: 0.042829
+        2023-01-01: 0.095307
+        2024-01-01: 0.103031
+      metadata:
+        unit: /1
+        label: london private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    SOUTH_EAST:
+      description: Private rental prices year-on-year growth in South East.
+      values:
+        2022-01-01: 0.050307
+        2023-01-01: 0.071938
+        2024-01-01: 0.077617
+      metadata:
+        unit: /1
+        label: south east private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+    SOUTH_WEST:
+      description: Private rental prices year-on-year growth in South West.
+      values:
+        2022-01-01: 0.059055
+        2023-01-01: 0.069351
+        2024-01-01: 0.06671
+      metadata:
+        unit: /1
+        label: south west private rental prices growth
+        reference:
+          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
 ofwat:
   water_bills:
     description: Water and sewerage bills year-on-year growth.
@@ -297,7 +487,7 @@ ofwat:
       2022-01-01: 0.052
       2023-01-01: 0.092
       2024-01-01: 0.044
-      2025-01-01: 0.260
+      2025-01-01: 0.26
       2026-01-01: 0.055
       2027-01-01: 0.046
       2028-01-01: 0.045
@@ -314,13 +504,13 @@ finance_ni:
   domestic_rates:
     description: Domestic rates year-on-year growth.
     values:
-      2024-01-01: 0.050
+      2024-01-01: 0.05
       2025-01-01: 0.047
-      2026-01-01: 0.0
-      2027-01-01: 0.0
-      2028-01-01: 0.0
-      2029-01-01: 0.0
-      2020-01-01: 0.0
+      2026-01-01: 0
+      2027-01-01: 0
+      2028-01-01: 0
+      2029-01-01: 0
+      2020-01-01: 0
     metadata:
       unit: /1
       label: domestic rates growth

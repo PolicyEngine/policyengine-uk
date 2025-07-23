@@ -1,11 +1,11 @@
 description: Addition to the Minimum Guarantee for each claimant who is a carer.
 values:
-  2019-04-01: 36.00
-  2020-04-01: 37.50
-  2021-04-01: 37.70
+  2019-04-01: 36
+  2020-04-01: 37.5
+  2021-04-01: 37.7
   2022-04-01: 38.85
   2023-04-01: 42.75
-  2024-04-01: 45.60
+  2024-04-01: 45.6
   2025-04-01: 46.37
 metadata:
   unit: currency-GBP
