@@ -46,15 +46,19 @@ def extract_variables_regex(formula_source):
     return matches
 
 
-def calculate_dependency_contributions(sim, variable_name, year, top_n=None, filter=None, map_to=None):
+def calculate_dependency_contributions(
+    sim, variable_name, year, top_n=None, filter=None, map_to=None
+):
     original_values = sim.calculate(variable_name, year)
-    
+
     if map_to is not None:
         source_entity = sim.tax_benefit_system.get_variable(
             variable_name
         ).entity.key
         original_values_mapped = sim.map_result(
-            original_values, source_entity, map_to,
+            original_values,
+            source_entity,
+            map_to,
         )
     else:
         original_values_mapped = original_values
@@ -72,7 +76,9 @@ def calculate_dependency_contributions(sim, variable_name, year, top_n=None, fil
 
         new_values_mapped = sim.calculate(variable_name, year, map_to=map_to)
         if filter is not None:
-            contribution = (original_values_mapped[filter] - new_values_mapped[filter]).mean()
+            contribution = (
+                original_values_mapped[filter] - new_values_mapped[filter]
+            ).mean()
         else:
             contribution = (original_values_mapped - new_values_mapped).mean()
         dependency_contributions[variable] = contribution
@@ -121,7 +127,9 @@ def create_waterfall_chart(sim, variable_name, year, top_n=5):
             "Simulation must have trace enabled to create a waterfall chart."
         )
 
-    df = calculate_dependency_contributions(sim, variable_name, year, top_n=top_n)
+    df = calculate_dependency_contributions(
+        sim, variable_name, year, top_n=top_n
+    )
 
     # make a waterfall chart
 
