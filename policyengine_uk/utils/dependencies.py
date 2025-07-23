@@ -5,21 +5,35 @@ import pandas as pd
 from plotly import graph_objects as go
 
 
-def find_variable_in_tree(variable_name, node, depth=0):
+def find_variable_in_trees(variable_name, tracer):
+    for tree in tracer.trees:
+        try:
+            node = find_variable_in_tree_recursive(variable_name, tree)
+            if node:
+                return node
+        except ValueError:
+            continue  # Variable not in this tree, try next
+
+    raise ValueError(
+        f"Variable '{variable_name}' not found in any simulation tree. "
+        f"Make sure you've calculated this variable or a parent variable that depends on it."
+    )
+
+
+def find_variable_in_tree_recursive(variable_name, node):
     if node.name == variable_name:
         return node
+
     for child in node.children:
-        result = find_variable_in_tree(variable_name, child, depth + 1)
+        result = find_variable_in_tree_recursive(variable_name, child)
         if result:
             return result
-    if depth == 0:
-        raise ValueError(
-            f"Variable '{variable_name}' not found in the simulation tree. The *first thing* you asked the simulation to calculate needs to include your target variable in its computation tree."
-        )
+
+    return None
 
 
 def get_variable_dependencies(variable_name, sim):
-    node = find_variable_in_tree(variable_name, sim.tracer.trees[0])
+    node = find_variable_in_trees(variable_name, sim.tracer)
     if not node:
         return []
     return [child.name for child in node.children]
@@ -61,7 +75,7 @@ def calculate_dependency_contributions(sim, variable_name, year, top_n=None):
 
 
 def calculate_dependency_contribution_change(
-    baseline_sim, reform_sim, variable_name, year, reform_year = None, top_n=5
+    baseline_sim, reform_sim, variable_name, year, reform_year=None, top_n=5
 ):
     baseline_dependency = calculate_dependency_contributions(
         baseline_sim, variable_name, year
@@ -93,9 +107,7 @@ def create_waterfall_chart(sim, variable_name, year, top_n=5):
             "Simulation must have trace enabled to create a waterfall chart."
         )
 
-    df = calculate_dependency_contributions(
-        sim, variable_name, year, top_n=top_n
-    )
+    df = calculate_dependency_contributions(sim, variable_name, year, top_n=top_n)
 
     # make a waterfall chart
 
@@ -117,7 +129,9 @@ def create_waterfall_chart(sim, variable_name, year, top_n=5):
     )
 
 
-def create_waterfall_change_chart(sim_1, sim_2, variable_name, year, sim_2_year = None, top_n=5):
+def create_waterfall_change_chart(
+    sim_1, sim_2, variable_name, year, sim_2_year=None, top_n=5
+):
     df = calculate_dependency_contribution_change(
         sim_1, sim_2, variable_name, year, reform_year=sim_2_year, top_n=top_n
     )
