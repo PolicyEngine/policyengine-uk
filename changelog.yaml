@@ -1688,3 +1688,8 @@
     changed:
     - Update microdf_python dependency to >=1.0.0.
   date: 2025-07-22 20:55:35
+- bump: patch
+  changes:
+    fixed:
+    - debug LHA lowercase
+  date: 2025-07-24 10:30:43
