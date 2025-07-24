@@ -32,7 +32,9 @@ class basic_state_pension(Variable):
         uprating_factor = where(
             has_dataset,
             parameters.gov.economic_assumptions.yoy_growth.triple_lock(period)
-            / parameters.gov.economic_assumptions.yoy_growth.triple_lock(data_year),
+            / parameters.gov.economic_assumptions.yoy_growth.triple_lock(
+                data_year
+            ),
             1,
         )
 
