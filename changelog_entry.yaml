@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    changed:
+    - Unpin microdf_python.
