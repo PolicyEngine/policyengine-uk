@@ -1,4 +1,4 @@
 - bump: patch
   changes:
     fixed:
-      - Parameterize age 35 threshold in LHA shared accommodation rules
+      - Basic state pension calculation.
