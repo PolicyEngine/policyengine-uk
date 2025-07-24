@@ -1,15 +1,15 @@
 description: Standard rate for Personal Independence Payment (daily living component).
 values:
-  2015-04-01: 55.10
-  2016-04-01: 55.10
+  2015-04-01: 55.1
+  2016-04-01: 55.1
   2017-04-01: 55.65
-  2018-04-01: 57.30
-  2019-04-01: 58.70
-  2020-04-01: 59.70
-  2021-04-01: 60.00
+  2018-04-01: 57.3
+  2019-04-01: 58.7
+  2020-04-01: 59.7
+  2021-04-01: 60
   2022-04-01: 61.85
-  2023-04-01: 
-    value: 68.10
+  2023-04-01:
+    value: 68.1
     reference:
       - title: Benefits Uprating 2024/25 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf

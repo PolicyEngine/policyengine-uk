@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.41.2] - 2025-07-24 10:30:43
+
+### Fixed
+
+- debug LHA lowercase
+
+## [2.41.1] - 2025-07-22 20:55:35
+
+### Changed
+
+- Update microdf_python dependency to >=1.0.0.
+
+## [2.41.0] - 2025-07-22 19:49:35
+
+### Changed
+
+- Standardize decimals in parameters.
+
+## [2.40.2] - 2025-07-22 09:37:07
+
+### Fixed
+
+- Bug in uprating.
+
+## [2.40.1] - 2025-07-21 15:37:49
+
+### Fixed
+
+- Bug in handling downloads of UKMultiYearDataset from HuggingFace.
+
+## [2.40.0] - 2025-07-21 13:23:31
+
+### Added
+
+- UKMultiYearDataset class to handle multiple fiscal years.
+- Uprating of datasets using the `uprate` method.
+
 ## [2.39.3] - 2025-07-17 12:45:26
 
 ### Fixed
@@ -1967,6 +2004,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.41.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.1...2.41.2
+[2.41.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.0...2.41.1
+[2.41.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.2...2.41.0
+[2.40.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.1...2.40.2
+[2.40.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.0...2.40.1
+[2.40.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.3...2.40.0
 [2.39.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.2...2.39.3
 [2.39.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.1...2.39.2
 [2.39.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.0...2.39.1

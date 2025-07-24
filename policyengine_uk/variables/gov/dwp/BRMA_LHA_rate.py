@@ -24,10 +24,10 @@ class BRMA_LHA_rate(Variable):
         )
         category = benunit("LHA_category", period).decode_to_str()
 
-        from policyengine_uk.parameters.gov.dwp.LHA import lha_list_of_rents
+        from policyengine_uk.parameters.gov.dwp.lha import lha_list_of_rents
 
         parameters = benunit.simulation.tax_benefit_system.parameters
-        lha = parameters.gov.dwp.LHA
+        lha = parameters.gov.dwp.lha
 
         # We first need to know what time period to collect rents from. If LHA is frozen, we need to look earlier
         # than the current time period.

@@ -381,6 +381,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/3c/38/bbe2e63902847cf79036ecc75550d0698af31c91c7575352eb25190d0fb3/coverage-7.9.2-py3-none-any.whl", hash = "sha256:e425cd5b00f6fc0ed7cdbd766c70be8baab4b7839e4d4fe5fac48581dd968ea4", size = 204005, upload-time = "2025-07-03T10:54:13.491Z" },
 ]
 
+[package.optional-dependencies]
+toml = [
+    { name = "tomli", marker = "python_full_version <= '3.11'" },
+]
+
 [[package]]
 name = "datetime"
 version = "5.5"
@@ -987,15 +992,15 @@ wheels = [
 
 [[package]]
 name = "microdf-python"
-version = "0.4.4"
+version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3a/d4/d73c7d2505e7247f761b42c84893474c8c0cbd860b0272bf019a74fbb19e/microdf_python-0.4.4.tar.gz", hash = "sha256:01ffb4f1e1f1fbceff5e9e448971ed39905916d52fbe1d87c48179c7278fb7f2", size = 22177, upload-time = "2025-07-09T17:40:10.739Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/40/8c015dd57b0bcb96f3551a4ddac536963f23e8024e433df1faa8a1ddce1e/microdf_python-0.4.6.tar.gz", hash = "sha256:8066feb06a9f52a8b8f1de59009601539fdf8a344f6854e290fb9e2aebd3984c", size = 30630, upload-time = "2025-07-18T11:45:02.867Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/51/bd8752149339e023d7f2a0a42ae3612fb38045bc873eaa465da132e0cc3c/microdf_python-0.4.4-py3-none-any.whl", hash = "sha256:435e9e9852612a81de1bdcffdc606c25dcd3fa2ea43d9fb52a85b2887bbca0ec", size = 26793, upload-time = "2025-07-09T17:40:09.641Z" },
+    { url = "https://files.pythonhosted.org/packages/46/7a/aca1b60540514d77cad374085150e5c61ba4d6ad5d9f80c5c4d728f37688/microdf_python-0.4.6-py3-none-any.whl", hash = "sha256:63b11174347b62e781da7e1a1358b0ca0c6e8c7595e3f503307b341a0d42876b", size = 37916, upload-time = "2025-07-18T11:45:01.705Z" },
 ]
 
 [[package]]
@@ -1441,7 +1446,7 @@ wheels = [
 
 [[package]]
 name = "policyengine-uk"
-version = "2.35.1"
+version = "2.39.3"
 source = { editable = "." }
 dependencies = [
     { name = "microdf-python" },
@@ -1456,6 +1461,7 @@ dev = [
     { name = "jupyter-book" },
     { name = "linecheck" },
     { name = "pytest" },
+    { name = "pytest-cov" },
     { name = "setuptools" },
     { name = "snowballstemmer" },
     { name = "sphinx-argparse" },
@@ -1478,9 +1484,10 @@ requires-dist = [
     { name = "furo", marker = "extra == 'dev'", specifier = "<2023" },
     { name = "jupyter-book", marker = "extra == 'dev'" },
     { name = "linecheck", marker = "extra == 'dev'" },
-    { name = "microdf-python" },
+    { name = "microdf-python", specifier = "==0.4.6" },
     { name = "policyengine-core", specifier = ">=3.6.4" },
     { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "setuptools", marker = "extra == 'dev'" },
     { name = "snowballstemmer", marker = "extra == 'dev'", specifier = ">=2,<3" },
     { name = "sphinx-argparse", marker = "extra == 'dev'", specifier = ">=0.3.2,<1" },
@@ -1627,6 +1634,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/08/ba/45911d754e8eba3d5a841a5ce61a65a685ff1798421ac054f85aa8747dfb/pytest-8.4.1.tar.gz", hash = "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c", size = 1517714, upload-time = "2025-06-18T05:48:06.109Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/29/16/c8a903f4c4dffe7a12843191437d7cd8e32751d5de349d45d3fe69544e87/pytest-8.4.1-py3-none-any.whl", hash = "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7", size = 365474, upload-time = "2025-06-18T05:48:03.955Z" },
+]
+
+[[package]]
+name = "pytest-cov"
+version = "6.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "coverage", extra = ["toml"] },
+    { name = "pluggy" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/18/99/668cade231f434aaa59bbfbf49469068d2ddd945000621d3d165d2e7dd7b/pytest_cov-6.2.1.tar.gz", hash = "sha256:25cc6cc0a5358204b8108ecedc51a9b57b34cc6b8c967cc2c01a4e00d8a67da2", size = 69432, upload-time = "2025-06-12T10:47:47.684Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bc/16/4ea354101abb1287856baa4af2732be351c7bee728065aed451b678153fd/pytest_cov-6.2.1-py3-none-any.whl", hash = "sha256:f5bc4c23f42f1cdd23c70b1dab1bbaef4fc505ba950d53e0081d0730dd7e86d5", size = 24644, upload-time = "2025-06-12T10:47:45.932Z" },
 ]
 
 [[package]]
