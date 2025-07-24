@@ -7,6 +7,7 @@ parts:
   - caption: Economic assumptions
     chapters:
       - file: assumptions/growthfactors
+      - file: assumptions/water-bills
   - caption: Validation
     chapters:
       - file: validation/hbai

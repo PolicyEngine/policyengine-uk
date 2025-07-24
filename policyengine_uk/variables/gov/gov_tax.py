@@ -34,6 +34,7 @@ class gov_tax(Variable):
         "high_income_incident_tax_change",
         "ni_employer",
         "student_loan_repayments",
+        "vat",
     ]
 
     def formula(household, period, parameters):

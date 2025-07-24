@@ -8,4 +8,4 @@ class employer_pension_contributions(Variable):
     documentation = "Total amount spent on employer pension contributions"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.per_capita.employment_income"
+    uprating = "gov.economic_assumptions.indices.obr.average_earnings"

@@ -13,7 +13,7 @@ values:
 metadata:
   unit: currency-GBP
   label: New State Pension amount
-  uprating: gov.dwp.state_pension.triple_lock.index
+  uprating: gov.economic_assumptions.indices.triple_lock
   reference:
     - title: House of Commons Library
       href: https://researchbriefings.files.parliament.uk/documents/SN05649/SN05649.pdf

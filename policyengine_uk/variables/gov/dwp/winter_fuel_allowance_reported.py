@@ -7,4 +7,4 @@ class winter_fuel_allowance_reported(Variable):
     label = "Winter fuel allowance"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.consumer_price_index"
+    uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"

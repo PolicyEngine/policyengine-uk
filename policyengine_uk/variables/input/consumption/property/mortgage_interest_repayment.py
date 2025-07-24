@@ -8,4 +8,4 @@ class mortgage_interest_repayment(Variable):
     documentation = "Total amount spent on mortgage interest repayments"
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.obr.mortgage_interest"
+    uprating = "gov.economic_assumptions.indices.obr.mortgage_interest"

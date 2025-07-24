@@ -9,4 +9,4 @@ class owned_land(Variable):
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
-    uprating = "household.wealth.financial_assets"
+    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
