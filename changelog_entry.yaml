@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-      - change LHA param name
