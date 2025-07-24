@@ -1,6 +1,6 @@
 [project] 
 name = "policyengine-uk"
-version = "2.39.3"
+version = "2.41.1"
 description = "PolicyEngine tax and benefit system for the UK"
 readme = "README.md"
 authors = [
@@ -22,8 +22,6 @@ requires-python = ">=3.10"
 dependencies = [
     "policyengine-core>=3.6.4",
     "microdf-python",
-    "matplotlib",
-    "taxcalc",
 ]
 
 [project.urls]

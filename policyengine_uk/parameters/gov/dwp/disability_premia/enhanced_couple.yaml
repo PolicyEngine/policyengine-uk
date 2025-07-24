@@ -1,6 +1,6 @@
 description: Enhanced disability premium for a couple, invalid for Employment and Support Allowance
 values:
-  2015-04-01: 24.50
+  2015-04-01: 24.5
 metadata:
   period: week
   unit: currency-GBP

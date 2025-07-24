@@ -1,0 +1,87 @@
+gov.economic_assumptions.yoy_growth.obr.average_earnings:
+- employee_pension_contributions
+- employer_pension_contributions
+- employment_income
+- employment_income_before_lsr
+- personal_pension_contributions
+- student_loan_repayments
+gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
+- afcs_reported
+- alcohol_and_tobacco_consumption
+- attendance_allowance_reported
+- bsp_reported
+- carers_allowance_reported
+- child_benefit_reported
+- child_tax_credit_reported
+- childcare_expenses
+- clothing_and_footwear_consumption
+- communication_consumption
+- diesel_spending
+- dla_m_reported
+- dla_sc_reported
+- domestic_energy_consumption
+- education_consumption
+- esa_contrib_reported
+- esa_income_reported
+- food_and_non_alcoholic_beverages_consumption
+- free_school_fruit_veg
+- free_school_meals
+- free_school_milk
+- health_consumption
+- household_furnishings_consumption
+- housing_benefit_reported
+- housing_water_and_electricity_consumption
+- iidb_reported
+- incapacity_benefit_reported
+- income_support_reported
+- jsa_contrib_reported
+- jsa_income_reported
+- maintenance_expenses
+- maternity_allowance_reported
+- miscellaneous_consumption
+- pension_credit_reported
+- petrol_spending
+- pip_dl_reported
+- pip_m_reported
+- recreation_consumption
+- restaurants_and_hotels_consumption
+- sda_reported
+- state_pension
+- state_pension_reported
+- statutory_maternity_pay
+- statutory_paternity_pay
+- statutory_sick_pay
+- transport_consumption
+- universal_credit_reported
+- winter_fuel_allowance_reported
+- working_tax_credit_reported
+gov.economic_assumptions.yoy_growth.obr.mortgage_interest:
+- mortgage_interest_repayment
+gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
+- capital_gains
+- capital_gains_before_response
+- corporate_wealth
+- dividend_income
+- gross_financial_wealth
+- lump_sum_income
+- main_residence_value
+- maintenance_income
+- miscellaneous_income
+- mortgage_capital_repayment
+- net_financial_wealth
+- non_residential_property_value
+- other_investment_income
+- other_residential_property_value
+- owned_land
+- pension_income
+- private_transfer_income
+- property_income
+- savings
+- savings_interest_income
+- sublet_income
+gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
+- self_employment_income
+gov.economic_assumptions.yoy_growth.obr.private_pension_index:
+- private_pension_income
+gov.economic_assumptions.yoy_growth.ons.population:
+- household_weight
