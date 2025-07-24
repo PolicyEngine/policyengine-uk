@@ -1698,3 +1698,8 @@
     fixed:
     - change LHA param name
   date: 2025-07-24 13:53:51
+- bump: patch
+  changes:
+    fixed:
+    - Parameterize age 35 threshold in LHA shared accommodation rules
+  date: 2025-07-24 14:41:02
