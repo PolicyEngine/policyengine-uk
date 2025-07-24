@@ -16,17 +16,14 @@ class basic_state_pension(Variable):
 
         reported = where(
             has_dataset,
-            person("state_pension_reported", data_year),
-            person("state_pension_reported", period),
+            person("state_pension_reported", data_year) / WEEKS_IN_YEAR,
+            person("state_pension_reported", period) / WEEKS_IN_YEAR,
         )
 
         type = person("state_pension_type", period)
-        maximum_basic_sp = (
-            parameters(
-                data_year
-            ).gov.dwp.state_pension.basic_state_pension.amount
-            * WEEKS_IN_YEAR
-        )
+        maximum_basic_sp = parameters(
+            data_year
+        ).gov.dwp.state_pension.basic_state_pension.amount
         amount_in_data_year = where(
             type == type.possible_values.BASIC,
             min_(reported, maximum_basic_sp),
@@ -41,4 +38,4 @@ class basic_state_pension(Variable):
             1,
         )
 
-        return amount_in_data_year * uprating_factor
+        return amount_in_data_year * uprating_factor * WEEKS_IN_YEAR

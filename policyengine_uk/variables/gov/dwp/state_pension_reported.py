@@ -8,3 +8,6 @@ class state_pension_reported(Variable):
     definition_period = YEAR
     unit = GBP
     uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
+
+    def formula_2022(person, period, parameters):
+        return person("state_pension_reported", period.last_year)
