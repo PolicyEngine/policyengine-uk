@@ -271,3 +271,8 @@ class UKMultiYearDataset:
                         data[col] = {}
                     data[col][year] = df[col].values
         return data
+
+    def reset_uprating(self):
+        from policyengine_uk.data.economic_assumptions import reset_uprating
+
+        reset_uprating(self)

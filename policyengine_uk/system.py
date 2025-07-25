@@ -512,6 +512,23 @@ class Simulation(CoreSimulation):
                 simulation.set_input(variable_target, known_period, array)
                 holder.delete_arrays(known_period)
 
+    def calculate(
+        self,
+        variable_name: str,
+        period: str,
+        map_to: str = None,
+        decode_enums: bool = False,
+    ):
+        tracer: SimpleTracer = self.tracer
+        if len(tracer.stack) == 0:
+            # Only decode enums to string values when we're not within
+            # the simulation tree.
+            decode_enums = True
+
+        return super().calculate(
+            variable_name, period, map_to=map_to, decode_enums=decode_enums
+        )
+
 
 class Microsimulation(Simulation):
     """Extended simulation class with weighting support for microsimulation.
@@ -537,35 +554,28 @@ class Microsimulation(Simulation):
         entity_key = map_to or variable.entity.key
         weight_variable_name = f"{entity_key}_weight"
         return self.calculate(
-            weight_variable_name, period, map_to=map_to, use_weights=False
+            weight_variable_name, period, map_to=map_to, unweighted=True
         )
 
     def calculate(
         self,
         variable_name: str,
-        period: Optional[str] = None,
-        map_to: Optional[str] = None,
-        use_weights: bool = True,
-        decode_enums: bool = True,
-    ) -> MicroSeries:
-        """Calculate variable values with optional weighting.
+        period: str,
+        map_to: str = None,
+        decode_enums: bool = False,
+        unweighted: bool = False,
+    ):
+        tracer: SimpleTracer = self.tracer
 
-        Args:
-            variable_name: Name of variable to calculate
-            period: Time period for calculation
-            map_to: Optional entity key to map results to
-            use_weights: Whether to apply survey weights
-
-        Returns:
-            MicroSeries with calculated values and weights
-        """
-        values = super().calculate(
-            variable_name, period, map_to, decode_enums=decode_enums
+        result = super().calculate(
+            variable_name, period, map_to=map_to, decode_enums=decode_enums
         )
-        if not use_weights:
-            return values
-        weights = self.get_weights(variable_name, period, map_to)
-        return MicroSeries(np.array(values), weights=weights)
+
+        if not unweighted and len(tracer.stack) == 0:
+            weights = self.get_weights(variable_name, period, map_to=map_to)
+            return MicroSeries(result, weights=weights)
+
+        return result
 
     def calculate_dataframe(
         self,
