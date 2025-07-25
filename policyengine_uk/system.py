@@ -13,6 +13,7 @@ from policyengine_core.data import Dataset
 from policyengine_core.parameters.operations.propagate_parameter_metadata import (
     propagate_parameter_metadata,
 )
+from policyengine_core.periods import period as period_
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
@@ -78,6 +79,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def reset_parameters(self) -> None:
         """Reset parameters by reloading from the parameters directory."""
+        self._parameters_at_instant_cache = {}
         self.load_parameters(self.parameters_dir)
 
     def process_parameters(self) -> None:
@@ -91,6 +93,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         - Parameter uprating and backdating
         - Conversion to fiscal year parameters
         """
+        self._parameters_at_instant_cache = {}
         # Add various UK-specific parameter adjustments
         self.parameters = add_private_pension_uprating_factor(self.parameters)
         self.parameters = add_lagged_earnings(self.parameters)
@@ -519,7 +522,7 @@ class Simulation(CoreSimulation):
     def calculate(
         self,
         variable_name: str,
-        period: str,
+        period: str = None,
         map_to: str = None,
         decode_enums: bool = False,
     ):
@@ -528,6 +531,11 @@ class Simulation(CoreSimulation):
             # Only decode enums to string values when we're not within
             # the simulation tree.
             decode_enums = True
+
+        if period is None:
+            period = self.default_calculation_period
+
+        period = period_(period)
 
         return super().calculate(
             variable_name, period, map_to=map_to, decode_enums=decode_enums
@@ -564,7 +572,7 @@ class Microsimulation(Simulation):
     def calculate(
         self,
         variable_name: str,
-        period: str,
+        period: str = None,
         map_to: str = None,
         decode_enums: bool = False,
         unweighted: bool = False,
