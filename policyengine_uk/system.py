@@ -530,6 +530,7 @@ class Microsimulation(Simulation):
         period: Optional[str] = None,
         map_to: Optional[str] = None,
         use_weights: bool = True,
+        decode_enums: bool = False,
     ) -> MicroSeries:
         """Calculate variable values with optional weighting.
 
@@ -542,7 +543,7 @@ class Microsimulation(Simulation):
         Returns:
             MicroSeries with calculated values and weights
         """
-        values = super().calculate(variable_name, period, map_to)
+        values = super().calculate(variable_name, period, map_to, decode_enums=decode_enums)
         if not use_weights:
             return values
         weights = self.get_weights(variable_name, period, map_to)
