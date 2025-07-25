@@ -1703,3 +1703,8 @@
     fixed:
     - Parameterize age 35 threshold in LHA shared accommodation rules
   date: 2025-07-24 14:41:02
+- bump: minor
+  changes:
+    changed:
+    - Add after housing costs deflator
+  date: 2025-07-25 08:57:23
