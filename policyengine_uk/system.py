@@ -258,7 +258,7 @@ class Simulation(CoreSimulation):
                         value=changes[parameter][time_period],
                     )
             else:
-                p.update(period="eternity", value=changes[parameter])
+                p.update(period="year:2000:100", value=changes[parameter])
 
         self.tax_benefit_system.process_parameters()
 
