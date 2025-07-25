@@ -4,12 +4,14 @@ from policyengine_core.data import Dataset
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.simulations import (
     Simulation as CoreSimulation,
-    Microsimulation as CoreMicrosimulation,
 )
+import numpy as np
 from policyengine_uk.data.dataset_schema import (
     UKSingleYearDataset,
     UKMultiYearDataset,
 )
+from policyengine_core.tracers import SimpleTracer, FullTracer
+from policyengine_uk.utils.scenario import Scenario
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 
 import pandas as pd
@@ -26,8 +28,6 @@ from policyengine_uk.parameters.gov.economic_assumptions.lag_average_earnings im
 from policyengine_uk.parameters.gov.economic_assumptions.lag_cpi import (
     add_lagged_cpi,
 )
-from policyengine_core.reforms import Reform
-from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
 from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
     add_private_pension_uprating_factor,
@@ -35,22 +35,15 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
-from policyengine_core.parameters.operations.homogenize_parameters import (
-    homogenize_parameter_structures,
-)
-from policyengine_core.parameters.operations.interpolate_parameters import (
-    interpolate_parameters,
-)
 from policyengine_core.parameters.operations.propagate_parameter_metadata import (
     propagate_parameter_metadata,
 )
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
-from policyengine_core.reforms import Reform
 from typing import Optional, Dict, Any
-from policyengine_core.parameters.parameter_node import ParameterNode
 import copy
+from microdf import MicroSeries, MicroDataFrame
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -66,6 +59,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         "age",
     ]
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
+    auto_carry_over_input_variables = True
 
     def reset_parameters(self):
         self.load_parameters(self.parameters_dir)
@@ -87,7 +81,11 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     def __init__(self):
         self._parameters_at_instant_cache = {}
         self.variables: Dict[Any, Any] = {}
-        person, benunit, household = copy.copy(Person), copy.copy(BenUnit), copy.copy(Household)
+        person, benunit, household = (
+            copy.copy(Person),
+            copy.copy(BenUnit),
+            copy.copy(Household),
+        )
         self.entities = [person, benunit, household]
         self.person_entity = person
         self.group_entities = [benunit, household]
@@ -114,150 +112,263 @@ variables = system.variables
 
 
 class Simulation(CoreSimulation):
-    default_calculation_period = 2023
-    default_input_period = 2023
-    default_role = "member"
-    max_spiral_loops = 10
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        reform = create_structural_reforms_from_parameters(
-            self.tax_benefit_system.parameters, "2023-01-01"
-        )
-        if reform is not None:
-            self.apply_reform(reform)
-
-        reform_dict = kwargs.get("reform")
-        if reform_dict is not None:
-            if isinstance(reform_dict, type):
-                try:
-                    reform_dict = reform_dict.parameter_values
-                except:
-                    reform_dict = None
-
-        if reform_dict is not None:
-            if any(["obr" in param for param in reform_dict]):
-                self.tax_benefit_system.load_parameters(
-                    self.tax_benefit_system.parameters_dir
-                )
-                Reform.from_dict(reform_dict).apply(self.tax_benefit_system)
-                self.tax_benefit_system.process_parameters()
-
-        # Labor supply responses
-
-        employment_income = self.get_holder("employment_income")
-        for known_period in employment_income.get_known_periods():
-            array = employment_income.get_array(known_period)
-            self.set_input("employment_income_before_lsr", known_period, array)
-            employment_income.delete_arrays(known_period)
-
-        # Capital gains responses
-
-        cg_holder = self.get_holder("capital_gains")
-        for known_period in cg_holder.get_known_periods():
-            array = cg_holder.get_array(known_period)
-            self.set_input(
-                "capital_gains_before_response", known_period, array
-            )
-            employment_income.delete_arrays(known_period)
-
-
-class Microsimulation(CoreMicrosimulation):
-    default_tax_benefit_system = CountryTaxBenefitSystem
-    default_dataset = ENHANCED_FRS
-    default_dataset_year = 2022
-    default_tax_benefit_system_instance = system
-    default_calculation_period = 2025
     default_input_period = 2025
-    default_role = "member"
-    max_spiral_loops = 10
+    default_calculation_period = 2025
 
-    def __init__(self, *args, dataset=ENHANCED_FRS, **kwargs):
-        if dataset is not None:
-            if isinstance(dataset, str):
-                if "hf://" in dataset:
-                    owner, repo, filename = dataset.split("/")[-3:]
-                    if "@" in filename:
-                        version = filename.split("@")[-1]
-                        filename = filename.split("@")[0]
-                    else:
-                        version = None
-                    dataset_file_path = download_huggingface_dataset(
-                        repo=f"{owner}/{repo}",
-                        repo_filename=filename,
-                        version=version,
-                    )
-
-                if Path(dataset_file_path).exists():
-                    if dataset_file_path.endswith(".h5"):
-                        try:
-                            UKSingleYearDataset.validate_file_path(
-                                dataset_file_path
-                            )
-                            dataset = UKSingleYearDataset(
-                                file_path=dataset_file_path
-                            )
-                        except:
-                            pass
-
-                        try:
-                            UKMultiYearDataset.validate_file_path(
-                                dataset_file_path
-                            )
-                            dataset = UKMultiYearDataset(
-                                file_path=dataset_file_path
-                            )
-                        except Exception as e:
-                            pass
-
-                        if not isinstance(
-                            dataset, (UKSingleYearDataset, UKMultiYearDataset)
-                        ):
-                            dataset = Dataset.from_file(dataset_file_path)
-
-        super().__init__(*args, dataset=dataset, **kwargs)
-
-        reform = create_structural_reforms_from_parameters(
-            self.tax_benefit_system.parameters, "2023-01-01"
+    def __init__(
+        self,
+        scenario: Optional[Scenario] = None,
+        situation: Optional[Dict] = None,
+        dataset: Optional[
+            pd.DataFrame | str | UKSingleYearDataset | UKMultiYearDataset
+        ] = None,
+        trace: bool = False,
+    ):
+        # Initialise tax-benefit rules
+        self.tax_benefit_system = CountryTaxBenefitSystem()
+        self.branch_name = "default"
+        self.invalidated_caches = set()
+        self.debug: bool = False
+        self.trace: bool = trace
+        self.tracer: SimpleTracer = (
+            SimpleTracer() if not trace else FullTracer()
         )
-        if reform is not None:
-            self.apply_reform(reform)
+        self.opt_out_cache: bool = False
+        self.max_spiral_loops: int = 10
+        self.memory_config = None
+        self._data_storage_dir: str = None
 
-        reform_dict = kwargs.get("reform")
-        if reform_dict is not None:
-            if isinstance(reform_dict, type):
-                try:
-                    reform_dict = reform_dict.parameter_values
-                except:
-                    reform_dict = None
+        self.branches: Dict[str, Simulation] = {}
 
-        if reform_dict is not None:
-            if any(["obr" in param for param in reform_dict]):
-                self.tax_benefit_system.load_parameters(
-                    self.tax_benefit_system.parameters_dir
-                )
-                Reform.from_dict(reform_dict).apply(self.tax_benefit_system)
-                self.tax_benefit_system.process_parameters()
+        if situation is not None:
+            self.build_from_situation(situation)
+        elif isinstance(dataset, str):
+            self.build_from_url(dataset)
+        elif isinstance(dataset, pd.DataFrame):
+            self.build_from_dataframe(dataset)
+        elif isinstance(dataset, Dataset):
+            self.build_from_dataset(dataset)
+        elif isinstance(dataset, UKSingleYearDataset):
+            self.build_from_single_year_dataset(dataset)
+        elif isinstance(dataset, UKMultiYearDataset):
+            self.build_from_multi_year_dataset(dataset)
+        else:
+            raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 
-        # Labor supply responses
+        # Earnings and gains have special treatment for behavioural responses
 
-        for simulation in list(self.branches.values()) + [self]:
-            employment_income = simulation.get_holder("employment_income")
-            for known_period in employment_income.get_known_periods():
-                array = employment_income.get_array(known_period)
-                simulation.set_input(
-                    "employment_income_before_lsr", known_period, array
-                )
-                employment_income.delete_arrays(known_period)
+        self.move_values("employment_income", "employment_income_before_lsr")
+        self.move_values("capital_gains", "capital_gains_before_response")
 
-        # Capital gains responses
+    def build_from_situation(self, situation: Dict):
+        self.build_from_populations(
+            self.tax_benefit_system.instantiate_entities()
+        )
+        from policyengine_core.simulations.simulation_builder import (
+            SimulationBuilder,
+        )  # Import here to avoid circular dependency
 
-        for simulation in list(self.branches.values()) + [self]:
-            cg_holder = self.get_holder("capital_gains")
-            for known_period in cg_holder.get_known_periods():
-                array = cg_holder.get_array(known_period)
+        builder = SimulationBuilder()
+        builder.default_period = self.default_input_period
+        builder.build_from_dict(self.tax_benefit_system, situation, self)
+        self.has_axes = builder.has_axes
+
+    def build_from_url(self, url: str):
+        if "hf://" not in url:
+            raise ValueError(
+                f"Non-HuggingFace URLs are currently not supported."
+            )
+
+        owner, repo, filename = url.split("/")[-3:]
+        if "@" in filename:
+            version = filename.split("@")[-1]
+            filename = filename.split("@")[0]
+        else:
+            version = None
+        dataset = download_huggingface_dataset(
+            repo=f"{owner}/{repo}",
+            repo_filename=filename,
+            version=version,
+        )
+
+        if UKMultiYearDataset.validate_file_path(dataset, False):
+            self.build_from_multi_year_dataset(UKMultiYearDataset(dataset))
+
+        if UKSingleYearDataset.validate_file_path(dataset, False):
+            self.build_from_single_year_dataset(UKSingleYearDataset(dataset))
+
+        self.build_from_dataset(
+            Dataset.from_file(dataset, self.default_input_period)
+        )
+
+    def build_from_dataframe(self, df: pd.DataFrame):
+        def get_first_array(variable_name: str):
+            columns = df.columns[df.columns.str.contains(variable_name + "__")]
+            return df[columns[0]]
+
+        (
+            person_id,
+            person_benunit_id,
+            person_household_id,
+            benunit_id,
+            household_id,
+        ) = map(
+            get_first_array,
+            [
+                "person_id",
+                "person_benunit_id",
+                "person_household_id",
+                "benunit_id",
+                "household_id",
+            ],
+        )
+
+        self.build_from_ids(
+            person_id,
+            person_benunit_id,
+            person_household_id,
+            benunit_id,
+            household_id,
+        )
+
+        for column in df:
+            variable, time_period = column.split("__")
+            if variable not in self.tax_benefit_system.variables:
+                continue
+            self.set_input(variable, time_period, df[column])
+
+    def build_from_dataset(self, dataset: Dataset):
+        data: Dict[str, Dict[str, float | int | str]] = dataset.load_dataset()
+
+        def get_first_array(variable_name):
+            time_period_values = data[variable_name]
+            return time_period_values[list(time_period_values.keys())[0]]
+
+        self.build_from_ids(
+            *map(
+                get_first_array,
+                [
+                    "person_id",
+                    "person_benunit_id",
+                    "person_household_id",
+                    "benunit_id",
+                    "household_id",
+                ],
+            )
+        )
+
+        for variable in data:
+            for time_period in data[variable]:
+                if variable not in self.tax_benefit_system.variables:
+                    continue
                 self.set_input(
-                    "capital_gains_before_response", known_period, array
+                    variable, time_period, data[variable][time_period]
                 )
-                employment_income.delete_arrays(known_period)
+
+    def build_from_single_year_dataset(self, dataset: UKSingleYearDataset):
+        self.build_from_ids(
+            dataset.person.person_id,
+            dataset.person.person_benunit_id,
+            dataset.person.person_household_id,
+            dataset.benunit.benunit_id,
+            dataset.household.household_id,
+        )
+
+        for table in dataset.tables:
+            for variable in table.columns:
+                if variable not in self.tax_benefit_system.variables:
+                    continue
+                self.set_input(variable, dataset.time_period, table[variable])
+
+    def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset):
+        first_year = dataset[dataset.years[0]]
+        self.build_from_ids(
+            first_year.person.person_id,
+            first_year.person.person_benunit_id,
+            first_year.person.person_household_id,
+            first_year.benunit.benunit_id,
+            first_year.household.household_id,
+        )
+
+        for year in dataset.years:
+            for table in dataset[year].tables:
+                for variable in table.columns:
+                    if variable not in self.tax_benefit_system.variables:
+                        continue
+                    self.set_input(variable, year, table[variable])
+
+    def build_from_ids(
+        self,
+        person_id: np.ndarray,
+        person_benunit_id: np.ndarray,
+        person_household_id: np.ndarray,
+        benunit_id: np.ndarray,
+        household_id: np.ndarray,
+    ) -> None:
+        from policyengine_core.simulations.simulation_builder import (
+            SimulationBuilder,
+        )  # Import here to avoid circular dependency
+
+        builder = SimulationBuilder()
+        builder.populations = self.tax_benefit_system.instantiate_entities()
+        builder.declare_person_entity("person", person_id)
+        builder.declare_entity("benunit", np.unique(benunit_id))
+        builder.declare_entity("household", np.unique(household_id))
+        builder.join_with_persons(
+            builder.populations["benunit"],
+            person_benunit_id,
+            np.array(["member"] * len(person_benunit_id)),
+        )
+        builder.join_with_persons(
+            builder.populations["household"],
+            person_household_id,
+            np.array(["member"] * len(person_household_id)),
+        )
+        self.build_from_populations(builder.populations)
+
+    def move_values(self, variable_donor: str, variable_target: str):
+        for simulation in list(self.branches.values()) + [self]:
+            holder = simulation.get_holder(variable_donor)
+            for known_period in holder.get_known_periods():
+                array = holder.get_array(known_period)
+                simulation.set_input(variable_target, known_period, array)
+                holder.delete_arrays(known_period)
+
+
+class Microsimulation(Simulation):
+
+    def get_weights(
+        self, variable_name: str, period: str, map_to: str = None
+    ) -> np.ndarray:
+        variable = self.tax_benefit_system.get_variable(variable_name)
+        entity_key = map_to or variable.entity.key
+        weight_variable_name = f"{entity_key}_weight"
+        return self.calculate(
+            weight_variable_name, period, map_to=map_to, use_weights=False
+        )
+
+    def calculate(
+        self,
+        variable_name: str,
+        period: str = None,
+        map_to: str = None,
+        use_weights: bool = True,
+    ) -> MicroSeries:
+        values = super().calculate(variable_name, period, map_to)
+        if not use_weights:
+            return values
+        weights = self.get_weights(variable_name, period, map_to)
+        return MicroSeries(np.array(values), weights=weights)
+
+    def calculate_dataframe(
+        self,
+        variable_names: list,
+        period: str = None,
+        map_to: str = None,
+        use_weights: bool = True,
+    ) -> MicroDataFrame:
+        values = super().calculate_dataframe(variable_names, period, map_to)
+        if not use_weights:
+            return values
+        weights = self.get_weights(variable_names[0], period, map_to=map_to)
+        return MicroDataFrame(values, weights=weights)
