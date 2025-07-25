@@ -1,5 +1,5 @@
 from pathlib import Path
-from policyengine_uk.entities import entities
+from policyengine_uk.entities import Person, BenUnit, Household
 from policyengine_core.data import Dataset
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.simulations import (
@@ -48,6 +48,9 @@ from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
 from policyengine_core.reforms import Reform
+from typing import Optional, Dict, Any
+from policyengine_core.parameters.parameter_node import ParameterNode
+import copy
 
 COUNTRY_DIR = Path(__file__).parent
 
@@ -55,8 +58,6 @@ ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
-    variables_dir = COUNTRY_DIR / "variables"
-    auto_carry_over_input_variables = True
     basic_inputs = [
         "brma",
         "local_authority",
@@ -66,37 +67,44 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     ]
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
 
-    def process_parameters(self, reform=None):
-        if reform:
-            self.apply_reform_set(reform)
+    def reset_parameters(self):
+        self.load_parameters(self.parameters_dir)
+
+    def process_parameters(self):
         self.parameters = add_private_pension_uprating_factor(self.parameters)
         self.parameters = add_lagged_earnings(self.parameters)
         self.parameters = add_lagged_cpi(self.parameters)
         self.parameters = add_triple_lock(self.parameters)
         self.parameters = create_economic_assumption_indices(self.parameters)
         self.parameters.add_child("baseline", self.parameters.clone())
-        self.parameters = homogenize_parameter_structures(
-            self.parameters, self.variables
-        )
         self.parameters = propagate_parameter_metadata(self.parameters)
-        self.parameters = interpolate_parameters(self.parameters)
         self.parameters = uprate_parameters(self.parameters)
-        self.parameters = propagate_parameter_metadata(self.parameters)
-        self.add_abolition_parameters()
         self.parameters = backdate_parameters(self.parameters, "2015-01-01")
-
         self.parameters.gov = convert_to_fiscal_year_parameters(
             self.parameters.gov
         )
 
-    def __init__(self, reform=None):
-        super().__init__(entities, reform=reform)
+    def __init__(self):
+        self._parameters_at_instant_cache = {}
+        self.variables: Dict[Any, Any] = {}
+        person, benunit, household = copy.copy(Person), copy.copy(BenUnit), copy.copy(Household)
+        self.entities = [person, benunit, household]
+        self.person_entity = person
+        self.group_entities = [benunit, household]
+        self.group_entity_keys = [entity.key for entity in self.group_entities]
+
+        for entity in self.entities:
+            entity.set_tax_benefit_system(self)
+
+        self.variable_module_metadata = {}
+
+        self.add_variables_from_directory(COUNTRY_DIR / "variables")
 
         self.parameters_dir = COUNTRY_DIR / "parameters"
 
-        self.load_parameters(self.parameters_dir)
+        self.reset_parameters()
 
-        self.process_parameters(reform=reform)
+        self.process_parameters()
 
 
 system = CountryTaxBenefitSystem()
@@ -106,8 +114,6 @@ variables = system.variables
 
 
 class Simulation(CoreSimulation):
-    default_tax_benefit_system = CountryTaxBenefitSystem
-    default_tax_benefit_system_instance = system
     default_calculation_period = 2023
     default_input_period = 2023
     default_role = "member"
