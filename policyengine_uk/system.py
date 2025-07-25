@@ -228,18 +228,22 @@ class Simulation(CoreSimulation):
 
     def apply_parameter_changes(self, changes: dict):
         self.tax_benefit_system.reset_parameters()
-        
+
         for parameter in changes:
-            p: Parameter = self.tax_benefit_system.parameters.get_child(parameter)
+            p: Parameter = self.tax_benefit_system.parameters.get_child(
+                parameter
+            )
             if isinstance(changes[parameter], dict):
                 # Time-period specific changes
                 for time_period in changes[parameter]:
-                    p.update(period=time_period, value=changes[parameter][time_period])
+                    p.update(
+                        period=time_period,
+                        value=changes[parameter][time_period],
+                    )
             else:
                 p.update(period="eternity", value=changes[parameter])
-        
+
         self.tax_benefit_system.process_parameters()
-                
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.

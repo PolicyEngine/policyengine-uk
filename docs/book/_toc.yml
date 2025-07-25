@@ -4,6 +4,8 @@ parts:
   - caption: Using the model
     chapters:
       - file: usage/getting-started
+      - file: usage/simulations
+      - file: usage/scenarios
   - caption: Economic assumptions
     chapters:
       - file: assumptions/growthfactors
@@ -11,24 +13,4 @@ parts:
   - caption: Validation
     chapters:
       - file: validation/hbai
-  - caption: Programs
-    chapters:
-      - file: programs/gov/hmrc/child-benefit
-      - file: programs/gov/dwp/universal-credit
-      - file: programs/gov/dwp/PIP
-      - file: programs/gov/dwp/pension-credit
-      - file: programs/gov/hmrc/national-insurance
-      - file: programs/gov/hmrc/income-tax
-      - file: programs/gov/hmrc/fuel-duty
-      - file: programs/gov/hmrc/stamp-duty
-      - file: programs/contrib/ubi-center/carbon-tax
-      - file: programs/gov/ofgem/energy-price-guarantee
-      - file: programs/gov/dcms/bbc/tv-licence
-      - file: programs/gov/revenue_scotland/land-and-buildings-transaction-tax
-      - file: programs/gov/wra/land-transaction-tax
-      - file: programs/gov/hmrc/tax-free-childcare
-      - file: programs/gov/dfe/extended-childcare-entitlement
-      - file: programs/gov/dfe/universal-childcare-entitlement
-      - file: programs/gov/dfe/care-to-learn
-      - file: programs/gov/dfe/targeted-childcare-entitlement
       
