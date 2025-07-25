@@ -1,7 +1,7 @@
 # Standard library imports
 import copy
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Type
 
 # Third-party imports
 import numpy as np
@@ -16,6 +16,8 @@ from policyengine_core.parameters.operations.propagate_parameter_metadata import
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
+from policyengine_core.parameters import Parameter
+from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
@@ -160,6 +162,7 @@ class Simulation(CoreSimulation):
             Union[pd.DataFrame, str, UKSingleYearDataset, UKMultiYearDataset]
         ] = None,
         trace: bool = False,
+        reform: Dict | Type[Reform] = None,
     ):
         """Initialize a UK simulation.
 
@@ -171,6 +174,18 @@ class Simulation(CoreSimulation):
         """
         # Initialize tax-benefit rules
         self.tax_benefit_system = CountryTaxBenefitSystem()
+
+        # Migrate Reform to Scenario
+
+        if reform is not None:
+            scenario = Scenario.from_reform(reform)
+
+        # Apply parametric reforms here
+
+        if scenario is not None:
+            if scenario.parameter_changes is not None:
+                self.apply_parameter_changes(scenario.parameter_changes)
+
         self.branch_name = "default"
         self.invalidated_caches = set()
         self.debug: bool = False
@@ -204,6 +219,27 @@ class Simulation(CoreSimulation):
         # Handle behavioral responses for earnings and capital gains
         self.move_values("employment_income", "employment_income_before_lsr")
         self.move_values("capital_gains", "capital_gains_before_response")
+
+        # Apply structural modifiers
+
+        if scenario is not None:
+            if scenario.simulation_modifier is not None:
+                scenario.simulation_modifier(self)
+
+    def apply_parameter_changes(self, changes: dict):
+        self.tax_benefit_system.reset_parameters()
+        
+        for parameter in changes:
+            p: Parameter = self.tax_benefit_system.parameters.get_child(parameter)
+            if isinstance(changes[parameter], dict):
+                # Time-period specific changes
+                for time_period in changes[parameter]:
+                    p.update(period=time_period, value=changes[parameter][time_period])
+            else:
+                p.update(period="eternity", value=changes[parameter])
+        
+        self.tax_benefit_system.process_parameters()
+                
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.
