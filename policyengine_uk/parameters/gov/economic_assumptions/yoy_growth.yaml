@@ -91,6 +91,30 @@ obr:
         - title: OBR EFO March 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
 
+  consumer_price_index_ahc:
+    description: Consumer price index year-on-year growth, modified to remove housing costs.
+    values:
+      2022-01-01: 0.107
+      2023-01-01: 0.057
+      2024-01-01: 0.018
+      2025-01-01: 0.027
+      2026-01-01: 0.017
+      2027-01-01: 0.019
+      2028-01-01: 0.019
+      2029-01-01: 0.019
+    metadata:
+      unit: /1
+      label: after housing costs consumer price index growth
+      reference:
+        - title: OBR EFO March 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+      reference:
+        - title: ONS CPI weights
+          href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflationupdatingweightsannexatablesw1tow3
+      reference: 
+        - title: ONS CPI series excluding housing costs
+        - href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/2863consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfortheperiodjanuary1996toapril2025
+
   non_labour_income:
     description: Non-labour income year-on-year growth.
     values:
