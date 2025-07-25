@@ -1,9 +1,3 @@
-# PolicyEngine UK API documentation
-
-## Overview
-
-PolicyEngine UK provides a simulation framework for modeling tax and benefit systems. The two core classes, `Scenario` and `Simulation`, work together to enable policy analysis and microsimulation.
-
 ## Scenario
 
 The `Scenario` class represents a configuration for policy simulations, allowing you to define parameter changes and custom modifications to apply to simulations.

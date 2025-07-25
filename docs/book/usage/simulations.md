@@ -126,8 +126,6 @@ Get the holder object for a variable (advanced usage).
 
 ---
 
-## Microsimulation
-
 The `Microsimulation` class extends `Simulation` with survey weights for population-level analysis.
 
 ### Basic usage
