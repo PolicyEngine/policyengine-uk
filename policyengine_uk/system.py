@@ -49,6 +49,10 @@ from policyengine_uk.utils.parameters import (
     convert_to_fiscal_year_parameters,
 )
 from policyengine_uk.utils.scenario import Scenario
+from policyengine_uk.data.economic_assumptions import (
+    apply_uprating,
+    extend_single_year_dataset,
+)
 
 # Module constants
 COUNTRY_DIR = Path(__file__).parent
@@ -220,11 +224,20 @@ class Simulation(CoreSimulation):
         self.move_values("employment_income", "employment_income_before_lsr")
         self.move_values("capital_gains", "capital_gains_before_response")
 
+        self.input_variables = self.get_known_variables()
+
         # Apply structural modifiers
 
         if scenario is not None:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
+
+    def get_known_variables(self):
+        variables = []
+        for variable in self.tax_benefit_system.variables:
+            if len(self.get_holder(variable).get_known_periods()) > 0:
+                variables.append(variable)
+        return variables
 
     def apply_parameter_changes(self, changes: dict):
         self.tax_benefit_system.reset_parameters()
@@ -295,12 +308,13 @@ class Simulation(CoreSimulation):
         # Determine dataset type and build accordingly
         if UKMultiYearDataset.validate_file_path(dataset, False):
             self.build_from_multi_year_dataset(UKMultiYearDataset(dataset))
+            self.dataset = dataset
         elif UKSingleYearDataset.validate_file_path(dataset, False):
             self.build_from_single_year_dataset(UKSingleYearDataset(dataset))
+            self.dataset = dataset
         else:
-            self.build_from_dataset(
-                Dataset.from_file(dataset, self.default_input_period)
-            )
+            dataset = Dataset.from_file(dataset, self.default_input_period)
+            self.build_from_dataset(dataset)
 
     def build_from_dataframe(self, df: pd.DataFrame) -> None:
         """Build simulation from a pandas DataFrame.
@@ -358,10 +372,13 @@ class Simulation(CoreSimulation):
             dataset.load_dataset()
         )
 
+        first_variable = data[list(data.keys())[0]]
+        first_time_period = list(first_variable.keys())[0]
+
         def get_first_array(variable_name: str) -> np.ndarray:
             """Get the first time period's values for a variable."""
             time_period_values = data[variable_name]
-            return time_period_values[list(time_period_values.keys())[0]]
+            return time_period_values[first_time_period]
 
         # Build entity structure from IDs
         self.build_from_ids(
@@ -386,6 +403,17 @@ class Simulation(CoreSimulation):
                     variable, time_period, data[variable][time_period]
                 )
 
+        # Now convert to the new UKSingleYearDataset
+        self.input_variables = self.get_known_variables()
+        self.dataset = dataset
+        dataset = UKSingleYearDataset.from_simulation(
+            self, fiscal_year=first_time_period
+        )
+        multi_year_dataset = extend_single_year_dataset(dataset)
+
+        self.build_from_multi_year_dataset(multi_year_dataset)
+        self.dataset = multi_year_dataset
+
     def build_from_single_year_dataset(
         self, dataset: UKSingleYearDataset
     ) -> None:
@@ -394,21 +422,9 @@ class Simulation(CoreSimulation):
         Args:
             dataset: UKSingleYearDataset containing one year of data
         """
-        # Build entity structure
-        self.build_from_ids(
-            dataset.person.person_id,
-            dataset.person.person_benunit_id,
-            dataset.person.person_household_id,
-            dataset.benunit.benunit_id,
-            dataset.household.household_id,
-        )
 
-        # Load variable values from all tables
-        for table in dataset.tables:
-            for variable in table.columns:
-                if variable not in self.tax_benefit_system.variables:
-                    continue
-                self.set_input(variable, dataset.time_period, table[variable])
+        dataset = extend_single_year_dataset(dataset)
+        self.build_from_multi_year_dataset(dataset)
 
     def build_from_multi_year_dataset(
         self, dataset: UKMultiYearDataset
@@ -530,7 +546,7 @@ class Microsimulation(Simulation):
         period: Optional[str] = None,
         map_to: Optional[str] = None,
         use_weights: bool = True,
-        decode_enums: bool = False,
+        decode_enums: bool = True,
     ) -> MicroSeries:
         """Calculate variable values with optional weighting.
 
@@ -543,7 +559,9 @@ class Microsimulation(Simulation):
         Returns:
             MicroSeries with calculated values and weights
         """
-        values = super().calculate(variable_name, period, map_to, decode_enums=decode_enums)
+        values = super().calculate(
+            variable_name, period, map_to, decode_enums=decode_enums
+        )
         if not use_weights:
             return values
         weights = self.get_weights(variable_name, period, map_to)

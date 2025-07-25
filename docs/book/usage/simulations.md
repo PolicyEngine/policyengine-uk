@@ -30,7 +30,7 @@ income_tax = sim.calculate("income_tax", "2023")
 
 Simulations can be created from various data sources:
 
-#### From a DataFrame
+#### DataFrames
 
 ```python
 import pandas as pd
@@ -45,14 +45,14 @@ df = pd.DataFrame({
 sim = Simulation(dataset=df)
 ```
 
-#### From a HuggingFace dataset
+#### HuggingFace locations
 
 ```python
 # Load from HuggingFace
 sim = Simulation(dataset="hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5")
 ```
 
-#### From UK dataset objects
+#### From PolicyEngine-Core Dataset objects
 
 ```python
 from policyengine_uk.data import EnhancedFRS
@@ -72,63 +72,9 @@ income_tax = sim.calculate("income_tax", "2023")
 household_income = sim.calculate("employment_income", "2023", map_to="household")
 ```
 
-### Working with branches
-
-Simulations support branching for comparing different scenarios:
-
-```python
-# Create baseline simulation
-baseline = Simulation(dataset=my_data)
-
-# Create reform branch
-reform = baseline.clone()
-reform.set_input("universal_credit", "2023", [500])
-
-# Compare results
-baseline_poverty = baseline.calculate("in_poverty", "2023")
-reform_poverty = reform.calculate("in_poverty", "2023")
-```
-
-### API reference
-
-#### Constructor
-
-```python
-Simulation(
-    scenario: Optional[Scenario] = None,
-    situation: Optional[Dict] = None,
-    dataset: Optional[Union[pd.DataFrame, str, Dataset]] = None,
-    trace: bool = False
-)
-```
-
-**Parameters:**
-- `scenario`: A Scenario object defining parameter changes and modifications
-- `situation`: Dictionary describing household composition and characteristics
-- `dataset`: Data source (DataFrame, URL, or Dataset object)
-- `trace`: Enable detailed calculation tracing for debugging
-
-#### Key methods
-
-##### `calculate(variable_name: str, period: str = None, map_to: str = None) -> np.ndarray`
-Calculate values for a variable.
-
-**Parameters:**
-- `variable_name`: Name of the variable to calculate
-- `period`: Time period (e.g., "2023", "2023-01")
-- `map_to`: Entity to map results to (e.g., "household")
-
-##### `set_input(variable_name: str, period: str, value: Union[np.ndarray, float])`
-Set input values for a variable.
-
-##### `get_holder(variable_name: str) -> Holder`
-Get the holder object for a variable (advanced usage).
-
----
+### Microsimulation
 
 The `Microsimulation` class extends `Simulation` with survey weights for population-level analysis.
-
-### Basic usage
 
 ```python
 from policyengine_uk import Microsimulation
