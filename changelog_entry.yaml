@@ -1,0 +1,6 @@
+- bump: minor
+  changes:
+    added:
+    - Scenario class for reforms.
+    - Documentation of Scenario and Simulation.
+    - Standardisation of uprating behaviour.
