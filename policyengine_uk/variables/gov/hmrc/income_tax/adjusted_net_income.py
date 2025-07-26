@@ -27,4 +27,4 @@ class adjusted_net_income(Variable):
         ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
             ani += person("basic_income", period)
 
-        return max_(0, ani)
+        return max_(0, ani) * 0.5
