@@ -9,7 +9,7 @@ authors = [
 maintainers = [
     { name = "Nikhil Woodruff", email = "nikhil@policyengine.org" }
 ]
-license = { text = "AGPL-3.0" }
+license = "AGPL-3.0"
 keywords = ["benefit", "microsimulation", "social", "tax"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -31,9 +31,8 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/PolicyEngine/policyengine-uk"
 Repository = "https://github.com/PolicyEngine/policyengine-uk"
-
-[project.scripts]
-# Add console scripts here if needed
+Issues = "https://github.com/PolicyEngine/policyengine-uk/issues"
+Changelog = "https://github.com/PolicyEngine/policyengine-uk/blob/master/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]
