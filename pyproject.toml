@@ -7,29 +7,32 @@ authors = [
     { name = "PolicyEngine", email = "nikhil@policyengine.org" }
 ]
 maintainers = [
-    { name = "Nikhil Woodruff", email = "nikhil.woodruff@outlook.com" }
+    { name = "Nikhil Woodruff", email = "nikhil@policyengine.org" }
 ]
-license = { text = "AGPL-3.0" }
+license = "AGPL-3.0"
 keywords = ["benefit", "microsimulation", "social", "tax"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: POSIX",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "policyengine-core>=3.6.4",
-    "microdf-python>=1.0.0",
+    "policyengine-core>=3.19.3",
+    "microdf-python>=1.0.2",
 ]
 
 [project.urls]
 Homepage = "https://github.com/PolicyEngine/policyengine-uk"
 Repository = "https://github.com/PolicyEngine/policyengine-uk"
-
-[project.scripts]
-# Add console scripts here if needed
+Issues = "https://github.com/PolicyEngine/policyengine-uk/issues"
+Changelog = "https://github.com/PolicyEngine/policyengine-uk/blob/master/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]
@@ -45,16 +48,6 @@ include = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["policyengine_uk"]
-
-[tool.hatch.build.targets.wheel.shared-data]
-"CHANGELOG.md" = "share/openfisca/openfisca-country-template/CHANGELOG.md"
-"LICENSE" = "share/openfisca/openfisca-country-template/LICENSE"
-"README.md" = "share/openfisca/openfisca-country-template/README.md"
-
-[dependency-groups]
-dev = [
-    "tables>=3.10.1",
-]
 
 [project.optional-dependencies]
 dev = [

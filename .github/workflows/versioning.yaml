@@ -41,14 +41,14 @@ jobs:
       GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-            python-version: '3.12'
+            python-version: '3.13'
       - name: Install package
         run: uv pip install -e .[dev] --system
       - name: Install policyengine
