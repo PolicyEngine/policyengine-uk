@@ -7,7 +7,7 @@ authors = [
     { name = "PolicyEngine", email = "nikhil@policyengine.org" }
 ]
 maintainers = [
-    { name = "Nikhil Woodruff", email = "nikhil.woodruff@outlook.com" }
+    { name = "Nikhil Woodruff", email = "nikhil@policyengine.org" }
 ]
 license = { text = "AGPL-3.0" }
 keywords = ["benefit", "microsimulation", "social", "tax"]
