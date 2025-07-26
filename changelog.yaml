@@ -1708,3 +1708,10 @@
     changed:
     - Add after housing costs deflator
   date: 2025-07-25 08:57:23
+- bump: minor
+  changes:
+    added:
+    - Scenario class for reforms.
+    - Documentation of Scenario and Simulation.
+    - Standardisation of uprating behaviour.
+  date: 2025-07-26 11:31:02

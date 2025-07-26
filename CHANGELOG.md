@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.43.0] - 2025-07-26 11:31:02
+
+### Added
+
+- Scenario class for reforms.
+- Documentation of Scenario and Simulation.
+- Standardisation of uprating behaviour.
+
 ## [2.42.0] - 2025-07-25 08:57:23
 
 ### Changed
@@ -2022,6 +2030,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.43.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.42.0...2.43.0
 [2.42.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.4...2.42.0
 [2.41.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.3...2.41.4
 [2.41.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.2...2.41.3
