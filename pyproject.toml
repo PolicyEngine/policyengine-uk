@@ -50,11 +50,6 @@ include = [
 [tool.hatch.build.targets.wheel]
 packages = ["policyengine_uk"]
 
-[tool.hatch.build.targets.wheel.shared-data]
-"CHANGELOG.md" = "share/openfisca/openfisca-country-template/CHANGELOG.md"
-"LICENSE" = "share/openfisca/openfisca-country-template/LICENSE"
-"README.md" = "share/openfisca/openfisca-country-template/README.md"
-
 [project.optional-dependencies]
 dev = [
     "black",
