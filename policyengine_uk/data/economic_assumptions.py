@@ -1,14 +1,31 @@
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
-from policyengine_uk.system import system
+
 import yaml
 from policyengine_core.parameters import ParameterNode
 from pathlib import Path
 import numpy as np
 
 
+def extend_single_year_dataset(
+    dataset: UKSingleYearDataset,
+    end_year: int = 2029,
+) -> UKMultiYearDataset:
+    # Extend years and uprate
+    start_year = int(dataset.time_period)
+    datasets = [dataset]
+    for year in range(start_year, end_year + 1):
+        next_year = dataset.copy()
+        next_year.time_period = str(year)
+        datasets.append(next_year)
+    multi_year_dataset = UKMultiYearDataset(datasets=datasets)
+    return apply_uprating(multi_year_dataset)
+
+
 def apply_uprating(
     dataset: UKMultiYearDataset,
 ):
+    from policyengine_uk.system import system
+
     # Apply uprating to the dataset.
     dataset = dataset.copy()
 

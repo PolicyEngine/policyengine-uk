@@ -14,11 +14,17 @@ class UKSingleYearDataset:
     household: pd.DataFrame
 
     @staticmethod
-    def validate_file_path(file_path: str):
+    def validate_file_path(file_path: str, raise_exception: bool = True):
         if not file_path.endswith(".h5"):
-            raise ValueError("File path must end with '.h5' for UKDataset.")
+            if raise_exception:
+                raise ValueError(
+                    "File path must end with '.h5' for UKDataset."
+                )
+            return False
         if not Path(file_path).exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+            if raise_exception:
+                raise FileNotFoundError(f"File not found: {file_path}")
+            return False
 
         # Check if the file contains time_period, person, benunit, and household datasets
         with h5py.File(file_path, "r") as f:
@@ -30,9 +36,14 @@ class UKSingleYearDataset:
             ]
             for dataset in required_datasets:
                 if dataset not in f:
-                    raise ValueError(
-                        f"Dataset '{dataset}' not found in the file: {file_path}"
-                    )
+                    if raise_exception:
+                        raise ValueError(
+                            f"Dataset '{dataset}' not found in the file: {file_path}"
+                        )
+                    else:
+                        return False
+
+        return True
 
     def __init__(
         self,
@@ -137,7 +148,7 @@ class UKMultiYearDataset:
                 self.datasets[year] = dataset
 
         if file_path is not None:
-            UKSingleYearDataset.validate_file_path(file_path)
+            UKMultiYearDataset.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
                 self.datasets = {}
                 for year in f.keys():
@@ -161,6 +172,10 @@ class UKMultiYearDataset:
             return self.datasets[fiscal_year]
         else:
             raise ValueError(f"No dataset found for year {fiscal_year}.")
+
+    @property
+    def years(self):
+        return list(self.datasets.keys())
 
     def __getitem__(self, fiscal_year: int):
         return self.get_year(fiscal_year)
@@ -203,21 +218,49 @@ class UKMultiYearDataset:
         return UKMultiYearDataset(datasets=list(new_datasets.values()))
 
     @staticmethod
-    def validate_file_path(file_path: str):
+    def validate_file_path(file_path: str, raise_exception: bool = False):
         if not file_path.endswith(".h5"):
-            raise ValueError(
-                "File path must end with '.h5' for UKMultiYearDataset."
-            )
+            if raise_exception:
+                raise ValueError(
+                    "File path must end with '.h5' for UKMultiYearDataset."
+                )
+            else:
+                return False
         if not Path(file_path).exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+            if raise_exception:
+                raise FileNotFoundError(f"File not found: {file_path}")
+            else:
+                return False
 
         # Check if the file contains datasets for multiple years
         with h5py.File(file_path, "r") as f:
             for required_dataset in ["person", "benunit", "household"]:
                 if not any(f"{required_dataset}" in key for key in f.keys()):
-                    raise ValueError(
-                        f"Dataset '{required_dataset}' not found in the file: {file_path}"
-                    )
+                    if raise_exception:
+                        raise ValueError(
+                            f"Dataset '{required_dataset}' not found in the file: {file_path}"
+                        )
+                    else:
+                        return False
+
+                # Check that there is at least one dataset year in the folder (keys include e.g. person/2025)
+
+                # Check that there is at least one dataset year in the folder
+                years_found = False
+                for key in f.keys():
+                    parts = key.split("/")
+                    if len(parts) >= 2 and required_dataset == parts[0]:
+                        years_found = True
+                        break
+
+                if not years_found:
+                    if raise_exception:
+                        raise ValueError(
+                            f"No yearly data found for '{required_dataset}' in file: {file_path}"
+                        )
+                    else:
+                        return False
+        return True
 
     def load(self):
         data = {}
@@ -228,3 +271,8 @@ class UKMultiYearDataset:
                         data[col] = {}
                     data[col][year] = df[col].values
         return data
+
+    def reset_uprating(self):
+        from policyengine_uk.data.economic_assumptions import reset_uprating
+
+        reset_uprating(self)
