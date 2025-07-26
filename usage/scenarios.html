@@ -3,10 +3,10 @@
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="HBAI" href="../validation/hbai.html" /><link rel="prev" title="Economic assumptions" href="growthfactors.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Economic assumptions" href="../assumptions/growthfactors.html" /><link rel="prev" title="Simulation" href="simulations.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
-        <title>Water bills projection and uprating - PolicyEngine UK documentation</title>
+        <title>Scenario - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
@@ -165,15 +165,15 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage/scenarios.html">Scenario</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulations.html">Simulation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Scenario</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="growthfactors.html">Economic assumptions</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Water bills projection and uprating</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../assumptions/growthfactors.html">Economic assumptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../assumptions/water-bills.html">Water bills projection and uprating</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
@@ -212,122 +212,101 @@
           </label>
         </div>
         <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="water-bills-projection-and-uprating">
-<h1>Water bills projection and uprating<a class="headerlink" href="#water-bills-projection-and-uprating" title="Permalink to this heading">#</a></h1>
-<p>This documentation describes the water bills projection and uprating methodology used in PolicyEngine UK.</p>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
-<p>We implement water bills projections through a combination of historical data analysis and regulatory projection data. The system uses:</p>
-<ol class="arabic simple">
-<li><p><strong>Historical data</strong> (2021-2025) from Ofwat average bills</p></li>
-<li><p><strong>Regulatory projection data</strong> from Ofwat company-specific increases (2025-2030)</p></li>
-<li><p><strong>Economic uprating</strong> using Consumer Price Index (CPIH) growth rates</p></li>
-</ol>
-</section>
-<section id="implementation">
-<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this heading">#</a></h2>
-<section id="data-sources">
-<h3>Data sources<a class="headerlink" href="#data-sources" title="Permalink to this heading">#</a></h3>
-<section id="historical-data">
-<h4>Historical data<a class="headerlink" href="#historical-data" title="Permalink to this heading">#</a></h4>
-<p>The projection uses historical real water bills data from Ofwat:</p>
-<ul class="simple">
-<li><p><strong>2021</strong>: £486 (real terms)</p></li>
-<li><p><strong>2022</strong>: £470 (real terms)</p></li>
-<li><p><strong>2023</strong>: £486 (real terms)</p></li>
-<li><p><strong>2024</strong>: £492 (real terms)</p></li>
-<li><p><strong>2025</strong>: £503 (real terms)</p></li>
-</ul>
-<p><strong>Data source</strong>: <a class="reference external" href="https://www.ofwat.gov.uk/average-bills-press-statement-2024-25/">Ofwat average bills data for England and Wales</a></p>
-</section>
-<section id="regulatory-projections">
-<h4>Regulatory projections<a class="headerlink" href="#regulatory-projections" title="Permalink to this heading">#</a></h4>
-<p>We source company-specific water bill increases from the Consumer Council for Water (CCW) based on Ofwat’s price review data for 2025-2030. The data includes projected bills for 16 water companies covering both water and sewerage services.</p>
-<p><strong>Data source</strong>: <a class="reference external" href="https://www.ccw.org.uk/our-work/price-review/how-much-will-my-water-and-sewerage-bills-increase-by-2030/breakdown-of-water-companies-bill-increases-2025-30/">CCW Water Company Bill Increases 2025-30</a></p>
-</section>
-</section>
-<section id="projection-methodology">
-<h3>Projection methodology<a class="headerlink" href="#projection-methodology" title="Permalink to this heading">#</a></h3>
-<section id="historical-period-2021-2025">
-<h4>Historical period (2021-2025)<a class="headerlink" href="#historical-period-2021-2025" title="Permalink to this heading">#</a></h4>
-<ol class="arabic simple">
-<li><p>We convert real bills to nominal terms using CPIH values</p></li>
-<li><p>We calculate year-on-year nominal growth rates</p></li>
-<li><p>We normalize to 2021 baseline (index = 100)</p></li>
-</ol>
-</section>
-<section id="future-period-2025-2030">
-<h4>Future period (2025-2030)<a class="headerlink" href="#future-period-2025-2030" title="Permalink to this heading">#</a></h4>
-<ol class="arabic simple">
-<li><p>We calculate average of company-specific projected increases</p></li>
-<li><p>We apply Consumer Price Index (CPIH) uprating to account for inflation</p></li>
-<li><p>We compound inflation adjustments year-over-year</p></li>
-</ol>
-<p>The methodology ensures that:</p>
-<ul class="simple">
-<li><p>We preserve real increases from regulatory decisions</p></li>
-<li><p>We apply additional inflation adjustments using CPIH forecasts</p></li>
-<li><p>Future projections account for both policy changes and economic conditions</p></li>
-</ul>
-</section>
-</section>
-<section id="code-structure">
-<h3>Code structure<a class="headerlink" href="#code-structure" title="Permalink to this heading">#</a></h3>
-<section id="core-implementation">
-<h4>Core implementation<a class="headerlink" href="#core-implementation" title="Permalink to this heading">#</a></h4>
-<ul class="simple">
-<li><p><strong>Location</strong>: <code class="docutils literal notranslate"><span class="pre">policyengine_uk/utils/water/forecast_water_bills.py</span></code></p></li>
-<li><p><strong>Function</strong>: <code class="docutils literal notranslate"><span class="pre">project_water_bills()</span></code></p></li>
-<li><p><strong>Data</strong>: <code class="docutils literal notranslate"><span class="pre">policyengine_uk/utils/water/ofwat_increases.csv</span></code></p></li>
-</ul>
-</section>
-<section id="parameters-integration">
-<h4>Parameters integration<a class="headerlink" href="#parameters-integration" title="Permalink to this heading">#</a></h4>
-<p>We store water bills year-on-year growth rates in:</p>
-<ul class="simple">
-<li><p><strong>Location</strong>: <code class="docutils literal notranslate"><span class="pre">policyengine_uk/parameters/gov/economic_assumptions/yoy_growth.yaml</span></code></p></li>
-<li><p><strong>Parameter</strong>: <code class="docutils literal notranslate"><span class="pre">ofwat.water_bills</span></code></p></li>
-</ul>
-</section>
-</section>
-<section id="growth-rates">
-<h3>Growth rates<a class="headerlink" href="#growth-rates" title="Permalink to this heading">#</a></h3>
-<p>The model uses these resulting year-on-year growth rates:</p>
-<div class="table-wrapper colwidths-auto docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Year</p></th>
-<th class="head"><p>Growth rate</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>2022</p></td>
-<td><p>5.2%</p></td>
-</tr>
-<tr class="row-odd"><td><p>2023</p></td>
-<td><p>9.2%</p></td>
-</tr>
-<tr class="row-even"><td><p>2024</p></td>
-<td><p>4.4%</p></td>
-</tr>
-<tr class="row-odd"><td><p>2025</p></td>
-<td><p>6.1%</p></td>
-</tr>
-<tr class="row-even"><td><p>2026</p></td>
-<td><p>6.1%</p></td>
-</tr>
-<tr class="row-odd"><td><p>2027</p></td>
-<td><p>5.1%</p></td>
-</tr>
-<tr class="row-even"><td><p>2028</p></td>
-<td><p>3.8%</p></td>
-</tr>
-<tr class="row-odd"><td><p>2029</p></td>
-<td><p>4.3%</p></td>
-</tr>
-</tbody>
-</table>
+          <section id="scenario">
+<h1>Scenario<a class="headerlink" href="#scenario" title="Permalink to this heading">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">Scenario</span></code> class represents a configuration for policy simulations, allowing you to define parameter changes and custom modifications to apply to simulations.</p>
+<section id="basic-usage">
+<h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scenario</span><span class="p">,</span> <span class="n">Simulation</span>
+
+<span class="c1"># Create a scenario with parameter changes</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span>
+    <span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;gov.hmrc.income_tax.rates.uk[0].rate&quot;</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">,</span>  <span class="c1"># Change basic rate to 15%</span>
+        <span class="s2">&quot;gov.dwp.universal_credit.standard_allowance.single.OVER_25&quot;</span><span class="p">:</span> <span class="mi">400</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Apply to a simulation</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">)</span>
+</pre></div>
 </div>
+</section>
+<section id="creating-scenarios-from-reforms">
+<h2>Creating scenarios from reforms<a class="headerlink" href="#creating-scenarios-from-reforms" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk.reforms</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicIncomeReform</span>
+
+<span class="c1"># From a Reform class</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="o">.</span><span class="n">from_reform</span><span class="p">(</span><span class="n">BasicIncomeReform</span><span class="p">)</span>
+
+<span class="c1"># From a dictionary of parameter changes</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="o">.</span><span class="n">from_reform</span><span class="p">({</span>
+    <span class="s2">&quot;gov.hmrc.income_tax.rates.uk[0].rate&quot;</span><span class="p">:</span> <span class="mf">0.25</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="combining-scenarios">
+<h2>Combining scenarios<a class="headerlink" href="#combining-scenarios" title="Permalink to this heading">#</a></h2>
+<p>Scenarios can be combined using the <code class="docutils literal notranslate"><span class="pre">+</span></code> operator:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create two scenarios</span>
+<span class="n">tax_scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span>
+    <span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;gov.hmrc.income_tax.rates.uk[0].rate&quot;</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">benefit_scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span>
+    <span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;gov.dwp.universal_credit.standard_allowance.single.OVER_25&quot;</span><span class="p">:</span> <span class="mi">400</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Combine them</span>
+<span class="n">combined_scenario</span> <span class="o">=</span> <span class="n">tax_scenario</span> <span class="o">+</span> <span class="n">benefit_scenario</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-simulation-modifiers">
+<h2>Custom simulation modifiers<a class="headerlink" href="#custom-simulation-modifiers" title="Permalink to this heading">#</a></h2>
+<p>For modifications beyond parameter changes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">add_new_benefit</span><span class="p">(</span><span class="n">simulation</span><span class="p">):</span>
+    <span class="c1"># Custom logic to add a new benefit to the simulation</span>
+    <span class="n">simulation</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="n">MyNewBenefit</span><span class="p">)</span>
+
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span>
+    <span class="n">simulation_modifier</span><span class="o">=</span><span class="n">add_new_benefit</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="api-reference">
+<h2>API reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">#</a></h2>
+<section id="constructor">
+<h3>Constructor<a class="headerlink" href="#constructor" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Scenario</span><span class="p">(</span>
+    <span class="n">parameter_changes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">simulation_modifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Simulation</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">parameter_changes</span></code>: Dictionary mapping parameter paths to new values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">simulation_modifier</span></code>: Function that takes a Simulation and modifies it</p></li>
+</ul>
+</section>
+<section id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this heading">#</a></h3>
+<section id="from-reform-reform-union-tuple-dict-type-reform-scenario">
+<h4><code class="docutils literal notranslate"><span class="pre">from_reform(reform:</span> <span class="pre">Union[tuple,</span> <span class="pre">dict,</span> <span class="pre">Type[Reform]])</span> <span class="pre">-&gt;</span> <span class="pre">Scenario</span></code><a class="headerlink" href="#from-reform-reform-union-tuple-dict-type-reform-scenario" title="Permalink to this heading">#</a></h4>
+<p>Create a Scenario from various reform representations.</p>
+</section>
+<section id="apply-simulation-simulation-none">
+<h4><code class="docutils literal notranslate"><span class="pre">apply(simulation:</span> <span class="pre">Simulation)</span> <span class="pre">-&gt;</span> <span class="pre">None</span></code><a class="headerlink" href="#apply-simulation-simulation-none" title="Permalink to this heading">#</a></h4>
+<p>Apply the scenario to a simulation instance.</p>
+</section>
+<section id="add-other-scenario-scenario">
+<h4><code class="docutils literal notranslate"><span class="pre">__add__(other:</span> <span class="pre">Scenario)</span> <span class="pre">-&gt;</span> <span class="pre">Scenario</span></code><a class="headerlink" href="#add-other-scenario-scenario" title="Permalink to this heading">#</a></h4>
+<p>Combine two scenarios. Parameter changes are merged (with the second scenario taking precedence in conflicts), and simulation modifiers are chained.</p>
+</section>
 </section>
 </section>
 </section>
@@ -345,7 +324,7 @@
         },
         kernelOptions: {
             name: "python3",
-            path: "./assumptions"
+            path: "./usage"
         },
         predefinedOutput: true
     }
@@ -356,23 +335,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../validation/hbai.html">
+          <a class="next-page" href="../assumptions/growthfactors.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">HBAI</div>
+                <div class="title">Economic assumptions</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="growthfactors.html">
+          <a class="prev-page" href="simulations.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Economic assumptions</div>
+                <div class="title">Simulation</div>
                 
               </div>
             </a>
@@ -406,25 +385,19 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Water bills projection and uprating</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#implementation">Implementation</a><ul>
-<li><a class="reference internal" href="#data-sources">Data sources</a><ul>
-<li><a class="reference internal" href="#historical-data">Historical data</a></li>
-<li><a class="reference internal" href="#regulatory-projections">Regulatory projections</a></li>
+<li><a class="reference internal" href="#">Scenario</a><ul>
+<li><a class="reference internal" href="#basic-usage">Basic usage</a></li>
+<li><a class="reference internal" href="#creating-scenarios-from-reforms">Creating scenarios from reforms</a></li>
+<li><a class="reference internal" href="#combining-scenarios">Combining scenarios</a></li>
+<li><a class="reference internal" href="#custom-simulation-modifiers">Custom simulation modifiers</a></li>
+<li><a class="reference internal" href="#api-reference">API reference</a><ul>
+<li><a class="reference internal" href="#constructor">Constructor</a></li>
+<li><a class="reference internal" href="#methods">Methods</a><ul>
+<li><a class="reference internal" href="#from-reform-reform-union-tuple-dict-type-reform-scenario"><code class="docutils literal notranslate"><span class="pre">from_reform(reform:</span> <span class="pre">Union[tuple,</span> <span class="pre">dict,</span> <span class="pre">Type[Reform]])</span> <span class="pre">-&gt;</span> <span class="pre">Scenario</span></code></a></li>
+<li><a class="reference internal" href="#apply-simulation-simulation-none"><code class="docutils literal notranslate"><span class="pre">apply(simulation:</span> <span class="pre">Simulation)</span> <span class="pre">-&gt;</span> <span class="pre">None</span></code></a></li>
+<li><a class="reference internal" href="#add-other-scenario-scenario"><code class="docutils literal notranslate"><span class="pre">__add__(other:</span> <span class="pre">Scenario)</span> <span class="pre">-&gt;</span> <span class="pre">Scenario</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#projection-methodology">Projection methodology</a><ul>
-<li><a class="reference internal" href="#historical-period-2021-2025">Historical period (2021-2025)</a></li>
-<li><a class="reference internal" href="#future-period-2025-2030">Future period (2025-2030)</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#code-structure">Code structure</a><ul>
-<li><a class="reference internal" href="#core-implementation">Core implementation</a></li>
-<li><a class="reference internal" href="#parameters-integration">Parameters integration</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#growth-rates">Growth rates</a></li>
 </ul>
 </li>
 </ul>
