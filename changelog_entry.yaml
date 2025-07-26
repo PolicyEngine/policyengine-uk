@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    added:
-    - Add pydantic dependency to fix missing import in scenario utilities
