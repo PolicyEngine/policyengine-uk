@@ -9,6 +9,7 @@ on:
     paths:
       - docs/**
       - .github/**
+  workflow_dispatch:
 
 jobs:
   Test:

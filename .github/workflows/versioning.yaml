@@ -9,6 +9,7 @@ on:
     paths:
       - changelog_entry.yaml
       - .github/**
+  workflow_dispatch:
 
 jobs:
   Versioning:
