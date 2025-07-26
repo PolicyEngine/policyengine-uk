@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.43.1] - 2025-07-26 14:10:57
+
+### Changed
+
+- Add Python 3.13 support and update CI workflows
+- Updated policyengine-core dependency to >=3.19.0 for Python 3.13 support
+- Updated GitHub Actions to latest versions (checkout@v4, setup-python@v5) for Python 3.13 compatibility
+- Set all workflows to use Python 3.13
+
 ## [2.43.0] - 2025-07-26 11:31:02
 
 ### Added
@@ -2030,6 +2039,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.43.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.0...2.43.1
 [2.43.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.42.0...2.43.0
 [2.42.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.4...2.42.0
 [2.41.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.3...2.41.4
