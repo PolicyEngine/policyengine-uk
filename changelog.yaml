@@ -1726,3 +1726,8 @@
     removed:
     - Removed unused tables dependency that was blocking Python 3.13 compatibility
   date: 2025-07-26 14:10:57
+- bump: patch
+  changes:
+    added:
+    - Add pydantic dependency to fix missing import in scenario utilities
+  date: 2025-07-26 21:48:22
