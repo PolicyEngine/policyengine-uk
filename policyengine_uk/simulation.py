@@ -198,6 +198,7 @@ class Simulation(CoreSimulation):
         else:
             dataset = Dataset.from_file(dataset, self.default_input_period)
             self.build_from_dataset(dataset)
+            self.dataset = dataset
 
     def build_from_dataframe(self, df: pd.DataFrame) -> None:
         """Build simulation from a pandas DataFrame.
@@ -308,6 +309,7 @@ class Simulation(CoreSimulation):
 
         dataset = extend_single_year_dataset(dataset)
         self.build_from_multi_year_dataset(dataset)
+        self.dataset = dataset
 
     def build_from_multi_year_dataset(
         self, dataset: UKMultiYearDataset
@@ -334,6 +336,8 @@ class Simulation(CoreSimulation):
                     if variable not in self.tax_benefit_system.variables:
                         continue
                     self.set_input(variable, year, table[variable])
+
+        self.dataset = dataset
 
     def build_from_ids(
         self,

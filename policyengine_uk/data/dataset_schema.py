@@ -53,6 +53,7 @@ class UKSingleYearDataset:
         household: pd.DataFrame = None,
         fiscal_year: int = 2025,
     ):
+        file_path = str(file_path) if file_path else None
         if file_path is not None:
             self.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
