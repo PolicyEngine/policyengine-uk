@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.43.5] - 2025-07-28 22:20:17
+
+### Fixed
+
+- Minor missing variable attributes.
+
 ## [2.43.4] - 2025-07-28 12:35:29
 
 ### Fixed
@@ -2058,6 +2064,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.43.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.4...2.43.5
 [2.43.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.3...2.43.4
 [2.43.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.2...2.43.3
 [2.43.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.1...2.43.2

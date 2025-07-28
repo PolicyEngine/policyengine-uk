@@ -1742,3 +1742,8 @@
     - WFP reforms active.
     - Growthfactors extended to 2040.
   date: 2025-07-28 12:35:29
+- bump: patch
+  changes:
+    fixed:
+    - Minor missing variable attributes.
+  date: 2025-07-28 22:20:17
