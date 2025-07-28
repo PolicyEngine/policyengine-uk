@@ -1731,3 +1731,8 @@
     added:
     - Add pydantic dependency to fix missing import in scenario utilities
   date: 2025-07-26 20:54:03
+- bump: patch
+  changes:
+    changed:
+    - Separated out system.py to avoid bloat.
+  date: 2025-07-28 10:01:47
