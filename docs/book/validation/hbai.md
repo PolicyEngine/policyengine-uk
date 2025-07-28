@@ -60,13 +60,13 @@ Each of the variables above is either derived from other variables, or is a dire
 | `free_tv_licence_value` | Not directly uprated | Depends on policy parameters |
 | `income_tax` | Derived | Calculated based on income and tax policy |
 | `national_insurance` | Derived | Calculated based on income and NI policy |
-| `council_tax` | gov.obr.council_tax | Uprated based on OBR council tax revenue projections |
+| `council_tax` | gov.obr.council_tax | Uprated based on outturn CT levels by region growth to 2025, then OBR projections of levels by region onwardss |
 | `domestic_rates` | gov.obr.council_tax | Uprated with council tax as proxy |
 | `employee_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
 | `personal_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
 | `maintenance_expenses` | gov.obr.consumer_price_index | Uprated based on CPI inflation |
 | `student_loan_repayments` | gov.economic_assumptions.indices.obr.average_earnings | Uprated based on OBR average earnings projections |
-| `rent` | gov.obr.rent | Uprated based on OBR rent projections |
+| `rent` | gov.obr.rent | Social rents uprated by CPI+1%, private rents uprated with outturn data by region to 2025, then with backed-out private rent level growth from OBR aggregate rent forecasts (assuming social rent grows at CPI+1%) |
 | `water_and_sewerage_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |
-| `mortgage_interest_repayment` | gov.obr.mortgage_interest | Uprated based on OBR mortgage interest projections |
+| `mortgage_interest_repayment` | gov.obr.mortgage_interest | Uprated based on outturn Ofwat data to 2025, then Ofwat projections onwards |
 | `housing_service_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |
