@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -247,29 +251,27 @@
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;href&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
+            <span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;href&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;title&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
         <span class="p">]</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
 
 
-<span class="k">for</span> <span class="p">(</span>
-    <span class="n">parameter</span>
-<span class="p">)</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">child_benefit</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">additional</span><span class="o">.</span><span class="n">values_list</span><span class="p">:</span>
+<span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">child_benefit</span><span class="o">.</span><span class="n">amount</span><span class="o">.</span><span class="n">additional</span><span class="o">.</span><span class="n">values_list</span><span class="p">:</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span><span class="p">]</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;Additional&quot;</span><span class="p">]</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;href&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
+            <span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;href&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;reference&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;title&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
         <span class="p">]</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
 
 
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">]</span>
-<span class="p">)</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -404,15 +406,13 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">sim</span><span class="o">.</span><span class="n">add_person</span><span class="p">(</span><span class="n">age</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
     <span class="n">sim</span><span class="o">.</span><span class="n">add_benunit</span><span class="p">(</span><span class="n">members</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;£</span><span class="si">{</span><span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;child_benefit&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s1">&#39;child_benefit&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
 
 
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
         <span class="s2">&quot;Number of children&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">)),</span>
-        <span class="s2">&quot;Child Benefit (Annual)&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span>
-            <span class="nb">map</span><span class="p">(</span><span class="n">get_cb_for_n_children</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
-        <span class="p">),</span>
+        <span class="s2">&quot;Child Benefit (Annual)&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">get_cb_for_n_children</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">))),</span>
     <span class="p">}</span>
 <span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Number of children&quot;</span><span class="p">)</span>
 </pre></div>

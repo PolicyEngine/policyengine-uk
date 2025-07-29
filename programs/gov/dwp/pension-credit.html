@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -250,12 +254,8 @@ The legal framework for Savings Credit is primarily defined in the legislation p
 
 <span class="n">parameters</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span>
 
-<span class="n">carer_addition</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">guarantee_credit</span><span class="o">.</span><span class="n">carer</span><span class="o">.</span><span class="n">addition</span>
-<span class="p">)</span>
-<span class="n">child_addition</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">guarantee_credit</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">addition</span>
-<span class="p">)</span>
+<span class="n">carer_addition</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">guarantee_credit</span><span class="o">.</span><span class="n">carer</span><span class="o">.</span><span class="n">addition</span>
+<span class="n">child_addition</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">guarantee_credit</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">addition</span>
 <span class="n">disabled_child</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">guarantee_credit</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">disability</span><span class="o">.</span><span class="n">addition</span>
 <span class="p">)</span>
@@ -499,12 +499,8 @@ This threshold represents the maximum amount of savings or assets an individual 
 
 <span class="n">parameters</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span>
 
-<span class="n">threshold_single</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">savings_credit</span><span class="o">.</span><span class="n">threshold</span><span class="o">.</span><span class="n">SINGLE</span>
-<span class="p">)</span>
-<span class="n">threshold_couple</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">savings_credit</span><span class="o">.</span><span class="n">threshold</span><span class="o">.</span><span class="n">COUPLE</span>
-<span class="p">)</span>
+<span class="n">threshold_single</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">savings_credit</span><span class="o">.</span><span class="n">threshold</span><span class="o">.</span><span class="n">SINGLE</span>
+<span class="n">threshold_couple</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">dwp</span><span class="o">.</span><span class="n">pension_credit</span><span class="o">.</span><span class="n">savings_credit</span><span class="o">.</span><span class="n">threshold</span><span class="o">.</span><span class="n">COUPLE</span>
 
 <span class="n">elements</span> <span class="o">=</span> <span class="p">[</span><span class="n">threshold_single</span><span class="p">,</span> <span class="n">threshold_couple</span><span class="p">]</span>  <span class="c1"># [...]</span>
 

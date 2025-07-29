@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -408,9 +412,7 @@
 <span class="n">stamp_duty</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;stamp_duty_land_tax&quot;</span><span class="p">)</span>
 <span class="n">home_price</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;main_residential_property_purchased&quot;</span><span class="p">)</span>
 
-<span class="n">marginal_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">stamp_duty</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">stamp_duty</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
-    <span class="n">home_price</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">home_price</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="p">)</span>
+<span class="n">marginal_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">stamp_duty</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">stamp_duty</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">home_price</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">home_price</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">home_price</span> <span class="o">=</span> <span class="n">home_price</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -426,14 +428,10 @@
 
 <span class="c1"># left shows marginal rate, right shows total SDLT</span>
 
-<span class="n">fig</span> <span class="o">=</span> <span class="n">make_subplots</span><span class="p">(</span>
-    <span class="n">rows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">subplot_titles</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Marginal SDLT rate&quot;</span><span class="p">,</span> <span class="s2">&quot;Total SDLT&quot;</span><span class="p">)</span>
-<span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">make_subplots</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">subplot_titles</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Marginal SDLT rate&quot;</span><span class="p">,</span> <span class="s2">&quot;Total SDLT&quot;</span><span class="p">))</span>
 
 <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>
-    <span class="n">px</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Home price&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Marginal SDLT rate&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Marginal SDLT rate&quot;</span>
-    <span class="p">)</span>
+    <span class="n">px</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Home price&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Marginal SDLT rate&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Marginal SDLT rate&quot;</span><span class="p">)</span>
     <span class="o">.</span><span class="n">update_traces</span><span class="p">(</span><span class="n">line_shape</span><span class="o">=</span><span class="s2">&quot;hv&quot;</span><span class="p">)</span>
     <span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
     <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>

@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -334,9 +338,7 @@
     <span class="k">return</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
             <span class="p">[</span>
-                <span class="n">get_parameter</span><span class="p">(</span><span class="n">calibration_parameters</span><span class="p">,</span> <span class="n">parameter</span><span class="p">)(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">-01-01&quot;</span>
-                <span class="p">)</span>
+                <span class="n">get_parameter</span><span class="p">(</span><span class="n">calibration_parameters</span><span class="p">,</span> <span class="n">parameter</span><span class="p">)(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">-01-01&quot;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">2026</span><span class="p">)</span>
             <span class="p">]</span>
         <span class="p">)</span>

@@ -3,10 +3,10 @@
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Scenario" href="scenarios.html" /><link rel="prev" title="Getting started" href="getting-started.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Creating policy scenarios" href="scenarios.html" /><link rel="prev" title="Getting started" href="getting-started.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
-        <title>Simulation - PolicyEngine UK documentation</title>
+        <title>Running simulations - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Scenario</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -212,19 +216,24 @@
           </label>
         </div>
         <article role="main">
-          <section id="simulation">
-<h1>Simulation<a class="headerlink" href="#simulation" title="Permalink to this heading">#</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> class calculates tax and benefit outcomes for individuals and households in the UK tax-benefit system.</p>
-<section id="basic-usage">
-<h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">#</a></h2>
+          <section class="tex2jax_ignore mathjax_ignore" id="running-simulations">
+<h1>Running simulations<a class="headerlink" href="#running-simulations" title="Permalink to this heading">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> class is the heart of PolicyEngine UK - it calculates tax and benefit outcomes for people and households. This guide walks you through everything from basic calculations to advanced microsimulation analysis.</p>
+<section id="creating-your-first-simulation">
+<h2>Creating your first simulation<a class="headerlink" href="#creating-your-first-simulation" title="Permalink to this heading">#</a></h2>
+<p>Every simulation starts with a situation that describes the people, benefit units, and households you want to analyse:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulation</span>
 
-<span class="c1"># Create from a situation dictionary</span>
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="p">{</span>
+<span class="n">situation</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;person_1&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;2023&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span>
-            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;2023&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">}</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span>
+            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">30_000</span><span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;benunits&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;benunit_1&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;person_1&quot;</span><span class="p">]</span>
         <span class="p">}</span>
     <span class="p">},</span>
     <span class="s2">&quot;households&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -232,92 +241,316 @@
             <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;person_1&quot;</span><span class="p">]</span>
         <span class="p">}</span>
     <span class="p">}</span>
-<span class="p">})</span>
+<span class="p">}</span>
 
-<span class="c1"># Calculate a variable</span>
-<span class="n">income_tax</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">)</span>
+<span class="n">income_tax</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Income tax: £</span><span class="si">{</span><span class="n">income_tax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This creates a simulation for one person and calculates their annual income tax liability. The result shows they would pay £3,486 per year in income tax.</p>
+</section>
+<section id="understanding-the-situation-structure">
+<h2>Understanding the situation structure<a class="headerlink" href="#understanding-the-situation-structure" title="Permalink to this heading">#</a></h2>
+<p>The situation dictionary has three main sections:</p>
+<p><strong>People</strong> define individuals with their characteristics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;sarah&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">28</span><span class="p">},</span>
+        <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">35_000</span><span class="p">},</span>
+        <span class="s2">&quot;pension_contributions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">2_800</span><span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tom&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">32</span><span class="p">},</span>
+        <span class="s2">&quot;self_employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">18_000</span><span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Benefit units</strong> group people for benefit calculations (typically families):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;benunits&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sarah&quot;</span><span class="p">,</span> <span class="s2">&quot;tom&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Households</strong> group people who live together:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;households&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;home&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sarah&quot;</span><span class="p">,</span> <span class="s2">&quot;tom&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;housing_costs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">11400</span><span class="p">},</span>  <span class="c1"># Annual rent</span>
+        <span class="s2">&quot;council_tax&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">1_800</span><span class="p">}</span>   <span class="c1"># Annual</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </section>
-<section id="data-sources">
-<h2>Data sources<a class="headerlink" href="#data-sources" title="Permalink to this heading">#</a></h2>
-<p>Simulations can be created from various data sources:</p>
-<section id="dataframes">
-<h3>DataFrames<a class="headerlink" href="#dataframes" title="Permalink to this heading">#</a></h3>
+<section id="calculating-different-variables">
+<h2>Calculating different variables<a class="headerlink" href="#calculating-different-variables" title="Permalink to this heading">#</a></h2>
+<p>PolicyEngine UK can calculate hundreds of variables. Here are some common ones:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Taxes</span>
+<span class="n">income_tax</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">national_insurance</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;national_insurance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">council_tax</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;council_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+
+<span class="c1"># Benefits</span>
+<span class="n">universal_credit</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">child_benefit</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;child_benefit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">state_pension</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;state_pension&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+
+<span class="c1"># Summary measures</span>
+<span class="n">net_income</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">in_poverty</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;in_poverty&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">marginal_tax_rate</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;marginal_tax_rate&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>These calculations return arrays because simulations can handle multiple people, benefit units or households simultaneously. Each variable gives you results at the appropriate level - income tax is calculated per person, Universal Credit per benefit unit, and council tax per household.</p>
+</section>
+<section id="simulating-policy-scenarios">
+<h2>Simulating policy scenarios<a class="headerlink" href="#simulating-policy-scenarios" title="Permalink to this heading">#</a></h2>
+<p>To test policy changes, create a scenario and apply it to your simulation. This example shows what happens when we increase Universal Credit’s standard allowance for single people over 25 from the current rate to £500 per month:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scenario</span>
+
+<span class="c1"># Create a scenario that increases UC standard allowance</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span><span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;gov.dwp.universal_credit.standard_allowance.single.OVER_25&quot;</span><span class="p">:</span> <span class="mi">500</span>
+<span class="p">})</span>
+
+<span class="c1"># Apply the scenario to create a new simulation</span>
+<span class="n">reformed_sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">,</span> <span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">)</span>
+
+<span class="c1"># Compare the average UC payment between baseline and scenario</span>
+<span class="n">baseline_uc</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">reformed_uc</span> <span class="o">=</span> <span class="n">reformed_sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="c1"># Calculate the difference to see the policy impact</span>
+<span class="n">difference</span> <span class="o">=</span> <span class="n">reformed_uc</span> <span class="o">-</span> <span class="n">baseline_uc</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average UC increase: £</span><span class="si">{</span><span class="n">difference</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> per month&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-families-and-children">
+<h2>Working with families and children<a class="headerlink" href="#working-with-families-and-children" title="Permalink to this heading">#</a></h2>
+<p>Family situations require more detailed setup:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">family_with_children</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">35</span><span class="p">},</span>
+            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">28_000</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;partner&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">33</span><span class="p">},</span>
+            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">12_000</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;child_1&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">7</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;child_2&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;benunits&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">,</span> <span class="s2">&quot;partner&quot;</span><span class="p">,</span> <span class="s2">&quot;child_1&quot;</span><span class="p">,</span> <span class="s2">&quot;child_2&quot;</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;households&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;home&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">,</span> <span class="s2">&quot;partner&quot;</span><span class="p">,</span> <span class="s2">&quot;child_1&quot;</span><span class="p">,</span> <span class="s2">&quot;child_2&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;housing_costs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">9600</span><span class="p">},</span>  <span class="c1"># Annual housing costs</span>
+            <span class="s2">&quot;childcare_costs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">7200</span><span class="p">}</span>  <span class="c1"># Annual childcare costs</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">family_sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">family_with_children</span><span class="p">)</span>
+
+<span class="c1"># Calculate family-specific benefits - these are per benefit unit (family)</span>
+<span class="n">child_benefit</span> <span class="o">=</span> <span class="n">family_sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;child_benefit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">childcare_support</span> <span class="o">=</span> <span class="n">family_sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit_childcare&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Child benefit: £</span><span class="si">{</span><span class="n">child_benefit</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> per month&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Childcare support: £</span><span class="si">{</span><span class="n">childcare_support</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> per month&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="using-different-data-sources">
+<h2>Using different data sources<a class="headerlink" href="#using-different-data-sources" title="Permalink to this heading">#</a></h2>
+<section id="from-pandas-dataframes">
+<h3>From pandas DataFrames<a class="headerlink" href="#from-pandas-dataframes" title="Permalink to this heading">#</a></h3>
+<p>If you have data in a DataFrame, convert it to the right format:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="c1"># Your data needs specific column naming</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">&quot;person_id__2023&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-    <span class="s2">&quot;age__2023&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">],</span>
-    <span class="s2">&quot;employment_income__2023&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">20000</span><span class="p">,</span> <span class="mi">30000</span><span class="p">,</span> <span class="mi">40000</span><span class="p">],</span>
-    <span class="c1"># ... other columns</span>
+    <span class="s2">&quot;person_id__2025&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+    <span class="s2">&quot;age__2025&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">65</span><span class="p">],</span>
+    <span class="s2">&quot;employment_income__2025&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">20000</span><span class="p">,</span> <span class="mi">40000</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="s2">&quot;state_pension__2025&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>  <span class="c1"># Weekly pension</span>
 <span class="p">})</span>
 
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+<span class="c1"># Create simulation from the DataFrame</span>
+<span class="n">sim_from_df</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+<span class="c1"># Calculate total income tax across all people in the dataset</span>
+<span class="n">total_tax</span> <span class="o">=</span> <span class="n">sim_from_df</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total income tax from all people: £</span><span class="si">{</span><span class="n">total_tax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The column naming follows the pattern <code class="docutils literal notranslate"><span class="pre">variable_name__year</span></code> for time-varying variables.</p>
 </section>
-<section id="huggingface-locations">
-<h3>HuggingFace locations<a class="headerlink" href="#huggingface-locations" title="Permalink to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load from HuggingFace</span>
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="from-policyengine-core-dataset-objects">
-<h3>From PolicyEngine-Core Dataset objects<a class="headerlink" href="#from-policyengine-core-dataset-objects" title="Permalink to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnhancedFRS</span>
-
-<span class="c1"># Using the Enhanced FRS dataset</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">EnhancedFRS</span><span class="p">()</span>
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="calculating-variables">
-<h2>Calculating variables<a class="headerlink" href="#calculating-variables" title="Permalink to this heading">#</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate for all entities</span>
-<span class="n">income_tax</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">)</span>
-
-<span class="c1"># Calculate with mapping to different entity</span>
-<span class="n">household_income</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;employment_income&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="microsimulation">
-<h2>Microsimulation<a class="headerlink" href="#microsimulation" title="Permalink to this heading">#</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">Microsimulation</span></code> class extends <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> with survey weights for population-level analysis.</p>
+<section id="from-survey-datasets">
+<h3>From survey datasets<a class="headerlink" href="#from-survey-datasets" title="Permalink to this heading">#</a></h3>
+<p>For population-level analysis, use survey data:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
 
-<span class="c1"># Create from weighted dataset</span>
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5&quot;</span><span class="p">)</span>
+<span class="c1"># Load the Enhanced Family Resources Survey</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
+<span class="p">)</span>
 
-<span class="c1"># Calculate with weights</span>
-<span class="n">poverty_rate</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;in_poverty&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Poverty rate: </span><span class="si">{</span><span class="n">poverty_rate</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># Get total government revenue</span>
-<span class="n">income_tax_revenue</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total income tax: £</span><span class="si">{</span><span class="n">income_tax_revenue</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">bn&quot;</span><span class="p">)</span>
+<span class="c1"># Calculate population totals using survey weights</span>
+<span class="c1"># This gives us an estimate for the entire UK population</span>
+<span class="n">total_income_tax</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total UK income tax revenue: £</span><span class="si">{</span><span class="n">total_income_tax</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">bn&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="working-with-weights">
-<h2>Working with weights<a class="headerlink" href="#working-with-weights" title="Permalink to this heading">#</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate without weights for debugging</span>
-<span class="n">values</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span> <span class="n">use_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</section>
+<section id="microsimulation-analysis">
+<h2>Microsimulation analysis<a class="headerlink" href="#microsimulation-analysis" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Microsimulation</span></code> class extends <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> with survey weights for population estimates:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
 
-<span class="c1"># Access weights directly</span>
-<span class="n">weights</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">get_weights</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">)</span>
-
-<span class="c1"># Calculate multiple variables as weighted DataFrame</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate_dataframe</span><span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;employment_income&quot;</span><span class="p">,</span> <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;universal_credit&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;2023&quot;</span>
+<span class="c1"># Compare baseline and reform</span>
+<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
 <span class="p">)</span>
+
+<span class="c1"># Create a scenario that increases the basic rate of income tax to 25%</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span><span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;gov.hmrc.income_tax.rates.uk[0].rate&quot;</span><span class="p">:</span> <span class="mf">0.25</span>
+<span class="p">})</span>
+<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span><span class="p">,</span>
+    <span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span>
+<span class="p">)</span>
+
+<span class="c1"># Calculate revenue impact by comparing household net incomes</span>
+<span class="c1"># When net income falls, government revenue increases</span>
+<span class="n">baseline_net</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">reformed_net</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+
+<span class="c1"># The negative of the income change gives us the revenue change</span>
+<span class="n">revenue_change</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">reformed_net</span> <span class="o">-</span> <span class="n">baseline_net</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Additional government revenue: £</span><span class="si">{</span><span class="n">revenue_change</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">bn&quot;</span><span class="p">)</span>
+
+<span class="c1"># Analyse distributional impact by looking at poverty rates</span>
+<span class="c1"># in_poverty is a boolean variable, so mean() gives us the poverty rate</span>
+<span class="n">poverty_baseline</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;in_poverty&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">poverty_reformed</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;in_poverty&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="n">poverty_change</span> <span class="o">=</span> <span class="n">poverty_reformed</span> <span class="o">-</span> <span class="n">poverty_baseline</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Poverty rate change: </span><span class="si">{</span><span class="n">poverty_change</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="advanced-techniques">
+<h2>Advanced techniques<a class="headerlink" href="#advanced-techniques" title="Permalink to this heading">#</a></h2>
+<section id="calculating-multiple-variables-efficiently">
+<h3>Calculating multiple variables efficiently<a class="headerlink" href="#calculating-multiple-variables-efficiently" title="Permalink to this heading">#</a></h3>
+<p>Instead of calculating variables one by one, you can get multiple results at once using the built-in <code class="docutils literal notranslate"><span class="pre">calculate_dataframe</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get multiple variables in a single DataFrame</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;employment_income&quot;</span><span class="p">,</span> <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="s2">&quot;household_net_income&quot;</span><span class="p">]</span>
+<span class="n">results_df</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate_dataframe</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+
+<span class="c1"># This gives you a DataFrame with columns for each variable</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average net income: £</span><span class="si">{</span><span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;household_net_income&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-different-time-periods">
+<h3>Working with different time periods<a class="headerlink" href="#working-with-different-time-periods" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Multi-year analysis to see how income changes over time</span>
+<span class="n">years</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">2024</span><span class="p">,</span> <span class="mi">2025</span><span class="p">]</span>
+<span class="n">income_by_year</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years</span><span class="p">:</span>
+    <span class="n">income_by_year</span><span class="p">[</span><span class="n">year</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+
+<span class="c1"># Compare average household income across years</span>
+<span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years</span><span class="p">:</span>
+    <span class="n">avg_income</span> <span class="o">=</span> <span class="n">income_by_year</span><span class="p">[</span><span class="n">year</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2">: £</span><span class="si">{</span><span class="n">avg_income</span><span class="o">/</span><span class="mi">12</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> per month&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="mapping-variables-to-different-entities">
+<h3>Mapping variables to different entities<a class="headerlink" href="#mapping-variables-to-different-entities" title="Permalink to this heading">#</a></h3>
+<p>Some variables can be calculated at different levels:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate employment income at different entity levels</span>
+<span class="c1"># Individual level - one value per person</span>
+<span class="n">person_income</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;employment_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average personal employment income: £</span><span class="si">{</span><span class="n">person_income</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Household level - sums all employment income within each household</span>
+<span class="n">household_income</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;employment_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;household&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average household employment income: £</span><span class="si">{</span><span class="n">household_income</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Benefit unit level - sums employment income within each benefit unit (family)</span>
+<span class="n">benunit_income</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;employment_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">,</span> <span class="n">map_to</span><span class="o">=</span><span class="s2">&quot;benunit&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average benefit unit employment income: £</span><span class="si">{</span><span class="n">benunit_income</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="using-custom-weights">
+<h3>Using custom weights<a class="headerlink" href="#using-custom-weights" title="Permalink to this heading">#</a></h3>
+<p>For microsimulation with custom weights:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Access and modify survey weights for sensitivity analysis</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">get_weights</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">modified_weights</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">*</span> <span class="mf">1.1</span>  <span class="c1"># Increase all weights by 10%</span>
+
+<span class="c1"># Calculate population total with modified weights</span>
+<span class="n">unweighted_values</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">,</span> <span class="n">use_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">weighted_total</span> <span class="o">=</span> <span class="p">(</span><span class="n">unweighted_values</span> <span class="o">*</span> <span class="n">modified_weights</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total with 10% higher weights: £</span><span class="si">{</span><span class="n">weighted_total</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">bn&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="debugging-simulations">
+<h2>Debugging simulations<a class="headerlink" href="#debugging-simulations" title="Permalink to this heading">#</a></h2>
+<p>When simulations don’t behave as expected:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check individual components to understand the tax calculation</span>
+<span class="c1"># These help you trace through how income tax is calculated step by step</span>
+<span class="n">employment_income</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;employment_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">personal_allowance</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;personal_allowance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">taxable_income</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;adjusted_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">income_tax</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Employment income: £</span><span class="si">{</span><span class="n">employment_income</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Personal allowance: £</span><span class="si">{</span><span class="n">personal_allowance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Taxable income: £</span><span class="si">{</span><span class="n">taxable_income</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Income tax: £</span><span class="si">{</span><span class="n">income_tax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Verify the household composition was interpreted correctly</span>
+<span class="n">avg_age</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">children_per_household</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_count_children&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average age: </span><span class="si">{</span><span class="n">avg_age</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> years&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average children per household: </span><span class="si">{</span><span class="n">children_per_household</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="performance-tips">
+<h2>Performance tips<a class="headerlink" href="#performance-tips" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">Microsimulation</span></code> for population analysis, <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> for household-level work</p></li>
+<li><p>Calculate multiple variables in batches rather than individually</p></li>
+<li><p>For large datasets, consider calculating subsets first to verify your logic</p></li>
+<li><p>Cache simulation results when running the same calculation multiple times</p></li>
+</ul>
+<p>The simulation system is designed to be flexible and powerful. Start with simple examples and gradually build up to more complex analyses as you become familiar with the structure and capabilities.</p>
 </section>
 </section>
 
@@ -350,7 +583,7 @@
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Scenario</div>
+                <div class="title">Creating policy scenarios</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -395,17 +628,27 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Simulation</a><ul>
-<li><a class="reference internal" href="#basic-usage">Basic usage</a></li>
-<li><a class="reference internal" href="#data-sources">Data sources</a><ul>
-<li><a class="reference internal" href="#dataframes">DataFrames</a></li>
-<li><a class="reference internal" href="#huggingface-locations">HuggingFace locations</a></li>
-<li><a class="reference internal" href="#from-policyengine-core-dataset-objects">From PolicyEngine-Core Dataset objects</a></li>
+<li><a class="reference internal" href="#">Running simulations</a><ul>
+<li><a class="reference internal" href="#creating-your-first-simulation">Creating your first simulation</a></li>
+<li><a class="reference internal" href="#understanding-the-situation-structure">Understanding the situation structure</a></li>
+<li><a class="reference internal" href="#calculating-different-variables">Calculating different variables</a></li>
+<li><a class="reference internal" href="#simulating-policy-scenarios">Simulating policy scenarios</a></li>
+<li><a class="reference internal" href="#working-with-families-and-children">Working with families and children</a></li>
+<li><a class="reference internal" href="#using-different-data-sources">Using different data sources</a><ul>
+<li><a class="reference internal" href="#from-pandas-dataframes">From pandas DataFrames</a></li>
+<li><a class="reference internal" href="#from-survey-datasets">From survey datasets</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#calculating-variables">Calculating variables</a></li>
-<li><a class="reference internal" href="#microsimulation">Microsimulation</a></li>
-<li><a class="reference internal" href="#working-with-weights">Working with weights</a></li>
+<li><a class="reference internal" href="#microsimulation-analysis">Microsimulation analysis</a></li>
+<li><a class="reference internal" href="#advanced-techniques">Advanced techniques</a><ul>
+<li><a class="reference internal" href="#calculating-multiple-variables-efficiently">Calculating multiple variables efficiently</a></li>
+<li><a class="reference internal" href="#working-with-different-time-periods">Working with different time periods</a></li>
+<li><a class="reference internal" href="#mapping-variables-to-different-entities">Mapping variables to different entities</a></li>
+<li><a class="reference internal" href="#using-custom-weights">Using custom weights</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#debugging-simulations">Debugging simulations</a></li>
+<li><a class="reference internal" href="#performance-tips">Performance tips</a></li>
 </ul>
 </li>
 </ul>

@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -307,9 +311,7 @@
         <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Label&quot;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Land Transaction Tax (LTT) rates over property price thresholds&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
-        <span class="n">yaxis_tickformat</span><span class="o">=</span><span class="s2">&quot;,.0%&quot;</span><span class="p">,</span> <span class="n">xaxis_tickprefix</span><span class="o">=</span><span class="s2">&quot;£&quot;</span><span class="p">,</span> <span class="n">legend_title</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-    <span class="p">)</span>
+    <span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">yaxis_tickformat</span><span class="o">=</span><span class="s2">&quot;,.0%&quot;</span><span class="p">,</span> <span class="n">xaxis_tickprefix</span><span class="o">=</span><span class="s2">&quot;£&quot;</span><span class="p">,</span> <span class="n">legend_title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="o">.</span><span class="n">update_traces</span><span class="p">(</span><span class="n">line_shape</span><span class="o">=</span><span class="s2">&quot;hv&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">format_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>

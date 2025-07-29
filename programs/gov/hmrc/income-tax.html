@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -254,9 +258,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulation</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">calculate_taxes</span><span class="p">(</span>
-    <span class="n">employment_income</span><span class="p">,</span> <span class="n">dividend_income</span><span class="p">,</span> <span class="n">savings_interest_income</span>
-<span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_taxes</span><span class="p">(</span><span class="n">employment_income</span><span class="p">,</span> <span class="n">dividend_income</span><span class="p">,</span> <span class="n">savings_interest_income</span><span class="p">):</span>
     <span class="n">simulation</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span>
         <span class="n">situation</span><span class="o">=</span><span class="p">{</span>
             <span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -269,9 +271,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
         <span class="p">}</span>
     <span class="p">)</span>
     <span class="n">income_tax</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">dividend_income_tax</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;dividend_income_tax&quot;</span><span class="p">)[</span>
-        <span class="mi">0</span>
-    <span class="p">]</span>  <span class="c1"># Added</span>
+    <span class="n">dividend_income_tax</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;dividend_income_tax&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Added</span>
     <span class="n">savings_income_tax</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;savings_income_tax&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Added</span>
 
     <span class="k">return</span> <span class="n">income_tax</span><span class="p">,</span> <span class="n">dividend_income_tax</span><span class="p">,</span> <span class="n">savings_income_tax</span>
@@ -292,9 +292,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Dividend Income (£)&quot;</span><span class="p">],</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Savings Interest Income (£)&quot;</span><span class="p">],</span>
 <span class="p">):</span>
-    <span class="n">income_tax</span><span class="p">,</span> <span class="n">div_tax</span><span class="p">,</span> <span class="n">sav_tax</span> <span class="o">=</span> <span class="n">calculate_taxes</span><span class="p">(</span>
-        <span class="n">emp_income</span><span class="p">,</span> <span class="n">div_income</span><span class="p">,</span> <span class="n">sav_income</span>
-    <span class="p">)</span>
+    <span class="n">income_tax</span><span class="p">,</span> <span class="n">div_tax</span><span class="p">,</span> <span class="n">sav_tax</span> <span class="o">=</span> <span class="n">calculate_taxes</span><span class="p">(</span><span class="n">emp_income</span><span class="p">,</span> <span class="n">div_income</span><span class="p">,</span> <span class="n">sav_income</span><span class="p">)</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Income Tax (£)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">income_tax</span><span class="p">)</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Dividend Income Tax (£)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">div_tax</span><span class="p">)</span>
     <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Savings Income Tax (£)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sav_tax</span><span class="p">)</span>
@@ -402,12 +400,8 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk.system</span><span class="w"> </span><span class="kn">import</span> <span class="n">system</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">default</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">annual_allowance</span><span class="o">.</span><span class="n">default</span>
-<span class="p">)</span>
-<span class="n">minimum</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">annual_allowance</span><span class="o">.</span><span class="n">minimum</span>
-<span class="p">)</span>
+<span class="n">default</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">annual_allowance</span><span class="o">.</span><span class="n">default</span>
+<span class="n">minimum</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">annual_allowance</span><span class="o">.</span><span class="n">minimum</span>
 <span class="n">reduction_rate</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">annual_allowance</span><span class="o">.</span><span class="n">reduction_rate</span>
 <span class="p">)</span>
@@ -437,9 +431,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 
 
 <span class="nb">max</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">marriage_allowance</span><span class="o">.</span><span class="n">max</span>
-<span class="n">rounding_increment</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">marriage_allowance</span><span class="o">.</span><span class="n">rounding_increment</span>
-<span class="p">)</span>
+<span class="n">rounding_increment</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">marriage_allowance</span><span class="o">.</span><span class="n">rounding_increment</span>
 <span class="n">takeup_rate</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">marriage_allowance</span><span class="o">.</span><span class="n">takeup_rate</span>
 <span class="p">)</span>
@@ -464,9 +456,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <span class="p">}</span>
 
 
-<span class="n">deduction_rate</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">married_couples_allowance</span><span class="o">.</span><span class="n">deduction_rate</span>
-<span class="p">)</span>
+<span class="n">deduction_rate</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">married_couples_allowance</span><span class="o">.</span><span class="n">deduction_rate</span>
 <span class="n">married_couples_allowance_data</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Attribute&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Married Couples Allowance&quot;</span><span class="p">],</span>
     <span class="s2">&quot;Type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Deduction Rate&quot;</span><span class="p">],</span>
@@ -476,9 +466,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <span class="p">}</span>
 
 
-<span class="n">amount</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">personal_allowance</span><span class="o">.</span><span class="n">amount</span>
-<span class="p">)</span>
+<span class="n">amount</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">personal_allowance</span><span class="o">.</span><span class="n">amount</span>
 <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">amount</span><span class="o">.</span><span class="n">values_list</span><span class="p">]</span>
 <span class="n">dates</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">instant_str</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">amount</span><span class="o">.</span><span class="n">values_list</span><span class="p">]</span>
 <span class="n">personal_allowance_data</span> <span class="o">=</span> <span class="p">{</span>
@@ -490,9 +478,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <span class="p">}</span>
 
 
-<span class="n">addtional_threshold</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">personal_savings_allowance</span><span class="o">.</span><span class="n">additional</span>
-<span class="p">)</span>
+<span class="n">addtional_threshold</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">personal_savings_allowance</span><span class="o">.</span><span class="n">additional</span>
 <span class="n">basic_threshold</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">personal_savings_allowance</span><span class="o">.</span><span class="n">basic</span>
 <span class="p">)</span>
@@ -520,9 +506,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <span class="p">}</span>
 
 
-<span class="n">dividend_allowance</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">dividend_allowance</span>
-<span class="p">)</span>
+<span class="n">dividend_allowance</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">dividend_allowance</span>
 <span class="n">dividend_allowance_data</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Attribute&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Dividend Allowance&quot;</span><span class="p">],</span>
     <span class="s2">&quot;Type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Dividend Allowance&quot;</span><span class="p">],</span>
@@ -532,9 +516,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <span class="p">}</span>
 
 
-<span class="n">property_allowance</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">property_allowance</span>
-<span class="p">)</span>
+<span class="n">property_allowance</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">property_allowance</span>
 <span class="n">property_allowance_data</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Attribute&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Property Allowance&quot;</span><span class="p">],</span>
     <span class="s2">&quot;Type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Property Allowance&quot;</span><span class="p">],</span>
@@ -544,9 +526,7 @@ Produced by HMRC, these comprehensive guides aim to help taxpayers in understand
 <span class="p">}</span>
 
 
-<span class="n">trading_allowance</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">trading_allowance</span>
-<span class="p">)</span>
+<span class="n">trading_allowance</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">allowances</span><span class="o">.</span><span class="n">trading_allowance</span>
 <span class="n">trading_allowance_data</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Attribute&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Trading Allowance&quot;</span><span class="p">],</span>
     <span class="s2">&quot;Type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Trading Allowance&quot;</span><span class="p">],</span>

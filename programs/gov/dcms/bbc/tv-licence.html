@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -251,12 +255,10 @@
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span>
-    <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
+    <span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
 <span class="p">]</span>
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Full TV Licence Fee&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
+    <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">dcms</span><span class="o">.</span><span class="n">bbc</span><span class="o">.</span><span class="n">tv_licence</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">values_list</span>
 <span class="p">]</span>
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Blind TV Licence Fee&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
     <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -355,13 +357,11 @@
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">])):</span>
     <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Current value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;100%&quot;</span><span class="p">]</span>
     <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Change against current&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">]</span>
-    <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span>
-        <span class="n">i</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
-        <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">reference_list_ad</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;Budgetary impact of changing aged discount to </span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
+        <span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">{</span><span class="n">reference_list_ad</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot;&gt;Budgetary impact of changing aged discount to </span><span class="si">{</span><span class="n">aged_discount</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
     <span class="p">]</span>
 
 <span class="n">df_aged_discount</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">aged_discount</span><span class="p">)</span>
@@ -429,11 +429,11 @@
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">])):</span>
     <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Current value&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;£159&quot;</span><span class="p">]</span>
     <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Change against current&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
-        <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">159</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">159</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">]</span>
     <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;£</span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Reference&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span>
-        <span class="sa">f</span><span class="s2">&quot;&lt;a href=</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">reference_list_fee</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;Budgetary impact of changing licence fee to </span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s1">&#39;Reformed value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/a&gt;&quot;</span>
+        <span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;</span><span class="si">{</span><span class="n">reference_list_fee</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot;&gt;Budgetary impact of changing licence fee to </span><span class="si">{</span><span class="n">licence_fee</span><span class="p">[</span><span class="s2">&quot;Reformed value&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
     <span class="p">]</span>
 
 <span class="n">df_licence_fee</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">licence_fee</span><span class="p">)</span>

@@ -3,10 +3,10 @@
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="HBAI" href="../validation/hbai.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
-        <title>Tax model validation - PolicyEngine UK documentation</title>
+        <title>Universal Credit rebalancing reforms - PolicyEngine UK documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
@@ -177,11 +177,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="hbai.html">HBAI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../validation/hbai.html">HBAI</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Policy</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -216,72 +216,101 @@
           </label>
         </div>
         <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="tax-model-validation">
-<h1>Tax model validation<a class="headerlink" href="#tax-model-validation" title="Permalink to this heading">#</a></h1>
-<p>To ensure accuracy and precision, PolicyEngine’s free and open-source simulation and microsimulation model is periodically validated against existing external datasets. This process involves taking external datasets meant to represent a particular slice of British society and loading their inputs, such as total individual employment income, into our data model. We then compare our calculated outputs with theirs in an effort to find discrepancies between the two. In this post, we’ll describe our efforts to validate our model against the newly released Survey of Personal Incomes (SPI) 2020/21 dataset.</p>
-<section id="the-uk-survey-of-personal-incomes">
-<h2>The UK Survey of Personal Incomes<a class="headerlink" href="#the-uk-survey-of-personal-incomes" title="Permalink to this heading">#</a></h2>
-<p>The Survey of Personal Incomes (SPI) is a comprehensive dataset produced by HM Revenue and Customs (HMRC). It provides detailed information on individuals’ income, tax, and other financial data based on a sample of HMRC records. The SPI is among the most comprehensive UK individual-level financial datasets, and is used by HMRC, HM Treasury, and individual Members of Parliament, among others.<a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
+          <section class="tex2jax_ignore mathjax_ignore" id="universal-credit-rebalancing-reforms">
+<h1>Universal Credit rebalancing reforms<a class="headerlink" href="#universal-credit-rebalancing-reforms" title="Permalink to this heading">#</a></h1>
+<p>The Universal Credit rebalancing reforms represent changes to Universal Credit provisions introduced through the Universal Credit Bill. These reforms take effect from April 2026 and are designed to adjust benefit levels and eligibility criteria.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
+<p>The reforms consist of two main components:</p>
+<ol class="arabic simple">
+<li><p><strong>Health element changes for new claimants</strong>: New Universal Credit claimants from April 2026 onwards receive a fixed health element amount, while existing claimants continue to receive inflation-linked increases.</p></li>
+<li><p><strong>Standard allowance uplifts</strong>: The standard allowance receives additional uplifts beyond the annual inflationary increase from 2026-2029.</p></li>
+</ol>
 </section>
-<section id="validation-results">
-<h2>Validation results<a class="headerlink" href="#validation-results" title="Permalink to this heading">#</a></h2>
-<p>We chose to validate PolicyEngine against the SPI’s total individual income, using the SPI’s input variables to compare PolicyEngine UK’s calculated total income tax against the SPI’s reported amount.</p>
-<p>To do so, we first remove the SPI’s “composite records,” which are used to represent smaller population groups as a collective. This group of records is only meant to be employed within society-wide modelling, and its outputs cannot be correctly computed using its inputs. This group of records contains 1,770 observations, representing around 0.2% of total records.</p>
-<p>We then treat relevant variables from the SPI 2020/21 dataset<a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> as input variables into the PolicyEngine UK model. Using this data, we run household-level simulations for each input and categorise the outputs logarithmically based on how close PolicyEngine’s calculated 2020/21 total income tax is to that of the SPI. We treat a result within £10 as a match due to differences in rounding. Our final match statistics are displayed in the table below.</p>
-<div class="table-wrapper colwidths-auto docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Total error (£)</p></th>
-<th class="head"><p>Percentage of all records</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>&lt;=10</p></td>
-<td><p>92.7%</p></td>
-</tr>
-<tr class="row-odd"><td><p>&lt;100</p></td>
-<td><p>93.5%</p></td>
-</tr>
-<tr class="row-even"><td><p>&lt;1,000</p></td>
-<td><p>98.3%</p></td>
-</tr>
-<tr class="row-odd"><td><p>&gt;=1,000</p></td>
-<td><p>1.7%</p></td>
-</tr>
-</tbody>
-</table>
+<section id="health-element-changes">
+<h2>Health element changes<a class="headerlink" href="#health-element-changes" title="Permalink to this heading">#</a></h2>
+<p>From April 2026, new Universal Credit claimants who qualify for the Limited Capacity for Work-Related Activity (LCWRA) element receive a fixed monthly amount of £217.26, rather than the inflation-adjusted amount that pre-2026 claimants continue to receive.</p>
+<p>The implementation uses transition probabilities based on WPI Economics analysis for the Trussell Trust, derived from administrative Personal Independence Payment data. The probability of being a new claimant varies by year:</p>
+<ul class="simple">
+<li><p>2026: 11%</p></li>
+<li><p>2027: 13%</p></li>
+<li><p>2028: 16%</p></li>
+<li><p>2029: 22%</p></li>
+</ul>
+</section>
+<section id="standard-allowance-uplifts">
+<h2>Standard allowance uplifts<a class="headerlink" href="#standard-allowance-uplifts" title="Permalink to this heading">#</a></h2>
+<p>The standard allowance receives additional percentage uplifts beyond the normal inflationary increase:</p>
+<ul class="simple">
+<li><p>2026: 2.3% additional uplift</p></li>
+<li><p>2027: 3.1% additional uplift (cumulative)</p></li>
+<li><p>2028: 4.0% additional uplift (cumulative)</p></li>
+<li><p>2029: 4.8% additional uplift (cumulative)</p></li>
+</ul>
+<p>These uplifts are applied to the previous year’s standard allowance amount and compound over time.</p>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this heading">#</a></h2>
+<p>The reforms are implemented through:</p>
+<ul class="simple">
+<li><p><strong>Parameters</strong>: Three YAML files define the reform’s activation status, health element amount for new claimants, and standard allowance uplift rates.</p></li>
+<li><p><strong>Scenario modifier</strong>: The <code class="docutils literal notranslate"><span class="pre">add_universal_credit_reform</span></code> function applies the changes to Universal Credit calculations during microsimulation.</p></li>
+<li><p><strong>Scenario</strong>: The <code class="docutils literal notranslate"><span class="pre">universal_credit_july_2025_reform</span></code> scenario enables the reforms in policy analysis.</p></li>
+</ul>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h2>
+<p>You can use these reforms in your own analysis by creating a <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> with parametric changes to modify the reform parameters.</p>
+<section id="disabling-the-rebalancing-reforms-entirely">
+<h3>Disabling the rebalancing reforms entirely<a class="headerlink" href="#disabling-the-rebalancing-reforms-entirely" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span> <span class="n">Scenario</span>
+
+<span class="c1"># Disable the reforms from 2026 onwards</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span><span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;gov.dwp.universal_credit.rebalancing.active&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">)</span>
+</pre></div>
 </div>
-<p>For 92.7% of individuals included within the SPI, PolicyEngine UK’s calculated total income tax is within £10 of the SPI’s calculated amount. We view this as a robust demonstration of PolicyEngine’s accuracy and precision.</p>
 </section>
-<section id="analysing-model-discrepancies">
-<h2>Analysing model discrepancies<a class="headerlink" href="#analysing-model-discrepancies" title="Permalink to this heading">#</a></h2>
-<p>For the remaining records where our calculations do not closely match the SPI, we believe the differences are attributable to two main factors:</p>
-<ol class="arabic simple">
-<li><p>Differences in input information: The SPI sometimes uses additional input data that is not available to PolicyEngine, leading to differences in calculations.</p></li>
-<li><p>Structural differences: At times, the SPI model’s structure differs from that of PolicyEngine in a way that complicates further model validation.</p></li>
-</ol>
-<p>Four relevant error clusters appeared among the records where the SPI and PolicyEngine calculate differing outputs:</p>
-<ol class="arabic simple">
-<li><p>Cases where an individual appears to transfer a portion of their Personal Allowance to their spouse as part of the Marriage Allowance. This is because the SPI removes the transferred amount from the individual’s Personal Allowance, but does not indicate that the subsequent lower amount is driven by the Marriage Allowance. This may represent as much as 37,998 records (4.8% of total).</p></li>
-<li><p>Cases where an individual receives less than £100,000 in annual income and is non-resident for taxation purposes. In this situation, the individual receives £0 Personal Allowance, even though our model would project a full £12,500 allowance. The SPI uses a variable that is not publicly available to calculate this status. This represents 2,054 records (0.3% of total).</p></li>
-<li><p>Cases where both the SPI and PolicyEngine calculate the same amount of taxable savings income for an individual receiving any form of savings income classified by the SPI as “Other Investment Income” (e.g., interest on securities), but the SPI finds that they owe around £1,000 more in income tax than we do. This represents 1,276 records (0.2% of total).</p></li>
-<li><p>Cases where an individual near the Personal Allowance taper value who claims Gift Aid receives a full Personal Allowance of £12,500 within the SPI model. The SPI model’s Gift Aid variable signifies the amount an individual deducts due to Gift Aid donations, while PolicyEngine’s represents an individual’s total Gift Aid-eligible donations. We then calculate the individual’s deduction amount from this value. This error represents 738 records (0.1% of total).</p></li>
-</ol>
+<section id="changing-the-standard-allowance-uplift-parameters">
+<h3>Changing the standard allowance uplift parameters<a class="headerlink" href="#changing-the-standard-allowance-uplift-parameters" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span> <span class="n">Scenario</span>
+
+<span class="c1"># Set different uplift rates - e.g. 5% in 2026, 7% in 2027</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span><span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;gov.dwp.universal_credit.rebalancing.standard_allowance_uplift&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;2026-01-01&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="s2">&quot;2027-01-01&quot;</span><span class="p">:</span> <span class="mf">0.07</span><span class="p">,</span>
+        <span class="s2">&quot;2028-01-01&quot;</span><span class="p">:</span> <span class="mf">0.07</span><span class="p">,</span>
+        <span class="s2">&quot;2029-01-01&quot;</span><span class="p">:</span> <span class="mf">0.07</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
-<section id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">#</a></h2>
-<p>PolicyEngine’s UK model shows a high level of accordance with the SPI’s 2020/21 data, with almost 93% of records with the same inputs returning the same total income tax calculation. While some discrepancies exist, they are limited in scope and often attributable to either testability limitations within the SPI’s structure or to inputs that the SPI has not made publicly available. This validation exercise builds upon our previous validations, such as our <a class="reference external" href="https://policyengine.org/uk/research/uk-calibration-2023-q4">Autumn 2023 model calibration</a>. We welcome questions and comments on our findings or methodology - please feel free to <a class="reference external" href="mailto:contact&#37;&#52;&#48;policyengine&#46;org">get in touch</a>.</p>
-<hr class="footnotes docutils" />
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="note">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p><a class="reference external" href="https://data.europa.eu/data/datasets/hmrc-survey-of-personal-incomes-spi?locale=en">https://data.europa.eu/data/datasets/hmrc-survey-of-personal-incomes-spi?locale=en</a></p>
-</aside>
-<aside class="footnote brackets" id="id4" role="note">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
-<p><a class="reference external" href="https://www.gov.uk/government/statistics/personal-incomes-statistics-for-the-tax-year-2020-to-2021">https://www.gov.uk/government/statistics/personal-incomes-statistics-for-the-tax-year-2020-to-2021</a></p>
-</aside>
-</aside>
+<section id="changing-the-health-element-amount-for-new-claimants">
+<h3>Changing the health element amount for new claimants<a class="headerlink" href="#changing-the-health-element-amount-for-new-claimants" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span> <span class="n">Scenario</span>
+
+<span class="c1"># Set the new claimant health element to £250 per month</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">Scenario</span><span class="p">(</span><span class="n">parameter_changes</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;gov.dwp.universal_credit.rebalancing.new_claimant_health_element&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;2026-01-01&quot;</span><span class="p">:</span> <span class="mf">250.00</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="legislative-reference">
+<h2>Legislative reference<a class="headerlink" href="#legislative-reference" title="Permalink to this heading">#</a></h2>
+<p>The reforms are based on provisions in the Universal Credit Bill, available at: <a class="reference external" href="https://bills.parliament.uk/publications/62123/documents/6889">https://bills.parliament.uk/publications/62123/documents/6889</a>.</p>
 </section>
 </section>
 
@@ -298,7 +327,7 @@
         },
         kernelOptions: {
             name: "python3",
-            path: "./validation"
+            path: "./policy"
         },
         predefinedOutput: true
     }
@@ -310,7 +339,17 @@
         
         <div class="related-pages">
           
-          
+          <a class="prev-page" href="../validation/hbai.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">HBAI</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -341,11 +380,18 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Tax model validation</a><ul>
-<li><a class="reference internal" href="#the-uk-survey-of-personal-incomes">The UK Survey of Personal Incomes</a></li>
-<li><a class="reference internal" href="#validation-results">Validation results</a></li>
-<li><a class="reference internal" href="#analysing-model-discrepancies">Analysing model discrepancies</a></li>
-<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+<li><a class="reference internal" href="#">Universal Credit rebalancing reforms</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#health-element-changes">Health element changes</a></li>
+<li><a class="reference internal" href="#standard-allowance-uplifts">Standard allowance uplifts</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#disabling-the-rebalancing-reforms-entirely">Disabling the rebalancing reforms entirely</a></li>
+<li><a class="reference internal" href="#changing-the-standard-allowance-uplift-parameters">Changing the standard allowance uplift parameters</a></li>
+<li><a class="reference internal" href="#changing-the-health-element-amount-for-new-claimants">Changing the health element amount for new claimants</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#legislative-reference">Legislative reference</a></li>
 </ul>
 </li>
 </ul>

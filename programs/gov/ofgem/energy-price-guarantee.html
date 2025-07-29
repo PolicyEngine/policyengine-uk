@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -244,9 +248,7 @@ e. Multiply the subsidy rate by the monthly consumption to get the subsidy amoun
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 
-<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">ofgem</span><span class="o">.</span><span class="n">energy_price_cap</span><span class="o">.</span><span class="n">values_list</span>
-<span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">instant_str</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">ofgem</span><span class="o">.</span><span class="n">energy_price_cap</span><span class="o">.</span><span class="n">values_list</span><span class="p">]</span>
 <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Energy price cap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">parameter</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">ofgem</span><span class="o">.</span><span class="n">energy_price_cap</span><span class="o">.</span><span class="n">values_list</span>
 <span class="p">]</span>
@@ -297,9 +299,7 @@ e. Multiply the subsidy rate by the monthly consumption to get the subsidy amoun
     <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;2023-</span><span class="si">{</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">month</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)],</span>
 <span class="p">]</span>
 
-<span class="n">epg_costs</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;monthly_epg_subsidy&quot;</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">time_periods</span>
-<span class="p">]</span>
+<span class="n">epg_costs</span> <span class="o">=</span> <span class="p">[</span><span class="n">sim</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;monthly_epg_subsidy&quot;</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">time_periods</span><span class="p">]</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>

@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage/simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage/scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -297,7 +301,7 @@ dtype: float64
     <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;gov_balance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;gov_balance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 <span class="p">)</span>
-<span class="sa">f</span><span class="s2">&quot;Revenue: £</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">revenue</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e+9</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">bn&quot;</span>
+<span class="sa">f</span><span class="s2">&quot;Revenue: £</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">revenue</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">bn&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -310,6 +314,8 @@ dtype: float64
 </div>
 </section>
 </section>
+<div class="toctree-wrapper compound">
+</div>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">

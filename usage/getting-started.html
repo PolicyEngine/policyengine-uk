@@ -3,7 +3,7 @@
   <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Simulation" href="simulations.html" /><link rel="prev" title="PolicyEngine-UK" href="../index.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Running simulations" href="simulations.html" /><link rel="prev" title="PolicyEngine-UK" href="../index.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
         <title>Getting started - PolicyEngine UK documentation</title>
@@ -167,8 +167,8 @@
   <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="simulations.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulations.html">Running simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenarios.html">Creating policy scenarios</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
 <ul>
@@ -178,6 +178,10 @@
 <p class="caption" role="heading"><span class="caption-text">Validation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../validation/hbai.html">HBAI</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
 </ul>
 
 </div>
@@ -214,33 +218,25 @@
         <article role="main">
           <section class="tex2jax_ignore mathjax_ignore" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">#</a></h1>
-<p>PolicyEngine has two main use-cases:</p>
-<ul class="simple">
-<li><p>I want to simulate policy over specific households.</p></li>
-<li><p>I want to run microsimulation analyses over large datasets.</p></li>
-</ul>
-<p>Anyone can do the former in a few minutes of setup, but the UK’s large household surveys are only available to academics, researchers and nonprofits, so getting set up takes a bit longer (and you should <a class="reference external" href="https://policyengine.org/uk/contact">get in touch</a> so we can make it as fast as possible).</p>
-<p>If you can, please use Google Colab. It’s free, and more importantly, it enables everyone to use the same computing environment, saving all the trouble of fiddling around with bad Python installations, etc. It means that the below snippet is all you need to use the full microsimulation model:</p>
+<p>PolicyEngine UK helps you analyse the UK tax and benefit system in two main ways: simulating policies for specific households, or running large-scale microsimulation analyses. The first requires just a few minutes of setup, while the second needs access to survey data and takes a bit longer to configure.</p>
+<p>If possible, use Google Colab - it’s free and ensures everyone uses the same computing environment. The full microsimulation model needs just this snippet:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!export HUGGING_FACE_TOKEN=&lt;your_token&gt;
 !pip install policyengine-uk
 </pre></div>
 </div>
-<section id="household-level-analysis">
-<h2>Household-level analysis<a class="headerlink" href="#household-level-analysis" title="Permalink to this heading">#</a></h2>
-<p>The PolicyEngine UK Python package can be installed just like any other. Here’s an example below.</p>
-<p>First, we need to install the package (please make sure you’re using Python &gt;=3.7):</p>
+<section id="installing-policyengine-uk">
+<h2>Installing PolicyEngine UK<a class="headerlink" href="#installing-policyengine-uk" title="Permalink to this heading">#</a></h2>
+<p>Install the package like any other Python library (requires Python ≥3.7):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>policyengine-uk
 </pre></div>
 </div>
-<section id="simulating-current-law">
-<h3>Simulating current law<a class="headerlink" href="#simulating-current-law" title="Permalink to this heading">#</a></h3>
-<p>This example shows how to define a situation (you need to define the people, benefit units and households, and their variables in specific time periods) and simulate the current tax-benefit system.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The `Simulation` class is the most important class in PolicyEngine- it runs the actual simulation.</span>
+</section>
+<section id="your-first-household-simulation">
+<h2>Your first household simulation<a class="headerlink" href="#your-first-household-simulation" title="Permalink to this heading">#</a></h2>
+<p>Let’s start with a simple example: calculating how much income tax a 30-year-old earning £30,000 would pay.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulation</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulation</span>
-
+<span class="c1"># Define the household situation</span>
 <span class="n">situation</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;person&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -260,128 +256,135 @@
     <span class="p">},</span>
 <span class="p">}</span>
 
+<span class="c1"># Create and run the simulation</span>
 <span class="n">simulation</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">)</span>
-
-<span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">income_tax</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Income tax: £</span><span class="si">{</span><span class="n">income_tax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/nikhilwoodruff/policyengine/policyengine-uk/.venv/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([3486.], dtype=float32)
-</pre></div>
-</div>
-</div>
-</div>
+<p>This gives us £3,486 in income tax. The structure might look complex at first, but it reflects how the UK tax system works - people belong to benefit units (families for benefit purposes) and households (for housing costs and council tax).</p>
 </section>
-<section id="simulating-a-policy-reform">
-<h3>Simulating a policy reform<a class="headerlink" href="#simulating-a-policy-reform" title="Permalink to this heading">#</a></h3>
-<p>Now, let’s simulate a policy reform that changes a policy parameter. The <a class="reference external" href="https://openfisca.org/doc">OpenFisca documentation</a> has some excellent documentation on the syntax here.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_core.model_api</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
-
-
+<section id="analysing-a-policy-reform">
+<h2>Analysing a policy reform<a class="headerlink" href="#analysing-a-policy-reform" title="Permalink to this heading">#</a></h2>
+<p>Now let’s see what happens if we increase the basic rate of income tax from 20% to 25%:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the policy reform</span>
 <span class="n">increase_basic_rate</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;gov.hmrc.income_tax.rates.uk[0].rate&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">}</span>
 
-
+<span class="c1"># Compare baseline and reformed systems</span>
 <span class="n">baseline</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">)</span>
 <span class="n">reformed</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">situation</span><span class="p">,</span> <span class="n">reform</span><span class="o">=</span><span class="n">increase_basic_rate</span><span class="p">)</span>
 
-<span class="n">baseline_income_tax</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">reformed_income_tax</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">baseline_tax</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">reformed_tax</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;Raising the basic rate to 25% would increase this person&#39;s income tax by £</span><span class="si">{</span><span class="n">reformed_income_tax</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">baseline_income_tax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
+<span class="n">increase</span> <span class="o">=</span> <span class="n">reformed_tax</span> <span class="o">-</span> <span class="n">baseline_tax</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tax increase: £</span><span class="si">{</span><span class="n">increase</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Raising the basic rate to 25% would increase this person&#39;s income tax by £871.50
-</pre></div>
-</div>
-</div>
-</div>
+<p>The reform increases this person’s tax by £871.50 per year. Policy parameters use a hierarchical structure - here we’re changing the first UK income tax rate (<code class="docutils literal notranslate"><span class="pre">uk[0].rate</span></code>), which is the basic rate.</p>
 </section>
-</section>
-<section id="microsimulation-analysis">
-<h2>Microsimulation analysis<a class="headerlink" href="#microsimulation-analysis" title="Permalink to this heading">#</a></h2>
-<p>PolicyEngine UK has all the code needed to actually generate the microsimulation datasets from the raw dataset files if you have them, but it’s easiest to download our final datasets. To do this, you’ll need to do the following:</p>
-<ul class="simple">
-<li><p>Make sure you’ve got a HuggingFace account.</p></li>
-<li><p>Get a personal access token via the settings.</p></li>
-<li><p>Set HUGGING_FACE_TOKEN as an environment variable.</p></li>
-</ul>
-<p>For example, in a bash shell:</p>
+<section id="running-microsimulation-analyses">
+<h2>Running microsimulation analyses<a class="headerlink" href="#running-microsimulation-analyses" title="Permalink to this heading">#</a></h2>
+<p>To analyse policies across the entire population, you’ll need survey data. PolicyEngine provides processed datasets via HuggingFace, but you’ll need an account and access token:</p>
+<ol class="arabic simple">
+<li><p>Create a <a class="reference external" href="https://huggingface.co">HuggingFace account</a></p></li>
+<li><p>Generate a personal access token in your settings</p></li>
+<li><p>Set it as an environment variable:</p></li>
+</ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">HUGGING_FACE_TOKEN</span><span class="o">=</span>your_token_here
 </pre></div>
 </div>
-<p>If you don’t want to set it, it’ll also just prompt you when you try to access the data.</p>
-<section id="getting-set-up">
-<h3>Getting set up<a class="headerlink" href="#getting-set-up" title="Permalink to this heading">#</a></h3>
-<p>Now the datasets will be downloaded automatically as you select them. Here’s an example:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
+<section id="your-first-population-analysis">
+<h3>Your first population analysis<a class="headerlink" href="#your-first-population-analysis" title="Permalink to this heading">#</a></h3>
+<p>Here’s how to calculate total Universal Credit spending across the UK:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
 
+<span class="c1"># Load the enhanced Family Resources Survey data</span>
 <span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span>
     <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
 <span class="p">)</span>
 
-<span class="c1"># The hf:// points to the private data-</span>
-<span class="c1"># hf:// &lt;- go get the data from huggingface</span>
-<span class="c1"># policyengine/policyengine-uk-data &lt;- the repo</span>
-<span class="c1"># enhanced_frs_2022_23.h5 &lt;- the file in the repo</span>
+<span class="c1"># Calculate total UC spending (in billions)</span>
+<span class="n">total_uc</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Universal Credit spending: £</span><span class="si">{</span><span class="n">total_uc</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">bn&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This shows approximately £79.4bn in Universal Credit spending.</p>
+</section>
+<section id="estimating-revenue-from-reforms">
+<h3>Estimating revenue from reforms<a class="headerlink" href="#estimating-revenue-from-reforms" title="Permalink to this heading">#</a></h3>
+<p>Let’s apply the same basic rate increase to the entire population:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up baseline and reformed simulations</span>
+<span class="n">DATASET</span> <span class="o">=</span> <span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
 
-<span class="n">sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">)</span>
+<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">DATASET</span><span class="p">,</span> <span class="n">reform</span><span class="o">=</span><span class="n">increase_basic_rate</span><span class="p">)</span>
+
+<span class="c1"># Calculate the revenue impact</span>
+<span class="n">baseline_income</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+<span class="n">reformed_income</span> <span class="o">=</span> <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
+
+<span class="n">revenue</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">reformed_income</span> <span class="o">-</span> <span class="n">baseline_income</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e9</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Additional revenue: £</span><span class="si">{</span><span class="n">revenue</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">bn per year&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>79.42656804925272
+<p>The reform would raise approximately £35.5bn annually.</p>
+</section>
+</section>
+<section id="working-with-complex-households">
+<h2>Working with complex households<a class="headerlink" href="#working-with-complex-households" title="Permalink to this heading">#</a></h2>
+<p>Real households often have multiple people, children, and various income sources. Here’s a family with two adults and two children:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">family_situation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;people&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;parent_1&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">35</span><span class="p">},</span>
+            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">25_000</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;parent_2&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">33</span><span class="p">},</span>
+            <span class="s2">&quot;employment_income&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">15_000</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;child_1&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;child_2&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;benunits&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;parent_1&quot;</span><span class="p">,</span> <span class="s2">&quot;parent_2&quot;</span><span class="p">,</span> <span class="s2">&quot;child_1&quot;</span><span class="p">,</span> <span class="s2">&quot;child_2&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;households&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;home&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;parent_1&quot;</span><span class="p">,</span> <span class="s2">&quot;parent_2&quot;</span><span class="p">,</span> <span class="s2">&quot;child_1&quot;</span><span class="p">,</span> <span class="s2">&quot;child_2&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;housing_costs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2025</span><span class="p">:</span> <span class="mi">9600</span><span class="p">},</span>  <span class="c1"># Annual rent</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">family_sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="n">situation</span><span class="o">=</span><span class="n">family_situation</span><span class="p">)</span>
+
+<span class="c1"># Calculate various benefits and taxes</span>
+<span class="n">child_benefit</span> <span class="o">=</span> <span class="n">family_sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;child_benefit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">universal_credit</span> <span class="o">=</span> <span class="n">family_sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;universal_credit&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">total_tax</span> <span class="o">=</span> <span class="n">family_sim</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;income_tax&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Child benefit: £</span><span class="si">{</span><span class="n">child_benefit</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Universal Credit: £</span><span class="si">{</span><span class="n">universal_credit</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total income tax: £</span><span class="si">{</span><span class="n">total_tax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
 </div>
 </section>
-<section id="running-reform-analyses">
-<h3>Running reform analyses<a class="headerlink" href="#running-reform-analyses" title="Permalink to this heading">#</a></h3>
-<p>Reforms work in exactly the same way as in the household-level analysis above. Here’s the same example reform:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ENHANCED_FRS</span> <span class="o">=</span> <span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
-
-<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span>
-<span class="p">)</span>  <span class="c1"># Enhanced FRS 2022 by default</span>
-<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">,</span> <span class="n">reform</span><span class="o">=</span><span class="n">increase_basic_rate</span><span class="p">)</span>
-
-<span class="n">revenue</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="o">-</span><span class="p">(</span>
-        <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
-        <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;household_net_income&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="o">/</span> <span class="mf">1e9</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;Raising the basic rate to 25% would raise the UK £</span><span class="si">{</span><span class="n">revenue</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">bn per year&quot;</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Raising the basic rate to 25% would raise the UK £35.54bn per year
-</pre></div>
-</div>
-</div>
-</div>
-<p>The <a class="reference external" href="https://policyengine.org">PolicyEngine web app</a> actually has a helpful tool for this: if you can generate a household or reform on the app, scroll down in the bottom left to the <code class="docutils literal notranslate"><span class="pre">Reproduce</span> <span class="pre">in</span> <span class="pre">Python</span></code> section, and you’ll see an automatically-generated code snippet to reproduce the same analysis in Python.</p>
-</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this heading">#</a></h2>
+<p>You’re now ready to explore PolicyEngine UK further. The <a class="reference external" href="https://policyengine.org">PolicyEngine web app</a> includes a ‘Reproduce in Python’ section at the bottom of each page, which generates code snippets for any household or reform you create there.</p>
+<p>For more detailed guidance, see:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="simulations.html"><span class="std std-doc">Simulations</span></a> - comprehensive guide to running simulations</p></li>
+<li><p><a class="reference internal" href="scenarios.html"><span class="std std-doc">Scenarios</span></a> - creating and combining policy reforms</p></li>
+</ul>
 </section>
 </section>
 
@@ -414,7 +417,7 @@
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Simulation</div>
+                <div class="title">Running simulations</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -460,16 +463,16 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Getting started</a><ul>
-<li><a class="reference internal" href="#household-level-analysis">Household-level analysis</a><ul>
-<li><a class="reference internal" href="#simulating-current-law">Simulating current law</a></li>
-<li><a class="reference internal" href="#simulating-a-policy-reform">Simulating a policy reform</a></li>
+<li><a class="reference internal" href="#installing-policyengine-uk">Installing PolicyEngine UK</a></li>
+<li><a class="reference internal" href="#your-first-household-simulation">Your first household simulation</a></li>
+<li><a class="reference internal" href="#analysing-a-policy-reform">Analysing a policy reform</a></li>
+<li><a class="reference internal" href="#running-microsimulation-analyses">Running microsimulation analyses</a><ul>
+<li><a class="reference internal" href="#your-first-population-analysis">Your first population analysis</a></li>
+<li><a class="reference internal" href="#estimating-revenue-from-reforms">Estimating revenue from reforms</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#microsimulation-analysis">Microsimulation analysis</a><ul>
-<li><a class="reference internal" href="#getting-set-up">Getting set up</a></li>
-<li><a class="reference internal" href="#running-reform-analyses">Running reform analyses</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#working-with-complex-households">Working with complex households</a></li>
+<li><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
 </ul>
