@@ -26,6 +26,9 @@ from policyengine_uk.data.economic_assumptions import (
 
 from .tax_benefit_system import CountryTaxBenefitSystem
 
+# Scenarios
+from policyengine_uk.scenarios import universal_credit_july_2025_reform
+
 
 class Simulation(CoreSimulation):
     """UK-specific simulation class for calculating tax and benefit outcomes.
@@ -108,6 +111,11 @@ class Simulation(CoreSimulation):
         self.move_values("capital_gains", "capital_gains_before_response")
 
         self.input_variables = self.get_known_variables()
+
+        # Universal Credit reform (July 2025). Needs closer integration in the baseline,
+        # but adding here for ease of toggling on/off via the 'active' parameter.
+
+        universal_credit_july_2025_reform.simulation_modifier(self)
 
         # Apply structural modifiers
 

@@ -1,0 +1,13 @@
+description: Uplift in the Standard Allowance for Universal Credit, in addition to the annual inflationary increase, compared to 2025-26 levels.
+values:
+  2025-01-01: 0.000
+  2026-01-01: 0.023
+  2027-01-01: 0.031
+  2028-01-01: 0.040
+  2029-01-01: 0.048
+metadata:
+  unit: /1
+  label: Universal Credit rebalancing standard allowance uplift
+  reference:
+    - title: Universal Credit Bill
+      href: https://bills.parliament.uk/publications/62123/documents/6889
