@@ -8,12 +8,10 @@ The `Scenario` class represents a configuration for policy simulations, allowing
 from policyengine_uk import Scenario, Simulation
 
 # Create a scenario with parameter changes
-scenario = Scenario(
-    parameter_changes={
-        "gov.hmrc.income_tax.rates.uk[0].rate": 0.15,  # Change basic rate to 15%
-        "gov.dwp.universal_credit.standard_allowance.single.OVER_25": 400
-    }
-)
+scenario = Scenario(parameter_changes={
+    "gov.hmrc.income_tax.rates.uk[0].rate": 0.15,  # Change basic rate to 15%
+    "gov.dwp.universal_credit.standard_allowance.single.OVER_25": 400
+})
 
 # Apply to a simulation
 sim = Simulation(scenario=scenario)
@@ -40,13 +38,13 @@ Scenarios can be combined using the `+` operator:
 
 ```python
 # Create two scenarios
-tax_scenario = Scenario(
-    parameter_changes={"gov.hmrc.income_tax.rates.uk[0].rate": 0.15}
-)
+tax_scenario = Scenario(parameter_changes={
+    "gov.hmrc.income_tax.rates.uk[0].rate": 0.15
+})
 
-benefit_scenario = Scenario(
-    parameter_changes={"gov.dwp.universal_credit.standard_allowance.single.OVER_25": 400}
-)
+benefit_scenario = Scenario(parameter_changes={
+    "gov.dwp.universal_credit.standard_allowance.single.OVER_25": 400
+})
 
 # Combine them
 combined_scenario = tax_scenario + benefit_scenario
@@ -61,9 +59,41 @@ def add_new_benefit(simulation):
     # Custom logic to add a new benefit to the simulation
     simulation.add_variable(MyNewBenefit)
 
-scenario = Scenario(
-    simulation_modifier=add_new_benefit
+scenario = Scenario(simulation_modifier=add_new_benefit)
+```
+
+### Working with specific reforms
+
+Some reforms are predefined as scenarios. For example, to use the Universal Credit rebalancing reforms:
+
+```python
+from policyengine_uk import Scenario, Simulation
+
+# Enable UC rebalancing reforms with default parameters
+scenario = Scenario(parameter_changes={
+    "gov.dwp.universal_credit.rebalancing.active": True
+})
+
+# Create simulation with a specific household
+sim = Simulation(
+    scenario=scenario,
+    situation={
+        "people": {
+            "person_1": {
+                "age": {"2026": 30},
+                "employment_income": {"2026": 25000}
+            }
+        },
+        "households": {
+            "household_1": {
+                "members": ["person_1"]
+            }
+        }
+    }
 )
+
+# Calculate Universal Credit with reforms applied
+uc_amount = sim.calculate("universal_credit", "2026")
 ```
 
 ### API reference

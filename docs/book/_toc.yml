@@ -13,4 +13,6 @@ parts:
   - caption: Validation
     chapters:
       - file: validation/hbai
-      
+  - caption: Policy
+    chapters:
+      - file: policy/uc-rebalancing
