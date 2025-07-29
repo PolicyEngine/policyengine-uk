@@ -1752,3 +1752,8 @@
     added:
     - UC rebalancing reforms.
   date: 2025-07-29 14:15:32
+- bump: patch
+  changes:
+    changed:
+    - HBAI benefits included at top level.
+  date: 2025-07-29 15:40:04
