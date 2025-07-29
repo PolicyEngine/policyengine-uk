@@ -1,0 +1,9 @@
+description: Monthly value of the Universal Credit health element for new claimants from April 2026.
+values:
+  2026-01-01: 217.26
+metadata:
+  unit: currency-GBP
+  label: Universal Credit new claimant health element amount
+  reference:
+    - title: Universal Credit Bill
+      href: https://bills.parliament.uk/publications/62123/documents/6889#page=16

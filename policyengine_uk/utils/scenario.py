@@ -165,7 +165,9 @@ class Scenario(BaseModel):
                 else:
                     # Simple parameter change
                     simulation.tax_benefit_system.parameters.update(
-                        path, period=None, value=value  # Apply to all periods
+                        path,
+                        period=None,
+                        value=value,  # Apply to all periods
                     )
 
         # Then apply simulation modifier

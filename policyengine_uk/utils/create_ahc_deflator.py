@@ -47,7 +47,6 @@ def create_modified_cpi_forecast(
     forecast_start_year=2025,
     forecast_end_year=2029,
 ):
-
     cpi_values = get_parameter_values(
         cpi_parameter, forecast_start_year, forecast_end_year
     )

@@ -194,7 +194,6 @@ from IPython.core.display import HTML, display_html
 
 
 def format_fig(fig):
-
     # PolicyEngine style (roboto mono for numbers, roboto serif for text), dark grey for negative, blue for positive, spacing, etc.
 
     # Set layout properties for a clean, professional look

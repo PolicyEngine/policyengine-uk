@@ -109,6 +109,12 @@ class Simulation(CoreSimulation):
 
         self.input_variables = self.get_known_variables()
 
+        # Universal Credit reform (July 2025). Needs closer integration in the baseline,
+        # but adding here for ease of toggling on/off via the 'active' parameter.
+        from policyengine_uk.scenarios import universal_credit_july_2025_reform
+
+        universal_credit_july_2025_reform.simulation_modifier(self)
+
         # Apply structural modifiers
 
         if scenario is not None:
