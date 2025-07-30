@@ -1,257 +1,41 @@
-<!doctype html>
-<html class="no-js" lang="en">
-  <head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Getting started" href="usage/getting-started.html" />
+<!DOCTYPE html><html lang="en" class="" style="scroll-padding:60px"><head><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script><meta charSet="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>PolicyEngine UK documentation</title><meta property="og:title" content="PolicyEngine UK documentation"/><meta name="generator" content="mystmd"/><meta name="keywords" content=""/><link rel="stylesheet" href="/build/_assets/app-5WKS5EPQ.css"/><link rel="stylesheet" href="/build/_assets/thebe-core-VKVHG5VY.css"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jupyter-matplotlib@0.11.3/css/mpl_widget.css"/><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous"/><link rel="icon" href="/favicon.ico"/><link rel="stylesheet" href="/myst-theme.css"/><script>
+  const savedTheme = localStorage.getItem("myst:theme");
+  const theme = window.matchMedia("(prefers-color-scheme: light)").matches ? 'light' : 'dark';
+  const classes = document.documentElement.classList;
+  const hasAnyTheme = classes.contains('light') || classes.contains('dark');
+  if (!hasAnyTheme) classes.add(savedTheme ?? theme);
+</script></head><body class="m-0 transition-colors duration-500 bg-white dark:bg-stone-900"><div class="fixed top-1 left-1 h-[0px] w-[0px] focus-within:z-40 focus-within:h-auto focus-within:w-auto bg-white overflow-hidden focus-within:p-2 focus-within:ring-1" aria-label="skip to content options"><a href="#skip-to-frontmatter" class="block px-2 py-1 text-black underline">Skip to article frontmatter</a><a href="#skip-to-article" class="block px-2 py-1 text-black underline">Skip to article content</a></div><div class="bg-white/80 backdrop-blur dark:bg-stone-900/80 shadow dark:shadow-stone-700 p-3 md:px-8 sticky w-screen top-0 z-30 h-[60px]"><nav class="flex items-center justify-between flex-nowrap max-w-[1440px] mx-auto"><div class="flex flex-row xl:min-w-[19.5rem] mr-2 sm:mr-7 justify-start items-center shrink-0"><div class="block xl:hidden"><button class="flex items-center border-stone-400 text-stone-800 hover:text-stone-900 dark:text-stone-200 hover:dark:text-stone-100"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" width="2rem" height="2rem" class="m-1"><path fill-rule="evenodd" d="M3 6.75A.75.75 0 0 1 3.75 6h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 6.75ZM3 12a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 12Zm0 5.25a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"></path></svg><span class="sr-only">Open Menu</span></button></div><a class="flex items-center ml-3 dark:text-white w-fit md:ml-5 xl:ml-7" href="/"><div class="p-1 mr-3 dark:bg-white dark:rounded"><img src="/build/logo-2bd7d2ab9c2d9ac8ba7bbafb653bd229.png" class="h-9" height="2.25rem"/></div><span class="text-md sm:text-xl tracking-tight sm:mr-5 sr-only">Made with MyST</span></a></div><div class="flex items-center flex-grow w-auto"><div class="flex-grow hidden text-md lg:block"></div><div class="flex-grow block"></div><button type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:R74op:" data-state="closed" class="flex items-center h-10 aspect-square sm:w-64 text-left text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 hover:ring-blue-500 dark:hover:ring-blue-500 hover:border-blue-500 dark:hover:border-blue-500"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="p-2.5 h-10 w-10 aspect-square"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd"></path></svg><span class="hidden sm:block grow">Search</span><div aria-hidden="true" class="items-center hidden mx-1 font-mono text-sm text-gray-400 sm:flex gap-x-1"><kbd class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-[0px_2px_0px_0px_rgba(0,0,0,0.08)] dark:shadow-none hide-mac">CTRL</kbd><kbd class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-[0px_2px_0px_0px_rgba(0,0,0,0.08)] dark:shadow-none show-mac">⌘</kbd><kbd class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-[0px_2px_0px_0px_rgba(0,0,0,0.08)] dark:shadow-none ">K</kbd><script>
+;(() => {
+const script = document.currentScript;
+const root = script.parentElement;
 
-    <!-- Generated with Sphinx 6.2.1 and Furo 2022.12.07 -->
-        <title>PolicyEngine UK documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.4cbf315f70debaebd550c87a6162cf0f.min.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-    <link rel="stylesheet" type="text/css" href="_static/style.css" />
-    <link rel="stylesheet" type="text/css" href="_static/style.css" />
-    
-    
+const isMac = /mac/i.test(
+      window.navigator.userAgentData?.platform ?? window.navigator.userAgent,
+    );
+root.querySelectorAll(".hide-mac").forEach(node => {node.classList.add(isMac ? "hidden" : "block")});
+root.querySelectorAll(".show-mac").forEach(node => {node.classList.add(!isMac ? "hidden" : "block")});
+})()</script></div></button><button class="theme rounded-full aspect-square border border-stone-700 dark:border-white hover:bg-neutral-100 border-solid overflow-hidden text-stone-700 dark:text-white hover:text-stone-500 dark:hover:text-neutral-800 w-8 h-8 mx-3" title="Toggle theme between light and dark mode" aria-label="Toggle theme between light and dark mode"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="h-full w-full p-0.5 hidden dark:block"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clip-rule="evenodd"></path></svg><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-full w-full p-0.5 dark:hidden"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"></path></svg></button><div class="block sm:hidden"></div><div class="hidden sm:block"></div></div></nav></div><div class="fixed xl:article-grid grid-gap xl:w-screen xl:pointer-events-none overflow-auto max-xl:min-w-[300px] hidden z-10" style="top:60px"><div class="pointer-events-auto xl:col-margin-left flex-col overflow-hidden hidden xl:flex"><div class="flex-grow py-6 overflow-y-auto primary-scrollbar"><nav aria-label="Navigation" class="overflow-y-hidden transition-opacity ml-3 xl:ml-0 mr-3 max-w-[350px] lg:hidden"><div class="w-full px-1 dark:text-white font-medium"></div></nav><div class="my-3 border-b-2 lg:hidden"></div><nav aria-label="Table of Contents" class="flex-grow overflow-y-hidden transition-opacity ml-3 xl:ml-0 mr-3 max-w-[350px]"><div class="w-full px-1 dark:text-white"><a title="PolicyEngine UK documentation" aria-current="page" class="block break-words focus:outline outline-blue-200 outline-2 rounded p-2 my-1 rounded-lg bg-blue-300/30 font-bold active" href="/">PolicyEngine UK documentation</a><div data-state="closed" class="w-full"><div class="flex flex-row w-full gap-2 px-2 my-1 text-left rounded-lg outline-none hover:bg-slate-300/30"><div title="Usage" class="block break-words rounded py-2 grow cursor-pointer">Usage</div><button class="self-center flex-none rounded-md group hover:bg-slate-300/30 focus:outline outline-blue-200 outline-2" aria-label="Open Folder" type="button" aria-controls="radix-:Rmp8p:" aria-expanded="false" data-state="closed"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="transition-transform duration-300 group-data-[state=open]:rotate-90 text-text-slate-700 dark:text-slate-100" height="1.5rem" width="1.5rem"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg></button></div><div data-state="closed" id="radix-:Rmp8p:" hidden="" class="pl-3 pr-[2px] collapsible-content"></div></div><div data-state="closed" class="w-full"><div class="flex flex-row w-full gap-2 px-2 my-1 text-left rounded-lg outline-none hover:bg-slate-300/30"><div title="Assumptions" class="block break-words rounded py-2 grow cursor-pointer">Assumptions</div><button class="self-center flex-none rounded-md group hover:bg-slate-300/30 focus:outline outline-blue-200 outline-2" aria-label="Open Folder" type="button" aria-controls="radix-:Rup8p:" aria-expanded="false" data-state="closed"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="transition-transform duration-300 group-data-[state=open]:rotate-90 text-text-slate-700 dark:text-slate-100" height="1.5rem" width="1.5rem"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg></button></div><div data-state="closed" id="radix-:Rup8p:" hidden="" class="pl-3 pr-[2px] collapsible-content"></div></div><div data-state="closed" class="w-full"><div class="flex flex-row w-full gap-2 px-2 my-1 text-left rounded-lg outline-none hover:bg-slate-300/30"><div title="Validation" class="block break-words rounded py-2 grow cursor-pointer">Validation</div><button class="self-center flex-none rounded-md group hover:bg-slate-300/30 focus:outline outline-blue-200 outline-2" aria-label="Open Folder" type="button" aria-controls="radix-:R16p8p:" aria-expanded="false" data-state="closed"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="transition-transform duration-300 group-data-[state=open]:rotate-90 text-text-slate-700 dark:text-slate-100" height="1.5rem" width="1.5rem"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg></button></div><div data-state="closed" id="radix-:R16p8p:" hidden="" class="pl-3 pr-[2px] collapsible-content"></div></div><div data-state="closed" class="w-full"><div class="flex flex-row w-full gap-2 px-2 my-1 text-left rounded-lg outline-none hover:bg-slate-300/30"><div title="Policy" class="block break-words rounded py-2 grow cursor-pointer">Policy</div><button class="self-center flex-none rounded-md group hover:bg-slate-300/30 focus:outline outline-blue-200 outline-2" aria-label="Open Folder" type="button" aria-controls="radix-:R1ep8p:" aria-expanded="false" data-state="closed"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="transition-transform duration-300 group-data-[state=open]:rotate-90 text-text-slate-700 dark:text-slate-100" height="1.5rem" width="1.5rem"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg></button></div><div data-state="closed" id="radix-:R1ep8p:" hidden="" class="pl-3 pr-[2px] collapsible-content"></div></div></div></nav></div><div class="flex-none py-6 transition-all duration-700 translate-y-6 opacity-0"><a class="flex mx-auto text-gray-700 w-fit hover:text-blue-700 dark:text-gray-200 dark:hover:text-blue-400" href="https://mystmd.org/made-with-myst" target="_blank" rel="noreferrer"><svg style="width:24px;height:24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="none"><g id="icon"><path fill="currentColor" d="M23.8,54.8v-3.6l4.7-0.8V17.5l-4.7-0.8V13H36l13.4,31.7h0.2l13-31.7h12.6v3.6l-4.7,0.8v32.9l4.7,0.8v3.6h-15
+          v-3.6l4.9-0.8V20.8H65L51.4,53.3h-3.8l-14-32.5h-0.1l0.2,17.4v12.1l5,0.8v3.6H23.8z"></path><path fill="#F37726" d="M47,86.9c0-5.9-3.4-8.8-10.1-8.8h-8.4c-5.2,0-9.4-1.3-12.5-3.8c-3.1-2.5-5.4-6.2-6.8-11l4.8-1.6
+          c1.8,5.6,6.4,8.6,13.8,8.8h9.2c6.4,0,10.8,2.5,13.1,7.5c2.3-5,6.7-7.5,13.1-7.5h8.4c7.8,0,12.7-2.9,14.6-8.7l4.8,1.6
+          c-1.4,4.9-3.6,8.6-6.8,11.1c-3.1,2.5-7.3,3.7-12.4,3.8H63c-6.7,0-10,2.9-10,8.8"></path></g></svg><span class="self-center ml-2 text-sm">Made with MyST</span></a></div></div></div><article class="article content article-grid grid-gap"><main class="article-grid subgrid-gap col-screen"><div class="hidden"></div><div id="skip-to-frontmatter" aria-label="article frontmatter" class="mb-8 pt-9"><div class="flex items-center h-6 mb-5 text-sm font-light"><div class="flex-grow"></div><a href="https://github.com/policyengine/policyengine-uk" title="GitHub Repository: policyengine/policyengine-uk" target="_blank" rel="noopener noreferrer" class="text-inherit hover:text-inherit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="1.25rem" height="1.25rem" class="inline-block mr-1 opacity-60 hover:opacity-100"><path d="M12 2.5c-5.4 0-9.8 4.4-9.8 9.7 0 4.3 2.8 8 6.7 9.2.5.1.7-.2.7-.5v-1.8c-2.4.5-3.1-.6-3.3-1.1-.1-.3-.6-1.1-1-1.4-.3-.2-.8-.6 0-.6s1.3.7 1.5 1c.9 1.5 2.3 1.1 2.8.8.1-.6.3-1.1.6-1.3-2.2-.2-4.4-1.1-4.4-4.8 0-1.1.4-1.9 1-2.6-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1 .8-.2 1.6-.3 2.4-.3.8 0 1.7.1 2.4.3 1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.7 1 1.5 1 2.6 0 3.7-2.3 4.6-4.4 4.8.4.3.7.9.7 1.8V21c0 .3.2.6.7.5 3.9-1.3 6.6-4.9 6.6-9.2 0-5.4-4.4-9.8-9.8-9.8z"></path></svg></a><div class="inline-block mr-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="1.25rem" height="1.25rem" class="inline-block"><title>Jupyter Notebook</title><path d="M20.2 1.7c0 .8-.5 1.4-1.3 1.5-.8 0-1.4-.5-1.5-1.3 0-.8.5-1.4 1.3-1.5.8-.1 1.5.5 1.5 1.3zM12 17.9c-3.7 0-7-1.3-8.7-3.3 1.8 4.8 7.1 7.3 11.9 5.5 2.5-.9 4.5-2.9 5.5-5.5-1.7 2-4.9 3.3-8.7 3.3zM12 5.1c3.7 0 7 1.3 8.7 3.3-1.8-4.8-7.1-7.3-11.9-5.5-2.5.9-4.5 2.9-5.5 5.5 1.7-2 5-3.3 8.7-3.3zM6.9 21.8c.1 1-.7 1.8-1.7 1.9-1 .1-1.8-.7-1.9-1.7 0-1 .7-1.8 1.7-1.9 1-.1 1.8.7 1.9 1.7zM3.7 4.6c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1c0 .5-.4 1-1 1z"></path></svg></div><a href="https://github.com/policyengine/policyengine-uk/blob/master/docs/book/index.ipynb" title="Edit This Page" target="_blank" rel="noopener noreferrer" class="text-inherit hover:text-inherit"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" width="1.25rem" height="1.25rem" class="inline-block mr-1 opacity-60 hover:opacity-100"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"></path></svg></a><div class="relative flex inline-block mx-1 grow-0" data-headlessui-state=""><button class="relative ml-2 -mr-1" id="headlessui-menu-button-:Rs8top:" type="button" aria-haspopup="menu" aria-expanded="false" data-headlessui-state=""><span class="sr-only">Downloads</span><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" width="1.25rem" height="1.25rem"><title>Download</title><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"></path></svg></button></div></div><h1 class="mb-0">PolicyEngine-UK</h1><header class="mt-4 not-prose"><div><span class="font-semibold text-sm inline-block"><button class="focus:shadow-[0_0_0_2px] focus:shadow-black outline-none hover:underline" aria-label="Author Details" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:R78top:" data-state="closed">PolicyEngine</button></span></div></header></div><div class="block my-10 lg:sticky lg:z-10 lg:h-0 lg:pt-0 lg:my-0 lg:ml-10 lg:col-margin-right" style="top:60px"><nav></nav></div><div id="skip-to-article"></div><div id="m9UlFuZW2N" class="relative group/block"><p>This book contains an introduction to using PolicyEngine-UK to model UK taxes and benefits. It is currently a work in progress and may be added to. PolicyEngine-UK is a microsimulation model of the UK tax and benefit system: it is a model which calculates variable values over UK entities from given policy parameters and structures. In practice, this gives it two main uses: calculating statistics under current tax and benefit law, and simulating effects of potential new changes to the legislation.</p><p>We’re grateful to the <a target="_blank" rel="noreferrer" href="https://www.iser.essex.ac.uk/research/projects/ukmod" class="">UKMOD</a> team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK’s development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.</p><p>Code examples and outputs are re-run automatically on each new version of PolicyEngine-UK.</p><h2 id="short-demo" class="relative group"><span class="heading-text">Short demo</span><a class="no-underline text-inherit hover:text-inherit inline-block w-0 px-0 translate-x-[10px] font-normal select-none transition-opacity opacity-0 focus:opacity-100 group-hover:opacity-70" href="#short-demo" title="Link to this Section" aria-label="Link to this Section">¶</a></h2><h3 id="baseline-estimation" class="relative group"><span class="heading-text">Baseline estimation</span><a class="no-underline text-inherit hover:text-inherit inline-block w-0 px-0 translate-x-[10px] font-normal select-none transition-opacity opacity-0 focus:opacity-100 group-hover:opacity-70" href="#baseline-estimation" title="Link to this Section" aria-label="Link to this Section">¶</a></h3><p>Calculating, for example, the total Income Tax liability by region can be done with the following code:</p></div><div id="TqtgsBKwji" class="relative group/block"><div class="flex sticky top-[115px] z-10 opacity-90 group-hover/block:opacity-100 group-hover/block:hidden"><div class="flex absolute top-0 right-0"></div></div><div class="hidden sticky top-[80px] z-10 opacity-70 group-hover/block:opacity-100 group-hover/block:flex"><div class="absolute top-0 -right-[28px] flex md:flex-col"></div></div><div class="relative myst-code group not-prose my-5 text-sm shadow hover:shadow-md dark:shadow-2xl dark:shadow-neutral-900 border border-l-4 border-gray-200 border-l-blue-400 dark:border-l-blue-400 dark:border-gray-800"><pre class="block overflow-auto p-3 myst-code-body hljs" style="background-color:unset"><code class="language-python" style="white-space:pre">from policyengine_uk import Microsimulation
+import pandas as pd
 
+ENHANCED_FRS = &quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;
 
-<style>
-  body {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  @media not print {
-    body[data-theme="dark"] {
-      --color-code-background: #202020;
-  --color-code-foreground: #d0d0d0;
-  
-    }
-    @media (prefers-color-scheme: dark) {
-      body:not([data-theme="light"]) {
-        --color-code-background: #202020;
-  --color-code-foreground: #d0d0d0;
-  
-      }
-    }
-  }
-</style></head>
-  <body>
-    
-    <script>
-      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
-    </script>
-    
+sim = Microsimulation(dataset=ENHANCED_FRS)
 
-<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-  <symbol id="svg-toc" viewBox="0 0 24 24">
-    <title>Contents</title>
-    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
-      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
-    </svg>
-  </symbol>
-  <symbol id="svg-menu" viewBox="0 0 24 24">
-    <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
-      <line x1="3" y1="12" x2="21" y2="12"></line>
-      <line x1="3" y1="6" x2="21" y2="6"></line>
-      <line x1="3" y1="18" x2="21" y2="18"></line>
-    </svg>
-  </symbol>
-  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
-    <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
-      <polyline points="9 18 15 12 9 6"></polyline>
-    </svg>
-  </symbol>
-  <symbol id="svg-sun" viewBox="0 0 24 24">
-    <title>Light mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
-      <circle cx="12" cy="12" r="5"></circle>
-      <line x1="12" y1="1" x2="12" y2="3"></line>
-      <line x1="12" y1="21" x2="12" y2="23"></line>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-      <line x1="1" y1="12" x2="3" y2="12"></line>
-      <line x1="21" y1="12" x2="23" y2="12"></line>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-    </svg>
-  </symbol>
-  <symbol id="svg-moon" viewBox="0 0 24 24">
-    <title>Dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
-    </svg>
-  </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
-</svg>
+df = sim.calculate_dataframe(
+    [
+        &quot;household_id&quot;,  # If the first variable is household level, the dataframe will project everything to households. Same for people.
+        &quot;income_tax&quot;,
+        &quot;region&quot;,
+    ],
+    period=2025,
+)
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
-
-
-
-<div class="page">
-  <header class="mobile-header">
-    <div class="header-left">
-      <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
-      </label>
-    </div>
-    <div class="header-center">
-      <a href="#"><div class="brand">PolicyEngine UK documentation</div></a>
-    </div>
-    <div class="header-right">
-      <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
-          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
-          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
-        </button>
-      </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-      </label>
-    </div>
-  </header>
-  <aside class="sidebar-drawer">
-    <div class="sidebar-container">
-      
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
-  
-  <div class="sidebar-logo-container">
-    <img class="sidebar-logo" src="_static/logo.png" alt="Logo"/>
-  </div>
-  
-  <span class="sidebar-brand-text">PolicyEngine UK documentation</span>
-  
-</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
-  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
-  <input type="hidden" name="check_keywords" value="yes">
-  <input type="hidden" name="area" value="default">
-</form>
-<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p class="caption" role="heading"><span class="caption-text">Using the model</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="usage/getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage/simulations.html">Running simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage/scenarios.html">Creating policy scenarios</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Economic assumptions</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="assumptions/growthfactors.html">Economic assumptions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="assumptions/water-bills.html">Water bills projection and uprating</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Validation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="validation/hbai.html">HBAI</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Policy</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="policy/uc-rebalancing.html">Universal Credit rebalancing reforms</a></li>
-</ul>
-
-</div>
-</div>
-
-      </div>
-      
-    </div>
-  </aside>
-  <div class="main">
-    <div class="content">
-      <div class="article-container">
-        <a href="#" class="back-to-top muted-link">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
-          </svg>
-          <span>Back to top</span>
-        </a>
-        <div class="content-icon-container">
-          
-<div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
-              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
-              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
-            </button>
-          </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-          </label>
-        </div>
-        <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="policyengine-uk">
-<h1>PolicyEngine-UK<a class="headerlink" href="#policyengine-uk" title="Permalink to this heading">#</a></h1>
-<p>This book contains an introduction to using PolicyEngine-UK to model UK taxes and benefits. It is currently a work in progress and may be added to. PolicyEngine-UK is a microsimulation model of the UK tax and benefit system: it is a model which calculates variable values over UK entities from given policy parameters and structures. In practice, this gives it two main uses: calculating statistics under current tax and benefit law, and simulating effects of potential new changes to the legislation.</p>
-<p>We’re grateful to the <a class="reference external" href="https://www.iser.essex.ac.uk/research/projects/ukmod">UKMOD</a> team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK’s development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.</p>
-<p>Code examples and outputs are re-run automatically on each new version of PolicyEngine-UK.</p>
-<section id="short-demo">
-<h2>Short demo<a class="headerlink" href="#short-demo" title="Permalink to this heading">#</a></h2>
-<section id="baseline-estimation">
-<h3>Baseline estimation<a class="headerlink" href="#baseline-estimation" title="Permalink to this heading">#</a></h3>
-<p>Calculating, for example, the total Income Tax liability by region can be done with the following code:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Microsimulation</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
-<span class="n">ENHANCED_FRS</span> <span class="o">=</span> <span class="s2">&quot;hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5&quot;</span>
-
-<span class="n">sim</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">)</span>
-
-<span class="n">df</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">calculate_dataframe</span><span class="p">(</span>
-    <span class="p">[</span>
-        <span class="s2">&quot;household_id&quot;</span><span class="p">,</span>  <span class="c1"># If the first variable is household level, the dataframe will project everything to households. Same for people.</span>
-        <span class="s2">&quot;income_tax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;region&quot;</span><span class="p">,</span>
-    <span class="p">],</span>
-    <span class="n">period</span><span class="o">=</span><span class="mi">2025</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
-    <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span>
-<span class="p">)</span> <span class="o">/</span> <span class="mf">1e9</span>  <span class="c1"># Weights automatically applied</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>region
+df.groupby(&quot;region&quot;).income_tax.sum().sort_values(
+    ascending=False
+) / 1e9  # Weights automatically applied</code></pre><button title="Copy to Clipboard" class="inline-flex items-center opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100 active:opacity-100 cursor-pointer ml-2 transition-color duration-200 ease-in-out text-blue-400 hover:text-blue-500 absolute right-1 myst-code-copy-icon top-1" aria-pressed="false" aria-label="Copy code to clipboard"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"></path></svg></button></div><div data-mdast-node-id="xOWEDEN7dfBWqykvgNmcQ" class="max-w-full overflow-y-visible overflow-x-auto m-0 group not-prose relative text-left mb-5"><div class="font-mono text-sm whitespace-pre-wrap"><code><span>region
 LONDON              78.710210
 SOUTH_EAST          75.588976
 EAST_OF_ENGLAND     30.134433
@@ -264,162 +48,30 @@ EAST_MIDLANDS       14.536368
 WALES               10.113785
 NORTH_EAST           7.983999
 NORTHERN_IRELAND     5.428561
-dtype: float64
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="reform-evaluation">
-<h3>Reform evaluation<a class="headerlink" href="#reform-evaluation" title="Permalink to this heading">#</a></h3>
-<p>Below is an example of simulating the effects of a reform (namely, increasing the basic rate of income tax from 20% to 23%).</p>
-<div class="cell tag_hide-input docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell source</p>
-<p class="expanded admonition-title">Hide code cell source</p>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">policyengine_uk.model_api</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+dtype: float64</span></code></div></div></div><div id="BhXrZlrAdU" class="relative group/block"><h3 id="reform-evaluation" class="relative group"><span class="heading-text">Reform evaluation</span><a class="no-underline text-inherit hover:text-inherit inline-block w-0 px-0 translate-x-[10px] font-normal select-none transition-opacity opacity-0 focus:opacity-100 group-hover:opacity-70" href="#reform-evaluation" title="Link to this Section" aria-label="Link to this Section">¶</a></h3><p>Below is an example of simulating the effects of a reform (namely, increasing the basic rate of income tax from 20% to 23%).</p></div><div id="KpKjtjxKGe" class="relative group/block"><div class="flex sticky top-[115px] z-10 opacity-90 group-hover/block:opacity-100 group-hover/block:hidden"><div class="flex absolute top-0 right-0"></div></div><div class="hidden sticky top-[80px] z-10 opacity-70 group-hover/block:opacity-100 group-hover/block:flex"><div class="absolute top-0 -right-[28px] flex md:flex-col"></div></div><details class="myst-dropdown rounded-md my-5 shadow dark:shadow-2xl dark:shadow-neutral-900 overflow-hidden bg-gray-50 dark:bg-stone-800"><summary class="myst-dropdown-header m-0 text-lg font-medium py-1 min-h-[2em] pl-3 cursor-pointer hover:shadow-[inset_0_0_0px_30px_#00000003] dark:hover:shadow-[inset_0_0_0px_30px_#FFFFFF03] bg-gray-100 dark:bg-slate-900"><span class="myst-dropdown-header-title text-neutral-900 dark:text-white"><span class="block float-right text-sm font-thin text-neutral-700 dark:text-neutral-200"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" width="1.5rem" height="1.5rem" class="myst-dropdown-header-icon inline-block pl-2 mr-2 -translate-y-[1px] details-toggle transition-transform"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"></path></svg></span>Source</span></summary><div class="myst-dropdown-body px-4 py-1 details-body"><div class="relative myst-code group not-prose my-5 text-sm shadow hover:shadow-md dark:shadow-2xl dark:shadow-neutral-900 border border-l-4 border-gray-200 border-l-blue-400 dark:border-l-blue-400 dark:border-gray-800"><pre class="block overflow-auto p-3 myst-code-body hljs" style="background-color:unset"><code class="language-python" style="white-space:pre">from policyengine_uk.model_api import *
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">change_tax_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
-    <span class="n">parameters</span><span class="o">.</span><span class="n">gov</span><span class="o">.</span><span class="n">hmrc</span><span class="o">.</span><span class="n">income_tax</span><span class="o">.</span><span class="n">rates</span><span class="o">.</span><span class="n">uk</span><span class="o">.</span><span class="n">brackets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rate</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-        <span class="n">period</span><span class="o">=</span><span class="n">periods</span><span class="o">.</span><span class="n">period</span><span class="p">(</span><span class="s2">&quot;year:2019:10&quot;</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.23</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">parameters</span>
+def change_tax_parameters(parameters):
+    parameters.gov.hmrc.income_tax.rates.uk.brackets[0].rate.update(
+        period=periods.period(&quot;year:2019:10&quot;), value=0.23
+    )
+    return parameters
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">reform</span><span class="p">(</span><span class="n">Reform</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">modify_parameters</span><span class="p">(</span><span class="n">change_tax_parameters</span><span class="p">)</span>
+class reform(Reform):
+    def apply(self):
+        self.modify_parameters(change_tax_parameters)
 
 
-<span class="n">baseline</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">)</span>
-<span class="n">reformed</span> <span class="o">=</span> <span class="n">Microsimulation</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ENHANCED_FRS</span><span class="p">,</span> <span class="n">reform</span><span class="o">=</span><span class="n">reform</span><span class="p">)</span>
-<span class="n">revenue</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">reformed</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="s2">&quot;gov_balance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="o">-</span> <span class="n">baseline</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="s2">&quot;gov_balance&quot;</span><span class="p">,</span> <span class="mi">2025</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="p">)</span>
-<span class="sa">f</span><span class="s2">&quot;Revenue: £</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">revenue</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">bn&quot;</span>
-</pre></div>
-</div>
-</div>
-</details>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;Revenue: £21.3bn&#39;
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-</section>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
-</section>
+baseline = Microsimulation(dataset=ENHANCED_FRS)
+reformed = Microsimulation(dataset=ENHANCED_FRS, reform=reform)
+revenue = (
+    reformed.calculate(&quot;gov_balance&quot;, 2025).sum()
+    - baseline.calc(&quot;gov_balance&quot;, 2025).sum()
+)
+f&quot;Revenue: £{round(revenue / 1e9, 1)}bn&quot;</code></pre><button title="Copy to Clipboard" class="inline-flex items-center opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100 active:opacity-100 cursor-pointer ml-2 transition-color duration-200 ease-in-out text-blue-400 hover:text-blue-500 absolute right-1 myst-code-copy-icon top-1" aria-pressed="false" aria-label="Copy code to clipboard"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"></path></svg></button></div></div></details><div data-mdast-node-id="Wp5_v_Y_pd4o7dbf7-_fJ" class="max-w-full overflow-y-visible overflow-x-auto m-0 group not-prose relative text-left mb-5"><div class="font-mono text-sm whitespace-pre-wrap"><code><span>&#x27;Revenue: £21.3bn&#x27;</span></code></div></div></div><div></div><div class="flex pt-10 mb-10 space-x-4"><a class="flex-1 block p-4 font-normal text-gray-600 no-underline border border-gray-200 rounded shadow-sm group hover:border-blue-600 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 dark:text-gray-100 dark:border-gray-500 hover:shadow-lg dark:shadow-neutral-700" href="/getting-started"><div class="flex h-full align-middle"><div class="flex-grow"><div class="text-xs text-gray-500 dark:text-gray-400">Usage</div>Getting started</div><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" width="1.5rem" height="1.5rem" class="self-center transition-transform group-hover:translate-x-1 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"></path></svg></div></a></div></main></article><script>((a,d)=>{if(!window.history.state||!window.history.state.key){let h=Math.random().toString(32).slice(2);window.history.replaceState({key:h},"")}try{let f=JSON.parse(sessionStorage.getItem(a)||"{}")[d||window.history.state.key];typeof f=="number"&&window.scrollTo(0,f)}catch(h){console.error(h),sessionStorage.removeItem(a)}})("positions", null)</script><link rel="modulepreload" href="/build/entry.client-UNPC4GT3.js"/><link rel="modulepreload" href="/build/_shared/chunk-OCTKKCIL.js"/><link rel="modulepreload" href="/build/_shared/chunk-UAI5KRM7.js"/><link rel="modulepreload" href="/build/_shared/chunk-2NH4LW52.js"/><link rel="modulepreload" href="/build/_shared/chunk-JSE36H2O.js"/><link rel="modulepreload" href="/build/_shared/chunk-HBJK6BW3.js"/><link rel="modulepreload" href="/build/_shared/chunk-HYMQ7M2K.js"/><link rel="modulepreload" href="/build/_shared/chunk-OHOXABTA.js"/><link rel="modulepreload" href="/build/_shared/chunk-OCWQY3HK.js"/><link rel="modulepreload" href="/build/_shared/chunk-C7FW3E47.js"/><link rel="modulepreload" href="/build/_shared/chunk-3CVK3PYF.js"/><link rel="modulepreload" href="/build/_shared/chunk-J6FHCSRC.js"/><link rel="modulepreload" href="/build/_shared/chunk-ND43KHSX.js"/><link rel="modulepreload" href="/build/_shared/chunk-GUCIBHGO.js"/><link rel="modulepreload" href="/build/root-IB5726YR.js"/><link rel="modulepreload" href="/build/_shared/chunk-NBON2RSI.js"/><link rel="modulepreload" href="/build/routes/_index-3KYSPUI6.js"/><script>window.__remixContext = {"url":"/","state":{"loaderData":{"root":{"config":{"version":2,"myst":"1.6.0","options":{"logo":"/build/logo-2bd7d2ab9c2d9ac8ba7bbafb653bd229.png"},"nav":[],"actions":[],"projects":[{"title":"PolicyEngine UK documentation","authors":[{"nameParsed":{"literal":"PolicyEngine","family":"PolicyEngine"},"name":"PolicyEngine","id":"contributors-myst-generated-uid-0"}],"github":"https://github.com/policyengine/policyengine-uk","copyright":"2024","toc":[{"file":"index"},{"children":[{"file":"usage/getting-started"},{"file":"usage/simulations"},{"file":"usage/scenarios"}],"title":"Usage"},{"children":[{"file":"assumptions/growthfactors"},{"file":"assumptions/water-bills"}],"title":"Assumptions"},{"children":[{"file":"validation/hbai"}],"title":"Validation"},{"children":[{"file":"policy/model-baseline"},{"file":"policy/uc-rebalancing"}],"title":"Policy"}],"exports":[],"bibliography":[],"index":"index","pages":[{"level":1,"title":"Usage"},{"slug":"getting-started","title":"Getting started","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"simulations","title":"Running simulations","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"scenarios","title":"Creating policy scenarios","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Assumptions"},{"slug":"growthfactors","title":"Economic assumptions","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"water-bills","title":"Water bills projection and uprating","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Validation"},{"slug":"hbai","title":"HBAI","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Policy"},{"slug":"model-baseline","title":"Model baseline","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"uc-rebalancing","title":"Universal Credit rebalancing reforms","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2}]}]},"CONTENT_CDN_PORT":"3100","MODE":"static"},"routes/_index":{"config":{"version":2,"myst":"1.6.0","options":{"logo":"/build/logo-2bd7d2ab9c2d9ac8ba7bbafb653bd229.png"},"nav":[],"actions":[],"projects":[{"title":"PolicyEngine UK documentation","authors":[{"nameParsed":{"literal":"PolicyEngine","family":"PolicyEngine"},"name":"PolicyEngine","id":"contributors-myst-generated-uid-0"}],"github":"https://github.com/policyengine/policyengine-uk","copyright":"2024","toc":[{"file":"index"},{"children":[{"file":"usage/getting-started"},{"file":"usage/simulations"},{"file":"usage/scenarios"}],"title":"Usage"},{"children":[{"file":"assumptions/growthfactors"},{"file":"assumptions/water-bills"}],"title":"Assumptions"},{"children":[{"file":"validation/hbai"}],"title":"Validation"},{"children":[{"file":"policy/model-baseline"},{"file":"policy/uc-rebalancing"}],"title":"Policy"}],"exports":[],"bibliography":[],"index":"index","pages":[{"level":1,"title":"Usage"},{"slug":"getting-started","title":"Getting started","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"simulations","title":"Running simulations","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"scenarios","title":"Creating policy scenarios","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Assumptions"},{"slug":"growthfactors","title":"Economic assumptions","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"water-bills","title":"Water bills projection and uprating","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Validation"},{"slug":"hbai","title":"HBAI","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Policy"},{"slug":"model-baseline","title":"Model baseline","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"uc-rebalancing","title":"Universal Credit rebalancing reforms","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2}]}]},"page":{"version":2,"kind":"Notebook","sha256":"ec6d40e0530e8cffdaee436ad6a002b129b56714ba657a2ccc6da39374a6da8c","slug":"index","location":"/index.ipynb","dependencies":[],"frontmatter":{"title":"PolicyEngine-UK","content_includes_title":false,"kernelspec":{"name":"python3","display_name":".venv","language":"python"},"authors":[{"nameParsed":{"literal":"PolicyEngine","family":"PolicyEngine"},"name":"PolicyEngine","id":"contributors-myst-generated-uid-0"}],"github":"https://github.com/policyengine/policyengine-uk","copyright":"2024","edit_url":"https://github.com/policyengine/policyengine-uk/blob/master/docs/book/index.ipynb","exports":[{"format":"ipynb","filename":"index.ipynb","url":"/build/index-465722892dd2f0285da92bc29b879caf.ipynb"}]},"widgets":{},"mdast":{"type":"root","children":[{"type":"block","kind":"notebook-content","children":[{"type":"paragraph","position":{"start":{"line":3,"column":1},"end":{"line":3,"column":1}},"children":[{"type":"text","value":"This book contains an introduction to using PolicyEngine-UK to model UK taxes and benefits. It is currently a work in progress and may be added to. PolicyEngine-UK is a microsimulation model of the UK tax and benefit system: it is a model which calculates variable values over UK entities from given policy parameters and structures. In practice, this gives it two main uses: calculating statistics under current tax and benefit law, and simulating effects of potential new changes to the legislation.","position":{"start":{"line":3,"column":1},"end":{"line":3,"column":1}},"key":"zg3TlMl2rg"}],"key":"vEi7LETAjb"},{"type":"paragraph","position":{"start":{"line":5,"column":1},"end":{"line":5,"column":1}},"children":[{"type":"text","value":"We’re grateful to the ","position":{"start":{"line":5,"column":1},"end":{"line":5,"column":1}},"key":"fwQNzCIhrY"},{"type":"link","url":"https://www.iser.essex.ac.uk/research/projects/ukmod","position":{"start":{"line":5,"column":1},"end":{"line":5,"column":1}},"children":[{"type":"text","value":"UKMOD","position":{"start":{"line":5,"column":1},"end":{"line":5,"column":1}},"key":"wZhTt47ke2"}],"urlSource":"https://www.iser.essex.ac.uk/research/projects/ukmod","key":"nEH0dZ7kDm"},{"type":"text","value":" team for publishing descriptions of their model; our ability to reference these descriptions accelerated OpenFisca UK’s development. UKMOD is maintained, developed and managed by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex.","position":{"start":{"line":5,"column":1},"end":{"line":5,"column":1}},"key":"uoeIBMB4MA"}],"key":"NWF4aHSfTl"},{"type":"paragraph","position":{"start":{"line":7,"column":1},"end":{"line":7,"column":1}},"children":[{"type":"text","value":"Code examples and outputs are re-run automatically on each new version of PolicyEngine-UK.","position":{"start":{"line":7,"column":1},"end":{"line":7,"column":1}},"key":"I4bLwm2kUf"}],"key":"InDTnvCQgu"},{"type":"heading","depth":2,"position":{"start":{"line":9,"column":1},"end":{"line":9,"column":1}},"children":[{"type":"text","value":"Short demo","position":{"start":{"line":9,"column":1},"end":{"line":9,"column":1}},"key":"uRYHYgrxJF"}],"identifier":"short-demo","label":"Short demo","html_id":"short-demo","implicit":true,"key":"MYxcbVqB52"},{"type":"heading","depth":3,"position":{"start":{"line":11,"column":1},"end":{"line":11,"column":1}},"children":[{"type":"text","value":"Baseline estimation","position":{"start":{"line":11,"column":1},"end":{"line":11,"column":1}},"key":"pKCADPLRZK"}],"identifier":"baseline-estimation","label":"Baseline estimation","html_id":"baseline-estimation","implicit":true,"key":"dijzhCeLGf"},{"type":"paragraph","position":{"start":{"line":13,"column":1},"end":{"line":13,"column":1}},"children":[{"type":"text","value":"Calculating, for example, the total Income Tax liability by region can be done with the following code:","position":{"start":{"line":13,"column":1},"end":{"line":13,"column":1}},"key":"Rh0oKcal9h"}],"key":"RBrI5REG86"}],"key":"m9UlFuZW2N"},{"type":"block","kind":"notebook-code","children":[{"type":"code","lang":"python","executable":true,"value":"from policyengine_uk import Microsimulation\nimport pandas as pd\n\nENHANCED_FRS = \"hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5\"\n\nsim = Microsimulation(dataset=ENHANCED_FRS)\n\ndf = sim.calculate_dataframe(\n    [\n        \"household_id\",  # If the first variable is household level, the dataframe will project everything to households. Same for people.\n        \"income_tax\",\n        \"region\",\n    ],\n    period=2025,\n)\n\ndf.groupby(\"region\").income_tax.sum().sort_values(\n    ascending=False\n) / 1e9  # Weights automatically applied","key":"biDNE1VeRu"},{"type":"output","id":"xOWEDEN7dfBWqykvgNmcQ","data":[{"output_type":"execute_result","execution_count":9,"metadata":{},"data":{"text/plain":{"content":"region\nLONDON              78.710210\nSOUTH_EAST          75.588976\nEAST_OF_ENGLAND     30.134433\nWEST_MIDLANDS       23.276691\nSCOTLAND            23.037309\nNORTH_WEST          20.306150\nSOUTH_WEST          17.589321\nYORKSHIRE           15.903155\nEAST_MIDLANDS       14.536368\nWALES               10.113785\nNORTH_EAST           7.983999\nNORTHERN_IRELAND     5.428561\ndtype: float64","content_type":"text/plain"}}}],"key":"wm16cth9sG"}],"key":"TqtgsBKwji"},{"type":"block","kind":"notebook-content","children":[{"type":"heading","depth":3,"position":{"start":{"line":1,"column":1},"end":{"line":1,"column":1}},"children":[{"type":"text","value":"Reform evaluation","position":{"start":{"line":1,"column":1},"end":{"line":1,"column":1}},"key":"j0HaJO80ge"}],"identifier":"reform-evaluation","label":"Reform evaluation","html_id":"reform-evaluation","implicit":true,"key":"tK3Cimd6V8"},{"type":"paragraph","position":{"start":{"line":3,"column":1},"end":{"line":3,"column":1}},"children":[{"type":"text","value":"Below is an example of simulating the effects of a reform (namely, increasing the basic rate of income tax from 20% to 23%).","position":{"start":{"line":3,"column":1},"end":{"line":3,"column":1}},"key":"FyarevAWUF"}],"key":"lpfwN3Xgl7"}],"key":"BhXrZlrAdU"},{"type":"block","kind":"notebook-code","data":{"tags":[]},"children":[{"type":"code","lang":"python","executable":true,"value":"from policyengine_uk.model_api import *\n\n\ndef change_tax_parameters(parameters):\n    parameters.gov.hmrc.income_tax.rates.uk.brackets[0].rate.update(\n        period=periods.period(\"year:2019:10\"), value=0.23\n    )\n    return parameters\n\n\nclass reform(Reform):\n    def apply(self):\n        self.modify_parameters(change_tax_parameters)\n\n\nbaseline = Microsimulation(dataset=ENHANCED_FRS)\nreformed = Microsimulation(dataset=ENHANCED_FRS, reform=reform)\nrevenue = (\n    reformed.calculate(\"gov_balance\", 2025).sum()\n    - baseline.calc(\"gov_balance\", 2025).sum()\n)\nf\"Revenue: £{round(revenue / 1e9, 1)}bn\"","visibility":"hide","key":"uC0AMdbwx6"},{"type":"output","id":"Wp5_v_Y_pd4o7dbf7-_fJ","data":[{"output_type":"execute_result","execution_count":10,"metadata":{},"data":{"text/plain":{"content":"'Revenue: £21.3bn'","content_type":"text/plain"}}}],"visibility":"show","key":"O5eYj3Rtfy"}],"visibility":"show","key":"KpKjtjxKGe"}],"key":"xq8W1ne6ZN"},"references":{"cite":{"order":[],"data":{}}},"footer":{"navigation":{"next":{"title":"Getting started","url":"/getting-started","group":"Usage"}}},"domain":"http://localhost:3000"},"project":{"title":"PolicyEngine UK documentation","authors":[{"nameParsed":{"literal":"PolicyEngine","family":"PolicyEngine"},"name":"PolicyEngine","id":"contributors-myst-generated-uid-0"}],"github":"https://github.com/policyengine/policyengine-uk","copyright":"2024","toc":[{"file":"index"},{"children":[{"file":"usage/getting-started"},{"file":"usage/simulations"},{"file":"usage/scenarios"}],"title":"Usage"},{"children":[{"file":"assumptions/growthfactors"},{"file":"assumptions/water-bills"}],"title":"Assumptions"},{"children":[{"file":"validation/hbai"}],"title":"Validation"},{"children":[{"file":"policy/model-baseline"},{"file":"policy/uc-rebalancing"}],"title":"Policy"}],"exports":[],"bibliography":[],"index":"index","pages":[{"level":1,"title":"Usage"},{"slug":"getting-started","title":"Getting started","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"simulations","title":"Running simulations","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"scenarios","title":"Creating policy scenarios","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Assumptions"},{"slug":"growthfactors","title":"Economic assumptions","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"water-bills","title":"Water bills projection and uprating","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Validation"},{"slug":"hbai","title":"HBAI","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"level":1,"title":"Policy"},{"slug":"model-baseline","title":"Model baseline","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2},{"slug":"uc-rebalancing","title":"Universal Credit rebalancing reforms","description":"","date":"","thumbnail":"","thumbnailOptimized":"","banner":"","bannerOptimized":"","tags":[],"level":2}]}}},"actionData":null,"errors":null},"future":{"unstable_dev":false,"unstable_postcss":false,"unstable_tailwind":false,"v2_errorBoundary":true,"v2_headers":true,"v2_meta":true,"v2_normalizeFormMethod":true,"v2_routeConvention":true}};</script><script type="module" async="">import "/build/manifest-B2B2E6A5.js";
+import * as route0 from "/build/root-IB5726YR.js";
+import * as route1 from "/build/routes/_index-3KYSPUI6.js";
+window.__remixRouteModules = {"root":route0,"routes/_index":route1};
 
-    <script type="text/x-thebe-config">
-    {
-        requestKernel: true,
-        binderOptions: {
-            repo: "binder-examples/jupyter-stacks-datascience",
-            ref: "master",
-        },
-        codeMirrorConfig: {
-            theme: "abcdef",
-            mode: "python"
-        },
-        kernelOptions: {
-            name: "python3",
-            path: "./."
-        },
-        predefinedOutput: true
-    }
-    </script>
-    <script>kernelName = 'python3'</script>
-        </article>
-      </div>
-      <footer>
-        
-        <div class="related-pages">
-          <a class="next-page" href="usage/getting-started.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">Getting started</div>
-              </div>
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-            </a>
-          
-        </div>
-        <div class="bottom-of-page">
-          <div class="left-details">
-            <div class="copyright">
-                Copyright &#169; 2024
-            </div>
-            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
-            
-            <a href="https://github.com/pradyunsg/furo">Furo</a>
-            
-          </div>
-          <div class="right-details">
-            
-          </div>
-        </div>
-        
-      </footer>
-    </div>
-    <aside class="toc-drawer">
-      
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">PolicyEngine-UK</a><ul>
-<li><a class="reference internal" href="#short-demo">Short demo</a><ul>
-<li><a class="reference internal" href="#baseline-estimation">Baseline estimation</a></li>
-<li><a class="reference internal" href="#reform-evaluation">Reform evaluation</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
-      
-      
-    </aside>
-  </div>
-</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/furo.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js"></script>
-    <script>let toggleHintShow = 'Click to show';</script>
-    <script>let toggleHintHide = 'Click to hide';</script>
-    <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    </body>
-</html>
+import("/build/entry.client-UNPC4GT3.js");</script></body></html>
