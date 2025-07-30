@@ -1,0 +1,6 @@
+- bump: minor
+  changes:
+    added:
+    - Docs upgraded to jupyter book 2.
+    - Model baseline page added.
+    - Capital gains tax baseline updated.

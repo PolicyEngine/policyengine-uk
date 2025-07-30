@@ -80,3 +80,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+
+# Docs
+**/_build/
