@@ -1757,3 +1757,10 @@
     changed:
     - HBAI benefits included at top level.
   date: 2025-07-29 15:40:04
+- bump: minor
+  changes:
+    added:
+    - Docs upgraded to jupyter book 2.
+    - Model baseline page added.
+    - Capital gains tax baseline updated.
+  date: 2025-07-30 14:17:20
