@@ -27,6 +27,7 @@ dependencies = [
     "policyengine-core>=3.19.3",
     "microdf-python>=1.0.2",
     "pydantic>=2.11.7",
+    "jupyter-book>=2.0.0a0",
 ]
 
 [project.urls]
