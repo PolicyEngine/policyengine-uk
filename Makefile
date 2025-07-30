@@ -21,7 +21,6 @@ update-tests:
 	python policyengine_uk/tests/microsimulation/update_reform_impacts.py
 
 documentation:
-	pip install --pre "jupyter-book>=2"
 	cd docs/book && jupyter book build
 	python docs/book/add_plotly_to_book.py docs/book/_build
 
