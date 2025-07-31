@@ -117,6 +117,8 @@ class Simulation(CoreSimulation):
 
         # Apply structural modifiers
 
+        self.tax_benefit_system.reset_parameter_caches()
+
         if scenario is not None:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
