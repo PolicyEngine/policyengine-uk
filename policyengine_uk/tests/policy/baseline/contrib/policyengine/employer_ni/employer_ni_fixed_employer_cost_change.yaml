@@ -1,0 +1,105 @@
+- name: Baseline scenario returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 50000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: Low income below threshold returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 8000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: Zero employee incidence returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 50000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+    gov.contrib.policyengine.employer_ni.employee_incidence: 0
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: High income baseline scenario returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 100000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: With employer pension contributions baseline returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 50000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 5000
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: With statutory benefits baseline returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 45000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+    statutory_sick_pay: 2000
+    statutory_maternity_pay: 3000
+    statutory_paternity_pay: 0
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: Income exactly at threshold baseline returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 9100
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: Income slightly above threshold baseline returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 9500
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: Pension contribution exemption disabled baseline returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 50000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 5000
+    gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions: false
+  output:
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: Different incidence rate baseline returns zero
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    employment_income_before_lsr: 50000
+    employment_income_behavioral_response: 0
+    employer_pension_contributions: 0
+    gov.contrib.policyengine.employer_ni.employee_incidence: 0.5
+  output:
+    employer_ni_fixed_employer_cost_change: 0
