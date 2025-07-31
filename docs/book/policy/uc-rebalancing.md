@@ -1,10 +1,14 @@
 # Universal Credit rebalancing reforms
 
+```{note}
 The Universal Credit rebalancing reforms represent changes to Universal Credit provisions introduced through the Universal Credit Bill. These reforms take effect from April 2026 and are designed to adjust benefit levels and eligibility criteria.
+```
 
 ## Overview
 
-The reforms consist of two main components:
+```{important}
+The reforms consist of two main components: health element changes for new claimants and standard allowance uplifts.
+```
 
 1. **Health element changes for new claimants**: New Universal Credit claimants from April 2026 onwards receive a fixed health element amount, while existing claimants continue to receive inflation-linked increases.
 
@@ -34,7 +38,9 @@ These uplifts are applied to the previous year's standard allowance amount and c
 
 ## Implementation
 
-The reforms are implemented through:
+```{tip}
+The reforms are implemented through parameters, scenario modifiers, and scenarios that work together to enable policy analysis.
+```
 
 - **Parameters**: Three YAML files define the reform's activation status, health element amount for new claimants, and standard allowance uplift rates.
 - **Scenario modifier**: The `add_universal_credit_reform` function applies the changes to Universal Credit calculations during microsimulation.

@@ -1,10 +1,14 @@
 # Economic assumptions
 
+```{note}
 We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's Economic and Fiscal Outlook ([March 2025](https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/)) unless we specify otherwise.
+```
 
 ## Consumer price index
 
+```{important}
 We use the OBR's CPI projections to drive most benefit and consumption variables.
+```
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------|------|------|------|------|------|------|------|------|
@@ -17,7 +21,9 @@ We apply CPI to these variables:
 
 ## Average earnings
 
+```{note}
 We apply the OBR's wage growth forecasts to employment-related variables.
+```
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------|------|------|------|------|------|------|------|------|

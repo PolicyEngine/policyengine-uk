@@ -1,6 +1,8 @@
 # Model baseline
 
+```{note}
 PolicyEngine UK models the UK tax and benefit system as of 2025, incorporating major reforms from 2020-2025. This page documents the key policy changes by year, working backwards from 2025, showing how each reform is implemented in the codebase.
+```
 
 ## 2025 reforms
 
@@ -88,7 +90,11 @@ Emergency measures included a [£20 weekly increase to Universal Credit standard
 
 ## Current baseline (2025)
 
-The model baseline includes all reforms above, resulting in:
+```{important}
+The model baseline includes all reforms above, incorporating the current UK tax and benefit system parameters.
+```
+
+Key features:
 - **Income tax**: 20%/40%/45% rates with personal allowance of £12,570 and higher rate threshold of £50,270
 - **National Insurance**: 8% employee rate, 15% employer rate, 6% self-employed rate
 - **Capital gains tax**: 18%/24% rates with £3,000 annual exempt amount
@@ -97,7 +103,11 @@ The model baseline includes all reforms above, resulting in:
 
 ## What is not modelled
 
-The model does not include:
+```{warning}
+The model does not include several announced reforms and tax policies that are either modelled as scenarios or not implemented.
+```
+
+Notable exclusions:
 - **PIP reform announced in Autumn Statement 2023**: The government announced reforms to Personal Independence Payment assessments and eligibility criteria, phasing out 25% of claimants between 2025-29. These reforms are [defined as a scenario](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/scenarios/pip_reform.py) but not included in the baseline model
 - **Non-domiciled taxation changes**: Remittance basis abolition and four-year exemption regime from fiscal year 2025-26 are not modelled
 - **Non-UK resident stamp duty surcharge**: 2% additional rate from fiscal year 2021-22 is not modelled

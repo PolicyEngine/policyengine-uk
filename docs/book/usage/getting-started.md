@@ -2,7 +2,11 @@
 
 PolicyEngine UK helps you analyse the UK tax and benefit system in two main ways: simulating policies for specific households, or running large-scale microsimulation analyses. The first requires just a few minutes of setup, while the second needs access to survey data and takes a bit longer to configure.
 
-If possible, use Google Colab - it's free and ensures everyone uses the same computing environment. The full microsimulation model needs just this snippet:
+```{tip}
+If possible, use Google Colab - it's free and ensures everyone uses the same computing environment.
+```
+
+The full microsimulation model needs just this snippet:
 
 ```python
 !export HUGGING_FACE_TOKEN=<your_token>
@@ -50,7 +54,11 @@ income_tax = simulation.calculate("income_tax", 2025)
 print(f"Income tax: £{income_tax[0]:.2f}")
 ```
 
-This gives us £3,486 in income tax. The structure might look complex at first, but it reflects how the UK tax system works - people belong to benefit units (families for benefit purposes) and households (for housing costs and council tax).
+This gives us £3,486 in income tax.
+
+```{note}
+The structure might look complex at first, but it reflects how the UK tax system works - people belong to benefit units (families for benefit purposes) and households (for housing costs and council tax).
+```
 
 ## Analysing a policy reform
 
@@ -71,11 +79,17 @@ increase = reformed_tax - baseline_tax
 print(f"Tax increase: £{increase:.2f}")
 ```
 
-The reform increases this person's tax by £871.50 per year. Policy parameters use a hierarchical structure - here we're changing the first UK income tax rate (`uk[0].rate`), which is the basic rate.
+The reform increases this person's tax by £871.50 per year.
+
+```{important}
+Policy parameters use a hierarchical structure - here we're changing the first UK income tax rate (`uk[0].rate`), which is the basic rate.
+```
 
 ## Running microsimulation analyses
 
-To analyse policies across the entire population, you'll need survey data. PolicyEngine provides processed datasets via HuggingFace, but you'll need an account and access token:
+```{warning}
+To analyse policies across the entire population, you'll need survey data. PolicyEngine provides processed datasets via HuggingFace, but you'll need an account and access token.
+```
 
 1. Create a [HuggingFace account](https://huggingface.co)
 2. Generate a personal access token in your settings
@@ -121,6 +135,10 @@ reformed_income = reformed.calculate("household_net_income", 2025)
 
 revenue = -(reformed_income - baseline_income).sum() / 1e9
 print(f"Additional revenue: £{revenue:.1f}bn per year")
+```
+
+```{note}
+Revenue is calculated as the negative of household net income changes - when households have less net income, government revenue increases.
 ```
 
 The reform would raise approximately £35.5bn annually.
@@ -174,7 +192,11 @@ print(f"Total income tax: £{total_tax:.2f}")
 
 ## Next steps
 
-You're now ready to explore PolicyEngine UK further. The [PolicyEngine web app](https://policyengine.org) includes a 'Reproduce in Python' section at the bottom of each page, which generates code snippets for any household or reform you create there.
+You're now ready to explore PolicyEngine UK further.
+
+```{tip}
+The [PolicyEngine web app](https://policyengine.org) includes a 'Reproduce in Python' section at the bottom of each page, which generates code snippets for any household or reform you create there.
+```
 
 For more detailed guidance, see:
 - [Simulations](simulations.md) - comprehensive guide to running simulations

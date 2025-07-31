@@ -1,6 +1,10 @@
 # HBAI
 
-PolicyEngine UK includes variables that match to the Households Below Average Income (HBAI) income concepts. These are:
+```{note}
+PolicyEngine UK includes variables that match to the Households Below Average Income (HBAI) income concepts.
+```
+
+These are:
 
 - `hbai_household_net_income`: Household net income, before housing costs
 - `hbai_household_net_income_ahc`: Household net income, after housing costs
@@ -9,7 +13,9 @@ PolicyEngine UK includes variables that match to the Households Below Average In
 
 These variables are used in the HBAI income distribution and poverty [statistics](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2024/households-below-average-income-an-analysis-of-the-uk-income-distribution-fye-1995-to-fye-2024), which are published by the Department for Work and Pensions (DWP) in the UK. The HBAI income concepts are defined [here](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023#income-definition).
 
+```{important}
 The table below shows how the HBAI income components map to PolicyEngine variables. The HBAI income definition is based on the income of all members of a household, and includes various sources of income, subtractions, and housing costs (for the AHC variant).
+```
 
 | HBAI component | PolicyEngine variable/notes |
 |------|-------------|
@@ -41,7 +47,9 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 ## Nowcasting/forecasting
 
 
+```{tip}
 Each of the variables above is either derived from other variables, or is a direct input variable. Direct input variables are uprated in future years according to economic indices, specified in the table below.
+```
 
 | Variable | Index | Notes |
 |----------|-------|-------|
