@@ -252,6 +252,33 @@ print(f"Poverty rate change: {poverty_change:.1%}")
 
 ## Advanced techniques
 
+### Understanding caching behavior
+
+```{warning}
+Variables and parameters are cached once calculated to improve performance, but this can affect dynamic scenarios.
+```
+
+```python
+# Variables are cached once you calculate them
+income_tax = sim.calculate("income_tax", 2025)  # Cached after first calculation
+# Subsequent calls return the cached value unless inputs change
+
+# To insert new values, use set_input with arrays
+current_income = sim.calculate("employment_income", 2025)
+new_income = current_income * 0 + 35_000  # Create array with new values
+sim.set_input("employment_income", 2025, new_income)  # This will invalidate related caches
+
+# Parameters are also cached when requested
+parameters = sim.tax_benefit_system.parameters(2025)  # Cached for 2025
+
+# If you have a reform that changes parameters after requesting them:
+scenario = Scenario(parameter_changes={
+    "gov.hmrc.income_tax.rates.uk[0].rate": 0.25
+})
+# The parameter change won't take effect unless you reset the cache:
+sim.tax_benefit_system.reset_parameter_caches()
+```
+
 ### Calculating multiple variables efficiently
 
 Instead of calculating variables one by one, you can get multiple results at once using the built-in `calculate_dataframe` method:
