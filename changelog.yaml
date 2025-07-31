@@ -1764,3 +1764,8 @@
     - Model baseline page added.
     - Capital gains tax baseline updated.
   date: 2025-07-30 14:17:20
+- bump: patch
+  changes:
+    fixed:
+    - Bug caused by not resetting parameter caches.
+  date: 2025-07-31 13:39:16
