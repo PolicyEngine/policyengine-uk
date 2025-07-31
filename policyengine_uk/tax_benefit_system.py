@@ -56,6 +56,13 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
     auto_carry_over_input_variables: bool = True
 
+    def reset_parameter_caches(self):
+        """Reset all caches in the tax-benefit system."""
+        self._parameters_at_instant_cache = {}
+        for parameter in self.parameters.get_descendants():
+            parameter._at_instant_cache = {}
+        self.parameters._at_instant_cache = {}
+
     def reset_parameters(self) -> None:
         """Reset parameters by reloading from the parameters directory."""
         self._parameters_at_instant_cache = {}
@@ -90,6 +97,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters.gov = convert_to_fiscal_year_parameters(
             self.parameters.gov
         )
+        self.reset_parameter_caches()
 
     def __init__(self):
         """Initialize the UK tax-benefit system with entities and parameters."""

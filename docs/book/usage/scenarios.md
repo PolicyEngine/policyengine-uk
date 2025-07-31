@@ -33,6 +33,10 @@ print(f"Income tax under 15% basic rate: £{income_tax:.2f}")
 
 Under this scenario, this person would pay £2,486 instead of the current £4,486 - a reduction of £2,000 per year due to the lower tax rate.
 
+```{note}
+Scenarios apply policy changes without modifying your original simulation, allowing easy comparison between different policy options.
+```
+
 ## Understanding parameter paths
 
 PolicyEngine UK organises policy parameters in a hierarchical structure. Each parameter has a path that describes where it sits in the system:
@@ -54,15 +58,20 @@ PolicyEngine UK organises policy parameters in a hierarchical structure. Each pa
 "gov.hmrc.child_benefit.rates.additional_child" # Additional children rate
 ```
 
+```{tip}
 You can find parameter paths by exploring the PolicyEngine web app or looking in the `parameters/` directory of the codebase.
+```
 
 ## Creating comprehensive reform packages
 
 Real policy proposals often involve multiple changes. Here's how to create a comprehensive reform:
 
+```{important}
+This represents the kind of coordinated policy change you might see in a budget - real reforms often involve multiple interacting changes.
+```
+
 ```python
 # A comprehensive package that increases Universal Credit support while adjusting income tax
-# This represents the kind of coordinated policy change you might see in a budget
 welfare_reform = Scenario(parameter_changes={
     # Increase UC standard allowances
     "gov.dwp.universal_credit.standard_allowance.single.OVER_25": 500,
@@ -108,7 +117,9 @@ print(f"Monthly net income: £{net_income/12:.2f}")
 
 ## Combining scenarios
 
-You can combine different scenarios using the `+` operator, which is useful for testing different combinations of policies:
+```{tip}
+You can combine different scenarios using the `+` operator, which is useful for testing different combinations of policies.
+```
 
 ```python
 # Create separate scenarios for different policy areas
@@ -146,6 +157,10 @@ Beyond simple parameter changes, you sometimes need scenarios that make structur
 ### Creating a two-child limit repeal scenario
 
 The two-child limit restricts Universal Credit child elements to the first two children. Here's how to build a scenario that removes this restriction:
+
+```{note}
+The two-child limit is controlled by this parameter - setting it to infinity effectively removes the limit.
+```
 
 ```python
 import numpy as np
@@ -189,7 +204,11 @@ print(f"UC increase from third child: £{increase:.2f} per month")
 
 ### Building a benefit cap reindexing scenario
 
-The benefit cap hasn't risen with inflation since 2016. Here's how to create a scenario that automatically indexes it to CPI:
+```{warning}
+The benefit cap hasn't risen with inflation since 2016.
+```
+
+Here's how to create a scenario that automatically indexes it to CPI:
 
 ```python
 from policyengine_uk import Scenario, Simulation
@@ -255,6 +274,10 @@ print(f"Benefit cap - frozen: £{baseline_cap:.0f}/year, indexed: £{reformed_ca
 
 Some reforms phase in over time:
 
+```{note}
+A scenario that gradually increases the personal allowance over four years - this kind of phasing helps manage fiscal costs and economic adjustment.
+```
+
 ```python
 # A scenario that gradually increases the personal allowance over four years
 # This kind of phasing helps manage fiscal costs and economic adjustment
@@ -285,7 +308,11 @@ for year in [2025, 2026, 2027, 2028]:
 
 ### Creating complex scenarios with simulation modifiers
 
-Some policy changes require modifying individual records rather than just changing parameters. Here's how to build a scenario that phases out PIP payments for some claimants over time:
+```{important}
+Some policy changes require modifying individual records rather than just changing parameters.
+```
+
+Here's how to build a scenario that phases out PIP payments for some claimants over time:
 
 ```python
 import numpy as np
@@ -535,11 +562,13 @@ for name, scenario in scenarios:
 
 ## Practical tips for scenario design
 
+```{tip}
 - Start simple and build complexity gradually
 - Test scenarios on multiple household types to understand different impacts
 - Use meaningful parameter names and document your choices
 - Combine related changes logically (tax reforms with tax reforms, benefit changes with benefit changes)
 - Always check the fiscal impact of major reforms
 - Consider unintended interactions between different policy areas
+```
 
 These techniques let you model complex policy changes that go beyond simple parameter adjustments. Simulation modifiers give you complete control over how the tax-benefit system works, allowing you to implement everything from gradual phase-outs to dynamic eligibility changes. The key is to understand the underlying data structures and use them thoughtfully to represent real policy proposals.

@@ -35,6 +35,10 @@ print(f"Income tax: £{income_tax[0]:.2f}")
 
 This creates a simulation for one person and calculates their annual income tax liability. The result shows they would pay £3,486 per year in income tax.
 
+```{tip}
+All calculations in PolicyEngine UK return arrays, even for single-person simulations. Use `[0]` to get the first (and only) result, or `.mean()` for the average across all entities.
+```
+
 ## Understanding the situation structure
 
 The situation dictionary has three main sections:
@@ -95,11 +99,17 @@ in_poverty = sim.calculate("in_poverty", 2025)
 marginal_tax_rate = sim.calculate("marginal_tax_rate", 2025)
 ```
 
+```{note}
 These calculations return arrays because simulations can handle multiple people, benefit units or households simultaneously. Each variable gives you results at the appropriate level - income tax is calculated per person, Universal Credit per benefit unit, and council tax per household.
+```
 
 ## Simulating policy scenarios
 
 To test policy changes, create a scenario and apply it to your simulation. This example shows what happens when we increase Universal Credit's standard allowance for single people over 25 from the current rate to £500 per month:
+
+```{note}
+Scenarios create reformed simulations without modifying your original baseline simulation. This allows easy comparison between policy options.
+```
 
 ```python
 from policyengine_uk import Scenario
@@ -124,6 +134,10 @@ print(f"Average UC increase: £{difference:.2f} per month")
 ## Working with families and children
 
 Family situations require more detailed setup:
+
+```{important}
+Each person must belong to exactly one benefit unit and one household. Children should be included in the same benefit unit as their parents for accurate benefit calculations.
+```
 
 ```python
 family_with_children = {
@@ -191,11 +205,17 @@ total_tax = sim_from_df.calculate("income_tax", 2025).sum()
 print(f"Total income tax from all people: £{total_tax:.2f}")
 ```
 
-The column naming follows the pattern `variable_name__year` for time-varying variables.
+```{important}
+The column naming follows the pattern `variable_name__year` for time-varying variables. Note the double underscore `__` between the variable name and year.
+```
 
 ### From survey datasets
 
 For population-level analysis, use survey data:
+
+```{note}
+The Enhanced FRS dataset contains representative survey data with weights that allow you to estimate outcomes for the entire UK population.
+```
 
 ```python
 from policyengine_uk import Microsimulation
@@ -240,7 +260,13 @@ reformed_net = reformed.calculate("household_net_income", 2025)
 # The negative of the income change gives us the revenue change
 revenue_change = -(reformed_net - baseline_net).sum() / 1e9
 print(f"Additional government revenue: £{revenue_change:.1f}bn")
+```
 
+```{note}
+Revenue calculations use the accounting identity: when household net income decreases, government revenue increases by the same amount (assuming no behavioural responses).
+```
+
+```python
 # Analyse distributional impact by looking at poverty rates
 # in_poverty is a boolean variable, so mean() gives us the poverty rate
 poverty_baseline = baseline.calculate("in_poverty", 2025).mean()
@@ -251,6 +277,33 @@ print(f"Poverty rate change: {poverty_change:.1%}")
 ```
 
 ## Advanced techniques
+
+### Understanding caching behavior
+
+```{warning}
+Variables and parameters are cached once calculated to improve performance, but this can affect dynamic scenarios.
+```
+
+```python
+# Variables are cached once you calculate them
+income_tax = sim.calculate("income_tax", 2025)  # Cached after first calculation
+# Subsequent calls return the cached value unless inputs change
+
+# To insert new values, use set_input with arrays
+current_income = sim.calculate("employment_income", 2025)
+new_income = current_income * 0 + 35_000  # Create array with new values
+sim.set_input("employment_income", 2025, new_income)  # This will invalidate related caches
+
+# Parameters are also cached when requested
+parameters = sim.tax_benefit_system.parameters(2025)  # Cached for 2025
+
+# If you have a reform that changes parameters after requesting them:
+scenario = Scenario(parameter_changes={
+    "gov.hmrc.income_tax.rates.uk[0].rate": 0.25
+})
+# The parameter change won't take effect unless you reset the cache:
+sim.tax_benefit_system.reset_parameter_caches()
+```
 
 ### Calculating multiple variables efficiently
 
@@ -320,6 +373,10 @@ print(f"Total with 10% higher weights: £{weighted_total/1e9:.1f}bn")
 
 When simulations don't behave as expected:
 
+```{tip}
+Trace through calculations step by step to understand how PolicyEngine UK derives results. Each complex variable builds on simpler components.
+```
+
 ```python
 # Check individual components to understand the tax calculation
 # These help you trace through how income tax is calculated step by step
@@ -342,9 +399,11 @@ print(f"Average children per household: {children_per_household:.1f}")
 
 ## Performance tips
 
+```{tip}
 - Use `Microsimulation` for population analysis, `Simulation` for household-level work
-- Calculate multiple variables in batches rather than individually
+- Calculate multiple variables in batches rather than individually  
 - For large datasets, consider calculating subsets first to verify your logic
 - Cache simulation results when running the same calculation multiple times
+```
 
 The simulation system is designed to be flexible and powerful. Start with simple examples and gradually build up to more complex analyses as you become familiar with the structure and capabilities.

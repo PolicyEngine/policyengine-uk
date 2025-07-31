@@ -29,7 +29,7 @@ project:
       - file: docs/book/policy/uc-rebalancing
 site:
   options:
-    logo: logo.png
+    logo: docs/book/logo.png
   template: book-theme
   extensions:
     - sphinx.ext.autodoc
