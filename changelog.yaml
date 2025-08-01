@@ -1769,3 +1769,8 @@
     fixed:
     - Bug caused by not resetting parameter caches.
   date: 2025-07-31 13:39:16
+- bump: patch
+  changes:
+    fixed:
+    - Bug in NI rates.
+  date: 2025-08-01 09:00:11
