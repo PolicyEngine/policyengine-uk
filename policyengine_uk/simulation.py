@@ -36,6 +36,7 @@ class Simulation(CoreSimulation):
 
     default_input_period: int = 2025
     default_calculation_period: int = 2025
+    baseline: "Simulation"
 
     def __init__(
         self,
@@ -97,15 +98,16 @@ class Simulation(CoreSimulation):
         elif isinstance(dataset, UKMultiYearDataset):
             self.build_from_multi_year_dataset(dataset)
         elif dataset is None:
-            self.build_from_url(
-                "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
+            self.build_from_single_year_dataset(
+                UKSingleYearDataset(
+                    "/Users/nikhilwoodruff/policyengine/policyengine-uk/enhanced_frs_2023_24.h5"
+                )
             )
+            # self.build_from_url(
+            #    "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
+            # )
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
-
-        # Handle behavioral responses for earnings and capital gains
-        self.move_values("employment_income", "employment_income_before_lsr")
-        self.move_values("capital_gains", "capital_gains_before_response")
 
         self.input_variables = self.get_known_variables()
 
@@ -122,6 +124,21 @@ class Simulation(CoreSimulation):
         if scenario is not None:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
+
+        if scenario is not None:
+            self.baseline = Simulation(
+                scenario=None,
+                situation=situation,
+                dataset=dataset,
+                trace=trace,
+            )
+        else:
+            self.baseline = self.clone()
+
+    def reset_calculations(self):
+        for variable in self.tax_benefit_system.variables:
+            if variable not in self.input_variables:
+                self.delete_arrays(variable)
 
     def get_known_variables(self):
         variables = []
@@ -167,6 +184,10 @@ class Simulation(CoreSimulation):
         builder.build_from_dict(self.tax_benefit_system, situation, self)
         self.has_axes = builder.has_axes
 
+        self.dataset = UKSingleYearDataset.from_simulation(
+            self, fiscal_year=self.default_input_period
+        )
+
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
 
@@ -199,14 +220,11 @@ class Simulation(CoreSimulation):
         # Determine dataset type and build accordingly
         if UKMultiYearDataset.validate_file_path(dataset, False):
             self.build_from_multi_year_dataset(UKMultiYearDataset(dataset))
-            self.dataset = dataset
         elif UKSingleYearDataset.validate_file_path(dataset, False):
             self.build_from_single_year_dataset(UKSingleYearDataset(dataset))
-            self.dataset = dataset
         else:
             dataset = Dataset.from_file(dataset, self.default_input_period)
             self.build_from_dataset(dataset)
-            self.dataset = dataset
 
     def build_from_dataframe(self, df: pd.DataFrame) -> None:
         """Build simulation from a pandas DataFrame.
