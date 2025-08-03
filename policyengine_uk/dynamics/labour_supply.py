@@ -11,6 +11,7 @@ Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note
 import numpy as np
 import pandas as pd
 from policyengine_uk import Simulation
+from microdf import MicroDataFrame
 
 
 def calculate_derivative(
@@ -42,8 +43,6 @@ def calculate_derivative(
     input_variable_values = sim.calculate(input_variable, year)
     adult_index = sim.calculate("adult_index")
     entity_key = sim.tax_benefit_system.variables[input_variable].entity.key
-
-    print("Calculating original target values")
 
     # Calculate baseline target values
     original_target_values = sim.calculate(
@@ -345,13 +344,13 @@ def calculate_employment_income_change(
     # Calculate substitution effect: response to changes in marginal rates
     substitution_response = (
         employment_income
-        * derivative_changes["rel_change"]
+        * derivative_changes["wage_rel_change"]
         * substitution_elasticities
     )
 
     # Calculate income effect: response to changes in unearned income
     income_response = (
-        employment_income * income_changes["rel_change"] * income_elasticities
+        employment_income * income_changes["income_rel_change"] * income_elasticities
     )
 
     # Total labour supply response is sum of substitution and income effects
@@ -360,7 +359,31 @@ def calculate_employment_income_change(
     # No response for people with zero employment income
     total_response[employment_income == 0] = 0
 
-    return total_response.fillna(0)
+    df = pd.DataFrame({
+        "substitution_response": substitution_response,
+        "income_response": income_response,
+        "total_response": total_response,
+    })
+
+    return df.fillna(0)
+
+def calculate_excluded_from_labour_supply_responses(
+    sim: Simulation,
+    count_adults: int = 1
+):
+    # Exclude self-employed, full-time students, aged 60+, and adult_index == (0, >= count_adults + 1)
+    self_employed = sim.calculate("employment_status").isin([
+        "FT_SELF_EMPLOYED", "PT_SELF_EMPLOYED"
+    ])
+    student = sim.calculate("employment_status") == "STUDENT"
+    age = sim.calculate("age")
+    age_60_plus = age >= 60
+    adult_index = sim.calculate("adult_index")
+    excluded = (
+        self_employed | student | age_60_plus |
+        (adult_index == 0) | (adult_index >= count_adults + 1)
+    )
+    return excluded
 
 
 def apply_labour_supply_responses(
@@ -389,6 +412,9 @@ def apply_labour_supply_responses(
     Returns:
         Array of employment income changes applied to the simulation
     """
+    follow_obr = sim.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(year)
+    if (not follow_obr) or (sim.baseline is None):
+        return
     # Calculate changes in marginal rates (drives substitution effects)
     derivative_changes = calculate_derivative_change(
         sim=sim,
@@ -399,20 +425,41 @@ def apply_labour_supply_responses(
         delta=delta,
     )
 
+    derivative_changes = derivative_changes.rename(
+        columns={
+            col: f"wage_{col}" for col in derivative_changes.columns
+        }
+    )
+
     # Calculate changes in income levels (drives income effects)
     income_changes = calculate_relative_income_change(
         sim, target_variable, year
     )
 
+    income_changes = income_changes.rename(
+        columns={
+            col: f"income_{col}" for col in income_changes.columns
+        }
+    )
+
+    df = pd.concat(
+        [derivative_changes, income_changes], axis=1
+    ).fillna(0)
+
     # Get elasticity parameters by demographic group
     substitution_elasticities = calculate_labour_substitution_elasticities(sim)
     income_elasticities = calculate_labour_net_income_elasticities(sim)
 
+    df["income_elasticity"] = income_elasticities
+    df["substitution_elasticity"] = substitution_elasticities
+
     # Get baseline employment income levels
     employment_income = sim.calculate(input_variable, year)
 
+    df["employment_income"] = employment_income
+
     # Calculate total labour supply response
-    response = calculate_employment_income_change(
+    response_df = calculate_employment_income_change(
         employment_income=employment_income,
         derivative_changes=derivative_changes,
         income_changes=income_changes,
@@ -420,8 +467,23 @@ def apply_labour_supply_responses(
         income_elasticities=income_elasticities,
     )
 
+    df = pd.concat([df, response_df], axis=1)
+
+    excluded = calculate_excluded_from_labour_supply_responses(
+        sim, count_adults=count_adults
+    )
+
+    for col in df.columns:
+        df.loc[excluded, col] = 0
+
+    df["excluded"] = excluded
+
+    response = response_df["total_response"].values
+
     # Apply the labour supply response to the simulation
     sim.reset_calculations()
     sim.set_input(input_variable, year, employment_income + response)
 
-    return response
+    weight = sim.calculate("household_weight", year, map_to="person")
+
+    return MicroDataFrame(df, weights=weight)

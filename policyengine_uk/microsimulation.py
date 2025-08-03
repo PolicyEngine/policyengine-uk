@@ -47,7 +47,6 @@ class Microsimulation(Simulation):
         unweighted: bool = False,
     ):
         tracer: SimpleTracer = self.tracer
-
         result = super().calculate(
             variable_name, period, map_to=map_to, decode_enums=decode_enums
         )
