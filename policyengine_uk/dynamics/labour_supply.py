@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 from policyengine_uk import Simulation
 from microdf import MicroDataFrame
+from pydantic import BaseModel
+from typing import Optional
 
 from .progression import (
     calculate_derivative_change,
@@ -58,6 +60,40 @@ def calculate_excluded_from_labour_supply_responses(
     return excluded
 
 
+class FTEImpacts(BaseModel):
+    """Data model for FTE impacts of labour supply responses."""
+
+    substitution_response_ftes: float
+    """FTE impact from substitution effects."""
+    income_response_ftes: float
+    """FTE impact from income effects."""
+    total_response_ftes: float
+    """Total FTE impact from both substitution and income effects."""
+
+    participation_response_employment: Optional[float] = None
+    """FTE impact from participation responses, if available."""
+    participation_response_ftes: Optional[float] = None
+    """FTE impact from participation responses, if available."""
+
+    ftes: Optional[float] = None
+    """Total FTE impact across all responses."""
+
+
+class LabourSupplyResponseData(BaseModel):
+    progression: pd.DataFrame
+    """DataFrame containing intensive margin (progression) responses."""
+    participation: Optional[pd.DataFrame] = None
+    """DataFrame containing extensive margin (participation) responses, if available."""
+
+    # Specific outputs for comparison with OBR outputs
+    fte_impacts: FTEImpacts
+    """FTE impacts of labour supply responses, including both progression and participation."""
+
+    model_config = {
+        "arbitrary_types_allowed": True,
+    }
+
+
 def apply_labour_supply_responses(
     sim: Simulation,
     target_variable: str = "household_net_income",
@@ -90,21 +126,52 @@ def apply_labour_supply_responses(
         return
 
     # Apply intensive margin responses (progression model)
-    # progression_responses = apply_progression_responses(
-    #    sim=sim,
-    #    target_variable=target_variable,
-    #    input_variable=input_variable,
-    #    year=year,
-    #    count_adults=count_adults,
-    #    delta=delta,
-    # )
+    progression_responses = apply_progression_responses(
+        sim=sim,
+        target_variable=target_variable,
+        input_variable=input_variable,
+        year=year,
+        count_adults=count_adults,
+        delta=delta,
+    )
 
-    # Apply extensive margin responses (participation model - placeholder for now)
+    # Apply extensive margin responses (participation model)
     participation_responses = apply_participation_responses(sim=sim, year=year)
+
+    # Add FTE impacts to the response data
+    fte_impacts = FTEImpacts(
+        substitution_response_ftes=progression_responses[
+            "substitution_response_ftes"
+        ].sum(),
+        income_response_ftes=progression_responses[
+            "income_response_ftes"
+        ].sum(),
+        total_response_ftes=progression_responses["total_response_ftes"].sum(),
+        participation_response_employment=(
+            participation_responses["participation_change"].sum()
+            if participation_responses is not None
+            else None
+        ),
+        participation_response_ftes=(
+            participation_responses["participation_change_ftes"].sum()
+            if participation_responses is not None
+            else None
+        ),
+    )
+
+    fte_impacts.ftes = fte_impacts.total_response_ftes + (
+        fte_impacts.participation_response_ftes
+        if fte_impacts.participation_response_ftes is not None
+        else 0
+    )
 
     # For now, return only progression responses since participation is placeholder
     # TODO: Combine progression and participation responses when participation model is implemented
-    return participation_responses
+    return LabourSupplyResponseData(
+        progression=progression_responses,
+        participation=participation_responses,
+        fte_impacts=fte_impacts,
+    )
 
 
 def apply_progression_responses(
@@ -149,6 +216,7 @@ def apply_progression_responses(
     gross_wage = sim.calculate("employment_income", year) / sim.calculate(
         "hours_worked", year
     )
+    gross_wage = gross_wage.fillna(0).replace([np.inf, -np.inf], 0)
     derivative_changes["wage_gross"] = gross_wage
     derivative_changes["wage_baseline"] = (
         gross_wage * derivative_changes["deriv_baseline"]
@@ -200,6 +268,20 @@ def apply_progression_responses(
     )
 
     df = pd.concat([df, response_df], axis=1)
+
+    # Apply relative {substitution, income, total} changes to hours as well
+    # Apply relative changes to hours using the same factor for all response types
+    for response_type in [
+        "substitution_response",
+        "income_response",
+        "total_response",
+    ]:
+        df[f"{response_type}_ftes"] = (
+            df[response_type]
+            / df["employment_income"]
+            * df["hours_per_week"]
+            / 37.5
+        )
 
     excluded = calculate_excluded_from_labour_supply_responses(
         sim, count_adults=count_adults

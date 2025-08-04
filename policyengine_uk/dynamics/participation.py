@@ -273,80 +273,6 @@ def calculate_gain_to_work(
                 "household_net_income", year, map_to="person"
             )[is_adult_i]
 
-    # Reset to original
-    sim.reset_calculations()
-    sim.set_input("employment_income", year, original_employment)
-
-    # Calculate average hourly wage by demographic group for imputation
-    working = employment_income > 0
-    positive_hours = hours_worked > 0
-    hourly_wage = np.zeros_like(employment_income, dtype=float)
-
-    # Calculate actual hourly wages where available
-    valid_wage_mask = working & positive_hours
-    hourly_wage[valid_wage_mask] = (
-        employment_income[valid_wage_mask] / hours_worked[valid_wage_mask]
-    )
-
-    # Get demographic characteristics
-    gender = sim.calculate("gender")
-    age = sim.calculate("age")
-
-    # Create age groups
-    age_groups = [
-        (age >= 18) & (age < 25),
-        (age >= 25) & (age < 35),
-        (age >= 35) & (age < 45),
-        (age >= 45) & (age < 55),
-        (age >= 55) & (age < 65),
-    ]
-
-    # Impute wages by gender and age group
-    for g_mask, g_name in [
-        (gender == "MALE", "MALE"),
-        (gender == "FEMALE", "FEMALE"),
-    ]:
-        for age_mask in age_groups:
-            # Workers in this demographic
-            demo_workers = g_mask & age_mask & valid_wage_mask
-
-            if demo_workers.any():
-                avg_wage = hourly_wage[demo_workers].mean()
-                # Non-workers in this demographic
-                demo_non_workers = g_mask & age_mask & ~working
-                hourly_wage[demo_non_workers] = avg_wage
-
-    # For any remaining without wages, use overall average
-    if valid_wage_mask.any():
-        overall_avg_wage = hourly_wage[valid_wage_mask].mean()
-        hourly_wage[(hourly_wage == 0) & ~working] = overall_avg_wage
-
-    # Calculate in-work income for non-workers
-    not_working = employment_income == 0
-
-    for i in range(1, count_adults + 1):
-        is_adult_i = adult_index == i
-        is_not_working = is_adult_i & not_working
-
-        if is_not_working.any():
-            # Estimate annual employment income
-            temp_employment = employment_income.copy()
-            temp_employment[is_not_working] = (
-                hourly_wage[is_not_working] * hours_for_new_entrants * 52
-            )
-
-            sim.reset_calculations()
-            sim.set_input("employment_income", year, temp_employment)
-
-            # Get household income when these adults work
-            in_work_income[is_not_working] = sim.calculate(
-                "household_net_income", year, map_to="person"
-            )[is_not_working]
-
-    # Reset to original
-    sim.reset_calculations()
-    sim.set_input("employment_income", year, original_employment)
-
     # Calculate gain to work
     gain_to_work = in_work_income - out_of_work_income
 
@@ -355,7 +281,6 @@ def calculate_gain_to_work(
             "in_work_income": in_work_income,
             "out_of_work_income": out_of_work_income,
             "gain_to_work": gain_to_work,
-            "potential_hourly_wage": hourly_wage,
         }
     )
 
@@ -379,21 +304,14 @@ def calculate_earnings_quintile(
     """
     employment_income = sim.calculate("employment_income", year)
 
-    # Get potential hourly wages from gain_to_work calculation
-    gtw_df = calculate_gain_to_work(sim, year, hours_for_new_entrants)
-    potential_hourly_wage = gtw_df["potential_hourly_wage"].values
-
-    # Calculate annual earnings: actual for workers, potential for non-workers
-    working = employment_income > 0
-    annual_earnings = employment_income.copy()
-    annual_earnings[~working] = (
-        potential_hourly_wage[~working] * hours_for_new_entrants * 52
-    )
-
     # Calculate quintiles
     # Use pandas qcut for equal-sized bins
+    # Add random noise to avoid ties in quintile calculation
     quintiles = pd.qcut(
-        annual_earnings, q=5, labels=[1, 2, 3, 4, 5], duplicates="drop"
+        employment_income + np.random.random(employment_income.shape),
+        q=5,
+        labels=[1, 2, 3, 4, 5],
+        duplicates="drop",
     )
 
     return quintiles.astype(int).values
@@ -484,9 +402,6 @@ def apply_participation_responses(
     # From OBR methodology: percentage change in participation = elasticity * percentage change in GTW
     participation_change = elasticities * gtw_pct_change
 
-    # Apply only to those not working
-    participation_change[~not_working] = 0
-
     # Create results DataFrame
     results = pd.DataFrame(
         {
@@ -499,6 +414,10 @@ def apply_participation_responses(
             "excluded": excluded,
         }
     )
+
+    results["participation_change_ftes"] = results["participation_change"] * (
+        hours_for_new_entrants / 37.5
+    )  # Convert to FTEs
 
     weights = sim.calculate("household_weight", year, map_to="person")
 
