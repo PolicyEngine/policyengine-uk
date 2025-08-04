@@ -100,14 +100,9 @@ class Simulation(CoreSimulation):
         elif isinstance(dataset, UKMultiYearDataset):
             self.build_from_multi_year_dataset(dataset)
         elif dataset is None:
-            self.build_from_single_year_dataset(
-                UKSingleYearDataset(
-                    "/Users/nikhilwoodruff/policyengine/policyengine-uk/enhanced_frs_2023_24.h5"
-                )
+            self.build_from_url(
+                "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
             )
-            # self.build_from_url(
-            #    "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
-            # )
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 
