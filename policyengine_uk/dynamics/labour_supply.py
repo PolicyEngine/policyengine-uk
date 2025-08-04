@@ -92,8 +92,8 @@ def calculate_relative_income_change(
         DataFrame with baseline, scenario, relative change, and absolute change columns
     """
     # Get income values from baseline and reform scenarios
-    original_target_values = sim.baseline.calculate(target_variable, year)
-    reformed_target_values = sim.calculate(target_variable, year)
+    original_target_values = sim.baseline.calculate(target_variable, year, map_to="person")
+    reformed_target_values = sim.calculate(target_variable, year, map_to="person")
 
     # Calculate relative change, handling division by zero
     rel_change = (
@@ -164,6 +164,8 @@ def calculate_derivative_change(
 
     # Clip extreme relative changes to avoid misleading results from small baseline derivatives
     rel_change = rel_change.clip(-1, 1)
+
+    rel_change[rel_change == np.inf] = 0
 
     return pd.DataFrame(
         {
@@ -379,9 +381,10 @@ def calculate_excluded_from_labour_supply_responses(
     age = sim.calculate("age")
     age_60_plus = age >= 60
     adult_index = sim.calculate("adult_index")
+    zero_hours = sim.calculate("hours_worked") == 0
     excluded = (
         self_employed | student | age_60_plus |
-        (adult_index == 0) | (adult_index >= count_adults + 1)
+        (adult_index == 0) | (adult_index >= count_adults + 1) | zero_hours
     )
     return excluded
 
@@ -427,8 +430,21 @@ def apply_labour_supply_responses(
 
     derivative_changes = derivative_changes.rename(
         columns={
-            col: f"wage_{col}" for col in derivative_changes.columns
+            col: f"deriv_{col}" for col in derivative_changes.columns
         }
+    )
+
+    # Add in actual implied wages
+
+    gross_wage = sim.calculate("employment_income", year) / sim.calculate("hours_worked", year)
+    derivative_changes["wage_gross"] = gross_wage
+    derivative_changes["wage_baseline"] = gross_wage * derivative_changes["deriv_baseline"]
+    derivative_changes["wage_scenario"] = gross_wage * derivative_changes["deriv_scenario"]
+    derivative_changes["wage_rel_change"] = (
+        derivative_changes["wage_scenario"] / derivative_changes["wage_baseline"] - 1
+    ).replace([np.inf, -np.inf], 0)
+    derivative_changes["wage_abs_change"] = (
+        derivative_changes["wage_scenario"] - derivative_changes["wage_baseline"]
     )
 
     # Calculate changes in income levels (drives income effects)
@@ -457,6 +473,7 @@ def apply_labour_supply_responses(
     employment_income = sim.calculate(input_variable, year)
 
     df["employment_income"] = employment_income
+    df["hours_per_week"] = sim.calculate("hours_worked", year) / 52
 
     # Calculate total labour supply response
     response_df = calculate_employment_income_change(
@@ -486,4 +503,6 @@ def apply_labour_supply_responses(
 
     weight = sim.calculate("household_weight", year, map_to="person")
 
-    return MicroDataFrame(df, weights=weight)
+    result = MicroDataFrame(df, weights=weight)
+
+    return result[~result.excluded].drop(columns=["excluded"])
