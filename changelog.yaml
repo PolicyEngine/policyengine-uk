@@ -1774,3 +1774,8 @@
     fixed:
     - Bug in NI rates.
   date: 2025-08-01 09:00:11
+- bump: patch
+  changes:
+    fixed:
+    - Moved rent uprating to warning from error if before 2022.
+  date: 2025-08-04 12:54:43
