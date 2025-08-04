@@ -450,7 +450,7 @@ class Simulation(CoreSimulation):
         return super().calculate(
             variable_name, period, map_to=map_to, decode_enums=decode_enums
         )
-    
+
     def apply_dynamics(self, year: int):
         """Apply dynamics to the simulation for a specific year.
 
@@ -458,6 +458,8 @@ class Simulation(CoreSimulation):
             year: Year to apply dynamics for
         """
         # Apply OBR labour supply dynamics if enabled
-        from policyengine_uk.dynamics.labour_supply import apply_labour_supply_responses
+        from policyengine_uk.dynamics.labour_supply import (
+            apply_labour_supply_responses,
+        )
 
         return apply_labour_supply_responses(self, year=str(year))
