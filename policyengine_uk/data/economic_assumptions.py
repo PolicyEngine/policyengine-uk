@@ -4,6 +4,7 @@ import yaml
 from policyengine_core.parameters import ParameterNode
 from pathlib import Path
 import numpy as np
+import logging
 
 
 def extend_single_year_dataset(
@@ -147,9 +148,10 @@ def uprate_rent(
     social_rent_growth = growth.obr.social_rent(year)
 
     if year < 2022:
-        raise ValueError(
-            "Rent uprating is not supported for years before 2022."
+        logging.warning(
+            "Rent uprating is not supported for years before 2022. Not applying uprating."
         )
+        pass
     elif year < 2025:
         # We have regional growth rates for private rent.
         regional_growth_rate = growth.ons.private_rental_prices(year)[

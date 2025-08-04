@@ -1,6 +1,6 @@
 [project] 
 name = "policyengine-uk"
-version = "2.45.1"
+version = "2.45.4"
 description = "PolicyEngine tax and benefit system for the UK"
 readme = "README.md"
 authors = [
@@ -27,7 +27,6 @@ dependencies = [
     "policyengine-core>=3.19.3",
     "microdf-python>=1.0.2",
     "pydantic>=2.11.7",
-    "jupyter-book>=2.0.0a0",
 ]
 
 [project.urls]

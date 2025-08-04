@@ -1769,3 +1769,18 @@
     fixed:
     - Bug caused by not resetting parameter caches.
   date: 2025-07-31 13:39:16
+- bump: patch
+  changes:
+    fixed:
+    - Bug in NI rates.
+  date: 2025-08-01 09:00:11
+- bump: patch
+  changes:
+    fixed:
+    - Moved rent uprating to warning from error if before 2022.
+  date: 2025-08-04 12:54:43
+- bump: patch
+  changes:
+    changed:
+    - Dropped direct jupyter book dependency.
+  date: 2025-08-04 14:23:45
