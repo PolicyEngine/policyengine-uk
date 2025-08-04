@@ -1779,3 +1779,8 @@
     fixed:
     - Moved rent uprating to warning from error if before 2022.
   date: 2025-08-04 12:54:43
+- bump: patch
+  changes:
+    changed:
+    - Dropped direct jupyter book dependency.
+  date: 2025-08-04 14:23:45

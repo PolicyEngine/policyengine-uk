@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.45.4] - 2025-08-04 14:23:45
+
+### Changed
+
+- Dropped direct jupyter book dependency.
+
 ## [2.45.3] - 2025-08-04 12:54:43
 
 ### Fixed
@@ -2102,6 +2108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.45.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.3...2.45.4
 [2.45.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.2...2.45.3
 [2.45.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.1...2.45.2
 [2.45.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.0...2.45.1

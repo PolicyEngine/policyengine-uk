@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    changed:
-    - Dropped direct jupyter book dependency.
