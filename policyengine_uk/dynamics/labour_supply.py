@@ -381,10 +381,9 @@ def calculate_excluded_from_labour_supply_responses(
     age = sim.calculate("age")
     age_60_plus = age >= 60
     adult_index = sim.calculate("adult_index")
-    zero_hours = sim.calculate("hours_worked") == 0
     excluded = (
         self_employed | student | age_60_plus |
-        (adult_index == 0) | (adult_index >= count_adults + 1) | zero_hours
+        (adult_index == 0) | (adult_index >= count_adults + 1)
     )
     return excluded
 
