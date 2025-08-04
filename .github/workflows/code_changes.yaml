@@ -45,6 +45,8 @@ jobs:
             run: uv pip install -e .[dev] --system
           - name: Install policyengine
             run: uv pip install policyengine --system
+          - name: Install JB
+            run: uv pip install "jupyter-book>=2.0.0a0" --system
           - name: UV sync
             run: uv sync
           - name: Run tests with coverage
