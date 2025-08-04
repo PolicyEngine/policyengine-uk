@@ -43,10 +43,11 @@ def calculate_excluded_from_labour_supply_responses(
         Boolean array indicating which individuals are excluded
     """
     # Exclude self-employed, full-time students, aged 60+, and adult_index == (0, >= count_adults + 1)
-    self_employed = sim.calculate("employment_status").isin(
-        ["FT_SELF_EMPLOYED", "PT_SELF_EMPLOYED"]
+    employment_status = sim.calculate("employment_status")
+    self_employed = np.isin(
+        employment_status, ["FT_SELF_EMPLOYED", "PT_SELF_EMPLOYED"]
     )
-    student = sim.calculate("employment_status") == "STUDENT"
+    student = employment_status == "STUDENT"
     age = sim.calculate("age")
     age_60_plus = age >= 60
     adult_index = sim.calculate("adult_index")

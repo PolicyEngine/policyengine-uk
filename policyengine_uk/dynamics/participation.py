@@ -222,22 +222,77 @@ def calculate_participation_elasticities(
     return elasticities
 
 
+def impute_wages_for_nonworkers(
+    sim: Simulation,
+    year: int = 2025,
+    hours_for_new_entrants: float = 18.8,
+) -> np.ndarray:
+    """Impute wages for non-workers based on their elasticity group.
+
+    Assumes non-workers would work 18.8 hours per week at the average wage
+    for their specific elasticity group.
+
+    Args:
+        sim: PolicyEngine simulation object
+        year: Year for calculation
+        hours_for_new_entrants: Weekly hours assumed for new entrants
+
+    Returns:
+        Array of imputed annual employment income for non-workers
+    """
+    employment_income = sim.calculate("employment_income", year)
+    hours_worked = sim.calculate("hours_worked", year)
+
+    # Calculate hourly wages for workers
+    working_mask = (employment_income > 0) & (hours_worked > 0)
+    hourly_wages = np.where(
+        working_mask, employment_income / (hours_worked * 52), 0
+    )
+
+    # Get elasticity groups for wage calculation
+    earnings_quintile = calculate_earnings_quintile(
+        sim, year, hours_for_new_entrants
+    )
+    elasticities = calculate_participation_elasticities(sim, earnings_quintile)
+
+    # Create elasticity bins for grouping
+    unique_elasticities = np.unique(elasticities[elasticities > 0])
+
+    # Calculate average wage by elasticity group
+    imputed_wages = np.zeros_like(employment_income, dtype=float)
+
+    for elasticity_val in unique_elasticities:
+        elasticity_mask = (elasticities == elasticity_val) & working_mask
+        if elasticity_mask.any():
+            avg_hourly_wage = np.mean(hourly_wages[elasticity_mask])
+            # Apply to all non-workers in this elasticity group
+            nonworker_mask = (elasticities == elasticity_val) & ~working_mask
+            imputed_wages[nonworker_mask] = (
+                avg_hourly_wage * hours_for_new_entrants * 52
+            )
+
+    return imputed_wages
+
+
 def calculate_gain_to_work(
     sim: Simulation,
     year: int = 2025,
     hours_for_new_entrants: float = 18.8,
     count_adults: int = 1,
+    impute_nonworker_wages: bool = True,
 ) -> pd.DataFrame:
     """Calculate gain-to-work metric for each individual.
 
     The gain-to-work is the difference between income when working vs not working.
     Uses adult_index to handle multi-adult benefit units correctly.
+    Optionally imputes wages for non-workers.
 
     Args:
         sim: PolicyEngine simulation object
         year: Year for calculation
         hours_for_new_entrants: Weekly hours for new labour market entrants
         count_adults: Number of adults to calculate responses for
+        impute_nonworker_wages: Whether to impute wages for non-workers
 
     Returns:
         DataFrame with in-work income, out-of-work income, and gain-to-work
@@ -250,28 +305,55 @@ def calculate_gain_to_work(
     )
     adult_index = sim.calculate("adult_index")
 
+    # Impute wages for non-workers if requested
+    if impute_nonworker_wages:
+        imputed_wages = impute_wages_for_nonworkers(
+            sim, year, hours_for_new_entrants
+        )
+        # For non-workers, use imputed wages; for workers, use actual income
+        working_mask = employment_income > 0
+        employment_income_with_imputation = np.where(
+            working_mask, employment_income, imputed_wages
+        )
+    else:
+        employment_income_with_imputation = employment_income
+
     # Initialize arrays
     out_of_work_income = household_net_income.copy()
     in_work_income = household_net_income.copy()
 
-    # Calculate out-of-work income for each adult group
+    # Calculate both in-work and out-of-work income for each adult group
     original_employment = employment_income.copy()
 
     for i in range(1, count_adults + 1):
         is_adult_i = adult_index == i
 
         if is_adult_i.any():
-            # Set employment income to 0 for this adult group
-            temp_employment = employment_income.copy()
-            temp_employment[is_adult_i] = 0
+            # Calculate out-of-work income (set employment to 0)
+            temp_employment_out = employment_income.copy()
+            temp_employment_out[is_adult_i] = 0
 
             sim.reset_calculations()
-            sim.set_input("employment_income", year, temp_employment)
-
-            # Get household income when these adults don't work
+            sim.set_input("employment_income", year, temp_employment_out)
             out_of_work_income[is_adult_i] = sim.calculate(
                 "household_net_income", year, map_to="person"
             )[is_adult_i]
+
+            # Calculate in-work income (use imputed wages if applicable)
+            temp_employment_in = employment_income.copy()
+            temp_employment_in[is_adult_i] = employment_income_with_imputation[
+                is_adult_i
+            ]
+
+            sim.reset_calculations()
+            sim.set_input("employment_income", year, temp_employment_in)
+            in_work_income[is_adult_i] = sim.calculate(
+                "household_net_income", year, map_to="person"
+            )[is_adult_i]
+
+    # Reset to original state
+    sim.reset_calculations()
+    sim.set_input("employment_income", year, original_employment)
 
     # Calculate gain to work
     gain_to_work = in_work_income - out_of_work_income
@@ -314,7 +396,10 @@ def calculate_earnings_quintile(
         duplicates="drop",
     )
 
-    return quintiles.astype(int).values
+    if quintiles is not None:
+        return quintiles.astype(int)
+    else:
+        return np.ones(employment_income.shape, dtype=int)
 
 
 def apply_participation_responses(
@@ -322,23 +407,28 @@ def apply_participation_responses(
     year: int = 2025,
     hours_for_new_entrants: float = 18.8,
     count_adults: int = 1,
+    random_seed: int = 42,
 ) -> pd.DataFrame:
-    """Apply participation responses to simulation.
+    """Apply participation responses to simulation at microdata level.
 
-    Calculates aggregate labour force entry by demographic group and randomly
-    selects individuals from the out-of-work population to enter employment.
+    Stochastically applies participation responses to individual workers and
+    non-workers based on their calculated participation elasticities.
 
     Args:
         sim: PolicyEngine simulation object (must have baseline)
         year: Year for calculation
         hours_for_new_entrants: Weekly hours for new labour market entrants
         count_adults: Number of adults to calculate responses for
+        random_seed: Seed for random number generation
 
     Returns:
-        DataFrame with participation response information
+        DataFrame with participation response information and updated employment
     """
     if sim.baseline is None:
         return pd.DataFrame()
+
+    # Set random seed for reproducibility
+    np.random.seed(random_seed)
 
     # Calculate excluded individuals
     from .labour_supply import calculate_excluded_from_labour_supply_responses
@@ -351,14 +441,23 @@ def apply_participation_responses(
     employment_income = sim.calculate("employment_income", year)
     adult_index = sim.calculate("adult_index")
     eligible = ~excluded & (adult_index > 0) & (adult_index <= count_adults)
-    not_working = (employment_income == 0) & eligible
+    currently_working = (employment_income > 0) & eligible
+    currently_not_working = (employment_income == 0) & eligible
 
-    # Calculate gain-to-work for baseline and reform
+    # Calculate gain-to-work for baseline and reform (with wage imputation)
     baseline_gtw = calculate_gain_to_work(
-        sim.baseline, year, hours_for_new_entrants, count_adults
+        sim.baseline,
+        year,
+        hours_for_new_entrants,
+        count_adults,
+        impute_nonworker_wages=True,
     )
     reform_gtw = calculate_gain_to_work(
-        sim, year, hours_for_new_entrants, count_adults
+        sim,
+        year,
+        hours_for_new_entrants,
+        count_adults,
+        impute_nonworker_wages=True,
     )
 
     # Calculate percentage change in gain-to-work
@@ -402,15 +501,62 @@ def apply_participation_responses(
     # From OBR methodology: percentage change in participation = elasticity * percentage change in GTW
     participation_change = elasticities * gtw_pct_change
 
+    # Apply stochastic participation responses
+    new_employment_income = employment_income.copy()
+    participation_response = np.zeros_like(employment_income, dtype=bool)
+
+    # For currently working individuals: chance of leaving work
+    for i in np.where(currently_working)[0]:
+        # Negative participation change means lower probability of working
+        exit_probability = max(
+            0, -participation_change[i]
+        )  # Only consider negative changes
+        if np.random.random() < exit_probability:
+            new_employment_income[i] = 0
+            participation_response[i] = True  # Exited work
+
+    # For currently non-working individuals: chance of entering work
+    imputed_wages = impute_wages_for_nonworkers(
+        sim, year, hours_for_new_entrants
+    )
+    for i in np.where(currently_not_working)[0]:
+        # Positive participation change means higher probability of working
+        entry_probability = max(
+            0, participation_change[i]
+        )  # Only consider positive changes
+        if np.random.random() < entry_probability and imputed_wages[i] > 0:
+            new_employment_income[i] = imputed_wages[i]
+            participation_response[i] = True  # Entered work
+
+    # Update simulation with new employment incomes
+    sim.set_input("employment_income", year, new_employment_income)
+
+    # Update hours worked for new entrants
+    hours_worked = sim.calculate("hours_worked", year)
+    new_hours_worked = hours_worked.copy()
+
+    # Set hours for new entrants
+    new_workers = currently_not_working & (new_employment_income > 0)
+    new_hours_worked[new_workers] = hours_for_new_entrants
+
+    # Set hours to 0 for those who left work
+    left_work = currently_working & (new_employment_income == 0)
+    new_hours_worked[left_work] = 0
+
+    sim.set_input("hours_worked", year, new_hours_worked)
+
     # Create results DataFrame
     results = pd.DataFrame(
         {
-            "not_working_baseline": not_working,
+            "originally_working": currently_working,
+            "originally_not_working": currently_not_working,
             "participation_elasticity": elasticities,
             "gtw_baseline": gtw_baseline,
             "gtw_reform": gtw_reform,
             "gtw_pct_change": gtw_pct_change,
             "participation_change": participation_change,
+            "participation_response": participation_response,
+            "new_employment_income": new_employment_income,
             "excluded": excluded,
         }
     )
