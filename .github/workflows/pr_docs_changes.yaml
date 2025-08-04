@@ -30,5 +30,7 @@ jobs:
             run: uv pip install -e .[dev] --system
           - name: Install policyengine
             run: uv pip install policyengine --system
+          - name: Install JB
+            run: uv pip install "jupyter-book>=2.0.0a0" --system
           - name: Test documentation builds
             run: make documentation
