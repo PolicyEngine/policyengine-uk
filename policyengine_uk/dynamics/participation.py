@@ -406,7 +406,7 @@ def apply_participation_responses(
     sim: Simulation,
     year: int = 2025,
     hours_for_new_entrants: float = 18.8,
-    count_adults: int = 1,
+    count_adults: int = 2,
     random_seed: int = 42,
 ) -> pd.DataFrame:
     """Apply participation responses to simulation at microdata level.

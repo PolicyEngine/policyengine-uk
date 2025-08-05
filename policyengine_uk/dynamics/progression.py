@@ -17,7 +17,7 @@ def calculate_derivative(
     target_variable: str = "household_net_income",
     input_variable: str = "employment_income",
     year: int = 2025,
-    count_adults: int = 1,
+    count_adults: int = 2,
     delta: float = 1_000,
 ) -> np.ndarray:
     """Calculate the marginal rate of change of target variable with respect to input variable.

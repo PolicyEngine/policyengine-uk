@@ -11,6 +11,7 @@ from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
+from policyengine_core.variables import Variable
 
 # PolicyEngine UK imports
 from policyengine_uk.entities import BenUnit, Household, Person
@@ -55,6 +56,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     ]
     modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
     auto_carry_over_input_variables: bool = True
+
+    variables: Dict[str, Variable]
 
     def reset_parameter_caches(self):
         """Reset all caches in the tax-benefit system."""
@@ -102,7 +105,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     def __init__(self):
         """Initialize the UK tax-benefit system with entities and parameters."""
         self._parameters_at_instant_cache: Dict[str, Any] = {}
-        self.variables: Dict[Any, Any] = {}
+        self.variables = {}
 
         # Create copies of entity classes to avoid modifying originals
         person, benunit, household = (

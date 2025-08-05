@@ -26,6 +26,8 @@ from policyengine_uk.data.economic_assumptions import (
 
 from .tax_benefit_system import CountryTaxBenefitSystem
 
+from microdf import MicroDataFrame
+
 
 class Simulation(CoreSimulation):
     """UK-specific simulation class for calculating tax and benefit outcomes.
@@ -424,13 +426,40 @@ class Simulation(CoreSimulation):
                 simulation.set_input(variable_target, known_period, array)
                 holder.delete_arrays(known_period)
 
+    def calculate_all(self, year: int) -> None:
+        person, benunit, household = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+        period = str(year)
+        for variable in self.tax_benefit_system.variables.values():
+            entity = variable.entity.key
+            result = self.calculate(variable.name, period).values
+            if entity == "person":
+                person[variable.name] = result
+            elif entity == "benunit":
+                benunit[variable.name] = result
+            elif entity == "household":
+                household[variable.name] = result
+        
+        person = MicroDataFrame(person, weights="person_weight")
+        benunit = MicroDataFrame(benunit, weights="benunit_weight")
+        household = MicroDataFrame(household, weights="household_weight")
+
+        return UKSingleYearDataset(
+            person=person,
+            benunit=benunit,
+            household=household,
+            fiscal_year=year,
+        )
+
+
     def calculate(
         self,
-        variable_name: str,
+        variable_name: str = None,
         period: str = None,
         map_to: str = None,
         decode_enums: bool = False,
     ):
+        if variable_name is None:
+            return self.calculate_all()
         tracer: SimpleTracer = self.tracer
         if len(tracer.stack) == 0:
             # Only decode enums to string values when we're not within
