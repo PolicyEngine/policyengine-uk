@@ -16,6 +16,7 @@ project:
       - file: docs/book/usage/getting-started
       - file: docs/book/usage/simulations
       - file: docs/book/usage/scenarios
+      - file: docs/book/usage/dynamics
     - title: Assumptions
       children:
       - file: docs/book/assumptions/growthfactors

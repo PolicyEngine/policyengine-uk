@@ -1,4 +1,4 @@
-from policyengine import Simulation
+from policyengine_uk import Microsimulation
 import pytest
 
 YEARS = range(2024, 2026)
@@ -6,8 +6,7 @@ YEARS = range(2024, 2026)
 
 @pytest.mark.parametrize("year", YEARS)
 def test_not_nan(year):
-    baseline = Simulation(scope="macro", country="uk")
-    baseline = baseline.baseline_simulation
+    baseline = Microsimulation()
     for variable in baseline.tax_benefit_system.variables:
         requires_computation_after = baseline.tax_benefit_system.variables[
             variable
