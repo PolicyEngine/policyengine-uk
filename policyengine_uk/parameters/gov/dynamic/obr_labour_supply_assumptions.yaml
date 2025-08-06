@@ -1,0 +1,9 @@
+description: Follow OBR labour supply response assumptions to tax-benefit reforms.
+values:
+  0001-01-01: true
+metadata:
+  unit: bool
+  label: Follow OBR labour supply response assumptions
+  reference:
+    - title: OBR assumptions
+      href: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf
