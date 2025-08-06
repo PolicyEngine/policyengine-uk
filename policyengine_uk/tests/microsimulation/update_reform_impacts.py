@@ -8,6 +8,18 @@ from pathlib import Path
 from policyengine_uk import Microsimulation
 import argparse
 from datetime import datetime
+from rich.console import Console
+from rich.table import Table
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    BarColumn,
+    TaskProgressColumn,
+)
+from rich.panel import Panel
+from rich import print as rprint
+import traceback
 
 baseline = Microsimulation()
 
@@ -40,57 +52,97 @@ def update_impacts(
         dry_run: If True, show changes without writing to file
         verbose: If True, show detailed output
     """
+    console = Console()
+
     # Load current configuration
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
     if verbose:
-        print(f"Loaded configuration from {config_path}")
-        print(f"Found {len(config['reforms'])} reforms to update\n")
+        console.print(
+            Panel.fit(
+                f"[bold cyan]Loaded configuration from {config_path}[/bold cyan]\n"
+                f"[green]Found {len(config['reforms'])} reforms to update[/green]",
+                title="Configuration loaded",
+            )
+        )
 
     # Track changes
     changes = []
 
-    # Update each reform's expected impact
-    for reform in config["reforms"]:
-        print(f"Processing reform: {reform['name']}") if verbose else None
-        old_impact = reform["expected_impact"]
-        new_impact = round(get_fiscal_impact(reform["parameters"]), 1)
+    # Update each reform's expected impact with progress bar
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task(
+            "[cyan]Processing reforms...", total=len(config["reforms"])
+        )
 
-        if (
-            abs(old_impact - new_impact) > 0.01
-        ):  # Only record meaningful changes
-            changes.append(
-                {
-                    "name": reform["name"],
-                    "old": old_impact,
-                    "new": new_impact,
-                    "diff": new_impact - old_impact,
-                }
+        for reform in config["reforms"]:
+            progress.update(
+                task, description=f"[cyan]Processing: {reform['name'][:40]}..."
             )
+            old_impact = reform["expected_impact"]
+            new_impact = round(get_fiscal_impact(reform["parameters"]), 1)
 
-        reform["expected_impact"] = new_impact
+            if (
+                abs(old_impact - new_impact) > 0.01
+            ):  # Only record meaningful changes
+                changes.append(
+                    {
+                        "name": reform["name"],
+                        "old": old_impact,
+                        "new": new_impact,
+                        "diff": new_impact - old_impact,
+                    }
+                )
 
-        if verbose:
-            print(f"Reform: {reform['name']}")
-            print(f"  Old impact: {old_impact:.1f} billion")
-            print(f"  New impact: {new_impact:.1f} billion")
-            if abs(old_impact - new_impact) > 0.01:
-                print(f"  Change: {new_impact - old_impact:+.1f} billion")
-            print()
+            reform["expected_impact"] = new_impact
+            progress.advance(task)
+
+    # Show detailed output if verbose
+    if verbose and changes:
+        console.print("\n[bold]Detailed changes:[/bold]")
+        for change in changes:
+            color = "red" if change["diff"] < 0 else "green"
+            console.print(
+                f"  [yellow]{change['name']}[/yellow]\n"
+                f"    Old impact: [dim]{change['old']:.1f} billion[/dim]\n"
+                f"    New impact: [bold]{change['new']:.1f} billion[/bold]\n"
+                f"    Change: [{color}]{change['diff']:+.1f} billion[/{color}]\n"
+            )
 
     # Show summary of changes
     if changes:
-        print("\nSummary of changes:")
-        print("-" * 70)
+        table = Table(
+            title="Summary of changes",
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Reform", style="cyan", no_wrap=False)
+        table.add_column("Old impact (£bn)", justify="right")
+        table.add_column("New impact (£bn)", justify="right")
+        table.add_column("Change (£bn)", justify="right")
+
         for change in changes:
-            print(
-                f"{change['name']:<50} {change['old']:>6.1f} → {change['new']:>6.1f} ({change['diff']:+.1f})"
+            color = "red" if change["diff"] < 0 else "green"
+            table.add_row(
+                change["name"],
+                f"{change['old']:.1f}",
+                f"{change['new']:.1f}",
+                f"[{color}]{change['diff']:+.1f}[/{color}]",
             )
-        print("-" * 70)
-        print(f"Total changes: {len(changes)}")
+
+        console.print("\n", table)
+        console.print(
+            f"\n[bold cyan]Total changes: {len(changes)}[/bold cyan]"
+        )
     else:
-        print("\nNo significant changes detected.")
+        console.print("\n[green]✓ No significant changes detected.[/green]")
 
     # Write updated configuration
     if not dry_run:
@@ -109,13 +161,22 @@ def update_impacts(
         with open(config_path, "w") as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
-        print(f"\nConfiguration updated successfully!")
-        print(f"Backup saved to: {backup_path}")
+        console.print(
+            Panel.fit(
+                f"[green]✓ Configuration updated successfully![/green]\n"
+                f"[dim]Backup saved to: {backup_path}[/dim]",
+                title="Success",
+                border_style="green",
+            )
+        )
     else:
-        print("\nDry run - no changes written to file.")
+        console.print(
+            "\n[yellow]⚠ Dry run - no changes written to file.[/yellow]"
+        )
 
 
 def main():
+    console = Console()
     parser = argparse.ArgumentParser(
         description="Update reform impact expectations with current model values"
     )
@@ -143,14 +204,17 @@ def main():
     args = parser.parse_args()
 
     if not args.config.exists():
-        print(f"Error: Configuration file '{args.config}' not found!")
+        console.print(
+            f"[bold red]Error:[/bold red] Configuration file '{args.config}' not found!"
+        )
         return 1
 
     try:
         update_impacts(args.config, dry_run=args.dry_run, verbose=args.verbose)
         return 0
     except Exception as e:
-        print(f"Error updating impacts: {e}")
+        console.print(f"[bold red]Error updating impacts:[/bold red] {e}")
+        console.print(traceback.format_exc())
         return 1
 
 
