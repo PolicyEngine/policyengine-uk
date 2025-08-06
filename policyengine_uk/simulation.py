@@ -427,7 +427,11 @@ class Simulation(CoreSimulation):
                 holder.delete_arrays(known_period)
 
     def calculate_all(self, year: int) -> None:
-        person, benunit, household = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+        person, benunit, household = (
+            pd.DataFrame(),
+            pd.DataFrame(),
+            pd.DataFrame(),
+        )
         period = str(year)
         for variable in self.tax_benefit_system.variables.values():
             entity = variable.entity.key
@@ -438,7 +442,7 @@ class Simulation(CoreSimulation):
                 benunit[variable.name] = result
             elif entity == "household":
                 household[variable.name] = result
-        
+
         person = MicroDataFrame(person, weights="person_weight")
         benunit = MicroDataFrame(benunit, weights="benunit_weight")
         household = MicroDataFrame(household, weights="household_weight")
@@ -449,7 +453,6 @@ class Simulation(CoreSimulation):
             household=household,
             fiscal_year=year,
         )
-
 
     def calculate(
         self,
