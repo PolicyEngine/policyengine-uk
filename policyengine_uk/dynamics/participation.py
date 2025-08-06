@@ -251,7 +251,7 @@ def impute_wages_for_nonworkers(
 
     # Get elasticity groups for wage calculation
     earnings_quintile = calculate_earnings_quintile(
-        sim, year, hours_for_new_entrants
+        sim, year, hours_for_new_entrants, random_seed=42
     )
     elasticities = calculate_participation_elasticities(sim, earnings_quintile)
 
@@ -371,6 +371,7 @@ def calculate_earnings_quintile(
     sim: Simulation,
     year: int = 2025,
     hours_for_new_entrants: float = 18.8,
+    random_seed: int = 42,
 ) -> np.ndarray:
     """Calculate earnings quintile for each person based on potential earnings.
 
@@ -380,6 +381,7 @@ def calculate_earnings_quintile(
         sim: PolicyEngine simulation object
         year: Year for calculation
         hours_for_new_entrants: Weekly hours assumed for new entrants
+        random_seed: Seed for random number generation
 
     Returns:
         Array of quintiles (1-5) for each person
@@ -389,8 +391,9 @@ def calculate_earnings_quintile(
     # Calculate quintiles
     # Use pandas qcut for equal-sized bins
     # Add random noise to avoid ties in quintile calculation
+    rng = np.random.RandomState(random_seed)
     quintiles = pd.qcut(
-        employment_income + np.random.random(employment_income.shape),
+        employment_income + rng.random(employment_income.shape),
         q=5,
         labels=[1, 2, 3, 4, 5],
         duplicates="drop",
@@ -473,7 +476,7 @@ def apply_participation_responses(
 
     # Get elasticities
     earnings_quintile = calculate_earnings_quintile(
-        sim, year, hours_for_new_entrants
+        sim, year, hours_for_new_entrants, random_seed
     )
     elasticities_wrt_income = calculate_participation_elasticities(
         sim, earnings_quintile
@@ -499,7 +502,53 @@ def apply_participation_responses(
 
     # Calculate participation probability change for each person
     # From OBR methodology: percentage change in participation = elasticity * percentage change in GTW
-    participation_change = elasticities * gtw_pct_change
+    direct_participation_change = elasticities * gtw_pct_change
+
+    # Calculate surplus participation effects (OBR methodology)
+    # When workers have better incentives (positive GTW change), this creates a "surplus"
+    # that pulls non-workers into employment
+    # When workers have worse incentives (negative GTW change), this creates a "deficit"
+    # that pushes non-workers further away from employment
+
+    # Group people by elasticity group for surplus calculation
+    elasticity_groups = pd.cut(
+        elasticities, bins=20, labels=False, duplicates="drop"
+    )
+
+    surplus_participation_change = np.zeros_like(direct_participation_change)
+
+    for group in np.unique(elasticity_groups[~np.isnan(elasticity_groups)]):
+        group_mask = elasticity_groups == group
+        workers_in_group = group_mask & currently_working
+        nonworkers_in_group = group_mask & currently_not_working
+
+        if workers_in_group.any() and nonworkers_in_group.any():
+            # Calculate average GTW change for workers in this elasticity group
+            avg_worker_gtw_change = np.mean(gtw_pct_change[workers_in_group])
+
+            # Apply a fraction of this to non-workers in the same group
+            # Using spillover factor of 1 (100% of worker effect) to match OBR
+            spillover_factor = 1
+            surplus_participation_change[nonworkers_in_group] = (
+                elasticities[nonworkers_in_group]
+                * avg_worker_gtw_change
+                * spillover_factor
+            )
+
+            # Similarly, non-worker GTW changes affect workers (pushing them out if negative)
+            avg_nonworker_gtw_change = np.mean(
+                gtw_pct_change[nonworkers_in_group]
+            )
+            surplus_participation_change[workers_in_group] = (
+                elasticities[workers_in_group]
+                * avg_nonworker_gtw_change
+                * spillover_factor
+            )
+
+    # Total participation change includes both direct and surplus effects
+    participation_change = (
+        direct_participation_change + surplus_participation_change
+    )
 
     # Apply stochastic participation responses
     new_employment_income = employment_income.copy()
@@ -551,9 +600,12 @@ def apply_participation_responses(
             "originally_working": currently_working,
             "originally_not_working": currently_not_working,
             "participation_elasticity": elasticities,
+            "elasticity_group": elasticity_groups,
             "gtw_baseline": gtw_baseline,
             "gtw_reform": gtw_reform,
             "gtw_pct_change": gtw_pct_change,
+            "direct_participation_change": direct_participation_change,
+            "surplus_participation_change": surplus_participation_change,
             "participation_change": participation_change,
             "participation_response": participation_response,
             "new_employment_income": new_employment_income,
