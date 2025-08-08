@@ -80,3 +80,26 @@ class Microsimulation(Simulation):
             return values
         weights = self.get_weights(variable_names[0], period, map_to=map_to)
         return MicroDataFrame(values, weights=weights)
+
+    def compare(
+        self,
+        other: "Simulation",
+        variables: list[str] = None,
+        period: str = None,
+        change_only: bool = False,
+    ):
+        """Compare two simulations for a specific variable list.
+
+        Args:
+            other: Another Simulation instance to compare against
+            variables: List of variable names to compare. If None, compares all variables.
+
+        Returns:
+            DataFrame with comparison results
+        """
+        df = super().compare(
+            other, variables=variables, period=period, change_only=change_only
+        )
+        return MicroDataFrame(
+            df, weights=self.get_weights(variables[0], period)
+        )
