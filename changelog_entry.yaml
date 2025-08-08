@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Forecast window extended to 2030-31.
