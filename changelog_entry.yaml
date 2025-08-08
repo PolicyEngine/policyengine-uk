@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    changed:
-    - Updated script to open automated API update PRs

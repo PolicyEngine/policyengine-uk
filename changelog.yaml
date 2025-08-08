@@ -1799,3 +1799,8 @@
     fixed:
     - Forecast window extended to 2030-31.
   date: 2025-08-08 11:42:38
+- bump: patch
+  changes:
+    changed:
+    - Updated script to open automated API update PRs
+  date: 2025-08-08 15:09:27
