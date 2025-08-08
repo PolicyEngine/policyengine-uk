@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    added:
-    - Utility function for comparing simulations added to `policyengine_uk.utils.compare`.

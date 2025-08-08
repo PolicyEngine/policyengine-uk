@@ -1784,3 +1784,8 @@
     changed:
     - Dropped direct jupyter book dependency.
   date: 2025-08-04 14:23:45
+- bump: patch
+  changes:
+    added:
+    - Utility function for comparing simulations added to `policyengine_uk.utils.compare`.
+  date: 2025-08-08 10:46:25
