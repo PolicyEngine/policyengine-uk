@@ -397,6 +397,53 @@ print(f"Average age: {avg_age:.1f} years")
 print(f"Average children per household: {children_per_household:.1f}")
 ```
 
+## Comparing simulations and analysing dependencies
+
+PolicyEngine UK provides utilities for comparing simulations and understanding variable relationships:
+
+### Fetching variable dependencies
+
+The `get_variable_dependencies` method helps you understand what variables feed into a calculation:
+
+```python
+from policyengine_uk import Microsimulation
+
+sim = Microsimulation()
+
+# Get direct dependencies of income tax
+deps = sim.get_variable_dependencies("income_tax")
+# Returns: ['earned_income_tax', 'savings_income_tax', 'dividend_income_tax', 'CB_HITC', ...]
+
+# Get dependencies up to 3 levels deep to see the full calculation tree
+deep_deps = sim.get_variable_dependencies("income_tax", depth=3)
+# Returns expanded list including dependencies of dependencies
+```
+
+This is particularly useful for debugging unexpected results or understanding the full impact of policy changes.
+
+### Comparing baseline and reformed simulations
+
+The `compare` method creates a DataFrame showing differences between simulations:
+
+```python
+baseline = Microsimulation()
+reformed = Microsimulation()  # Apply your reforms here
+
+# Compare specific variables between simulations
+comparison_df = baseline.compare(
+    reformed, 
+    baseline.get_variable_dependencies("income_tax", depth=1), 
+    2029
+)
+
+# The DataFrame has columns for each variable:
+# - variable_self: baseline value
+# - variable_other: reformed value  
+# - variable_change: difference between reformed and baseline
+```
+
+This makes it easy to trace through exactly how a reform affects different components of the tax and benefit system.
+
 ## Performance tips
 
 ```{tip}

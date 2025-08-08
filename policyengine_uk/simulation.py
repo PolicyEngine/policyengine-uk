@@ -23,6 +23,7 @@ from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
 )
+from policyengine_uk.utils.dependencies import get_variable_dependencies
 
 from .tax_benefit_system import CountryTaxBenefitSystem
 
@@ -41,6 +42,7 @@ class Simulation(CoreSimulation):
     baseline: "Simulation"
 
     calculated_periods: List[str] = []
+    _variable_dependencies: Dict[str, List[str]] = None
 
     def __init__(
         self,
@@ -490,3 +492,102 @@ class Simulation(CoreSimulation):
         )
 
         return apply_labour_supply_responses(self, year=str(year))
+
+    def get_variable_dependencies(self, variable_name: str, depth: int = 1):
+        if self._variable_dependencies is None:
+            self._variable_dependencies = {}
+            self._example_simulation = Simulation(
+                situation={
+                    "age": 30,
+                },
+                trace=True,
+            )
+            self._example_simulation.calculate("hbai_household_net_income")
+            for (
+                variable
+            ) in self._example_simulation.tax_benefit_system.variables:
+                try:
+                    dependencies = get_variable_dependencies(
+                        variable, self._example_simulation
+                    )
+                    self._variable_dependencies[variable] = dependencies
+                except Exception as e:
+                    self._variable_dependencies[variable] = []
+
+        if variable_name not in self._variable_dependencies:
+            raise ValueError(
+                f"Variable '{variable_name}' not found in simulation dependencies."
+            )
+        dependencies = self._variable_dependencies[variable_name]
+
+        if depth <= 1:
+            return dependencies
+
+        all_dependencies = set(dependencies)
+        for dep in dependencies:
+            try:
+                sub_dependencies = self.get_variable_dependencies(
+                    dep, depth - 1
+                )
+                all_dependencies.update(sub_dependencies)
+            except ValueError:
+                continue
+        return list(all_dependencies)
+
+    def compare(
+        self,
+        other: "Simulation",
+        variables: list[str] = None,
+        period: str = None,
+    ):
+        """Compare two simulations for a specific variable list.
+
+        Args:
+            other: Another Simulation instance to compare against
+            variables: List of variable names to compare. If None, compares all variables.
+
+        Returns:
+            DataFrame with comparison results
+        """
+
+        if variables is None:
+            variables = self.input_variables + [
+                "hbai_household_net_income",
+            ]
+
+        df_self = self.calculate_dataframe(variables, period=period)
+        df_other = other.calculate_dataframe(variables, period=period)
+
+        df_combined = pd.concat(
+            [df_self, df_other], axis=1, keys=["self", "other"]
+        )
+        # Reset columns, then order by variable name first then self/other
+        df_combined.columns = [
+            f"{var}_{entity}" for entity, var in df_combined.columns
+        ]
+        # Add change where applicable (numeric only)
+        for variable in variables:
+            self_col = f"{variable}_self"
+            other_col = f"{variable}_other"
+            if pd.api.types.is_numeric_dtype(
+                df_combined[self_col]
+            ) and pd.api.types.is_numeric_dtype(df_combined[other_col]):
+                df_combined[f"{variable}_change"] = (
+                    df_combined[other_col] - df_combined[self_col]
+                )
+            else:
+                # True if different, False if same
+                df_combined[f"{variable}_change"] = (
+                    df_combined[other_col] != df_combined[self_col]
+                )
+        columns = []
+
+        for variable in variables:
+            columns.extend(
+                [
+                    f"{variable}_self",
+                    f"{variable}_other",
+                    f"{variable}_change",
+                ]
+            )
+        return df_combined[columns]

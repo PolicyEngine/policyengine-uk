@@ -1,7 +1,7 @@
 # Economic assumptions
 
 ```{note}
-We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's Economic and Fiscal Outlook ([March 2025](https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/)) unless we specify otherwise.
+We project economic variables using year-over-year growth rates stored in `parameters/gov/economic_assumptions/yoy_growth.yaml`. We generate index values from these rates to update household variables. We source all values from the OBR's long-term economic determinants and Economic and Fiscal Outlook ([March 2025](https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/)) unless we specify otherwise. The long-term determinants provide extended forecasts beyond the standard forecast horizon.
 ```
 
 ## Consumer price index
