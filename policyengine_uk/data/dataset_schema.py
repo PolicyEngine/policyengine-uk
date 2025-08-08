@@ -120,9 +120,12 @@ class UKSingleYearDataset:
                 if simulation.tax_benefit_system.variables[variable].entity.key
                 == entity
             ]
-            entity_dfs[entity] = simulation.calculate_dataframe(
-                input_variables, period=fiscal_year
-            )
+            if len(input_variables) == 0:
+                entity_dfs[entity] = pd.DataFrame()
+            else:
+                entity_dfs[entity] = simulation.calculate_dataframe(
+                    input_variables, period=fiscal_year
+                )
 
         return UKSingleYearDataset(
             person=entity_dfs["person"],
