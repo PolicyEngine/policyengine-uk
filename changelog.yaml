@@ -1794,3 +1794,8 @@
     changed:
     - Long-term OBR economic growfactors for 2030-10 and onwards.
   date: 2025-08-08 11:34:55
+- bump: patch
+  changes:
+    fixed:
+    - Forecast window extended to 2030-31.
+  date: 2025-08-08 11:42:38
