@@ -1789,3 +1789,8 @@
     added:
     - Utility function for comparing simulations added to `policyengine_uk.utils.compare`.
   date: 2025-08-08 10:46:25
+- bump: minor
+  changes:
+    changed:
+    - Long-term OBR economic growfactors for 2030-10 and onwards.
+  date: 2025-08-08 11:34:55

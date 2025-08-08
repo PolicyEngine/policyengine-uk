@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.46.0] - 2025-08-08 11:34:55
+
+### Changed
+
+- Long-term OBR economic growfactors for 2030-10 and onwards.
+
 ## [2.45.5] - 2025-08-08 10:46:25
 
 ### Added
@@ -2114,6 +2120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.46.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.5...2.46.0
 [2.45.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.4...2.45.5
 [2.45.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.3...2.45.4
 [2.45.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.2...2.45.3
