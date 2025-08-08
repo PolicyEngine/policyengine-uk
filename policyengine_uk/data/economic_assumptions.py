@@ -9,7 +9,7 @@ import logging
 
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
-    end_year: int = 2029,
+    end_year: int = 2030,
 ) -> UKMultiYearDataset:
     # Extend years and uprate
     start_year = int(dataset.time_period)
