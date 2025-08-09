@@ -539,6 +539,7 @@ class Simulation(CoreSimulation):
         other: "Simulation",
         variables: list[str] = None,
         period: str = None,
+        change_only: bool = False,
     ):
         """Compare two simulations for a specific variable list.
 
@@ -569,14 +570,12 @@ class Simulation(CoreSimulation):
         for variable in variables:
             self_col = f"{variable}_self"
             other_col = f"{variable}_other"
-            if pd.api.types.is_numeric_dtype(
-                df_combined[self_col]
-            ) and pd.api.types.is_numeric_dtype(df_combined[other_col]):
+            try:
                 df_combined[f"{variable}_change"] = (
                     df_combined[other_col] - df_combined[self_col]
                 )
-            else:
-                # True if different, False if same
+            except:
+                # For other data types, use XOR
                 df_combined[f"{variable}_change"] = (
                     df_combined[other_col] != df_combined[self_col]
                 )
@@ -590,4 +589,17 @@ class Simulation(CoreSimulation):
                     f"{variable}_change",
                 ]
             )
+
+        if change_only:
+            variables_to_include = []
+            for variable in variables:
+                if df_combined[f"{variable}_change"].mean() > 0:
+                    variables_to_include.extend(
+                        [
+                            f"{variable}_self",
+                            f"{variable}_other",
+                            f"{variable}_change",
+                        ]
+                    )
+            columns = variables_to_include
         return df_combined[columns]
