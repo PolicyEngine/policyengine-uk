@@ -1804,3 +1804,8 @@
     changed:
     - Updated script to open automated API update PRs
   date: 2025-08-08 15:09:27
+- bump: patch
+  changes:
+    fixed:
+    - Minor bug in comparison function.
+  date: 2025-08-09 09:01:58
