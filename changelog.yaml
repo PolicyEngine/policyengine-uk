@@ -1809,3 +1809,8 @@
     fixed:
     - Minor bug in comparison function.
   date: 2025-08-09 09:01:58
+- bump: minor
+  changes:
+    fixed:
+    - Dropped support for <3.13.
+  date: 2025-08-12 09:29:55
