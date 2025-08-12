@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Callable, Dict, Type, Union
 from policyengine_core.simulations import Simulation
 from policyengine_core.reforms import Reform
+from policyengine_core.periods import period, instant
 
 
 class Scenario(BaseModel):
@@ -111,8 +112,33 @@ class Scenario(BaseModel):
 
         elif isinstance(reform, dict):
             # Dictionary of parameter changes
-            return cls(
-                parameter_changes=reform,
+            # Make sure to capture YYYY-MM-DD.YYYY-MM-DD.
+
+            def modifier(sim: Simulation):
+                for parameter in reform:
+                    if isinstance(reform[parameter], dict):
+                        for period_str, value in reform[parameter].items():
+                            if "." in period_str:
+                                start = instant(period_str.split(".")[0])
+                                stop = instant(period_str.split(".")[1])
+                                period_ = None
+                            else:
+                                period_ = period(period_str)
+                    else:
+                        start = instant("2023-01-01")
+                        stop = None
+                        period_ = None
+                    sim.tax_benefit_system.parameters.get_child(
+                        parameter
+                    ).update(
+                        start=start,
+                        stop=stop,
+                        period=period_,
+                        value=value,
+                    )
+
+            return Scenario(
+                simulation_modifier=modifier,
             )
 
         elif isinstance(reform, tuple):

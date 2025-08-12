@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Scenario class now supports all Reform object types and maintains backwards compatibility.
