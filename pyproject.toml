@@ -1,7 +1,7 @@
 [project] 
 name = "policyengine-uk"
 version = "2.47.2"
-description = "PolicyEngine tax and benefit system for the UK"
+description = "PolicyEngine tax and benefit system for the UK."
 readme = "README.md"
 authors = [
     { name = "PolicyEngine", email = "nikhil@policyengine.org" }
