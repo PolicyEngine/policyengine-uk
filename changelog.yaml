@@ -1819,3 +1819,8 @@
     fixed:
     - Bug in multi year datasets.
   date: 2025-08-12 09:48:46
+- bump: patch
+  changes:
+    fixed:
+    - Moved `Scenario` in top-level import.
+  date: 2025-08-12 14:17:09

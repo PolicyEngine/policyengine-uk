@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Moved `Scenario` in top-level import.
