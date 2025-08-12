@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    fixed:
+    - Dropped support for <3.13.
