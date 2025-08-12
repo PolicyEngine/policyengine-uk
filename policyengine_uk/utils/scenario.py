@@ -124,18 +124,27 @@ class Scenario(BaseModel):
                                 period_ = None
                             else:
                                 period_ = period(period_str)
+                            sim.tax_benefit_system.parameters.get_child(
+                                parameter
+                            ).update(
+                                start=start,
+                                stop=stop,
+                                period=period_,
+                                value=value,
+                            )
                     else:
                         start = instant("2023-01-01")
                         stop = None
                         period_ = None
-                    sim.tax_benefit_system.parameters.get_child(
-                        parameter
-                    ).update(
-                        start=start,
-                        stop=stop,
-                        period=period_,
-                        value=value,
-                    )
+
+                        sim.tax_benefit_system.parameters.get_child(
+                            parameter
+                        ).update(
+                            start=start,
+                            stop=stop,
+                            period=period_,
+                            value=reform[parameter],
+                        )
 
             return Scenario(
                 simulation_modifier=modifier,
