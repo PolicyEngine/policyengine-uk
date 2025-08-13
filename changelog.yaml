@@ -1824,3 +1824,9 @@
     fixed:
     - Moved `Scenario` in top-level import.
   date: 2025-08-12 14:17:09
+- bump: patch
+  changes:
+    fixed:
+    - Scenario class now supports all Reform object types and maintains backwards
+      compatibility.
+  date: 2025-08-13 08:14:33
