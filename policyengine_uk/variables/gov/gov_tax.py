@@ -26,7 +26,6 @@ class gov_tax(Variable):
         "national_insurance",
         "LVT",
         "carbon_tax",
-        "vat_change",
         "capital_gains_tax",
         "private_school_vat",
         "corporate_incident_tax_revenue_change",
