@@ -122,6 +122,9 @@ class Simulation(CoreSimulation):
 
         self.tax_benefit_system.reset_parameter_caches()
 
+        self.move_values("capital_gains", "capital_gains_before_response")
+        self.move_values("employment_income", "employment_income_before_lsr")
+
         if scenario is not None:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
