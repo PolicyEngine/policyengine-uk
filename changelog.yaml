@@ -1830,3 +1830,8 @@
     - Scenario class now supports all Reform object types and maintains backwards
       compatibility.
   date: 2025-08-13 08:14:33
+- bump: patch
+  changes:
+    fixed:
+    - Issue causing capital gains elasticities to not take effect.
+  date: 2025-08-14 16:30:16

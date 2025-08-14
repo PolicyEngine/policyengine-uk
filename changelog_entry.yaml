@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Issue causing capital gains elasticities to not take effect.
