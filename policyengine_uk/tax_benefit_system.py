@@ -14,7 +14,7 @@ from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.variables import Variable
 
 # PolicyEngine UK imports
-from policyengine_uk.entities import BenUnit, Household, Person
+from policyengine_uk.entities import BenUnit, Household, Person, Firm
 from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
     add_private_pension_uprating_factor,
 )
@@ -108,16 +108,17 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.variables = {}
 
         # Create copies of entity classes to avoid modifying originals
-        person, benunit, household = (
+        person, benunit, household, firm = (
             copy.copy(Person),
             copy.copy(BenUnit),
             copy.copy(Household),
+            copy.copy(Firm),
         )
 
         # Set up entities
-        self.entities = [person, benunit, household]
+        self.entities = [person, benunit, household, firm]
         self.person_entity = person
-        self.group_entities = [benunit, household]
+        self.group_entities = [benunit, household, firm]
         self.group_entity_keys = [entity.key for entity in self.group_entities]
 
         # Link entities to this tax-benefit system

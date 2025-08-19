@@ -1,0 +1,9 @@
+description: Zero-rated VAT (0% rate) applies to essential items like most food, children's clothes, books
+values:
+  1973-04-01: 0.0
+metadata:
+  unit: /1
+  reference:
+    - title: HMRC VAT rates
+      href: https://www.gov.uk/vat-rates
+  label: VAT zero rate
