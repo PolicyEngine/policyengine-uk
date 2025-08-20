@@ -178,9 +178,15 @@ class Simulation(CoreSimulation):
         Args:
             situation: Dictionary describing household composition and characteristics
         """
-        self.build_from_populations(
-            self.tax_benefit_system.instantiate_entities()
-        )
+        # Only instantiate entities that are present in the situation
+        # Firm is optional and only needed when explicitly provided
+        populations = self.tax_benefit_system.instantiate_entities()
+        
+        # Remove firm population if no firm data in situation
+        if "firms" not in situation and "firm" not in situation:
+            populations = {k: v for k, v in populations.items() if k != "firm"}
+        
+        self.build_from_populations(populations)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
