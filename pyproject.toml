@@ -67,4 +67,5 @@ dev = [
     "jupyter-book>=2.0.0a0",
     "linecheck",
     "rich",
+    "tables",
 ]
