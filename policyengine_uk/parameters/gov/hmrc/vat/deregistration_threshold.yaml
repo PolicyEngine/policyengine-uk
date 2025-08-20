@@ -1,7 +1,7 @@
 description: VAT deregistration threshold - firms can deregister if turnover falls below this
 values:
-  2017-04-01: 83000
-  2024-04-01: 88000
+  2017-04-01: 83_000
+  2024-04-01: 88_000
 metadata:
   unit: currency-GBP
   reference:

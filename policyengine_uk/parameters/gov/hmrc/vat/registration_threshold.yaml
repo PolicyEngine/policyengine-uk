@@ -1,7 +1,7 @@
 description: VAT registration threshold - firms with taxable turnover above this must register for VAT
 values:
-  2017-04-01: 85000
-  2024-04-01: 90000
+  2017-04-01: 85_000
+  2024-04-01: 90_000
 metadata:
   unit: currency-GBP
   reference:
