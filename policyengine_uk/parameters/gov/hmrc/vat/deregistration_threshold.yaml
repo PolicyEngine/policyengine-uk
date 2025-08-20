@@ -1,4 +1,4 @@
-description: VAT deregistration threshold - firms can deregister if turnover falls below this
+description: The United Kingdom allows firms to deregister from Value Added Tax if their taxable turnover falls below this amount.
 values:
   2017-04-01: 83_000
   2024-04-01: 88_000
