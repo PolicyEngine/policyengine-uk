@@ -15,10 +15,9 @@ class firm_vat_on_sales(Variable):
 
         standard_supplies = firm("firm_standard_rated_supplies", period)
         reduced_supplies = firm("firm_reduced_rated_supplies", period)
-        zero_supplies = firm("firm_zero_rated_supplies", period)
 
         standard_vat = standard_supplies * p.standard_rate
         reduced_vat = reduced_supplies * p.reduced_rate
-        zero_vat = zero_supplies * p.zero_rate
+        # Zero-rated supplies have 0% VAT by definition
 
-        return standard_vat + reduced_vat + zero_vat
+        return standard_vat + reduced_vat

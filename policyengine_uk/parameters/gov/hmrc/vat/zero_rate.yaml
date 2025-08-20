@@ -1,9 +1,0 @@
-description: The United Kingdom applies this zero Value Added Tax rate to essential items including most food, children's clothing, and books.
-values:
-  1973-04-01: 0.0
-metadata:
-  unit: /1
-  reference:
-    - title: HMRC VAT rates
-      href: https://www.gov.uk/vat-rates
-  label: VAT zero rate
