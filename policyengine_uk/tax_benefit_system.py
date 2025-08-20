@@ -118,7 +118,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         # Set up entities
         self.entities = [person, benunit, household, firm]
         self.person_entity = person
-        self.group_entities = [benunit, household, firm]
+        self.group_entities = [benunit, household]
         self.group_entity_keys = [entity.key for entity in self.group_entities]
 
         # Link entities to this tax-benefit system
