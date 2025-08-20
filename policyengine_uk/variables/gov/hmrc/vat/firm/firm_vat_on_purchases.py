@@ -8,3 +8,4 @@ class firm_vat_on_purchases(Variable):
     definition_period = YEAR
     unit = GBP
     documentation = "Total VAT paid on firm's purchases (input VAT)"
+    defined_for = "firm_vat_registered"
