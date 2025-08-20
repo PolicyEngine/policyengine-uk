@@ -43,4 +43,19 @@ Person = build_entity(
     is_person=True,
 )
 
-entities = [Household, BenUnit, Person]
+Firm = build_entity(
+    key="firm",
+    plural="firms",
+    label="Firm",
+    doc="A business entity that may be subject to VAT and other business taxes.",
+    roles=[
+        {
+            "key": "owner",
+            "plural": "owners",
+            "label": "Owner",
+            "doc": "A person who owns or has an interest in the firm.",
+        }
+    ],
+)
+
+entities = [Household, BenUnit, Person, Firm]

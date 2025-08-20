@@ -115,6 +115,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         )
 
         # Set up entities
+        # Note: Firm entity exists but is not included in default entities
+        # to avoid issues with YAML tests that don't include firm data
         self.entities = [person, benunit, household]
         self.person_entity = person
         self.group_entities = [benunit, household]
