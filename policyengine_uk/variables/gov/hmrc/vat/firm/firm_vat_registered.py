@@ -10,5 +10,5 @@ class firm_vat_registered(Variable):
 
     def formula(firm, period, parameters):
         turnover = firm("firm_turnover", period)
-        threshold = parameters(period).gov.hmrc.vat.registration_threshold
-        return turnover > threshold
+        p = parameters(period).gov.hmrc.vat
+        return turnover > p.registration_threshold
