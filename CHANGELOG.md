@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.48.0] - 2025-08-27 20:32:42
+
+### Fixed
+
+- Fuel duty is 52.95p per litre until 2026 where the temporary 5p cut is reversed, and then risen with RPI
+
 ## [2.47.4] - 2025-08-14 16:30:16
 
 ### Fixed
@@ -2168,6 +2174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.48.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.4...2.48.0
 [2.47.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.3...2.47.4
 [2.47.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.2...2.47.3
 [2.47.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.1...2.47.2

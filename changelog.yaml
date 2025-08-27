@@ -1835,3 +1835,9 @@
     fixed:
     - Issue causing capital gains elasticities to not take effect.
   date: 2025-08-14 16:30:16
+- bump: minor
+  changes:
+    fixed:
+    - Fuel duty is 52.95p per litre until 2026 where the temporary 5p cut is reversed,
+      and then risen with RPI
+  date: 2025-08-27 20:32:42
