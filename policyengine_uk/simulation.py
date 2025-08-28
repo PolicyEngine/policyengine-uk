@@ -126,10 +126,6 @@ class Simulation(CoreSimulation):
         self.move_values("employment_income", "employment_income_before_lsr")
 
         if scenario is not None:
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
-
-        if scenario is not None:
             self.baseline = Simulation(
                 scenario=None,
                 situation=situation,
@@ -138,6 +134,10 @@ class Simulation(CoreSimulation):
             )
         else:
             self.baseline = self.clone()
+
+        if scenario is not None:
+            if scenario.simulation_modifier is not None:
+                scenario.simulation_modifier(self)
 
         self.calculated_periods = []
 
