@@ -1841,3 +1841,8 @@
     - Fuel duty is 52.95p per litre until 2026 where the temporary 5p cut is reversed,
       and then risen with RPI
   date: 2025-08-27 20:32:42
+- bump: minor
+  changes:
+    fixed:
+    - Baseline simulation created before simulation modifier is applied.
+  date: 2025-08-28 13:08:00

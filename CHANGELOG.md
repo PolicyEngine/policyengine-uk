@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.49.0] - 2025-08-28 13:08:00
+
+### Fixed
+
+- Baseline simulation created before simulation modifier is applied.
+
 ## [2.48.0] - 2025-08-27 20:32:42
 
 ### Fixed
@@ -2174,6 +2180,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.49.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.48.0...2.49.0
 [2.48.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.4...2.48.0
 [2.47.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.3...2.47.4
 [2.47.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.2...2.47.3

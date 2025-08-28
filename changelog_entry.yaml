@@ -1,4 +1,0 @@
-- bump: minor
-  changes:
-    fixed:
-      - Baseline simulation created before simulation modifier is applied.
