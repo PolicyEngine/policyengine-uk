@@ -127,16 +127,22 @@ def apply_labour_supply_responses(
         return
 
     # Calculate income changes using household_net_income
-    baseline_income = sim.baseline.calculate(target_variable, year, map_to="person")
+    baseline_income = sim.baseline.calculate(
+        target_variable, year, map_to="person"
+    )
     reform_income = sim.calculate(target_variable, year, map_to="person")
-    
-    if hasattr(baseline_income, 'values'):
+
+    if hasattr(baseline_income, "values"):
         baseline_income = baseline_income.values
-    if hasattr(reform_income, 'values'):
+    if hasattr(reform_income, "values"):
         reform_income = reform_income.values
-    
+
     # Calculate relative changes
-    income_rel_change = np.where(baseline_income != 0, (reform_income - baseline_income) / baseline_income, 0)
+    income_rel_change = np.where(
+        baseline_income != 0,
+        (reform_income - baseline_income) / baseline_income,
+        0,
+    )
 
     # Apply intensive margin responses (progression model)
     progression_responses = apply_progression_responses(
@@ -240,10 +246,14 @@ def apply_progression_responses(
         gross_wage * derivative_changes["deriv_scenario"]
     )
     derivative_changes["wage_rel_change"] = (
-        derivative_changes["wage_scenario"]
-        / derivative_changes["wage_baseline"]
-        - 1
-    ).replace([np.inf, -np.inf, np.nan], 0).fillna(0)
+        (
+            derivative_changes["wage_scenario"]
+            / derivative_changes["wage_baseline"]
+            - 1
+        )
+        .replace([np.inf, -np.inf, np.nan], 0)
+        .fillna(0)
+    )
     derivative_changes["wage_abs_change"] = (
         derivative_changes["wage_scenario"]
         - derivative_changes["wage_baseline"]
@@ -253,12 +263,20 @@ def apply_progression_responses(
     if pre_calculated_income_rel_change is not None:
         # Use pre-calculated values
         n_people = len(sim.calculate("person_id", year))
-        income_changes = pd.DataFrame({
-            "baseline": np.zeros(n_people),  # Not needed for behavioral response
-            "scenario": np.zeros(n_people),  # Not needed for behavioral response
-            "rel_change": pre_calculated_income_rel_change,
-            "abs_change": np.zeros(n_people),  # Not needed for behavioral response
-        })
+        income_changes = pd.DataFrame(
+            {
+                "baseline": np.zeros(
+                    n_people
+                ),  # Not needed for behavioral response
+                "scenario": np.zeros(
+                    n_people
+                ),  # Not needed for behavioral response
+                "rel_change": pre_calculated_income_rel_change,
+                "abs_change": np.zeros(
+                    n_people
+                ),  # Not needed for behavioral response
+            }
+        )
     else:
         income_changes = calculate_relative_income_change(
             sim, target_variable, year
