@@ -42,7 +42,11 @@ class employer_ni_fixed_employer_cost_change(Variable):
         )
 
         # Calculate baseline employer cost
-        baseline_parameters = parameters(period).baseline
+        if person.simulation.baseline is None:
+            return 0
+        baseline_parameters = (
+            person.simulation.baseline.tax_benefit_system.parameters(period)
+        )
         baseline_class_1 = (
             baseline_parameters.gov.hmrc.national_insurance.class_1
         )

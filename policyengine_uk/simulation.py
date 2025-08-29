@@ -70,12 +70,6 @@ class Simulation(CoreSimulation):
         if reform is not None:
             scenario = Scenario.from_reform(reform)
 
-        # Apply parametric reforms here
-
-        if scenario is not None:
-            if scenario.parameter_changes is not None:
-                self.apply_parameter_changes(scenario.parameter_changes)
-
         self.branch_name = "default"
         self.invalidated_caches = set()
         self.debug: bool = False
@@ -136,6 +130,8 @@ class Simulation(CoreSimulation):
             self.baseline = self.clone()
 
         if scenario is not None:
+            if scenario.parameter_changes is not None:
+                self.apply_parameter_changes(scenario.parameter_changes)
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
 
