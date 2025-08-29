@@ -126,6 +126,22 @@ def apply_labour_supply_responses(
     if (not follow_obr) or (sim.baseline is None):
         return
 
+    # Calculate income changes using household_net_income
+    baseline_income = sim.baseline.calculate(
+        target_variable, year, map_to="person"
+    )
+    reform_income = sim.calculate(target_variable, year, map_to="person")
+
+    baseline_income = baseline_income.values
+    reform_income = reform_income.values
+
+    # Calculate relative changes
+    income_rel_change = np.where(
+        baseline_income != 0,
+        (reform_income - baseline_income) / baseline_income,
+        0,
+    )
+
     # Apply intensive margin responses (progression model)
     progression_responses = apply_progression_responses(
         sim=sim,
@@ -134,6 +150,7 @@ def apply_labour_supply_responses(
         year=year,
         count_adults=count_adults,
         delta=delta,
+        pre_calculated_income_rel_change=income_rel_change,
     )
 
     # Apply extensive margin responses (participation model)
@@ -182,6 +199,7 @@ def apply_progression_responses(
     year: int = 2025,
     count_adults: int = 1,
     delta: float = 1_000,
+    pre_calculated_income_rel_change: np.ndarray = None,
 ) -> pd.DataFrame:
     """Apply progression (intensive margin) labour supply responses.
 
@@ -226,19 +244,41 @@ def apply_progression_responses(
         gross_wage * derivative_changes["deriv_scenario"]
     )
     derivative_changes["wage_rel_change"] = (
-        derivative_changes["wage_scenario"]
-        / derivative_changes["wage_baseline"]
-        - 1
-    ).replace([np.inf, -np.inf], 0)
+        (
+            derivative_changes["wage_scenario"]
+            / derivative_changes["wage_baseline"]
+            - 1
+        )
+        .replace([np.inf, -np.inf, np.nan], 0)
+        .fillna(0)
+    )
     derivative_changes["wage_abs_change"] = (
         derivative_changes["wage_scenario"]
         - derivative_changes["wage_baseline"]
     )
 
     # Calculate changes in income levels (drives income effects)
-    income_changes = calculate_relative_income_change(
-        sim, target_variable, year
-    )
+    if pre_calculated_income_rel_change is not None:
+        # Use pre-calculated values
+        n_people = len(sim.calculate("person_id", year))
+        income_changes = pd.DataFrame(
+            {
+                "baseline": np.zeros(
+                    n_people
+                ),  # Not needed for behavioral response
+                "scenario": np.zeros(
+                    n_people
+                ),  # Not needed for behavioral response
+                "rel_change": pre_calculated_income_rel_change,
+                "abs_change": np.zeros(
+                    n_people
+                ),  # Not needed for behavioral response
+            }
+        )
+    else:
+        income_changes = calculate_relative_income_change(
+            sim, target_variable, year
+        )
 
     income_changes = income_changes.rename(
         columns={col: f"income_{col}" for col in income_changes.columns}
@@ -296,7 +336,8 @@ def apply_progression_responses(
     response = response_df["total_response"].values
 
     # Apply the labour supply response to the simulation
-    sim.reset_calculations()
+    # NOTE: Don't reset calculations as this breaks UC and other benefit calculations
+    # Instead, just update the employment income with the behavioral response
     sim.set_input(input_variable, year, employment_income + response)
 
     weight = sim.calculate("household_weight", year, map_to="person")

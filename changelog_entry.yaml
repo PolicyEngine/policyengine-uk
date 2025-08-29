@@ -1,0 +1,6 @@
+- bump: patch
+  changes:
+    fixed:
+      - Fix behavioral response calculations returning zero FTE impacts due to simulation state corruption
+      - Fix NaN values in wage relative change calculations during labor supply responses
+      - Fix income effect calculations by properly handling household_net_income timing
