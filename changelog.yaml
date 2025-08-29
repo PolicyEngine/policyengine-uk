@@ -1846,3 +1846,8 @@
     fixed:
     - Baseline simulation created before simulation modifier is applied.
   date: 2025-08-28 13:08:00
+- bump: patch
+  changes:
+    fixed:
+    - Re-enabled employer NI dynamics.
+  date: 2025-08-29 10:32:06
