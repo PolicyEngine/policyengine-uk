@@ -70,12 +70,6 @@ class Simulation(CoreSimulation):
         if reform is not None:
             scenario = Scenario.from_reform(reform)
 
-        # Apply parametric reforms here
-
-        if scenario is not None:
-            if scenario.parameter_changes is not None:
-                self.apply_parameter_changes(scenario.parameter_changes)
-
         self.branch_name = "default"
         self.invalidated_caches = set()
         self.debug: bool = False
@@ -126,10 +120,6 @@ class Simulation(CoreSimulation):
         self.move_values("employment_income", "employment_income_before_lsr")
 
         if scenario is not None:
-            if scenario.simulation_modifier is not None:
-                scenario.simulation_modifier(self)
-
-        if scenario is not None:
             self.baseline = Simulation(
                 scenario=None,
                 situation=situation,
@@ -138,6 +128,12 @@ class Simulation(CoreSimulation):
             )
         else:
             self.baseline = self.clone()
+
+        if scenario is not None:
+            if scenario.parameter_changes is not None:
+                self.apply_parameter_changes(scenario.parameter_changes)
+            if scenario.simulation_modifier is not None:
+                scenario.simulation_modifier(self)
 
         self.calculated_periods = []
 

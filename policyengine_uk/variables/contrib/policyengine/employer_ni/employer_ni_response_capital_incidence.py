@@ -36,7 +36,7 @@ class employer_ni_response_capital_incidence(Variable):
         value = (
             amount_paid_by_employers
             * share_of_total_wealth
-            * capital_incidence
+            * emp_ni.capital_incidence
         )
 
         if total_wealth == 0:
