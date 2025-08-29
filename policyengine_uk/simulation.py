@@ -74,7 +74,9 @@ class Simulation(CoreSimulation):
         self.invalidated_caches = set()
         self.debug: bool = False
         self.trace: bool = trace
-        self.tracer: SimpleTracer = SimpleTracer() if not trace else FullTracer()
+        self.tracer: SimpleTracer = (
+            SimpleTracer() if not trace else FullTracer()
+        )
         self.opt_out_cache: bool = False
         self.max_spiral_loops: int = 10
         self.memory_config = None
@@ -151,7 +153,9 @@ class Simulation(CoreSimulation):
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:
-            p: Parameter = self.tax_benefit_system.parameters.get_child(parameter)
+            p: Parameter = self.tax_benefit_system.parameters.get_child(
+                parameter
+            )
             if isinstance(changes[parameter], dict):
                 # Time-period specific changes
                 for time_period in changes[parameter]:
@@ -170,7 +174,9 @@ class Simulation(CoreSimulation):
         Args:
             situation: Dictionary describing household composition and characteristics
         """
-        self.build_from_populations(self.tax_benefit_system.instantiate_entities())
+        self.build_from_populations(
+            self.tax_benefit_system.instantiate_entities()
+        )
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
@@ -194,7 +200,9 @@ class Simulation(CoreSimulation):
             ValueError: If URL is not a HuggingFace URL
         """
         if "hf://" not in url:
-            raise ValueError(f"Non-HuggingFace URLs are currently not supported.")
+            raise ValueError(
+                f"Non-HuggingFace URLs are currently not supported."
+            )
 
         # Parse HuggingFace URL components
         owner, repo, filename = url.split("/")[-3:]
@@ -272,7 +280,9 @@ class Simulation(CoreSimulation):
         Args:
             dataset: PolicyEngine Dataset object containing simulation data
         """
-        data: Dict[str, Dict[str, Union[float, int, str]]] = dataset.load_dataset()
+        data: Dict[str, Dict[str, Union[float, int, str]]] = (
+            dataset.load_dataset()
+        )
 
         first_variable = data[list(data.keys())[0]]
         first_time_period = list(first_variable.keys())[0]
@@ -301,7 +311,9 @@ class Simulation(CoreSimulation):
             for time_period in data[variable]:
                 if variable not in self.tax_benefit_system.variables:
                     continue
-                self.set_input(variable, time_period, data[variable][time_period])
+                self.set_input(
+                    variable, time_period, data[variable][time_period]
+                )
 
         # Now convert to the new UKSingleYearDataset
         self.input_variables = self.get_known_variables()
@@ -314,7 +326,9 @@ class Simulation(CoreSimulation):
         self.build_from_multi_year_dataset(multi_year_dataset)
         self.dataset = multi_year_dataset
 
-    def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
+    def build_from_single_year_dataset(
+        self, dataset: UKSingleYearDataset
+    ) -> None:
         """Build simulation from a single-year UK dataset.
 
         Args:
@@ -325,7 +339,9 @@ class Simulation(CoreSimulation):
         self.build_from_multi_year_dataset(dataset)
         self.dataset = dataset
 
-    def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
+    def build_from_multi_year_dataset(
+        self, dataset: UKMultiYearDataset
+    ) -> None:
         """Build simulation from a multi-year UK dataset.
 
         Args:
@@ -486,7 +502,9 @@ class Simulation(CoreSimulation):
                 trace=True,
             )
             self._example_simulation.calculate("hbai_household_net_income")
-            for variable in self._example_simulation.tax_benefit_system.variables:
+            for (
+                variable
+            ) in self._example_simulation.tax_benefit_system.variables:
                 try:
                     dependencies = get_variable_dependencies(
                         variable, self._example_simulation
@@ -507,7 +525,9 @@ class Simulation(CoreSimulation):
         all_dependencies = set(dependencies)
         for dep in dependencies:
             try:
-                sub_dependencies = self.get_variable_dependencies(dep, depth - 1)
+                sub_dependencies = self.get_variable_dependencies(
+                    dep, depth - 1
+                )
                 all_dependencies.update(sub_dependencies)
             except ValueError:
                 continue
@@ -538,9 +558,13 @@ class Simulation(CoreSimulation):
         df_self = self.calculate_dataframe(variables, period=period)
         df_other = other.calculate_dataframe(variables, period=period)
 
-        df_combined = pd.concat([df_self, df_other], axis=1, keys=["self", "other"])
+        df_combined = pd.concat(
+            [df_self, df_other], axis=1, keys=["self", "other"]
+        )
         # Reset columns, then order by variable name first then self/other
-        df_combined.columns = [f"{var}_{entity}" for entity, var in df_combined.columns]
+        df_combined.columns = [
+            f"{var}_{entity}" for entity, var in df_combined.columns
+        ]
         # Add change where applicable (numeric only)
         for variable in variables:
             self_col = f"{variable}_self"
