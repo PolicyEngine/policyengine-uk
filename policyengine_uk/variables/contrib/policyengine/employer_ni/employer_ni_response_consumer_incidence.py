@@ -22,13 +22,10 @@ class employer_ni_response_consumer_incidence(Variable):
         baseline_employer_cost = person("baseline_employer_cost", period)
         employer_cost = person("adjusted_employer_cost", period)
         change_in_employer_cost = employer_cost - baseline_employer_cost
-        amount_paid_by_employers = (
-            person_weight * change_in_employer_cost
-        ).sum()
+        amount_paid_by_employers = (person_weight * change_in_employer_cost).sum()
 
         consumption = (
-            person.household("consumption", period)
-            / person.household.nb_persons()
+            person.household("consumption", period) / person.household.nb_persons()
         )
         total_consumption = (consumption * person_weight).sum()
         share_of_total_consumption = consumption / total_consumption
@@ -36,7 +33,7 @@ class employer_ni_response_consumer_incidence(Variable):
         value = (
             amount_paid_by_employers
             * share_of_total_consumption
-            * consumer_incidence
+            * emp_ni.consumer_incidence
         )
 
         if total_consumption == 0:

@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+      - Fix bug in capital/consumer incidence.

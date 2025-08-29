@@ -22,21 +22,16 @@ class employer_ni_response_capital_incidence(Variable):
         baseline_employer_cost = person("baseline_employer_cost", period)
         employer_cost = person("adjusted_employer_cost", period)
         change_in_employer_cost = employer_cost - baseline_employer_cost
-        amount_paid_by_employers = (
-            person_weight * change_in_employer_cost
-        ).sum()
+        amount_paid_by_employers = (person_weight * change_in_employer_cost).sum()
 
         wealth = (
-            person.household("corporate_wealth", period)
-            / person.household.nb_persons()
+            person.household("corporate_wealth", period) / person.household.nb_persons()
         )
         total_wealth = (wealth * person_weight).sum()
         share_of_total_wealth = wealth / total_wealth
 
         value = (
-            amount_paid_by_employers
-            * share_of_total_wealth
-            * capital_incidence
+            amount_paid_by_employers * share_of_total_wealth * emp_ni.capital_incidence
         )
 
         if total_wealth == 0:
