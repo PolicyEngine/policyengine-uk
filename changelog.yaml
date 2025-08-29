@@ -1851,3 +1851,8 @@
     fixed:
     - Re-enabled employer NI dynamics.
   date: 2025-08-29 10:32:06
+- bump: patch
+  changes:
+    fixed:
+    - Fix bug in capital/consumer incidence.
+  date: 2025-08-29 13:54:13
