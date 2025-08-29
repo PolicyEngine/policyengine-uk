@@ -1,4 +1,4 @@
-  reforms:
+reforms:
   - name: Raise basic rate by 1pp
     expected_impact: 8.1
     parameters:
