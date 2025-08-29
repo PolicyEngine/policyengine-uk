@@ -132,10 +132,8 @@ def apply_labour_supply_responses(
     )
     reform_income = sim.calculate(target_variable, year, map_to="person")
 
-    if hasattr(baseline_income, "values"):
-        baseline_income = baseline_income.values
-    if hasattr(reform_income, "values"):
-        reform_income = reform_income.values
+    baseline_income = baseline_income.values
+    reform_income = reform_income.values
 
     # Calculate relative changes
     income_rel_change = np.where(
