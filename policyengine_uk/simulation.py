@@ -115,7 +115,10 @@ class Simulation(CoreSimulation):
         # but adding here for ease of toggling on/off via the 'active' parameter.
         # Skip UC reform for firm datasets
         if not isinstance(dataset, UKFirmSingleYearDataset):
-            from policyengine_uk.scenarios import universal_credit_july_2025_reform
+            from policyengine_uk.scenarios import (
+                universal_credit_july_2025_reform,
+            )
+
             universal_credit_july_2025_reform.simulation_modifier(self)
 
         # Apply structural modifiers
@@ -125,7 +128,9 @@ class Simulation(CoreSimulation):
         # Skip variable movements for firm datasets (they don't have these variables)
         if not isinstance(dataset, UKFirmSingleYearDataset):
             self.move_values("capital_gains", "capital_gains_before_response")
-            self.move_values("employment_income", "employment_income_before_lsr")
+            self.move_values(
+                "employment_income", "employment_income_before_lsr"
+            )
 
         if scenario is not None:
             self.baseline = Simulation(
@@ -386,9 +391,12 @@ class Simulation(CoreSimulation):
             dataset: UKFirmSingleYearDataset containing firm data
         """
         # Use FirmTaxBenefitSystem for firm datasets
-        from policyengine_uk.firm_tax_benefit_system import FirmTaxBenefitSystem
+        from policyengine_uk.firm_tax_benefit_system import (
+            FirmTaxBenefitSystem,
+        )
+
         self.tax_benefit_system = FirmTaxBenefitSystem()
-        
+
         self.build_from_firm_ids(
             dataset.firm.firm_id,
             dataset.firm.firm_sector_id,
