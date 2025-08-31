@@ -1,0 +1,9 @@
+description: The United Kingdom requires firms to remain registered for Value Added Tax if their taxable turnover exceeds this amount.
+values:
+  2017-04-01: 83_000
+  2024-04-01: 88_000
+metadata:
+  unit: currency-GBP
+  reference:
+    - title: HMRC VAT registration thresholds
+      href: https://www.gov.uk/vat-registration-thresholds
