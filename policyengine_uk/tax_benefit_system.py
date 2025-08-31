@@ -116,13 +116,10 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.variables = {}
 
         # Create copies of entity classes to avoid modifying originals
-        person, benunit, household, firm, sector, business_group = (
+        person, benunit, household = (
             copy.copy(Person),
             copy.copy(BenUnit),
             copy.copy(Household),
-            copy.copy(Firm),
-            copy.copy(Sector),
-            copy.copy(BusinessGroup),
         )
 
         # Set up entities
@@ -130,12 +127,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             person,
             benunit,
             household,
-            firm,
-            sector,
-            business_group,
         ]
         self.person_entity = person
-        self.group_entities = [benunit, household, sector, business_group]
+        self.group_entities = [benunit, household]
         self.group_entity_keys = [entity.key for entity in self.group_entities]
 
         # Link entities to this tax-benefit system
