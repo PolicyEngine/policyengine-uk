@@ -19,9 +19,6 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.data.firm_dataset_schema import (
-    UKFirmSingleYearDataset,
-)
 from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
@@ -100,8 +97,6 @@ class Simulation(CoreSimulation):
             self.build_from_single_year_dataset(dataset)
         elif isinstance(dataset, UKMultiYearDataset):
             self.build_from_multi_year_dataset(dataset)
-        elif isinstance(dataset, UKFirmSingleYearDataset):
-            self.build_from_firm_dataset(dataset)
         elif dataset is None:
             self.build_from_url(
                 "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
@@ -113,24 +108,18 @@ class Simulation(CoreSimulation):
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
-        # Skip UC reform for firm datasets
-        if not isinstance(dataset, UKFirmSingleYearDataset):
-            from policyengine_uk.scenarios import (
-                universal_credit_july_2025_reform,
-            )
+        from policyengine_uk.scenarios import (
+            universal_credit_july_2025_reform,
+        )
 
-            universal_credit_july_2025_reform.simulation_modifier(self)
+        universal_credit_july_2025_reform.simulation_modifier(self)
 
         # Apply structural modifiers
 
         self.tax_benefit_system.reset_parameter_caches()
 
-        # Skip variable movements for firm datasets (they don't have these variables)
-        if not isinstance(dataset, UKFirmSingleYearDataset):
-            self.move_values("capital_gains", "capital_gains_before_response")
-            self.move_values(
-                "employment_income", "employment_income_before_lsr"
-            )
+        self.move_values("capital_gains", "capital_gains_before_response")
+        self.move_values("employment_income", "employment_income_before_lsr")
 
         if scenario is not None:
             self.baseline = Simulation(
@@ -237,8 +226,6 @@ class Simulation(CoreSimulation):
             self.build_from_multi_year_dataset(UKMultiYearDataset(dataset))
         elif UKSingleYearDataset.validate_file_path(dataset, False):
             self.build_from_single_year_dataset(UKSingleYearDataset(dataset))
-        elif UKFirmSingleYearDataset.validate_file_path(dataset, False):
-            self.build_from_firm_dataset(UKFirmSingleYearDataset(dataset))
         else:
             dataset = Dataset.from_file(dataset, self.default_input_period)
             self.build_from_dataset(dataset)
@@ -381,81 +368,6 @@ class Simulation(CoreSimulation):
                     self.set_input(variable, year, table[variable])
 
         self.dataset = dataset
-
-    def build_from_firm_dataset(
-        self, dataset: UKFirmSingleYearDataset
-    ) -> None:
-        """Build simulation from a firm dataset.
-
-        Args:
-            dataset: UKFirmSingleYearDataset containing firm data
-        """
-        # Use FirmTaxBenefitSystem for firm datasets
-        from policyengine_uk.firm_tax_benefit_system import (
-            FirmTaxBenefitSystem,
-        )
-
-        self.tax_benefit_system = FirmTaxBenefitSystem()
-
-        self.build_from_firm_ids(
-            dataset.firm.firm_id,
-            dataset.firm.firm_sector_id,
-            dataset.firm.firm_business_group_id,
-            dataset.sector.sector_id,
-            dataset.business_group.business_group_id,
-        )
-
-        # Load variable values
-        for table in dataset.tables:
-            for variable in table.columns:
-                if variable not in self.tax_benefit_system.variables:
-                    continue
-                self.set_input(variable, dataset.time_period, table[variable])
-
-        self.dataset = dataset
-
-    def build_from_firm_ids(
-        self,
-        firm_id: np.ndarray,
-        firm_sector_id: np.ndarray,
-        firm_business_group_id: np.ndarray,
-        sector_id: np.ndarray,
-        business_group_id: np.ndarray,
-    ) -> None:
-        """Build simulation entities from firm ID arrays.
-
-        Args:
-            firm_id: Array of firm IDs
-            firm_sector_id: Array mapping firms to sectors
-            firm_business_group_id: Array mapping firms to business groups
-            sector_id: Array of sector IDs
-            business_group_id: Array of business group IDs
-        """
-        from policyengine_core.simulations.simulation_builder import (
-            SimulationBuilder,
-        )
-
-        builder = SimulationBuilder()
-        builder.populations = self.tax_benefit_system.instantiate_entities()
-
-        # Declare entities
-        builder.declare_person_entity("firm", firm_id)
-        builder.declare_entity("sector", np.unique(sector_id))
-        builder.declare_entity("business_group", np.unique(business_group_id))
-
-        # Link firms to sectors and business groups
-        builder.join_with_persons(
-            builder.populations["sector"],
-            firm_sector_id,
-            np.array(["member"] * len(firm_sector_id)),
-        )
-        builder.join_with_persons(
-            builder.populations["business_group"],
-            firm_business_group_id,
-            np.array(["member"] * len(firm_business_group_id)),
-        )
-
-        self.build_from_populations(builder.populations)
 
     def build_from_ids(
         self,

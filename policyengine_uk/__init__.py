@@ -6,6 +6,7 @@ from policyengine_uk.system import (
     CountryTaxBenefitSystem,
     Microsimulation,
     Simulation,
+    FirmSimulation,
     COUNTRY_DIR,
     parameters,
     variables,
