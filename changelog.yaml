@@ -1856,3 +1856,8 @@
     fixed:
     - Fix bug in capital/consumer incidence.
   date: 2025-08-29 13:54:13
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing some households to claim both CTC and UC.
+  date: 2025-09-01 09:09:46
