@@ -28,5 +28,5 @@ class real_hbai_household_net_income_ahc(Variable):
 
     def formula(household, period, parameters):
         return household("hbai_household_net_income_ahc", period) * household(
-            "inflation_adjustment", period
+            "inflation_adjustment_ahc", period
         )
