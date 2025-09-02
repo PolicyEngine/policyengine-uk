@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.49.5] - 2025-09-02 13:00:40
+
+### Fixed
+
+- Removed bug-causing high income tax change variable.
+
+## [2.49.4] - 2025-09-01 13:02:52
+
+### Fixed
+
+- Fix behavioral response calculations returning zero FTE impacts due to simulation state corruption
+- Fix NaN values in wage relative change calculations during labor supply responses
+- Fix income effect calculations by properly handling household_net_income timing
+
+## [2.49.3] - 2025-09-01 09:09:46
+
+### Fixed
+
+- Bug causing some households to claim both CTC and UC.
+
 ## [2.49.2] - 2025-08-29 13:54:13
 
 ### Fixed
@@ -2192,6 +2212,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.49.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.4...2.49.5
+[2.49.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.3...2.49.4
+[2.49.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.2...2.49.3
 [2.49.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.1...2.49.2
 [2.49.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.0...2.49.1
 [2.49.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.48.0...2.49.0

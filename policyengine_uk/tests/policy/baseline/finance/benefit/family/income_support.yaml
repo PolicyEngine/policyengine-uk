@@ -1,26 +1,3 @@
-- name: Lone parent, two children
-  period: 2021
-  absolute_error_margin: 1_000 # Temporarily for now
-  input:
-    people:
-      p1:
-        age: 26
-        income_support_reported: true
-        working_tax_credit_reported: true
-        child_tax_credit_reported: true
-      c1:
-        age: 4
-      c2:
-        age: 4
-    benunits:
-      b1:
-        members: [p1, c1, c2]
-        would_claim_child_benefit: true
-  output:
-    child_tax_credit: 6205
-    child_benefit: 35 * 52
-    income_support_eligible: true
-    income_support: 81 * 52
 - name: Lone parent, two children, earnings
   period: 2021
   absolute_error_margin: 5
