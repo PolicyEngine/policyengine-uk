@@ -30,7 +30,6 @@ class gov_tax(Variable):
         "private_school_vat",
         "corporate_incident_tax_revenue_change",
         "consumer_incident_tax_revenue_change",
-        "high_income_incident_tax_change",
         "ni_employer",
         "student_loan_repayments",
         "vat",
