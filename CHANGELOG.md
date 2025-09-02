@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.49.5] - 2025-09-02 13:00:40
+
+### Fixed
+
+- Removed bug-causing high income tax change variable.
+
 ## [2.49.4] - 2025-09-01 13:02:52
 
 ### Fixed
@@ -2206,6 +2212,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.49.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.4...2.49.5
 [2.49.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.3...2.49.4
 [2.49.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.2...2.49.3
 [2.49.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.1...2.49.2

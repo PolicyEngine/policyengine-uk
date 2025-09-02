@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Removed bug-causing high income tax change variable.

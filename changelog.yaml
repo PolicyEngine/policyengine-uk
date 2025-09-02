@@ -1869,3 +1869,8 @@
     - Fix NaN values in wage relative change calculations during labor supply responses
     - Fix income effect calculations by properly handling household_net_income timing
   date: 2025-09-01 13:02:52
+- bump: patch
+  changes:
+    fixed:
+    - Removed bug-causing high income tax change variable.
+  date: 2025-09-02 13:00:40
