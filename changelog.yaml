@@ -1874,3 +1874,8 @@
     fixed:
     - Removed bug-causing high income tax change variable.
   date: 2025-09-02 13:00:40
+- bump: minor
+  changes:
+    fixed:
+    - Add real_hbai_household_net_income_ahc variable for convenience.
+  date: 2025-09-03 09:15:47

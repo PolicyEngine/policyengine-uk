@@ -1,4 +1,0 @@
-- bump: minor
-  changes:
-    fixed:
-      - Add real_hbai_household_net_income_ahc variable for convenience.
