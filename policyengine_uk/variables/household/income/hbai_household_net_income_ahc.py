@@ -17,3 +17,16 @@ class hbai_household_net_income_ahc(Variable):
         "mortgage_interest_repayment",
         "structural_insurance_payments",
     ]
+
+
+class real_hbai_household_net_income_ahc(Variable):
+    label = "real household net income after housing costs (HBAI definition)"
+    entity = Household
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+
+    def formula(household, period, parameters):
+        return household("hbai_household_net_income_ahc", period) * household(
+            "inflation_adjustment_ahc", period
+        )
