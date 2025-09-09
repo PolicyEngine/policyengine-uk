@@ -1,4 +1,4 @@
-# HBAI
+# HBAI components
 
 ```{note}
 PolicyEngine UK includes variables that match to the Households Below Average Income (HBAI) income concepts.

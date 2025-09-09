@@ -24,6 +24,7 @@ project:
     - title: Validation
       children:
       - file: docs/book/validation/hbai
+      - file: docs/book/validation/hbai-poverty-rates
     - title: Policy
       children:
       - file: docs/book/policy/model-baseline
