@@ -1879,3 +1879,8 @@
     fixed:
     - Add real_hbai_household_net_income_ahc variable for convenience.
   date: 2025-09-03 09:15:47
+- bump: minor
+  changes:
+    fixed:
+    - Update reduced vat expenditure share from OBR
+  date: 2025-09-10 09:28:56

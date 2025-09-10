@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.51.0] - 2025-09-10 09:28:56
+
+### Fixed
+
+- Update reduced vat expenditure share from OBR
+
 ## [2.50.0] - 2025-09-03 09:15:47
 
 ### Fixed
@@ -2218,6 +2224,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.51.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.50.0...2.51.0
 [2.50.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.5...2.50.0
 [2.49.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.4...2.49.5
 [2.49.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.3...2.49.4
