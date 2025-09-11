@@ -1,0 +1,7 @@
+- bump: minor
+  changes:
+    added:
+    - Firm dataset support with 3 new entities (firm, sector, business_group)
+    - 16 firm variables for business microdata analysis
+    - UKFirmSingleYearDataset class for firm data handling
+    - FIRM_2023_24 dataset constant for firm_2023_24.h5 integration

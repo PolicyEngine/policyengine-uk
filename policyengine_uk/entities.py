@@ -43,4 +43,42 @@ Person = build_entity(
     is_person=True,
 )
 
-entities = [Household, BenUnit, Person]
+Firm = build_entity(
+    key="firm",
+    plural="firms",
+    label="Firm",
+    doc="A business entity with employees and operations.",
+    is_person=True,
+)
+
+Sector = build_entity(
+    key="sector",
+    plural="sectors",
+    label="Sector",
+    doc="An economic sector containing multiple firms.",
+    roles=[
+        {
+            "key": "member",
+            "plural": "members",
+            "label": "Member",
+            "doc": "A sector in the business classification.",
+        }
+    ],
+)
+
+BusinessGroup = build_entity(
+    key="business_group",
+    plural="business_groups",
+    label="Business Group",
+    doc="A business group containing multiple firms.",
+    roles=[
+        {
+            "key": "member",
+            "plural": "members",
+            "label": "Member",
+            "doc": "A business group in the firm dataset.",
+        }
+    ],
+)
+
+entities = [Household, BenUnit, Person, Firm, Sector, BusinessGroup]
