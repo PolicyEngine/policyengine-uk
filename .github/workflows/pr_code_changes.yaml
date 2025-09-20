@@ -4,10 +4,10 @@ name: Code changes
 on:
   pull_request:
     branches:
-      - master
+      - main
 
     paths:
-      - policyengine_uk/**
+      - src/**
       - tests/**
       - .github/**
   workflow_dispatch:
