@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    added:
+    - Add savings, net_financial_wealth, gross_financial_wealth, and shareholding to total_wealth calculation
