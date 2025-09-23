@@ -19,7 +19,7 @@ industry:
   metadata:
     unit: tonnes CO2
     reference:
-      - title: Energy and emissions projections: 2023 to 2050
+      - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 land_use:
   description: Carbon dioxide emission from LULUCF
@@ -42,7 +42,7 @@ land_use:
   metadata:
     unit: tonnes CO2
     reference:
-      - title: Energy and emissions projections: 2023 to 2050
+      - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 refineries:
   description: Carbon dioxide emission from refineries
@@ -65,7 +65,7 @@ refineries:
   metadata:
     unit: tonnes CO2
     reference:
-      - title: Energy and emissions projections: 2023 to 2050
+      - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 residential:
   description: Carbon dioxide emission from residential usage
@@ -88,7 +88,7 @@ residential:
   metadata:
     unit: tonnes CO2
     reference:
-      - title: Energy and emissions projections: 2023 to 2050
+      - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 services:
   description: Carbon dioxide emission from services
@@ -111,7 +111,7 @@ services:
   metadata:
     unit: tonnes CO2
     reference:
-      - title: Energy and emissions projections: 2023 to 2050
+      - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 roads:
   description: Carbon dioxide emission from road transport
@@ -134,7 +134,7 @@ roads:
   metadata:
     unit: tonnes CO2
     reference:
-      - title: Energy and emissions projections: 2023 to 2050
+      - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 other_transport:
   description: Carbon dioxide emission from other transport (civil aviation,domestic cruise and landing,military aviation & shipping,railway)
@@ -157,5 +157,5 @@ other_transport:
   metadata:
     unit: tonnes CO2
     reference:
-      - title: Energy and emissions projections: 2023 to 2050
+      - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
