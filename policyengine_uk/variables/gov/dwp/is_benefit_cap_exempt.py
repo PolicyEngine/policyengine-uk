@@ -23,11 +23,11 @@ class is_benefit_cap_exempt(Variable):
         # Carer element in UC indicates caring for someone with disability
         gets_uc_carer_element = benunit("uc_carer_element", period) > 0
 
-        # Earnings exemption (£846/month = £10,152/year)
-        uc = benunit("universal_credit", period) > 0
+        # Earnings exemption for UC (£846/month = £10,152/year)
+        # Note: Only check earned income, not UC amount itself to avoid circular dependency
         uc_earned = benunit("uc_earned_income", period)
         earnings_threshold = 10_152
-        meets_earnings_test = uc & (uc_earned >= earnings_threshold)
+        meets_earnings_test = uc_earned >= earnings_threshold
 
         # Disability and carer benefits that exempt from cap
         QUAL_PERSONAL_BENEFITS = [
