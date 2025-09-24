@@ -37,3 +37,4 @@ transport_consumption:
   2022-01-01: 0.00107164
 metadata:
   unit: tonnes per gbp
+  uprating: gov.economic_assumptions.yoy_growth.carbon_intensity
