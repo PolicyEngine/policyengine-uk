@@ -38,3 +38,5 @@ transport_consumption:
 metadata:
   unit: tonnes per gbp
   uprating: gov.economic_assumptions.indices.carbon_intensity
+  propagate_metadata_to_children: true
+  period: year
