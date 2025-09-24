@@ -781,6 +781,7 @@ finance_ni:
 carbon_intensity:
   description: Carbon intensity year-over-year growth (decline).
   values:
+    2022-01-01: -0.049
     2023-01-01: -0.049
     2024-01-01: -0.049
     2025-01-01: -0.049
