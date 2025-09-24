@@ -14,7 +14,14 @@ from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.variables import Variable
 
 # PolicyEngine UK imports
-from policyengine_uk.entities import BenUnit, Household, Person
+from policyengine_uk.entities import (
+    BenUnit,
+    Household,
+    Person,
+    Firm,
+    Sector,
+    BusinessGroup,
+)
 from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
     add_private_pension_uprating_factor,
 )
@@ -38,6 +45,7 @@ from policyengine_uk.utils.parameters import (
 # Module constants
 COUNTRY_DIR = Path(__file__).parent
 ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
+FIRM_2023_24 = "hf://policyengine/policyengine-uk-data/firm_2023_24.h5"
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
@@ -115,7 +123,11 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         )
 
         # Set up entities
-        self.entities = [person, benunit, household]
+        self.entities = [
+            person,
+            benunit,
+            household,
+        ]
         self.person_entity = person
         self.group_entities = [benunit, household]
         self.group_entity_keys = [entity.key for entity in self.group_entities]
