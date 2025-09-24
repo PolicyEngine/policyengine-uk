@@ -16,7 +16,9 @@ class is_benefit_cap_exempt(Variable):
 
         # UC-specific exemptions
         # Limited capability for work and work-related activity
-        has_lcwra = benunit.any(person("uc_limited_capability_for_WRA", period))
+        has_lcwra = benunit.any(
+            person("uc_limited_capability_for_WRA", period)
+        )
 
         # Carer element in UC indicates caring for someone with disability
         gets_uc_carer_element = benunit("uc_carer_element", period) > 0
@@ -33,7 +35,7 @@ class is_benefit_cap_exempt(Variable):
             "carers_allowance",
             "dla",  # Disability Living Allowance (includes components)
             "pip_dl",  # PIP daily living component
-            "pip_m",   # PIP mobility component
+            "pip_m",  # PIP mobility component
             "iidb",  # Industrial injuries disability benefit
         ]
 
