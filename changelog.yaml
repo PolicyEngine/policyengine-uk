@@ -1884,3 +1884,8 @@
     fixed:
     - Update reduced vat expenditure share from OBR
   date: 2025-09-10 09:28:56
+- bump: minor
+  changes:
+    fixed:
+    - Bugs in the benefit cap exemption list.
+  date: 2025-09-24 12:24:39
