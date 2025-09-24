@@ -1889,3 +1889,8 @@
     fixed:
     - Bugs in the benefit cap exemption list.
   date: 2025-09-24 12:24:39
+- bump: patch
+  changes:
+    fixed:
+    - Updated carbon emissions data to latest available figures
+  date: 2025-09-24 15:33:18
