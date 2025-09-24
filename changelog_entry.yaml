@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    fixed:
+    - Bugs in the benefit cap exemption list.
