@@ -63,6 +63,4 @@ class is_benefit_cap_exempt_earnings(Variable):
         # ESA contribution-based with support component
         esa_support_component = benunit("esa_contrib", period) > 0
 
-        return (
-            meets_earnings_test
-        )
+        return meets_earnings_test
