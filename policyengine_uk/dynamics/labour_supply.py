@@ -58,7 +58,7 @@ def calculate_excluded_from_labour_supply_responses(
         | (adult_index == 0)
         | (adult_index >= count_adults + 1)
     )
-    return excluded
+    return excluded.values
 
 
 class FTEImpacts(BaseModel):
@@ -132,8 +132,9 @@ def apply_labour_supply_responses(
     )
     reform_income = sim.calculate(target_variable, year, map_to="person")
 
-    baseline_income = baseline_income.values
-    reform_income = reform_income.values
+    baseline_income = baseline_income
+    reform_income = reform_income
+    baseline_income = pd.Series(baseline_income, index=reform_income.index)
 
     # Calculate relative changes
     income_rel_change = np.where(
@@ -154,7 +155,9 @@ def apply_labour_supply_responses(
     )
 
     # Apply extensive margin responses (participation model)
-    participation_responses = apply_participation_responses(sim=sim, year=year)
+    participation_responses = (
+        None  # = apply_participation_responses(sim=sim, year=year)
+    )
 
     # Add FTE impacts to the response data
     fte_impacts = FTEImpacts(
@@ -336,11 +339,10 @@ def apply_progression_responses(
     response = response_df["total_response"].values
 
     # Apply the labour supply response to the simulation
-    # NOTE: Don't reset calculations as this breaks UC and other benefit calculations
-    # Instead, just update the employment income with the behavioral response
+    sim.reset_calculations()
     sim.set_input(input_variable, year, employment_income + response)
 
-    weight = sim.calculate("household_weight", year, map_to="person")
+    weight = sim.calculate("household_weight", year, map_to="person").values
 
     result = MicroDataFrame(df, weights=weight)
 

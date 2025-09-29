@@ -38,7 +38,7 @@ def calculate_derivative(
         Array of marginal rates clipped between 0 and 1
     """
     # Get baseline values for input variable and identify adults
-    input_variable_values = sim.calculate(input_variable, year)
+    input_variable_values = sim.calculate(input_variable, year).copy()
     adult_index = sim.calculate("adult_index")
     entity_key = sim.tax_benefit_system.variables[input_variable].entity.key
 
@@ -66,6 +66,10 @@ def calculate_derivative(
     rel_marginal_wages[
         ~pd.Series(adult_index).isin(range(1, count_adults + 1))
     ] = np.nan
+
+    # Reset simulation to original state
+    sim.reset_calculations()
+    sim.set_input(input_variable, year, input_variable_values)
 
     # Clip to ensure rates are between 0 and 1 (0% to 100% retention)
     return rel_marginal_wages.clip(0, 1)
@@ -95,6 +99,9 @@ def calculate_relative_income_change(
     )
     reformed_target_values = sim.calculate(
         target_variable, year, map_to="person"
+    )
+    original_target_values = pd.Series(
+        original_target_values, index=reformed_target_values.index
     )
 
     # Calculate relative change, handling division by zero
@@ -159,6 +166,7 @@ def calculate_derivative_change(
         count_adults=count_adults,
         delta=delta,
     )
+    original_deriv = pd.Series(original_deriv, index=reformed_deriv.index)
 
     # Calculate relative and absolute changes in marginal rates
     rel_change = reformed_deriv / original_deriv - 1
