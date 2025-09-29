@@ -1899,3 +1899,8 @@
     fixed:
     - Bugs in the benefit cap exemption list.
   date: 2025-09-25 09:22:41
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily disabled OBR participation responses.
+  date: 2025-09-29 12:26:51
