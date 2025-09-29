@@ -1884,3 +1884,18 @@
     fixed:
     - Update reduced vat expenditure share from OBR
   date: 2025-09-10 09:28:56
+- bump: minor
+  changes:
+    fixed:
+    - Bugs in the benefit cap exemption list.
+  date: 2025-09-24 12:24:39
+- bump: patch
+  changes:
+    fixed:
+    - Updated carbon emissions data to latest available figures
+  date: 2025-09-24 15:33:18
+- bump: minor
+  changes:
+    fixed:
+    - Bugs in the benefit cap exemption list.
+  date: 2025-09-25 09:22:41

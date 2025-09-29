@@ -777,3 +777,22 @@ finance_ni:
       reference:
         - title: Finance NI (based on outturn)
           href: https://www.finance-ni.gov.uk/
+
+carbon_intensity:
+  description: Carbon intensity year-over-year growth (decline).
+  values:
+    2022-01-01: -0.049
+    2023-01-01: -0.049
+    2024-01-01: -0.049
+    2025-01-01: -0.049
+    2026-01-01: -0.049
+    2027-01-01: -0.049
+    2028-01-01: -0.049
+    2029-01-01: -0.049
+    2030-01-01: -0.049
+  metadata:
+    unit: /1
+    label: carbon intensity growth
+    reference:
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
