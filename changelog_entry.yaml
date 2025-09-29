@@ -1,4 +1,4 @@
-- bump: minor
+- bump: patch
   changes:
     fixed:
-    - Bugs in the benefit cap exemption list.
+    - Temporarily disabled OBR participation responses.
