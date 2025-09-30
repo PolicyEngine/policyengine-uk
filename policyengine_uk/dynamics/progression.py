@@ -14,7 +14,7 @@ from policyengine_uk import Simulation
 
 def calculate_derivative(
     sim: Simulation,
-    target_variable: str = "household_net_income",
+    target_variable: str = "hbai_household_net_income",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -72,12 +72,12 @@ def calculate_derivative(
     sim.set_input(input_variable, year, input_variable_values)
 
     # Clip to ensure rates are between 0 and 1 (0% to 100% retention)
-    return rel_marginal_wages.clip(0, 1)
+    return rel_marginal_wages.round(4)
 
 
 def calculate_relative_income_change(
     sim: Simulation,
-    target_variable: str = "household_net_income",
+    target_variable: str = "hbai_household_net_income",
     year: int = 2025,
 ) -> pd.DataFrame:
     """Calculate relative change in income between baseline and scenario.
@@ -125,10 +125,10 @@ def calculate_relative_income_change(
 
 def calculate_derivative_change(
     sim: Simulation,
-    target_variable: str = "household_net_income",
+    target_variable: str = "hbai_household_net_income",
     input_variable: str = "employment_income",
     year: int = 2025,
-    count_adults: int = 1,
+    count_adults: int = 2,
     delta: float = 1_000,
 ) -> pd.DataFrame:
     """Calculate change in marginal rates between baseline and scenario.

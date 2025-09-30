@@ -104,8 +104,6 @@ class Simulation(CoreSimulation):
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 
-        self.input_variables = self.get_known_variables()
-
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
         from policyengine_uk.scenarios import universal_credit_july_2025_reform
@@ -118,6 +116,8 @@ class Simulation(CoreSimulation):
 
         self.move_values("capital_gains", "capital_gains_before_response")
         self.move_values("employment_income", "employment_income_before_lsr")
+
+        self.input_variables = self.get_known_variables()
 
         if scenario is not None:
             self.baseline = Simulation(

@@ -28,7 +28,7 @@ from .participation import (
 
 
 def calculate_excluded_from_labour_supply_responses(
-    sim: Simulation, count_adults: int = 1
+    sim: Simulation, count_adults: int = 2
 ):
     """Calculate which individuals are excluded from labour supply responses.
 
@@ -97,10 +97,10 @@ class LabourSupplyResponseData(BaseModel):
 
 def apply_labour_supply_responses(
     sim: Simulation,
-    target_variable: str = "household_net_income",
+    target_variable: str = "hbai_household_net_income",
     input_variable: str = "employment_income",
     year: int = 2025,
-    count_adults: int = 1,
+    count_adults: int = 2,
     delta: float = 1_000,
 ) -> pd.DataFrame:
     """Apply labour supply responses to simulation and return the response vector.
@@ -197,10 +197,10 @@ def apply_labour_supply_responses(
 
 def apply_progression_responses(
     sim: Simulation,
-    target_variable: str = "household_net_income",
+    target_variable: str = "hbai_household_net_income",
     input_variable: str = "employment_income",
     year: int = 2025,
-    count_adults: int = 1,
+    count_adults: int = 2,
     delta: float = 1_000,
     pre_calculated_income_rel_change: np.ndarray = None,
 ) -> pd.DataFrame:
@@ -233,6 +233,7 @@ def apply_progression_responses(
     derivative_changes = derivative_changes.rename(
         columns={col: f"deriv_{col}" for col in derivative_changes.columns}
     )
+    derivative_changes["person_id"] = sim.calculate("person_id", year).values
 
     # Add in actual implied wages
     gross_wage = sim.calculate("employment_income", year) / sim.calculate(
@@ -262,20 +263,13 @@ def apply_progression_responses(
 
     # Calculate changes in income levels (drives income effects)
     if pre_calculated_income_rel_change is not None:
-        # Use pre-calculated values
         n_people = len(sim.calculate("person_id", year))
         income_changes = pd.DataFrame(
             {
-                "baseline": np.zeros(
-                    n_people
-                ),  # Not needed for behavioral response
-                "scenario": np.zeros(
-                    n_people
-                ),  # Not needed for behavioral response
+                "baseline": np.zeros(n_people),
+                "scenario": np.zeros(n_people),
                 "rel_change": pre_calculated_income_rel_change,
-                "abs_change": np.zeros(
-                    n_people
-                ),  # Not needed for behavioral response
+                "abs_change": np.zeros(n_people),
             }
         )
     else:

@@ -1904,3 +1904,16 @@
     fixed:
     - Temporarily disabled OBR participation responses.
   date: 2025-09-29 12:26:51
+- bump: minor
+  changes:
+    added:
+    - Dataset filter function to extract single households for analysis.
+    changed:
+    - Default target variable for labour supply calculations to HBAI household net
+      income.
+    - Default adult count for labour supply calculations to 2.
+    fixed:
+    - Labour supply response calculation issues by removing inappropriate clipping
+      of marginal rates.
+    - Potential bug in labour supply response variable initialization order.
+  date: 2025-09-30 14:40:31
