@@ -241,15 +241,24 @@ def apply_progression_responses(
     )
     gross_wage = gross_wage.fillna(0).replace([np.inf, -np.inf], 0)
     derivative_changes["wage_gross"] = gross_wage
-    derivative_changes["wage_baseline"] = gross_wage * derivative_changes["deriv_baseline"]
-    derivative_changes["wage_scenario"] = gross_wage * derivative_changes["deriv_scenario"]
+    derivative_changes["wage_baseline"] = (
+        gross_wage * derivative_changes["deriv_baseline"]
+    )
+    derivative_changes["wage_scenario"] = (
+        gross_wage * derivative_changes["deriv_scenario"]
+    )
     derivative_changes["wage_rel_change"] = (
-        (derivative_changes["wage_scenario"] / derivative_changes["wage_baseline"] - 1)
+        (
+            derivative_changes["wage_scenario"]
+            / derivative_changes["wage_baseline"]
+            - 1
+        )
         .replace([np.inf, -np.inf, np.nan], 0)
         .fillna(0)
     )
     derivative_changes["wage_abs_change"] = (
-        derivative_changes["wage_scenario"] - derivative_changes["wage_baseline"]
+        derivative_changes["wage_scenario"]
+        - derivative_changes["wage_baseline"]
     )
 
     # Calculate changes in income levels (drives income effects)
@@ -264,7 +273,9 @@ def apply_progression_responses(
             }
         )
     else:
-        income_changes = calculate_relative_income_change(sim, target_variable, year)
+        income_changes = calculate_relative_income_change(
+            sim, target_variable, year
+        )
 
     income_changes = income_changes.rename(
         columns={col: f"income_{col}" for col in income_changes.columns}
