@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.54.0] - 2025-09-30 14:40:31
+
+### Added
+
+- Dataset filter function to extract single households for analysis.
+
+### Changed
+
+- Default target variable for labour supply calculations to HBAI household net income.
+- Default adult count for labour supply calculations to 2.
+
+### Fixed
+
+- Labour supply response calculation issues by removing inappropriate clipping of marginal rates.
+- Potential bug in labour supply response variable initialization order.
+
 ## [2.53.1] - 2025-09-29 12:26:51
 
 ### Fixed
@@ -2248,6 +2264,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.54.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.53.1...2.54.0
 [2.53.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.53.0...2.53.1
 [2.53.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.52.1...2.53.0
 [2.52.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.52.0...2.52.1
