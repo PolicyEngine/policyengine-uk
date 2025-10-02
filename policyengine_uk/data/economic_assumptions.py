@@ -50,7 +50,11 @@ def apply_single_year_uprating(
 ):
     # Apply uprating to a single year dataset.
 
-    # First, apply standard variable-YoY growth based uprating.
+    # First, age the population by incrementing age by 1 year.
+    if "age" in current_year.person.columns:
+        current_year.person["age"] = previous_year.person["age"] + 1
+
+    # Second, apply standard variable-YoY growth based uprating.
 
     with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
         uprating = yaml.safe_load(f)

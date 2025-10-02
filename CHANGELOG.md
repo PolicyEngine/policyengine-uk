@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.55.0] - 2025-10-02 14:18:49
+
+### Fixed
+
+- Fix age progression in multi-year projections to properly age the population over time, resolving issue where two-child limit budgetary impact was incorrectly constant across years
+
 ## [2.54.0] - 2025-09-30 14:40:31
 
 ### Added
@@ -1673,6 +1679,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.29.0] - 2022-08-28 14:45:36
 
+### Changed
+
+- Refactored the parameter tree into the (gov/hh/calibration/contrib)|(dept) format.
+
 ## [0.28.1] - 2022-08-25 17:36:23
 
 ### Fixed
@@ -2264,6 +2274,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.55.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.54.0...2.55.0
 [2.54.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.53.1...2.54.0
 [2.53.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.53.0...2.53.1
 [2.53.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.52.1...2.53.0
