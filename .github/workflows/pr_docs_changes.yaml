@@ -4,7 +4,7 @@ name: Docs changes
 on:
   pull_request:
     branches:
-      - master
+      - main
 
     paths:
       - docs/**
