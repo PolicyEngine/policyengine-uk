@@ -493,7 +493,8 @@
   date: 2022-08-25 17:36:23
 - bump: minor
   changes:
-  - Refactored the parameter tree into the (gov/hh/calibration/contrib)|(dept) format.
+    changed:
+    - Refactored the parameter tree into the (gov/hh/calibration/contrib)|(dept) format.
   date: 2022-08-28 14:45:36
 - bump: minor
   changes:
@@ -1917,3 +1918,10 @@
       of marginal rates.
     - Potential bug in labour supply response variable initialization order.
   date: 2025-09-30 14:40:31
+- bump: minor
+  changes:
+    fixed:
+    - Fix two-child limit cost projections by ensuring birth_year is calculated from
+      age and period rather than using static dataset values, allowing the number
+      of affected children to increase correctly over time
+  date: 2025-10-02 14:33:05

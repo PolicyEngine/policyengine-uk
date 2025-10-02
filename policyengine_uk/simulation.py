@@ -272,6 +272,9 @@ class Simulation(CoreSimulation):
             variable, time_period = column.split("__")
             if variable not in self.tax_benefit_system.variables:
                 continue
+            # Skip birth_year - it should be calculated from age and period
+            if variable == "birth_year":
+                continue
             self.set_input(variable, time_period, df[column])
 
     def build_from_dataset(self, dataset: Dataset) -> None:
@@ -310,6 +313,9 @@ class Simulation(CoreSimulation):
         for variable in data:
             for time_period in data[variable]:
                 if variable not in self.tax_benefit_system.variables:
+                    continue
+                # Skip birth_year - it should be calculated from age and period
+                if variable == "birth_year":
                     continue
                 self.set_input(
                     variable, time_period, data[variable][time_period]
@@ -362,6 +368,10 @@ class Simulation(CoreSimulation):
             for table in dataset[year].tables:
                 for variable in table.columns:
                     if variable not in self.tax_benefit_system.variables:
+                        continue
+                    # Skip birth_year - it should be calculated from age and period
+                    # to properly reflect the projection year in multi-year datasets
+                    if variable == "birth_year":
                         continue
                     self.set_input(variable, year, table[variable])
 
