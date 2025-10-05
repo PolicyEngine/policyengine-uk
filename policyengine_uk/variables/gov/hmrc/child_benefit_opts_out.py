@@ -19,7 +19,7 @@ class child_benefit_opts_out(Variable):
             in_phase_out = ani > cb_hitc.phase_out_end
             return where(
                 benunit.any(in_phase_out),
-                random(benunit) < cb.opt_out_rate,
+                benunit("child_benefit_opts_out_seed", period) < cb.opt_out_rate,
                 False,
             )
         else:

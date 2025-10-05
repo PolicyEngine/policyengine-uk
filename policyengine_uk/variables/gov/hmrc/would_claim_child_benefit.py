@@ -13,6 +13,6 @@ class would_claim_child_benefit(Variable):
     def formula(benunit, period, parameters):
         takeup_rate = parameters(period).gov.hmrc.child_benefit.takeup
         overall_p = takeup_rate.overall
-        return (random(benunit) < overall_p) * ~benunit(
+        return (benunit("child_benefit_take_up_seed", period) < overall_p) * ~benunit(
             "child_benefit_opts_out", period
         )

@@ -12,4 +12,4 @@ class household_owns_tv(Variable):
         percent_owning_tv = parameters(
             period
         ).gov.dcms.bbc.tv_licence.tv_ownership
-        return random(household) <= percent_owning_tv
+        return household("household_owns_tv_seed", period) <= percent_owning_tv

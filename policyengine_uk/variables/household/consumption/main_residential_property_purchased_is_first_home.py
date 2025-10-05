@@ -21,4 +21,4 @@ class main_residential_property_purchased_is_first_home(Variable):
             residential_sd.first_time_buyers_relief.calc(age)
             / residential_sd.transactions_by_age.calc(age)
         )
-        return random(household) < percentage_claiming_ftbr
+        return household("first_home_purchase_seed", period) < percentage_claiming_ftbr

@@ -1,0 +1,9 @@
+description: Extended childcare entitlement take-up rate
+metadata:
+  unit: /1
+  period: year
+  reference:
+    - title: Empirical estimate from FRS data
+      href: https://github.com/PolicyEngine/policyengine-uk-data
+values:
+  2015-01-01: 0.812

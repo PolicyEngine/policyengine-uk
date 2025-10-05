@@ -11,6 +11,6 @@ class is_higher_earner(Variable):
         income = person("adjusted_net_income", period)
         # Add noise to incomes in order to avoid ties
         return (
-            person.get_rank(person.benunit, -income + random(person) * 1e-2)
+            person.get_rank(person.benunit, -income + person("is_higher_earner_seed", period) * 1e-2)
             == 0
         )

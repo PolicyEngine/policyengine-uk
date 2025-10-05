@@ -23,7 +23,7 @@ class would_claim_pc(Variable):
             ],
             [
                 True,
-                random(benunit) < takeup_rate,
+                benunit("pension_credit_take_up_seed", period) < takeup_rate,
                 False,
             ],
         )

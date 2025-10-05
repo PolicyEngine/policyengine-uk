@@ -18,7 +18,7 @@ class is_disabled_for_benefits(Variable):
         p_claims_lcwra_if_on_pip_dla = 0.8
         p_claims_lcwra_if_not_on_pip_dla = 0.13
 
-        random_seed = random(person)
+        random_seed = person("is_disabled_for_benefits_seed", period)
 
         on_qual_benefits = add(person, period, QUALIFYING_BENEFITS) > 0
 

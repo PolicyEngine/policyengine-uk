@@ -76,6 +76,6 @@ class attends_private_school(Variable):
             * is_child
         )
 
-        value = random(person) < p_attends_private_school
+        value = person("attends_private_school_seed", period) < p_attends_private_school
 
         return value

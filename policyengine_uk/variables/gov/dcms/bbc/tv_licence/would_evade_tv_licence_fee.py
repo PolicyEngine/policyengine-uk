@@ -12,4 +12,4 @@ class would_evade_tv_licence_fee(Variable):
 
     def formula(household, period, parameters):
         evasion_rate = parameters(period).gov.dcms.bbc.tv_licence.evasion_rate
-        return random(household) <= evasion_rate
+        return household("tv_licence_evasion_seed", period) <= evasion_rate
