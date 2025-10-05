@@ -76,6 +76,6 @@ class attends_private_school(Variable):
             * is_child
         )
 
-        value = person("attends_private_school_seed", period) < p_attends_private_school
-
-        return value
+        # Use random draw from dataset (only exists in microsimulation)
+        random_draw = person("attends_private_school_random_draw", period)
+        return random_draw < p_attends_private_school

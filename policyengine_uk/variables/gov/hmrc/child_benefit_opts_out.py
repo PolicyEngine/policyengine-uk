@@ -4,24 +4,13 @@ from policyengine_uk.model_api import *
 class child_benefit_opts_out(Variable):
     label = "opts out of Child Benefit"
     documentation = (
-        "Whether this family would opt out of receiving Child Benefit payments"
+        "Whether this family would opt out of receiving Child Benefit payments. "
+        "Generated stochastically in the dataset using opt-out rates."
     )
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
 
-    def formula(benunit, period, parameters):
-        if benunit.simulation.dataset is not None:
-            ani = benunit.members("adjusted_net_income", period)
-            hmrc = parameters(period).gov.hmrc
-            cb_hitc = hmrc.income_tax.charges.CB_HITC
-            cb = hmrc.child_benefit
-            in_phase_out = ani > cb_hitc.phase_out_end
-            return where(
-                benunit.any(in_phase_out),
-                benunit("child_benefit_opts_out_seed", period) < cb.opt_out_rate,
-                False,
-            )
-        else:
-            # If we're not in a microsimulation, assume the family would not opt out
-            return False
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to False
+    default_value = False

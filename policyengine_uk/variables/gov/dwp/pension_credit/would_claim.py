@@ -3,27 +3,14 @@ from policyengine_uk.model_api import *
 
 class would_claim_pc(Variable):
     label = "Would claim Pension Credit"
+    documentation = (
+        "Whether this benefit unit would claim Pension Credit if eligible. "
+        "Generated stochastically in the dataset using take-up rates."
+    )
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
 
-    def formula(benunit, period, parameters):
-        reported_pc = add(benunit, period, ["pension_credit_reported"]) > 0
-        claims_all_entitled_benefits = benunit(
-            "claims_all_entitled_benefits", period
-        )
-        baseline = benunit("baseline_pension_credit_entitlement", period) > 0
-        eligible = benunit("pension_credit_entitlement", period) > 0
-        takeup_rate = parameters(period).gov.dwp.pension_credit.takeup
-        return select(
-            [
-                reported_pc | claims_all_entitled_benefits,
-                ~baseline & eligible,
-                True,
-            ],
-            [
-                True,
-                benunit("pension_credit_take_up_seed", period) < takeup_rate,
-                False,
-            ],
-        )
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to True
+    default_value = True

@@ -9,8 +9,10 @@ class is_higher_earner(Variable):
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
-        # Add noise to incomes in order to avoid ties
+
+        # Use random draw from dataset to break ties (only exists in microsimulation)
+        # For policy calculator, this will be 0 and ties go to first person
+        random_draw = person("higher_earner_tie_break", period)
         return (
-            person.get_rank(person.benunit, -income + person("is_higher_earner_seed", period) * 1e-2)
-            == 0
+            person.get_rank(person.benunit, -income + random_draw * 1e-2) == 0
         )

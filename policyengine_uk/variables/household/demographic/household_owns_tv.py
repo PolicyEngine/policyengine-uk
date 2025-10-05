@@ -3,13 +3,14 @@ from policyengine_uk.model_api import *
 
 class household_owns_tv(Variable):
     label = "Owns a TV"
-    documentation = "Whether this household owns a functioning colour TV."
+    documentation = (
+        "Whether this household owns a functioning colour TV. "
+        "Generated stochastically in the dataset using ownership rates."
+    )
     entity = Household
     definition_period = YEAR
     value_type = bool
 
-    def formula(household, period, parameters):
-        percent_owning_tv = parameters(
-            period
-        ).gov.dcms.bbc.tv_licence.tv_ownership
-        return household("household_owns_tv_seed", period) <= percent_owning_tv
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to True
+    default_value = True

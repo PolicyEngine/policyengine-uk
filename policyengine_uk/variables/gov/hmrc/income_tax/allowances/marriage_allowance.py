@@ -29,4 +29,5 @@ class marriage_allowance(Variable):
             np.ceil(amount_if_eligible_pre_rounding / rounding_increment)
             * rounding_increment
         )
-        return eligible * amount_if_eligible * (person("marriage_allowance_take_up_seed", period) < takeup_rate)
+        would_claim = person("would_claim_marriage_allowance", period)
+        return eligible * amount_if_eligible * would_claim

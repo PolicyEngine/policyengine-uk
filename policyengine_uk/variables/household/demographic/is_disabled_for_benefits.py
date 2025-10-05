@@ -10,20 +10,14 @@ class is_disabled_for_benefits(Variable):
     reference = "Child Tax Credit Regulations 2002 s. 8"
 
     def formula(person, period, parameters):
+        # In microsimulation, this is set in the dataset (see frs.py line 726)
+        # This formula only runs for policy calculator (non-dataset)
+
+        # Deterministic rule: disabled if they receive qualifying benefits
         QUALIFYING_BENEFITS = [
             "dla",
             "pip",
         ]
 
-        p_claims_lcwra_if_on_pip_dla = 0.8
-        p_claims_lcwra_if_not_on_pip_dla = 0.13
-
-        random_seed = person("is_disabled_for_benefits_seed", period)
-
         on_qual_benefits = add(person, period, QUALIFYING_BENEFITS) > 0
-
-        return np.where(
-            on_qual_benefits,
-            random_seed < p_claims_lcwra_if_on_pip_dla,
-            random_seed < p_claims_lcwra_if_not_on_pip_dla,
-        )
+        return on_qual_benefits

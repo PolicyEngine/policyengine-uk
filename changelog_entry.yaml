@@ -1,0 +1,9 @@
+- bump: minor
+  changes:
+    removed:
+      - All take-up rate parameters (moved to policyengine-uk-data)
+      - All random seed variables for stochastic processes
+    changed:
+      - Would_claim variables now sourced from dataset
+      - Country package is now purely deterministic
+      - Formulas preserved for policy calculator with dataset fallback

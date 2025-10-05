@@ -6,16 +6,11 @@ class would_claim_uc(Variable):
     entity = BenUnit
     label = "Would claim Universal Credit"
     documentation = (
-        "Whether this family would claim the Universal Credit if eligible"
+        "Whether this family would claim the Universal Credit if eligible. "
+        "Generated stochastically in the dataset using take-up rates."
     )
     definition_period = YEAR
 
-    def formula(benunit, period, parameters):
-        takes_up = (
-            benunit("universal_credit_take_up_seed", period)
-            < parameters(period).gov.dwp.universal_credit.takeup_rate
-        )
-        is_in_microsimulation = benunit.simulation.dataset is not None
-        if is_in_microsimulation:
-            return takes_up
-        return True
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to True
+    default_value = True

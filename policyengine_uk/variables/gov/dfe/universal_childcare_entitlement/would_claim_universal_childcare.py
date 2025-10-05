@@ -5,12 +5,12 @@ class would_claim_universal_childcare(Variable):
     value_type = bool
     entity = BenUnit
     label = "would claim universal childcare entitlement"
-    documentation = "Whether this BenUnit would claim universal childcare entitlement if eligible"
+    documentation = (
+        "Whether this BenUnit would claim universal childcare entitlement if eligible. "
+        "Generated stochastically in the dataset using take-up rates."
+    )
     definition_period = YEAR
 
-    def formula(benunit, period, parameters):
-        takeup_rate = parameters(period).gov.dfe.universal_childcare_entitlement.takeup_rate
-        is_in_microsimulation = benunit.simulation.dataset is not None
-        if is_in_microsimulation:
-            return benunit("universal_childcare_take_up_seed", period) < takeup_rate
-        return True
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to True
+    default_value = True
