@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+    - Update documentation command to use myst instead of deprecated jb/jupyter book
