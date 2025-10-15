@@ -1917,3 +1917,8 @@
       of marginal rates.
     - Potential bug in labour supply response variable initialization order.
   date: 2025-09-30 14:40:31
+- bump: patch
+  changes:
+    fixed:
+    - Fixed randomness between runs caused by UC reform.
+  date: 2025-10-15 12:18:22
