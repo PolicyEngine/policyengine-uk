@@ -1,5 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Fix bug where changes to economic assumption parameters would not change uprating behaviour.
-

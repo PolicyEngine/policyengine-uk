@@ -1922,3 +1922,9 @@
     fixed:
     - Fixed randomness between runs caused by UC reform.
   date: 2025-10-15 12:18:22
+- bump: patch
+  changes:
+    fixed:
+    - Fix bug where changes to economic assumption parameters would not change uprating
+      behaviour.
+  date: 2025-10-17 15:01:31
