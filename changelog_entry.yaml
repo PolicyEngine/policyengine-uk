@@ -1,4 +1,5 @@
 - bump: patch
   changes:
     fixed:
-    - Fixed randomness between runs caused by UC reform.
+    - Fix bug where changes to economic assumption parameters would not change uprating behaviour.
+
