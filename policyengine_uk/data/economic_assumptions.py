@@ -20,7 +20,10 @@ def extend_single_year_dataset(
         next_year.time_period = str(year)
         datasets.append(next_year)
     multi_year_dataset = UKMultiYearDataset(datasets=datasets)
-    return apply_uprating(multi_year_dataset, tax_benefit_system_parameters=tax_benefit_system_parameters)
+    return apply_uprating(
+        multi_year_dataset,
+        tax_benefit_system_parameters=tax_benefit_system_parameters,
+    )
 
 
 def apply_uprating(
@@ -40,7 +43,9 @@ def apply_uprating(
             continue  # Don't uprate the first year
         current_year = dataset.datasets[year]
         prev_year = dataset.datasets[year - 1]
-        apply_single_year_uprating(current_year, prev_year, tax_benefit_system_parameters)
+        apply_single_year_uprating(
+            current_year, prev_year, tax_benefit_system_parameters
+        )
 
     return dataset
 

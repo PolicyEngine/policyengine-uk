@@ -90,8 +90,6 @@ class Simulation(CoreSimulation):
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
 
-
-
         # Build simulation from appropriate source
         if situation is not None:
             self.build_from_situation(situation)
@@ -323,7 +321,9 @@ class Simulation(CoreSimulation):
         dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=first_time_period
         )
-        multi_year_dataset = extend_single_year_dataset(dataset, self.tax_benefit_system.parameters)
+        multi_year_dataset = extend_single_year_dataset(
+            dataset, self.tax_benefit_system.parameters
+        )
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self.dataset = multi_year_dataset
@@ -337,7 +337,9 @@ class Simulation(CoreSimulation):
             dataset: UKSingleYearDataset containing one year of data
         """
 
-        dataset = extend_single_year_dataset(dataset, self.tax_benefit_system.parameters)
+        dataset = extend_single_year_dataset(
+            dataset, self.tax_benefit_system.parameters
+        )
         self.build_from_multi_year_dataset(dataset)
         self.dataset = dataset
 
