@@ -1928,3 +1928,9 @@
     - Fix bug where changes to economic assumption parameters would not change uprating
       behaviour.
   date: 2025-10-17 15:01:31
+- bump: minor
+  changes:
+    fixed:
+    - Bug in state pension formulae causing issues when using datasets with year !=
+      2023.
+  date: 2025-10-20 12:43:40
