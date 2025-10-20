@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    fixed:
+    - Bug in state pension formulae causing issues when using datasets with year != 2023.
