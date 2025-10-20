@@ -43,6 +43,7 @@ class Simulation(CoreSimulation):
 
     calculated_periods: List[str] = []
     _variable_dependencies: Dict[str, List[str]] = None
+    dataset = None
 
     def __init__(
         self,

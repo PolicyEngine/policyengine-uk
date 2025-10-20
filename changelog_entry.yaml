@@ -1,0 +1,2 @@
+- fixed:
+    - Fix missing dataset attribute in Simulation class
