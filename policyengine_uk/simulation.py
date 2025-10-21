@@ -85,12 +85,12 @@ class Simulation(CoreSimulation):
 
         self.branches: Dict[str, Simulation] = {}
 
-        if scenario is not None:
-            if scenario.parameter_changes is not None:
-                self.apply_parameter_changes(scenario.parameter_changes)
+        if scenario is not None and scenario.applied_before_data_load:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
 
+            if scenario.parameter_changes is not None:
+                self.apply_parameter_changes(scenario.parameter_changes)
         # Build simulation from appropriate source
         if situation is not None:
             self.build_from_situation(situation)
@@ -137,6 +137,12 @@ class Simulation(CoreSimulation):
             self.baseline = self.clone()
 
         self.calculated_periods = []
+
+        if scenario is not None and not scenario.applied_before_data_load:
+            if scenario.simulation_modifier is not None:
+                scenario.simulation_modifier(self)
+            if scenario.parameter_changes is not None:
+                self.apply_parameter_changes(scenario.parameter_changes)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:

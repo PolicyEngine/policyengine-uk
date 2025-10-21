@@ -13,6 +13,8 @@ class Scenario(BaseModel):
     using the + operator.
     """
 
+    applied_before_data_load: bool = False
+
     parameter_changes: Optional[
         Dict[
             str,
