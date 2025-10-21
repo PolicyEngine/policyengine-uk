@@ -1939,3 +1939,8 @@
     fixed:
     - Bug fix in state pension scripts.
   date: 2025-10-20 12:51:40
+- bump: patch
+  changes:
+    fixed:
+    - Bug fix for decomp analysis.
+  date: 2025-10-21 12:08:26
