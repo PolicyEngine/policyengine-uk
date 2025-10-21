@@ -1,2 +1,4 @@
-- fixed:
-    - Fix missing dataset attribute in Simulation class
+- bump: patch
+  changes:
+    fixed:
+    - Bug fix for decomp analysis.

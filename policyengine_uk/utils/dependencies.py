@@ -69,7 +69,7 @@ def calculate_dependency_contributions(
         if "weight" in variable:
             continue
         sim.get_holder(variable_name).delete_arrays(year)
-        value_type = system.get_variable(variable).value_type
+        value_type = sim.tax_benefit_system.get_variable(variable).value_type
         current_values = sim.calculate(variable, year)
         if value_type == float:
             sim.set_input(variable, year, (current_values * 0).astype(float))
