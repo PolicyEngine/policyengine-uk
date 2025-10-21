@@ -1917,3 +1917,25 @@
       of marginal rates.
     - Potential bug in labour supply response variable initialization order.
   date: 2025-09-30 14:40:31
+- bump: patch
+  changes:
+    fixed:
+    - Fixed randomness between runs caused by UC reform.
+  date: 2025-10-15 12:18:22
+- bump: patch
+  changes:
+    fixed:
+    - Fix bug where changes to economic assumption parameters would not change uprating
+      behaviour.
+  date: 2025-10-17 15:01:31
+- bump: minor
+  changes:
+    fixed:
+    - Bug in state pension formulae causing issues when using datasets with year !=
+      2023.
+  date: 2025-10-20 12:43:40
+- bump: patch
+  changes:
+    fixed:
+    - Bug fix in state pension scripts.
+  date: 2025-10-20 12:51:40

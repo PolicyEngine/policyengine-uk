@@ -8,7 +8,9 @@ def add_universal_credit_reform(sim: Microsimulation):
         sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
     )
 
-    uc_seed = np.random.random(len(sim.calculate("benunit_id")))
+    generator = np.random.default_rng(43)
+
+    uc_seed = generator.random(len(sim.calculate("benunit_id")))
     p_uc_post_2026_status = {
         2025: 0,
         2026: 0.11,

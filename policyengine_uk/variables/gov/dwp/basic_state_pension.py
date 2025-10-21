@@ -12,8 +12,10 @@ class basic_state_pension(Variable):
         simulation = person.simulation
         if simulation.dataset is None:
             return 0
-
-        data_year = 2023
+        try:
+            data_year = min(simulation.dataset.years)
+        except:
+            data_year = period.start.year
         reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
         type = person("state_pension_type", period)
         maximum_basic_sp = parameters(
