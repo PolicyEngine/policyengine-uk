@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    added:
-      - Scenario now supports `applied_before_data_load` flag to control when parameter changes and simulation modifiers are applied relative to data loading.

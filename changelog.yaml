@@ -1944,3 +1944,9 @@
     fixed:
     - Bug fix for decomp analysis.
   date: 2025-10-21 12:08:26
+- bump: patch
+  changes:
+    added:
+    - Scenario now supports `applied_before_data_load` flag to control when parameter
+      changes and simulation modifiers are applied relative to data loading.
+  date: 2025-10-22 10:03:42
