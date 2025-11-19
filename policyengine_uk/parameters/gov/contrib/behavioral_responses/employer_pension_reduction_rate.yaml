@@ -1,0 +1,17 @@
+description: |
+  The percentage by which employers reduce their pension contributions in response
+  to the salary sacrifice pension cap NI charge.
+  - 0 = no reduction (employers absorb the cost)
+  - 0.5 = employers reduce contributions by 50% of the NI charge
+  - 1.0 = employers reduce contributions by 100% of the NI charge (full offset)
+
+  Evidence suggests many employers would reduce contributions to partially or fully
+  offset the 15% NI charge they face on salary sacrifice amounts above £2,000.
+values:
+  2025-11-01: 0  # Default: no behavioral response (baseline scenario)
+metadata:
+  unit: /1
+  label: Employer pension contribution reduction rate in response to salary sacrifice cap
+  reference:
+    - title: "Cap on UK salary sacrifice benefits is 'short-term' choice, warn experts"
+      href: https://www.ft.com/content/11602ac1-44fc-4b58-8b17-af5e851f5c95

@@ -1,0 +1,10 @@
+description: The annual cap on salary sacrifice pension contributions that are exempt from employee and employer National Insurance contributions. Contributions above this cap are subject to standard NI rates.
+values:
+  2025-11-01: 2000
+metadata:
+  unit: currency-GBP
+  label: Salary sacrifice pension NI exemption cap
+  period: year
+  reference:
+    - title: "Cap on UK salary sacrifice benefits is 'short-term' choice, warn experts"
+      href: https://www.ft.com/content/11602ac1-44fc-4b58-8b17-af5e851f5c95
