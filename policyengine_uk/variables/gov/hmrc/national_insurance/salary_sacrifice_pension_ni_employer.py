@@ -17,19 +17,18 @@ class salary_sacrifice_pension_ni_employer(Variable):
     )
 
     def formula(person, period, parameters):
-        # Check if reform is in effect
-        reform_in_effect = parameters(
-            period
-        ).gov.contrib.salary_sacrifice_pension_cap_in_effect
-        if not reform_in_effect:
-            return 0
-
+        # Use adjusted salary sacrifice after behavioral response
         ss_contributions = person(
-            "pension_contributions_via_salary_sacrifice", period
+            "pension_contributions_via_salary_sacrifice_adjusted", period
         )
         cap = parameters(
             period
         ).gov.hmrc.national_insurance.salary_sacrifice_pension_cap
+
+        # If cap is infinite, scheme is inactive (no charge)
+        if np.isinf(cap):
+            return person("salary_sacrifice_pension_ni_employer", period) * 0
+
         excess = max_(ss_contributions - cap, 0)
 
         # Use existing NI Class 1 employer rate parameter
