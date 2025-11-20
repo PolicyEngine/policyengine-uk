@@ -1,7 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Salary sacrifice returned to income now cannot be negative.
-    - Adjusted salary sacrifice pension contributions now cannot go below zero.
-    changed:
-    - Updated microsimulation test expected values to reflect salary sacrifice calculation improvements.

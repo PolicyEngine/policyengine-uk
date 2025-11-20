@@ -1955,3 +1955,12 @@
     added:
     - Salary sacrifice pension cap policy modeling (2,000 GBP cap on NI-exempt contributions)
   date: 2025-11-20 12:24:29
+- bump: patch
+  changes:
+    changed:
+    - Updated microsimulation test expected values to reflect salary sacrifice calculation
+      improvements.
+    fixed:
+    - Salary sacrifice returned to income now cannot be negative.
+    - Adjusted salary sacrifice pension contributions now cannot go below zero.
+  date: 2025-11-20 14:51:58
