@@ -1950,3 +1950,8 @@
     - Scenario now supports `applied_before_data_load` flag to control when parameter
       changes and simulation modifiers are applied relative to data loading.
   date: 2025-10-22 10:03:42
+- bump: minor
+  changes:
+    added:
+    - Salary sacrifice pension cap policy modeling (2,000 GBP cap on NI-exempt contributions)
+  date: 2025-11-20 12:24:29
