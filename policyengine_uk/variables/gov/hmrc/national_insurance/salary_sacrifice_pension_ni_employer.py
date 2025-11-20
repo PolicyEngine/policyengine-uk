@@ -12,9 +12,7 @@ class salary_sacrifice_pension_ni_employer(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    reference = (
-        "https://docs.google.com/document/d/1Rhrfrg7A_oZHudmA775otAn1EE4-YthgeyS9nL-PrE8/edit?tab=t.0"
-    )
+    reference = "https://docs.google.com/document/d/1Rhrfrg7A_oZHudmA775otAn1EE4-YthgeyS9nL-PrE8/edit?tab=t.0"
 
     def formula(person, period, parameters):
         # Use adjusted salary sacrifice after behavioral response

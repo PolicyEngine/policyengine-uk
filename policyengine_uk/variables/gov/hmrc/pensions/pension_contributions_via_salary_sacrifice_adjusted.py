@@ -14,9 +14,7 @@ class pension_contributions_via_salary_sacrifice_adjusted(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    reference = (
-        "https://docs.google.com/document/d/1Rhrfrg7A_oZHudmA775otAn1EE4-YthgeyS9nL-PrE8/edit?tab=t.0"
-    )
+    reference = "https://docs.google.com/document/d/1Rhrfrg7A_oZHudmA775otAn1EE4-YthgeyS9nL-PrE8/edit?tab=t.0"
 
     def formula(person, period, parameters):
         intended_ss = person(
