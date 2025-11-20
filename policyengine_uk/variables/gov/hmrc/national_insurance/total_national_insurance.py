@@ -11,4 +11,5 @@ class total_national_insurance(Variable):
     adds = [
         "national_insurance",
         "ni_class_1_employer",
+        "salary_sacrifice_pension_ni_employer",
     ]

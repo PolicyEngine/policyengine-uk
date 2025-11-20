@@ -1,0 +1,14 @@
+# The percentage by which employees reduce their salary sacrifice pension contributions in response to the cap.
+# - 0 = no adjustment (employees keep high salary sacrifice and pay NI on excess)
+# - 0.5 = employees reduce salary sacrifice by 50% of the excess above cap
+# - 1.0 = employees fully optimize (reduce salary sacrifice to exactly the cap)
+# Most employees would optimize their salary sacrifice to avoid NI charges by reducing it to the cap level.
+description: The percentage by which employees reduce their salary sacrifice pension contributions in response to the salary sacrifice pension cap.
+values:
+  2010-01-01: 1.0  # Default: full optimization (employees reduce to cap level)
+metadata:
+  unit: /1
+  label: Employee salary sacrifice reduction rate in response to cap
+  reference:
+    - title: "Cap on UK salary sacrifice benefits is 'short-term' choice, warn experts"
+      href: https://docs.google.com/document/d/1Rhrfrg7A_oZHudmA775otAn1EE4-YthgeyS9nL-PrE8/edit?tab=t.0

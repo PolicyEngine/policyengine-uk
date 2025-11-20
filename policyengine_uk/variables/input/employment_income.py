@@ -14,5 +14,6 @@ class employment_income(Variable):
         "employment_income_before_lsr",
         "employment_income_behavioral_response",
         "employer_ni_fixed_employer_cost_change",
+        "salary_sacrifice_returned_to_income",
     ]
     uprating = "gov.economic_assumptions.indices.obr.average_earnings"
