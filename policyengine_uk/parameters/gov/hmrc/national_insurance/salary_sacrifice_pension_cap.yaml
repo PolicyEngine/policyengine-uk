@@ -1,4 +1,7 @@
-description: The annual cap on salary sacrifice pension contributions that are exempt from employee and employer National Insurance contributions. Contributions above this cap are subject to standard NI rates. When set to infinity (default), the scheme is inactive and all salary sacrifice pension contributions remain exempt from NI.
+# The annual cap on salary sacrifice pension contributions that are exempt from NI.
+# Contributions above this cap are subject to standard NI rates.
+# When set to infinity (default), the scheme is inactive and all salary sacrifice remains exempt from NI.
+description: The annual cap on salary sacrifice pension contributions that are exempt from employee and employer National Insurance contributions.
 values:
   2010-01-01: .inf  # Default: no cap (scheme inactive)
 metadata:
@@ -7,4 +10,4 @@ metadata:
   period: year
   reference:
     - title: "Cap on UK salary sacrifice benefits is 'short-term' choice, warn experts"
-      href: https://www.ft.com/content/11602ac1-44fc-4b58-8b17-af5e851f5c95
+      href: https://docs.google.com/document/d/1Rhrfrg7A_oZHudmA775otAn1EE4-YthgeyS9nL-PrE8/edit?tab=t.0

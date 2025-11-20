@@ -13,7 +13,7 @@ class salary_sacrifice_returned_to_income(Variable):
     value_type = float
     unit = GBP
     reference = (
-        "https://www.ft.com/content/11602ac1-44fc-4b58-8b17-af5e851f5c95"
+        "https://docs.google.com/document/d/1Rhrfrg7A_oZHudmA775otAn1EE4-YthgeyS9nL-PrE8/edit?tab=t.0"
     )
 
     def formula(person, period, parameters):
