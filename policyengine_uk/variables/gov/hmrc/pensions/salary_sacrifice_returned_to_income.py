@@ -22,5 +22,5 @@ class salary_sacrifice_returned_to_income(Variable):
             "pension_contributions_via_salary_sacrifice_adjusted", period
         )
 
-        # The difference is returned to employment income
-        return intended_ss - adjusted_ss
+        # The difference is returned to employment income (cannot be negative)
+        return max_(intended_ss - adjusted_ss, 0)
