@@ -39,5 +39,5 @@ class pension_contributions_via_salary_sacrifice_adjusted(Variable):
         # Amount employee reduces their salary sacrifice
         reduction = excess * reduction_rate
 
-        # Adjusted salary sacrifice
-        return intended_ss - reduction
+        # Adjusted salary sacrifice (cannot go below zero)
+        return max_(intended_ss - reduction, 0)
