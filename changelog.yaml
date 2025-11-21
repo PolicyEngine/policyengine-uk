@@ -1964,3 +1964,11 @@
     - Salary sacrifice returned to income now cannot be negative.
     - Adjusted salary sacrifice pension contributions now cannot go below zero.
   date: 2025-11-20 14:51:58
+- bump: minor
+  changes:
+    changed:
+    - Salary sacrifice pension contributions above the cap are now redirected to employee
+      pension contributions (which receive income tax relief but pay NI) instead of
+      returning only to regular employment income. This better reflects the behavioral
+      assumption that individuals prioritize retirement savings.
+  date: 2025-11-21 14:59:20

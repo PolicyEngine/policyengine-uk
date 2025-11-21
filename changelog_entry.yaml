@@ -1,4 +1,0 @@
-- bump: minor
-  changes:
-    changed:
-    - Salary sacrifice pension contributions above the cap are now redirected to employee pension contributions (which receive income tax relief but pay NI) instead of returning only to regular employment income. This better reflects the behavioral assumption that individuals prioritize retirement savings.
