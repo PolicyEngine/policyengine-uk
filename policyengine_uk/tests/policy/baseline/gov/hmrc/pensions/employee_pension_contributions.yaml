@@ -1,0 +1,129 @@
+- name: Salary sacrifice returned to income - no cap exceeded
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 1_500
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    salary_sacrifice_returned_to_income: 0
+
+- name: Salary sacrifice returned to income - exceeding cap with full behavioral response
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 3_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    salary_sacrifice_returned_to_income: 1_000  # 3,000 - 2,000 cap
+    pension_contributions_via_salary_sacrifice_adjusted: 2_000
+
+- name: Salary sacrifice returned to income - large excess
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 10_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    salary_sacrifice_returned_to_income: 8_000  # 10,000 - 2,000 cap
+    pension_contributions_via_salary_sacrifice_adjusted: 2_000
+
+- name: Salary sacrifice returned to income - exactly at cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 2_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    salary_sacrifice_returned_to_income: 0
+    pension_contributions_via_salary_sacrifice_adjusted: 2_000
+
+- name: Salary sacrifice returned to income - no behavioral response
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 3_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+  output:
+    salary_sacrifice_returned_to_income: 0  # No behavioral response means no reduction
+    pension_contributions_via_salary_sacrifice_adjusted: 3_000
+
+- name: Salary sacrifice returned to income - 50% behavioral response
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 4_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0.5
+  output:
+    salary_sacrifice_returned_to_income: 1_000  # (4,000 - 2,000) * 0.5
+    pension_contributions_via_salary_sacrifice_adjusted: 3_000  # 4,000 - 1,000
+
+- name: Salary sacrifice returned to income - no cap (infinite)
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 15_000
+  output:
+    salary_sacrifice_returned_to_income: 0
+    pension_contributions_via_salary_sacrifice_adjusted: 15_000
+
+- name: Employee pension contributions - no salary sacrifice
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employee_pension_contributions_reported: 5_000
+  output:
+    employee_pension_contributions: 5_000
+
+- name: Employee pension contributions - with salary sacrifice below cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employee_pension_contributions_reported: 3_000
+    pension_contributions_via_salary_sacrifice: 1_500
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    employee_pension_contributions: 3_000
+    salary_sacrifice_returned_to_income: 0
+
+- name: Employee pension contributions - with salary sacrifice exceeding cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employee_pension_contributions_reported: 4_000
+    pension_contributions_via_salary_sacrifice: 3_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    employee_pension_contributions: 5_000  # 4,000 + 1,000
+    salary_sacrifice_returned_to_income: 1_000
+
+- name: Employee pension contributions - zero reported with salary sacrifice over cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employee_pension_contributions_reported: 0
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    employee_pension_contributions: 3_000  # 0 + 3,000
+    salary_sacrifice_returned_to_income: 3_000
+
+- name: Employee pension contributions - large excess scenario
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employee_pension_contributions_reported: 5_000
+    pension_contributions_via_salary_sacrifice: 10_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 1.0
+  output:
+    employee_pension_contributions: 13_000  # 5,000 + 8,000
+    salary_sacrifice_returned_to_income: 8_000
