@@ -17,7 +17,7 @@ class personal_pension_contributions_tax(Variable):
         taxed_income = person("taxed_income", period)
 
         personal_pension_contributions = person(
-            "employee_pension_contributions", period
+            "employee_pension_contributions_adjusted", period
         ) + person("personal_pension_contributions", period)
         pension_annual_allowance = person("pension_annual_allowance", period)
         taxable_contributions = (

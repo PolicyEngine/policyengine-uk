@@ -62,7 +62,7 @@ class hbai_household_net_income(Variable):
         "income_tax",
         "national_insurance",
         "student_loan_repayments",
-        "employee_pension_contributions",
+        "employee_pension_contributions_adjusted",
         "personal_pension_contributions",
         "maintenance_expenses",
         "external_child_payments",
