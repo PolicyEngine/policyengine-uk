@@ -20,35 +20,34 @@ class property_income_tax(Variable):
 
     def formula(person, period, parameters):
         """
-        Calculate income tax on property income using property-specific rates.
+        Calculate income tax on property income.
 
-        Property income is stacked on top of other earned income (employment,
-        pension, self-employment) for determining which tax band it falls into.
-        From April 2027, property income is taxed at rates 2pp higher than
-        standard UK rates (22%, 42%, 47% vs 20%, 40%, 45%).
+        For Scottish taxpayers, property income is taxed using the normal
+        Scottish income tax rates (the new property-specific rates do not
+        apply to Scotland).
+
+        For rUK taxpayers, property income is taxed using property-specific
+        rates. From April 2027, these are 2pp higher than standard UK rates
+        (22%, 42%, 47% vs 20%, 40%, 45%).
+
+        Property income is stacked on top of other earned income for
+        determining which tax band it falls into.
         """
-        property_rates = parameters(period).gov.hmrc.income_tax.rates.property
-        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
-        personal_allowance = parameters(
-            period
-        ).gov.hmrc.income_tax.allowances.personal_allowance.amount
-
-        # Get taxable property income (after property allowance)
+        rates = parameters(period).gov.hmrc.income_tax.rates
         taxable_property = person("taxable_property_income", period)
-
-        # Get other earned income that comes before property in the stack
-        # Property income sits within earned_taxable_income, which includes:
-        # - employment income
-        # - pension income
-        # - self-employment income
-        # - property income
-        # We need the portion excluding property to know where property starts
         earned_taxable = person("earned_taxable_income", period)
         other_earned_taxable = max_(0, earned_taxable - taxable_property)
+        is_scottish = person("pays_scottish_income_tax", period)
 
-        # Calculate how much property income falls in each band
-        # Band boundaries (after personal allowance is accounted for in
-        # earned_taxable_income calculation)
+        # Scottish taxpayers: use Scottish rates via calc method
+        # Tax on (other earned + property) minus tax on (other earned)
+        scottish_tax = rates.scotland.rates.calc(
+            other_earned_taxable + taxable_property
+        ) - rates.scotland.rates.calc(other_earned_taxable)
+
+        # rUK taxpayers: use property-specific rates
+        property_rates = rates.property
+        thresholds = rates.uk.thresholds
         basic_upper = thresholds[1]  # Higher rate threshold
         higher_upper = thresholds[2]  # Additional rate threshold
 
@@ -67,9 +66,10 @@ class property_income_tax(Variable):
             0, taxable_property - property_in_basic - property_in_higher
         )
 
-        # Apply property-specific rates
-        return (
+        ruk_tax = (
             property_rates.basic * property_in_basic
             + property_rates.higher * property_in_higher
             + property_rates.additional * property_in_additional
         )
+
+        return where(is_scottish, scottish_tax, ruk_tax)
