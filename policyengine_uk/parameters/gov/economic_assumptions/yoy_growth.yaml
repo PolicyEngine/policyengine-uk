@@ -1,8 +1,8 @@
 # OBR Economic Projections
 #
 # Data sources:
-# - 2009-2023: OBR outturn data from detailed forecast tables
-# - 2024-2030: OBR forecast from latest Economic and Fiscal Outlook (EFO)
+# - 2009-2024: OBR outturn data from detailed forecast tables
+# - 2025-2030: OBR forecast from latest Economic and Fiscal Outlook (EFO)
 # - 2031+: OBR long-run equilibrium assumptions:
 #   - CPI: 2.0% (Bank of England target)
 #   - RPI/CPIH: ~2.4% (CPI + 0.4pp wedge, reflecting housing costs growth)
@@ -15,7 +15,7 @@ obr:
   rpi:
     description: Retail price index year-on-year growth.
     values:
-      # Outturn (2009-2023)
+      # Outturn (2009-2024)
       2009-01-01: 0.018
       2010-01-01: 0.008
       2011-01-01: 0.016
@@ -31,8 +31,8 @@ obr:
       2021-01-01: 0.059
       2022-01-01: 0.1158
       2023-01-01: 0.0969
-      # Forecast (2024-2030)
       2024-01-01: 0.0359
+      # Forecast (2025-2030)
       2025-01-01: 0.0433
       2026-01-01: 0.0371
       2027-01-01: 0.0313
@@ -94,7 +94,7 @@ obr:
   average_earnings:
     description: Average earnings year-on-year growth.
     values:
-      # Outturn (2009-2023)
+      # Outturn (2009-2024)
       2009-01-01: 0.018
       2010-01-01: 0.008
       2011-01-01: 0.016
@@ -110,8 +110,8 @@ obr:
       2021-01-01: 0.059
       2022-01-01: 0.0614
       2023-01-01: 0.0622
-      # Forecast (2024-2030)
       2024-01-01: 0.0493
+      # Forecast (2025-2030)
       2025-01-01: 0.0517
       2026-01-01: 0.0333
       2027-01-01: 0.0225
@@ -174,7 +174,7 @@ obr:
   consumer_price_index:
     description: Consumer price index year-on-year growth.
     values:
-      # Outturn (2009-2023)
+      # Outturn (2009-2024)
       2009-01-01: 0.022
       2010-01-01: 0.035
       2011-01-01: 0.043
@@ -190,8 +190,8 @@ obr:
       2021-01-01: 0.04
       2022-01-01: 0.0907
       2023-01-01: 0.0730
-      # Forecast (2024-2030)
       2024-01-01: 0.0253
+      # Forecast (2025-2030)
       2025-01-01: 0.0345
       2026-01-01: 0.0248
       2027-01-01: 0.0202
@@ -276,11 +276,11 @@ obr:
   cpih:
     description: Consumer price index including owner occupiers' housing costs year-on-year growth.
     values:
-      # Outturn (2022-2023)
+      # Outturn (2022-2024)
       2022-01-01: 0.0792
       2023-01-01: 0.0679
-      # Forecast (2024-2030)
       2024-01-01: 0.0327
+      # Forecast (2025-2030)
       2025-01-01: 0.0393
       2026-01-01: 0.0267
       2027-01-01: 0.0215
@@ -467,12 +467,12 @@ obr:
   house_prices:
     description: House prices year-on-year growth.
     values:
-      # Outturn (2021-2023)
+      # Outturn (2021-2024)
       2021-01-01: 0.082
       2022-01-01: 0.0926
       2023-01-01: 0.0036
-      # Forecast (2024-2030)
       2024-01-01: 0.0083
+      # Forecast (2025-2030)
       2025-01-01: 0.0294
       2026-01-01: 0.0222
       2027-01-01: 0.0279
@@ -489,12 +489,12 @@ obr:
   mortgage_interest:
     description: Mortgage interest year-on-year growth.
     values:
-      # Outturn (2021-2023)
+      # Outturn (2021-2024)
       2021-01-01: -0.0226
       2022-01-01: 0.1462
       2023-01-01: 0.5224
-      # Forecast (2024-2030)
       2024-01-01: 0.2730
+      # Forecast (2025-2030)
       2025-01-01: 0.1098
       2026-01-01: 0.1435
       2027-01-01: 0.1032
@@ -511,11 +511,11 @@ obr:
   social_rent:
     description: Rent year-on-year growth (CPI+1%, one year lagged).
     values:
-      # Outturn (2022-2023)
+      # Outturn (2022-2024)
       2022-01-01: 0.05
       2023-01-01: 0.07
-      # Forecast (2024-2030): Derived from CPI+1%, one year lagged
       2024-01-01: 0.083
+      # Forecast (2025-2030): Derived from CPI+1%, one year lagged
       2025-01-01: 0.035
       2026-01-01: 0.045
       2027-01-01: 0.035
@@ -531,11 +531,11 @@ obr:
   rent:
     description: Rent year-on-year growth, private and social (ONS series D7GQ).
     values:
-      # Outturn (2022-2023)
+      # Outturn (2022-2024)
       2022-01-01: 0.0347
       2023-01-01: 0.0575
-      # Forecast (2024-2030)
       2024-01-01: 0.0716
+      # Forecast (2025-2030)
       2025-01-01: 0.0546
       2026-01-01: 0.0334
       2027-01-01: 0.0311
