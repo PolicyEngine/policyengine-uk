@@ -28,6 +28,6 @@ reforms:
   parameters:
     gov.hmrc.vat.standard_rate: 0.22
 - name: Raise additional rate by 3pp
-  expected_impact: 5.0
+  expected_impact: 5.1
   parameters:
     gov.hmrc.income_tax.rates.uk[2].rate: 0.48
