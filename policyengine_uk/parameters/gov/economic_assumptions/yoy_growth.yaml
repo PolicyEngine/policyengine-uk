@@ -1,7 +1,21 @@
+# OBR Economic Projections
+#
+# Data sources:
+# - 2009-2023: OBR outturn data from detailed forecast tables
+# - 2024-2030: OBR forecast from latest Economic and Fiscal Outlook (EFO)
+# - 2031+: OBR long-run equilibrium assumptions:
+#   - CPI: 2.0% (Bank of England target)
+#   - RPI/CPIH: ~2.4% (CPI + 0.4pp wedge, reflecting housing costs growth)
+#   - Average earnings: ~3.8% (productivity growth + inflation)
+#   Note: RPI will align with CPIH methodology from February 2030 per ONS plans
+#
+# See: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
+
 obr:
   rpi:
     description: Retail price index year-on-year growth.
     values:
+      # Outturn (2009-2023)
       2009-01-01: 0.018
       2010-01-01: 0.008
       2011-01-01: 0.016
@@ -17,6 +31,7 @@ obr:
       2021-01-01: 0.059
       2022-01-01: 0.1158
       2023-01-01: 0.0969
+      # Forecast (2024-2030)
       2024-01-01: 0.0359
       2025-01-01: 0.0433
       2026-01-01: 0.0371
@@ -24,6 +39,7 @@ obr:
       2028-01-01: 0.0287
       2029-01-01: 0.0291
       2030-01-01: 0.0231
+      # Long-run assumptions (2031+)
       2031-01-01: 0.0230
       2032-01-01: 0.0237
       2033-01-01: 0.0238
@@ -76,6 +92,7 @@ obr:
   average_earnings:
     description: Average earnings year-on-year growth.
     values:
+      # Outturn (2009-2023)
       2009-01-01: 0.018
       2010-01-01: 0.008
       2011-01-01: 0.016
@@ -91,6 +108,7 @@ obr:
       2021-01-01: 0.059
       2022-01-01: 0.0614
       2023-01-01: 0.0622
+      # Forecast (2024-2030)
       2024-01-01: 0.0493
       2025-01-01: 0.0517
       2026-01-01: 0.0333
@@ -98,6 +116,7 @@ obr:
       2028-01-01: 0.0210
       2029-01-01: 0.0221
       2030-01-01: 0.0232
+      # Long-run assumptions (2031+)
       2031-01-01: 0.0332
       2032-01-01: 0.0371
       2033-01-01: 0.0374
@@ -151,6 +170,7 @@ obr:
   consumer_price_index:
     description: Consumer price index year-on-year growth.
     values:
+      # Outturn (2009-2023)
       2009-01-01: 0.022
       2010-01-01: 0.035
       2011-01-01: 0.043
@@ -166,6 +186,7 @@ obr:
       2021-01-01: 0.04
       2022-01-01: 0.0907
       2023-01-01: 0.0730
+      # Forecast (2024-2030)
       2024-01-01: 0.0253
       2025-01-01: 0.0345
       2026-01-01: 0.0248
@@ -173,6 +194,7 @@ obr:
       2028-01-01: 0.0204
       2029-01-01: 0.0204
       2030-01-01: 0.0200
+      # Long-run assumptions (2031+): Bank of England 2% target
       2031-01-01: 0.0200
       2032-01-01: 0.0200
       2033-01-01: 0.0200
@@ -248,8 +270,10 @@ obr:
   cpih:
     description: Consumer price index including owner occupiers' housing costs year-on-year growth.
     values:
+      # Outturn (2022-2023)
       2022-01-01: 0.0792
       2023-01-01: 0.0679
+      # Forecast (2024-2030)
       2024-01-01: 0.0327
       2025-01-01: 0.0393
       2026-01-01: 0.0267
@@ -257,6 +281,7 @@ obr:
       2028-01-01: 0.0208
       2029-01-01: 0.0211
       2030-01-01: 0.0213
+      # Long-run assumptions (2031+): CPI + 0.4pp wedge for housing costs
       2031-01-01: 0.0230
       2032-01-01: 0.0237
       2033-01-01: 0.0238
@@ -434,9 +459,11 @@ obr:
   house_prices:
     description: House prices year-on-year growth.
     values:
+      # Outturn (2021-2023)
       2021-01-01: 0.082
       2022-01-01: 0.0926
       2023-01-01: 0.0036
+      # Forecast (2024-2030)
       2024-01-01: 0.0083
       2025-01-01: 0.0294
       2026-01-01: 0.0222
@@ -454,9 +481,11 @@ obr:
   mortgage_interest:
     description: Mortgage interest year-on-year growth.
     values:
+      # Outturn (2021-2023)
       2021-01-01: -0.0226
       2022-01-01: 0.1462
       2023-01-01: 0.5224
+      # Forecast (2024-2030)
       2024-01-01: 0.2730
       2025-01-01: 0.1098
       2026-01-01: 0.1435
@@ -474,8 +503,10 @@ obr:
   social_rent:
     description: Rent year-on-year growth (CPI+1%, one year lagged).
     values:
+      # Outturn (2022-2023)
       2022-01-01: 0.05
       2023-01-01: 0.07
+      # Forecast (2024-2030): Derived from CPI+1%, one year lagged
       2024-01-01: 0.083
       2025-01-01: 0.035
       2026-01-01: 0.045
@@ -491,10 +522,11 @@ obr:
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
   rent:
     description: Rent year-on-year growth, private and social (ONS series D7GQ).
-
     values:
+      # Outturn (2022-2023)
       2022-01-01: 0.0347
       2023-01-01: 0.0575
+      # Forecast (2024-2030)
       2024-01-01: 0.0716
       2025-01-01: 0.0546
       2026-01-01: 0.0334
