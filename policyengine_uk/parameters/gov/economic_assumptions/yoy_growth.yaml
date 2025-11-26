@@ -343,125 +343,146 @@ obr:
   non_labour_income:
     description: Non-labour income year-on-year growth.
     values:
-      2021-01-01: 0.072
-      2022-01-01: 0.138
-      2023-01-01: 0.066
-      2024-01-01: 0.08
-      2025-01-01: 0.068
-      2026-01-01: 0.056
-      2027-01-01: 0.045
-      2028-01-01: 0.034
-      2029-01-01: 0.035
+      # Outturn (2021-2024)
+      2021-01-01: 0.0870
+      2022-01-01: 0.0987
+      2023-01-01: 0.1215
+      2024-01-01: 0.0492
+      # Forecast (2025-2030) from OBR EFO November 2025, Table 1.12
+      2025-01-01: 0.0519
+      2026-01-01: 0.0565
+      2027-01-01: 0.0474
+      2028-01-01: 0.0364
+      2029-01-01: 0.0302
+      2030-01-01: 0.0292
     metadata:
       unit: /1
       label: non-labour income growth
       reference:
-        - title: OBR EFO November 2025
+        - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   council_tax:
     england:
       description: Growth in the level of council tax receipts in England.
       values:
+        # Outturn (2023-2024)
         2023-01-01: 0.051
         2024-01-01: 0.051
-        2025-01-01: 0.05
-        2026-01-01: 0.043
-        2027-01-01: 0.043
-        2028-01-01: 0.043
-        2029-01-01: 0.043
+        # Forecast (2025-2030) from OBR EFO November 2025, Expenditure Table 4.1
+        2025-01-01: 0.0781
+        2026-01-01: 0.0530
+        2027-01-01: 0.0579
+        2028-01-01: 0.0565
+        2029-01-01: 0.0547
+        2030-01-01: 0.0542
       metadata:
         unit: /1
         reference:
-          - title: OBR EFO November 2025 (2023-2025 based on outturn)
+          - title: OBR EFO November 2025 (detailed forecast tables, expenditure, Table 4.1)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
     scotland:
       description: Growth in the level of council tax receipts in Scotland.
       values:
+        # Outturn (2023-2024)
         2023-01-01: 0.052
         2024-01-01: 0.001
-        2025-01-01: 0.088
-        2026-01-01: 0.027
-        2027-01-01: 0.027
-        2028-01-01: 0.027
-        2029-01-01: 0.027
+        # Forecast (2025-2030) from OBR EFO November 2025, Expenditure Table 4.1
+        2025-01-01: 0.0384
+        2026-01-01: 0.0384
+        2027-01-01: 0.0384
+        2028-01-01: 0.0384
+        2029-01-01: 0.0384
+        2030-01-01: 0.0384
       metadata:
         unit: /1
         reference:
-          - title: OBR EFO November 2025 (2023-2025 based on outturn)
+          - title: OBR EFO November 2025 (detailed forecast tables, expenditure, Table 4.1)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
     wales:
       description: Growth in the level of council tax receipts in Wales.
       values:
+        # Outturn (2023-2024)
         2023-01-01: 0.058
         2024-01-01: 0.077
-        2025-01-01: 0.072
-        2026-01-01: 0.041
-        2027-01-01: 0.041
-        2028-01-01: 0.041
-        2029-01-01: 0.041
+        # Forecast (2025-2030) from OBR EFO November 2025, Expenditure Table 4.1
+        2025-01-01: 0.0581
+        2026-01-01: 0.0581
+        2027-01-01: 0.0581
+        2028-01-01: 0.0581
+        2029-01-01: 0.0581
+        2030-01-01: 0.0581
       metadata:
         unit: /1
         reference:
-          - title: OBR EFO November 2025 (2023-2025 based on outturn)
+          - title: OBR EFO November 2025 (detailed forecast tables, expenditure, Table 4.1)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   per_capita:
     gdp:
-      description: Per capita GDP year-on-year growth.
+      description: Per capita nominal GDP year-on-year growth.
       values:
-        2021-01-01: 0.125
-        2022-01-01: 0.092
-        2023-01-01: 0.05
-        2024-01-01: 0.038
-        2025-01-01: 0.028
-        2026-01-01: 0.028
-        2027-01-01: 0.031
-        2028-01-01: 0.033
-        2029-01-01: 0.033
+        # Outturn (2021-2024) - derived from nominal GDP growth minus population growth
+        2021-01-01: 0.0892
+        2022-01-01: 0.1019
+        2023-01-01: 0.0532
+        2024-01-01: 0.0372
+        # Forecast (2025-2030) from OBR EFO November 2025, Table 1.4 minus population growth
+        2025-01-01: 0.0418
+        2026-01-01: 0.0327
+        2027-01-01: 0.0326
+        2028-01-01: 0.0302
+        2029-01-01: 0.0294
+        2030-01-01: 0.0306
       metadata:
         unit: /1
         label: per capita GDP growth
         reference:
-          - title: OBR EFO November 2025
+          - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.4)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
     mixed_income:
       description: Per capita mixed income year-on-year growth.
       values:
-        2021-01-01: 0.06
-        2022-01-01: 0.063
-        2023-01-01: 0.024
-        2024-01-01: 0.048
-        2025-01-01: 0.047
-        2026-01-01: 0.031
-        2027-01-01: 0.031
-        2028-01-01: 0.036
-        2029-01-01: 0.038
+        # Outturn (2021-2024) - derived from mixed income growth minus population growth
+        2021-01-01: 0.0635
+        2022-01-01: 0.0296
+        2023-01-01: -0.0060
+        2024-01-01: 0.0273
+        # Forecast (2025-2030) from OBR EFO November 2025, Table 1.12 minus population growth
+        2025-01-01: 0.0024
+        2026-01-01: 0.0362
+        2027-01-01: 0.0374
+        2028-01-01: 0.0351
+        2029-01-01: 0.0358
+        2030-01-01: 0.0364
       metadata:
         unit: /1
         label: per capita mixed income growth
         reference:
-          - title: OBR EFO November 2025
+          - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
     non_labour_income:
       description: Per capita non-labour income year-on-year growth.
       values:
-        2021-01-01: 0.068
-        2022-01-01: 0.134
-        2023-01-01: 0.052
-        2024-01-01: 0.069
-        2025-01-01: 0.057
-        2026-01-01: 0.049
-        2027-01-01: 0.038
-        2028-01-01: 0.029
-        2029-01-01: 0.03
+        # Outturn (2021-2024) - derived from non-labour income growth minus population growth
+        2021-01-01: 0.0830
+        2022-01-01: 0.0894
+        2023-01-01: 0.1084
+        2024-01-01: 0.0385
+        # Forecast (2025-2030) from OBR EFO November 2025, Table 1.12 minus population growth
+        2025-01-01: 0.0447
+        2026-01-01: 0.0527
+        2027-01-01: 0.0437
+        2028-01-01: 0.0324
+        2029-01-01: 0.0258
+        2030-01-01: 0.0247
       metadata:
         unit: /1
         label: per capita non-labour income growth
         reference:
-          - title: OBR EFO November 2025
+          - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   house_prices:
