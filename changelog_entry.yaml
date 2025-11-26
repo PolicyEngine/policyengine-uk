@@ -1,4 +1,4 @@
-- bump: patch
+- bump: minor
   changes:
-    fixed:
-      - Correct OBR March 2025 economic projections to match detailed forecast tables
+    changed:
+      - Update economic projections to OBR November 2025 Economic and Fiscal Outlook forecasts (CPI, RPI, CPIH, average earnings, house prices, rents, mortgage interest)
