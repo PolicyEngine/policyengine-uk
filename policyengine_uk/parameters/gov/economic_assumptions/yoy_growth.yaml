@@ -17,7 +17,6 @@ obr:
       2021-01-01: 0.059
       2022-01-01: 0.1287
       2023-01-01: 0.0748
-      # Outturn
       2024-01-01: 0.0359
       # Forecast (2025-2029) from OBR EFO March 2025, Table 1.7
       2025-01-01: 0.0409
@@ -94,9 +93,8 @@ obr:
       2021-01-01: 0.059
       2022-01-01: 0.0644
       2023-01-01: 0.0688
-      # Outturn
       2024-01-01: 0.0465
-      # Forecast (2025-2029) from OBR EFO March 2025, Table 1.6, Row Q
+      # Forecast (2025-2029) from OBR EFO March 2025, Table 1.6
       2025-01-01: 0.0432
       2026-01-01: 0.0230
       2027-01-01: 0.0206
@@ -172,7 +170,6 @@ obr:
       2021-01-01: 0.04
       2022-01-01: 0.1004
       2023-01-01: 0.0567
-      # Outturn
       2024-01-01: 0.0253
       # Forecast (2025-2029) from OBR EFO March 2025, Table 1.7
       2025-01-01: 0.0321
@@ -259,7 +256,6 @@ obr:
     values:
       2022-01-01: 0.0877
       2023-01-01: 0.0555
-      # Outturn
       2024-01-01: 0.0327
       # Forecast (2025-2029) from OBR EFO March 2025, Table 1.7
       2025-01-01: 0.0388
@@ -323,7 +319,6 @@ obr:
     description: Non-labour income year-on-year growth.
     values:
       2021-01-01: 0.072
-      # Outturn (Table 1.12)
       2022-01-01: 0.0930
       2023-01-01: 0.1228
       2024-01-01: 0.0621
@@ -345,7 +340,6 @@ obr:
       description: Growth in the level of council tax receipts in England.
       values:
         2023-01-01: 0.051
-        # Outturn
         2024-01-01: 0.0763
         # Forecast (2025-2029) from OBR EFO March 2025, Expenditure Table 4.1
         2025-01-01: 0.0557
@@ -362,7 +356,6 @@ obr:
       description: Growth in the level of council tax receipts in Scotland.
       values:
         2023-01-01: 0.052
-        # Outturn
         2024-01-01: 0.0351
         # Forecast (2025-2029) from OBR EFO March 2025, Expenditure Table 4.1
         2025-01-01: 0.0351
@@ -379,7 +372,6 @@ obr:
       description: Growth in the level of council tax receipts in Wales.
       values:
         2023-01-01: 0.058
-        # Outturn
         2024-01-01: 0.0463
         # Forecast (2025-2029) from OBR EFO March 2025, Expenditure Table 4.1
         2025-01-01: 0.0463
@@ -397,7 +389,6 @@ obr:
     gdp:
       description: Per capita GDP year-on-year growth.
       values:
-        # Outturn (derived from nominal GDP growth minus population growth)
         2021-01-01: 0.125
         2022-01-01: 0.092
         2023-01-01: 0.05
@@ -418,7 +409,6 @@ obr:
     mixed_income:
       description: Per capita mixed income year-on-year growth.
       values:
-        # Outturn (derived from mixed income growth minus population growth, Table 1.12)
         2021-01-01: 0.056
         2022-01-01: 0.053
         2023-01-01: 0.037
@@ -439,7 +429,6 @@ obr:
     non_labour_income:
       description: Per capita non-labour income year-on-year growth.
       values:
-        # Outturn (derived from non-labour income growth minus population growth, Table 1.12)
         2021-01-01: 0.068
         2022-01-01: 0.084
         2023-01-01: 0.110
@@ -463,7 +452,6 @@ obr:
       2021-01-01: 0.082
       2022-01-01: 0.093
       2023-01-01: 0.004
-      # Outturn
       2024-01-01: 0.0132
       # Forecast (2025-2029) from OBR EFO March 2025, Table 1.16
       2025-01-01: 0.0281
@@ -484,7 +472,6 @@ obr:
       2021-01-01: 0.0165
       2022-01-01: 0.0322
       2023-01-01: 0.0454
-      # Outturn
       2024-01-01: 0.0686
       # Forecast (2025-2029) from OBR EFO March 2025, Table 1.7
       2025-01-01: 0.0691
@@ -504,7 +491,6 @@ obr:
     values:
       2022-01-01: 0.05
       2023-01-01: 0.07
-      # Outturn
       2024-01-01: 0.067
       # Forecast (2025-2029) derived from CPI+1% one year lagged
       2025-01-01: 0.035
@@ -523,7 +509,6 @@ obr:
     values:
       2022-01-01: 0.0347
       2023-01-01: 0.0575
-      # Outturn
       2024-01-01: 0.0716
       # Forecast (2025-2029) from OBR EFO March 2025, Table 1.7
       2025-01-01: 0.0649
