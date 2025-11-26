@@ -1,0 +1,46 @@
+description: Savings income tax rates. From April 2027, savings income is taxed at rates 2pp higher than the standard UK rates.
+metadata:
+  label: Savings income tax rates
+  unit: /1
+  reference:
+    - title: OBR Economic and Fiscal Outlook November 2025
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+basic:
+  description: The basic rate of tax on savings income.
+  metadata:
+    label: Savings basic rate
+    unit: /1
+  values:
+    2015-04-06: 0.20
+    2027-04-06:
+      value: 0.22
+      metadata:
+        reference:
+          - title: OBR Economic and Fiscal Outlook November 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+higher:
+  description: The higher rate of tax on savings income.
+  metadata:
+    label: Savings higher rate
+    unit: /1
+  values:
+    2015-04-06: 0.40
+    2027-04-06:
+      value: 0.42
+      metadata:
+        reference:
+          - title: OBR Economic and Fiscal Outlook November 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+additional:
+  description: The additional rate of tax on savings income.
+  metadata:
+    label: Savings additional rate
+    unit: /1
+  values:
+    2015-04-06: 0.45
+    2027-04-06:
+      value: 0.47
+      metadata:
+        reference:
+          - title: OBR Economic and Fiscal Outlook November 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
