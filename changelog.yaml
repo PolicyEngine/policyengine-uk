@@ -1972,3 +1972,8 @@
       returning only to regular employment income. This better reflects the behavioral
       assumption that individuals prioritize retirement savings.
   date: 2025-11-21 14:59:20
+- bump: patch
+  changes:
+    fixed:
+    - Correct OBR March 2025 economic projections to match detailed forecast tables
+  date: 2025-11-26 18:40:43
