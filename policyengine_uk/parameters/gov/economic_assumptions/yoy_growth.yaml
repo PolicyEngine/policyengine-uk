@@ -89,7 +89,7 @@ obr:
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
-        - title: OBR long-run RPI-CPI wedge assumptions
+        - title: OBR long-run RPI-CPI wedge methodology (2031+ values derived from this)
           href: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
   average_earnings:
     description: Average earnings year-on-year growth.
@@ -168,7 +168,7 @@ obr:
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.6)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
-        - title: OBR long-run economic assumptions
+        - title: OBR long-run economic methodology (2031+ values derived from this)
           href: https://obr.uk/forecasts-in-depth/the-economy-forecast/potential-output-and-the-output-gap/
 
   consumer_price_index:
@@ -248,7 +248,7 @@ obr:
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
-        - title: Bank of England inflation target (long-run assumption)
+        - title: Bank of England inflation target (2031+ assumes 2% target)
           href: https://www.bankofengland.co.uk/monetary-policy/inflation
 
   consumer_price_index_ahc:
@@ -337,7 +337,7 @@ obr:
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
-        - title: OBR long-run RPI-CPI wedge assumptions
+        - title: OBR long-run RPI-CPI wedge methodology (2031+ values derived from this)
           href: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
 
   non_labour_income:
