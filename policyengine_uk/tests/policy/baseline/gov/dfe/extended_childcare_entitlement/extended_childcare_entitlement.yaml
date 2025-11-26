@@ -10,7 +10,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6872.79
+    extended_childcare_entitlement: 6872.805
 
 - name: Eligible for 15 hours - All first conditions met
   period: 2025
@@ -24,7 +24,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4839.01
+    extended_childcare_entitlement: 4839.016
 
 - name: Not eligible (one condition not met)
   period: 2025
@@ -54,7 +54,7 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 11711.80
+    extended_childcare_entitlement: 11711.82
 
 - name: Not eligible - Family with multiple children but conditions not met
   period: 2025
@@ -89,7 +89,7 @@
         family_type: COUPLE_WITH_CHILDREN
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 18584.59
+    extended_childcare_entitlement: 18584.625
 
 - name: No expenses for zero hours
   period: 2025
@@ -118,11 +118,11 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4581.86
+    extended_childcare_entitlement: 4581.87  # 20 hours * 38 weeks * £6.07 per hour (2025 rate)
 
 - name: Child using fewer hours than maximum entitlement - multiple children
   period: 2025
-  absolute_error_margin: 3
+  absolute_error_margin: 2
   input:
     people:
       child1:
@@ -136,7 +136,7 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6662.40
+    extended_childcare_entitlement: 6662.413
 
 - name: Benefit unit maximum hours cap applied
   period: 2025
@@ -153,14 +153,14 @@
       benunit1:
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
-        maximum_extended_childcare_hours_usage: 40
+        maximum_extended_childcare_hours_usage: 40 
   output:
-    extended_childcare_entitlement: 13745.58
+    extended_childcare_entitlement: 13745.609
 
 
 - name: Benefit unit without maximum hours cap applied
   period: 2025
-  absolute_error_margin: 2
+  absolute_error_margin: 1
   input:
     people:
       child1:
@@ -170,9 +170,9 @@
       benunit1:
         members: [child1]
         extended_childcare_entitlement_eligible: true
-        maximum_extended_childcare_hours_usage: 10
+        maximum_extended_childcare_hours_usage: 10 
   output:
-    extended_childcare_entitlement: 2290.93
+    extended_childcare_entitlement: 2290.935
 
 
 - name: Benefit unit without maximum hours cap applied with 3 years old child
@@ -187,6 +187,6 @@
       benunit1:
         members: [child1]
         extended_childcare_entitlement_eligible: true
-        maximum_extended_childcare_hours_usage: 18
+        maximum_extended_childcare_hours_usage: 18 
   output:
-    extended_childcare_entitlement: 3436.40
+    extended_childcare_entitlement: 3436.402
