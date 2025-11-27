@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.60.0] - 2025-11-27 16:24:25
+
+### Added
+
+- November 2025 Autumn Budget parameter updates. Extends income tax threshold freeze (personal allowance GBP 12,570, higher rate GBP 50,270, additional rate GBP 125,140) and NICs secondary threshold freeze (GBP 96/week) to April 2031. Updates fuel duty schedule with freeze until September 2026, staggered 5p cut reversal, and RPI uprating from April 2027.
+
 ## [2.59.0] - 2025-11-27 09:29:34
 
 ### Added
@@ -2341,6 +2347,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.60.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.59.0...2.60.0
 [2.59.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.58.0...2.59.0
 [2.58.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.57.1...2.58.0
 [2.57.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.57.0...2.57.1
