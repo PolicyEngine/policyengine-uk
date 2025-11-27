@@ -5,8 +5,8 @@ class rail_subsidy_spending(Variable):
     label = "rail subsidy spending"
     documentation = (
         "Total spending on rail subsidies for this household. "
-        "Computed as rail fare index × rail usage to properly separate "
-        "price (fare changes) from quantity (ridership changes)."
+        "Computed as rail_usage × fare_index, allowing reforms to "
+        "modify fare prices independently of usage quantity."
     )
     entity = Household
     definition_period = YEAR
@@ -14,17 +14,12 @@ class rail_subsidy_spending(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        # Get the rail usage quantity (uprated by ridership growth)
+        # Get rail usage (quantity at base year prices)
+        # This should be provided by policyengine-uk-data
         rail_usage = household("rail_usage", period)
 
         # Get the fare index for the current period
         fare_index = parameters(period).gov.dft.rail.fare_index
 
-        # Base year fare index (2020)
-        base_fare_index = 1.0
-
-        # Scale usage by the relative change in fares
-        # This ensures spending reflects both quantity and price changes
-        fare_multiplier = fare_index / base_fare_index
-
-        return rail_usage * fare_multiplier
+        # Spending = quantity × price
+        return rail_usage * fare_index
