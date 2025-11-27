@@ -47,6 +47,12 @@ brackets:
       2020-04-01: 37500
       2021-04-01: 37700
       2027-04-01: 37700
+      2030-04-01:
+        value: 37700
+        metadata:
+          reference:
+            - title: OBR Economic and Fiscal Outlook November 2025
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 - rate:
     description: The additional rate is the highest tax bracket, with no upper bound
     metadata:
@@ -71,11 +77,17 @@ brackets:
       unit: currency-GBP
     values:
       2015-04-05: 150_000
-      2023-01-01: 
-        value: 125_140 
+      2023-01-01:
+        value: 125_140
         reference:
           - title: Finance Act 2023 s. 6 (4)
             href: https://www.legislation.gov.uk/ukpga/2023/1/section/6/enacted
+      2030-04-01:
+        value: 125_140
+        metadata:
+          reference:
+            - title: OBR Economic and Fiscal Outlook November 2025
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 - rate:
     description: An extra tax bracket.
     metadata:
