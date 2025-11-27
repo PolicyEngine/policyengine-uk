@@ -1,4 +1,4 @@
-description: Fuel duty rate per litre of petrol and diesel.
+description: The UK levies fuel duty on petrol and diesel at this rate per litre.
 values:
   2010-04-01: 0.5719
   2010-10-01: 0.5819
@@ -26,6 +26,8 @@ values:
       reference:
         - title: OBR Economic and Fiscal Outlook November 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+  # November 2025 Autumn Budget: staggered 5p cut reversal (+1p Sep, +2p Dec, +2p Mar 2027)
+  # then RPI uprating from Apr 2027: 59.80p (4.1%), 61.54p (3.2%), 63.34p (2.9%)
   2026-09-01:
     value: 0.5395
     metadata:
