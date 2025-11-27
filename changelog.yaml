@@ -1983,3 +1983,10 @@
     - Update economic projections to OBR November 2025 Economic and Fiscal Outlook
       forecasts (CPI, RPI, CPIH, average earnings, house prices, rents, mortgage interest)
   date: 2025-11-26 19:23:28
+- bump: minor
+  changes:
+    added:
+    - Implement November 2025 Autumn Budget income source tax rate increases. Dividends
+      +2pp basic/higher from April 2026, savings +2pp from April 2027, property +2pp
+      from April 2027.
+  date: 2025-11-27 09:29:34

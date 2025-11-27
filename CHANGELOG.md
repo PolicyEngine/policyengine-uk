@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.59.0] - 2025-11-27 09:29:34
+
+### Added
+
+- Implement November 2025 Autumn Budget income source tax rate increases. Dividends +2pp basic/higher from April 2026, savings +2pp from April 2027, property +2pp from April 2027.
+
 ## [2.58.0] - 2025-11-26 19:23:28
 
 ### Changed
@@ -2335,6 +2341,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.59.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.58.0...2.59.0
 [2.58.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.57.1...2.58.0
 [2.57.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.57.0...2.57.1
 [2.57.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.56.1...2.57.0
