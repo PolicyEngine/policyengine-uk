@@ -28,8 +28,14 @@ values:
     reference:
       - title: National Insurance Contributions (Secondary Class 1 Contributions) Act 2025(2)
         href: https://www.legislation.gov.uk/ukpga/2025/11/section/2
-  2027-01-01: 
+  2027-01-01:
     value: 96
     reference:
       - title: National Insurance Contributions (Secondary Class 1 Contributions) Act 2025(2)
         href: https://www.legislation.gov.uk/ukpga/2025/11/section/2
+  2030-04-06:
+    value: 96
+    metadata:
+      reference:
+        - title: OBR Economic and Fiscal Outlook November 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
