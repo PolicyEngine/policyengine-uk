@@ -182,3 +182,54 @@
   output:
     # £1000 at NEW rate 47%
     property_income_tax: 1000 * 0.47
+
+# =============================================================================
+# INTEGRATION TESTS - verify income_tax includes source-specific taxes
+# These tests verify that property_income_tax flows into total income_tax
+# =============================================================================
+
+- name: Property tax flows into income_tax - basic rate - 2028
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    # Person with just personal allowance worth of employment income
+    employment_income: 12570
+    property_income: 2000
+  output:
+    # Property allowance is £1000, so £1000 taxable at 22%
+    property_income_tax: 220
+    # Total income_tax should include property_income_tax
+    # Employment: £0 (covered by PA), Property: £220
+    income_tax: 220
+
+- name: Property tax flows into income_tax - higher rate - 2028
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    property_income: 2000
+  output:
+    # £1000 at 42%
+    property_income_tax: 420
+    # income_tax = earned_income_tax + savings_income_tax + dividend_income_tax + property_income_tax
+    # Earned income tax on £60000: PA=£12570, taxable=£47430
+    # Basic rate (20%): £37700 at 20% = £7540
+    # Higher rate (40%): £9730 at 40% = £3892
+    # Total earned: £11432
+    # Property: £420
+    # Total: £11852
+    income_tax: 11852
+
+- name: Savings tax flows into income_tax - higher rate - 2028
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    savings_interest_income: 2000
+  output:
+    # £1500 at 42% (after £500 savings allowance)
+    savings_income_tax: 630
+    # Earned: £11432 (same as above)
+    # Savings: £630
+    # Total: £12062
+    income_tax: 12062

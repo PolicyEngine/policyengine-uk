@@ -16,4 +16,5 @@ class income_tax_pre_charges(Variable):
         "earned_income_tax",
         "savings_income_tax",
         "dividend_income_tax",
+        "property_income_tax",
     ]
