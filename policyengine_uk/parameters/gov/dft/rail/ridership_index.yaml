@@ -1,0 +1,30 @@
+description: Cumulative index of rail ridership (passenger journeys). Base year 2020 = 1.0. Used for uprating the quantity component of rail subsidy spending.
+values:
+  # Base year (COVID-affected)
+  2020-01-01: 1.000
+  # 2021: Recovery year
+  2021-01-01: 0.400
+  # 2022: Continued recovery
+  2022-01-01: 0.700
+  # 2023: Near full recovery
+  2023-01-01: 0.900
+  # 2024: Full recovery plus growth
+  2024-01-01: 0.950
+  # 2025: +1.9% growth (ORR/Steer projected trend)
+  2025-01-01: 0.968
+  # 2026: +1.9% growth
+  2026-01-01: 0.986
+  # 2027: +1.9% growth
+  2027-01-01: 1.005
+  # 2028: +1.9% growth
+  2028-01-01: 1.024
+  # 2029: +1.9% growth
+  2029-01-01: 1.044
+metadata:
+  unit: /1
+  label: Rail ridership index
+  reference:
+    - title: ORR Passenger Rail Usage Statistics
+      href: https://dataportal.orr.gov.uk/statistics/usage/passenger-rail-usage/
+    - title: Steer - UK Rail Demand Forecasting
+      href: https://www.steergroup.com/
