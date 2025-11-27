@@ -1,4 +1,5 @@
-- bump: minor
+- bump: patch
   changes:
-    added:
-      - November 2025 Autumn Budget parameter updates. Extends income tax threshold freeze (personal allowance £12,570, higher rate £50,270, additional rate £125,140) and NICs secondary threshold freeze (£96/week) to April 2031. Updates fuel duty schedule with freeze until September 2026, staggered 5p cut reversal, and RPI uprating from April 2027.
+    fixed:
+    - Property income tax now properly included in total income tax calculation
+    - Property income excluded from earned taxable income to prevent double taxation
