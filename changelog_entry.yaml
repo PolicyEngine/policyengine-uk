@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    changed:
+    - Redirect excess salary sacrifice to employee pension contributions when salary sacrifice cap is exceeded
