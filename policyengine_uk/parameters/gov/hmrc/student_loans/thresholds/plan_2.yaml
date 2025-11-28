@@ -18,8 +18,29 @@ values:
     value: 28_470
     metadata:
       reference:
-        - title: Plan 2 threshold frozen until April 2027
-          href: https://www.gov.uk/government/publications/autumn-budget-2024-overview-of-tax-legislation-and-rates-ootlar/autumn-budget-2024-overview-of-tax-legislation-and-rates-ootlar
+        - title: Student loan thresholds for April 2025
+          href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2025-to-2026-academic-year
+  2026-04-06:
+    value: 28_470
+    metadata:
+      uprating: none
+      reference:
+        - title: Autumn Budget 2025 - Plan 2 threshold freeze
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+  2027-04-06:
+    value: 28_470
+    metadata:
+      uprating: none
+      reference:
+        - title: Autumn Budget 2025 - Plan 2 threshold freeze
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+  2028-04-06:
+    value: 28_470
+    metadata:
+      uprating: none
+      reference:
+        - title: Autumn Budget 2025 - Plan 2 threshold freeze
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 metadata:
   label: Plan 2 threshold
   unit: currency-GBP

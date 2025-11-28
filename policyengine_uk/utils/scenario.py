@@ -125,6 +125,8 @@ class Scenario(BaseModel):
                                 stop = instant(period_str.split(".")[1])
                                 period_ = None
                             else:
+                                start = None
+                                stop = None
                                 period_ = period(period_str)
                             sim.tax_benefit_system.parameters.get_child(
                                 parameter
