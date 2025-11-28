@@ -16,6 +16,7 @@ class household_net_income(Variable):
     ]
     subtracts = [
         "household_tax",
+        "employee_pension_contributions",
     ]
 
     def formula(household, period, parameters):
