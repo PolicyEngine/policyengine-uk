@@ -644,19 +644,21 @@ ons:
       2022-01-01: 1.210  # 43.3/19.6 - 1
       2023-01-01: 0.987  # 86.0/43.3 - 1
       2024-01-01: 0.142  # 98.2/86.0 - 1
-      # Forecast: held flat (no OBR forecast for this specific series)
-      2025-01-01: 0.000
-      2026-01-01: 0.000
-      2027-01-01: 0.000
-      2028-01-01: 0.000
-      2029-01-01: 0.000
-      2030-01-01: 0.000
+      # Forecast: use OBR non-labour income growth as proxy (Table 1.12)
+      2025-01-01: 0.0519
+      2026-01-01: 0.0565
+      2027-01-01: 0.0474
+      2028-01-01: 0.0364
+      2029-01-01: 0.0302
+      2030-01-01: 0.0292
     metadata:
       unit: /1
       label: household interest income growth
       reference:
         - title: ONS National Accounts D.41g - Households interest received (HAXV series)
           href: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
+        - title: OBR EFO November 2025 - Non-labour income growth used as proxy for 2025+ (Table 1.12)
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
   private_rental_prices:
     UNITED_KINGDOM:
       description: Private rental prices year-on-year growth in United Kingdom.
