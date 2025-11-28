@@ -1,0 +1,63 @@
+# Test student loan repayment calculations
+# Plan 2 threshold for 2025 is £28,470
+
+- name: Plan 2 - Income above threshold
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+  output:
+    # 9% of (40,000 - 28,470) = 9% of 11,530 = 1,037.70
+    student_loan_repayment: 1_037.70
+
+- name: Plan 2 - Income below threshold
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 25_000
+        student_loan_plan: PLAN_2
+  output:
+    student_loan_repayment: 0
+
+- name: Plan 1 - Income above threshold
+  period: 2024
+  input:
+    people:
+      person:
+        employment_income: 35_000
+        student_loan_plan: PLAN_1
+  output:
+    # Plan 1 threshold 2024 is £24,990
+    # 9% of (35,000 - 24,990) = 9% of 10,010 = 900.90
+    student_loan_repayment: 900.90
+
+- name: No student loan
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 50_000
+        student_loan_plan: NONE
+  output:
+    student_loan_repayment: 0
+
+- name: Has student loan - true
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+  output:
+    has_student_loan: true
+
+- name: Has student loan - false
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: NONE
+  output:
+    has_student_loan: false

@@ -1,0 +1,25 @@
+description: Plan 1 student loan repayment threshold (annual). Plan 1 applies to students who started undergraduate courses in England/Wales before September 2012.
+values:
+  2015-04-06: 17_335
+  2016-04-06: 17_495
+  2017-04-06: 17_775
+  2018-04-06: 18_330
+  2019-04-06: 18_935
+  2020-04-06: 19_390
+  2021-04-06: 19_895
+  2022-04-06: 20_195
+  2023-04-06: 22_015
+  2024-04-06:
+    value: 24_990
+    metadata:
+      reference:
+        - title: Student loan thresholds for April 2024
+          href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2024-to-2025-academic-year
+metadata:
+  label: Plan 1 threshold
+  unit: currency-GBP
+  period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
+  reference:
+    - title: GOV.UK Student loan repayment thresholds
+      href: https://www.gov.uk/repaying-your-student-loan/what-you-pay

@@ -1,0 +1,30 @@
+description: Plan 2 student loan repayment threshold (annual). Plan 2 applies to students who started undergraduate courses in England/Wales on or after September 2012 and before August 2023.
+values:
+  2016-04-06: 21_000
+  2017-04-06: 21_000
+  2018-04-06: 25_000
+  2019-04-06: 25_725
+  2020-04-06: 26_575
+  2021-04-06: 27_295
+  2022-04-06: 27_295
+  2023-04-06: 27_295
+  2024-04-06:
+    value: 27_295
+    metadata:
+      reference:
+        - title: Student loan thresholds for April 2024
+          href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2024-to-2025-academic-year
+  2025-04-06:
+    value: 28_470
+    metadata:
+      reference:
+        - title: Plan 2 threshold frozen until April 2027
+          href: https://www.gov.uk/government/publications/autumn-budget-2024-overview-of-tax-legislation-and-rates-ootlar/autumn-budget-2024-overview-of-tax-legislation-and-rates-ootlar
+metadata:
+  label: Plan 2 threshold
+  unit: currency-GBP
+  period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
+  reference:
+    - title: GOV.UK Student loan repayment thresholds
+      href: https://www.gov.uk/repaying-your-student-loan/what-you-pay
