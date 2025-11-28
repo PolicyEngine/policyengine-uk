@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.61.1] - 2025-11-28 13:48:04
+
+### Fixed
+
+- Update HH net income calculation.
+
 ## [2.61.0] - 2025-11-28 11:59:37
 
 ### Added
@@ -2353,6 +2359,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.61.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.0...2.61.1
 [2.61.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.60.0...2.61.0
 [2.60.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.59.0...2.60.0
 [2.59.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.58.0...2.59.0

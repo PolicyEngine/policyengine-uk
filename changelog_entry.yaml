@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Update HH net income calculation.
