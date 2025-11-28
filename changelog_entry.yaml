@@ -1,4 +1,0 @@
-- bump: minor
-  changes:
-    added:
-      - Add student loan repayment modelling with parameters for Plan 1, 2, 4, 5 and postgraduate loans, including thresholds and repayment rates.
