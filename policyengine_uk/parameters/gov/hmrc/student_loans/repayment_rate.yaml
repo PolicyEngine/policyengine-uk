@@ -1,0 +1,9 @@
+description: Student loan repayment rate. Borrowers repay this percentage of income above their repayment threshold.
+values:
+  2015-04-06: 0.09
+metadata:
+  label: Student loan repayment rate
+  unit: /1
+  reference:
+    - title: GOV.UK Student loan repayments
+      href: https://www.gov.uk/repaying-your-student-loan/what-you-pay
