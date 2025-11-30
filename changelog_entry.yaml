@@ -1,6 +1,4 @@
-- bump: minor
+- bump: patch
   changes:
-    added:
-      - Add ONS household interest income uprating index from National Accounts D.41g (HAXV series) that reflects actual growth in household interest received
     changed:
-      - Update savings_interest_income variable to use ONS household interest income index for uprating instead of per capita GDP. This captures the dramatic growth in household interest income (from £16bn in 2020 to £98bn in 2024) due to interest rate rises.
+    - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
