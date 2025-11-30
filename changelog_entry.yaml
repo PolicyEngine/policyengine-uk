@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    changed:
+    - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
