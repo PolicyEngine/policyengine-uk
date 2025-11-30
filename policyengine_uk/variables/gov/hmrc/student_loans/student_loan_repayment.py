@@ -2,7 +2,6 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.hmrc.student_loans.student_loan_plan import (
     StudentLoanPlan,
 )
-import numpy as np
 
 
 class student_loan_repayment(Variable):
@@ -69,25 +68,10 @@ class student_loan_interest_rate(Variable):
 
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
-        income = person("adjusted_net_income", period)
         p = parameters(period).gov.hmrc.student_loans.interest_rates
 
-        # Calculate Plan 2 tapered rate
-        # Below lower threshold: base rate only
-        # Above upper threshold: base + full additional
-        # Between: linear taper
-        taper_fraction = np.clip(
-            (income - p.plan_2.lower_threshold)
-            / (p.plan_2.upper_threshold - p.plan_2.lower_threshold),
-            0,
-            1,
-        )
-        plan_2_rate = p.plan_2.base_rate + (
-            p.plan_2.additional_rate * taper_fraction
-        )
-
         # Select rate based on plan type
-        rate = select(
+        return select(
             [
                 plan == StudentLoanPlan.PLAN_1,
                 plan == StudentLoanPlan.PLAN_2,
@@ -96,11 +80,9 @@ class student_loan_interest_rate(Variable):
             ],
             [
                 p.plan_1,
-                plan_2_rate,
+                person("plan_2_interest_rate", period),
                 p.plan_4,
                 p.plan_5,
             ],
             default=0,
         )
-
-        return rate
