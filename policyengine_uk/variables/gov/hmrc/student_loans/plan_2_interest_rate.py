@@ -15,15 +15,15 @@ class plan_2_interest_rate(Variable):
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
-        p = parameters(period).gov.hmrc.student_loans.interest_rates.plan_2
+        p = parameters(period).gov.hmrc.student_loans.interest_rates
 
-        # Below lower threshold: base rate only (RPI)
-        # Above upper threshold: base + full additional (RPI + 3%)
+        # Below lower threshold: RPI only
+        # Above upper threshold: RPI + 3%
         # Between: linear taper
         taper_fraction = np.clip(
-            (income - p.lower_threshold)
-            / (p.upper_threshold - p.lower_threshold),
+            (income - p.plan_2.lower_threshold)
+            / (p.plan_2.upper_threshold - p.plan_2.lower_threshold),
             0,
             1,
         )
-        return p.base_rate + (p.additional_rate * taper_fraction)
+        return p.rpi + (p.plan_2.additional_rate * taper_fraction)

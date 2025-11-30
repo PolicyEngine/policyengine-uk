@@ -1,0 +1,31 @@
+description: Bank of England base rate
+metadata:
+  label: BoE base rate
+  unit: /1
+  period: year
+  reference:
+    - title: Bank of England - Bank Rate history
+      href: https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp
+  documentation: |
+    The Bank of England base rate (Bank Rate).
+    Used in student loan interest calculations for Plans 1 and 4,
+    which charge the lower of RPI or (BoE base rate + 1%).
+
+    Values shown are the rate in effect at the start of each year.
+    Note: Student loan rates are set annually in September using
+    rates from earlier in the year.
+
+# Values are annual averages or year-start values for simplicity
+# Student loan rates use specific reference dates (typically March)
+values:
+  2020-01-01: 0.001  # 0.1% from March 2020
+  2021-01-01: 0.001  # 0.1% throughout
+  2022-01-01: 0.01   # Rising from 0.25% to 3.5%
+  2023-01-01: 0.0425 # Rising from 3.5% to 5.25%
+  2024-01-01: 0.0525 # 5.25% until August, then cuts
+  2025-01-01: 0.045  # ~4.5% average
+  2026-01-01: 0.04   # Forecast: gradual decline
+  2027-01-01: 0.035  # Forecast
+  2028-01-01: 0.03   # Forecast: settling toward neutral
+  2029-01-01: 0.03   # Forecast
+  2030-01-01: 0.03   # Forecast: long-run neutral rate

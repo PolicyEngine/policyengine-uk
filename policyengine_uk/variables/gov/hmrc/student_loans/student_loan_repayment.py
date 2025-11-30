@@ -68,7 +68,6 @@ class student_loan_interest_rate(Variable):
 
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
-        p = parameters(period).gov.hmrc.student_loans.interest_rates
 
         # Select rate based on plan type
         return select(
@@ -79,10 +78,10 @@ class student_loan_interest_rate(Variable):
                 plan == StudentLoanPlan.PLAN_5,
             ],
             [
-                p.plan_1,
+                person("plan_1_interest_rate", period),
                 person("plan_2_interest_rate", period),
-                p.plan_4,
-                p.plan_5,
+                person("plan_4_interest_rate", period),
+                person("plan_5_interest_rate", period),
             ],
             default=0,
         )

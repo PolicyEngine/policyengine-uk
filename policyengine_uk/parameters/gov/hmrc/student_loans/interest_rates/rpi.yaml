@@ -1,6 +1,6 @@
-description: Plan 2 base interest rate (RPI)
+description: Student loan interest RPI rate
 metadata:
-  label: Plan 2 base rate
+  label: Student loan RPI rate
   unit: /1
   period: year
   reference:
@@ -9,12 +9,13 @@ metadata:
     - title: GOV.UK - Student loan interest rates
       href: https://www.gov.uk/repaying-your-student-loan/interest
   documentation: |
-    Base interest rate for Plan 2 student loans (RPI).
-    This is the minimum rate applied to all Plan 2 borrowers.
-    Higher earners pay this plus an additional rate up to 3%.
+    RPI rate used for student loan interest calculations.
+    Set annually in September using the March RPI figure from the same year.
 
-    Per Regulation 21A, the "standard interest rate" is the prevailing
-    market rate as determined by the Secretary of State (set to RPI).
+    This rate is used as:
+    - Plan 5: RPI only
+    - Plan 2 base rate: RPI (with additional 0-3% based on income)
+    - Plan 1/4: Lower of RPI or (BoE base rate + 1%)
 
 values:
   2020-09-01: 0.026  # 2.6%
@@ -22,4 +23,5 @@ values:
   2022-09-01: 0.051  # 5.1%
   2023-09-01: 0.071  # 7.1%
   2024-09-01: 0.072  # 7.2%
-  2025-09-01: 0.032  # 3.2%
+  2025-09-01: 0.043  # 4.3%
+  2026-09-01: 0.032  # 3.2% (forecast based on OBR RPI)
