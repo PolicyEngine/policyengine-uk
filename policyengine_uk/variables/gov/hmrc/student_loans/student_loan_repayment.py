@@ -70,22 +70,21 @@ class student_loan_interest_rate(Variable):
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
         income = person("adjusted_net_income", period)
-        interest = parameters(period).gov.hmrc.student_loans.interest_rates
-
-        # Plan 2 has income-contingent rates
-        plan_2_base = interest.plan_2.base_rate
-        plan_2_additional = interest.plan_2.additional_rate
-        plan_2_lower = interest.plan_2.lower_threshold
-        plan_2_upper = interest.plan_2.upper_threshold
+        p = parameters(period).gov.hmrc.student_loans.interest_rates
 
         # Calculate Plan 2 tapered rate
         # Below lower threshold: base rate only
         # Above upper threshold: base + full additional
         # Between: linear taper
         taper_fraction = np.clip(
-            (income - plan_2_lower) / (plan_2_upper - plan_2_lower), 0, 1
+            (income - p.plan_2.lower_threshold)
+            / (p.plan_2.upper_threshold - p.plan_2.lower_threshold),
+            0,
+            1,
         )
-        plan_2_rate = plan_2_base + (plan_2_additional * taper_fraction)
+        plan_2_rate = p.plan_2.base_rate + (
+            p.plan_2.additional_rate * taper_fraction
+        )
 
         # Select rate based on plan type
         rate = select(
@@ -94,13 +93,12 @@ class student_loan_interest_rate(Variable):
                 plan == StudentLoanPlan.PLAN_2,
                 plan == StudentLoanPlan.PLAN_4,
                 plan == StudentLoanPlan.PLAN_5,
-                # Postgraduate loans would need a separate plan type
             ],
             [
-                interest.plan_1,
+                p.plan_1,
                 plan_2_rate,
-                interest.plan_4,
-                interest.plan_5,
+                p.plan_4,
+                p.plan_5,
             ],
             default=0,
         )
