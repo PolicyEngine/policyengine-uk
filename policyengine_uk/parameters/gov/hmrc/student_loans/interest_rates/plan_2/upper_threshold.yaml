@@ -16,14 +16,14 @@ metadata:
     Per Regulation 21A(10), this is the "higher interest threshold".
 
 values:
-  2020-09-01: 47835
-  2021-09-01: 49130
-  2022-09-01: 49130
-  2023-09-01: 49585
-  2024-09-01: 49585
-  2025-09-01: 51245
+  2020-09-01: 47_835
+  2021-09-01: 49_130
+  2022-09-01: 49_130
+  2023-09-01: 49_585
+  2024-09-01: 49_585
+  2025-09-01: 51_245
   2026-09-01:
-    value: 52885
+    value: 52_885
     metadata:
       reference:
         - title: Student Loans Interest and Repayment Threshold Announcement for Plan 2 and Plan 3 loans

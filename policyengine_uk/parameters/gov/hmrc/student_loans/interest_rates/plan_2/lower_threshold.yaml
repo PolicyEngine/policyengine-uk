@@ -17,34 +17,34 @@ metadata:
     Note: This is the same as the Plan 2 repayment threshold.
 
 values:
-  2020-09-01: 26575
-  2021-09-01: 27295
-  2022-09-01: 27295
-  2023-09-01: 27660
-  2024-09-01: 27660
-  2025-09-01: 28470
+  2020-09-01: 26_575
+  2021-09-01: 27_295
+  2022-09-01: 27_295
+  2023-09-01: 27_660
+  2024-09-01: 27_660
+  2025-09-01: 28_470
   2026-09-01:
-    value: 29385
+    value: 29_385
     metadata:
       reference:
         - title: Student Loans Interest and Repayment Threshold Announcement for Plan 2 and Plan 3 loans
           href: https://www.gov.uk/government/news/student-loans-interest-and-repayment-threshold-announcement-for-plan-2-and-plan-3-loans
   2027-09-01:
-    value: 29385
+    value: 29_385
     metadata:
       uprating: none
       reference:
         - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
           href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
   2028-09-01:
-    value: 29385
+    value: 29_385
     metadata:
       uprating: none
       reference:
         - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
           href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
   2029-09-01:
-    value: 29385
+    value: 29_385
     metadata:
       uprating: none
       reference:

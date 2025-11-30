@@ -1,0 +1,168 @@
+# Tests for student loan interest rate variable
+# Plan 2 uses income-contingent rates: RPI below lower threshold, RPI+3% above upper, tapered between
+# 2025 thresholds: lower £28,470, upper £51,245
+# 2026 thresholds: lower £29,385, upper £52,885
+# 2027-2029: lower threshold frozen at £29,385 per Budget 2025
+
+# Plan 2 - 2025 thresholds
+- name: Plan 2 - 2025 - Income below lower threshold (RPI only)
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 25_000
+  output:
+    # Below £28,470: base rate only (RPI ~4.3% for 2025)
+    student_loan_interest_rate: 0.043
+
+- name: Plan 2 - 2025 - Income above upper threshold (RPI + 3%)
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 60_000
+  output:
+    # Above £51,245: base (4.3%) + additional (3%) = 7.3%
+    student_loan_interest_rate: 0.073
+
+# Plan 2 - 2026 thresholds (£29,385 / £52,885)
+- name: Plan 2 - 2026 - Income below lower threshold (RPI only)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 25_000
+  output:
+    # Below £29,385: base rate only (RPI ~3.2% for 2026)
+    student_loan_interest_rate: 0.032
+
+- name: Plan 2 - 2026 - Income at lower threshold (RPI only)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 29_385
+  output:
+    # At £29,385: base rate only
+    student_loan_interest_rate: 0.032
+
+- name: Plan 2 - 2026 - Income above upper threshold (RPI + 3%)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 60_000
+  output:
+    # Above £52,885: base (3.2%) + additional (3%) = 6.2%
+    student_loan_interest_rate: 0.062
+
+- name: Plan 2 - 2026 - Income at upper threshold (RPI + 3%)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 52_885
+  output:
+    # At £52,885: base (3.2%) + additional (3%) = 6.2%
+    student_loan_interest_rate: 0.062
+
+- name: Plan 2 - 2026 - Income midpoint (tapered rate)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        # Midpoint: (29,385 + 52,885) / 2 = 41,135
+        adjusted_net_income: 41_135
+  output:
+    # Base (3.2%) + half of additional (1.5%) = 4.7%
+    student_loan_interest_rate: 0.047
+
+# Plan 2 - 2027-2029 threshold freeze tests
+- name: Plan 2 - 2027 - Lower threshold frozen at £29,385
+  period: 2027
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        # Just above frozen lower threshold
+        adjusted_net_income: 30_000
+  output:
+    # Above £29,385 so tapering begins
+    # Taper: (30,000 - 29,385) / (upper - 29,385) * 0.03 + RPI
+    # Upper in 2027 ~= 54,514 (RPI uprated from 52,885)
+    # Taper fraction: 615 / 25,129 = 0.0245
+    # Rate: RPI (~3%) + 0.0245 * 3% = 3% + 0.07% = 3.07%
+    student_loan_interest_rate: 0.031
+
+- name: Plan 2 - 2028 - Lower threshold still frozen at £29,385
+  period: 2028
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 29_000
+  output:
+    # Below frozen threshold of £29,385: base rate only
+    student_loan_interest_rate: 0.028
+
+- name: Plan 2 - 2029 - Lower threshold still frozen at £29,385
+  period: 2029
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 29_000
+  output:
+    # Below frozen threshold of £29,385: base rate only
+    student_loan_interest_rate: 0.028
+
+# Other plan types (fixed rates)
+- name: Plan 1 - Fixed rate regardless of income
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_1
+        adjusted_net_income: 60_000
+  output:
+    student_loan_interest_rate: 0.032
+
+- name: Plan 5 - RPI only regardless of income
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_5
+        adjusted_net_income: 60_000
+  output:
+    # RPI only (3.2%) regardless of income
+    student_loan_interest_rate: 0.032
+
+- name: No student loan - Zero rate
+  period: 2026
+  input:
+    people:
+      person:
+        student_loan_plan: NONE
+        adjusted_net_income: 50_000
+  output:
+    student_loan_interest_rate: 0
