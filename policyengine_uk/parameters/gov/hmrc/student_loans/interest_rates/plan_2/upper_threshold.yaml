@@ -1,0 +1,24 @@
+description: Plan 2 upper income threshold for interest rate tapering
+metadata:
+  label: Plan 2 interest upper threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(10)
+      href: https://www.legislation.gov.uk/uksi/2012/1309/regulation/10/made
+    - title: GOV.UK - Student loan interest rates
+      href: https://www.gov.uk/repaying-your-student-loan/interest
+  documentation: |
+    Upper income threshold for Plan 2 interest rate tapering (H in the formula).
+    Above this income, borrowers pay the maximum rate (RPI + 3%).
+    Between the lower and upper thresholds, the rate is tapered.
+
+    Per Regulation 21A(10), this is the "higher interest threshold".
+
+values:
+  2020-09-01: 47835
+  2021-09-01: 49130
+  2022-09-01: 49130
+  2023-09-01: 49585
+  2024-09-01: 49585
+  2025-09-01: 51245

@@ -1,0 +1,25 @@
+description: Plan 2 lower income threshold for interest rate tapering
+metadata:
+  label: Plan 2 interest lower threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(10)
+      href: https://www.legislation.gov.uk/uksi/2012/1309/regulation/10/made
+    - title: GOV.UK - Student loan interest rates
+      href: https://www.gov.uk/repaying-your-student-loan/interest
+  documentation: |
+    Lower income threshold for Plan 2 interest rate tapering (L in the formula).
+    Below this income, borrowers pay the base rate (RPI) only.
+    Above this, the additional rate begins to taper in.
+
+    Per Regulation 21A(10), this is the "lower interest threshold".
+    Note: This is the same as the Plan 2 repayment threshold.
+
+values:
+  2020-09-01: 26575
+  2021-09-01: 27295
+  2022-09-01: 27295
+  2023-09-01: 27660
+  2024-09-01: 27660
+  2025-09-01: 28470
