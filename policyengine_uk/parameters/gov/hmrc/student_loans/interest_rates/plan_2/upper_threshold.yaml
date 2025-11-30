@@ -22,3 +22,9 @@ values:
   2023-09-01: 49585
   2024-09-01: 49585
   2025-09-01: 51245
+  2026-09-01:
+    value: 52885
+    metadata:
+      reference:
+        - title: Student Loans Interest and Repayment Threshold Announcement for Plan 2 and Plan 3 loans
+          href: https://www.gov.uk/government/news/student-loans-interest-and-repayment-threshold-announcement-for-plan-2-and-plan-3-loans
