@@ -3,8 +3,9 @@
 # Plan 2: RPI below lower threshold, tapered to RPI+3% at upper threshold
 # Plan 5: RPI only
 #
-# 2025: RPI ~4.3%, BoE ~4.5% -> Plan 1/4 = min(4.3%, 5.5%) = 4.3%
-# 2026: RPI ~3.2%, BoE ~4.0% -> Plan 1/4 = min(3.2%, 5.0%) = 3.2%
+# Uses OBR RPI forecasts from gov.economic_assumptions.yoy_growth.obr.rpi:
+# 2025: RPI 4.33%, BoE 4% -> Plan 1/4 = min(4.33%, 5%) = 4.33%
+# 2026: RPI 3.71%, BoE 3.6% -> Plan 1/4 = min(3.71%, 4.6%) = 3.71%
 
 # Plan 2 tests
 - name: Plan 2 - 2025 - Income below lower threshold (RPI only)
@@ -16,8 +17,8 @@
         student_loan_plan: PLAN_2
         adjusted_net_income: 25_000
   output:
-    # Below £28,470: RPI only (4.3%)
-    student_loan_interest_rate: 0.043
+    # Below £28,470: RPI only (4.33%)
+    student_loan_interest_rate: 0.0433
 
 - name: Plan 2 - 2025 - Income above upper threshold (RPI + 3%)
   period: 2025
@@ -28,8 +29,8 @@
         student_loan_plan: PLAN_2
         adjusted_net_income: 60_000
   output:
-    # Above £51,245: RPI (4.3%) + 3% = 7.3%
-    student_loan_interest_rate: 0.073
+    # Above £51,245: RPI (4.33%) + 3% = 7.33%
+    student_loan_interest_rate: 0.0733
 
 - name: Plan 2 - 2026 - Income below lower threshold (RPI only)
   period: 2026
@@ -40,8 +41,8 @@
         student_loan_plan: PLAN_2
         adjusted_net_income: 25_000
   output:
-    # Below £29,385: RPI only (3.2%)
-    student_loan_interest_rate: 0.032
+    # Below £29,385: RPI only (3.71%)
+    student_loan_interest_rate: 0.0371
 
 - name: Plan 2 - 2026 - Income above upper threshold (RPI + 3%)
   period: 2026
@@ -52,8 +53,8 @@
         student_loan_plan: PLAN_2
         adjusted_net_income: 60_000
   output:
-    # Above £52,885: RPI (3.2%) + 3% = 6.2%
-    student_loan_interest_rate: 0.062
+    # Above £52,885: RPI (3.71%) + 3% = 6.71%
+    student_loan_interest_rate: 0.0671
 
 - name: Plan 2 - 2026 - Income midpoint (tapered rate)
   period: 2026
@@ -65,8 +66,8 @@
         # Midpoint: (29,385 + 52,885) / 2 = 41,135
         adjusted_net_income: 41_135
   output:
-    # RPI (3.2%) + half of 3% (1.5%) = 4.7%
-    student_loan_interest_rate: 0.047
+    # RPI (3.71%) + half of 3% (1.5%) = 5.21%
+    student_loan_interest_rate: 0.0521
 
 # Plan 1 tests - min(RPI, BoE + 1%)
 - name: Plan 1 - 2026 - min(RPI, BoE+1%)
@@ -78,8 +79,8 @@
         student_loan_plan: PLAN_1
         adjusted_net_income: 60_000
   output:
-    # min(3.2%, 4% + 1%) = min(3.2%, 5%) = 3.2%
-    plan_1_interest_rate: 0.032
+    # min(3.71%, 3.6% + 1%) = min(3.71%, 4.6%) = 3.71%
+    plan_1_interest_rate: 0.0371
 
 # Plan 4 tests - same as Plan 1
 - name: Plan 4 - 2026 - min(RPI, BoE+1%)
@@ -91,8 +92,8 @@
         student_loan_plan: PLAN_4
         adjusted_net_income: 60_000
   output:
-    # min(3.2%, 4% + 1%) = min(3.2%, 5%) = 3.2%
-    plan_4_interest_rate: 0.032
+    # min(3.71%, 3.6% + 1%) = min(3.71%, 4.6%) = 3.71%
+    plan_4_interest_rate: 0.0371
 
 # Plan 5 tests - RPI only
 - name: Plan 5 - 2026 - RPI only
@@ -104,8 +105,8 @@
         student_loan_plan: PLAN_5
         adjusted_net_income: 60_000
   output:
-    # RPI only (3.2%)
-    plan_5_interest_rate: 0.032
+    # RPI only (3.71%)
+    plan_5_interest_rate: 0.0371
 
 # No student loan
 - name: No student loan - Zero rate

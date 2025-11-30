@@ -11,6 +11,7 @@ class plan_5_interest_rate(Variable):
     )
     definition_period = YEAR
     unit = "/1"
+    reference = "https://www.legislation.gov.uk/uksi/2023/207/made"
 
     def formula(person, period, parameters):
-        return parameters(period).gov.hmrc.student_loans.interest_rates.rpi
+        return parameters(period).gov.economic_assumptions.yoy_growth.obr.rpi

@@ -12,6 +12,10 @@ class plan_4_interest_rate(Variable):
     )
     definition_period = YEAR
     unit = "/1"
+    reference = [
+        "https://www.legislation.gov.uk/uksi/2009/470/regulation/21",
+        "https://www.legislation.gov.uk/uksi/2022/1335",  # Plan 4 amendments
+    ]
 
     def formula(person, period, parameters):
         # Plan 4 uses identical interest rate calculation as Plan 1

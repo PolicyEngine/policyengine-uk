@@ -8,22 +8,24 @@ class plan_2_interest_rate(Variable):
     label = "Plan 2 student loan interest rate"
     documentation = (
         "Income-contingent interest rate for Plan 2 student loans. "
-        "RPI only below lower threshold, tapered to RPI+3% at upper threshold."
+        "RPI only below lower threshold, tapered to RPI+3% at upper threshold. "
+        "Note: Actual rates are set annually in September using March RPI."
     )
     definition_period = YEAR
     unit = "/1"
+    reference = "https://www.legislation.gov.uk/uksi/2012/1309/regulation/10"
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
-        p = parameters(period).gov.hmrc.student_loans.interest_rates
+        p = parameters(period).gov.hmrc.student_loans.interest_rates.plan_2
+        rpi = parameters(period).gov.economic_assumptions.yoy_growth.obr.rpi
 
         # Below lower threshold: RPI only
         # Above upper threshold: RPI + 3%
         # Between: linear taper
         taper_fraction = np.clip(
-            (income - p.plan_2.lower_threshold)
-            / (p.plan_2.upper_threshold - p.plan_2.lower_threshold),
+            (income - p.lower_threshold) / (p.upper_threshold - p.lower_threshold),
             0,
             1,
         )
-        return p.rpi + (p.plan_2.additional_rate * taper_fraction)
+        return rpi + (p.additional_rate * taper_fraction)
