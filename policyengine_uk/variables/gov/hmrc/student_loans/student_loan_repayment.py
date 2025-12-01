@@ -2,7 +2,6 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.hmrc.student_loans.student_loan_plan import (
     StudentLoanPlan,
 )
-import numpy as np
 
 
 class student_loan_repayment(Variable):
@@ -53,3 +52,36 @@ class has_student_loan(Variable):
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
         return plan != StudentLoanPlan.NONE
+
+
+class student_loan_interest_rate(Variable):
+    value_type = float
+    entity = Person
+    label = "Student loan interest rate"
+    documentation = (
+        "Annual interest rate on student loan balance. "
+        "Plan 2 has income-contingent rates (RPI to RPI+3%). "
+        "Plans 1, 4, 5 and Postgraduate have fixed rates."
+    )
+    definition_period = YEAR
+    unit = "/1"
+
+    def formula(person, period, parameters):
+        plan = person("student_loan_plan", period)
+
+        # Select rate based on plan type
+        return select(
+            [
+                plan == StudentLoanPlan.PLAN_1,
+                plan == StudentLoanPlan.PLAN_2,
+                plan == StudentLoanPlan.PLAN_4,
+                plan == StudentLoanPlan.PLAN_5,
+            ],
+            [
+                person("plan_1_interest_rate", period),
+                person("plan_2_interest_rate", period),
+                person("plan_4_interest_rate", period),
+                person("plan_5_interest_rate", period),
+            ],
+            default=0,
+        )

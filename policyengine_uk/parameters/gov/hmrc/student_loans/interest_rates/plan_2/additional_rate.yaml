@@ -1,0 +1,27 @@
+description: Plan 2 maximum additional interest rate
+metadata:
+  label: Plan 2 additional rate
+  unit: /1
+  period: year
+  reference:
+    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(10)
+      href: https://www.legislation.gov.uk/uksi/2012/1309/regulation/10/made
+    - title: GOV.UK - Student loan interest rates
+      href: https://www.gov.uk/repaying-your-student-loan/interest
+  documentation: |
+    Maximum additional interest rate for Plan 2 student loans.
+    Added to the base rate for higher earners.
+
+    Per Regulation 21A(10), the additional interest rate is calculated as:
+    3 × (I - L) / (H - L)
+    where I = borrower's income, L = lower threshold, H = higher threshold.
+
+    The actual additional rate is tapered between the lower and upper
+    income thresholds, from 0% at the lower threshold to this maximum
+    at the upper threshold.
+
+    For income at or above the upper threshold, the total rate is:
+    base_rate + additional_rate (i.e., RPI + 3%)
+
+values:
+  2012-09-01: 0.03  # 3%
