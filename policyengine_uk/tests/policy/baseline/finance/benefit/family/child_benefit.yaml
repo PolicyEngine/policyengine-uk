@@ -26,6 +26,7 @@
     benunits:
       benunit:
         members: [parent1, parent2, child1]
+        would_claim_child_benefit: true
   output:
     child_benefit: 1098
 - name: Child Benefit with two children, one over 16
@@ -45,5 +46,6 @@
     benunits:
       benunit:
         members: [parent1, parent2, child1, child2]
+        would_claim_child_benefit: true
   output:
     child_benefit: 1825.20
