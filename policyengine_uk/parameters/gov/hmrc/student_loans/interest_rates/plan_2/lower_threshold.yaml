@@ -49,21 +49,18 @@ values:
   2027-09-01:
     value: 29_385
     metadata:
-      uprating: none
       reference:
         - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
           href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
   2028-09-01:
     value: 29_385
     metadata:
-      uprating: none
       reference:
         - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
           href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
   2029-09-01:
     value: 29_385
     metadata:
-      uprating: none
       reference:
         - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
           href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
