@@ -5,24 +5,22 @@ metadata:
   period: year
   uprating: gov.economic_assumptions.indices.obr.rpi
   reference:
-    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(13)
-      href: https://www.legislation.gov.uk/uksi/2012/1309/regulation/10/made
-    - title: GOV.UK - Student loan interest rates
-      href: https://www.gov.uk/repaying-your-student-loan/interest
+    - title: Education (Student Loans) (Repayment) Regulations 2009, Regulation 21AA
+      href: https://www.legislation.gov.uk/uksi/2009/470/regulation/21AA
   documentation: |
     Upper income threshold for Plan 2 interest rate tapering (H in the formula).
     Above this income, borrowers pay the maximum rate (RPI + 3%).
     Between the lower and upper thresholds, the rate is tapered.
 
-    Per Regulation 21A(13), "H" means the higher interest threshold.
+    Per Regulation 21AA, this is the "higher interest threshold".
 
 values:
-  2020-09-01: 47_835
-  2021-09-01: 49_130
-  2022-09-01: 49_130
-  2023-09-01: 49_585
-  2024-09-01: 49_585
-  2025-09-01: 51_245
+  2025-09-01:
+    value: 51_245
+    metadata:
+      reference:
+        - title: Student loans - a guide to terms and conditions 2025 to 2026
+          href: https://www.gov.uk/government/publications/student-loans-a-guide-to-terms-and-conditions/student-loans-a-guide-to-terms-and-conditions-2025-to-2026
   2026-09-01:
     value: 52_885
     metadata:
