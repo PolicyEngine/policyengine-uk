@@ -18,5 +18,6 @@ class plan_1_interest_rate(Variable):
         p = parameters(period).gov
         return min_(
             p.economic_assumptions.yoy_growth.obr.rpi,
-            p.boe.base_rate + p.hmrc.student_loans.interest_rates.plan_1.boe_margin,
+            p.boe.base_rate
+            + p.hmrc.student_loans.interest_rates.plan_1.boe_margin,
         )
