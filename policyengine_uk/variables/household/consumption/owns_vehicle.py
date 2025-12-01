@@ -12,3 +12,6 @@ class owns_vehicle(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
+
+    def formula(household, period):
+        return household("num_cars", period) > 0

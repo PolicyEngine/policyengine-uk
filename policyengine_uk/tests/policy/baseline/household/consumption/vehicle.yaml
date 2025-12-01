@@ -1,0 +1,27 @@
+- name: Household with no cars does not own a vehicle
+  period: 2024
+  input:
+    num_cars: 0
+  output:
+    owns_vehicle: false
+
+- name: Household with one car owns a vehicle
+  period: 2024
+  input:
+    num_cars: 1
+  output:
+    owns_vehicle: true
+
+- name: Household with multiple cars owns a vehicle
+  period: 2024
+  input:
+    num_cars: 3
+  output:
+    owns_vehicle: true
+
+- name: Default num_cars is zero
+  period: 2024
+  input: {}
+  output:
+    num_cars: 0
+    owns_vehicle: false
