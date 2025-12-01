@@ -2024,3 +2024,8 @@
     - "Add 2026 Plan 2 student loan interest rate thresholds (lower \xA329,385, upper\
       \ \xA352,885) and freeze lower threshold 2027-2029 per Budget 2025"
   date: 2025-12-01 03:34:34
+- bump: patch
+  changes:
+    changed:
+    - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
+  date: 2025-12-01 11:11:26
