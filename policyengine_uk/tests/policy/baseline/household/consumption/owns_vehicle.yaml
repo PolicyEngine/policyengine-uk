@@ -1,0 +1,31 @@
+- name: Household with petrol spending owns a vehicle
+  period: 2024
+  input:
+    petrol_spending: 1000
+    diesel_spending: 0
+  output:
+    owns_vehicle: true
+
+- name: Household with diesel spending owns a vehicle
+  period: 2024
+  input:
+    petrol_spending: 0
+    diesel_spending: 500
+  output:
+    owns_vehicle: true
+
+- name: Household with both petrol and diesel spending owns a vehicle
+  period: 2024
+  input:
+    petrol_spending: 800
+    diesel_spending: 200
+  output:
+    owns_vehicle: true
+
+- name: Household with no fuel spending does not own a vehicle
+  period: 2024
+  input:
+    petrol_spending: 0
+    diesel_spending: 0
+  output:
+    owns_vehicle: false
