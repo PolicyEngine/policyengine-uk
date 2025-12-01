@@ -17,20 +17,21 @@ class plan_2_interest_rate(Variable):
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
-        sl = parameters(period).gov.hmrc.student_loans
-        rpi = parameters(period).gov.economic_assumptions.yoy_growth.obr.rpi
+        p = parameters(period).gov
 
         # Per Regulation 21AB, lower interest threshold = repayment threshold
-        lower_threshold = sl.thresholds.plan_2
-        upper_threshold = sl.interest_rates.plan_2.upper_threshold
-        additional_rate = sl.interest_rates.plan_2.additional_rate
-
         # Below lower threshold: RPI only
         # Above upper threshold: RPI + 3%
         # Between: linear taper
         taper_fraction = np.clip(
-            (income - lower_threshold) / (upper_threshold - lower_threshold),
+            (income - p.hmrc.student_loans.thresholds.plan_2)
+            / (
+                p.hmrc.student_loans.interest_rates.plan_2.upper_threshold
+                - p.hmrc.student_loans.thresholds.plan_2
+            ),
             0,
             1,
         )
-        return rpi + (additional_rate * taper_fraction)
+        return p.economic_assumptions.yoy_growth.obr.rpi + (
+            p.hmrc.student_loans.interest_rates.plan_2.additional_rate * taper_fraction
+        )
