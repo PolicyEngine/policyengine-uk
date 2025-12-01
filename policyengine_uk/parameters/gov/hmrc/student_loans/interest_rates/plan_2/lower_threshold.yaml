@@ -15,6 +15,25 @@ metadata:
     Per Regulation 21AB, the lower interest threshold equals the Plan 2 repayment threshold.
 
 values:
+  # Lower interest threshold = Plan 2 repayment threshold per Regulation 21AB
+  2020-09-01:
+    value: 26_575
+    metadata:
+      reference:
+        - title: GOV.UK - Previous annual repayment thresholds
+          href: https://www.gov.uk/guidance/previous-annual-repayment-thresholds
+  2021-09-01:
+    value: 27_295
+    metadata:
+      reference:
+        - title: GOV.UK - Previous annual repayment thresholds
+          href: https://www.gov.uk/guidance/previous-annual-repayment-thresholds
+  2024-09-01:
+    value: 27_295
+    metadata:
+      reference:
+        - title: Student loans - a guide to terms and conditions 2024 to 2025
+          href: https://www.gov.uk/government/publications/student-loans-a-guide-to-terms-and-conditions/student-loans-a-guide-to-terms-and-conditions-2024-to-2025
   2025-09-01:
     value: 28_470
     metadata:

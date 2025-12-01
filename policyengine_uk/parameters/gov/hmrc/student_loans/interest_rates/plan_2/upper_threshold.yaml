@@ -15,6 +15,14 @@ metadata:
     Per Regulation 21AA, this is the "higher interest threshold".
 
 values:
+  2024-09-01:
+    value: 49_130
+    metadata:
+      reference:
+        - title: Education (Student Loans) (Repayment) (Amendment) (No. 4) Regulations 2022, Regulation 21AA
+          href: https://www.legislation.gov.uk/uksi/2022/1335/made
+        - title: Student loans - a guide to terms and conditions 2024 to 2025
+          href: https://www.gov.uk/government/publications/student-loans-a-guide-to-terms-and-conditions/student-loans-a-guide-to-terms-and-conditions-2024-to-2025
   2025-09-01:
     value: 51_245
     metadata:
