@@ -15,6 +15,8 @@ class plan_1_interest_rate(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2009/470/regulation/21"
 
     def formula(person, period, parameters):
-        rpi = parameters(period).gov.economic_assumptions.yoy_growth.obr.rpi
-        boe_rate = parameters(period).gov.boe.base_rate
-        return min_(rpi, boe_rate + 0.01)
+        p = parameters(period).gov
+        return min_(
+            p.economic_assumptions.yoy_growth.obr.rpi,
+            p.boe.base_rate + p.hmrc.student_loans.interest_rates.plan_1.boe_margin,
+        )

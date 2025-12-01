@@ -14,4 +14,5 @@ class plan_5_interest_rate(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2023/207/made"
 
     def formula(person, period, parameters):
-        return parameters(period).gov.economic_assumptions.yoy_growth.obr.rpi
+        p = parameters(period).gov
+        return p.economic_assumptions.yoy_growth.obr.rpi
