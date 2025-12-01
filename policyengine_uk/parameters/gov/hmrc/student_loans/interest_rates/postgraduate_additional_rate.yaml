@@ -1,0 +1,11 @@
+description: Additional interest rate above RPI for Postgraduate loans
+metadata:
+  label: Postgraduate additional rate
+  unit: /1
+  period: year
+  reference:
+    - title: Education (Student Loans) (Repayment) Regulations 2009, Regulation 21B(1)
+      href: https://www.legislation.gov.uk/uksi/2009/470/regulation/21B
+
+values:
+  2016-09-01: 0.03

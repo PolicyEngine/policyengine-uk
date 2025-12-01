@@ -2018,3 +2018,9 @@
       averages (53.45p, 59.02p, 61.11p, 62.90p) with detailed documentation of actual
       source values and calculation methodology.
   date: 2025-11-28 14:58:06
+- bump: patch
+  changes:
+    added:
+    - "Add 2026 Plan 2 student loan interest rate thresholds (lower \xA329,385, upper\
+      \ \xA352,885) and freeze lower threshold 2027-2029 per Budget 2025"
+  date: 2025-12-01 03:34:34
