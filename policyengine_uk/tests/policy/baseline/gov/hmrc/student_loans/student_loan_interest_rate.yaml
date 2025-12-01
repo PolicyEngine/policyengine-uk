@@ -63,8 +63,9 @@
     people:
       person:
         student_loan_plan: PLAN_2
-        # Midpoint: (29,385 + 52,885) / 2 = 41,135
-        adjusted_net_income: 41_135
+        # 2026 calendar year uses 2025-09-01 thresholds: 28,470 / 51,245
+        # Midpoint: (28,470 + 51,245) / 2 = 39,857.5
+        adjusted_net_income: 39_858
   output:
     # RPI (3.71%) + half of 3% (1.5%) = 5.21%
     student_loan_interest_rate: 0.0521
