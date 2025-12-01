@@ -12,7 +12,7 @@ class postgraduate_interest_rate(Variable):
     )
     definition_period = YEAR
     unit = "/1"
-    reference = "https://www.legislation.gov.uk/uksi/2017/831/made"
+    reference = "https://www.legislation.gov.uk/uksi/2009/470/regulation/21B"
 
     def formula(person, period, parameters):
         p = parameters(period).gov
