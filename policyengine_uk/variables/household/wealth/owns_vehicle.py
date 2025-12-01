@@ -14,4 +14,4 @@ class owns_vehicle(Variable):
     value_type = bool
 
     def formula(household, period):
-        return household("num_cars", period) > 0
+        return household("num_vehicles", period) > 0
