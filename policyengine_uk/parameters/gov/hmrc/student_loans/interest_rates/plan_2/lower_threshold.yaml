@@ -3,8 +3,9 @@ metadata:
   label: Plan 2 interest lower threshold
   unit: currency-GBP
   period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
   reference:
-    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(10)
+    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(12)
       href: https://www.legislation.gov.uk/uksi/2012/1309/regulation/10/made
     - title: GOV.UK - Student loan interest rates
       href: https://www.gov.uk/repaying-your-student-loan/interest
@@ -13,7 +14,7 @@ metadata:
     Below this income, borrowers pay the base rate (RPI) only.
     Above this, the additional rate begins to taper in.
 
-    Per Regulation 21A(10), this is the "lower interest threshold".
+    Per Regulation 21A(12), "L" means the lower interest threshold.
     Note: This is the same as the Plan 2 repayment threshold.
 
 values:

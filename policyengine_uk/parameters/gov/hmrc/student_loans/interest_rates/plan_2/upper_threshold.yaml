@@ -3,8 +3,9 @@ metadata:
   label: Plan 2 interest upper threshold
   unit: currency-GBP
   period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
   reference:
-    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(10)
+    - title: Education (Student Loans) (Repayment) (Amendment) (No. 2) Regulations 2012, Regulation 21A(13)
       href: https://www.legislation.gov.uk/uksi/2012/1309/regulation/10/made
     - title: GOV.UK - Student loan interest rates
       href: https://www.gov.uk/repaying-your-student-loan/interest
@@ -13,7 +14,7 @@ metadata:
     Above this income, borrowers pay the maximum rate (RPI + 3%).
     Between the lower and upper thresholds, the rate is tapered.
 
-    Per Regulation 21A(10), this is the "higher interest threshold".
+    Per Regulation 21A(13), "H" means the higher interest threshold.
 
 values:
   2020-09-01: 47_835
