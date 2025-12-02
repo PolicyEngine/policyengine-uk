@@ -2034,3 +2034,8 @@
     added:
     - Add owns vehicle variable
   date: 2025-12-02 09:19:36
+- bump: patch
+  changes:
+    added:
+    - Add upper interest threshold freeze for Plan 2 student loans (Budget 2025)
+  date: 2025-12-02 14:16:53
