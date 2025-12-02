@@ -16,7 +16,7 @@ reforms:
   parameters:
     gov.hmrc.child_benefit.amount.additional: 25
 - name: Reduce Universal Credit taper rate to 20%
-  expected_impact: -29.2
+  expected_impact: -27.5  # Updated after Gift Aid PA taper fix (ITA 2007 s.58)
   parameters:
     gov.dwp.universal_credit.means_test.reduction_rate: 0.2
 - name: Raise Class 1 main employee NICs rate to 10%
