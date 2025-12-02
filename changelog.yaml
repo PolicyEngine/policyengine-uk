@@ -2029,3 +2029,8 @@
     changed:
     - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
   date: 2025-12-01 11:11:26
+- bump: minor
+  changes:
+    added:
+    - Add owns vehicle variable
+  date: 2025-12-02 09:19:36
