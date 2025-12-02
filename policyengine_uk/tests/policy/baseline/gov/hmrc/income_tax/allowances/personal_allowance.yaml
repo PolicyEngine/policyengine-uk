@@ -1,0 +1,161 @@
+# Personal Allowance tests
+# ITA 2007 s.35: Personal Allowance
+# ITA 2007 s.58: ANI for PA taper excludes grossed-up Gift Aid
+
+# ============================================
+# Basic PA tests (no Gift Aid)
+# ============================================
+
+- name: Full PA below taper threshold
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 50000
+  output:
+    # Below £100k threshold, full PA
+    personal_allowance: 12570
+
+- name: Full PA at exactly taper threshold
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 100000
+  output:
+    # At exactly £100k, no taper yet
+    personal_allowance: 12570
+
+- name: PA taper begins above £100k
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 105000
+  output:
+    # £5k over threshold, lose £2.5k PA (50% taper)
+    # PA = £12,570 - £2,500 = £10,070
+    personal_allowance: 10070
+
+- name: PA fully tapered at £125,140
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 125140
+  output:
+    # £25,140 over threshold, lose all PA (50% of £25,140 = £12,570)
+    personal_allowance: 0
+
+- name: PA remains zero above full taper
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 150000
+  output:
+    personal_allowance: 0
+
+# ============================================
+# PA taper with Gift Aid (ITA 2007 s.58)
+# These tests verify the fix for grossed-up Gift Aid deduction
+# ============================================
+
+- name: Gift Aid does not affect PA below taper threshold
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 50000
+    gift_aid: 5000
+  output:
+    # Already below £100k, Gift Aid doesn't change PA
+    personal_allowance: 12570
+
+- name: Gift Aid reduces ANI for taper - partial restoration
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 105000
+    gift_aid: 4000
+  output:
+    # Without Gift Aid: ANI = £105k, PA = £10,070
+    # Gift Aid = £4k, grossed up = £5k
+    # ANI for taper = £105k - £5k = £100k (at threshold)
+    # Full PA restored
+    personal_allowance: 12570
+
+- name: Gift Aid partially restores PA in deep taper
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 120000
+    gift_aid: 8000
+  output:
+    # Without Gift Aid: ANI = £120k, excess = £20k, PA reduction = £10k
+    # Gift Aid = £8k, grossed up = £10k
+    # ANI for taper = £120k - £10k = £110k
+    # Excess = £10k, PA reduction = £5k
+    # PA = £12,570 - £5,000 = £7,570
+    personal_allowance: 7570
+
+- name: Gift Aid fully restores PA from zero
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 130000
+    gift_aid: 24000
+  output:
+    # Without Gift Aid: ANI = £130k, PA = £0
+    # Gift Aid = £24k, grossed up = £30k
+    # ANI for taper = £130k - £30k = £100k (at threshold)
+    # Full PA restored
+    personal_allowance: 12570
+
+# ============================================
+# Edge cases with zero Gift Aid
+# Verify the fix doesn't break anything when gift_aid = 0
+# ============================================
+
+- name: Zero Gift Aid - PA taper works normally at £110k
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 110000
+    gift_aid: 0
+  output:
+    # ANI = £110k, excess = £10k, PA reduction = £5k
+    # PA = £12,570 - £5,000 = £7,570
+    personal_allowance: 7570
+
+- name: Zero Gift Aid - PA taper works normally at £115k
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 115000
+    gift_aid: 0
+  output:
+    # ANI = £115k, excess = £15k, PA reduction = £7.5k
+    # PA = £12,570 - £7,500 = £5,070
+    personal_allowance: 5070
+
+- name: Zero Gift Aid - PA fully tapered
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 150000
+    gift_aid: 0
+  output:
+    personal_allowance: 0
+
+# ============================================
+# Scottish taxpayer tests
+# PA taper should work the same regardless of region
+# ============================================
+
+- name: Scottish taxpayer - PA taper with Gift Aid
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 110000
+    gift_aid: 10000
+    country: "SCOTLAND"
+  output:
+    # Gift Aid = £10k, grossed up = £12.5k
+    # ANI for taper = £110k - £12.5k = £97.5k (below £100k)
+    # Full PA restored
+    personal_allowance: 12570
