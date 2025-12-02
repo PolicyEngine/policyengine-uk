@@ -2,10 +2,13 @@ description: Limit on the number of children for which the Universal Credit chil
 values:
   0001-01-01: .inf
   2017-04-06: 2
+  2026-04-06: .inf
 metadata:
   unit: child
   label: Universal Credit child element child limit
   period: year
-  reference: 
+  reference:
     - title: The Universal Credit Regulations 2013 reg. 24A
       href: https://www.legislation.gov.uk/uksi/2013/376/data.pdf#page=31
+    - title: Autumn Budget 2025 - Two child limit repeal
+      href: https://www.gov.uk/government/publications/autumn-budget-2025
