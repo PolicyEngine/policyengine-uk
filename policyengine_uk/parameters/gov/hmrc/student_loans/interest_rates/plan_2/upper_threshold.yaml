@@ -35,3 +35,14 @@ values:
       reference:
         - title: Student Loans Interest and Repayment Threshold Announcement for Plan 2 and Plan 3 loans
           href: https://www.gov.uk/government/news/student-loans-interest-and-repayment-threshold-announcement-for-plan-2-and-plan-3-loans
+  # Budget 2025: interest rate thresholds frozen 2027-2030 (OBR EFO Nov 2025, section 3.22)
+  2027-09-01:
+    value: 52_885
+    metadata:
+      reference:
+        - title: Autumn Budget 2025 - Student loans threshold freeze
+          href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
+  2028-09-01:
+    value: 52_885
+  2029-09-01:
+    value: 52_885
