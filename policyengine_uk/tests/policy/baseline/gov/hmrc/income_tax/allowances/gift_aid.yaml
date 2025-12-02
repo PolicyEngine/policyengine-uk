@@ -1,0 +1,71 @@
+# Gift Aid tests
+# ITA 2007 s.58 requires grossed-up Gift Aid to be deducted from ANI
+# when calculating Personal Allowance taper
+
+- name: Higher rate taxpayer gets 40% relief
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    gift_aid: 1000
+  output:
+    # Basic rate band is £37,700, PA is £12,570
+    # Higher rate threshold = £50,270
+    # £60k income means in 40% band
+    # £1k gift aid reduces taxable income by £1k, saving 40%
+    income_tax: 11032
+
+- name: Basic rate taxpayer gets 20% relief
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 30000
+    gift_aid: 1000
+  output:
+    # In basic rate band, £1k gift aid saves 20%
+    income_tax: 3286
+
+- name: Gift Aid reduces ANI for PA taper - full PA restored
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 110000
+    gift_aid: 10000
+  output:
+    # Per ITA 2007 s.58, Gift Aid (grossed up) reduces ANI for PA taper
+    # £10k net = £12,500 gross
+    # ANI for PA taper = £110k - £12.5k = £97,500
+    # This is below £100k threshold, so full PA restored
+    personal_allowance: 12570
+
+- name: Gift Aid partially restores PA in taper zone
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 115000
+    gift_aid: 4000
+  output:
+    # £4k net = £5k gross
+    # ANI for PA taper = £115k - £5k = £110k
+    # Excess over £100k = £10k
+    # PA reduction = £10k * 0.5 = £5k
+    # PA = £12,570 - £5k = £7,570
+    personal_allowance: 7570
+
+- name: PA taper zone effective relief is ~60%
+  period: 2025
+  absolute_error_margin: 50
+  input:
+    employment_income: 110000
+    gift_aid: 10000
+  output:
+    # Without gift aid: PA = £7,570, tax ~£33,432
+    # With £10k gift aid (£12.5k gross):
+    #   - ANI for PA taper reduced to £97,500 (below £100k)
+    #   - Full PA £12,570 restored
+    #   - Taxable = £110k - £12,570 (PA) - £10k (gift aid) = £87,430
+    #   - Tax at basic rate (£37,700): £7,540
+    #   - Tax at higher rate (£87,430 - £37,700 = £49,730): £19,892
+    #   - Total: £27,432
+    # Tax savings: ~£6,000 = 60% effective relief on £10k donation
+    income_tax: 27432
