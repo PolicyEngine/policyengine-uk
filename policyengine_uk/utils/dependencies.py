@@ -257,6 +257,3 @@ def format_fig(fig):
     fig.update_layout(margin=dict(l=100, r=100, t=100, b=100))
 
     return fig
-
-
-add_fonts()
