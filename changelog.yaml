@@ -2039,3 +2039,19 @@
     added:
     - Add upper interest threshold freeze for Plan 2 student loans (Budget 2025)
   date: 2025-12-02 14:16:53
+- bump: minor
+  changes:
+    added:
+    - Added gift_aid_grossed_up variable that computes Gift Aid grossed up by basic
+      rate per ITA 2007 s.58.
+    - Added comprehensive Gift Aid tests covering basic rate relief, higher rate relief,
+      and PA taper interaction.
+    changed:
+    - Added legislation references (legislation.gov.uk) to gift_aid and personal_allowance
+      variables.
+    fixed:
+    - Fixed Personal Allowance taper calculation to deduct grossed-up Gift Aid from
+      ANI per ITA 2007 s.58. Previously, Gift Aid donations did not reduce ANI for
+      PA taper purposes, causing high earners (GBP 100k-125k) to receive less tax
+      relief than legally entitled.
+  date: 2025-12-02 16:24:40
