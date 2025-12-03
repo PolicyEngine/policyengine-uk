@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.64.0] - 2025-12-03 11:59:49
+
+### Added
+
+- Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax Credits child element limit to infinity
+- Salary sacrifice pension cap of �2,000 from April 2029 (Autumn Budget 2025)
+- Move inflation adjustment AHC back to BHC inflation.
+
 ## [2.63.0] - 2025-12-02 16:24:40
 
 ### Added
@@ -2404,6 +2412,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.64.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.63.0...2.64.0
 [2.63.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.1...2.63.0
 [2.62.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.0...2.62.1
 [2.62.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.4...2.62.0
