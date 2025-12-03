@@ -26,7 +26,18 @@ def backdate_parameters(
 
 
 def convert_to_fiscal_year_parameters(parameters):
-    YEARS = list(range(2015, 2026))
+    """
+    Convert parameters to use UK fiscal year values.
+
+    The UK fiscal year runs April 6 to April 5. When querying a parameter
+    for a year (e.g., param("2026")), we want the value at April 30 of
+    that year (which represents the fiscal year starting April 6).
+
+    This function samples each parameter at April 30 of each year and
+    sets that as the value for the entire year period.
+    """
+    # Cover years from 2015 through 2040 for long-term projections
+    YEARS = list(range(2015, 2041))
     for param in parameters.get_descendants():
         if isinstance(param, Parameter):
             for year in YEARS:
