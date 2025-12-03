@@ -251,9 +251,7 @@ class TestDeterminism:
                     "would_claim_child_benefit": {2024: True},
                 }
             },
-            "households": {
-                "household": {"members": ["adult", "child"]}
-            },
+            "households": {"household": {"members": ["adult", "child"]}},
         }
 
         results = []
@@ -279,16 +277,12 @@ class TestDeterminism:
                 },
             },
             "benunits": {"benunit": {"members": ["person1", "person2"]}},
-            "households": {
-                "household": {"members": ["person1", "person2"]}
-            },
+            "households": {"household": {"members": ["person1", "person2"]}},
         }
 
         results = []
         for _ in range(3):
             sim = Simulation(situation=situation)
-            results.append(
-                tuple(sim.calculate("marriage_allowance", 2024))
-            )
+            results.append(tuple(sim.calculate("marriage_allowance", 2024)))
 
         assert results[0] == results[1] == results[2]
