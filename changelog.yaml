@@ -2055,3 +2055,12 @@
       PA taper purposes, causing high earners (GBP 100k-125k) to receive less tax
       relief than legally entitled.
   date: 2025-12-02 16:24:40
+- bump: minor
+  changes:
+    added:
+    - Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax
+      Credits child element limit to infinity
+    - "Salary sacrifice pension cap of \uFFFD2,000 from April 2029 (Autumn Budget\
+      \ 2025)"
+    - Move inflation adjustment AHC back to BHC inflation.
+  date: 2025-12-03 11:59:49
