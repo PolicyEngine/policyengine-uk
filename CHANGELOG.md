@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.63.0] - 2025-12-02 16:24:40
+
+### Added
+
+- Added gift_aid_grossed_up variable that computes Gift Aid grossed up by basic rate per ITA 2007 s.58.
+- Added comprehensive Gift Aid tests covering basic rate relief, higher rate relief, and PA taper interaction.
+
+### Changed
+
+- Added legislation references (legislation.gov.uk) to gift_aid and personal_allowance variables.
+
+### Fixed
+
+- Fixed Personal Allowance taper calculation to deduct grossed-up Gift Aid from ANI per ITA 2007 s.58. Previously, Gift Aid donations did not reduce ANI for PA taper purposes, causing high earners (GBP 100k-125k) to receive less tax relief than legally entitled.
+
+## [2.62.1] - 2025-12-02 14:16:53
+
+### Added
+
+- Add upper interest threshold freeze for Plan 2 student loans (Budget 2025)
+
 ## [2.62.0] - 2025-12-02 09:19:36
 
 ### Added
@@ -2383,6 +2404,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.63.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.1...2.63.0
+[2.62.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.0...2.62.1
 [2.62.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.4...2.62.0
 [2.61.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.3...2.61.4
 [2.61.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.2...2.61.3
