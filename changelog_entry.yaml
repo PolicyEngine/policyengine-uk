@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    fixed:
+      - Extend fiscal year parameter conversion to cover 2015-2040, fixing issues where policies changing on April 6 (UK fiscal year start) were not reflected in simulations for years 2026+.
