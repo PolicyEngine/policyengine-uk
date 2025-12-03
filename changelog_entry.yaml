@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    changed:
+      - Remove randomness from country package by moving stochastic variable generation to data package. Variables now read pre-computed values from datasets for deterministic, reproducible calculations.
