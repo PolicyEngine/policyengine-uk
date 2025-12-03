@@ -2064,3 +2064,8 @@
       \ 2025)"
     - Move inflation adjustment AHC back to BHC inflation.
   date: 2025-12-03 11:59:49
+- bump: patch
+  changes:
+    fixed:
+    - Print statement.
+  date: 2025-12-03 12:45:46
