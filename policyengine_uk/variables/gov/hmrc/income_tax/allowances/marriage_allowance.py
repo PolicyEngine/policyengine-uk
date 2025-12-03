@@ -1,6 +1,21 @@
 from policyengine_uk.model_api import *
 
 
+class would_claim_marriage_allowance(Variable):
+    label = "Would claim Marriage Allowance"
+    documentation = (
+        "Whether this person would claim Marriage Allowance if eligible. "
+        "Generated stochastically in the dataset using take-up rates."
+    )
+    entity = Person
+    definition_period = YEAR
+    value_type = bool
+
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to True
+    default_value = True
+
+
 class marriage_allowance(Variable):
     value_type = float
     entity = Person
@@ -19,7 +34,6 @@ class marriage_allowance(Variable):
             "partners_unused_personal_allowance", period
         )
         allowances = parameters(period).gov.hmrc.income_tax.allowances
-        takeup_rate = allowances.marriage_allowance.takeup_rate
         capped_percentage = allowances.marriage_allowance.max
         max_amount = allowances.personal_allowance.amount * capped_percentage
         amount_if_eligible_pre_rounding = min_(transferable_amount, max_amount)
@@ -29,4 +43,6 @@ class marriage_allowance(Variable):
             np.ceil(amount_if_eligible_pre_rounding / rounding_increment)
             * rounding_increment
         )
-        return eligible * amount_if_eligible * (random(person) < takeup_rate)
+        # Use pre-generated take-up decision from dataset
+        would_claim = person("would_claim_marriage_allowance", period)
+        return eligible * amount_if_eligible * would_claim

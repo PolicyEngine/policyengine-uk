@@ -13,6 +13,21 @@ def interpolate_percentile(param, percentile):
         return v1 + (v2 - v1) * (percentile - p1) / (p2 - p1)
 
 
+class attends_private_school_random_draw(Variable):
+    label = "Private school attendance random draw"
+    documentation = (
+        "Random draw for determining private school attendance. "
+        "Generated stochastically in the dataset."
+    )
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to 0.5
+    default_value = 0.5
+
+
 class attends_private_school(Variable):
     label = "attends private school"
     entity = Person
@@ -76,6 +91,8 @@ class attends_private_school(Variable):
             * is_child
         )
 
-        value = random(person) < p_attends_private_school
+        # Use pre-generated random draw from dataset instead of calling random()
+        random_draw = person("attends_private_school_random_draw", period)
+        value = random_draw < p_attends_private_school
 
         return value
