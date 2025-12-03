@@ -4,12 +4,17 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 # PolicyEngine core imports
+from policyengine_core import periods
 from policyengine_core.parameters.operations.propagate_parameter_metadata import (
     propagate_parameter_metadata,
 )
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
+from policyengine_core.parameters.parameter_node_at_instant import (
+    ParameterNodeAtInstant,
+)
+from policyengine_core.periods import Instant, Period
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.variables import Variable
 
@@ -32,6 +37,7 @@ from policyengine_uk.parameters.gov.economic_assumptions.lag_cpi import (
 )
 from policyengine_uk.utils.parameters import (
     backdate_parameters,
+    convert_instant_to_fiscal_year,
     convert_to_fiscal_year_parameters,
 )
 
@@ -65,6 +71,56 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         for parameter in self.parameters.get_descendants():
             parameter._at_instant_cache = {}
         self.parameters._at_instant_cache = {}
+
+    def get_parameters_at_instant(
+        self, instant: Instant
+    ) -> ParameterNodeAtInstant:
+        """
+        Get parameters at an instant, with UK fiscal year adjustment.
+
+        The UK fiscal year runs April 6 to April 5. When querying for a year
+        (e.g., "2026" or January 1, 2026), this method converts the instant
+        to April 30 of that year to get the correct fiscal year value.
+
+        This ensures that queries like param("2026") return the value for
+        fiscal year 2026/27 (April 6, 2026 - April 5, 2027) rather than
+        the January 1, 2026 value.
+
+        Args:
+            instant: The instant to query, as string, int, Period, or Instant
+
+        Returns:
+            ParameterNodeAtInstant with all parameter values at that instant
+        """
+        # Convert to Instant if needed
+        if isinstance(instant, Period):
+            instant = instant.start
+        elif isinstance(instant, (str, int)):
+            instant = periods.instant(instant)
+        else:
+            assert isinstance(
+                instant, Instant
+            ), f"Expected Instant, got: {instant}"
+
+        # Apply UK fiscal year conversion
+        # If querying January 1 of a year, convert to April 30 to get
+        # the fiscal year value (UK tax year starts April 6)
+        instant_str = str(instant)
+        fiscal_instant_str = convert_instant_to_fiscal_year(instant_str)
+        fiscal_instant = periods.instant(fiscal_instant_str)
+
+        # Use fiscal instant for cache key and lookup
+        parameters_at_instant = self._parameters_at_instant_cache.get(
+            fiscal_instant
+        )
+        if parameters_at_instant is None and self.parameters is not None:
+            parameters_at_instant = self.parameters.get_at_instant(
+                str(fiscal_instant)
+            )
+            self._parameters_at_instant_cache[fiscal_instant] = (
+                parameters_at_instant
+            )
+        return parameters_at_instant
 
     def reset_parameters(self) -> None:
         """Reset parameters by reloading from the parameters directory."""

@@ -1,5 +1,4 @@
 - bump: minor
   changes:
-    added:
-      - Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax Credits child element limit to infinity
-      - Salary sacrifice pension cap of £2,000 from April 2029 (Autumn Budget 2025)
+    fixed:
+      - Fix fiscal year parameter handling to use April 30 reference date for annual queries, ensuring policies that change on April 6 (UK fiscal year start) are correctly reflected in simulations.
