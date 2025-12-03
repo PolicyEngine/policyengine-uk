@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
+from pathlib import Path
+
+from policyengine_core.taxbenefitsystems import TaxBenefitSystem
+
 from policyengine_uk import entities
 from policyengine_uk.system import (
     CountryTaxBenefitSystem,
@@ -10,10 +14,6 @@ from policyengine_uk.system import (
     parameters,
     variables,
 )
-from pathlib import Path
-import os
 from .model_api import *
-from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 
 REPO = Path(__file__).parent
-
