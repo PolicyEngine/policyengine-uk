@@ -2076,3 +2076,8 @@
       policies changing on April 6 (UK fiscal year start) were not reflected in simulations
       for years 2026+.
   date: 2025-12-03 16:17:09
+- bump: patch
+  changes:
+    changed:
+    - Bump policyengine-core to 3.23.0 (adds strict enum validation).
+  date: 2025-12-04 14:45:58
