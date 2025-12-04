@@ -21,16 +21,22 @@ values:
         - title: Costing Document - Spring Budget 2023 (page 25)
           href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1142824/Costing_Document_-_Spring_Budget_2023.pdf#page=25
   # November 2025 Autumn Budget: staggered 5p cut reversal (+1p Sep, +2p Dec, +2p Mar 2027)
-  # then RPI uprating from Apr 2027: 59.80p (4.1%), 61.54p (3.2%), 63.34p (2.9%)
+  # then RPI uprating from Apr 2027 using OBR November 2025 RPI forecasts.
   #
   # Source values (actual policy implementation dates):
   # - Mar 22, 2026: 52.95p (continuation of 5p cut)
   # - Sep 1, 2026: 53.95p (+1p increase)
   # - Dec 1, 2026: 55.95p (+2p increase)
-  # - Mar 1, 2027: 57.95p (+2p increase)
-  # - Apr 1, 2027: 59.80p (RPI uprating: 4.1%)
-  # - Apr 1, 2028: 61.54p (RPI uprating: 3.2%)
-  # - Apr 1, 2029: 63.34p (RPI uprating: 2.9%)
+  # - Mar 1, 2027: 57.95p (+2p increase, full rate restored)
+  # - Apr 1, 2027: 60.10p (RPI uprating: 3.71% from OBR Nov 2025 Table 1.7)
+  # - Apr 1, 2028: 61.98p (RPI uprating: 3.13% from OBR Nov 2025 Table 1.7)
+  # - Apr 1, 2029: 63.76p (RPI uprating: 2.87% from OBR Nov 2025 Table 1.7)
+  #
+  # RPI forecasts from OBR EFO November 2025 detailed forecast tables (Table 1.7):
+  # https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+  # - 2026 RPI: 3.71% (applied Apr 2027)
+  # - 2027 RPI: 3.13% (applied Apr 2028)
+  # - 2028 RPI: 2.87% (applied Apr 2029)
   #
   # For annual calculations, we use the average rate over each calendar year
   # to avoid issues with monthly rate selection in reform calculations.
@@ -40,40 +46,52 @@ values:
       reference:
         - title: OBR Economic and Fiscal Outlook November 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+        - title: Autumn Budget 2025 Policy Costings
+          href: https://assets.publishing.service.gov.uk/media/69271396a245b0985f0340dd/OS_Budget_2025_Policy_Costings.pdf
       note: |
-        Calendar year 2026 average:
-        (0.5295 * 243 days + 0.5395 * 91 days + 0.5595 * 31 days) / 365 days = 0.5345
+        Calendar year 2026 average (no RPI, staggered 5p cut reversal):
+        (52.95p * 243 days + 53.95p * 91 days + 55.95p * 31 days) / 365 days = 53.45p
         where 243 days = Jan 1 - Aug 31, 91 days = Sep 1 - Nov 30, 31 days = Dec 1 - Dec 31
   2027-01-01:
-    value: 0.5902
+    value: 0.5910
     metadata:
       reference:
         - title: OBR Economic and Fiscal Outlook November 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+        - title: OBR EFO November 2025 Table 1.7 (RPI forecast 3.71% for 2026)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
       note: |
         Calendar year 2027 average:
-        (0.5595 * 59 days + 0.5795 * 31 days + 0.598 * 275 days) / 365 days = 0.5902
-        where 59 days = Jan 1 - Feb 28, 31 days = Mar 1 - Mar 31, 275 days = Apr 1 - Dec 31
+        - Jan 1 - Feb 28 (59 days): 55.95p (pre-March reversal)
+        - Mar 1 - Mar 31 (31 days): 57.95p (full rate restored)
+        - Apr 1 - Dec 31 (275 days): 60.10p (57.95p * 1.0371 RPI)
+        (55.95p * 59 + 57.95p * 31 + 60.10p * 275) / 365 = 59.10p
   2028-01-01:
-    value: 0.6111
+    value: 0.6151
     metadata:
       reference:
         - title: OBR Economic and Fiscal Outlook November 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+        - title: OBR EFO November 2025 Table 1.7 (RPI forecast 3.13% for 2027)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
       note: |
         Calendar year 2028 average (leap year):
-        (0.598 * 91 days + 0.6154 * 275 days) / 366 days = 0.6111
-        where 91 days = Jan 1 - Mar 31, 275 days = Apr 1 - Dec 31
+        - Jan 1 - Mar 31 (91 days): 60.10p
+        - Apr 1 - Dec 31 (275 days): 61.98p (60.10p * 1.0313 RPI)
+        (60.10p * 91 + 61.98p * 275) / 366 = 61.51p
   2029-01-01:
-    value: 0.6290
+    value: 0.6332
     metadata:
       reference:
         - title: OBR Economic and Fiscal Outlook November 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+        - title: OBR EFO November 2025 Table 1.7 (RPI forecast 2.87% for 2028)
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
       note: |
         Calendar year 2029 average:
-        (0.6154 * 90 days + 0.6334 * 275 days) / 365 days = 0.6290
-        where 90 days = Jan 1 - Mar 31, 275 days = Apr 1 - Dec 31
+        - Jan 1 - Mar 31 (90 days): 61.98p
+        - Apr 1 - Dec 31 (275 days): 63.76p (61.98p * 1.0287 RPI)
+        (61.98p * 90 + 63.76p * 275) / 365 = 63.32p
 metadata:
   unit: currency-GBP
   name: fuel_duty_rate
