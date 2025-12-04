@@ -17,6 +17,7 @@ Reference: https://policyengine.org/uk/research/salary-sacrifice-cap
 
 import pytest
 import numpy as np
+import pandas as pd
 from policyengine_uk import Microsimulation
 
 
@@ -256,4 +257,114 @@ def test_employer_haircut_applied(reform_simulation):
         f"Raw excess: £{raw_excess/1e9:.2f}bn, "
         f"Redirected: £{redirected_total/1e9:.2f}bn, "
         f"Ratio: {ratio:.2f}"
+    )
+
+
+def test_decile_impact_negative_for_higher_earners(
+    baseline_simulation, reform_simulation
+):
+    """
+    Test that higher income deciles experience negative income changes.
+
+    The salary sacrifice cap reduces household net income for affected workers
+    (those with SS contributions > £2,000) because they now pay NI on the excess.
+    Higher deciles should have larger negative impacts as they're more likely
+    to have high salary sacrifice contributions.
+
+    This validates the distributional impact methodology used in uk-budget-data.
+    """
+    # Calculate household net income for baseline and reform
+    baseline_income = baseline_simulation.calculate(
+        "household_net_income", period=POLICY_YEAR, map_to="household"
+    )
+    reform_income = reform_simulation.calculate(
+        "household_net_income", period=POLICY_YEAR, map_to="household"
+    )
+    household_decile = baseline_simulation.calculate(
+        "household_income_decile", period=POLICY_YEAR, map_to="household"
+    )
+    household_weight = baseline_simulation.calculate(
+        "household_weight", period=POLICY_YEAR, map_to="household"
+    )
+
+    # Build decile DataFrame
+    decile_df = pd.DataFrame(
+        {
+            "household_income_decile": household_decile.values,
+            "baseline_income": baseline_income.values,
+            "reform_income": reform_income.values,
+            "income_change": (reform_income - baseline_income).values,
+            "household_weight": household_weight.values,
+        }
+    )
+    decile_df = decile_df[decile_df["household_income_decile"] >= 1]
+
+    # Calculate weighted relative change by decile
+    decile_names = [
+        "1st",
+        "2nd",
+        "3rd",
+        "4th",
+        "5th",
+        "6th",
+        "7th",
+        "8th",
+        "9th",
+        "10th",
+    ]
+    results = []
+
+    for decile_num in range(1, 11):
+        decile_data = decile_df[
+            decile_df["household_income_decile"] == decile_num
+        ]
+        if len(decile_data) > 0:
+            weighted_change = (
+                decile_data["income_change"] * decile_data["household_weight"]
+            ).sum()
+            weighted_baseline = (
+                decile_data["baseline_income"]
+                * decile_data["household_weight"]
+            ).sum()
+            rel_change = (
+                (weighted_change / weighted_baseline) * 100
+                if weighted_baseline > 0
+                else 0
+            )
+            results.append(
+                {
+                    "decile": decile_names[decile_num - 1],
+                    "decile_num": decile_num,
+                    "rel_change_pct": rel_change,
+                    "abs_change": weighted_change,
+                }
+            )
+
+    print("\nDecile Impact (relative % change in household net income):")
+    for r in results:
+        print(f"  {r['decile']}: {r['rel_change_pct']:.3f}%")
+
+    # Higher deciles (8th, 9th, 10th) should have negative impacts
+    # These workers are more likely to have high salary sacrifice
+    high_decile_results = [r for r in results if r["decile_num"] >= 8]
+
+    for r in high_decile_results:
+        assert r["rel_change_pct"] < 0, (
+            f"Decile {r['decile']} should have negative impact "
+            f"(losers from reform), got {r['rel_change_pct']:.3f}%"
+        )
+
+    # The 10th decile should have the largest negative impact
+    decile_10 = next(r for r in results if r["decile_num"] == 10)
+    assert decile_10["rel_change_pct"] < -0.1, (
+        f"10th decile should have significant negative impact (<-0.1%), "
+        f"got {decile_10['rel_change_pct']:.3f}%"
+    )
+
+    # Overall impact should be negative (reform takes money from households)
+    total_change = sum(r["abs_change"] for r in results)
+    print(f"\nTotal household income change: £{total_change/1e9:.3f}bn")
+    assert total_change < 0, (
+        f"Total household income should decrease, "
+        f"got £{total_change/1e9:.3f}bn change"
     )
