@@ -14,5 +14,4 @@ class national_insurance(Variable):
         "ni_class_2",
         "ni_class_3",
         "ni_class_4",
-        "salary_sacrifice_pension_ni_employee",
     ]
