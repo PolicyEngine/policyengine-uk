@@ -5,7 +5,7 @@
     employment_income: 40_000
     pension_contributions_via_salary_sacrifice: 1_500
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
     salary_sacrifice_pension_ni_employee: 0
 
@@ -16,10 +16,10 @@
     employment_income: 45_000
     pension_contributions_via_salary_sacrifice: 2_250
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
-    # £250 excess * 0.87 (employer haircut) * 8% = £17.40
-    salary_sacrifice_pension_ni_employee: (2_250 - 2_000) * 0.87 * 0.08
+    # £250 excess * 8% = £20
+    salary_sacrifice_pension_ni_employee: (2_250 - 2_000) * 0.08
 
 - name: Employee NI charge at 8% main rate for earner just below UEL
   period: 2025
@@ -28,10 +28,10 @@
     employment_income: 50_000
     pension_contributions_via_salary_sacrifice: 10_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
-    # £8,000 excess * 0.87 (employer haircut) * 8% = £556.80
-    salary_sacrifice_pension_ni_employee: (10_000 - 2_000) * 0.87 * 0.08
+    # £8,000 excess * 8% = £640
+    salary_sacrifice_pension_ni_employee: (10_000 - 2_000) * 0.08
 
 - name: Employee NI charge at 2% additional rate for high earner above UEL
   period: 2025
@@ -40,10 +40,10 @@
     employment_income: 125_000
     pension_contributions_via_salary_sacrifice: 25_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
-    # £23,000 excess * 0.87 (employer haircut) * 2% = £400.20
-    salary_sacrifice_pension_ni_employee: (25_000 - 2_000) * 0.87 * 0.02
+    # £23,000 excess * 2% = £460
+    salary_sacrifice_pension_ni_employee: (25_000 - 2_000) * 0.02
 
 - name: Employee NI charge at 2% for earner well above UEL
   period: 2025
@@ -52,10 +52,10 @@
     employment_income: 80_000
     pension_contributions_via_salary_sacrifice: 5_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
-    # £3,000 excess * 0.87 (employer haircut) * 2% = £52.20
-    salary_sacrifice_pension_ni_employee: (5_000 - 2_000) * 0.87 * 0.02
+    # £3,000 excess * 2% = £60
+    salary_sacrifice_pension_ni_employee: (5_000 - 2_000) * 0.02
 
 - name: No employee NI charge when exactly at cap
   period: 2025
@@ -64,7 +64,7 @@
     employment_income: 60_000
     pension_contributions_via_salary_sacrifice: 2_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
     salary_sacrifice_pension_ni_employee: 0
 
@@ -75,20 +75,33 @@
     employment_income: 35_000
     pension_contributions_via_salary_sacrifice: 2_100
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
-    # £100 excess * 0.87 (employer haircut) * 8% = £6.96
-    salary_sacrifice_pension_ni_employee: 100 * 0.87 * 0.08
+    # £100 excess * 8% = £8
+    salary_sacrifice_pension_ni_employee: 100 * 0.08
 
-- name: Employee NI on redirected excess (after employer haircut)
+- name: Employee NI on full redirected excess
   period: 2025
   absolute_error_margin: 0.01
   input:
     employment_income: 45_000
     pension_contributions_via_salary_sacrifice: 3_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
-    gov.contrib.behavioral_responses.employee_salary_sacrifice_reduction_rate: 0
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
   output:
-    # £1,000 excess * 0.87 (employer haircut) * 8% = £69.60
-    salary_sacrifice_pension_ni_employee: (3_000 - 2_000) * 0.87 * 0.08
-    salary_sacrifice_returned_to_income: (3_000 - 2_000) * 0.87
+    # £1,000 excess * 8% = £80
+    salary_sacrifice_pension_ni_employee: (3_000 - 2_000) * 0.08
+    # Full excess is redirected (no targeted haircut)
+    salary_sacrifice_returned_to_income: 1_000
+
+- name: Broad-base haircut reduces all workers employment income
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    employment_income: 50_000
+    pension_contributions_via_salary_sacrifice: 0
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0.0016
+  output:
+    # Worker with no salary sacrifice still has employment income reduced by 0.16%
+    salary_sacrifice_broad_base_haircut: -80  # -50_000 * 0.0016

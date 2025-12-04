@@ -4,15 +4,15 @@ Test suite for salary sacrifice pension cap reform fiscal impacts.
 This tests the £2,000 salary sacrifice cap policy announced in Autumn Budget 2025,
 which takes effect from April 2029.
 
-Methodology (matching blog and dashboard):
+Methodology (matching blog at https://policyengine.org/uk/research/uk-salary-sacrifice-cap):
 - Employees redirect excess above £2,000 to regular pension contributions
 - Regular pension contributions get income tax relief but NOT NI relief
-- Employer haircut of 13% applied (employers spread NI costs across workers)
+- Broad-base haircut: employers spread NI costs across ALL workers (~0.16% of employment income)
 - Revenue comes from NI on the redirected excess
 
 Expected revenue: ~£3.3 billion in 2029-30
 
-Reference: https://policyengine.org/uk/research/salary-sacrifice-cap
+Reference: https://policyengine.org/uk/research/uk-salary-sacrifice-cap
 """
 
 import pytest
@@ -68,7 +68,7 @@ def test_salary_sacrifice_cap_revenue_impact(
 
     This matches the PolicyEngine blog methodology:
     - Employees redirect excess to regular pension contributions
-    - NI charged on the excess (after 13% employer haircut)
+    - Full excess subject to NI (broad-base haircut reduces all workers' income)
     - Income tax relief preserved via regular pension contributions
     """
     baseline_gov_balance = baseline_simulation.calculate(
@@ -163,19 +163,19 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
 
 def test_excess_redirected_to_pension(reform_simulation):
     """
-    Test that excess is redirected to employee pension contributions.
+    Test that full excess is redirected to employee pension contributions.
 
     The blog assumes employees maintain their total pension contributions
-    by redirecting excess to regular pension contributions.
+    by redirecting the full excess to regular pension contributions.
     """
     redirected = reform_simulation.calculate(
         "salary_sacrifice_returned_to_income", POLICY_YEAR
     ).sum()
 
-    # Should be significant (blog says £13.8bn excess, minus 13% haircut = ~£12bn)
+    # Should be significant (blog says £13.8bn excess - full amount redirected)
     assert (
-        redirected > 10e9
-    ), f"Redirected amount should be >£10bn, got £{redirected/1e9:.2f}bn"
+        redirected > 12e9
+    ), f"Redirected amount should be >£12bn, got £{redirected/1e9:.2f}bn"
 
 
 def test_salary_sacrifice_data_exists(reform_simulation):
@@ -222,12 +222,12 @@ def test_affected_population(reform_simulation):
     ), f"Expected <5 million affected, got {affected_count/1e6:.1f}m"
 
 
-def test_employer_haircut_applied(reform_simulation):
+def test_full_excess_redirected(reform_simulation):
     """
-    Test that the 13% employer haircut is applied.
+    Test that the full excess is redirected (no targeted haircut).
 
-    The redirected amount should be 87% of the raw excess.
-    Uses weighted totals to match aggregate fiscal calculations.
+    The broad-base haircut reduces ALL workers' employment income,
+    but the full excess above cap is redirected to regular pension contributions.
     """
     # Get weighted totals using map_to for proper aggregation
     ss_contributions = reform_simulation.calculate(
@@ -244,19 +244,48 @@ def test_employer_haircut_applied(reform_simulation):
     raw_excess = (np.maximum(ss_contributions - cap, 0) * weights).sum()
     redirected_total = (redirected * weights).sum()
 
-    # Redirected should be ~87% of raw excess (13% haircut)
-    expected_redirected = raw_excess * 0.87
-    ratio = (
-        redirected_total / expected_redirected
-        if expected_redirected > 0
-        else 0
-    )
+    # Redirected should be 100% of raw excess (no targeted haircut)
+    ratio = redirected_total / raw_excess if raw_excess > 0 else 0
 
     assert 0.95 < ratio < 1.05, (
-        f"Redirected amount should be ~87% of excess. "
+        f"Full excess should be redirected (ratio ~1.0). "
         f"Raw excess: £{raw_excess/1e9:.2f}bn, "
         f"Redirected: £{redirected_total/1e9:.2f}bn, "
         f"Ratio: {ratio:.2f}"
+    )
+
+
+def test_broad_base_haircut_affects_all_workers(reform_simulation):
+    """
+    Test that the broad-base haircut reduces employment income for all workers.
+
+    The broad-base haircut (default 0.16%) applies to ALL workers,
+    not just those with salary sacrifice.
+    """
+    haircut = reform_simulation.calculate(
+        "salary_sacrifice_broad_base_haircut", POLICY_YEAR
+    )
+    weights = reform_simulation.calculate("person_weight", POLICY_YEAR)
+    employment_income = reform_simulation.calculate(
+        "employment_income_before_lsr", POLICY_YEAR
+    )
+
+    # All workers with employment income should have a haircut
+    has_employment = employment_income > 0
+    has_haircut = haircut < 0  # Haircut is negative
+
+    # Count workers with employment income but no haircut
+    workers_with_employment = (has_employment * weights).sum()
+    workers_with_haircut = (has_haircut * weights).sum()
+
+    print(f"\nWorkers with employment income: {workers_with_employment/1e6:.1f}m")
+    print(f"Workers with haircut: {workers_with_haircut/1e6:.1f}m")
+
+    # Most workers with employment income should have a haircut
+    haircut_coverage = workers_with_haircut / workers_with_employment
+    assert haircut_coverage > 0.9, (
+        f"Broad-base haircut should affect most workers, "
+        f"but only {haircut_coverage:.1%} are affected"
     )
 
 

@@ -7,14 +7,17 @@ class salary_sacrifice_returned_to_income(Variable):
         "The amount of excess salary sacrifice (above the cap) that is redirected "
         "to regular employee pension contributions. This maintains total pension savings "
         "while subjecting the excess to National Insurance (but not income tax, since "
-        "regular pension contributions receive income tax relief). An employer haircut is "
-        "applied to reflect employers spreading increased NI costs across workers."
+        "regular pension contributions receive income tax relief). "
+        "\n\n"
+        "The full excess is redirected - the employer cost increase is handled via "
+        "the broad-base haircut (salary_sacrifice_broad_base_haircut) which reduces "
+        "ALL workers' employment income by ~0.16%, not just affected workers."
     )
     entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP
-    reference = "https://policyengine.org/uk/research/salary-sacrifice-cap"
+    reference = "https://policyengine.org/uk/research/uk-salary-sacrifice-cap"
 
     def formula(person, period, parameters):
         intended_ss = person(
@@ -28,16 +31,11 @@ class salary_sacrifice_returned_to_income(Variable):
         if np.isinf(cap):
             return 0
 
-        # Calculate raw excess above cap (no behavioral response - employees redirect all excess)
+        # Calculate excess above cap - full excess is redirected to regular
+        # employee pension contributions (no targeted haircut on the individual)
         excess = max_(intended_ss - cap, 0)
 
-        # Apply employer haircut (employers spread NI costs across workers)
-        haircut = parameters(
-            period
-        ).gov.contrib.behavioral_responses.employer_salary_sacrifice_haircut
-
-        # Return excess minus haircut (redirected to employee pension contributions)
-        # This amount:
-        # 1. Gets added to employee_pension_contributions (income tax relief)
-        # 2. Is subject to NI (no NI relief like salary sacrifice)
-        return excess * (1 - haircut)
+        # Full excess is redirected to employment income (and then to employee
+        # pension contributions for income tax relief). The employer NI cost
+        # increase is spread across ALL workers via salary_sacrifice_broad_base_haircut.
+        return excess
