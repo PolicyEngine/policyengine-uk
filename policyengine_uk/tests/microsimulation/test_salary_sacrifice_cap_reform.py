@@ -28,7 +28,13 @@ POLICY_YEAR = 2030  # Use 2030 to ensure cap is active (cap starts 2029-04-06)
 # OBR static estimate: £4.9 billion
 # OBR post-behavioural: £4.7 billion
 EXPECTED_REVENUE_BILLION = 3.3
+<<<<<<< HEAD
 TOLERANCE_BILLION = 1.5  # Allow reasonable tolerance for year/methodology differences
+=======
+TOLERANCE_BILLION = (
+    1.5  # Allow reasonable tolerance for year/methodology differences
+)
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
 
 def _create_no_cap_baseline():
@@ -88,7 +94,14 @@ def test_salary_sacrifice_cap_revenue_impact(
     )
 
     # Revenue should be approximately £3.3 billion
+<<<<<<< HEAD
     assert abs(revenue_impact_billion - EXPECTED_REVENUE_BILLION) < TOLERANCE_BILLION, (
+=======
+    assert (
+        abs(revenue_impact_billion - EXPECTED_REVENUE_BILLION)
+        < TOLERANCE_BILLION
+    ), (
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
         f"Salary sacrifice cap revenue is {revenue_impact_billion:.2f} billion, "
         f"expected ~{EXPECTED_REVENUE_BILLION:.1f} billion "
         f"(±{TOLERANCE_BILLION:.1f} billion tolerance)"
@@ -116,6 +129,7 @@ def test_ni_increases_with_reform(baseline_simulation, reform_simulation):
     print(f"NI increase: £{ni_increase/1e9:.3f}bn")
 
     # NI should increase with the reform
+<<<<<<< HEAD
     assert ni_increase > 0, (
         f"NI should increase with cap, but change is £{ni_increase/1e9:.3f}bn"
     )
@@ -124,6 +138,16 @@ def test_ni_increases_with_reform(baseline_simulation, reform_simulation):
     assert ni_increase > 1e9, (
         f"NI increase should be >£1bn, got £{ni_increase/1e9:.3f}bn"
     )
+=======
+    assert (
+        ni_increase > 0
+    ), f"NI should increase with cap, but change is £{ni_increase/1e9:.3f}bn"
+
+    # NI increase should be significant (at least £1bn)
+    assert (
+        ni_increase > 1e9
+    ), f"NI increase should be >£1bn, got £{ni_increase/1e9:.3f}bn"
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
 
 def test_income_tax_impact(baseline_simulation, reform_simulation):
@@ -137,9 +161,13 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
     baseline_tax = baseline_simulation.calculate(
         "income_tax", POLICY_YEAR
     ).sum()
+<<<<<<< HEAD
     reform_tax = reform_simulation.calculate(
         "income_tax", POLICY_YEAR
     ).sum()
+=======
+    reform_tax = reform_simulation.calculate("income_tax", POLICY_YEAR).sum()
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
     tax_change = reform_tax - baseline_tax
 
@@ -149,12 +177,21 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
 
     # Income tax should increase slightly (due to pension relief caps)
     # Expected to be around £1-2bn
+<<<<<<< HEAD
     assert tax_change > 0, (
         f"Income tax should increase, got £{tax_change/1e9:.3f}bn"
     )
     assert tax_change < 3e9, (
         f"Income tax increase should be <£3bn, got £{tax_change/1e9:.3f}bn"
     )
+=======
+    assert (
+        tax_change > 0
+    ), f"Income tax should increase, got £{tax_change/1e9:.3f}bn"
+    assert (
+        tax_change < 3e9
+    ), f"Income tax increase should be <£3bn, got £{tax_change/1e9:.3f}bn"
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
 
 def test_excess_redirected_to_pension(reform_simulation):
@@ -169,9 +206,15 @@ def test_excess_redirected_to_pension(reform_simulation):
     ).sum()
 
     # Should be significant (blog says £13.8bn excess, minus 13% haircut = ~£12bn)
+<<<<<<< HEAD
     assert redirected > 10e9, (
         f"Redirected amount should be >£10bn, got £{redirected/1e9:.2f}bn"
     )
+=======
+    assert (
+        redirected > 10e9
+    ), f"Redirected amount should be >£10bn, got £{redirected/1e9:.2f}bn"
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
 
 def test_salary_sacrifice_data_exists(reform_simulation):
@@ -188,12 +231,21 @@ def test_salary_sacrifice_data_exists(reform_simulation):
     num_contributors = (ss_contributions > 0).sum()
 
     # Should have significant SS contributions
+<<<<<<< HEAD
     assert total_ss > 20e9, (
         f"Total SS contributions should be >£20bn, got £{total_ss/1e9:.2f}bn"
     )
     assert num_contributors > 4e6, (
         f"Should have >4 million contributors, got {num_contributors/1e6:.1f}m"
     )
+=======
+    assert (
+        total_ss > 20e9
+    ), f"Total SS contributions should be >£20bn, got £{total_ss/1e9:.2f}bn"
+    assert (
+        num_contributors > 4e6
+    ), f"Should have >4 million contributors, got {num_contributors/1e6:.1f}m"
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
 
 def test_affected_population(reform_simulation):
@@ -210,12 +262,21 @@ def test_affected_population(reform_simulation):
     affected_count = (ss_contributions > cap).sum()
 
     # Should be around 3.3 million
+<<<<<<< HEAD
     assert affected_count > 2.5e6, (
         f"Expected >2.5 million affected, got {affected_count/1e6:.1f}m"
     )
     assert affected_count < 5e6, (
         f"Expected <5 million affected, got {affected_count/1e6:.1f}m"
     )
+=======
+    assert (
+        affected_count > 2.5e6
+    ), f"Expected >2.5 million affected, got {affected_count/1e6:.1f}m"
+    assert (
+        affected_count < 5e6
+    ), f"Expected <5 million affected, got {affected_count/1e6:.1f}m"
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
 
 def test_employer_haircut_applied(reform_simulation):
@@ -227,7 +288,13 @@ def test_employer_haircut_applied(reform_simulation):
     """
     # Get weighted totals using map_to for proper aggregation
     ss_contributions = reform_simulation.calculate(
+<<<<<<< HEAD
         "pension_contributions_via_salary_sacrifice", POLICY_YEAR, map_to="person"
+=======
+        "pension_contributions_via_salary_sacrifice",
+        POLICY_YEAR,
+        map_to="person",
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
     )
     weights = reform_simulation.calculate("person_weight", POLICY_YEAR)
     redirected = reform_simulation.calculate(
@@ -240,7 +307,15 @@ def test_employer_haircut_applied(reform_simulation):
 
     # Redirected should be ~87% of raw excess (13% haircut)
     expected_redirected = raw_excess * 0.87
+<<<<<<< HEAD
     ratio = redirected_total / expected_redirected if expected_redirected > 0 else 0
+=======
+    ratio = (
+        redirected_total / expected_redirected
+        if expected_redirected > 0
+        else 0
+    )
+>>>>>>> 94d867e6 (Edit salary sacrifice pension cap reform)
 
     assert 0.95 < ratio < 1.05, (
         f"Redirected amount should be ~87% of excess. "
