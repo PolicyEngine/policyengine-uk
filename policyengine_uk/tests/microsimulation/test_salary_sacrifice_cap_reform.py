@@ -28,7 +28,9 @@ POLICY_YEAR = 2030  # Use 2030 to ensure cap is active (cap starts 2029-04-06)
 # OBR static estimate: £4.9 billion
 # OBR post-behavioural: £4.7 billion
 EXPECTED_REVENUE_BILLION = 3.3
-TOLERANCE_BILLION = 1.5  # Allow reasonable tolerance for year/methodology differences
+TOLERANCE_BILLION = (
+    1.5  # Allow reasonable tolerance for year/methodology differences
+)
 
 
 def _create_no_cap_baseline():
@@ -244,7 +246,9 @@ def test_employer_haircut_applied(reform_simulation):
     # Redirected should be ~87% of raw excess (13% haircut)
     expected_redirected = raw_excess * 0.87
     ratio = (
-        redirected_total / expected_redirected if expected_redirected > 0 else 0
+        redirected_total / expected_redirected
+        if expected_redirected > 0
+        else 0
     )
 
     assert 0.95 < ratio < 1.05, (
