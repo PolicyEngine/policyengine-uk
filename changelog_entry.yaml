@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Fix fuel duty rates to use OBR November 2025 RPI forecasts.
