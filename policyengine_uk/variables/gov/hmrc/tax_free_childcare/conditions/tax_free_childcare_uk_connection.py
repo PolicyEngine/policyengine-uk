@@ -26,7 +26,9 @@ class tax_free_childcare_uk_connection(Variable):
 
         # Immigration statuses that are subject to immigration control
         # and NOT exempt under Regulation 8
-        subject_to_control_not_exempt = immigration_status == statuses.VISA_HOLDER
+        subject_to_control_not_exempt = (
+            immigration_status == statuses.VISA_HOLDER
+        )
 
         # Regulation 8 exempt statuses (not subject to immigration control
         # exclusion): refugee, humanitarian protection, discretionary leave
