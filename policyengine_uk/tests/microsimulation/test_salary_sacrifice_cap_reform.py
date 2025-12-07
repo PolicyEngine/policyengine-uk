@@ -278,7 +278,9 @@ def test_broad_base_haircut_affects_all_workers(reform_simulation):
     workers_with_employment = (has_employment * weights).sum()
     workers_with_haircut = (has_haircut * weights).sum()
 
-    print(f"\nWorkers with employment income: {workers_with_employment/1e6:.1f}m")
+    print(
+        f"\nWorkers with employment income: {workers_with_employment/1e6:.1f}m"
+    )
     print(f"Workers with haircut: {workers_with_haircut/1e6:.1f}m")
 
     # Most workers with employment income should have a haircut
