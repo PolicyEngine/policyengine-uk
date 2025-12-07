@@ -98,7 +98,7 @@
   period: 2025
   absolute_error_margin: 1
   input:
-    employment_income: 50_000
+    employment_income_before_lsr: 50_000
     pension_contributions_via_salary_sacrifice: 0
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0.0016
