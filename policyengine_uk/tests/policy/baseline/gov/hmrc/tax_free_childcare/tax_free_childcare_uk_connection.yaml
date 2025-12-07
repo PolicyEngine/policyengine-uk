@@ -1,0 +1,82 @@
+# Tests for tax_free_childcare_uk_connection
+# (The Childcare Payments (Eligibility) Regulations 2015, regulations 7-8)
+
+- name: UK citizen ordinarily resident - eligible
+  period: 2025
+  input:
+    is_in_uk: true
+    immigration_status: CITIZEN
+  output:
+    tax_free_childcare_uk_connection: true
+
+- name: UK citizen not ordinarily resident - ineligible
+  period: 2025
+  input:
+    is_in_uk: false
+    immigration_status: CITIZEN
+  output:
+    tax_free_childcare_uk_connection: false
+
+- name: Settled status ordinarily resident - eligible
+  period: 2025
+  input:
+    is_in_uk: true
+    immigration_status: SETTLED
+  output:
+    tax_free_childcare_uk_connection: true
+
+- name: Pre-settled status ordinarily resident - eligible
+  period: 2025
+  input:
+    is_in_uk: true
+    immigration_status: PRE_SETTLED
+  output:
+    tax_free_childcare_uk_connection: true
+
+- name: Refugee ordinarily resident - eligible (Regulation 8 exempt)
+  period: 2025
+  input:
+    is_in_uk: true
+    immigration_status: REFUGEE
+  output:
+    tax_free_childcare_uk_connection: true
+
+- name: Humanitarian protection ordinarily resident - eligible (Regulation 8 exempt)
+  period: 2025
+  input:
+    is_in_uk: true
+    immigration_status: HUMANITARIAN_PROTECTION
+  output:
+    tax_free_childcare_uk_connection: true
+
+- name: Discretionary leave ordinarily resident - eligible (Regulation 8 exempt)
+  period: 2025
+  input:
+    is_in_uk: true
+    immigration_status: DISCRETIONARY_LEAVE
+  output:
+    tax_free_childcare_uk_connection: true
+
+- name: Visa holder ordinarily resident - ineligible (subject to immigration control)
+  period: 2025
+  input:
+    is_in_uk: true
+    immigration_status: VISA_HOLDER
+  output:
+    tax_free_childcare_uk_connection: false
+
+- name: Visa holder not ordinarily resident - ineligible
+  period: 2025
+  input:
+    is_in_uk: false
+    immigration_status: VISA_HOLDER
+  output:
+    tax_free_childcare_uk_connection: false
+
+- name: Refugee not ordinarily resident - ineligible
+  period: 2025
+  input:
+    is_in_uk: false
+    immigration_status: REFUGEE
+  output:
+    tax_free_childcare_uk_connection: false

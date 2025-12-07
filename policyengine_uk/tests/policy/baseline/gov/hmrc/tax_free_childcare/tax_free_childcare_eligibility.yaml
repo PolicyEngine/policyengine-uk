@@ -6,6 +6,7 @@
     tax_free_childcare_meets_income_requirements: true
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: true
+    tax_free_childcare_uk_connection: true
   output:
     tax_free_childcare_eligible: true
 
@@ -16,6 +17,7 @@
     tax_free_childcare_meets_income_requirements: true
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: true
+    tax_free_childcare_uk_connection: true
   output:
     tax_free_childcare_eligible: false
 
@@ -26,6 +28,7 @@
     tax_free_childcare_meets_income_requirements: false
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: true
+    tax_free_childcare_uk_connection: true
     is_parent: true
   output:
     tax_free_childcare_eligible: false
@@ -37,6 +40,19 @@
     tax_free_childcare_meets_income_requirements: true
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: false
+    tax_free_childcare_uk_connection: true
+  output:
+    tax_free_childcare_eligible: false
+
+- name: Fails UK connection condition only
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    tax_free_childcare_meets_income_requirements: true
+    tax_free_childcare_program_eligible: true
+    tax_free_childcare_work_condition: true
+    tax_free_childcare_uk_connection: false
+    is_parent: true
   output:
     tax_free_childcare_eligible: false
 
@@ -47,6 +63,7 @@
     tax_free_childcare_meets_income_requirements: false
     tax_free_childcare_program_eligible: false
     tax_free_childcare_work_condition: false
+    tax_free_childcare_uk_connection: false
   output:
     tax_free_childcare_eligible: false
 

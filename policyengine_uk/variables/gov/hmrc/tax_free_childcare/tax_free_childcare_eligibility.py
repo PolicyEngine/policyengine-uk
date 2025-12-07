@@ -26,11 +26,19 @@ class tax_free_childcare_eligible(Variable):
 
         work_eligible = benunit("tax_free_childcare_work_condition", period)
 
+        # UK connection requirement: all parents must meet UK connection
+        # (The Childcare Payments (Eligibility) Regulations 2015, regs 7-8)
+        meets_uk_connection = benunit.all(
+            benunit.members("tax_free_childcare_uk_connection", period)
+            | ~benunit.members("is_parent", period)
+        )
+
         return np.logical_and.reduce(
             [
                 meets_age_condition,
                 meets_income_condition,
                 childcare_eligible,
                 work_eligible,
+                meets_uk_connection,
             ]
         )
