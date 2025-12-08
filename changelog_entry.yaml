@@ -1,4 +1,6 @@
 - bump: patch
   changes:
     fixed:
-      - Add missing 2025-26 Universal Credit non-dependent deduction amount (£93.02)
+      - Correct 2025-26 benefit cap rates (were incorrectly showing uprated values; benefit cap has been frozen since 2023)
+      - Update UC parameter legislation references to point to exact regulation sections on legislation.gov.uk
+      - Add missing 2025-26 Universal Credit non-dependent deduction amount (GBP 93.02)
