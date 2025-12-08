@@ -16,7 +16,5 @@ metadata:
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference:
-    - title: The Universal Credit Regulations 2013 reg. 36
-      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
-    - title: Benefits Uprating 2024/25 | Commons Library Briefing
-      href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+    - title: The Universal Credit Regulations 2013 reg. 27 (LCWRA element), amounts in reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36

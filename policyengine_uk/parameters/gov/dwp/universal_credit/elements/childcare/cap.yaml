@@ -14,9 +14,5 @@ metadata:
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi
   reference:
-    - title: The Universal Credit Regulations 2013 reg. 36.
-      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
-    - title: Costing Document - Spring Budget 2023
-      href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1142824/Costing_Document_-_Spring_Budget_2023.pdf#page=9
-    - title: Guidance on Universal Credit childcare costs - 2025
-      href: https://www.gov.uk/guidance/universal-credit-childcare-costs
+    - title: The Universal Credit Regulations 2013 reg. 31 (childcare costs element), amounts in reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36
