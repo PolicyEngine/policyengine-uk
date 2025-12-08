@@ -24,10 +24,10 @@ class BRMA_LHA_rate(Variable):
         )
         category = benunit("LHA_category", period).decode_to_str()
 
-        from policyengine_uk.parameters.gov.dwp.lha import lha_list_of_rents
+        from policyengine_uk.parameters.gov.dwp.LHA import lha_list_of_rents
 
         parameters = benunit.simulation.tax_benefit_system.parameters
-        lha = parameters.gov.dwp.lha
+        lha = parameters.gov.dwp.LHA
 
         # We first need to know what time period to collect rents from. If LHA is frozen, we need to look earlier
         # than the current time period.
@@ -51,13 +51,18 @@ class BRMA_LHA_rate(Variable):
             ["brma", "lha_category"]
         ).weekly_rent.quantile(percentile)
 
+        # Convert MultiIndex Series to DataFrame for merge
+        lha_rates_df = lha_rates.reset_index()
+        lha_rates_df.columns = ["brma", "lha_category", "weekly_rent"]
+
         lha_lookup_table = pd.DataFrame(
             {
                 "brma": brma,
                 "lha_category": category,
             }
         )
-        lha_lookup_table["weekly_rent"] = lha_lookup_table.apply(
-            lambda x: lha_rates.loc[x.brma, x.lha_category], axis=1
+        # Use merge instead of row-by-row apply for vectorised lookup
+        lha_lookup_table = lha_lookup_table.merge(
+            lha_rates_df, on=["brma", "lha_category"], how="left"
         )
         return lha_lookup_table.weekly_rent.values * 52

@@ -9,7 +9,6 @@ class targeted_childcare_entitlement_eligible(Variable):
     defined_for = "would_claim_targeted_childcare"
 
     def formula(benunit, period, parameters):
-
         # Check if household is in England
         country = benunit.household("country", period)
         in_england = country == country.possible_values.ENGLAND

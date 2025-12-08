@@ -69,7 +69,7 @@ def calculate_dependency_contributions(
         if "weight" in variable:
             continue
         sim.get_holder(variable_name).delete_arrays(year)
-        value_type = system.get_variable(variable).value_type
+        value_type = sim.tax_benefit_system.get_variable(variable).value_type
         current_values = sim.calculate(variable, year)
         if value_type == float:
             sim.set_input(variable, year, (current_values * 0).astype(float))
@@ -194,7 +194,6 @@ from IPython.core.display import HTML, display_html
 
 
 def format_fig(fig):
-
     # PolicyEngine style (roboto mono for numbers, roboto serif for text), dark grey for negative, blue for positive, spacing, etc.
 
     # Set layout properties for a clean, professional look
@@ -258,6 +257,3 @@ def format_fig(fig):
     fig.update_layout(margin=dict(l=100, r=100, t=100, b=100))
 
     return fig
-
-
-add_fonts()

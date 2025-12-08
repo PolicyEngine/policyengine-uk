@@ -45,11 +45,12 @@ class winter_fuel_allowance(Variable):
         )
 
         meets_mtb_requirement = (
-            on_mtb | ~wfp.eligibility.require_benefits | meets_income_passport
+            on_mtb
+            | (not wfp.eligibility.require_benefits)
+            | meets_income_passport
         )
-        meets_spa_requirement = (
-            household.any(is_SP_age)
-            | ~wfp.eligibility.state_pension_age_requirement
+        meets_spa_requirement = household.any(is_SP_age) | (
+            not wfp.eligibility.state_pension_age_requirement
         )
         meets_higher_age_requirement = household.any(
             age >= wfp.eligibility.higher_age_requirement

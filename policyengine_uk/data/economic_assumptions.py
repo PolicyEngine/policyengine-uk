@@ -1,14 +1,37 @@
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
-from policyengine_uk.system import system
+
 import yaml
 from policyengine_core.parameters import ParameterNode
 from pathlib import Path
 import numpy as np
+import logging
+
+
+def extend_single_year_dataset(
+    dataset: UKSingleYearDataset,
+    tax_benefit_system_parameters: ParameterNode,
+    end_year: int = 2030,
+) -> UKMultiYearDataset:
+    # Extend years and uprate
+    start_year = int(dataset.time_period)
+    datasets = [dataset]
+    for year in range(start_year, end_year + 1):
+        next_year = dataset.copy()
+        next_year.time_period = str(year)
+        datasets.append(next_year)
+    multi_year_dataset = UKMultiYearDataset(datasets=datasets)
+    return apply_uprating(
+        multi_year_dataset,
+        tax_benefit_system_parameters=tax_benefit_system_parameters,
+    )
 
 
 def apply_uprating(
     dataset: UKMultiYearDataset,
+    tax_benefit_system_parameters: ParameterNode = None,
 ):
+    from policyengine_uk.system import system
+
     # Apply uprating to the dataset.
     dataset = dataset.copy()
 
@@ -20,7 +43,9 @@ def apply_uprating(
             continue  # Don't uprate the first year
         current_year = dataset.datasets[year]
         prev_year = dataset.datasets[year - 1]
-        apply_single_year_uprating(current_year, prev_year, system.parameters)
+        apply_single_year_uprating(
+            current_year, prev_year, tax_benefit_system_parameters
+        )
 
     return dataset
 
@@ -130,9 +155,10 @@ def uprate_rent(
     social_rent_growth = growth.obr.social_rent(year)
 
     if year < 2022:
-        raise ValueError(
-            "Rent uprating is not supported for years before 2022."
+        logging.warning(
+            "Rent uprating is not supported for years before 2022. Not applying uprating."
         )
+        pass
     elif year < 2025:
         # We have regional growth rates for private rent.
         regional_growth_rate = growth.ons.private_rental_prices(year)[

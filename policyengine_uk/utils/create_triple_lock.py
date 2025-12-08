@@ -20,5 +20,5 @@ for year in range(START_YEAR, 2029):
     triple_lock_increase = max(earnings_increase, cpi_increase, 1.025)
     lock_value *= triple_lock_increase
     print(
-        f"  {year}-01-01: {lock_value:.3f} # Earnings increase FY{year - 1}/{year - 2} = {earnings_increase-1:.1%}, CPI increase FY{year - 1}/{year - 2} = {cpi_increase-1:.1%}"
+        f"  {year}-01-01: {lock_value:.3f} # Earnings increase FY{year - 1}/{year - 2} = {earnings_increase - 1:.1%}, CPI increase FY{year - 1}/{year - 2} = {cpi_increase - 1:.1%}"
     )
