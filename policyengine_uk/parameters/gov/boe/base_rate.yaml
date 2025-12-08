@@ -1,0 +1,34 @@
+description: Bank of England base rate
+metadata:
+  label: BoE base rate
+  unit: /1
+  period: year
+  reference:
+    - title: Bank of England - Bank Rate history
+      href: https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp
+    - title: OBR EFO November 2025 - Market expectations for Bank Rate
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+  documentation: |
+    The Bank of England base rate (Bank Rate).
+    Used in student loan interest calculations for Plans 1 and 4,
+    which charge the lower of RPI or (BoE base rate + 1%).
+
+    Historical values are from Bank of England data.
+    Forecast values (2025+) are based on OBR November 2025 EFO market
+    expectations: Bank Rate expected to fall from 4% to 3.6% by end-2026,
+    then gradually return to 4% by end-2030.
+
+# Historical: Bank of England outturn
+# Forecast: OBR November 2025 EFO market expectations
+values:
+  2020-01-01: 0.001  # 0.1% from March 2020
+  2021-01-01: 0.001  # 0.1% throughout
+  2022-01-01: 0.01   # Rising from 0.25% to 3.5%
+  2023-01-01: 0.0425 # Rising from 3.5% to 5.25%
+  2024-01-01: 0.0525 # 5.25% until August, then 5%
+  2025-01-01: 0.04   # 4% as of Nov 2025
+  2026-01-01: 0.036  # OBR: falls to 3.6% by end-2026
+  2027-01-01: 0.037  # OBR: gradual rise back
+  2028-01-01: 0.038  # OBR: average ~3.8% 2025-2029
+  2029-01-01: 0.039  # OBR: rising toward 4%
+  2030-01-01: 0.04   # OBR: returns to 4% by end-2030

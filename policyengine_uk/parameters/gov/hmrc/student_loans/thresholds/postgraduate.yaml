@@ -1,0 +1,21 @@
+description: Postgraduate loan repayment threshold (annual). Applies to postgraduate master's and doctoral loans.
+values:
+  2019-04-06: 21_000
+  2020-04-06: 21_000
+  2021-04-06: 21_000
+  2022-04-06: 21_000
+  2023-04-06: 21_000
+  2024-04-06:
+    value: 21_000
+    metadata:
+      reference:
+        - title: Student loan thresholds for April 2024
+          href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2024-to-2025-academic-year
+metadata:
+  label: Postgraduate loan threshold
+  unit: currency-GBP
+  period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
+  reference:
+    - title: GOV.UK Student loan repayment thresholds
+      href: https://www.gov.uk/repaying-your-student-loan/what-you-pay

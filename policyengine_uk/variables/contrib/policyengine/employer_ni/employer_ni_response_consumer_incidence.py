@@ -36,7 +36,7 @@ class employer_ni_response_consumer_incidence(Variable):
         value = (
             amount_paid_by_employers
             * share_of_total_consumption
-            * consumer_incidence
+            * emp_ni.consumer_incidence
         )
 
         if total_consumption == 0:

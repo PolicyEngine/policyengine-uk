@@ -16,10 +16,14 @@ class household_net_income(Variable):
     ]
     subtracts = [
         "household_tax",
+        "pension_contributions",
     ]
 
     def formula(household, period, parameters):
         market_income = household("household_market_income", period)
         benefits = household("household_benefits", period)
         tax = household("household_tax", period)
-        return np.round(market_income + benefits - tax)
+        pension_contributions = add(
+            household, period, ["pension_contributions"]
+        )
+        return np.round(market_income + benefits - tax - pension_contributions)

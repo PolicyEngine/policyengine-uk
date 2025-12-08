@@ -1,6 +1,6 @@
 description: Total spending by the Department for Education (DfE) on state education services (£ billions). Includes both Resource Departmental Expenditure Limit and Capital Departmental Expenditure Limit, but excludes depreciation.
 values:
-  2023-01-01: 88.0
+  2023-01-01: 88
   2024-01-01: 94.9
   2025-01-01: 100.9
 metadata:

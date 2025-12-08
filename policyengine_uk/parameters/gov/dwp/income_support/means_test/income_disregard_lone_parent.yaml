@@ -1,6 +1,6 @@
 description: Threshold in income for a lone parent, above which the Income Support amount is reduced
 values:
-  2015-04-01: 20.00
+  2015-04-01: 20
 metadata:
   period: week
   label: Income Support income disregard (lone parent)

@@ -38,7 +38,7 @@ def create_economic_assumption_indices(
             start_year = int(descendant.values_list[-1].instant_str[:4])
             values = {start_year: 1.0}
 
-            for year in range(start_year + 1, 2030):
+            for year in range(start_year + 1, 2040):
                 yoy_growth = descendant(year)
                 indices_value = round(
                     values[year - 1] * (1 + yoy_growth),

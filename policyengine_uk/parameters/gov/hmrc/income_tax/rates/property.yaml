@@ -1,0 +1,46 @@
+description: Property income tax rates. From April 2027, property income is taxed at rates 2pp higher than the standard UK rates.
+metadata:
+  label: Property income tax rates
+  unit: /1
+  reference:
+    - title: OBR Economic and Fiscal Outlook November 2025
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+basic:
+  description: The basic rate of tax on property income.
+  metadata:
+    label: Property basic rate
+    unit: /1
+  values:
+    2015-04-06: 0.20
+    2027-04-06:
+      value: 0.22
+      metadata:
+        reference:
+          - title: OBR Economic and Fiscal Outlook November 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+higher:
+  description: The higher rate of tax on property income.
+  metadata:
+    label: Property higher rate
+    unit: /1
+  values:
+    2015-04-06: 0.40
+    2027-04-06:
+      value: 0.42
+      metadata:
+        reference:
+          - title: OBR Economic and Fiscal Outlook November 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+additional:
+  description: The additional rate of tax on property income.
+  metadata:
+    label: Property additional rate
+    unit: /1
+  values:
+    2015-04-06: 0.45
+    2027-04-06:
+      value: 0.47
+      metadata:
+        reference:
+          - title: OBR Economic and Fiscal Outlook November 2025
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/

@@ -15,6 +15,12 @@ brackets:
             reference:
               - title: Autumn Budget and Spending Review 2022
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+        2026-04-06:
+          value: 0.1075
+          metadata:
+            reference:
+              - title: OBR Economic and Fiscal Outlook November 2025
+                href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
     threshold:
       values:
         2015-04-01: 0
@@ -38,6 +44,12 @@ brackets:
             reference:
               - title: Autumn Budget and Spending Review 2022
                 href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+        2026-04-06:
+          value: 0.3575
+          metadata:
+            reference:
+              - title: OBR Economic and Fiscal Outlook November 2025
+                href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
     threshold:
       metadata:
         name: dividend_higher_threshold

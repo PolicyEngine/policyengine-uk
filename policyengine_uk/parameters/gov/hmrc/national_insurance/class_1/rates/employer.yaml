@@ -10,8 +10,8 @@ values:
     reference:
       - title: National Insurance rates and thresholds
         href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
-  2025-04-06: 
+  2025-01-01: 
     value: 0.15
     reference:
-      - title: National Insurance rates and letters
-        href: https://www.gov.uk/national-insurance-rates-letters
+      - title: National Insurance Contributions (Secondary Class 1 Contributions) Act 2025(1)
+        href: https://www.legislation.gov.uk/ukpga/2025/11/section/1
