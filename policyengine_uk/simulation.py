@@ -164,8 +164,10 @@ class Simulation(CoreSimulation):
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:
+            # Convert parameter name to lowercase for backwards compatibility
+            parameter_lowercase = parameter.lower()
             p: Parameter = self.tax_benefit_system.parameters.get_child(
-                parameter
+                parameter_lowercase
             )
             if isinstance(changes[parameter], dict):
                 # Time-period specific changes
