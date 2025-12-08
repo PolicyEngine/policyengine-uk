@@ -2086,3 +2086,9 @@
     fixed:
     - Fix fuel duty rates to use OBR November 2025 RPI forecasts.
   date: 2025-12-05 16:29:26
+- bump: patch
+  changes:
+    added:
+    - Salary sacrifice pension cap reform (GBP 2,000 cap from April 2029) with broad-base
+      employer response modeling.
+  date: 2025-12-08 10:54:42
