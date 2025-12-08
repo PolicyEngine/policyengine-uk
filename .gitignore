@@ -55,3 +55,31 @@ policyengine_uk/calibration/*.h5
 *.ipynb
 !docs/**/*.ipynb
 !uprating_growth_factors.csv
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+env.bak/
+venv.bak/
+.env*
+
+# Coverage / testing
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Docs
+**/_build/

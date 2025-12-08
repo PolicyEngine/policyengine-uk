@@ -14,4 +14,16 @@ class is_disabled_for_benefits(Variable):
             "dla",
             "pip",
         ]
-        return add(person, period, QUALIFYING_BENEFITS) > 0
+
+        p_claims_lcwra_if_on_pip_dla = 0.8
+        p_claims_lcwra_if_not_on_pip_dla = 0.13
+
+        random_seed = random(person)
+
+        on_qual_benefits = add(person, period, QUALIFYING_BENEFITS) > 0
+
+        return np.where(
+            on_qual_benefits,
+            random_seed < p_claims_lcwra_if_on_pip_dla,
+            random_seed < p_claims_lcwra_if_not_on_pip_dla,
+        )

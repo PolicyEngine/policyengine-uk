@@ -2,20 +2,25 @@ industry:
   description: Carbon dioxide emission from industry (combustion,process,off road construction and energy supply with respect to industry)
   values:
     2010-01-01: 101_000_000
-    2011-01-01: 93_000_000
-    2012-01-01: 91_000_000
-    2013-01-01: 94_000_000
-    2014-01-01: 93_000_000
-    2015-01-01: 91_000_000
-    2016-01-01: 85_000_000
-    2017-01-01: 87_000_000
-    2018-01-01: 84_000_000
-    2019-01-01: 76_000_000
+    2011-01-01: 95_000_000
+    2012-01-01: 94_000_000
+    2013-01-01: 91_000_000
+    2014-01-01: 86_000_000
+    2015-01-01: 82_000_000
+    2016-01-01: 80_000_000
+    2017-01-01: 79_000_000
+    2018-01-01: 77_000_000
+    2019-01-01: 74_000_000
+    2020-01-01: 69_000_000
+    2021-01-01: 73_000_000
+    2022-01-01: 71_000_000
+    2023-01-01: 65_000_000
+    2024-01-01: 66_000_000
   metadata:
     unit: tonnes CO2
     reference:
-      - title: BEIS 2019 Updated Energy & Emissions Projections
-        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 land_use:
   description: Carbon dioxide emission from LULUCF
   values:
@@ -28,12 +33,17 @@ land_use:
     2016-01-01: -11_000_000
     2017-01-01: -12_000_000
     2018-01-01: -12_000_000
-    2019-01-01: -12_000_000
+    2019-01-01: -13_000_000
+    2020-01-01: -13_000_000
+    2021-01-01: -13_000_000
+    2022-01-01: -13_000_000
+    2023-01-01: -14_000_000
+    2024-01-01: -15_000_000
   metadata:
     unit: tonnes CO2
     reference:
-      - title: BEIS 2019 Updated Energy & Emissions Projections
-        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 refineries:
   description: Carbon dioxide emission from refineries
   values:
@@ -46,12 +56,17 @@ refineries:
     2016-01-01: 14_000_000
     2017-01-01: 14_000_000
     2018-01-01: 13_000_000
-    2019-01-01: 12_000_000
+    2019-01-01: 13_000_000
+    2020-01-01: 12_000_000
+    2021-01-01: 14_000_000
+    2022-01-01: 14_000_000
+    2023-01-01: 14_000_000
+    2024-01-01: 15_000_000
   metadata:
     unit: tonnes CO2
     reference:
-      - title: BEIS 2019 Updated Energy & Emissions Projections
-        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 residential:
   description: Carbon dioxide emission from residential usage
   values:
@@ -64,12 +79,17 @@ residential:
     2016-01-01: 66_000_000
     2017-01-01: 64_000_000
     2018-01-01: 66_000_000
-    2019-01-01: 64_000_000
+    2019-01-01: 65_000_000
+    2020-01-01: 67_000_000
+    2021-01-01: 69_000_000
+    2022-01-01: 61_000_000
+    2023-01-01: 66_000_000
+    2024-01-01: 62_000_000
   metadata:
     unit: tonnes CO2
     reference:
-      - title: BEIS 2019 Updated Energy & Emissions Projections
-        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 services:
   description: Carbon dioxide emission from services
   values:
@@ -80,47 +100,62 @@ services:
     2014-01-01: 24_000_000
     2015-01-01: 25_000_000
     2016-01-01: 25_000_000
-    2017-01-01: 25_000_000
-    2018-01-01: 25_000_000
-    2019-01-01: 31_000_000
+    2017-01-01: 26_000_000
+    2018-01-01: 26_000_000
+    2019-01-01: 26_000_000
+    2020-01-01: 27_000_000
+    2021-01-01: 30_000_000
+    2022-01-01: 28_000_000
+    2023-01-01: 27_000_000
+    2024-01-01: 26_000_000
   metadata:
     unit: tonnes CO2
     reference:
-      - title: BEIS 2019 Updated Energy & Emissions Projections
-        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 roads:
   description: Carbon dioxide emission from road transport
   values:
     2010-01-01: 110_000_000
     2011-01-01: 108_000_000
-    2012-01-01: 108_000_000
+    2012-01-01: 107_000_000
     2013-01-01: 107_000_000
     2014-01-01: 109_000_000
-    2015-01-01: 110_000_000
+    2015-01-01: 111_000_000
     2016-01-01: 113_000_000
-    2017-01-01: 113_000_000
-    2018-01-01: 112_000_000
-    2019-01-01: 107_000_000
+    2017-01-01: 114_000_000
+    2018-01-01: 113_000_000
+    2019-01-01: 113_000_000
+    2020-01-01: 93_000_000
+    2021-01-01: 101_000_000
+    2022-01-01: 105_000_000
+    2023-01-01: 104_000_000
+    2024-01-01: 102_000_000
   metadata:
     unit: tonnes CO2
     reference:
-      - title: BEIS 2019 Updated Energy & Emissions Projections
-        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050
 other_transport:
   description: Carbon dioxide emission from other transport (civil aviation,domestic cruise and landing,military aviation & shipping,railway)
   values:
     2010-01-01: 14_000_000
     2011-01-01: 13_000_000
-    2012-01-01: 13_000_000
+    2012-01-01: 12_000_000
     2013-01-01: 12_000_000
-    2014-01-01: 12_000_000
-    2015-01-01: 12_000_000
-    2016-01-01: 12_000_000
-    2017-01-01: 12_000_000
-    2018-01-01: 11_000_000
-    2019-01-01: 12_000_000
+    2014-01-01: 11_000_000
+    2015-01-01: 11_000_000
+    2016-01-01: 11_000_000
+    2017-01-01: 11_000_000
+    2018-01-01: 10_000_000
+    2019-01-01: 10_000_000
+    2020-01-01: 6_000_000
+    2021-01-01: 8_000_000
+    2022-01-01: 9_000_000
+    2023-01-01: 9_000_000
+    2024-01-01: 9_000_000
   metadata:
     unit: tonnes CO2
     reference:
-      - title: BEIS 2019 Updated Energy & Emissions Projections
-        href: https://www.gov.uk/government/publications/updated-energy-and-emissions-projections-2019
+      - title: "Energy and emissions projections: 2023 to 2050"
+        href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050

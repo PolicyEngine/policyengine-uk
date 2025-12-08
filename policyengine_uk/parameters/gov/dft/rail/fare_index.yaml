@@ -1,0 +1,32 @@
+description: Cumulative index of regulated rail fares under current law. Base year 2020 = 1.0. Reflects the Autumn Budget 2025 fare freeze in 2026.
+values:
+  # Base year
+  2020-01-01: 1.000
+  # 2021: +1.0% (COVID-suppressed)
+  2021-01-01: 1.010
+  # 2022: +3.8%
+  2022-01-01: 1.048
+  # 2023: +5.9%
+  2023-01-01: 1.110
+  # 2024: +4.9%
+  2024-01-01: 1.165
+  # 2025: +4.5% (March 2025 actual)
+  2025-01-01: 1.217
+  # 2026: FROZEN (Autumn Budget 2025 policy)
+  2026-01-01: 1.217
+  # 2027: +4.2% (projected - OBR RPI ~3.2% + 1%, from frozen base)
+  2027-01-01: 1.268
+  # 2028: +3.9% (projected - OBR RPI ~2.9% + 1%)
+  2028-01-01: 1.318
+  # 2029: +3.9% (projected - OBR RPI ~2.9% + 1%)
+  2029-01-01: 1.369
+metadata:
+  unit: /1
+  label: Regulated rail fare index (current law)
+  reference:
+    - title: GOV.UK Rail Fares Freeze Announcement - Autumn Budget 2025
+      href: https://www.gov.uk/government/news/rail-fares-freeze-autumn-budget-2025
+    - title: OBR Economic and Fiscal Outlook March 2025
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+    - title: Network Rail - How train fares are set
+      href: https://www.networkrail.co.uk/stories/how-train-fares-set/

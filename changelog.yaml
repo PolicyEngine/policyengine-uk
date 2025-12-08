@@ -1634,3 +1634,466 @@
     fixed:
     - Lag CPI correctly for benefit uprating.
   date: 2025-07-14 15:03:33
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in
+      the baseline.
+  date: 2025-07-15 08:50:48
+- bump: minor
+  changes:
+    added:
+    - Codecov coverage.
+    - Expanded .gitignore.
+  date: 2025-07-15 11:58:59
+- bump: patch
+  changes:
+    fixed:
+    - Improved water bills projections.
+  date: 2025-07-16 11:08:29
+- bump: patch
+  changes:
+    fixed:
+    - Use outturn data for council tax growth in England, Scotland, and Wales for
+      2023-2025.
+  date: 2025-07-17 10:41:08
+- bump: patch
+  changes:
+    fixed:
+    - NI domestic rates taken as reported.
+  date: 2025-07-17 12:45:26
+- bump: minor
+  changes:
+    added:
+    - UKMultiYearDataset class to handle multiple fiscal years.
+    - Uprating of datasets using the `uprate` method.
+  date: 2025-07-21 13:23:31
+- bump: patch
+  changes:
+    fixed:
+    - Bug in handling downloads of UKMultiYearDataset from HuggingFace.
+  date: 2025-07-21 15:37:49
+- bump: patch
+  changes:
+    fixed:
+    - Bug in uprating.
+  date: 2025-07-22 09:37:07
+- bump: minor
+  changes:
+    changed:
+    - Standardize decimals in parameters.
+  date: 2025-07-22 19:49:35
+- bump: patch
+  changes:
+    changed:
+    - Update microdf_python dependency to >=1.0.0.
+  date: 2025-07-22 20:55:35
+- bump: patch
+  changes:
+    fixed:
+    - debug LHA lowercase
+  date: 2025-07-24 10:30:43
+- bump: patch
+  changes:
+    fixed:
+    - change LHA param name
+  date: 2025-07-24 13:53:51
+- bump: patch
+  changes:
+    fixed:
+    - Parameterize age 35 threshold in LHA shared accommodation rules
+  date: 2025-07-24 14:41:02
+- bump: minor
+  changes:
+    changed:
+    - Add after housing costs deflator
+  date: 2025-07-25 08:57:23
+- bump: minor
+  changes:
+    added:
+    - Scenario class for reforms.
+    - Documentation of Scenario and Simulation.
+    - Standardisation of uprating behaviour.
+  date: 2025-07-26 11:31:02
+- bump: patch
+  changes:
+    changed:
+    - Add Python 3.13 support and update CI workflows
+    - Updated policyengine-core dependency to >=3.19.0 for Python 3.13 support
+    - Updated GitHub Actions to latest versions (checkout@v4, setup-python@v5) for
+      Python 3.13 compatibility
+    - Set all workflows to use Python 3.13
+    removed:
+    - Removed unused tables dependency that was blocking Python 3.13 compatibility
+  date: 2025-07-26 14:10:57
+- bump: patch
+  changes:
+    added:
+    - Add pydantic dependency to fix missing import in scenario utilities
+  date: 2025-07-26 20:54:03
+- bump: patch
+  changes:
+    changed:
+    - Separated out system.py to avoid bloat.
+  date: 2025-07-28 10:01:47
+- bump: patch
+  changes:
+    fixed:
+    - WFP reforms active.
+    - Growthfactors extended to 2040.
+  date: 2025-07-28 12:35:29
+- bump: patch
+  changes:
+    fixed:
+    - Minor missing variable attributes.
+  date: 2025-07-28 22:20:17
+- bump: minor
+  changes:
+    added:
+    - UC rebalancing reforms.
+  date: 2025-07-29 14:15:32
+- bump: patch
+  changes:
+    changed:
+    - HBAI benefits included at top level.
+  date: 2025-07-29 15:40:04
+- bump: minor
+  changes:
+    added:
+    - Docs upgraded to jupyter book 2.
+    - Model baseline page added.
+    - Capital gains tax baseline updated.
+  date: 2025-07-30 14:17:20
+- bump: patch
+  changes:
+    fixed:
+    - Bug caused by not resetting parameter caches.
+  date: 2025-07-31 13:39:16
+- bump: patch
+  changes:
+    fixed:
+    - Bug in NI rates.
+  date: 2025-08-01 09:00:11
+- bump: patch
+  changes:
+    fixed:
+    - Moved rent uprating to warning from error if before 2022.
+  date: 2025-08-04 12:54:43
+- bump: patch
+  changes:
+    changed:
+    - Dropped direct jupyter book dependency.
+  date: 2025-08-04 14:23:45
+- bump: patch
+  changes:
+    added:
+    - Utility function for comparing simulations added to `policyengine_uk.utils.compare`.
+  date: 2025-08-08 10:46:25
+- bump: minor
+  changes:
+    changed:
+    - Long-term OBR economic growfactors for 2030-10 and onwards.
+  date: 2025-08-08 11:34:55
+- bump: patch
+  changes:
+    fixed:
+    - Forecast window extended to 2030-31.
+  date: 2025-08-08 11:42:38
+- bump: patch
+  changes:
+    changed:
+    - Updated script to open automated API update PRs
+  date: 2025-08-08 15:09:27
+- bump: patch
+  changes:
+    fixed:
+    - Minor bug in comparison function.
+  date: 2025-08-09 09:01:58
+- bump: minor
+  changes:
+    fixed:
+    - Dropped support for <3.13.
+  date: 2025-08-12 09:29:55
+- bump: patch
+  changes:
+    fixed:
+    - Bug in multi year datasets.
+  date: 2025-08-12 09:48:46
+- bump: patch
+  changes:
+    fixed:
+    - Moved `Scenario` in top-level import.
+  date: 2025-08-12 14:17:09
+- bump: patch
+  changes:
+    fixed:
+    - Scenario class now supports all Reform object types and maintains backwards
+      compatibility.
+  date: 2025-08-13 08:14:33
+- bump: patch
+  changes:
+    fixed:
+    - Issue causing capital gains elasticities to not take effect.
+  date: 2025-08-14 16:30:16
+- bump: minor
+  changes:
+    fixed:
+    - Fuel duty is 52.95p per litre until 2026 where the temporary 5p cut is reversed,
+      and then risen with RPI
+  date: 2025-08-27 20:32:42
+- bump: minor
+  changes:
+    fixed:
+    - Baseline simulation created before simulation modifier is applied.
+  date: 2025-08-28 13:08:00
+- bump: patch
+  changes:
+    fixed:
+    - Re-enabled employer NI dynamics.
+  date: 2025-08-29 10:32:06
+- bump: patch
+  changes:
+    fixed:
+    - Fix bug in capital/consumer incidence.
+  date: 2025-08-29 13:54:13
+- bump: patch
+  changes:
+    fixed:
+    - Bug causing some households to claim both CTC and UC.
+  date: 2025-09-01 09:09:46
+- bump: patch
+  changes:
+    fixed:
+    - Fix behavioral response calculations returning zero FTE impacts due to simulation
+      state corruption
+    - Fix NaN values in wage relative change calculations during labor supply responses
+    - Fix income effect calculations by properly handling household_net_income timing
+  date: 2025-09-01 13:02:52
+- bump: patch
+  changes:
+    fixed:
+    - Removed bug-causing high income tax change variable.
+  date: 2025-09-02 13:00:40
+- bump: minor
+  changes:
+    fixed:
+    - Add real_hbai_household_net_income_ahc variable for convenience.
+  date: 2025-09-03 09:15:47
+- bump: minor
+  changes:
+    fixed:
+    - Update reduced vat expenditure share from OBR
+  date: 2025-09-10 09:28:56
+- bump: minor
+  changes:
+    fixed:
+    - Bugs in the benefit cap exemption list.
+  date: 2025-09-24 12:24:39
+- bump: patch
+  changes:
+    fixed:
+    - Updated carbon emissions data to latest available figures
+  date: 2025-09-24 15:33:18
+- bump: minor
+  changes:
+    fixed:
+    - Bugs in the benefit cap exemption list.
+  date: 2025-09-25 09:22:41
+- bump: patch
+  changes:
+    fixed:
+    - Temporarily disabled OBR participation responses.
+  date: 2025-09-29 12:26:51
+- bump: minor
+  changes:
+    added:
+    - Dataset filter function to extract single households for analysis.
+    changed:
+    - Default target variable for labour supply calculations to HBAI household net
+      income.
+    - Default adult count for labour supply calculations to 2.
+    fixed:
+    - Labour supply response calculation issues by removing inappropriate clipping
+      of marginal rates.
+    - Potential bug in labour supply response variable initialization order.
+  date: 2025-09-30 14:40:31
+- bump: patch
+  changes:
+    fixed:
+    - Fixed randomness between runs caused by UC reform.
+  date: 2025-10-15 12:18:22
+- bump: patch
+  changes:
+    fixed:
+    - Fix bug where changes to economic assumption parameters would not change uprating
+      behaviour.
+  date: 2025-10-17 15:01:31
+- bump: minor
+  changes:
+    fixed:
+    - Bug in state pension formulae causing issues when using datasets with year !=
+      2023.
+  date: 2025-10-20 12:43:40
+- bump: patch
+  changes:
+    fixed:
+    - Bug fix in state pension scripts.
+  date: 2025-10-20 12:51:40
+- bump: patch
+  changes:
+    fixed:
+    - Bug fix for decomp analysis.
+  date: 2025-10-21 12:08:26
+- bump: patch
+  changes:
+    added:
+    - Scenario now supports `applied_before_data_load` flag to control when parameter
+      changes and simulation modifiers are applied relative to data loading.
+  date: 2025-10-22 10:03:42
+- bump: minor
+  changes:
+    added:
+    - Salary sacrifice pension cap policy modeling (2,000 GBP cap on NI-exempt contributions)
+  date: 2025-11-20 12:24:29
+- bump: patch
+  changes:
+    changed:
+    - Updated microsimulation test expected values to reflect salary sacrifice calculation
+      improvements.
+    fixed:
+    - Salary sacrifice returned to income now cannot be negative.
+    - Adjusted salary sacrifice pension contributions now cannot go below zero.
+  date: 2025-11-20 14:51:58
+- bump: minor
+  changes:
+    changed:
+    - Salary sacrifice pension contributions above the cap are now redirected to employee
+      pension contributions (which receive income tax relief but pay NI) instead of
+      returning only to regular employment income. This better reflects the behavioral
+      assumption that individuals prioritize retirement savings.
+  date: 2025-11-21 14:59:20
+- bump: patch
+  changes:
+    fixed:
+    - Correct OBR March 2025 economic projections to match detailed forecast tables
+  date: 2025-11-26 18:40:43
+- bump: minor
+  changes:
+    changed:
+    - Update economic projections to OBR November 2025 Economic and Fiscal Outlook
+      forecasts (CPI, RPI, CPIH, average earnings, house prices, rents, mortgage interest)
+  date: 2025-11-26 19:23:28
+- bump: minor
+  changes:
+    added:
+    - Implement November 2025 Autumn Budget income source tax rate increases. Dividends
+      +2pp basic/higher from April 2026, savings +2pp from April 2027, property +2pp
+      from April 2027.
+  date: 2025-11-27 09:29:34
+- bump: minor
+  changes:
+    added:
+    - November 2025 Autumn Budget parameter updates. Extends income tax threshold
+      freeze (personal allowance GBP 12,570, higher rate GBP 50,270, additional rate
+      GBP 125,140) and NICs secondary threshold freeze (GBP 96/week) to April 2031.
+      Updates fuel duty schedule with freeze until September 2026, staggered 5p cut
+      reversal, and RPI uprating from April 2027.
+  date: 2025-11-27 16:24:25
+- bump: minor
+  changes:
+    added:
+    - Add student loan repayment modelling with parameters for Plan 1, 2, 4, 5 and
+      postgraduate loans, including thresholds and repayment rates.
+  date: 2025-11-28 11:59:37
+- bump: patch
+  changes:
+    fixed:
+    - Update HH net income calculation.
+  date: 2025-11-28 13:48:04
+- bump: patch
+  changes:
+    fixed:
+    - Fix fuel duty rates to use calendar year averages instead of incorrectly selecting
+      first rate of each year in reform calculations. Updates 2026-2029 rates to weighted
+      averages (53.45p, 59.02p, 61.11p, 62.90p) with detailed documentation of actual
+      source values and calculation methodology.
+  date: 2025-11-28 14:58:06
+- bump: patch
+  changes:
+    added:
+    - "Add 2026 Plan 2 student loan interest rate thresholds (lower \xA329,385, upper\
+      \ \xA352,885) and freeze lower threshold 2027-2029 per Budget 2025"
+  date: 2025-12-01 03:34:34
+- bump: patch
+  changes:
+    changed:
+    - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
+  date: 2025-12-01 11:11:26
+- bump: minor
+  changes:
+    added:
+    - Add owns vehicle variable
+  date: 2025-12-02 09:19:36
+- bump: patch
+  changes:
+    added:
+    - Add upper interest threshold freeze for Plan 2 student loans (Budget 2025)
+  date: 2025-12-02 14:16:53
+- bump: minor
+  changes:
+    added:
+    - Added gift_aid_grossed_up variable that computes Gift Aid grossed up by basic
+      rate per ITA 2007 s.58.
+    - Added comprehensive Gift Aid tests covering basic rate relief, higher rate relief,
+      and PA taper interaction.
+    changed:
+    - Added legislation references (legislation.gov.uk) to gift_aid and personal_allowance
+      variables.
+    fixed:
+    - Fixed Personal Allowance taper calculation to deduct grossed-up Gift Aid from
+      ANI per ITA 2007 s.58. Previously, Gift Aid donations did not reduce ANI for
+      PA taper purposes, causing high earners (GBP 100k-125k) to receive less tax
+      relief than legally entitled.
+  date: 2025-12-02 16:24:40
+- bump: minor
+  changes:
+    added:
+    - Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax
+      Credits child element limit to infinity
+    - "Salary sacrifice pension cap of \uFFFD2,000 from April 2029 (Autumn Budget\
+      \ 2025)"
+    - Move inflation adjustment AHC back to BHC inflation.
+  date: 2025-12-03 11:59:49
+- bump: patch
+  changes:
+    fixed:
+    - Print statement.
+  date: 2025-12-03 12:45:46
+- bump: minor
+  changes:
+    fixed:
+    - Extend fiscal year parameter conversion to cover 2015-2040, fixing issues where
+      policies changing on April 6 (UK fiscal year start) were not reflected in simulations
+      for years 2026+.
+  date: 2025-12-03 16:17:09
+- bump: patch
+  changes:
+    changed:
+    - Bump policyengine-core to 3.23.0 (adds strict enum validation).
+  date: 2025-12-04 14:45:58
+- bump: patch
+  changes:
+    fixed:
+    - Fix fuel duty rates to use OBR November 2025 RPI forecasts.
+  date: 2025-12-05 16:29:26
+- bump: patch
+  changes:
+    added:
+    - Salary sacrifice pension cap reform (GBP 2,000 cap from April 2029) with broad-base
+      employer response modeling.
+  date: 2025-12-08 10:54:42
+- bump: patch
+  changes:
+    fixed:
+    - Basic state pension calculation.
+  date: 2025-12-08 21:37:03

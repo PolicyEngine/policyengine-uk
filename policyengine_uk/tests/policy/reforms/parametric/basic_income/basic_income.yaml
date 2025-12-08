@@ -21,6 +21,7 @@
     benunits:
       benunit:
         members: [working_age, senior, child]
+        would_claim_child_benefit: true
   output:
     basic_income: [52, 104, 156]
     child_benefit: 1820

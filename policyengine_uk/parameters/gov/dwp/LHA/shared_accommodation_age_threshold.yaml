@@ -1,0 +1,12 @@
+description: Age threshold below which single adults without children can only claim shared accommodation rates under LHA
+values:
+  2013-04-01: 35
+metadata:
+  period: year
+  unit: year
+  label: LHA shared accommodation age threshold
+  reference:
+    - title: The Housing Benefit Regulations 2006 - Schedule 4 - Paragraph 28
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28
+    - title: LHA shared accommodation rate guidance
+      href: https://www.gov.uk/government/publications/local-housing-allowance-rates-applicable-from-april-2013

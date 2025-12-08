@@ -5,6 +5,518 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.65.4] - 2025-12-08 21:37:03
+
+### Fixed
+
+- Basic state pension calculation.
+
+## [2.65.3] - 2025-12-08 10:54:42
+
+### Added
+
+- Salary sacrifice pension cap reform (GBP 2,000 cap from April 2029) with broad-base employer response modeling.
+
+## [2.65.2] - 2025-12-05 16:29:26
+
+### Fixed
+
+- Fix fuel duty rates to use OBR November 2025 RPI forecasts.
+
+## [2.65.1] - 2025-12-04 14:45:58
+
+### Changed
+
+- Bump policyengine-core to 3.23.0 (adds strict enum validation).
+
+## [2.65.0] - 2025-12-03 16:17:09
+
+### Fixed
+
+- Extend fiscal year parameter conversion to cover 2015-2040, fixing issues where policies changing on April 6 (UK fiscal year start) were not reflected in simulations for years 2026+.
+
+## [2.64.1] - 2025-12-03 12:45:46
+
+### Fixed
+
+- Print statement.
+
+## [2.64.0] - 2025-12-03 11:59:49
+
+### Added
+
+- Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax Credits child element limit to infinity
+- Salary sacrifice pension cap of �2,000 from April 2029 (Autumn Budget 2025)
+- Move inflation adjustment AHC back to BHC inflation.
+
+## [2.63.0] - 2025-12-02 16:24:40
+
+### Added
+
+- Added gift_aid_grossed_up variable that computes Gift Aid grossed up by basic rate per ITA 2007 s.58.
+- Added comprehensive Gift Aid tests covering basic rate relief, higher rate relief, and PA taper interaction.
+
+### Changed
+
+- Added legislation references (legislation.gov.uk) to gift_aid and personal_allowance variables.
+
+### Fixed
+
+- Fixed Personal Allowance taper calculation to deduct grossed-up Gift Aid from ANI per ITA 2007 s.58. Previously, Gift Aid donations did not reduce ANI for PA taper purposes, causing high earners (GBP 100k-125k) to receive less tax relief than legally entitled.
+
+## [2.62.1] - 2025-12-02 14:16:53
+
+### Added
+
+- Add upper interest threshold freeze for Plan 2 student loans (Budget 2025)
+
+## [2.62.0] - 2025-12-02 09:19:36
+
+### Added
+
+- Add owns vehicle variable
+
+## [2.61.4] - 2025-12-01 11:11:26
+
+### Changed
+
+- Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
+
+## [2.61.3] - 2025-12-01 03:34:34
+
+### Added
+
+- Add 2026 Plan 2 student loan interest rate thresholds (lower £29,385, upper £52,885) and freeze lower threshold 2027-2029 per Budget 2025
+
+## [2.61.2] - 2025-11-28 14:58:06
+
+### Fixed
+
+- Fix fuel duty rates to use calendar year averages instead of incorrectly selecting first rate of each year in reform calculations. Updates 2026-2029 rates to weighted averages (53.45p, 59.02p, 61.11p, 62.90p) with detailed documentation of actual source values and calculation methodology.
+
+## [2.61.1] - 2025-11-28 13:48:04
+
+### Fixed
+
+- Update HH net income calculation.
+
+## [2.61.0] - 2025-11-28 11:59:37
+
+### Added
+
+- Add student loan repayment modelling with parameters for Plan 1, 2, 4, 5 and postgraduate loans, including thresholds and repayment rates.
+
+## [2.60.0] - 2025-11-27 16:24:25
+
+### Added
+
+- November 2025 Autumn Budget parameter updates. Extends income tax threshold freeze (personal allowance GBP 12,570, higher rate GBP 50,270, additional rate GBP 125,140) and NICs secondary threshold freeze (GBP 96/week) to April 2031. Updates fuel duty schedule with freeze until September 2026, staggered 5p cut reversal, and RPI uprating from April 2027.
+
+## [2.59.0] - 2025-11-27 09:29:34
+
+### Added
+
+- Implement November 2025 Autumn Budget income source tax rate increases. Dividends +2pp basic/higher from April 2026, savings +2pp from April 2027, property +2pp from April 2027.
+
+## [2.58.0] - 2025-11-26 19:23:28
+
+### Changed
+
+- Update economic projections to OBR November 2025 Economic and Fiscal Outlook forecasts (CPI, RPI, CPIH, average earnings, house prices, rents, mortgage interest)
+
+## [2.57.1] - 2025-11-26 18:40:43
+
+### Fixed
+
+- Correct OBR March 2025 economic projections to match detailed forecast tables
+
+## [2.57.0] - 2025-11-21 14:59:20
+
+### Changed
+
+- Salary sacrifice pension contributions above the cap are now redirected to employee pension contributions (which receive income tax relief but pay NI) instead of returning only to regular employment income. This better reflects the behavioral assumption that individuals prioritize retirement savings.
+
+## [2.56.1] - 2025-11-20 14:51:58
+
+### Changed
+
+- Updated microsimulation test expected values to reflect salary sacrifice calculation improvements.
+
+### Fixed
+
+- Salary sacrifice returned to income now cannot be negative.
+- Adjusted salary sacrifice pension contributions now cannot go below zero.
+
+## [2.56.0] - 2025-11-20 12:24:29
+
+### Added
+
+- Salary sacrifice pension cap policy modeling (2,000 GBP cap on NI-exempt contributions)
+
+## [2.55.3] - 2025-10-22 10:03:42
+
+### Added
+
+- Scenario now supports `applied_before_data_load` flag to control when parameter changes and simulation modifiers are applied relative to data loading.
+
+## [2.55.2] - 2025-10-21 12:08:26
+
+### Fixed
+
+- Bug fix for decomp analysis.
+
+## [2.55.1] - 2025-10-20 12:51:40
+
+### Fixed
+
+- Bug fix in state pension scripts.
+
+## [2.55.0] - 2025-10-20 12:43:40
+
+### Fixed
+
+- Bug in state pension formulae causing issues when using datasets with year != 2023.
+
+## [2.54.2] - 2025-10-17 15:01:31
+
+### Fixed
+
+- Fix bug where changes to economic assumption parameters would not change uprating behaviour.
+
+## [2.54.1] - 2025-10-15 12:18:22
+
+### Fixed
+
+- Fixed randomness between runs caused by UC reform.
+
+## [2.54.0] - 2025-09-30 14:40:31
+
+### Added
+
+- Dataset filter function to extract single households for analysis.
+
+### Changed
+
+- Default target variable for labour supply calculations to HBAI household net income.
+- Default adult count for labour supply calculations to 2.
+
+### Fixed
+
+- Labour supply response calculation issues by removing inappropriate clipping of marginal rates.
+- Potential bug in labour supply response variable initialization order.
+
+## [2.53.1] - 2025-09-29 12:26:51
+
+### Fixed
+
+- Temporarily disabled OBR participation responses.
+
+## [2.53.0] - 2025-09-25 09:22:41
+
+### Fixed
+
+- Bugs in the benefit cap exemption list.
+
+## [2.52.1] - 2025-09-24 15:33:18
+
+### Fixed
+
+- Updated carbon emissions data to latest available figures
+
+## [2.52.0] - 2025-09-24 12:24:39
+
+### Fixed
+
+- Bugs in the benefit cap exemption list.
+
+## [2.51.0] - 2025-09-10 09:28:56
+
+### Fixed
+
+- Update reduced vat expenditure share from OBR
+
+## [2.50.0] - 2025-09-03 09:15:47
+
+### Fixed
+
+- Add real_hbai_household_net_income_ahc variable for convenience.
+
+## [2.49.5] - 2025-09-02 13:00:40
+
+### Fixed
+
+- Removed bug-causing high income tax change variable.
+
+## [2.49.4] - 2025-09-01 13:02:52
+
+### Fixed
+
+- Fix behavioral response calculations returning zero FTE impacts due to simulation state corruption
+- Fix NaN values in wage relative change calculations during labor supply responses
+- Fix income effect calculations by properly handling household_net_income timing
+
+## [2.49.3] - 2025-09-01 09:09:46
+
+### Fixed
+
+- Bug causing some households to claim both CTC and UC.
+
+## [2.49.2] - 2025-08-29 13:54:13
+
+### Fixed
+
+- Fix bug in capital/consumer incidence.
+
+## [2.49.1] - 2025-08-29 10:32:06
+
+### Fixed
+
+- Re-enabled employer NI dynamics.
+
+## [2.49.0] - 2025-08-28 13:08:00
+
+### Fixed
+
+- Baseline simulation created before simulation modifier is applied.
+
+## [2.48.0] - 2025-08-27 20:32:42
+
+### Fixed
+
+- Fuel duty is 52.95p per litre until 2026 where the temporary 5p cut is reversed, and then risen with RPI
+
+## [2.47.4] - 2025-08-14 16:30:16
+
+### Fixed
+
+- Issue causing capital gains elasticities to not take effect.
+
+## [2.47.3] - 2025-08-13 08:14:33
+
+### Fixed
+
+- Scenario class now supports all Reform object types and maintains backwards compatibility.
+
+## [2.47.2] - 2025-08-12 14:17:09
+
+### Fixed
+
+- Moved `Scenario` in top-level import.
+
+## [2.47.1] - 2025-08-12 09:48:46
+
+### Fixed
+
+- Bug in multi year datasets.
+
+## [2.47.0] - 2025-08-12 09:29:55
+
+### Fixed
+
+- Dropped support for <3.13.
+
+## [2.46.3] - 2025-08-09 09:01:58
+
+### Fixed
+
+- Minor bug in comparison function.
+
+## [2.46.2] - 2025-08-08 15:09:27
+
+### Changed
+
+- Updated script to open automated API update PRs
+
+## [2.46.1] - 2025-08-08 11:42:38
+
+### Fixed
+
+- Forecast window extended to 2030-31.
+
+## [2.46.0] - 2025-08-08 11:34:55
+
+### Changed
+
+- Long-term OBR economic growfactors for 2030-10 and onwards.
+
+## [2.45.5] - 2025-08-08 10:46:25
+
+### Added
+
+- Utility function for comparing simulations added to `policyengine_uk.utils.compare`.
+
+## [2.45.4] - 2025-08-04 14:23:45
+
+### Changed
+
+- Dropped direct jupyter book dependency.
+
+## [2.45.3] - 2025-08-04 12:54:43
+
+### Fixed
+
+- Moved rent uprating to warning from error if before 2022.
+
+## [2.45.2] - 2025-08-01 09:00:11
+
+### Fixed
+
+- Bug in NI rates.
+
+## [2.45.1] - 2025-07-31 13:39:16
+
+### Fixed
+
+- Bug caused by not resetting parameter caches.
+
+## [2.45.0] - 2025-07-30 14:17:20
+
+### Added
+
+- Docs upgraded to jupyter book 2.
+- Model baseline page added.
+- Capital gains tax baseline updated.
+
+## [2.44.1] - 2025-07-29 15:40:04
+
+### Changed
+
+- HBAI benefits included at top level.
+
+## [2.44.0] - 2025-07-29 14:15:32
+
+### Added
+
+- UC rebalancing reforms.
+
+## [2.43.5] - 2025-07-28 22:20:17
+
+### Fixed
+
+- Minor missing variable attributes.
+
+## [2.43.4] - 2025-07-28 12:35:29
+
+### Fixed
+
+- WFP reforms active.
+- Growthfactors extended to 2040.
+
+## [2.43.3] - 2025-07-28 10:01:47
+
+### Changed
+
+- Separated out system.py to avoid bloat.
+
+## [2.43.2] - 2025-07-26 20:54:03
+
+### Added
+
+- Add pydantic dependency to fix missing import in scenario utilities
+
+## [2.43.1] - 2025-07-26 14:10:57
+
+### Changed
+
+- Add Python 3.13 support and update CI workflows
+- Updated policyengine-core dependency to >=3.19.0 for Python 3.13 support
+- Updated GitHub Actions to latest versions (checkout@v4, setup-python@v5) for Python 3.13 compatibility
+- Set all workflows to use Python 3.13
+
+## [2.43.0] - 2025-07-26 11:31:02
+
+### Added
+
+- Scenario class for reforms.
+- Documentation of Scenario and Simulation.
+- Standardisation of uprating behaviour.
+
+## [2.42.0] - 2025-07-25 08:57:23
+
+### Changed
+
+- Add after housing costs deflator
+
+## [2.41.4] - 2025-07-24 14:41:02
+
+### Fixed
+
+- Parameterize age 35 threshold in LHA shared accommodation rules
+
+## [2.41.3] - 2025-07-24 13:53:51
+
+### Fixed
+
+- change LHA param name
+
+## [2.41.2] - 2025-07-24 10:30:43
+
+### Fixed
+
+- debug LHA lowercase
+
+## [2.41.1] - 2025-07-22 20:55:35
+
+### Changed
+
+- Update microdf_python dependency to >=1.0.0.
+
+## [2.41.0] - 2025-07-22 19:49:35
+
+### Changed
+
+- Standardize decimals in parameters.
+
+## [2.40.2] - 2025-07-22 09:37:07
+
+### Fixed
+
+- Bug in uprating.
+
+## [2.40.1] - 2025-07-21 15:37:49
+
+### Fixed
+
+- Bug in handling downloads of UKMultiYearDataset from HuggingFace.
+
+## [2.40.0] - 2025-07-21 13:23:31
+
+### Added
+
+- UKMultiYearDataset class to handle multiple fiscal years.
+- Uprating of datasets using the `uprate` method.
+
+## [2.39.3] - 2025-07-17 12:45:26
+
+### Fixed
+
+- NI domestic rates taken as reported.
+
+## [2.39.2] - 2025-07-17 10:41:08
+
+### Fixed
+
+- Use outturn data for council tax growth in England, Scotland, and Wales for 2023-2025.
+
+## [2.39.1] - 2025-07-16 11:08:29
+
+### Fixed
+
+- Improved water bills projections.
+
+## [2.39.0] - 2025-07-15 11:58:59
+
+### Added
+
+- Codecov coverage.
+- Expanded .gitignore.
+
+## [2.38.2] - 2025-07-15 08:50:48
+
+### Fixed
+
+- Temporarily suspended employer_ni_fixed_cost_change as it returns impacts in the baseline.
+
 ## [2.38.1] - 2025-07-14 15:03:33
 
 ### Fixed
@@ -1936,6 +2448,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.65.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.3...2.65.4
+[2.65.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.2...2.65.3
+[2.65.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.1...2.65.2
+[2.65.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.0...2.65.1
+[2.65.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.64.1...2.65.0
+[2.64.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.64.0...2.64.1
+[2.64.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.63.0...2.64.0
+[2.63.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.1...2.63.0
+[2.62.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.0...2.62.1
+[2.62.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.4...2.62.0
+[2.61.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.3...2.61.4
+[2.61.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.2...2.61.3
+[2.61.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.1...2.61.2
+[2.61.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.0...2.61.1
+[2.61.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.60.0...2.61.0
+[2.60.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.59.0...2.60.0
+[2.59.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.58.0...2.59.0
+[2.58.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.57.1...2.58.0
+[2.57.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.57.0...2.57.1
+[2.57.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.56.1...2.57.0
+[2.56.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.56.0...2.56.1
+[2.56.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.55.3...2.56.0
+[2.55.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.55.2...2.55.3
+[2.55.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.55.1...2.55.2
+[2.55.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.55.0...2.55.1
+[2.55.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.54.2...2.55.0
+[2.54.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.54.1...2.54.2
+[2.54.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.54.0...2.54.1
+[2.54.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.53.1...2.54.0
+[2.53.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.53.0...2.53.1
+[2.53.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.52.1...2.53.0
+[2.52.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.52.0...2.52.1
+[2.52.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.51.0...2.52.0
+[2.51.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.50.0...2.51.0
+[2.50.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.5...2.50.0
+[2.49.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.4...2.49.5
+[2.49.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.3...2.49.4
+[2.49.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.2...2.49.3
+[2.49.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.1...2.49.2
+[2.49.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.49.0...2.49.1
+[2.49.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.48.0...2.49.0
+[2.48.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.4...2.48.0
+[2.47.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.3...2.47.4
+[2.47.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.2...2.47.3
+[2.47.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.1...2.47.2
+[2.47.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.47.0...2.47.1
+[2.47.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.46.3...2.47.0
+[2.46.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.46.2...2.46.3
+[2.46.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.46.1...2.46.2
+[2.46.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.46.0...2.46.1
+[2.46.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.5...2.46.0
+[2.45.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.4...2.45.5
+[2.45.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.3...2.45.4
+[2.45.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.2...2.45.3
+[2.45.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.1...2.45.2
+[2.45.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.45.0...2.45.1
+[2.45.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.44.1...2.45.0
+[2.44.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.44.0...2.44.1
+[2.44.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.5...2.44.0
+[2.43.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.4...2.43.5
+[2.43.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.3...2.43.4
+[2.43.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.2...2.43.3
+[2.43.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.1...2.43.2
+[2.43.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.43.0...2.43.1
+[2.43.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.42.0...2.43.0
+[2.42.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.4...2.42.0
+[2.41.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.3...2.41.4
+[2.41.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.2...2.41.3
+[2.41.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.1...2.41.2
+[2.41.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.41.0...2.41.1
+[2.41.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.2...2.41.0
+[2.40.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.1...2.40.2
+[2.40.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.40.0...2.40.1
+[2.40.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.3...2.40.0
+[2.39.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.2...2.39.3
+[2.39.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.1...2.39.2
+[2.39.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.39.0...2.39.1
+[2.39.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.2...2.39.0
+[2.38.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.1...2.38.2
 [2.38.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.38.0...2.38.1
 [2.38.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.37.0...2.38.0
 [2.37.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.36.1...2.37.0

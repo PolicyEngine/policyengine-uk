@@ -1,0 +1,9 @@
+description: Whether the Universal Credit 'rebalancing' reforms are active.
+values:
+  2025-01-01: true
+metadata:
+  unit: bool
+  label: Universal Credit rebalancing reforms active
+  reference:
+    - title: Universal Credit Bill
+      href: https://bills.parliament.uk/publications/62123/documents/6889

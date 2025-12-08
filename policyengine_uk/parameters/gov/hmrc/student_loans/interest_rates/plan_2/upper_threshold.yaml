@@ -1,0 +1,48 @@
+description: Plan 2 upper income threshold for interest rate tapering
+metadata:
+  label: Plan 2 interest upper threshold
+  unit: currency-GBP
+  period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
+  reference:
+    - title: Education (Student Loans) (Repayment) Regulations 2009, Regulation 21AA
+      href: https://www.legislation.gov.uk/uksi/2009/470/regulation/21AA
+  documentation: |
+    Upper income threshold for Plan 2 interest rate tapering (H in the formula).
+    Above this income, borrowers pay the maximum rate (RPI + 3%).
+    Between the lower and upper thresholds, the rate is tapered.
+
+    Per Regulation 21AA, this is the "higher interest threshold".
+
+values:
+  2024-09-01:
+    value: 49_130
+    metadata:
+      reference:
+        - title: Education (Student Loans) (Repayment) (Amendment) (No. 4) Regulations 2022, Regulation 21AA
+          href: https://www.legislation.gov.uk/uksi/2022/1335/made
+        - title: Student loans - a guide to terms and conditions 2024 to 2025
+          href: https://www.gov.uk/government/publications/student-loans-a-guide-to-terms-and-conditions/student-loans-a-guide-to-terms-and-conditions-2024-to-2025
+  2025-09-01:
+    value: 51_245
+    metadata:
+      reference:
+        - title: Student loans - a guide to terms and conditions 2025 to 2026
+          href: https://www.gov.uk/government/publications/student-loans-a-guide-to-terms-and-conditions/student-loans-a-guide-to-terms-and-conditions-2025-to-2026
+  2026-09-01:
+    value: 52_885
+    metadata:
+      reference:
+        - title: Student Loans Interest and Repayment Threshold Announcement for Plan 2 and Plan 3 loans
+          href: https://www.gov.uk/government/news/student-loans-interest-and-repayment-threshold-announcement-for-plan-2-and-plan-3-loans
+  # Budget 2025: interest rate thresholds frozen 2027-2030 (OBR EFO Nov 2025, section 3.22)
+  2027-09-01:
+    value: 52_885
+    metadata:
+      reference:
+        - title: Autumn Budget 2025 - Student loans threshold freeze
+          href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
+  2028-09-01:
+    value: 52_885
+  2029-09-01:
+    value: 52_885

@@ -1,0 +1,95 @@
+- name: No employer NI charge when salary sacrifice below £2,000 cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 40_000
+    pension_contributions_via_salary_sacrifice: 1_500
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_pension_ni_employer: 0
+
+- name: Employer NI charge at 15% for moderate earner above cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 45_000
+    pension_contributions_via_salary_sacrifice: 2_250
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £250 excess * 15% = £37.50
+    salary_sacrifice_pension_ni_employer: (2_250 - 2_000) * 0.15
+
+- name: Employer NI charge at 15% for high earner with large excess
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 125_000
+    pension_contributions_via_salary_sacrifice: 25_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £23,000 excess * 15% = £3,450
+    salary_sacrifice_pension_ni_employer: (25_000 - 2_000) * 0.15
+
+- name: Employer NI charge for large salary sacrifice
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 80_000
+    pension_contributions_via_salary_sacrifice: 15_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £13,000 excess * 15% = £1,950
+    salary_sacrifice_pension_ni_employer: (15_000 - 2_000) * 0.15
+
+- name: No employer NI charge when exactly at cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    pension_contributions_via_salary_sacrifice: 2_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_pension_ni_employer: 0
+
+- name: Employer NI charge for small excess over cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 35_000
+    pension_contributions_via_salary_sacrifice: 2_100
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £100 excess * 15% = £15
+    salary_sacrifice_pension_ni_employer: 100 * 0.15
+
+- name: Employer NI charge for low earner with high pension contribution
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £3,000 excess * 15% = £450
+    salary_sacrifice_pension_ni_employer: (5_000 - 2_000) * 0.15
+
+- name: Employer NI on full redirected excess
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 45_000
+    pension_contributions_via_salary_sacrifice: 3_000
+    gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # £1,000 excess * 15% = £150
+    salary_sacrifice_pension_ni_employer: (3_000 - 2_000) * 0.15
+    # Full excess is redirected (no targeted haircut)
+    salary_sacrifice_returned_to_income: 1_000

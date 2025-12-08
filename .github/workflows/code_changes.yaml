@@ -10,6 +10,7 @@ on:
       - policyengine_uk/**
       - tests/**
       - .github/**
+  workflow_dispatch:
 
 jobs:
   Lint:
@@ -27,14 +28,14 @@ jobs:
         id-token: "write"
       steps:
           - name: Checkout repo
-            uses: actions/checkout@v2
+            uses: actions/checkout@v4
           - name: Install uv
             uses: astral-sh/setup-uv@v5
 
           - name: Set up Python
-            uses: actions/setup-python@v2
+            uses: actions/setup-python@v5
             with:
-                python-version: '3.12'
+                python-version: '3.13'
           - uses: "google-github-actions/auth@v2"
             with:
               workload_identity_provider: "projects/322898545428/locations/global/workloadIdentityPools/policyengine-research-id-pool/providers/prod-github-provider"
@@ -44,9 +45,17 @@ jobs:
             run: uv pip install -e .[dev] --system
           - name: Install policyengine
             run: uv pip install policyengine --system
+          - name: Install JB
+            run: uv pip install "jupyter-book>=2.0.0a0" --system
           - name: UV sync
             run: uv sync
-          - name: Run tests
+          - name: Run tests with coverage
             run: make test
             env:
               HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+          - name: Upload coverage to Codecov
+            uses: codecov/codecov-action@v4
+            with:
+              file: ./coverage.xml
+              fail_ci_if_error: false
+              verbose: true

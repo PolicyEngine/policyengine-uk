@@ -1,0 +1,58 @@
+description: Plan 2 student loan repayment threshold (annual). Plan 2 applies to students who started undergraduate courses in England/Wales on or after September 2012 and before August 2023.
+values:
+  2016-04-06: 21_000
+  2017-04-06: 21_000
+  2018-04-06: 25_000
+  2019-04-06: 25_725
+  2020-04-06: 26_575
+  2021-04-06: 27_295
+  2022-04-06: 27_295
+  2023-04-06: 27_295
+  2024-04-06:
+    value: 27_295
+    metadata:
+      reference:
+        - title: Student loan thresholds for April 2024
+          href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2024-to-2025-academic-year
+  2025-04-06:
+    value: 28_470
+    metadata:
+      reference:
+        - title: Student loan thresholds for April 2025
+          href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2025-to-2026-academic-year
+  2026-04-06:
+    value: 29_385
+    metadata:
+      uprating: none
+      reference:
+        - title: Student Loans Interest and Repayment Threshold Announcement for Plan 2 and Plan 3 loans
+          href: https://www.gov.uk/government/news/student-loans-interest-and-repayment-threshold-announcement-for-plan-2-and-plan-3-loans
+  2027-04-06:
+    value: 29_385
+    metadata:
+      uprating: none
+      reference:
+        - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
+          href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
+  2028-04-06:
+    value: 29_385
+    metadata:
+      uprating: none
+      reference:
+        - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
+          href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
+  2029-04-06:
+    value: 29_385
+    metadata:
+      uprating: none
+      reference:
+        - title: Budget 2025 - Plan 2 threshold freeze 2027-28 until 2029-30
+          href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
+metadata:
+  label: Plan 2 threshold
+  unit: currency-GBP
+  period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
+  reference:
+    - title: GOV.UK Student loan repayment thresholds
+      href: https://www.gov.uk/repaying-your-student-loan/what-you-pay

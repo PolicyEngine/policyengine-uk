@@ -1,0 +1,11 @@
+description: Plan 1 margin added to Bank of England base rate for interest calculation
+metadata:
+  label: Plan 1 BoE margin
+  unit: /1
+  period: year
+  reference:
+    - title: Education (Student Loans) (Repayment) Regulations 2009, Regulation 21(2)
+      href: https://www.legislation.gov.uk/uksi/2009/470/regulation/21
+
+values:
+  2000-01-01: 0.01

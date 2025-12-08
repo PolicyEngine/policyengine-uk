@@ -8,7 +8,6 @@ class other_public_spending_budget_change(Variable):
     value_type = float
 
     def formula(household, period, parameters):
-
         budget_increase = (
             parameters(
                 period

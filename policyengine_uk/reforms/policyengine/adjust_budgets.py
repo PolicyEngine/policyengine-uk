@@ -34,7 +34,6 @@ def adjust_budgets(parameters, period):
 
     class adjust_budgets_reform(Reform):
         def apply(self):
-
             for reform in reforms:
                 reform.apply(self)
 

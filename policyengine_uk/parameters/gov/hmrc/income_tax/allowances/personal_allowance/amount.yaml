@@ -6,6 +6,12 @@ values:
   2019-04-06: 12_500
   2021-04-06: 12_570
   2027-04-06: 12_570
+  2030-04-06:
+    value: 12_570
+    metadata:
+      reference:
+        - title: OBR Economic and Fiscal Outlook November 2025
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 metadata:
   period: year
   name: personal_allowance
