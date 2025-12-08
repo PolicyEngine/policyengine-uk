@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+      - Add missing 2025-26 Universal Credit non-dependent deduction amount (£93.02)
