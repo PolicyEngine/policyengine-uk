@@ -25,4 +25,4 @@ class is_severely_disabled_for_benefits(Variable):
             - THRESHOLD_SAFETY_GAP
         )
         paragraph_5 = person("afcs", period) > 0
-        return sum([paragraph_3, paragraph_4, paragraph_5]) > 0
+        return paragraph_3 | paragraph_4 | paragraph_5

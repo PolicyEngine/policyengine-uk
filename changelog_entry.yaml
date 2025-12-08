@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    changed:
+      - Replace boolean arithmetic operators (* and +) with logical operators (& and |) for clarity

@@ -15,4 +15,5 @@ class benunit_is_renting(Variable):
             tenures.RENT_FROM_COUNCIL,
             tenures.RENT_FROM_HA,
         ]
-        return sum([tenure == tenure_type for tenure_type in RENT_TENURES]) > 0
+        conditions = [tenure == tenure_type for tenure_type in RENT_TENURES]
+        return conditions[0] | conditions[1] | conditions[2]

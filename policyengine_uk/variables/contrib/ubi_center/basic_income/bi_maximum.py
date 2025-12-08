@@ -13,10 +13,10 @@ class bi_maximum(Variable):
         weekly_flat_amount = bi.amount.flat
         is_senior_for_bi = person("is_SP_age", period)
         age = person("age", period)
-        is_child_for_bi = (age < bi.amount.adult_age) * (
+        is_child_for_bi = (age < bi.amount.adult_age) & (
             age >= bi.amount.child_min_age
         )
-        is_adult_for_bi = (age >= bi.amount.adult_age) * ~is_senior_for_bi
+        is_adult_for_bi = (age >= bi.amount.adult_age) & ~is_senior_for_bi
         weekly_amount_by_age = select(
             [is_child_for_bi, is_senior_for_bi, is_adult_for_bi],
             [
