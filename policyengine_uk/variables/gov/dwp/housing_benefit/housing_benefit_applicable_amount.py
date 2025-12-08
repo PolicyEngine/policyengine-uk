@@ -18,7 +18,7 @@ class housing_benefit_applicable_amount(Variable):
         u_18 = eldest_age < younger_age_threshold
         u_25 = eldest_age < older_age_threshold
         o_25 = (eldest_age >= older_age_threshold) & ~any_over_SP_age
-        o_18 = (eldest_age >= younger_age_threshold) * ~any_over_SP_age
+        o_18 = (eldest_age >= younger_age_threshold) & ~any_over_SP_age
         single = benunit("is_single_person", period)
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_lone_parent", period)
