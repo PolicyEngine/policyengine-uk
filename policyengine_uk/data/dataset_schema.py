@@ -55,7 +55,6 @@ class UKSingleYearDataset:
     ):
         file_path = str(file_path) if file_path else None
         if file_path is not None:
-            file_path = str(file_path)
             self.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
                 self.person = f["person"]
