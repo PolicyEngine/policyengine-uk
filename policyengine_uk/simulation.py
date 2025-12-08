@@ -479,6 +479,10 @@ class Simulation(CoreSimulation):
     ):
         if variable_name is None:
             return self.calculate_all()
+
+        # Convert variable name to lowercase for backwards compatibility
+        variable_name = variable_name.lower()
+
         tracer: SimpleTracer = self.tracer
         if len(tracer.stack) == 0:
             # Only decode enums to string values when we're not within
