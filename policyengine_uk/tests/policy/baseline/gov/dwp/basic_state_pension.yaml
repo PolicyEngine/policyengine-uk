@@ -7,7 +7,7 @@
         state_pension_type: BASIC
         age: 70
   output:
-    basic_state_pension: 5000  # Should be capped at the minimum of reported and maximum
+    basic_state_pension: 5000  # Reported amount (under maximum)
 
 - name: Basic state pension caps at maximum when reported exceeds maximum
   period: 2021
@@ -18,9 +18,9 @@
         state_pension_type: BASIC
         age: 70
   output:
-    basic_state_pension: 7155.2  # Should be capped at maximum (137.60 * 52)
+    basic_state_pension: 7155.2  # Capped at maximum (137.60 * 52)
 
-- name: Non-basic state pension not affected by basic pension maximum
+- name: Non-basic state pension type returns zero for basic_state_pension
   period: 2021
   input:
     people:
@@ -29,7 +29,7 @@
         state_pension_type: NEW  # Not basic pension
         age: 70
   output:
-    basic_state_pension: 5000  # Should not be affected by basic pension maximum
+    basic_state_pension: 0  # basic_state_pension is only for BASIC type
 
 - name: Basic state pension should be zero when maximum is zero
   period: 2021
