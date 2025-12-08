@@ -8,13 +8,11 @@ values:
         - title: Autumn Budget and Spending Review 2022
           href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
   2024-04-04:
-    value: 0.0185
+    value: 0.02
     metadata:
       reference:
-        - title: National Insurance Contributions (Reduction in Rates) Act 2024 s 1
-          href: https://www.legislation.gov.uk/ukpga/2024/5/section/1
+        - title: Social Security Contributions and Benefits Act 1992
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/8
 metadata:
   label: NI Class 1 additional rate
-  name: NI_add_rate
   unit: /1
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

@@ -13,12 +13,12 @@ class savings_income_tax(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        rates = parameters(period).gov.hmrc.income_tax.rates.uk.rates
+        savings_rates = parameters(period).gov.hmrc.income_tax.rates.savings
         basic_rate_amount = person("basic_rate_savings_income", period)
         higher_rate_amount = person("higher_rate_savings_income", period)
         add_rate_amount = person("add_rate_savings_income", period)
         return (
-            rates[0] * basic_rate_amount
-            + rates[1] * higher_rate_amount
-            + rates[2] * add_rate_amount
+            savings_rates.basic * basic_rate_amount
+            + savings_rates.higher * higher_rate_amount
+            + savings_rates.additional * add_rate_amount
         )

@@ -1,0 +1,19 @@
+description: Plan 4 student loan repayment threshold (annual). Plan 4 applies to students who started undergraduate courses in Scotland on or after September 1998.
+values:
+  2021-04-06: 25_000
+  2022-04-06: 25_375
+  2023-04-06: 27_660
+  2024-04-06:
+    value: 31_395
+    metadata:
+      reference:
+        - title: Student loan thresholds for April 2024
+          href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2024-to-2025-academic-year
+metadata:
+  label: Plan 4 threshold
+  unit: currency-GBP
+  period: year
+  uprating: gov.economic_assumptions.indices.obr.rpi
+  reference:
+    - title: GOV.UK Student loan repayment thresholds
+      href: https://www.gov.uk/repaying-your-student-loan/what-you-pay

@@ -1,0 +1,235 @@
+# Tests for November 2025 Autumn Budget income source-specific tax rate increases
+#
+# From OBR Economic and Fiscal Outlook November 2025, paragraph 3.33:
+#
+# Dividends (from April 2026):
+# - Basic rate: 8.75% -> 10.75% (+2pp)
+# - Higher rate: 33.75% -> 35.75% (+2pp)
+# - Additional rate: NOT MENTIONED (stays at 39.35%)
+#
+# Savings (from April 2027):
+# - Basic rate: 20% -> 22% (+2pp)
+# - Higher rate: 40% -> 42% (+2pp)
+# - Additional rate: 45% -> 47% (+2pp)
+#
+# Property (from April 2027):
+# - Basic rate: 20% -> 22% (+2pp)
+# - Higher rate: 40% -> 42% (+2pp)
+# - Additional rate: 45% -> 47% (+2pp)
+
+# =============================================================================
+# DIVIDEND TAX RATE TESTS
+# =============================================================================
+
+# Test dividend rates BEFORE April 2026 (should be unchanged at 8.75/33.75/39.35)
+- name: Dividend tax at basic rate - 2025 (pre-reform)
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    # Person with just enough employment income for personal allowance
+    employment_income: 12570
+    dividend_income: 1500
+  output:
+    # Dividend allowance is £500 in 2025, so £1000 taxable at 8.75%
+    dividend_income_tax: 1000 * 0.0875
+
+- name: Dividend tax at higher rate - 2025 (pre-reform)
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    # Employment income pushes person into higher rate band
+    employment_income: 60000
+    dividend_income: 1500
+  output:
+    # All dividends (after £500 allowance) taxed at higher rate 33.75%
+    dividend_income_tax: 1000 * 0.3375
+
+# Test dividend rates AFTER April 2026 (basic and higher +2pp, additional unchanged)
+- name: Dividend tax at basic rate - 2027 (post-reform)
+  period: 2027
+  absolute_error_margin: 1
+  input:
+    employment_income: 12570
+    dividend_income: 1500
+  output:
+    # £1000 taxable at NEW basic rate 10.75%
+    dividend_income_tax: 1000 * 0.1075
+
+- name: Dividend tax at higher rate - 2027 (post-reform)
+  period: 2027
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    dividend_income: 1500
+  output:
+    # All dividends at NEW higher rate 35.75%
+    dividend_income_tax: 1000 * 0.3575
+
+- name: Dividend tax at additional rate - 2027 (post-reform, rate unchanged)
+  period: 2027
+  absolute_error_margin: 1
+  input:
+    employment_income: 200000
+    dividend_income: 1500
+  output:
+    # Additional rate UNCHANGED at 39.35% per OBR
+    dividend_income_tax: 1000 * 0.3935
+
+# =============================================================================
+# SAVINGS INCOME TAX RATE TESTS
+# Note: Savings starter rate provides up to £5000 at 0% for low earners.
+# We use higher income scenarios to avoid the starter rate complication.
+# =============================================================================
+
+# Test savings rates BEFORE April 2027 (should be standard 20/40/45)
+- name: Savings tax at higher rate - 2026 (pre-reform)
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    # Higher rate earner - no starter rate applies
+    employment_income: 60000
+    savings_interest_income: 2000
+  output:
+    # Higher rate taxpayers get £500 savings allowance, so £1500 at 40%
+    savings_income_tax: 1500 * 0.40
+
+- name: Savings tax at additional rate - 2026 (pre-reform)
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    employment_income: 200000
+    savings_interest_income: 2000
+  output:
+    # Additional rate taxpayers get £0 savings allowance, so £2000 at 45%
+    savings_income_tax: 2000 * 0.45
+
+# Test savings rates AFTER April 2027 (should be +2pp: 22/42/47)
+- name: Savings tax at higher rate - 2028 (post-reform)
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    savings_interest_income: 2000
+  output:
+    # £1500 at NEW rate 42%
+    savings_income_tax: 1500 * 0.42
+
+- name: Savings tax at additional rate - 2028 (post-reform)
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 200000
+    savings_interest_income: 2000
+  output:
+    # £2000 at NEW rate 47%
+    savings_income_tax: 2000 * 0.47
+
+# =============================================================================
+# PROPERTY INCOME TAX RATE TESTS
+# Note: Property income is currently part of earned_income_tax. We need to
+# create a separate property_income_tax variable to implement source-specific rates.
+# =============================================================================
+
+# Test property rates BEFORE April 2027 (should be standard 20/40/45)
+- name: Property tax at basic rate - 2026 (pre-reform)
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    employment_income: 12570
+    property_income: 2000
+  output:
+    # Property allowance is £1000, so £1000 taxable at 20%
+    property_income_tax: 1000 * 0.20
+
+- name: Property tax at higher rate - 2026 (pre-reform)
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    property_income: 2000
+  output:
+    # £1000 (after property allowance) all at 40% since employment income
+    # has already used up basic rate band
+    property_income_tax: 1000 * 0.40
+
+# Test property rates AFTER April 2027 (should be +2pp: 22/42/47)
+- name: Property tax at basic rate - 2028 (post-reform)
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 12570
+    property_income: 2000
+  output:
+    # £1000 at NEW rate 22%
+    property_income_tax: 1000 * 0.22
+
+- name: Property tax at higher rate - 2028 (post-reform)
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    property_income: 2000
+  output:
+    # £1000 at NEW rate 42%
+    property_income_tax: 1000 * 0.42
+
+- name: Property tax at additional rate - 2028 (post-reform)
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 200000
+    property_income: 2000
+  output:
+    # £1000 at NEW rate 47%
+    property_income_tax: 1000 * 0.47
+
+# =============================================================================
+# INTEGRATION TESTS - verify income_tax includes source-specific taxes
+# These tests verify that property_income_tax flows into total income_tax
+# =============================================================================
+
+- name: Property tax flows into income_tax - basic rate - 2028
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    # Person with just personal allowance worth of employment income
+    employment_income: 12570
+    property_income: 2000
+  output:
+    # Property allowance is £1000, so £1000 taxable at 22%
+    property_income_tax: 220
+    # Total income_tax should include property_income_tax
+    # Employment: £0 (covered by PA), Property: £220
+    income_tax: 220
+
+- name: Property tax flows into income_tax - higher rate - 2028
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    property_income: 2000
+  output:
+    # £1000 at 42%
+    property_income_tax: 420
+    # income_tax = earned_income_tax + savings_income_tax + dividend_income_tax + property_income_tax
+    # Earned income tax on £60000: PA=£12570, taxable=£47430
+    # Basic rate (20%): £37700 at 20% = £7540
+    # Higher rate (40%): £9730 at 40% = £3892
+    # Total earned: £11432
+    # Property: £420
+    # Total: £11852
+    income_tax: 11852
+
+- name: Savings tax flows into income_tax - higher rate - 2028
+  period: 2028
+  absolute_error_margin: 1
+  input:
+    employment_income: 60000
+    savings_interest_income: 2000
+  output:
+    # £1500 at 42% (after £500 savings allowance)
+    savings_income_tax: 630
+    # Earned: £11432 (same as above)
+    # Savings: £630
+    # Total: £12062
+    income_tax: 12062

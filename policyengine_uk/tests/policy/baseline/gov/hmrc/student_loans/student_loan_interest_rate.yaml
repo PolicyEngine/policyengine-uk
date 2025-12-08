@@ -1,0 +1,153 @@
+# Test student loan interest rate calculations
+# Interest rates vary by plan type and income (for Plan 2)
+# Note: RPI for 2025 is ~4.33% per OBR forecasts
+
+# Plan 2 income-contingent interest rate tests
+# Below lower threshold: RPI only
+# Above upper threshold: RPI + 3%
+# Between: linear taper
+
+- name: Plan 2 - Low income gets base rate (RPI only)
+  period: 2025
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 20_000
+  output:
+    # Below lower threshold, should be RPI (~4.33%)
+    plan_2_interest_rate: 0.0433
+
+- name: Plan 2 - High income gets max rate (RPI + 3%)
+  period: 2025
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 60_000
+  output:
+    # Above upper threshold, should be RPI + 3% (~7.33%)
+    plan_2_interest_rate: 0.0733
+
+- name: Plan 2 - Mid income gets tapered rate
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 40_000
+  output:
+    # Between thresholds, tapered rate ~5.8%
+    plan_2_interest_rate: 0.058
+
+# Plan 5 interest rate (RPI only, regardless of income)
+
+- name: Plan 5 - High income still gets RPI only
+  period: 2025
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_5
+        adjusted_net_income: 100_000
+  output:
+    # RPI only regardless of income (~4.33%)
+    plan_5_interest_rate: 0.0433
+
+# Postgraduate interest rate (RPI + 3%)
+
+- name: Postgraduate - Gets RPI + 3% regardless of income
+  period: 2025
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        student_loan_plan: POSTGRADUATE
+        adjusted_net_income: 25_000
+  output:
+    # RPI + 3% regardless of income (~7.33%)
+    postgraduate_interest_rate: 0.0733
+
+# Unified student_loan_interest_rate dispatch tests
+
+- name: No loan returns zero interest rate
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: NONE
+        adjusted_net_income: 50_000
+  output:
+    student_loan_interest_rate: 0
+
+- name: Dispatch to Plan 2 rate
+  period: 2025
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+        adjusted_net_income: 60_000
+  output:
+    # Should match plan_2_interest_rate at high income (~7.33%)
+    student_loan_interest_rate: 0.0733
+
+- name: Dispatch to Postgraduate rate
+  period: 2025
+  absolute_error_margin: 0.005
+  input:
+    people:
+      person:
+        student_loan_plan: POSTGRADUATE
+        adjusted_net_income: 30_000
+  output:
+    # Should match postgraduate_interest_rate (~7.33%)
+    student_loan_interest_rate: 0.0733
+
+# Repayment rate tests
+
+- name: No loan returns zero repayment rate
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: NONE
+  output:
+    student_loan_repayment_rate: 0
+
+- name: Plan 2 returns 9% repayment rate
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+  output:
+    student_loan_repayment_rate: 0.09
+
+- name: Postgraduate returns 6% repayment rate
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: POSTGRADUATE
+  output:
+    student_loan_repayment_rate: 0.06
+
+# Postgraduate repayment integration test
+# Note: Threshold uprated by RPI so ~21,909 for 2025
+
+- name: Postgraduate - Repayment above threshold at 6% rate
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        employment_income: 30_000
+        student_loan_plan: POSTGRADUATE
+  output:
+    # Postgraduate threshold ~£21,909 (uprated from £21,000)
+    # 6% of (30,000 - 21,909) = 6% of 8,091 = ~485
+    student_loan_repayment: 485

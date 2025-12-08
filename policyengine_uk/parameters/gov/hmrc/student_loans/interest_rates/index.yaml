@@ -1,0 +1,12 @@
+description: Student loan interest rates
+label: Interest rates
+documentation: |
+  Interest rates applied to student loan balances vary by plan type.
+  Plan 2 has income-contingent rates that vary between RPI and RPI+3%.
+  Plan 5 and Plans 1/4 have simpler fixed rate structures.
+
+  Note: These parameters document the policy rules. Interest accrual
+  is not currently modelled in the microsimulation as it requires
+  tracking loan balances over time.
+
+  Reference: https://www.gov.uk/repaying-your-student-loan/interest

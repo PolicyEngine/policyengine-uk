@@ -7,11 +7,11 @@ consumer_incidence:
     name: carbon_tax_consumer_incidence
     unit: /1
   values:
-    2010-01-01: 1.0
+    2010-01-01: 1
 rate:
   description: Price per tonne of carbon emissions
   metadata:
     label: Carbon tax
     unit: currency-GBP
   values:
-    2010-01-01: 0.0
+    2010-01-01: 0

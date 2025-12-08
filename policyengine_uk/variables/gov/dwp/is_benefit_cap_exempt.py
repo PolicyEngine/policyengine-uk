@@ -4,20 +4,16 @@ from policyengine_uk.model_api import *
 class is_benefit_cap_exempt(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether exempt from the benefits cap"
+    label = (
+        "Whether exempt from the benefits cap because of health or disability"
+    )
     definition_period = YEAR
+    reference = "https://www.gov.uk/benefit-cap/when-youre-not-affected"
 
     def formula(benunit, period, parameters):
-        QUAL_PERSONAL_BENEFITS = [
-            "carers_allowance",
-            "dla",
-            "esa_contrib",
-        ]
-        QUAL_BENUNIT_BENEFITS = ["working_tax_credit", "esa_income"]
-        qualifying_benunit_benefits = add(
-            benunit, period, QUAL_BENUNIT_BENEFITS
+        exempt_health = benunit(
+            "is_benefit_cap_exempt_health_disability", period
         )
-        qualifying_personal_benefits = add(
-            benunit, period, QUAL_PERSONAL_BENEFITS
-        )
-        return (qualifying_personal_benefits + qualifying_benunit_benefits) > 0
+        exempt_other = benunit("is_benefit_cap_exempt_other", period)
+        exempt_earnings = benunit("is_benefit_cap_exempt_earnings", period)
+        return exempt_health | exempt_earnings | exempt_other

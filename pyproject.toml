@@ -1,35 +1,40 @@
 [project] 
 name = "policyengine-uk"
-version = "2.39.3"
-description = "PolicyEngine tax and benefit system for the UK"
+version = "2.65.4"
+description = "PolicyEngine tax and benefit system for the UK."
 readme = "README.md"
 authors = [
     { name = "PolicyEngine", email = "nikhil@policyengine.org" }
 ]
 maintainers = [
-    { name = "Nikhil Woodruff", email = "nikhil.woodruff@outlook.com" }
+    { name = "Nikhil Woodruff", email = "nikhil@policyengine.org" }
 ]
-license = { text = "AGPL-3.0" }
+license = "AGPL-3.0"
 keywords = ["benefit", "microsimulation", "social", "tax"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: POSIX",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.13,<3.14"
 dependencies = [
-    "policyengine-core>=3.6.4",
-    "microdf-python",
+    "policyengine-core>=3.23.0",
+    "microdf-python>=1.0.2",
+    "pydantic>=2.11.7",
+    "tables>=3.10.2",
 ]
 
 [project.urls]
 Homepage = "https://github.com/PolicyEngine/policyengine-uk"
 Repository = "https://github.com/PolicyEngine/policyengine-uk"
-
-[project.scripts]
-# Add console scripts here if needed
+Issues = "https://github.com/PolicyEngine/policyengine-uk/issues"
+Changelog = "https://github.com/PolicyEngine/policyengine-uk/blob/master/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]
@@ -46,16 +51,6 @@ include = [
 [tool.hatch.build.targets.wheel]
 packages = ["policyengine_uk"]
 
-[tool.hatch.build.targets.wheel.shared-data]
-"CHANGELOG.md" = "share/openfisca/openfisca-country-template/CHANGELOG.md"
-"LICENSE" = "share/openfisca/openfisca-country-template/LICENSE"
-"README.md" = "share/openfisca/openfisca-country-template/README.md"
-
-[dependency-groups]
-dev = [
-    "tables>=3.10.1",
-]
-
 [project.optional-dependencies]
 dev = [
     "black",
@@ -70,6 +65,7 @@ dev = [
     "wheel",
     "yaml-changelog>=0.1.7",
     "snowballstemmer>=2,<3",
-    "jupyter-book",
+    "jupyter-book>=2.0.0a0",
     "linecheck",
+    "rich",
 ]

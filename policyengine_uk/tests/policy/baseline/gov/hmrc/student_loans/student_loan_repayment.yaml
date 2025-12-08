@@ -1,0 +1,130 @@
+# Test student loan repayment calculations
+# Plan 2 threshold for 2025 is £28,470
+
+- name: Plan 2 - Income above threshold
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+  output:
+    # 9% of (40,000 - 28,470) = 9% of 11,530 = 1,037.70
+    student_loan_repayment: 1_037.70
+
+- name: Plan 2 - Income below threshold
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 25_000
+        student_loan_plan: PLAN_2
+  output:
+    student_loan_repayment: 0
+
+- name: Plan 1 - Income above threshold
+  period: 2024
+  input:
+    people:
+      person:
+        employment_income: 35_000
+        student_loan_plan: PLAN_1
+  output:
+    # Plan 1 threshold 2024 is £24,990
+    # 9% of (35,000 - 24,990) = 9% of 10,010 = 900.90
+    student_loan_repayment: 900.90
+
+- name: No student loan
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 50_000
+        student_loan_plan: NONE
+  output:
+    student_loan_repayment: 0
+
+- name: Has student loan - true
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: PLAN_2
+  output:
+    has_student_loan: true
+
+- name: Has student loan - false
+  period: 2025
+  input:
+    people:
+      person:
+        student_loan_plan: NONE
+  output:
+    has_student_loan: false
+
+# Plan 2 threshold tests for Autumn Budget 2025 freeze
+# Per GOV.UK announcement: threshold rises to £29,385 from April 2026
+# Per Budget 2025: frozen at £29,385 from 2027-28 until 2029-30
+# Reference: https://www.gov.uk/government/news/student-loans-interest-and-repayment-threshold-announcement-for-plan-2-and-plan-3-loans
+#
+# Note: Calendar year tests use the parameter value at January 1 of that year.
+# The £29,385 threshold takes effect from April 6, 2026, so:
+# - 2026 calendar year (Jan 1): uses £28,470 (from April 2025)
+# - 2027+ calendar years: use £29,385 (from April 2026)
+# For tax year 2026-27 calculations, the threshold is £29,385.
+
+- name: Plan 2 - 2027 threshold is £29,385 (tax year 2026-27 rate)
+  period: 2027
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+  output:
+    # 9% of (40,000 - 29,385) = 9% of 10,615 = 955.35
+    student_loan_repayment: 955.35
+
+- name: Plan 2 - 2028 threshold frozen at £29,385
+  period: 2028
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+  output:
+    # 9% of (40,000 - 29,385) = 9% of 10,615 = 955.35
+    student_loan_repayment: 955.35
+
+- name: Plan 2 - 2029 threshold frozen at £29,385
+  period: 2029
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+  output:
+    # 9% of (40,000 - 29,385) = 9% of 10,615 = 955.35
+    student_loan_repayment: 955.35
+
+- name: Plan 2 - 2030 threshold resumed RPI uprating
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+  output:
+    # Threshold resumes RPI uprating from 2030
+    # 9% of (40,000 - ~30,064) = 9% of ~9,936 = ~894.26
+    student_loan_repayment: 894.26
+
+- name: Plan 2 - Income just below 2027 threshold
+  period: 2027
+  input:
+    people:
+      person:
+        employment_income: 29_000
+        student_loan_plan: PLAN_2
+  output:
+    student_loan_repayment: 0

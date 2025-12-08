@@ -1,0 +1,16 @@
+# The annual cap on salary sacrifice pension contributions that are exempt from NI.
+# Contributions above this cap are subject to standard NI rates.
+# When set to infinity (default), the scheme is inactive and all salary sacrifice remains exempt from NI.
+description: The annual cap on salary sacrifice pension contributions that are exempt from employee and employer National Insurance contributions.
+values:
+  2010-01-01: .inf  # Default: no cap (scheme inactive)
+  2029-04-06: 2000  # Autumn Budget 2025: £2,000 cap from April 2029
+metadata:
+  unit: currency-GBP
+  label: Salary sacrifice pension NI exemption cap
+  period: year
+  reference:
+    - title: Changes to salary sacrifice for pensions from April 2029
+      href: https://www.gov.uk/government/publications/changes-to-salary-sacrifice-for-pensions-from-april-2029
+    - title: Budget 2025 (HTML)
+      href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html

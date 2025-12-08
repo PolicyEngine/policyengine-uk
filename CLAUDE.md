@@ -17,7 +17,7 @@
 - **Testing**: Write tests for all new functionality
 - **Documentation**: Document all public functions with docstrings
 - **Versioning**: Follow SemVer (increment patch for fixes, minor for features, major for breaking changes)
-- **Pull Requests**: Add entries to changelog_entry.yaml, run `make changelog`, and commit results
+- **Pull Requests**: Must include a changelog_entry.yaml file describing the changes (GitHub Actions will automatically run `make changelog` to update the changelog)
 
 ## Repository Structure
 - **parameters/**: YAML files that define tax rates, thresholds, and other policy parameters

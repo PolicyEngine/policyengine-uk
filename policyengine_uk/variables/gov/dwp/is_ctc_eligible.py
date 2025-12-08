@@ -11,7 +11,7 @@ class is_ctc_eligible(Variable):
     def formula(benunit, period, parameters):
         already_claiming = (
             add(benunit, period, ["child_tax_credit_reported"]) > 0
-        )
+        ) & (~add(benunit, period, ["would_claim_uc"]) > 0)
         return (
             benunit.any(benunit.members("is_child_for_ctc", period))
             & already_claiming

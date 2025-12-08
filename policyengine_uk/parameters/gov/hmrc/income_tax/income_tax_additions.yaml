@@ -7,5 +7,6 @@ values:
   - earned_income_tax
   - savings_income_tax
   - dividend_income_tax
+  - property_income_tax
   - cb_hitc
   - personal_pension_contributions_tax

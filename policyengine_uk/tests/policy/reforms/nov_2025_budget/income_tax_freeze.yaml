@@ -1,0 +1,83 @@
+# Tests for November 2025 Autumn Budget income tax threshold freeze extension
+# The budget extends the freeze on personal allowance, higher rate threshold, and additional rate threshold
+# from April 2028 to April 2031 (covering tax years 2028-29, 2029-30, 2030-31)
+
+# Personal allowance freeze tests
+- name: Personal allowance frozen at 12570 in 2028-29
+  period: 2028
+  input:
+    employment_income: 50000
+  output:
+    personal_allowance: 12570
+
+- name: Personal allowance frozen at 12570 in 2029-30
+  period: 2029
+  input:
+    employment_income: 50000
+  output:
+    personal_allowance: 12570
+
+- name: Personal allowance frozen at 12570 in 2030-31
+  period: 2030
+  input:
+    employment_income: 50000
+  output:
+    personal_allowance: 12570
+
+# Higher rate threshold tests (PA + basic rate band = 12570 + 37700 = 50270)
+- name: Income at 50270 pays basic rate only in 2028-29
+  period: 2028
+  input:
+    employment_income: 50270
+  output:
+    higher_rate_earned_income: 0
+
+- name: Income at 50271 pays higher rate in 2028-29
+  period: 2028
+  input:
+    employment_income: 50271
+  output:
+    higher_rate_earned_income: 1
+
+- name: Income at 50270 pays basic rate only in 2030-31
+  period: 2030
+  input:
+    employment_income: 50270
+  output:
+    higher_rate_earned_income: 0
+
+- name: Income at 50271 pays higher rate in 2030-31
+  period: 2030
+  input:
+    employment_income: 50271
+  output:
+    higher_rate_earned_income: 1
+
+# Additional rate threshold tests (125140)
+- name: Income at 125140 pays higher rate only in 2028-29
+  period: 2028
+  input:
+    employment_income: 125140
+  output:
+    add_rate_earned_income: 0
+
+- name: Income at 125141 pays additional rate in 2028-29
+  period: 2028
+  input:
+    employment_income: 125141
+  output:
+    add_rate_earned_income: 1
+
+- name: Income at 125140 pays higher rate only in 2030-31
+  period: 2030
+  input:
+    employment_income: 125140
+  output:
+    add_rate_earned_income: 0
+
+- name: Income at 125141 pays additional rate in 2030-31
+  period: 2030
+  input:
+    employment_income: 125141
+  output:
+    add_rate_earned_income: 1

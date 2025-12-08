@@ -1,6 +1,10 @@
 # HBAI
 
-PolicyEngine UK includes variables that match to the Households Below Average Income (HBAI) income concepts. These are:
+```{note}
+PolicyEngine UK includes variables that match to the Households Below Average Income (HBAI) income concepts.
+```
+
+These are:
 
 - `hbai_household_net_income`: Household net income, before housing costs
 - `hbai_household_net_income_ahc`: Household net income, after housing costs
@@ -9,7 +13,9 @@ PolicyEngine UK includes variables that match to the Households Below Average In
 
 These variables are used in the HBAI income distribution and poverty [statistics](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2024/households-below-average-income-an-analysis-of-the-uk-income-distribution-fye-1995-to-fye-2024), which are published by the Department for Work and Pensions (DWP) in the UK. The HBAI income concepts are defined [here](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023#income-definition).
 
+```{important}
 The table below shows how the HBAI income components map to PolicyEngine variables. The HBAI income definition is based on the income of all members of a household, and includes various sources of income, subtractions, and housing costs (for the AHC variant).
+```
 
 | HBAI component | PolicyEngine variable/notes |
 |------|-------------|
@@ -41,7 +47,9 @@ The table below shows how the HBAI income components map to PolicyEngine variabl
 ## Nowcasting/forecasting
 
 
+```{tip}
 Each of the variables above is either derived from other variables, or is a direct input variable. Direct input variables are uprated in future years according to economic indices, specified in the table below.
+```
 
 | Variable | Index | Notes |
 |----------|-------|-------|
@@ -60,13 +68,13 @@ Each of the variables above is either derived from other variables, or is a dire
 | `free_tv_licence_value` | Not directly uprated | Depends on policy parameters |
 | `income_tax` | Derived | Calculated based on income and tax policy |
 | `national_insurance` | Derived | Calculated based on income and NI policy |
-| `council_tax` | gov.obr.council_tax | Uprated based on OBR council tax revenue projections |
+| `council_tax` | gov.obr.council_tax | Uprated based on outturn CT levels by region growth to 2025, then OBR projections of levels by region onwardss |
 | `domestic_rates` | gov.obr.council_tax | Uprated with council tax as proxy |
 | `employee_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
 | `personal_pension_contributions` | gov.obr.per_capita.employment_income | Uprated based on per capita employment income growth |
 | `maintenance_expenses` | gov.obr.consumer_price_index | Uprated based on CPI inflation |
 | `student_loan_repayments` | gov.economic_assumptions.indices.obr.average_earnings | Uprated based on OBR average earnings projections |
-| `rent` | gov.obr.rent | Uprated based on OBR rent projections |
+| `rent` | gov.obr.rent | Social rents uprated by CPI+1%, private rents uprated with outturn data by region to 2025, then with backed-out private rent level growth from OBR aggregate rent forecasts (assuming social rent grows at CPI+1%) |
 | `water_and_sewerage_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |
-| `mortgage_interest_repayment` | gov.obr.mortgage_interest | Uprated based on OBR mortgage interest projections |
+| `mortgage_interest_repayment` | gov.obr.mortgage_interest | Uprated based on outturn Ofwat data to 2025, then Ofwat projections onwards |
 | `housing_service_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |

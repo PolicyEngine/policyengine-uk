@@ -1,0 +1,16 @@
+description: Plan 2 student loan interest rates
+label: Plan 2 interest rates
+documentation: |
+  Plan 2 student loan interest rates are income-contingent after graduation.
+
+  While studying: RPI + 3%
+  After graduating:
+  - Income at or below lower threshold: RPI only
+  - Income between lower and upper threshold: RPI + tapered rate (0% to 3%)
+  - Income at or above upper threshold: RPI + 3%
+
+  This progressive structure means higher earners pay more interest,
+  though the actual repayment amount still depends on income, not the
+  loan balance or interest rate.
+
+  Reference: https://www.gov.uk/repaying-your-student-loan/interest

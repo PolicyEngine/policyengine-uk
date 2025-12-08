@@ -4,7 +4,11 @@ This documentation describes the water bills projection and uprating methodology
 
 ## Overview
 
-We implement water bills projections through a combination of historical data analysis and regulatory projection data. The system uses:
+```{note}
+We implement water bills projections through a combination of historical data analysis and regulatory projection data.
+```
+
+The system uses:
 
 1. **Historical data** (2021-2025) from Ofwat average bills
 2. **Regulatory projection data** from Ofwat company-specific increases (2025-2030)
@@ -25,7 +29,9 @@ The projection uses historical real water bills data from Ofwat:
 **Data source**: [Ofwat average bills data for England and Wales](https://www.ofwat.gov.uk/average-bills-press-statement-2024-25/)
 
 #### Regulatory projections
+```{important}
 We source company-specific water bill increases from the Consumer Council for Water (CCW) based on Ofwat's price review data for 2025-2030. The data includes projected bills for 16 water companies covering both water and sewerage services.
+```
 
 **Data source**: [CCW Water Company Bill Increases 2025-30](https://www.ccw.org.uk/our-work/price-review/how-much-will-my-water-and-sewerage-bills-increase-by-2030/breakdown-of-water-companies-bill-increases-2025-30/)
 
@@ -41,10 +47,9 @@ We source company-specific water bill increases from the Consumer Council for Wa
 2. We apply Consumer Price Index (CPIH) uprating to account for inflation
 3. We compound inflation adjustments year-over-year
 
-The methodology ensures that:
-- We preserve real increases from regulatory decisions
-- We apply additional inflation adjustments using CPIH forecasts
-- Future projections account for both policy changes and economic conditions
+```{tip}
+The methodology ensures we preserve real increases from regulatory decisions, apply additional inflation adjustments using CPIH forecasts, and account for both policy changes and economic conditions in future projections.
+```
 
 ### Code structure
 

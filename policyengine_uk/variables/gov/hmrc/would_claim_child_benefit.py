@@ -11,8 +11,12 @@ class would_claim_child_benefit(Variable):
     value_type = bool
 
     def formula(benunit, period, parameters):
+        claims_all_entitled_benefits = benunit(
+            "claims_all_entitled_benefits", period
+        )
         p = parameters(period).gov.hmrc.child_benefit.takeup
         overall_p = p.overall
-        return (random(benunit) < overall_p) * ~benunit(
+        random_takeup = (random(benunit) < overall_p) & ~benunit(
             "child_benefit_opts_out", period
         )
+        return claims_all_entitled_benefits | random_takeup
