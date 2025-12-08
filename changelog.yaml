@@ -2092,3 +2092,8 @@
     - Salary sacrifice pension cap reform (GBP 2,000 cap from April 2029) with broad-base
       employer response modeling.
   date: 2025-12-08 10:54:42
+- bump: patch
+  changes:
+    fixed:
+    - Basic state pension calculation.
+  date: 2025-12-08 21:37:03
