@@ -13,30 +13,27 @@ class rent(Variable):
     quantity_type = FLOW
 
     def formula(household, period, parameters):
-        if period.start.year < 2023:
-            # We don't have growth rates for rent before this.
-            return 0
-
+        # Only apply uprating for microsimulation datasets
         if household.simulation.dataset is None:
             return 0
 
         data_year = household.simulation.dataset.time_period
 
-        # When asked for the data year, we need to use the input value
-        # Check if this value has already been set (to avoid recursion)
-        if period.start.year == data_year:
-            holder = household.get_holder("rent")
-            # Try to get the known values for this period
-            known_periods = holder.get_known_periods()
-            if period in known_periods:
-                # Value already exists, return it
-                return holder.get_array(period)
-            else:
-                # No input provided, return 0
-                return 0
+        # Don't apply formula for years at or before data year
+        # The data itself contains the rent values for those years
+        if period.start.year <= data_year:
+            return 0
 
-        # For future years, uprate from data year
-        original_rent = household("rent", data_year)
+        if period.start.year < 2023:
+            # We don't have growth rates for rent before this.
+            return 0
+
+        # For future years after the data year, uprate from data year
+        # Get rent directly from holder to avoid recursion
+        holder = household.get_holder("rent")
+        original_rent = holder.get_array(data_year)
+        if original_rent is None:
+            return 0
         tenure_type = household("tenure_type", period).decode_to_str()
 
         is_social_rent = (tenure_type == "RENT_FROM_COUNCIL") | (
