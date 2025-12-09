@@ -1,0 +1,9 @@
+- bump: patch
+  changes:
+    added:
+      - Legislative references for marriage allowance take-up rate (Income Tax Act 2007 s. 55B)
+      - Legislative references for married couple's allowance deduction rate (Income Tax Act 2007 s. 46)
+      - Legislative references for income tax additions and subtractions (Income Tax Act 2007 s. 23)
+      - Labels for 11 HMRC income tax parameters including annual allowance, personal savings allowance, and savings starter rate parameters
+    changed:
+      - All HMRC income tax parameters now have proper labels and legislative references
