@@ -22,11 +22,20 @@ class rent(Variable):
 
         data_year = household.simulation.dataset.time_period
 
-        # If we're asking for the data year itself, return the input value
-        # to avoid circular reference
+        # When asked for the data year, we need to use the input value
+        # Check if this value has already been set (to avoid recursion)
         if period.start.year == data_year:
-            return household.get_holder("rent").get_array(period)
+            holder = household.get_holder("rent")
+            # Try to get the known values for this period
+            known_periods = holder.get_known_periods()
+            if period in known_periods:
+                # Value already exists, return it
+                return holder.get_array(period)
+            else:
+                # No input provided, return 0
+                return 0
 
+        # For future years, uprate from data year
         original_rent = household("rent", data_year)
         tenure_type = household("tenure_type", period).decode_to_str()
 
