@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-    - Fixed employer_ni_fixed_employer_cost_change variable returning impacts in baseline scenarios by correcting baseline parameter access.
