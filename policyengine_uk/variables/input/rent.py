@@ -21,6 +21,12 @@ class rent(Variable):
             return 0
 
         data_year = household.simulation.dataset.time_period
+
+        # If we're asking for the data year itself, return the input value
+        # to avoid circular reference
+        if period.start.year == data_year:
+            return household.get_holder("rent").get_array(period)
+
         original_rent = household("rent", data_year)
         tenure_type = household("tenure_type", period).decode_to_str()
 
