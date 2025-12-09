@@ -2132,3 +2132,9 @@
     changed:
     - All HMRC income tax parameters now have proper labels and legislative references
   date: 2025-12-09 10:09:16
+- bump: patch
+  changes:
+    fixed:
+    - Refactor variables with redundant adds/subtracts and formula definitions to
+      prevent sync issues
+  date: 2025-12-09 16:16:37
