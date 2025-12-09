@@ -12,7 +12,4 @@ class total_wealth(Variable):
         "property_wealth",
         "corporate_wealth",
         "savings",
-        "net_financial_wealth",
-        "gross_financial_wealth",
-        "shareholding",
     ]
