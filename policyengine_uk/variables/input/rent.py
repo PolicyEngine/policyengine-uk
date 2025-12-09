@@ -17,7 +17,7 @@ class rent(Variable):
         if household.simulation.dataset is None:
             return 0
 
-        data_year = household.simulation.dataset.time_period
+        data_year = int(household.simulation.dataset.time_period)
 
         # Don't apply formula for years at or before data year
         # The data itself contains the rent values for those years
