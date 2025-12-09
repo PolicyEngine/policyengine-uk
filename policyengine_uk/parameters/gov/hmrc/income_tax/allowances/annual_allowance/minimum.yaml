@@ -3,6 +3,7 @@ values:
   2015-04-01: 4_000
 metadata:
   unit: currency-GBP
+  label: Minimum annual allowance for pension contributions
   reference: 
   - title: Work out your reduced (tapered) annual allowance
     href: https://www.gov.uk/guidance/pension-schemes-work-out-your-tapered-annual-allowance

@@ -4,4 +4,5 @@ values:
 metadata:
   period: week
   unit: currency-GBP
+  label: Personal savings allowance (basic rate)
   reference: https://www.gov.uk/apply-tax-free-interest-on-savings
