@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.65.8] - 2025-12-09 10:09:16
+
+### Added
+
+- Legislative references for marriage allowance take-up rate (Income Tax Act 2007 s. 55B)
+- Legislative references for married couple's allowance deduction rate (Income Tax Act 2007 s. 46)
+- Legislative references for income tax additions and subtractions (Income Tax Act 2007 s. 23)
+- Labels for 11 HMRC income tax parameters including annual allowance, personal savings allowance, and savings starter rate parameters
+
+### Changed
+
+- All HMRC income tax parameters now have proper labels and legislative references
+
 ## [2.65.7] - 2025-12-09 09:47:39
 
 ### Added
@@ -2468,6 +2481,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.65.8]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.7...2.65.8
 [2.65.7]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.6...2.65.7
 [2.65.6]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.5...2.65.6
 [2.65.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.4...2.65.5
