@@ -23,7 +23,7 @@ def add_universal_credit_reform(sim: Microsimulation):
         if not rebalancing.active(year):
             continue
         is_post_25_claimant = uc_seed < p_uc_post_2026_status[year]
-        current_health_element = sim.calculate("uc_LCWRA_element", year)
+        current_health_element = sim.calculate("uc_lcwra_element", year)
         # Set new claimants to £217.26/month from April 2026 (pre-2026 claimaints keep inflation-linked increases)
         # https://bills.parliament.uk/publications/62123/documents/6889#page=16
         current_health_element[
@@ -31,7 +31,7 @@ def add_universal_credit_reform(sim: Microsimulation):
         ] = (
             new_claimant_health_element(year) * 12
         )  # Monthly amount * 12
-        sim.set_input("uc_LCWRA_element", year, current_health_element)
+        sim.set_input("uc_lcwra_element", year, current_health_element)
 
     # https://bills.parliament.uk/publications/62123/documents/6889#page=14
 

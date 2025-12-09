@@ -11,13 +11,13 @@ class is_benefit_cap_exempt_earnings(Variable):
     def formula(benunit, period, parameters):
         # Check if anyone in benefit unit is over state pension age
         person = benunit.members
-        over_pension_age = person("is_SP_age", period)
+        over_pension_age = person("is_sp_age", period)
         has_pensioner = benunit.any(over_pension_age)
 
         # UC-specific exemptions
         # Limited capability for work and work-related activity
         has_lcwra = benunit.any(
-            person("uc_limited_capability_for_WRA", period)
+            person("uc_limited_capability_for_wra", period)
         )
 
         # Carer element in UC indicates caring for someone with disability
