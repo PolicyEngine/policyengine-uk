@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+      - Refactor variables with redundant adds/subtracts and formula definitions to prevent sync issues
