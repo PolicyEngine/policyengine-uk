@@ -69,3 +69,8 @@ dev = [
     "linecheck",
     "rich",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "microsimulation: marks tests that use full microsimulation (deselect with '-m \"not microsimulation\"')",
+]

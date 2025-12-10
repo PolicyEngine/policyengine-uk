@@ -60,6 +60,7 @@ def reform_simulation():
     return Microsimulation()
 
 
+@pytest.mark.microsimulation
 def test_salary_sacrifice_cap_revenue_impact(
     baseline_simulation, reform_simulation
 ):
@@ -101,6 +102,7 @@ def test_salary_sacrifice_cap_revenue_impact(
     )
 
 
+@pytest.mark.microsimulation
 def test_ni_increases_with_reform(baseline_simulation, reform_simulation):
     """
     Test that total NI increases when the cap is applied.
@@ -132,6 +134,7 @@ def test_ni_increases_with_reform(baseline_simulation, reform_simulation):
     ), f"NI increase should be >£1bn, got £{ni_increase/1e9:.3f}bn"
 
 
+@pytest.mark.microsimulation
 def test_income_tax_impact(baseline_simulation, reform_simulation):
     """
     Test the income tax impact of the reform.
@@ -161,6 +164,7 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
     ), f"Income tax increase should be <£3bn, got £{tax_change/1e9:.3f}bn"
 
 
+@pytest.mark.microsimulation
 def test_excess_redirected_to_pension(reform_simulation):
     """
     Test that full excess is redirected to employee pension contributions.
@@ -178,6 +182,7 @@ def test_excess_redirected_to_pension(reform_simulation):
     ), f"Redirected amount should be >£12bn, got £{redirected/1e9:.2f}bn"
 
 
+@pytest.mark.microsimulation
 def test_salary_sacrifice_data_exists(reform_simulation):
     """
     Test that salary sacrifice data exists in the simulation.
@@ -200,6 +205,7 @@ def test_salary_sacrifice_data_exists(reform_simulation):
     ), f"Should have >4 million contributors, got {num_contributors/1e6:.1f}m"
 
 
+@pytest.mark.microsimulation
 def test_affected_population(reform_simulation):
     """
     Test that a reasonable number of people are affected by the cap.
@@ -222,6 +228,7 @@ def test_affected_population(reform_simulation):
     ), f"Expected <5 million affected, got {affected_count/1e6:.1f}m"
 
 
+@pytest.mark.microsimulation
 def test_full_excess_redirected(reform_simulation):
     """
     Test that the full excess is redirected (no targeted haircut).
@@ -255,6 +262,7 @@ def test_full_excess_redirected(reform_simulation):
     )
 
 
+@pytest.mark.microsimulation
 def test_broad_base_haircut_affects_all_workers(reform_simulation):
     """
     Test that the broad-base haircut reduces employment income for all workers.
@@ -291,6 +299,7 @@ def test_broad_base_haircut_affects_all_workers(reform_simulation):
     )
 
 
+@pytest.mark.microsimulation
 def test_decile_impact_negative_for_higher_earners(
     baseline_simulation, reform_simulation
 ):
