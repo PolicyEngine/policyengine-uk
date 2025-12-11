@@ -16,7 +16,7 @@ class benefit_cap(Variable):
         region = benunit.value_from_first_person(household_region)
         regions = household_region.possible_values
         in_london = region == regions.LONDON
-        cap = parameters(period).gov.dwp.benefit_cap
+        p = parameters(period).gov.dwp.benefit_cap
         rate = select(
             [
                 single_claimant & in_london,
@@ -25,10 +25,10 @@ class benefit_cap(Variable):
                 ~single_claimant & ~in_london,
             ],
             [
-                cap.single.in_london,
-                cap.single.outside_london,
-                cap.non_single.in_london,
-                cap.non_single.outside_london,
+                p.single.in_london,
+                p.single.outside_london,
+                p.non_single.in_london,
+                p.non_single.outside_london,
             ],
         )
         exempt = benunit("is_benefit_cap_exempt", period)

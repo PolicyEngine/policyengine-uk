@@ -11,5 +11,5 @@ values:
   - savings_income_tax
   - dividend_income_tax
   - property_income_tax
-  - CB_HITC
+  - cb_hitc
   - personal_pension_contributions_tax

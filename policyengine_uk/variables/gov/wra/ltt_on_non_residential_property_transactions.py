@@ -12,7 +12,7 @@ class ltt_on_non_residential_property_transactions(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        ltt = parameters(period).gov.wra.land_transaction_tax
+        p = parameters(period).gov.wra.land_transaction_tax
         price = household("non_residential_property_purchased", period)
-        non_residential_purchase_tax = ltt.non_residential.calc(price)
+        non_residential_purchase_tax = p.non_residential.calc(price)
         return household("ltt_liable", period) * non_residential_purchase_tax

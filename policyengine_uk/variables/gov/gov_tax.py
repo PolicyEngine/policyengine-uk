@@ -24,7 +24,7 @@ class gov_tax(Variable):
         "non_primary_residence_wealth_tax",
         "income_tax",
         "national_insurance",
-        "LVT",
+        "lvt",
         "carbon_tax",
         "capital_gains_tax",
         "private_school_vat",

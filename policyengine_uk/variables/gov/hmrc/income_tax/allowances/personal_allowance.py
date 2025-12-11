@@ -13,14 +13,15 @@ class personal_allowance(Variable):
     )
 
     def formula(person, period, parameters):
-        params = parameters(period)
-        PA = params.gov.hmrc.income_tax.allowances.personal_allowance
-        personal_allowance = PA.amount
-        ANI = person("adjusted_net_income", period)
+        p = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.personal_allowance
+        personal_allowance = p.amount
+        ani = person("adjusted_net_income", period)
         # Per ITA 2007 s.58, deduct grossed-up Gift Aid from ANI
         # when calculating Personal Allowance taper
         gift_aid_grossed_up = person("gift_aid_grossed_up", period)
-        ANI_for_taper = ANI - gift_aid_grossed_up
-        excess = max_(0, ANI_for_taper - PA.maximum_ANI)
-        reduction = excess * PA.reduction_rate
+        ani_for_taper = ani - gift_aid_grossed_up
+        excess = max_(0, ani_for_taper - p.maximum_ani)
+        reduction = excess * p.reduction_rate
         return max_(0, personal_allowance - reduction)

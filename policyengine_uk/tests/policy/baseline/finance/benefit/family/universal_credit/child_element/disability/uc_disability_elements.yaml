@@ -9,6 +9,6 @@
     benunits:
       benunit:
         members: person
-        uc_LCWRA_element: 1
+        uc_lcwra_element: 1
   output:
     uc_disability_elements: 3

@@ -11,4 +11,4 @@ class ni_liable(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        return person("over_16", period) & ~person("is_SP_age", period)
+        return person("over_16", period) & ~person("is_sp_age", period)

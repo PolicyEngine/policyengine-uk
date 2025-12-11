@@ -4,7 +4,7 @@
   input:
     age: 14
   output:
-    is_child_or_QYP: true
+    is_child_or_qyp: true
 - name: Child or QYP for student in FE
   period: 2020
   absolute_error_margin: 0
@@ -12,7 +12,7 @@
     age: 17
     current_education: POST_SECONDARY
   output:
-    is_child_or_QYP: true
+    is_child_or_qyp: true
 - name: Benefits premiums summed
   period: 2020
   absolute_error_margin: 0

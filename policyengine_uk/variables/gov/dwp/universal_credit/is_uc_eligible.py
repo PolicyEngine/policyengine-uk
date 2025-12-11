@@ -9,4 +9,4 @@ class is_uc_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return benunit.any(benunit.members("is_WA_adult", period))
+        return benunit.any(benunit.members("is_wa_adult", period))

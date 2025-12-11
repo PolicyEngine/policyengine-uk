@@ -14,8 +14,8 @@ class would_claim_child_benefit(Variable):
         claims_all_entitled_benefits = benunit(
             "claims_all_entitled_benefits", period
         )
-        takeup_rate = parameters(period).gov.hmrc.child_benefit.takeup
-        overall_p = takeup_rate.overall
+        p = parameters(period).gov.hmrc.child_benefit.takeup
+        overall_p = p.overall
         random_takeup = (random(benunit) < overall_p) & ~benunit(
             "child_benefit_opts_out", period
         )

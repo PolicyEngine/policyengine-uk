@@ -11,5 +11,5 @@ class wealth_tax(Variable):
 
     def formula(household, period, parameters):
         wealth = household("total_wealth", period)
-        tax = parameters(period).gov.contrib.ubi_center.wealth_tax
-        return tax.calc(wealth)
+        p = parameters(period).gov.contrib.ubi_center.wealth_tax
+        return p.calc(wealth)

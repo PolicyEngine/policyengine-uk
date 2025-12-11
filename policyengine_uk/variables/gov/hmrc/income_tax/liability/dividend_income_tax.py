@@ -13,13 +13,11 @@ class dividend_income_tax(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        rates = parameters(period).gov.hmrc.income_tax.rates
+        p = parameters(period).gov.hmrc.income_tax.rates
         other_income = person("earned_taxable_income", period) + person(
             "taxed_savings_income", period
         )
         taxable_dividends = person("taxed_dividend_income", period)
-        tax_with_dividends = rates.dividends.calc(
-            other_income + taxable_dividends
-        )
-        tax_without_dividends = rates.dividends.calc(other_income)
+        tax_with_dividends = p.dividends.calc(other_income + taxable_dividends)
+        tax_without_dividends = p.dividends.calc(other_income)
         return max_(0, tax_with_dividends - tax_without_dividends)

@@ -164,8 +164,10 @@ class Simulation(CoreSimulation):
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:
+            # Convert parameter name to lowercase for backwards compatibility
+            parameter_lowercase = parameter.lower()
             p: Parameter = self.tax_benefit_system.parameters.get_child(
-                parameter
+                parameter_lowercase
             )
             if isinstance(changes[parameter], dict):
                 # Time-period specific changes
@@ -479,6 +481,10 @@ class Simulation(CoreSimulation):
     ):
         if variable_name is None:
             return self.calculate_all()
+
+        # Convert variable name to lowercase for backwards compatibility
+        variable_name = variable_name.lower()
+
         tracer: SimpleTracer = self.tracer
         if len(tracer.stack) == 0:
             # Only decode enums to string values when we're not within

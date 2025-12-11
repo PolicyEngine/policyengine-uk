@@ -13,10 +13,9 @@ class household_land_value(Variable):
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        wealth = parameters(period).household.wealth
+        p = parameters(period).household.wealth
         property_wealth_intensity = (
-            wealth.land.value.aggregate_household_land_value
-            / wealth.property_wealth
+            p.land.value.aggregate_household_land_value / p.property_wealth
         )
         property_wealth = household("property_wealth", period)
         owned_land = household("owned_land", period)
