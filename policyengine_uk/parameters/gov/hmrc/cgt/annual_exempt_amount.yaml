@@ -1,8 +1,20 @@
 description: Annual Exempt Amount for individuals. This parameter is under active development and reforms including it should not be cited.
 values:
-  2018-01-01: 11_700
-  2019-01-01: 12_000
-  2020-01-01: 12_300
+  2018-01-01:
+    value: 11_700
+    reference:
+      - title: The Capital Gains Tax (Annual Exempt Amount) Order 2018
+        href: https://www.legislation.gov.uk/uksi/2018/244/made
+  2019-01-01:
+    value: 12_000
+    reference:
+      - title: Finance Act 2019 s. 13 and Sch. 1
+        href: https://www.legislation.gov.uk/ukpga/2019/1/schedule/1
+  2020-01-01:
+    value: 12_300
+    reference:
+      - title: The Capital Gains Tax (Annual Exempt Amount) Order 2020
+        href: https://www.legislation.gov.uk/uksi/2020/333/made
   2023-01-01: 
     value: 6_000
     reference:
@@ -16,7 +28,6 @@ values:
 metadata:
   unit: currency-GBP
   label: Annual Exempt Amount
-  uprating: gov.benefit_uprating_cpi
   reference:
     - title: Taxation of Chargeable Gains Act 1992 s. 1K(2) # Current law
       href: https://www.legislation.gov.uk/ukpga/1992/12/section/1K

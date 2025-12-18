@@ -1,7 +1,15 @@
 description: Capital gains tax rate on additional rate taxpayers. This parameter is under active development and reforms including it should not be cited.
 values:
-  2015-01-01: 0.2
-  2025-04-06: 0.24
+  2015-01-01:
+    value: 0.2
+    reference:
+      - title: Finance Act 2016 s. 83
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/83
+  2025-04-06:
+    value: 0.24
+    reference:
+      - title: Finance Act 2025 s. 7
+        href: https://www.legislation.gov.uk/ukpga/2025/8/section/7
 metadata:
   unit: /1
   label: Capital Gains Tax additional rate
