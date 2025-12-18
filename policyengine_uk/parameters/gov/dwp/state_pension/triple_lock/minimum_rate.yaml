@@ -1,6 +1,14 @@
 description: The triple lock is set to the highest of earnings growth, CPI inflation, or this rate.
 values:
-  2010-01-01: 0.025
+  2010-01-01:
+    value: 0.025
+    reference:
+      - title: State Pension triple lock (House of Commons Library)
+        href: https://commonslibrary.parliament.uk/research-briefings/cbp-7812/
 metadata:
   unit: /1
   label: triple lock minimum rate
+  documentation: |
+    The triple lock is a policy commitment introduced by the Coalition Government
+    in 2010, not enshrined in primary legislation. The 2.5% minimum is one of three
+    components ensuring pensions increase by the highest of earnings, inflation, or 2.5%.
