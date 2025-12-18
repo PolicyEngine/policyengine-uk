@@ -4,7 +4,7 @@ values:
 metadata:
   period: week
   unit: hour
-  label: Housing Benefit worker element hours requirement
+  label: Housing benefit worker element hours requirement
   economy: false
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 17 (4)

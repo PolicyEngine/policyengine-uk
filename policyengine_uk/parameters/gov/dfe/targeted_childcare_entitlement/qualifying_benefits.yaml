@@ -5,7 +5,7 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2018/146/regulation/2/made
   period: year
   unit: program
-  label: qualifying benefits for targeted childcare entitlement
+  label: Qualifying benefits for targeted childcare entitlement
 values:
   2014-01-01:
     - income_support

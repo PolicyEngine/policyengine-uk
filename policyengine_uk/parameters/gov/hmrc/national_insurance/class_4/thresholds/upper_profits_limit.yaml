@@ -9,7 +9,7 @@ values:
   2021-04-06: 50_270
   2026-04-06: 50_270
 metadata:
-  label: NI Upper Profits Limit
+  label: NI upper profits limit
   name: NI_UPL
   unit: currency-GBP
   period: year

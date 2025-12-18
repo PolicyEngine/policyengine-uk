@@ -3,6 +3,6 @@ values:
   2015-04-01: 20
 metadata:
   period: week
-  label: Income Support income disregard (lone parent)
+  label: Income support income disregard (lone parent)
   unit: currency-GBP
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33

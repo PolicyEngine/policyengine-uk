@@ -1,6 +1,6 @@
 description: A non dependent deduction is provided under Housing Benefit for filers at or above this age threshold.
 metadata:
-  label: Housing Benefit non dependent deduction age threshold
+  label: Housing benefit non dependent deduction age threshold
   period: year
   unit: year
   reference: 

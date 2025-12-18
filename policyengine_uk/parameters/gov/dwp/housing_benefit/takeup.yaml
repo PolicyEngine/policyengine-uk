@@ -2,7 +2,7 @@ description: Share of eligible Housing Benefit recipients that participate. By d
   this is 100%, because only current claimants are eligible (no new claims).
 metadata:
   economy: false
-  label: Housing Benefit take-up rate
+  label: Housing benefit take-up rate
   propagate_metadata_to_children: true
   unit: /1
   period: year

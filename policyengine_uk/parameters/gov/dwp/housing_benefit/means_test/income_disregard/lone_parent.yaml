@@ -4,7 +4,7 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  label: Housing Benefit lone parent earnings disregard
+  label: Housing benefit lone parent earnings disregard
   uprating: gov.benefit_uprating_cpi
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 4

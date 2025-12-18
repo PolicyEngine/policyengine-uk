@@ -3,7 +3,7 @@ values:
   2015-04-01: 116.8
 metadata:
   period: week
-  label: Income Support applicable amount (couples, both over 18)
+  label: Income support applicable amount (couples, both over 18)
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference: https://www.gov.uk/income-support/what-youll-get

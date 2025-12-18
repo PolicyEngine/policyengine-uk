@@ -1,6 +1,6 @@
 description: Savings income tax rates. From April 2027, savings income is taxed at rates 2pp higher than the standard UK rates.
 metadata:
-  label: Savings income tax rates
+  label: Savings Income Tax rates
   unit: /1
   reference:
     - title: OBR Economic and Fiscal Outlook November 2025

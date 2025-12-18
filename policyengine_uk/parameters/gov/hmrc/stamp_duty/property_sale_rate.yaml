@@ -4,4 +4,4 @@ values:
 metadata:
   unit: /1
   # 4.5% was the value in 2021 and probably is still accurate: TODO add proper calculations for this but seems OK for now.
-  label: percentage of properties sold
+  label: Percentage of properties sold

@@ -19,7 +19,7 @@ values:
         - title: National Insurance Contributions (Increase of Thresholds) Act 2022
           href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
 metadata:
-  label: NI Lower Profits Limit
+  label: NI lower profits limit
   unit: currency-GBP
   period: year
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

@@ -3,7 +3,7 @@ values:
   2015-04-01: 74.35
 metadata:
   period: week
-  label: Income Support applicable amount (single, over 25)
+  label: Income support applicable amount (single, over 25)
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference: https://www.gov.uk/income-support/what-youll-get

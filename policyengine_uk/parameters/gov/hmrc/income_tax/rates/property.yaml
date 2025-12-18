@@ -1,6 +1,6 @@
 description: Property income tax rates. From April 2027, property income is taxed at rates 2pp higher than the standard UK rates.
 metadata:
-  label: Property income tax rates
+  label: Property Income Tax rates
   unit: /1
   reference:
     - title: OBR Economic and Fiscal Outlook November 2025
