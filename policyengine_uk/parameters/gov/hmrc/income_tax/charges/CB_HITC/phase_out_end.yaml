@@ -5,7 +5,7 @@ values:
 metadata:
   period: year
   name: CB_HITC_reduction_threshold
-  label: Child Benefit Tax Charge phase-out end
+  label: Child Benefit tax charge phase-out end
   unit: currency-GBP
   reference:
     - title: Finance Act 2012 Schedule 1 s. 681C

@@ -1,6 +1,6 @@
 description: All variables that are subtracted from the base amount to calculate total income tax
 metadata:
-  label: Subtractive components of total income tax
+  label: Subtractive components of total Income Tax
   unit: list
   reference:
     - title: Income Tax Act 2007 s. 23

@@ -4,7 +4,7 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  label: Housing Benefit single person earnings disregard
+  label: Housing benefit single person earnings disregard
   uprating: gov.benefit_uprating_cpi
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 9

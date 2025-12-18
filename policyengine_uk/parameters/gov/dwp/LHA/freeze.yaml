@@ -6,4 +6,4 @@ values:
   2024-01-01: true
 metadata:
   unit: bool
-  label: LHA freeze
+  label: Lha freeze

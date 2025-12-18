@@ -1,6 +1,4 @@
 - bump: patch
   changes:
-    fixed:
-      - Remove uprating from CGT annual exempt amount to reflect fixed 3,000 amount
     changed:
-      - Add per-value legislative references to all CGT parameters
+      - Standardized all parameter labels to use sentence case, while preserving proper names (e.g., "Bank of England", "Child Benefit") and acronyms (e.g., "HMRC", "VAT", "NHS")

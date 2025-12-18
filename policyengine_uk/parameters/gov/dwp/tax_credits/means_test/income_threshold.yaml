@@ -11,7 +11,7 @@ values:
 metadata:
   period: year
   name: tc_income_threshold
-  label: "Tax Credits income threshold"
+  label: "Tax credits income threshold"
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi
   reference:

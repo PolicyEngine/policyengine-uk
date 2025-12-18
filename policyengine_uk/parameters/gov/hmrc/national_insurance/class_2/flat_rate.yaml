@@ -19,7 +19,7 @@ values:
           href: https://www.gov.uk/government/publications/autumn-statement-2023-national-insurance-factsheet/autumn-statement-2023-national-insurance-factsheet
 metadata:
   unit: currency-GBP
-  label: NI Class 2 Flat Rate
+  label: NI class 2 flat rate
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
     - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

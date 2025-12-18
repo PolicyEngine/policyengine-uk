@@ -14,7 +14,7 @@ values:
         - title: National Insurance Contributions (Reduction in Rates) Act 2024 s 1
           href: https://www.legislation.gov.uk/ukpga/2024/5/section/1
 metadata:
-  label: NI Class 4 additional rate
+  label: NI class 4 additional rate
   name: NI_class_4_add_rate
   unit: /1
   reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

@@ -26,7 +26,7 @@ values:
         - title: Spring Statement 2022
           href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1062486/Spring_Statement_2022_Web_Accessible.pdf
 metadata:
-  label: NI Primary Threshold
+  label: NI primary threshold
   name: NI_PT
   unit: currency-GBP
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

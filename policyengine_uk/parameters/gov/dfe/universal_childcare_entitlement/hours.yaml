@@ -2,7 +2,7 @@ description: The Department for Education provides this number of hours per year
 metadata:
   unit: hour
   threshold_unit: year
-  label: universal childcare entitlement hours
+  label: Universal childcare entitlement hours
   reference:
     - title: Childcare (Early Years Provision Free of Charge) (Extended Entitlement) Regulations 2016 - Regulation 35(3)
       href: https://www.legislation.gov.uk/uksi/2016/1257/part/4/made

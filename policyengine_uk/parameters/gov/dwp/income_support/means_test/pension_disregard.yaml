@@ -3,7 +3,7 @@ description: Threshold in occupational and personal pensions, above which the In
 metadata:
   economy: false
   period: week
-  label: Income Support pension disregard
+  label: Income support pension disregard
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
   unit: currency-GBP
 values:

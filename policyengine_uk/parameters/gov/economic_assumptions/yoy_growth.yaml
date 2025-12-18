@@ -85,7 +85,7 @@ obr:
       2073-01-01: 0.0239
     metadata:
       unit: /1
-      label: retail price index growth
+      label: Retail price index growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -164,7 +164,7 @@ obr:
       2073-01-01: 0.0383
     metadata:
       unit: /1
-      label: average earnings growth
+      label: Average earnings growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.6)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -244,7 +244,7 @@ obr:
       2073-01-01: 0.0200
     metadata:
       unit: /1
-      label: consumer price index growth
+      label: Consumer price index growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -264,7 +264,7 @@ obr:
       2029-01-01: 0.019
     metadata:
       unit: /1
-      label: after housing costs consumer price index growth
+      label: After housing costs consumer price index growth
       reference:
         - title: OBR EFO November 2025
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -357,7 +357,7 @@ obr:
       2030-01-01: 0.0292
     metadata:
       unit: /1
-      label: non-labour income growth
+      label: Non-labour income growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -436,7 +436,7 @@ obr:
         2030-01-01: 0.0306
       metadata:
         unit: /1
-        label: per capita GDP growth
+        label: Per capita GDP growth
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.4)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -458,7 +458,7 @@ obr:
         2030-01-01: 0.0364
       metadata:
         unit: /1
-        label: per capita mixed income growth
+        label: Per capita mixed income growth
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -480,7 +480,7 @@ obr:
         2030-01-01: 0.0247
       metadata:
         unit: /1
-        label: per capita non-labour income growth
+        label: Per capita non-labour income growth
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
             href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -502,7 +502,7 @@ obr:
       2030-01-01: 0.0242
     metadata:
       unit: /1
-      label: house prices growth
+      label: House prices growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.16)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -524,7 +524,7 @@ obr:
       2030-01-01: 0.0553
     metadata:
       unit: /1
-      label: mortgage interest growth
+      label: Mortgage interest growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -545,7 +545,7 @@ obr:
       2030-01-01: 0.030
     metadata:
       unit: /1
-      label: social rent growth
+      label: Social rent growth
       reference:
         - title: OBR EFO November 2025 (derived from CPI+1%, one year lagged)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -566,7 +566,7 @@ obr:
 
     metadata:
       unit: /1
-      label: rent growth
+      label: Rent growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
@@ -630,7 +630,7 @@ ons:
       2073-01-01: 0.0014
     metadata:
       unit: /1
-      label: population growth
+      label: Population growth
       reference:
         - title: ONS Population Projections
           href: https://www.ons.gov.uk/
@@ -653,7 +653,7 @@ ons:
       2030-01-01: 0.0292
     metadata:
       unit: /1
-      label: household interest income growth
+      label: Household interest income growth
       reference:
         - title: ONS National Accounts D.41g - Households interest received (HAXV series)
           href: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
@@ -668,7 +668,7 @@ ons:
         2024-01-01: 0.086137
       metadata:
         unit: /1
-        label: united kingdom private rental prices growth
+        label: United kingdom private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -680,7 +680,7 @@ ons:
         2024-01-01: 0.08694
       metadata:
         unit: /1
-        label: england private rental prices growth
+        label: England private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -692,7 +692,7 @@ ons:
         2024-01-01: 0.082778
       metadata:
         unit: /1
-        label: wales private rental prices growth
+        label: Wales private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -704,7 +704,7 @@ ons:
         2024-01-01: 0.073967
       metadata:
         unit: /1
-        label: scotland private rental prices growth
+        label: Scotland private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -716,7 +716,7 @@ ons:
         2024-01-01: 0.090822
       metadata:
         unit: /1
-        label: northern ireland private rental prices growth
+        label: Northern Ireland private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -728,7 +728,7 @@ ons:
         2024-01-01: 0.073116
       metadata:
         unit: /1
-        label: north east private rental prices growth
+        label: North east private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -740,7 +740,7 @@ ons:
         2024-01-01: 0.094498
       metadata:
         unit: /1
-        label: north west private rental prices growth
+        label: North west private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -754,7 +754,7 @@ ons:
         2024-01-01: 0.063506
       metadata:
         unit: /1
-        label: yorkshire and the humber private rental prices growth
+        label: Yorkshire and the humber private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -766,7 +766,7 @@ ons:
         2024-01-01: 0.087371
       metadata:
         unit: /1
-        label: east midlands private rental prices growth
+        label: East midlands private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -778,7 +778,7 @@ ons:
         2024-01-01: 0.084456
       metadata:
         unit: /1
-        label: west midlands private rental prices growth
+        label: West midlands private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -790,7 +790,7 @@ ons:
         2024-01-01: 0.077271
       metadata:
         unit: /1
-        label: east of england private rental prices growth
+        label: East of England private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -802,7 +802,7 @@ ons:
         2024-01-01: 0.103031
       metadata:
         unit: /1
-        label: london private rental prices growth
+        label: London private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -814,7 +814,7 @@ ons:
         2024-01-01: 0.077617
       metadata:
         unit: /1
-        label: south east private rental prices growth
+        label: South east private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -826,7 +826,7 @@ ons:
         2024-01-01: 0.06671
       metadata:
         unit: /1
-        label: south west private rental prices growth
+        label: South west private rental prices growth
         reference:
           - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
             href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
@@ -844,7 +844,7 @@ ofwat:
       2029-01-01: 0.045
     metadata:
       unit: /1
-      label: water bills growth
+      label: Water bills growth
       reference:
         - title: Ofwat (and custom projections)
           href: https://www.ofwat.gov.uk/price-review/
@@ -863,7 +863,7 @@ finance_ni:
       2020-01-01: 0
     metadata:
       unit: /1
-      label: domestic rates growth
+      label: Domestic rates growth
       reference:
         - title: Finance NI (based on outturn)
           href: https://www.finance-ni.gov.uk/
@@ -882,7 +882,7 @@ carbon_intensity:
     2030-01-01: -0.049
   metadata:
     unit: /1
-    label: carbon intensity growth
+    label: Carbon intensity growth
     reference:
       - title: "Energy and emissions projections: 2023 to 2050"
         href: https://www.gov.uk/government/publications/energy-and-emissions-projections-2023-to-2050

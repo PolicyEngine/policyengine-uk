@@ -5,7 +5,7 @@ metadata:
     href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
   period: year
   unit: program
-  label: tax-free childcare disqualifying benefits
+  label: Tax-free childcare disqualifying benefits
 values:
   2015-01-01:
     - working_tax_credit

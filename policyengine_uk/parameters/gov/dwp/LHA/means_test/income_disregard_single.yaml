@@ -3,7 +3,7 @@ description: Threshold in income for a single person, above which the Housing Be
 metadata:
   economy: false
   period: week
-  label: Housing Benefit (LHA) income disregard (single)
+  label: Housing benefit (lha) income disregard (single)
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=33
   unit: currency-GBP
 values:
