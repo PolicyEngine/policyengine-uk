@@ -2,7 +2,7 @@ description: The Department for Education qualifies Universal Credit recipients 
 metadata:
   unit: currency-GBP 
   period: year
-  label: income limit for universal credit recipients to access benefit-targeted free childcare
+  label: Income limit for Universal Credit recipients to access benefit-targeted free childcare
   reference:
     - title: Document for the Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - page 3
       href: https://www.legislation.gov.uk/uksi/2018/146/pdfs/uksi_20180146_en.pdf#:~:text=Coming%20into%20force%20,into%20force%20on%201st%20April

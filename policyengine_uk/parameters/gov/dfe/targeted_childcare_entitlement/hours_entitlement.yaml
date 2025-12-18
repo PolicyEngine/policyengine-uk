@@ -2,7 +2,7 @@ description: The Department for Education provides this number of hours of free 
 metadata:
   type: parameter
   unit: hour
-  label: targeted childcare entitlement hours
+  label: Targeted childcare entitlement hours
   reference:
     - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 4
       href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/4/made

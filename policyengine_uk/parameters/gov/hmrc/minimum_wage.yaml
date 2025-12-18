@@ -141,7 +141,7 @@ description: Minimum wage by age group
 metadata:
   economy: false
   household: false
-  label: Minimum Wage
+  label: Minimum wage
   propagate_metadata_to_children: true
   reference:
   - href: https://www.gov.uk/national-minimum-wage-rates

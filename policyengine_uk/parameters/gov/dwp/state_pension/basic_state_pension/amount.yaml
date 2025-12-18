@@ -26,7 +26,7 @@ values:
   2025-04-01: 172.38
 metadata:
   unit: currency-GBP
-  label: basic State Pension amount
+  label: Basic State Pension amount
   uprating: gov.economic_assumptions.indices.triple_lock
   reference:
     - title: House of Commons Library

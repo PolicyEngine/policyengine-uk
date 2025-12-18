@@ -6,7 +6,7 @@ metadata:
   name: PA_reduction_threshold
   period: year
   unit: currency-GBP
-  label: Personal Allowance phase-out threshold
+  label: Personal allowance phase-out threshold
   reference:
     - title: Income Tax Act 2007 s. 35
       href: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/2/crossheading/personal-allowances

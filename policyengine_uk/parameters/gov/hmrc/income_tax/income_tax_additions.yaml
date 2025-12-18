@@ -1,6 +1,6 @@
 description: All variables that are added together to calculate total income tax
 metadata:
-  label: Additive components of total income tax
+  label: Additive components of total Income Tax
   unit: list
   reference:
     - title: Income Tax Act 2007 s. 23

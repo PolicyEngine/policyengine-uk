@@ -14,7 +14,7 @@ brackets:
 description: Rates on cumulative rent
 metadata:
   economy: false
-  label: LBTT on cumulative rent
+  label: Lbtt on cumulative rent
   name: lbtt_on_cumulative_rent
   propagate_metadata_to_children: true
   rate_unit: /1

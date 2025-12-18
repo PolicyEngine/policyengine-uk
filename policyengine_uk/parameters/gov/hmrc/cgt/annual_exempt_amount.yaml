@@ -27,7 +27,7 @@ values:
         href: https://www.legislation.gov.uk/ukpga/2023/1/section/8
 metadata:
   unit: currency-GBP
-  label: Annual Exempt Amount
+  label: Annual exempt amount
   reference:
     - title: Taxation of Chargeable Gains Act 1992 s. 1K(2) # Current law
       href: https://www.legislation.gov.uk/ukpga/1992/12/section/1K

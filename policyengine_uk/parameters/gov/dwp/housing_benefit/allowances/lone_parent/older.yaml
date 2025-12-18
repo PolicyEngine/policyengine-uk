@@ -10,7 +10,7 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  label: Housing Benefit lone parent older personal allowance 
+  label: Housing benefit lone parent older personal allowance
   uprating: gov.benefit_uprating_cpi
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1

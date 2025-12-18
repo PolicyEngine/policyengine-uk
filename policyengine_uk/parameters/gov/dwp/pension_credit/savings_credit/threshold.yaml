@@ -14,7 +14,7 @@ SINGLE:
     2025-04-01: 193.02
   metadata:
     name: pc_sc_income_threshold_single
-    label: Pension Credit savings credit income threshold (single)
+    label: Pension Credit Savings Credit income threshold (single)
 COUPLE:
   values:
     2015-04-06: 201.8
@@ -30,7 +30,7 @@ COUPLE:
     2025-04-01: 306.34
   metadata:
     name: pc_sc_income_threshold_couple
-    label: Pension Credit savings credit income threshold (couple)
+    label: Pension Credit Savings Credit income threshold (couple)
 metadata:
   unit: currency-GBP
   period: week

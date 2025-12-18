@@ -5,4 +5,4 @@ values:
   2023-01-01: true
 metadata:
   unit: bool
-  label: include average earnings in triple lock
+  label: Include average earnings in triple lock
