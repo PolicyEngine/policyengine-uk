@@ -1,6 +1,10 @@
 description: Hours requirement for single claimants of Jobseeker's Allowance
 values:
-  2015-04-01: 16
+  2015-04-01:
+    value: 16
+    reference:
+      - title: The Jobseeker's Allowance Regulations 1996, regulation 13
+        href: https://www.legislation.gov.uk/uksi/1996/207/regulation/13
 metadata:
   unit: hour
   period: week

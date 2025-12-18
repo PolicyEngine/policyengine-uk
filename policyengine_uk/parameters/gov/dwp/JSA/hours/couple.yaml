@@ -1,6 +1,10 @@
 description: Hours requirement for joint claimants of Jobseeker's Allowance
 values:
-  2015-04-01: 24
+  2015-04-01:
+    value: 24
+    reference:
+      - title: The Jobseeker's Allowance Regulations 1996
+        href: https://www.legislation.gov.uk/uksi/1996/207/made
 metadata:
   unit: hour
   period: week
