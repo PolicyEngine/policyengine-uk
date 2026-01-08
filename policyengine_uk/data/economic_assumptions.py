@@ -162,7 +162,7 @@ def uprate_rent(
     elif year < 2025:
         # We have regional growth rates for private rent.
         regional_growth_rate = growth.ons.private_rental_prices(year)[
-            region.values
+            region.values.astype(str)
         ]
         current_year.household["rent"] = np.where(
             is_private_rented,

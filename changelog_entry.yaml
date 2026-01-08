@@ -1,6 +1,5 @@
 - bump: patch
   changes:
     fixed:
-      - Remove uprating from CGT annual exempt amount to reflect fixed 3,000 amount
-    changed:
-      - Add per-value legislative references to all CGT parameters
+      - Dataset uprating bug where region values weren't converted to strings for rent indexing
+      - Salary sacrifice default behavior to be static (0) instead of fully optimized (1.0)
