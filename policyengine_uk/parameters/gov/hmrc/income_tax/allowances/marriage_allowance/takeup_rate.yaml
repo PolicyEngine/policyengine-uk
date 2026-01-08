@@ -4,3 +4,6 @@ values:
 metadata:
   unit: /1
   label: Marriage Allowance take-up rate
+  reference:
+    - title: Income Tax Act 2007 s. 55B
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/55B

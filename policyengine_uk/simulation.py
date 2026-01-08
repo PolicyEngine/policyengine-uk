@@ -123,6 +123,10 @@ class Simulation(CoreSimulation):
 
         self.move_values("capital_gains", "capital_gains_before_response")
         self.move_values("employment_income", "employment_income_before_lsr")
+        self.move_values(
+            "employee_pension_contributions",
+            "employee_pension_contributions_reported",
+        )
 
         self.input_variables = self.get_known_variables()
 

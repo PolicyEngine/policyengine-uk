@@ -3,6 +3,7 @@ values:
   2015-04-01: 0.5
 metadata:
   unit: marginal-rate
+  label: Annual allowance reduction rate
   reference: 
   - title: Tax on your private pension contributions
     href: https://www.gov.uk/tax-on-your-private-pension/annual-allowance

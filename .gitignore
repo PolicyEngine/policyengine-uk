@@ -56,7 +56,7 @@ policyengine_uk/calibration/*.h5
 !docs/**/*.ipynb
 !uprating_growth_factors.csv
 
-# Virtual environments
+# Virtual environments
 .venv/
 venv/
 env/

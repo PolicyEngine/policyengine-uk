@@ -1,8 +1,5 @@
-- bump: minor
+- bump: patch
   changes:
-    added:
-      - Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax Credits child element limit to infinity
-      - Salary sacrifice pension cap of £2,000 from April 2029 (Autumn Budget 2025)
     fixed:
       - Dataset uprating bug where region values weren't converted to strings for rent indexing
       - Salary sacrifice default behavior to be static (0) instead of fully optimized (1.0)

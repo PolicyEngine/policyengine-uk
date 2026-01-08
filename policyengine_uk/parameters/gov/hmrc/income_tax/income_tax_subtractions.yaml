@@ -2,6 +2,9 @@ description: All variables that are subtracted from the base amount to calculate
 metadata:
   label: Subtractive components of total income tax
   unit: list
+  reference:
+    - title: Income Tax Act 2007 s. 23
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/23
 values:
   0000-01-01:
   - capped_mcad

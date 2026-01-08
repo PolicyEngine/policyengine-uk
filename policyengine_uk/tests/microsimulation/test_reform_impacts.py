@@ -16,11 +16,14 @@ with open(config_path, "r") as f:
 
 reforms_data = config["reforms"]
 
-# Initialize baseline simulation
-baseline = Microsimulation()
+
+@pytest.fixture(scope="module")
+def baseline():
+    """Create baseline simulation once for all tests in this module."""
+    return Microsimulation()
 
 
-def get_fiscal_impact(reform: dict) -> float:
+def get_fiscal_impact(baseline, reform: dict) -> float:
     """
     Calculate the fiscal impact of a reform in billions.
 
@@ -45,14 +48,15 @@ test_params = [
 reform_names = [reform["name"] for reform in reforms_data]
 
 
+@pytest.mark.microsimulation
 @pytest.mark.parametrize(
     "reform, reform_name, expected_impact",
     test_params,
     ids=reform_names,
 )
-def test_reform_fiscal_impacts(reform, reform_name, expected_impact):
+def test_reform_fiscal_impacts(baseline, reform, reform_name, expected_impact):
     """Test that each reform produces the expected fiscal impact."""
-    impact = get_fiscal_impact(reform)
+    impact = get_fiscal_impact(baseline, reform)
 
     # Allow for small numerical differences (1 billion tolerance)
     assert (

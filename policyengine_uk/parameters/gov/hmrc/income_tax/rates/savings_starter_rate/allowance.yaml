@@ -4,6 +4,7 @@ values:
 metadata:
   period: week
   unit: currency-GBP
+  label: Savings starter rate allowance
   reference: 
   - title: Tax on savings interest
     href: https://www.gov.uk/apply-tax-free-interest-on-savings

@@ -2055,3 +2055,86 @@
       PA taper purposes, causing high earners (GBP 100k-125k) to receive less tax
       relief than legally entitled.
   date: 2025-12-02 16:24:40
+- bump: minor
+  changes:
+    added:
+    - Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax
+      Credits child element limit to infinity
+    - "Salary sacrifice pension cap of \uFFFD2,000 from April 2029 (Autumn Budget\
+      \ 2025)"
+    - Move inflation adjustment AHC back to BHC inflation.
+  date: 2025-12-03 11:59:49
+- bump: patch
+  changes:
+    fixed:
+    - Print statement.
+  date: 2025-12-03 12:45:46
+- bump: minor
+  changes:
+    fixed:
+    - Extend fiscal year parameter conversion to cover 2015-2040, fixing issues where
+      policies changing on April 6 (UK fiscal year start) were not reflected in simulations
+      for years 2026+.
+  date: 2025-12-03 16:17:09
+- bump: patch
+  changes:
+    changed:
+    - Bump policyengine-core to 3.23.0 (adds strict enum validation).
+  date: 2025-12-04 14:45:58
+- bump: patch
+  changes:
+    fixed:
+    - Fix fuel duty rates to use OBR November 2025 RPI forecasts.
+  date: 2025-12-05 16:29:26
+- bump: patch
+  changes:
+    added:
+    - Salary sacrifice pension cap reform (GBP 2,000 cap from April 2029) with broad-base
+      employer response modeling.
+  date: 2025-12-08 10:54:42
+- bump: patch
+  changes:
+    fixed:
+    - Basic state pension calculation.
+  date: 2025-12-08 21:37:03
+- bump: patch
+  changes:
+    fixed:
+    - Correct 2025-26 benefit cap rates (were incorrectly showing uprated values;
+      benefit cap has been frozen since 2023)
+    - Update UC parameter legislation references to point to exact regulation sections
+      on legislation.gov.uk
+    - Add missing 2025-26 Universal Credit non-dependent deduction amount (GBP 93.02)
+  date: 2025-12-08 22:13:29
+- bump: patch
+  changes:
+    fixed:
+    - Fixed employer_ni_fixed_employer_cost_change variable returning impacts in baseline
+      scenarios by correcting baseline parameter access.
+  date: 2025-12-09 08:44:22
+- bump: patch
+  changes:
+    added:
+    - Add savings, net_financial_wealth, gross_financial_wealth, and shareholding
+      to total_wealth calculation
+  date: 2025-12-09 09:47:39
+- bump: patch
+  changes:
+    added:
+    - Legislative references for marriage allowance take-up rate (Income Tax Act 2007
+      s. 55B)
+    - Legislative references for married couple's allowance deduction rate (Income
+      Tax Act 2007 s. 46)
+    - Legislative references for income tax additions and subtractions (Income Tax
+      Act 2007 s. 23)
+    - Labels for 11 HMRC income tax parameters including annual allowance, personal
+      savings allowance, and savings starter rate parameters
+    changed:
+    - All HMRC income tax parameters now have proper labels and legislative references
+  date: 2025-12-09 10:09:16
+- bump: patch
+  changes:
+    fixed:
+    - Refactor variables with redundant adds/subtracts and formula definitions to
+      prevent sync issues
+  date: 2025-12-09 16:16:37
