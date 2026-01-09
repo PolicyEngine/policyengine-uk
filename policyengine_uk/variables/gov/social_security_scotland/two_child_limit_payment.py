@@ -11,6 +11,10 @@ class two_child_limit_payment(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    reference = [
+        "https://www.gov.scot/policies/social-security/two-child-limit-payment/",
+        "https://www.gov.scot/publications/draft-two-child-limit-payment-scotland-regulations-2026/",
+    ]
 
     def formula(benunit, period, parameters):
         in_scotland = (
