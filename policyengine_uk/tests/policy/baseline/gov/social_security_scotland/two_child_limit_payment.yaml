@@ -1,8 +1,8 @@
 # Two Child Limit Payment tests
-# Payment is active from Dec 2024 to April 2026 (when UK abolishes two-child limit)
+# Payment is active from April 2025 onwards (fiscal year 2025-26)
 
-- name: No payment in Scotland before December 2024
-  period: 2023
+- name: No payment in Scotland before April 2025
+  period: 2024
   absolute_error_margin: 1
   input:
     people:
@@ -32,7 +32,7 @@
         members: [parent, child_1, child_2, child_3]
         region: SCOTLAND
   output:
-    # Payment not in effect before December 2024
+    # Payment not in effect before April 2025
     two_child_limit_payment: 0
 
 - name: Payment in Scotland in 2025
@@ -69,7 +69,7 @@
     # UC child element amount * 12 months * 1 affected child
     two_child_limit_payment: 3514
 
-- name: Payment for multiple affected children in Scotland 2025
+- name: Payment for multiple affected children in Scotland
   period: 2025
   absolute_error_margin: 1
   input:
@@ -108,7 +108,7 @@
     # UC child element amount * 12 months * 2 affected children
     two_child_limit_payment: 7027
 
-- name: Large family with three affected children in Scotland 2025
+- name: Large family with three affected children in Scotland
   period: 2025
   absolute_error_margin: 1
   input:
@@ -279,7 +279,7 @@
   output:
     two_child_limit_payment: 0
 
-- name: Two parent household in Scotland 2025
+- name: Two parent household in Scotland
   period: 2025
   absolute_error_margin: 1
   input:
@@ -315,8 +315,8 @@
   output:
     two_child_limit_payment: 3514
 
-- name: No payment in Scotland after April 2026 - UK abolished limit
-  period: 2027
+- name: Payment continues in Scotland in 2026
+  period: 2026
   absolute_error_margin: 1
   input:
     people:
@@ -346,5 +346,5 @@
         members: [parent, child_1, child_2, child_3]
         region: SCOTLAND
   output:
-    # Payment no longer in effect after UK abolished two-child limit
-    two_child_limit_payment: 0
+    # Payment continues as two-child limit still in effect
+    two_child_limit_payment: 3635
