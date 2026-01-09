@@ -1,6 +1,4 @@
-- bump: patch
+- bump: minor
   changes:
-    fixed:
-      - Remove uprating from CGT annual exempt amount to reflect fixed 3,000 amount
-    changed:
-      - Add per-value legislative references to all CGT parameters
+    added:
+      - Two Child Limit Payment for Scotland - mitigation payment equal to UC child element for children affected by the two-child limit (effective from December 2024).
