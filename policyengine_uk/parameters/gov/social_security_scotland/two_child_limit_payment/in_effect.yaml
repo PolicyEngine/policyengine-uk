@@ -1,7 +1,8 @@
 description: Whether the Two Child Limit Payment is in effect in Scotland.
 values:
   0001-01-01: false
-  2024-12-04: true
+  2025-04-06: true
+  2026-04-06: false
 metadata:
   unit: bool
   label: Two Child Limit Payment in effect
@@ -11,3 +12,5 @@ metadata:
       href: https://www.gov.scot/policies/social-security/two-child-limit-payment/
     - title: Scottish Budget December 2024 announcement
       href: https://www.gov.scot/publications/scottish-budget-2025-26/
+    - title: UK abolishes two-child limit from April 2026
+      href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html
