@@ -2138,3 +2138,8 @@
     - Refactor variables with redundant adds/subtracts and formula definitions to
       prevent sync issues
   date: 2025-12-09 16:16:37
+- bump: minor
+  changes:
+    fixed:
+    - LHA freeze parameter.
+  date: 2026-01-12 16:12:34
