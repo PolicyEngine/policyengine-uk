@@ -1,10 +1,10 @@
-# Workflow that runs on code changes to the master branch.
+# Workflow that runs on code changes to the main branch.
 
 name: Code changes
 on:
   push:
     branches:
-      - master
+      - main
 
     paths:
       - policyengine_uk/**
