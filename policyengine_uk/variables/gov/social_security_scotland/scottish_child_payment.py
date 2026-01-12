@@ -42,17 +42,32 @@ class scottish_child_payment(Variable):
         children_under_6 = benunit.sum(is_child & (age < 6))
         children_6_and_over = benunit.sum(is_child & (age >= 6) & (age < 16))
 
-        # Check if receiving a qualifying benefit (UC or legacy benefits)
-        # Families must be in receipt of UC, Tax Credits, or certain other benefits
-        # Note: CTC and WTC are being phased out but remain qualifying benefits
-        # for existing claimants
-        receives_uc = benunit("universal_credit", period) > 0
-        receives_ctc = benunit("child_tax_credit", period) > 0
-        receives_wtc = benunit("working_tax_credit", period) > 0
-        receives_income_support = benunit("income_support", period) > 0
-        receives_jsa_income = benunit("jsa_income", period) > 0
-        receives_esa_income = benunit("esa_income", period) > 0
-        receives_pension_credit = benunit("pension_credit", period) > 0
+        # Check if receiving a qualifying benefit
+        # The list of qualifying benefits is parameterized as CTC/WTC
+        # were removed in 2024 as part of UC migration
+        qb = p.qualifying_benefits
+
+        receives_uc = (
+            benunit("universal_credit", period) > 0
+        ) & qb.universal_credit
+        receives_ctc = (
+            benunit("child_tax_credit", period) > 0
+        ) & qb.child_tax_credit
+        receives_wtc = (
+            benunit("working_tax_credit", period) > 0
+        ) & qb.working_tax_credit
+        receives_income_support = (
+            benunit("income_support", period) > 0
+        ) & qb.income_support
+        receives_jsa_income = (
+            benunit("jsa_income", period) > 0
+        ) & qb.jsa_income
+        receives_esa_income = (
+            benunit("esa_income", period) > 0
+        ) & qb.esa_income
+        receives_pension_credit = (
+            benunit("pension_credit", period) > 0
+        ) & qb.pension_credit
 
         receives_qualifying_benefit = (
             receives_uc

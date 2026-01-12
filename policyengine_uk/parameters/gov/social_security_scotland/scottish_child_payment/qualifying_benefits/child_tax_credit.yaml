@@ -1,0 +1,12 @@
+description: >
+  Whether Child Tax Credit is a qualifying benefit for Scottish Child Payment.
+  CTC was removed as a qualifying benefit in 2024 as part of UC migration.
+values:
+  0001-01-01: true
+  2024-04-01: false
+metadata:
+  unit: bool
+  label: CTC qualifies for SCP
+  reference:
+    - title: Social Security Scotland - Scottish Child Payment
+      href: https://www.socialsecurity.gov.scot/scottish-child-payment
