@@ -3,7 +3,7 @@ from typing import List, Optional
 
 # Third-party imports
 import numpy as np
-from microdf import MicroDataFrame, MicroSeries
+from microdf import MicroDataFrame, MicroSeries 
 
 # PolicyEngine core imports
 from policyengine_core.tracers import SimpleTracer
