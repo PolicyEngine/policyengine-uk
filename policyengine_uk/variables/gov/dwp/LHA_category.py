@@ -93,23 +93,49 @@ def time_shift_dataset(
 
 
 def find_freeze_start(freeze_parameter: Parameter, period: str) -> str:
-    """Finds the first instant in which the LHA freeze was applied. Returns none if this is impossible.
+    """Finds the start instant of the current freeze period containing the given period.
+
+    The function works backwards from the given period to find when the current freeze
+    started. It looks for the most recent transition from false->true (unfreeze->freeze).
 
     Args:
         freeze_parameter (Parameter): The LHA freeze parameter.
         period (str): The period to search up to.
 
     Returns:
-        str: The first instant in which the LHA freeze was applied.
+        str: The instant when the current freeze period started, or None if not frozen.
     """
-    freeze_start = None
-    for i in range(len(freeze_parameter.values_list)):
-        param = freeze_parameter.values_list[i]
-        if param.instant_str > str(period):
-            continue
-        if (
-            i < len(freeze_parameter.values_list) - 1
-            and not freeze_parameter.values_list[i + 1].value
-        ):
-            return param.instant_str
+    # Get all parameter values that are <= the requested period
+    values_list = freeze_parameter.values_list
+    relevant_values = [v for v in values_list if v.instant_str <= str(period)]
+
+    if not relevant_values:
+        return None
+
+    # Check if the period is currently frozen
+    # relevant_values is in reverse chronological order (newest first)
+    current_state = relevant_values[0].value
+
+    if not current_state:
+        # Not currently frozen
+        return None
+
+    # Work from most recent backwards to find when this freeze started
+    # List is in reverse chronological order: [newest...oldest]
+    # Example: [('2026', True), ('2025', True), ('2024', False), ('2023', True)]
+    # Find the earliest True in the current frozen period
+    for i in range(len(relevant_values)):
+        current_value = relevant_values[i]
+
+        if current_value.value:  # This is a freeze=True value
+            # Check if the chronologically earlier period (i+1) was unfrozen
+            if i == len(relevant_values) - 1:
+                # This is the oldest value and it's frozen - use it
+                return current_value.instant_str
+            elif not relevant_values[i + 1].value:
+                # The chronologically earlier value was False
+                # This is where the freeze period started
+                return current_value.instant_str
+            # Otherwise the earlier value was also True, so continue backwards
+
     return None
