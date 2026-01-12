@@ -1,4 +1,5 @@
 - bump: minor
   changes:
-    added:
-      - Two child limit in Scotland
+    fixed:
+    - LHA freeze parameter.
+
