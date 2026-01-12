@@ -1,22 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-class is_scp_eligible_child(Variable):
-    label = "Eligible for Scottish Child Payment"
-    documentation = "Whether this child is eligible for Scottish Child Payment based on age."
-    entity = Person
-    definition_period = YEAR
-    value_type = bool
-
-    def formula(person, period, parameters):
-        p = parameters(
-            period
-        ).gov.social_security_scotland.scottish_child_payment
-        age = person("age", period)
-        max_age = p.max_age
-        return age < max_age
-
-
 class scottish_child_payment(Variable):
     label = "Scottish Child Payment"
     documentation = (
@@ -52,8 +36,16 @@ class scottish_child_payment(Variable):
         is_eligible_child = benunit.members("is_scp_eligible_child", period)
         eligible_children = benunit.sum(is_eligible_child)
 
+        # Count children under 6 and 6+ for takeup rate calculation
+        age = benunit.members("age", period)
+        is_child = benunit.members("is_child", period)
+        children_under_6 = benunit.sum(is_child & (age < 6))
+        children_6_and_over = benunit.sum(is_child & (age >= 6) & (age < 16))
+
         # Check if receiving a qualifying benefit (UC or legacy benefits)
         # Families must be in receipt of UC, Tax Credits, or certain other benefits
+        # Note: CTC and WTC are being phased out but remain qualifying benefits
+        # for existing claimants
         receives_uc = benunit("universal_credit", period) > 0
         receives_ctc = benunit("child_tax_credit", period) > 0
         receives_wtc = benunit("working_tax_credit", period) > 0
@@ -75,8 +67,18 @@ class scottish_child_payment(Variable):
         # Calculate annual payment
         annual_amount = eligible_children * weekly_amount * WEEKS_IN_YEAR
 
-        # Apply take-up rate in microsimulation
-        takeup_rate = p.takeup_rate
+        # Apply age-specific take-up rates in microsimulation
+        # 97% for families with only children under 6
+        # 86% for families with any children 6 and over
+        takeup_under_6 = p.takeup_rate.under_6
+        takeup_6_and_over = p.takeup_rate.age_6_and_over
+
+        # Use the 6+ rate if any child is 6 or older, otherwise under-6 rate
+        has_children_6_and_over = children_6_and_over > 0
+        takeup_rate = where(
+            has_children_6_and_over, takeup_6_and_over, takeup_under_6
+        )
+
         takes_up = random(benunit) < takeup_rate
         is_in_microsimulation = benunit.simulation.dataset is not None
         if is_in_microsimulation:
