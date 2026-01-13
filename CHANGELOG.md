@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.68.1] - 2026-01-13 17:13:11
+
+### Fixed
+
+- Dataset uprating bug where region values weren't converted to strings for rent indexing
+- Salary sacrifice default behavior to be static (0) instead of fully optimized (1.0)
+
 ## [2.68.0] - 2026-01-13 15:46:23
 
 ### Added
@@ -2505,6 +2512,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.68.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.68.0...2.68.1
 [2.68.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.67.0...2.68.0
 [2.67.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.66.0...2.67.0
 [2.66.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.9...2.66.0

@@ -2155,3 +2155,11 @@
     added:
     - 2025-26 Scottish income tax rates.
   date: 2026-01-13 15:46:23
+- bump: patch
+  changes:
+    fixed:
+    - Dataset uprating bug where region values weren't converted to strings for rent
+      indexing
+    - Salary sacrifice default behavior to be static (0) instead of fully optimized
+      (1.0)
+  date: 2026-01-13 17:13:11
