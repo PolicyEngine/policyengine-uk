@@ -1,0 +1,397 @@
+# Scottish Child Payment tests
+# SCP available from Feb 2021, extended to under-16s from Nov 2022
+
+- name: SCP for family receiving UC in Scotland (2024)
+  period: 2024
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+      child_2:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1, child_2]
+        region: SCOTLAND
+  output:
+    # £26.70/week * 52 weeks * 2 children = £2,776.80
+    scottish_child_payment: 2777
+
+- name: SCP for family receiving UC in Scotland (2023)
+  period: 2023
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 10
+      child_2:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1, child_2]
+        region: SCOTLAND
+  output:
+    # £25/week * 52 weeks * 2 children = £2,600
+    scottish_child_payment: 2600
+
+- name: No SCP for families not receiving qualifying benefit
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 50000
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        universal_credit: 0
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    scottish_child_payment: 0
+
+- name: No SCP in England
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1]
+        region: NORTH_EAST
+  output:
+    scottish_child_payment: 0
+
+- name: No SCP in Wales
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1]
+        region: WALES
+  output:
+    scottish_child_payment: 0
+
+- name: SCP before Nov 2022 only for under-6s
+  period: 2022
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_young:
+        age: 4
+      child_older:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child_young, child_older]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_young, child_older]
+        region: SCOTLAND
+  output:
+    # Only child_young (age 4) eligible, £20/week * 52 = £1,040
+    scottish_child_payment: 1040
+
+- name: SCP for family receiving Child Tax Credit (2023 - CTC still qualifies)
+  period: 2023
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        child_tax_credit: 2000
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # £25/week * 52 weeks * 1 child = £1,300
+    scottish_child_payment: 1300
+
+- name: No SCP before Feb 2021
+  period: 2020
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    scottish_child_payment: 0
+
+- name: No SCP for child over 16
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 40
+      child_1:
+        age: 17
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    scottish_child_payment: 0
+
+- name: Large family with multiple eligible children
+  period: 2024
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 35
+      child_1:
+        age: 14
+      child_2:
+        age: 10
+      child_3:
+        age: 6
+      child_4:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+        universal_credit: 8000
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3, child_4]
+        region: SCOTLAND
+  output:
+    # £26.70/week * 52 weeks * 4 children = £5,553.60
+    scottish_child_payment: 5554
+
+# New tests for 2025 amount and qualifying benefit changes
+
+- name: SCP with 2025 amount (£27.15/week)
+  period: 2025
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # £27.15/week * 52 weeks * 1 child = £1,411.80
+    scottish_child_payment: 1412
+
+- name: CTC no longer qualifies from 2025 (after April 2024)
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        child_tax_credit: 2000
+        universal_credit: 0
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # CTC removed as qualifying benefit from April 2024
+    scottish_child_payment: 0
+
+- name: CTC still qualifies in 2023 (before April 2024)
+  period: 2023
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        child_tax_credit: 2000
+        universal_credit: 0
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # £25/week * 52 weeks * 1 child = £1,300
+    scottish_child_payment: 1300
+
+- name: WTC no longer qualifies from 2025
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        working_tax_credit: 2000
+        universal_credit: 0
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # WTC removed as qualifying benefit from April 2024
+    scottish_child_payment: 0
+
+- name: Income Support still qualifies in 2025
+  period: 2025
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        income_support: 3000
+        universal_credit: 0
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # £27.15/week * 52 weeks * 1 child = £1,411.80
+    scottish_child_payment: 1412
+
+- name: JSA income-based still qualifies in 2025
+  period: 2025
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        jsa_income: 3000
+        universal_credit: 0
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # £27.15/week * 52 weeks * 1 child = £1,411.80
+    scottish_child_payment: 1412
+
+- name: ESA income-related still qualifies in 2025
+  period: 2025
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        esa_income: 4000
+        universal_credit: 0
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # £27.15/week * 52 weeks * 1 child = £1,411.80
+    scottish_child_payment: 1412
+
+- name: Pension Credit still qualifies in 2025
+  period: 2025
+  absolute_error_margin: 10
+  input:
+    people:
+      grandparent:
+        age: 70
+      child_1:
+        age: 10
+    benunits:
+      benunit:
+        members: [grandparent, child_1]
+        pension_credit: 5000
+        universal_credit: 0
+    households:
+      household:
+        members: [grandparent, child_1]
+        region: SCOTLAND
+  output:
+    # £27.15/week * 52 weeks * 1 child = £1,411.80
+    scottish_child_payment: 1412

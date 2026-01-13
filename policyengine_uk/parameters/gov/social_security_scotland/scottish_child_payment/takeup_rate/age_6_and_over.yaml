@@ -1,0 +1,13 @@
+description: >
+  Take-up rate for Scottish Child Payment for families with children aged 6
+  and over. Lower than under-6 rate as these families require separate
+  application rather than automatic award.
+values:
+  0001-01-01: 0.86
+metadata:
+  unit: /1
+  period: year
+  label: Scottish Child Payment take-up rate (6 and over)
+  reference:
+    - title: SPICe analysis of SCP coverage
+      href: https://spice-spotlight.scot/2024/07/31/scottish-child-payment-who-gets-it/

@@ -1,0 +1,12 @@
+description: Maximum age for Scottish Child Payment eligibility (child must be under this age).
+values:
+  0001-01-01: 0
+  2021-02-15: 6
+  2022-11-14: 16
+metadata:
+  unit: year
+  period: year
+  label: Scottish Child Payment maximum age
+  reference:
+    - title: Scottish Government - Scottish Child Payment
+      href: https://www.gov.scot/policies/social-security/scottish-child-payment/

@@ -1,0 +1,17 @@
+description: Weekly amount of Scottish Child Payment per eligible child.
+values:
+  0001-01-01: 0
+  2021-02-15: 10
+  2022-04-01: 20
+  2022-11-14: 25
+  2024-04-01: 26.70
+  2025-04-01: 27.15
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Scottish Child Payment weekly amount
+  reference:
+    - title: Scottish Government - Scottish Child Payment
+      href: https://www.gov.scot/policies/social-security/scottish-child-payment/
+    - title: Social Security Scotland - SCP statistics
+      href: https://www.socialsecurity.gov.scot/publications/2024/02/scottish-child-payment-statistics-to-31-december-2023

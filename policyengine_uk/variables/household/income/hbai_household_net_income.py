@@ -54,6 +54,7 @@ class hbai_household_net_income(Variable):
         "winter_fuel_allowance",
         "tax_free_childcare",
         "healthy_start_vouchers",
+        "scottish_child_payment",
         # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
     ]
     subtracts = [
