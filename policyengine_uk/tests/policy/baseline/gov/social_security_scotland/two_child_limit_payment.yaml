@@ -1,0 +1,350 @@
+# Two Child Limit Payment tests
+# Payment is active from April 2025 onwards (fiscal year 2025-26)
+
+- name: No payment in Scotland before April 2025
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 5
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: SCOTLAND
+  output:
+    # Payment not in effect before April 2025
+    two_child_limit_payment: 0
+
+- name: Payment in Scotland in 2025
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 5
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: SCOTLAND
+  output:
+    # UC child element amount * 12 months * 1 affected child
+    two_child_limit_payment: 3514
+
+- name: Payment for multiple affected children in Scotland
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 8
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 6
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 4
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+      child_4:
+        age: 2
+        is_child: true
+        child_index: 4
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3, child_4]
+        region: SCOTLAND
+  output:
+    # UC child element amount * 12 months * 2 affected children
+    two_child_limit_payment: 7027
+
+- name: Large family with three affected children in Scotland
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 35
+        is_child: false
+      child_1:
+        age: 12
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 10
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 7
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+      child_4:
+        age: 5
+        is_child: true
+        child_index: 4
+        uc_is_child_limit_affected: true
+      child_5:
+        age: 3
+        is_child: true
+        child_index: 5
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4, child_5]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3, child_4, child_5]
+        region: SCOTLAND
+  output:
+    # UC child element amount * 12 months * 3 affected children
+    two_child_limit_payment: 10541
+
+- name: No payment if no children affected in Scotland
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 5
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+    households:
+      household:
+        members: [parent, child_1, child_2]
+        region: SCOTLAND
+  output:
+    two_child_limit_payment: 0
+
+- name: No payment in England even with affected children
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 5
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: NORTH_EAST
+  output:
+    two_child_limit_payment: 0
+
+- name: No payment in Wales
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 5
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: WALES
+  output:
+    two_child_limit_payment: 0
+
+- name: No payment in Northern Ireland
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 5
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: NORTHERN_IRELAND
+  output:
+    two_child_limit_payment: 0
+
+- name: Two parent household in Scotland
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      parent_1:
+        age: 35
+        is_child: false
+      parent_2:
+        age: 33
+        is_child: false
+      child_1:
+        age: 8
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 5
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 2
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent_1, parent_2, child_1, child_2, child_3]
+        region: SCOTLAND
+  output:
+    two_child_limit_payment: 3514
+
+- name: Payment continues in Scotland in 2026
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      parent:
+        age: 30
+        is_child: false
+      child_1:
+        age: 5
+        is_child: true
+        child_index: 1
+        uc_is_child_limit_affected: false
+      child_2:
+        age: 3
+        is_child: true
+        child_index: 2
+        uc_is_child_limit_affected: false
+      child_3:
+        age: 1
+        is_child: true
+        child_index: 3
+        uc_is_child_limit_affected: true
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3]
+        region: SCOTLAND
+  output:
+    # Payment continues as two-child limit still in effect
+    two_child_limit_payment: 3635

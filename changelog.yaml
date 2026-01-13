@@ -2138,3 +2138,20 @@
     - Refactor variables with redundant adds/subtracts and formula definitions to
       prevent sync issues
   date: 2025-12-09 16:16:37
+- bump: minor
+  changes:
+    fixed:
+    - LHA freeze parameter.
+  date: 2026-01-12 16:12:34
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment - a benefit provided by Social Security Scotland for
+      eligible children under 16 in low-income families receiving qualifying benefits
+      (UC, tax credits, etc.).
+  date: 2026-01-13 14:23:42
+- bump: minor
+  changes:
+    added:
+    - 2025-26 Scottish income tax rates.
+  date: 2026-01-13 15:46:23

@@ -4,7 +4,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 PolicyEngine UK is [PolicyEngine](https://policyengine.org)'s microsimulation model of the UK tax-benefit system.
-It uses the PolicyEngine Core microsimulation framework, which is based on [OpenFisca](https://openfisca.org).
+It uses the PolicyEngine Core microsimulation framework, which is based on [OpenFisca](https://openfisca.org). 
 
 The elements are described in different folders. All the modelling happens within the `policyengine_uk` folder.
 
