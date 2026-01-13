@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.66.0] - 2026-01-12 16:12:34
+
+### Fixed
+
+- LHA freeze parameter.
+
 ## [2.65.9] - 2025-12-09 16:16:37
 
 ### Fixed
@@ -2487,6 +2493,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.66.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.9...2.66.0
 [2.65.9]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.8...2.65.9
 [2.65.8]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.7...2.65.8
 [2.65.7]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.6...2.65.7
