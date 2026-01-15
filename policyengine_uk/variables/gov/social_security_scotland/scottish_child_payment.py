@@ -36,8 +36,10 @@ class scottish_child_payment(Variable):
         is_eligible_child = benunit.members("is_scp_eligible_child", period)
         eligible_children = benunit.sum(is_eligible_child)
 
-        # Count children under 6 and 6+ for takeup rate calculation
+        # Get ages for baby bonus calculation
         age = benunit.members("age", period)
+
+        # Count children by age for takeup rate calculation
         is_child = benunit.members("is_child", period)
         children_under_6 = benunit.sum(is_child & (age < 6))
         children_6_and_over = benunit.sum(is_child & (age >= 6) & (age < 16))
@@ -79,8 +81,24 @@ class scottish_child_payment(Variable):
             | receives_pension_credit
         )
 
+        # Get reform parameters for baby bonus
+        p_ref = parameters(
+            period
+        ).gov.contrib.scotland.scottish_child_payment
+
+        # Only apply baby bonus if reform is in effect
+        reform_in_effect = p_ref.in_effect
+        baby_bonus_weekly = where(
+            reform_in_effect,
+            benunit.sum(p_ref.baby_bonus.calc(age) * is_eligible_child),
+            0,
+        )
+
         # Calculate annual payment
-        annual_amount = eligible_children * weekly_amount * WEEKS_IN_YEAR
+        # Standard SCP + baby bonus (if reform in effect)
+        annual_amount = (
+            eligible_children * weekly_amount + baby_bonus_weekly
+        ) * WEEKS_IN_YEAR
 
         # Apply age-specific take-up rates in microsimulation
         # 97% for families with only children under 6
