@@ -4,7 +4,7 @@ from .policyengine import (
     disable_simulated_benefits,
 )
 from .policyengine.adjust_budgets import adjust_budgets
-from .scottland import create_scottish_child_payment_reform
+from .scotland import create_scottish_child_payment_reform
 from policyengine_core.model_api import *
 from policyengine_core import periods
 

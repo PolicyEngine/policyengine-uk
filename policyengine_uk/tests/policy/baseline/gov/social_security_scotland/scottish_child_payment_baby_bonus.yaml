@@ -34,7 +34,7 @@
 - name: Scottish family with 1 baby - with baby bonus
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
@@ -63,7 +63,7 @@
 - name: Scottish family with 2 babies - with baby bonus
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
@@ -96,7 +96,7 @@
 - name: Scottish family with 1 baby and 1 older child - with baby bonus
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
@@ -129,7 +129,7 @@
 - name: Scottish family with older children only - no baby bonus
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
@@ -161,7 +161,7 @@
 - name: English family with baby - no SCP
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
@@ -188,7 +188,7 @@
 - name: Scottish family with 1 year old child - no baby bonus
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
@@ -216,7 +216,7 @@
 - name: Scottish family with £45k income - no SCP (no qualifying benefit)
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
@@ -244,7 +244,7 @@
 - name: Scottish family with £50k income - no SCP (no qualifying benefit)
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scottland.scottish_child_payment_reform.scottish_child_payment_reform
+  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
     gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
