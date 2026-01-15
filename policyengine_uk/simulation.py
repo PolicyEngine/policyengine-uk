@@ -124,7 +124,8 @@ class Simulation(CoreSimulation):
 
         # Apply structural reforms based on parameters
         structural_reform = create_structural_reforms_from_parameters(
-            self.tax_benefit_system.parameters, period_(self.default_input_period)
+            self.tax_benefit_system.parameters,
+            period_(self.default_input_period),
         )
         if structural_reform is not None:
             self.apply_reform(structural_reform)

@@ -162,4 +162,6 @@ def create_scottish_child_payment_reform(
         return None
 
 
-scottish_child_payment_reform = create_scottish_child_payment_baby_bonus_reform()
+scottish_child_payment_reform = (
+    create_scottish_child_payment_baby_bonus_reform()
+)
