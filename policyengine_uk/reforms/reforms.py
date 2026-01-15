@@ -4,6 +4,7 @@ from .policyengine import (
     disable_simulated_benefits,
 )
 from .policyengine.adjust_budgets import adjust_budgets
+from .scottland import create_scottish_child_payment_reform
 from policyengine_core.model_api import *
 from policyengine_core import periods
 
@@ -15,6 +16,7 @@ def create_structural_reforms_from_parameters(parameters, period):
         create_household_based_hitc_reform(parameters, period),
         disable_simulated_benefits(parameters, period),
         adjust_budgets(parameters, period),
+        create_scottish_child_payment_reform(parameters, period),
     ]
     reforms = tuple(filter(lambda x: x is not None, reforms))
 
