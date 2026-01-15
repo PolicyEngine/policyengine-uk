@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.69.0] - 2026-01-15 15:17:19
+
+### Added
+
+- Scottish Child Payment baby bonus reform.
+
 ## [2.68.1] - 2026-01-13 17:13:11
 
 ### Fixed
@@ -2512,6 +2518,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.69.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.68.1...2.69.0
 [2.68.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.68.0...2.68.1
 [2.68.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.67.0...2.68.0
 [2.67.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.66.0...2.67.0

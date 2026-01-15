@@ -2163,3 +2163,8 @@
     - Salary sacrifice default behavior to be static (0) instead of fully optimized
       (1.0)
   date: 2026-01-13 17:13:11
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment baby bonus reform.
+  date: 2026-01-15 15:17:19
