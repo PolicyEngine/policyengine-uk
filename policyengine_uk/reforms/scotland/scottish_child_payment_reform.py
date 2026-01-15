@@ -4,9 +4,17 @@ from policyengine_core.periods import period as period_
 
 def create_scottish_child_payment_baby_bonus_reform() -> Reform:
     """
-    Reform that adds a baby bonus to Scottish Child Payment.
-    Children under 1 receive an additional £12.85/week on top of the
-    standard £27.15/week SCP amount.
+    Reform that implements SCP Premium for under-ones.
+
+    Policy: Children under 1 receive a FIXED £40/week total payment.
+    Children 1+ receive the standard SCP rate (inflates with inflation).
+
+    This is NOT a fixed bonus added to the base - it's a fixed total amount.
+    As the base SCP rate inflates, the "bonus" for under-1s effectively
+    decreases to maintain the £40 total.
+
+    Source: Scottish Budget 2026-27
+    https://www.gov.scot/publications/scottish-budget-2026-2027-finance-secretarys-statement-13-january-2026-2/
     """
 
     class scottish_child_payment(Variable):
@@ -91,21 +99,22 @@ def create_scottish_child_payment_baby_bonus_reform() -> Reform:
                 | receives_pension_credit
             )
 
-            # Get baby bonus parameters
-            p_ref = parameters(
-                period
-            ).gov.contrib.scotland.scottish_child_payment
+            # SCP Premium for under-ones: Fixed £40/week total (not base + bonus)
+            # Policy: Children under 1 get £40/week, children 1+ get standard rate
+            PREMIUM_RATE_UNDER_ONE = 40.0  # £40/week fixed total
 
-            # Calculate baby bonus (extra weekly amount for children under 1)
-            baby_bonus_weekly = benunit.sum(
-                p_ref.baby_bonus.calc(age) * is_eligible_child
+            # Calculate per-child weekly amount based on age
+            per_child_weekly = where(
+                age < 1,
+                PREMIUM_RATE_UNDER_ONE,  # £40/week for under-1s (TOTAL, not bonus)
+                weekly_amount  # Standard SCP rate for 1+ (inflates with inflation)
             )
 
-            # Calculate annual payment
-            # Standard SCP + baby bonus
-            annual_amount = (
-                eligible_children * weekly_amount + baby_bonus_weekly
-            ) * WEEKS_IN_YEAR
+            # Calculate total weekly payment for all eligible children
+            total_weekly = benunit.sum(per_child_weekly * is_eligible_child)
+
+            # Convert to annual amount
+            annual_amount = total_weekly * WEEKS_IN_YEAR
 
             # Apply age-specific take-up rates in microsimulation
             takeup_under_6 = p.takeup_rate.under_6

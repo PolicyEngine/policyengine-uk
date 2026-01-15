@@ -1,8 +1,15 @@
-# Tests for Scottish Child Payment baby bonus reform
-# Weekly SCP amount: £27.15 (2025)
-# Baby bonus: £12.85/week extra for children under 1
-# Annual SCP per child: £27.15 * 52 = £1,411.80
-# Annual baby bonus: £12.85 * 52 = £668.20
+# Tests for Scottish Child Payment Premium for under-ones reform
+#
+# POLICY: Children under 1 receive FIXED £40/week TOTAL payment
+#         Children 1+ receive standard SCP rate (£27.15 in 2026, inflates thereafter)
+#
+# This is NOT a fixed bonus - it's a fixed total amount.
+# As standard rate inflates, the effective "premium" decreases to maintain £40 total.
+#
+# 2026 calculations:
+# - Standard SCP: £27.15/week * 52 = £1,411.80/year
+# - Premium for under-1s: £40/week * 52 = £2,080/year (TOTAL, not base + bonus)
+# - Effective premium: £40 - £27.15 = £12.85/week (but this changes as base inflates)
 
 # Test 1: Scottish family with 1 baby (age 0) - WITHOUT reform
 - name: Scottish family with 1 baby - baseline (no baby bonus)
@@ -55,8 +62,7 @@
           - baby
         region: SCOTLAND
   output:
-    # 1 child * £27.15/week * 52 + 1 baby * £12.85/week * 52
-    # = £1,411.80 + £668.20 = £2,080.00
+    # 1 baby * £40/week * 52 = £2,080/year (TOTAL payment for under-1)
     scottish_child_payment: 2080
 
 # Test 3: Scottish family with 2 babies (both age 0) - WITH reform
@@ -88,8 +94,7 @@
           - baby2
         region: SCOTLAND
   output:
-    # 2 children * £27.15/week * 52 + 2 babies * £12.85/week * 52
-    # = £2,823.60 + £1,336.40 = £4,160.00
+    # 2 babies * £40/week * 52 = £4,160/year (TOTAL payment for 2 under-1s)
     scottish_child_payment: 4160
 
 # Test 4: Scottish family with 1 baby and 1 older child - WITH reform
@@ -121,8 +126,8 @@
           - older_child
         region: SCOTLAND
   output:
-    # 2 children * £27.15/week * 52 + 1 baby * £12.85/week * 52
-    # = £2,823.60 + £668.20 = £3,491.80
+    # 1 baby @ £40/week + 1 older child @ £27.15/week = £67.15/week
+    # £67.15 * 52 = £3,491.80/year
     scottish_child_payment: 3492
 
 # Test 5: Scottish family with only older children (no babies) - WITH reform
@@ -154,7 +159,7 @@
           - child2
         region: SCOTLAND
   output:
-    # 2 children * £27.15/week * 52 = £2,823.60 (no baby bonus)
+    # 2 older children @ £27.15/week * 52 = £2,823.60 (standard rate, no premium)
     scottish_child_payment: 2824
 
 # Test 6: English family with baby - no SCP regardless of reform
@@ -209,7 +214,7 @@
           - child
         region: SCOTLAND
   output:
-    # 1 child * £27.15/week * 52 = £1,411.80 (no baby bonus - age >= 1)
+    # 1 child @ £27.15/week * 52 = £1,411.80 (standard rate - age >= 1, no premium)
     scottish_child_payment: 1412
 
 # Test 8: Higher income (£45k) - no qualifying benefit, no SCP
