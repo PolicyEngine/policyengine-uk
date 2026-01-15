@@ -107,7 +107,7 @@ def create_scottish_child_payment_baby_bonus_reform() -> Reform:
             per_child_weekly = where(
                 age < 1,
                 PREMIUM_RATE_UNDER_ONE,  # £40/week for under-1s (TOTAL, not bonus)
-                weekly_amount  # Standard SCP rate for 1+ (inflates with inflation)
+                weekly_amount,  # Standard SCP rate for 1+ (inflates with inflation)
             )
 
             # Calculate total weekly payment for all eligible children
