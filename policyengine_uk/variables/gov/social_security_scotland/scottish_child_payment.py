@@ -34,12 +34,10 @@ class scottish_child_payment(Variable):
 
         # Count eligible children in the benefit unit
         is_eligible_child = benunit.members("is_scp_eligible_child", period)
-        eligible_children = benunit.sum(is_eligible_child)
 
-        # Count children under 6 and 6+ for takeup rate calculation
+        # Get ages for baby bonus calculation
         age = benunit.members("age", period)
         is_child = benunit.members("is_child", period)
-        children_under_6 = benunit.sum(is_child & (age < 6))
         children_6_and_over = benunit.sum(is_child & (age >= 6) & (age < 16))
 
         # Check if receiving a qualifying benefit
@@ -79,8 +77,29 @@ class scottish_child_payment(Variable):
             | receives_pension_credit
         )
 
-        # Calculate annual payment
-        annual_amount = eligible_children * weekly_amount * WEEKS_IN_YEAR
+        # Check if SCP Premium for under-ones is enabled (parametric reform)
+        # This allows enabling via parameter_changes without structural reform
+        baby_bonus_in_effect = parameters(
+            period
+        ).gov.contrib.scotland.scottish_child_payment.in_effect
+
+        # SCP Premium for under-ones: Fixed £40/week total for babies under 1
+        # Policy: Children under 1 get £40/week, children 1+ get standard rate
+        # Source: Scottish Budget 2026-27
+        PREMIUM_RATE_UNDER_ONE = 40.0  # £40/week fixed total
+
+        # Calculate per-child weekly amount based on age (if reform is active)
+        per_child_weekly = where(
+            baby_bonus_in_effect & (age < 1),
+            PREMIUM_RATE_UNDER_ONE,  # £40/week for under-1s (TOTAL, not bonus)
+            weekly_amount,  # Standard SCP rate for 1+ or when reform inactive
+        )
+
+        # Calculate total weekly payment for all eligible children
+        total_weekly = benunit.sum(per_child_weekly * is_eligible_child)
+
+        # Convert to annual amount
+        annual_amount = total_weekly * WEEKS_IN_YEAR
 
         # Apply age-specific take-up rates in microsimulation
         # 97% for families with only children under 6

@@ -24,6 +24,7 @@ from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
 from .tax_benefit_system import CountryTaxBenefitSystem
 
@@ -120,6 +121,14 @@ class Simulation(CoreSimulation):
         # Apply structural modifiers
 
         self.tax_benefit_system.reset_parameter_caches()
+
+        # Apply structural reforms based on parameters
+        structural_reform = create_structural_reforms_from_parameters(
+            self.tax_benefit_system.parameters,
+            period_(self.default_input_period),
+        )
+        if structural_reform is not None:
+            self.apply_reform(structural_reform)
 
         self.move_values("capital_gains", "capital_gains_before_response")
         self.move_values("employment_income", "employment_income_before_lsr")
