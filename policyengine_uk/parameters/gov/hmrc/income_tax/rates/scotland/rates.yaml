@@ -19,6 +19,9 @@ brackets:
         2023-04-06: 2_162
         2024-04-06: 2_306
         2025-04-06: 2_827
+        # Scottish Budget 2026-27: Basic rate threshold £16,537 total
+        # (above £12,570 PA = £3,967). 7.4% increase.
+        2026-04-06: 3_967
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -32,6 +35,9 @@ brackets:
         2023-04-06: 13_118
         2024-04-06: 13_991
         2025-04-06: 14_921
+        # Scottish Budget 2026-27: Intermediate rate threshold £29,526 total
+        # (above £12,570 PA = £16,956). 7.4% increase.
+        2026-04-06: 16_956
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -81,3 +87,5 @@ metadata:
   reference:
     - title: GOV.UK
       href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+    - title: Scottish Budget 2026-27 - Income Tax Technical Factsheet
+      href: https://www.gov.scot/publications/scottish-income-tax-technical-factsheet/

@@ -1,7 +1,13 @@
-description: Whether the Scottish Child Payment baby bonus reform is in effect.
+description: Whether the Scottish Child Payment Premium for under-ones is in effect.
 values:
   0001-01-01: false
+  # Scottish Budget 2026-27: SCP Premium for under-ones (£40/week)
+  # announced by Finance Secretary Shona Robison, 13 January 2026
+  2026-04-06: true
 metadata:
   unit: bool
   period: year
-  label: Scottish Child Payment baby bonus reform in effect
+  label: Scottish Child Payment Premium for under-ones in effect
+  reference:
+    - title: Scottish Budget 2026-27 - Finance Secretary's Statement
+      href: https://www.gov.scot/publications/scottish-budget-2026-2027/
