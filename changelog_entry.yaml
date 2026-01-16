@@ -1,0 +1,6 @@
+- bump: minor
+  changes:
+    added:
+      - Scottish Budget 2026-27 income tax threshold uplift (7.4% increase to basic and intermediate rate thresholds)
+      - Scottish Budget 2026-27 SCP Premium for under-ones (£40/week for children under 1)
+      - New parameter premium_under_one_amount for SCP Premium rate
