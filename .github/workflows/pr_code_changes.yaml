@@ -50,9 +50,14 @@ jobs:
           - name: UV sync
             run: uv sync
           - name: Run tests with coverage
-            run: make test
+            run: |
+              # Only export token if non-empty (avoids 'Bearer ' error for Dependabot PRs)
+              if [ -n "$HF_TOKEN_VALUE" ]; then
+                export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
+              fi
+              make test
             env:
-              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+              HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
           - name: Upload coverage to Codecov
             uses: codecov/codecov-action@v4
             with:
