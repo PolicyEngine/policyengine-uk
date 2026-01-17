@@ -1,10 +1,10 @@
 from policyengine_uk.model_api import *
-from typing import Union, Optional
+from typing import Optional
 
 
 def create_expanded_ma_reform(
     max_child_age: Optional[int] = None,
-    child_education_levels: Optional[List[str]] = None,
+    child_education_levels: Optional[list[str]] = None,
 ) -> Reform:
     class meets_expanded_ma_conditions(Variable):
         label = "Qualifies for an expanded Marriage Allowance"
@@ -209,7 +209,27 @@ def create_marriage_neutral_income_tax_reform(
     return reform
 
 
-def create_marriage_tax_reform(parameters, period):
+def create_marriage_tax_reform(parameters, period, bypass: bool = False):
+    """
+    Create marriage tax reforms based on CPS proposals.
+
+    Policy: Expand Marriage Allowance eligibility and/or implement
+    marriage-neutral income tax.
+
+    Args:
+        parameters: The parameter tree
+        period: The time period
+        bypass: If True, return default reform without parameter checks
+
+    Source: Centre for Policy Studies
+    """
+    if bypass:
+        # Return both reforms with default settings when bypassed
+        return (
+            create_expanded_ma_reform(),
+            create_marriage_neutral_income_tax_reform(),
+        )
+
     cps = parameters(period).gov.contrib.cps.marriage_tax_reforms
     remove_income_condition = cps.expanded_ma.remove_income_condition
     rate = cps.expanded_ma.ma_rate
@@ -243,3 +263,10 @@ def create_marriage_tax_reform(parameters, period):
             return it_reform
         else:
             return None
+
+
+# For direct import
+expanded_ma_reform = create_expanded_ma_reform()
+marriage_neutral_income_tax_reform = (
+    create_marriage_neutral_income_tax_reform()
+)

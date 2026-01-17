@@ -19,15 +19,14 @@ class tax_credits_applicable_income(Variable):
         ]
         income = add(benunit, period, STEP_1_COMPONENTS)
         income = max_(income - TC.means_test.non_earned_disregard, 0)
+        # Default behavior: Basic income not included in means tests.
+        # Use basic_income_interactions reform to change this.
         STEP_2_COMPONENTS = [
             "employment_income",
             "self_employment_income",
             "social_security_income",
             "miscellaneous_income",
         ]
-        bi = parameters(period).gov.contrib.ubi_center.basic_income
-        if bi.interactions.include_in_means_tests:
-            STEP_2_COMPONENTS.append("basic_income")
         income += add(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
         on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
