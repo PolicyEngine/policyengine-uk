@@ -1,7 +1,10 @@
-# Tests for Scottish Child Payment Premium for under-ones reform
+# Tests for Scottish Child Payment Premium for under-ones
 #
-# POLICY: Children under 1 receive FIXED £40/week TOTAL payment
-#         Children 1+ receive standard SCP rate (£27.15 in 2026, inflates thereafter)
+# POLICY: Children under 1 receive FIXED £40/week TOTAL payment (from April 2026)
+#         Children 1+ receive standard SCP rate (£27.15 in 2025, inflates thereafter)
+#
+# Source: Scottish Budget 2026-27
+# https://www.gov.scot/publications/scottish-budget-2026-2027/
 #
 # This is NOT a fixed bonus - it's a fixed total amount.
 # As standard rate inflates, the effective "premium" decreases to maintain £40 total.
@@ -9,11 +12,10 @@
 # 2026 calculations:
 # - Standard SCP: £27.15/week * 52 = £1,411.80/year
 # - Premium for under-1s: £40/week * 52 = £2,080/year (TOTAL, not base + bonus)
-# - Effective premium: £40 - £27.15 = £12.85/week (but this changes as base inflates)
 
-# Test 1: Scottish family with 1 baby (age 0) - WITHOUT reform
-- name: Scottish family with 1 baby - baseline (no baby bonus)
-  period: 2026
+# Test 1: Scottish family with 1 baby (age 0) - BEFORE premium (2025)
+- name: Scottish family with 1 baby - before premium (2025)
+  period: 2025
   absolute_error_margin: 1
   input:
     people:
@@ -34,16 +36,14 @@
           - baby
         region: SCOTLAND
   output:
-    # 1 child * £27.15/week * 52 weeks = £1,411.80
+    # 1 child * £27.15/week * 52 weeks = £1,411.80 (no premium before 2026)
     scottish_child_payment: 1412
 
-# Test 2: Scottish family with 1 baby (age 0) - WITH reform
-- name: Scottish family with 1 baby - with baby bonus
+# Test 2: Scottish family with 1 baby (age 0) - WITH premium (2026)
+- name: Scottish family with 1 baby - with premium (2026)
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -65,13 +65,11 @@
     # 1 baby * £40/week * 52 = £2,080/year (TOTAL payment for under-1)
     scottish_child_payment: 2080
 
-# Test 3: Scottish family with 2 babies (both age 0) - WITH reform
-- name: Scottish family with 2 babies - with baby bonus
+# Test 3: Scottish family with 2 babies (both age 0) - 2026
+- name: Scottish family with 2 babies - with premium (2026)
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -94,16 +92,14 @@
           - baby2
         region: SCOTLAND
   output:
-    # 2 babies * £40/week * 52 = £4,160/year (TOTAL payment for 2 under-1s)
+    # 2 babies * £40/week * 52 = £4,160/year
     scottish_child_payment: 4160
 
-# Test 4: Scottish family with 1 baby and 1 older child - WITH reform
-- name: Scottish family with 1 baby and 1 older child - with baby bonus
+# Test 4: Scottish family with 1 baby and 1 older child - 2026
+- name: Scottish family with 1 baby and 1 older child (2026)
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -130,13 +126,11 @@
     # £67.15 * 52 = £3,491.80/year
     scottish_child_payment: 3492
 
-# Test 5: Scottish family with only older children (no babies) - WITH reform
-- name: Scottish family with older children only - no baby bonus
+# Test 5: Scottish family with only older children (no babies) - 2026
+- name: Scottish family with older children only (2026)
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -162,13 +156,11 @@
     # 2 older children @ £27.15/week * 52 = £2,823.60 (standard rate, no premium)
     scottish_child_payment: 2824
 
-# Test 6: English family with baby - no SCP regardless of reform
+# Test 6: English family with baby - no SCP (not in Scotland)
 - name: English family with baby - no SCP
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -189,13 +181,11 @@
   output:
     scottish_child_payment: 0
 
-# Test 7: Child at age boundary (exactly 1 year old) - no baby bonus
-- name: Scottish family with 1 year old child - no baby bonus
+# Test 7: Child at age boundary (exactly 1 year old) - no premium
+- name: Scottish family with 1 year old child - no premium
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -214,16 +204,14 @@
           - child
         region: SCOTLAND
   output:
-    # 1 child @ £27.15/week * 52 = £1,411.80 (standard rate - age >= 1, no premium)
+    # 1 child @ £27.15/week * 52 = £1,411.80 (standard rate - age >= 1)
     scottish_child_payment: 1412
 
-# Test 8: Higher income (£45k) - no qualifying benefit, no SCP
-- name: Scottish family with £45k income - no SCP (no qualifying benefit)
+# Test 8: Higher income - no qualifying benefit, no SCP
+- name: Scottish family with £45k income - no SCP
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -245,13 +233,11 @@
     # No UC at £45k income, so no SCP eligibility
     scottish_child_payment: 0
 
-# Test 9: Higher income (£50k) - no qualifying benefit, no SCP
-- name: Scottish family with £50k income - no SCP (no qualifying benefit)
+# Test 9: High income - no qualifying benefit, no SCP
+- name: Scottish family with £50k income - no SCP
   period: 2026
   absolute_error_margin: 1
-  reforms: policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
-    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30

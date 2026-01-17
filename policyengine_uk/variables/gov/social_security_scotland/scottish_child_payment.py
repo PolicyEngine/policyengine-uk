@@ -13,8 +13,8 @@ class scottish_child_payment(Variable):
     value_type = float
     unit = GBP
     reference = [
+        "https://www.legislation.gov.uk/ssi/2020/351/contents",
         "https://www.gov.scot/policies/social-security/scottish-child-payment/",
-        "https://www.socialsecurity.gov.scot/",
     ]
 
     def formula(benunit, period, parameters):
@@ -35,10 +35,11 @@ class scottish_child_payment(Variable):
         # Count eligible children in the benefit unit
         is_eligible_child = benunit.members("is_scp_eligible_child", period)
 
+        # Child-level take-up (generated stochastically in dataset)
+        would_claim = benunit.members("would_claim_scp", period)
+
         # Get ages for baby bonus calculation
         age = benunit.members("age", period)
-        is_child = benunit.members("is_child", period)
-        children_6_and_over = benunit.sum(is_child & (age >= 6) & (age < 16))
 
         # Check if receiving a qualifying benefit
         # The list of qualifying benefits is parameterized as CTC/WTC
@@ -77,53 +78,30 @@ class scottish_child_payment(Variable):
             | receives_pension_credit
         )
 
-        # Check if SCP Premium for under-ones is enabled (parametric reform)
-        # This allows enabling via parameter_changes without structural reform
-        baby_bonus_in_effect = parameters(
-            period
-        ).gov.contrib.scotland.scottish_child_payment.in_effect
+        # SCP Premium for under-ones (Scottish Budget 2026-27)
+        # Children under 1 receive £40/week total from April 2026
+        # When premium_under_one_amount > 0, it applies to under-1s
+        premium_rate = p.premium_under_one_amount
 
-        # SCP Premium for under-ones: Fixed £40/week total for babies under 1
-        # Policy: Children under 1 get £40/week, children 1+ get standard rate
-        # Source: Scottish Budget 2026-27
-        PREMIUM_RATE_UNDER_ONE = 40.0  # £40/week fixed total
-
-        # Calculate per-child weekly amount based on age (if reform is active)
+        # Calculate per-child weekly amount based on age
+        # Under-1s get premium rate when available, others get standard rate
         per_child_weekly = where(
-            baby_bonus_in_effect & (age < 1),
-            PREMIUM_RATE_UNDER_ONE,  # £40/week for under-1s (TOTAL, not bonus)
-            weekly_amount,  # Standard SCP rate for 1+ or when reform inactive
+            (age < 1) & (premium_rate > 0),
+            premium_rate,  # Premium for under-1s (TOTAL amount, not bonus)
+            weekly_amount,  # Standard SCP rate for 1+ or when no premium
         )
 
-        # Calculate total weekly payment for all eligible children
-        total_weekly = benunit.sum(per_child_weekly * is_eligible_child)
+        # Calculate total weekly payment for eligible children who would claim
+        total_weekly = benunit.sum(
+            per_child_weekly * is_eligible_child * would_claim
+        )
 
         # Convert to annual amount
         annual_amount = total_weekly * WEEKS_IN_YEAR
-
-        # Apply age-specific take-up rates in microsimulation
-        # 97% for families with only children under 6
-        # 86% for families with any children 6 and over
-        takeup_under_6 = p.takeup_rate.under_6
-        takeup_6_and_over = p.takeup_rate.age_6_and_over
-
-        # Use the 6+ rate if any child is 6 or older, otherwise under-6 rate
-        has_children_6_and_over = children_6_and_over > 0
-        takeup_rate = where(
-            has_children_6_and_over, takeup_6_and_over, takeup_under_6
-        )
-
-        takes_up = random(benunit) < takeup_rate
-        is_in_microsimulation = benunit.simulation.dataset is not None
-        if is_in_microsimulation:
-            receives_payment = takes_up
-        else:
-            receives_payment = True
 
         return (
             in_scotland
             * scp_available
             * receives_qualifying_benefit
-            * receives_payment
             * annual_amount
         )
