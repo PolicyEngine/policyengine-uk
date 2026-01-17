@@ -1,0 +1,18 @@
+description: Weekly amount of Scottish Child Payment Premium for children under 1.
+values:
+  # No premium before 2027-28
+  0001-01-01: 0
+  # Scottish Budget 2026-27 announced this for 2027-28
+  # Source: "will be paid in 2027-28"
+  # https://www.gov.scot/publications/scottish-budget-2026-2027/pages/6/
+  # This is a TOTAL amount, not a bonus on top of standard SCP
+  2027-04-06: 40
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Scottish Child Payment Premium for under-ones weekly amount
+  reference:
+    - title: Scottish Budget 2026-27 - Finance Secretary's Statement
+      href: https://www.gov.scot/publications/scottish-budget-2026-2027/
+    - title: Scottish Government announcement
+      href: https://www.gov.scot/news/income-tax-proposals-for-2026-27-3/
