@@ -1,4 +1,0 @@
-- bump: patch
-  changes:
-    fixed:
-      - CI workflows now handle missing HUGGING_FACE_TOKEN gracefully, allowing Dependabot PRs to run tests without failing on empty Bearer token errors.

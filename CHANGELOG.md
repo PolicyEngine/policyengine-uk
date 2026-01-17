@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.70.5] - 2026-01-17 18:05:46
+
+### Fixed
+
+- CI workflows now handle missing HUGGING_FACE_TOKEN gracefully, allowing Dependabot PRs to run tests without failing on empty Bearer token errors.
+
 ## [2.70.4] - 2026-01-17 17:45:51
 
 ### Changed
@@ -2549,6 +2555,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.70.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.4...2.70.5
 [2.70.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.3...2.70.4
 [2.70.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.2...2.70.3
 [2.70.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.1...2.70.2
