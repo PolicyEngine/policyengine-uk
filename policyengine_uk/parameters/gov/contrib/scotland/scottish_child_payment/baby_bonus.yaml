@@ -1,11 +1,12 @@
-description: Additional weekly amount for Scottish Child Payment based on child age.
+description: Additional weekly amount for Scottish Child Payment based on child age. Effective from 2027-28 fiscal year.
 brackets:
   - threshold:
       values:
         0001-01-01: 0
     amount:
       values:
-        0001-01-01: 12.85
+        0001-01-01: 0
+        2027-04-01: 12.85
   - threshold:
       values:
         0001-01-01: 1
@@ -19,5 +20,5 @@ metadata:
   period: week
   label: Scottish Child Payment baby bonus by age
   reference:
-    - title: Scottish Government - Scottish Child Payment
-      href: https://www.gov.scot/policies/social-security/scottish-child-payment/
+    - title: Scottish Budget 2026 to 2027
+      href: https://www.gov.scot/publications/scottish-budget-2026-2027/pages/6/

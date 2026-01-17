@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    fixed:
+      - Fixed Scottish Child Payment baby bonus reform to use Person-level variable structure, matching the refactored base variable. The reform now correctly uses parameterized baby bonus rates instead of hardcoded values.
+      - Fixed SCP baby bonus effective date to 2027-04-01 (fiscal year 2027-28) per Scottish Budget 2026-27.
