@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    changed:
+      - Refactor reforms to use two-layer pattern with bypass parameter, matching PolicyEngine US architecture. This enables programmatic reform application without parameter checks and cleaner separation between core law (gov/) and policy proposals (contrib/).
