@@ -8,5 +8,7 @@ metadata:
   period: year
   label: Scottish Child Payment maximum age
   reference:
+    - title: The Scottish Child Payment Regulations 2020, Regulation 18
+      href: https://www.legislation.gov.uk/ssi/2020/351/regulation/18
     - title: Scottish Government - Scottish Child Payment
       href: https://www.gov.scot/policies/social-security/scottish-child-payment/

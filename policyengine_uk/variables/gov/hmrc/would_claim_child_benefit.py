@@ -4,19 +4,13 @@ from policyengine_uk.model_api import *
 class would_claim_child_benefit(Variable):
     label = "Would claim Child Benefit"
     documentation = (
-        "Whether this benefit unit would claim Child Benefit if eligible"
+        "Whether this benefit unit would claim Child Benefit if eligible. "
+        "Generated stochastically in the dataset using take-up rates."
     )
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
 
-    def formula(benunit, period, parameters):
-        claims_all_entitled_benefits = benunit(
-            "claims_all_entitled_benefits", period
-        )
-        takeup_rate = parameters(period).gov.hmrc.child_benefit.takeup
-        overall_p = takeup_rate.overall
-        random_takeup = (random(benunit) < overall_p) & ~benunit(
-            "child_benefit_opts_out", period
-        )
-        return claims_all_entitled_benefits | random_takeup
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to True
+    default_value = True
