@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+      - Skip behavioral response tests when HUGGING_FACE_TOKEN is not available (enables Dependabot PRs to pass CI).
