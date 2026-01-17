@@ -2175,3 +2175,10 @@
       to data package. Variables now read pre-computed values from datasets for deterministic,
       reproducible calculations.
   date: 2026-01-17 04:45:58
+- bump: patch
+  changes:
+    fixed:
+    - CI now runs on dependency updates (pyproject.toml, uv.lock changes)
+    - Fixed Scottish Child Payment test format to use array notation for person-level
+      output
+  date: 2026-01-17 17:17:54
