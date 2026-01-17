@@ -77,22 +77,17 @@ class scottish_child_payment(Variable):
             | receives_pension_credit
         )
 
-        # Check if SCP Premium for under-ones is enabled
-        # Scottish Budget 2026-27: £40/week for children under 1
-        contrib_params = parameters(
-            period
-        ).gov.contrib.scotland.scottish_child_payment
-        baby_bonus_in_effect = contrib_params.in_effect
-
-        # Get the premium rate from parameters (£40/week from April 2026)
+        # SCP Premium for under-ones (Scottish Budget 2026-27)
+        # Children under 1 receive £40/week total from April 2026
+        # When premium_under_one_amount > 0, it applies to under-1s
         premium_rate = p.premium_under_one_amount
 
         # Calculate per-child weekly amount based on age
-        # Under-1s get premium rate when in effect, others get standard rate
+        # Under-1s get premium rate when available, others get standard rate
         per_child_weekly = where(
-            baby_bonus_in_effect & (age < 1) & (premium_rate > 0),
+            (age < 1) & (premium_rate > 0),
             premium_rate,  # Premium for under-1s (TOTAL amount, not bonus)
-            weekly_amount,  # Standard SCP rate for 1+ or when premium not in effect
+            weekly_amount,  # Standard SCP rate for 1+ or when no premium
         )
 
         # Calculate total weekly payment for all eligible children

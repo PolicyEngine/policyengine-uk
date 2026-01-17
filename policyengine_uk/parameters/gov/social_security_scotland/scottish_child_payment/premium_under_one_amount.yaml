@@ -1,5 +1,7 @@
 description: Weekly amount of Scottish Child Payment Premium for children under 1.
 values:
+  # No premium before Scottish Budget 2026-27
+  0001-01-01: 0
   # Scottish Budget 2026-27: £40/week for under-ones
   # This is a TOTAL amount, not a bonus on top of standard SCP
   2026-04-06: 40
