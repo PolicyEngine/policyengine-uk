@@ -24,24 +24,11 @@ class scottish_child_payment_person(Variable):
         ).gov.social_security_scotland.scottish_child_payment
         weekly_amount = p.amount
 
-        # Get age for baby bonus calculation
-        age = person("age", period)
-
-        # SCP Premium for under-ones (Scottish Budget 2026-27)
-        premium_rate = p.premium_under_one_amount
-
-        # Calculate weekly amount based on age
-        weekly = where(
-            (age < 1) & (premium_rate > 0),
-            premium_rate,  # Premium for under-1s (TOTAL amount, not bonus)
-            weekly_amount,  # Standard SCP rate
-        )
-
         # Child-level take-up (generated stochastically in dataset)
         would_claim = person("would_claim_scp", period)
 
         # Convert to annual amount
-        return weekly * WEEKS_IN_YEAR * would_claim
+        return weekly_amount * WEEKS_IN_YEAR * would_claim
 
 
 class scottish_child_payment(Variable):
