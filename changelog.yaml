@@ -2188,3 +2188,11 @@
     - Per-value legislative references for income tax allowances and minimum wage
       rates
   date: 2026-01-17 17:37:48
+- bump: patch
+  changes:
+    fixed:
+    - Extended childcare entitlement hours expansion date corrected from 2026-01-01
+      to 2025-09-01 for children aged 9 months to 2 years, implementing the September
+      2025 policy change that doubled free childcare from 15 to 30 hours per week
+      for working parents.
+  date: 2026-01-17 17:42:23

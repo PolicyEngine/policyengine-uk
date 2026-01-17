@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.70.3] - 2026-01-17 17:42:23
+
+### Fixed
+
+- Extended childcare entitlement hours expansion date corrected from 2026-01-01 to 2025-09-01 for children aged 9 months to 2 years, implementing the September 2025 policy change that doubled free childcare from 15 to 30 hours per week for working parents.
+
 ## [2.70.2] - 2026-01-17 17:37:48
 
 ### Added
@@ -2537,6 +2543,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.70.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.2...2.70.3
 [2.70.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.1...2.70.2
 [2.70.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.0...2.70.1
 [2.70.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.69.0...2.70.0
