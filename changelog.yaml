@@ -2218,3 +2218,9 @@
     - Fixed SCP baby bonus effective date to 2027-04-01 (fiscal year 2027-28) per
       Scottish Budget 2026-27.
   date: 2026-01-17 18:33:41
+- bump: patch
+  changes:
+    fixed:
+    - Skip behavioral response tests when HUGGING_FACE_TOKEN is not available (enables
+      Dependabot PRs to pass CI).
+  date: 2026-01-17 18:37:47
