@@ -13,15 +13,12 @@ class ni_class_1_employer(Variable):
     def formula(person, period, parameters):
         class_1 = parameters(period).gov.hmrc.national_insurance.class_1
         earnings = person("ni_class_1_income", period)
-        if not parameters(
-            period
-        ).gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions:
-            added_pension_contributions = person(
-                "employer_pension_contributions", period
-            )
-            taxed_earnings = earnings + added_pension_contributions
-        else:
-            taxed_earnings = earnings
+        # Default behavior: employer pension contributions ARE taxed
+        # Use employer_ni_pension_exemption reform to exempt them
+        added_pension_contributions = person(
+            "employer_pension_contributions", period
+        )
+        taxed_earnings = earnings + added_pension_contributions
         secondary_threshold = (
             class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
         )

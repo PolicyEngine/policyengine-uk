@@ -1,4 +1,4 @@
 - bump: minor
   changes:
     changed:
-      - Refactor reforms to use two-layer pattern with bypass parameter, matching PolicyEngine US architecture. This enables programmatic reform application without parameter checks and cleaner separation between core law (gov/) and policy proposals (contrib/).
+      - Refactor reforms to use two-layer pattern with bypass parameter, matching PolicyEngine US architecture. All gov.contrib parameter references have been removed from gov/ variables - contrib parameters now only affect behavior via reforms. This enables programmatic reform application and cleaner separation between core law (gov/) and policy proposals (contrib/).

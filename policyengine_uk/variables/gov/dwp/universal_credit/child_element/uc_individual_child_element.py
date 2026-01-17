@@ -22,16 +22,6 @@ class uc_individual_child_element(Variable):
             child_index <= child_limit_applying
         )
 
-        # Reform proposal
-        age_exemption = parameters.gov.contrib.two_child_limit.age_exemption.universal_credit(
-            period
-        )
-        if age_exemption > 0:
-            is_exempt = person.benunit.any(
-                person("age", period) < age_exemption
-            )
-            born_before_limit = is_exempt
-
         return (
             select(
                 [
