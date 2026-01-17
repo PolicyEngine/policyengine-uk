@@ -8,19 +8,21 @@ class scottish_child_payment(Variable):
         "families in Scotland. It is paid per eligible child to families "
         "receiving qualifying benefits such as Universal Credit."
     )
-    entity = BenUnit
+    entity = Person
     definition_period = YEAR
     value_type = float
     unit = GBP
+    adds = ["benunit"]
+    defined_for = "would_claim_scp"
     reference = [
         "https://www.legislation.gov.uk/ssi/2020/351/contents",
         "https://www.gov.scot/policies/social-security/scottish-child-payment/",
     ]
 
-    def formula(benunit, period, parameters):
+    def formula(person, period, parameters):
         # Check if household is in Scotland
         in_scotland = (
-            benunit.household("country", period).decode_to_str() == "SCOTLAND"
+            person.household("country", period).decode_to_str() == "SCOTLAND"
         )
 
         # Get SCP parameters
@@ -32,19 +34,15 @@ class scottish_child_payment(Variable):
         # SCP only available when amount > 0 (i.e., after Feb 2021)
         scp_available = weekly_amount > 0
 
-        # Count eligible children in the benefit unit
-        is_eligible_child = benunit.members("is_scp_eligible_child", period)
+        # Check if child is eligible
+        is_eligible_child = person("is_scp_eligible_child", period)
 
-        # Child-level take-up (generated stochastically in dataset)
-        would_claim = benunit.members("would_claim_scp", period)
+        # Get age for baby bonus calculation
+        age = person("age", period)
 
-        # Get ages for baby bonus calculation
-        age = benunit.members("age", period)
-
-        # Check if receiving a qualifying benefit
-        # The list of qualifying benefits is parameterized as CTC/WTC
-        # were removed in 2024 as part of UC migration
+        # Check if family receives a qualifying benefit
         qb = p.qualifying_benefits
+        benunit = person.benunit
 
         receives_uc = (
             benunit("universal_credit", period) > 0
@@ -80,28 +78,22 @@ class scottish_child_payment(Variable):
 
         # SCP Premium for under-ones (Scottish Budget 2026-27)
         # Children under 1 receive £40/week total from April 2026
-        # When premium_under_one_amount > 0, it applies to under-1s
         premium_rate = p.premium_under_one_amount
 
-        # Calculate per-child weekly amount based on age
-        # Under-1s get premium rate when available, others get standard rate
-        per_child_weekly = where(
+        # Calculate weekly amount based on age
+        weekly = where(
             (age < 1) & (premium_rate > 0),
             premium_rate,  # Premium for under-1s (TOTAL amount, not bonus)
-            weekly_amount,  # Standard SCP rate for 1+ or when no premium
-        )
-
-        # Calculate total weekly payment for eligible children who would claim
-        total_weekly = benunit.sum(
-            per_child_weekly * is_eligible_child * would_claim
+            weekly_amount,  # Standard SCP rate
         )
 
         # Convert to annual amount
-        annual_amount = total_weekly * WEEKS_IN_YEAR
+        annual_amount = weekly * WEEKS_IN_YEAR
 
         return (
             in_scotland
             * scp_available
+            * is_eligible_child
             * receives_qualifying_benefit
             * annual_amount
         )
