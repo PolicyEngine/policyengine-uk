@@ -1,0 +1,151 @@
+# Tests for Scottish Budget 2026-27 income tax threshold changes
+#
+# Source: Scottish Income Tax 2026-27 Technical Factsheet, Table 1
+# https://www.gov.scot/publications/scottish-income-tax-technical-factsheet/
+#
+# Scottish income tax thresholds for 2026-27:
+# - Starter rate (19%): £0 - £16,537 (first £16,537 of taxable income)
+# - Basic rate (20%): £16,538 - £29,526
+# - Intermediate rate (21%): £29,527 - £43,662
+# - Higher rate (42%): £43,663 - £75,000
+# - Advanced rate (45%): £75,001 - £125,140
+# - Top rate (48%): Over £125,140
+#
+# PolicyEngine stores thresholds as amounts ABOVE personal allowance (£12,570):
+# - Starter rate threshold: £0 (bracket 0)
+# - Basic rate threshold: £3,967 (£16,537 - £12,570) (bracket 1)
+# - Intermediate rate threshold: £16,956 (£29,526 - £12,570) (bracket 2)
+
+# Test 1: Scottish taxpayer in basic rate band (2026)
+# Income: £25,000 → taxable = £12,430 (after £12,570 PA)
+# Tax calculation:
+#   Starter rate (19%): £3,967 × 0.19 = £753.73
+#   Basic rate (20%): (£12,430 - £3,967) × 0.20 = £8,463 × 0.20 = £1,692.60
+#   Total: £2,446.33
+- name: Scottish taxpayer in basic rate band (2026)
+  period: 2026
+  absolute_error_margin: 5
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 25000
+    benunits:
+      benunit:
+        members:
+          - person
+    households:
+      household:
+        members:
+          - person
+        region: SCOTLAND
+  output:
+    income_tax: 2446
+
+# Test 2: Scottish taxpayer at intermediate threshold boundary (2026)
+# Income: £42,096 (£29,526 + £12,570 PA) → taxable = £29,526
+# Tax calculation:
+#   Starter rate (19%): £3,967 × 0.19 = £753.73
+#   Basic rate (20%): (£16,956 - £3,967) × 0.20 = £12,989 × 0.20 = £2,597.80
+#   Intermediate rate (21%): (£29,526 - £16,956) × 0.21 = £12,570 × 0.21 = £2,639.70
+#   Total: £5,991.23
+- name: Scottish taxpayer at intermediate threshold boundary (2026)
+  period: 2026
+  absolute_error_margin: 5
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 42096
+    benunits:
+      benunit:
+        members:
+          - person
+    households:
+      household:
+        members:
+          - person
+        region: SCOTLAND
+  output:
+    income_tax: 5991
+
+# Test 3: Compare 2025 vs 2026 for same income
+# Shows the threshold uplift effect
+# Income: £20,000 → taxable = £7,430 (after £12,570 PA)
+#
+# 2025 thresholds (pre-uplift):
+#   Basic rate threshold: £2,827 above PA
+#   Starter rate (19%): £2,827 × 0.19 = £537.13
+#   Basic rate (20%): (£7,430 - £2,827) × 0.20 = £4,603 × 0.20 = £920.60
+#   Total 2025: £1,457.73
+#
+# 2026 thresholds (post-uplift):
+#   Basic rate threshold: £3,967 above PA
+#   Starter rate (19%): £3,967 × 0.19 = £753.73
+#   Basic rate (20%): (£7,430 - £3,967) × 0.20 = £3,463 × 0.20 = £692.60
+#   Total 2026: £1,446.33
+#
+# Difference: £11.40 less tax in 2026 due to threshold uplift
+- name: Scottish taxpayer - threshold uplift comparison (2025)
+  period: 2025
+  absolute_error_margin: 5
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 20000
+    benunits:
+      benunit:
+        members:
+          - person
+    households:
+      household:
+        members:
+          - person
+        region: SCOTLAND
+  output:
+    income_tax: 1458
+
+- name: Scottish taxpayer - threshold uplift comparison (2026)
+  period: 2026
+  absolute_error_margin: 5
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 20000
+    benunits:
+      benunit:
+        members:
+          - person
+    households:
+      household:
+        members:
+          - person
+        region: SCOTLAND
+  output:
+    income_tax: 1446
+
+# Test 4: English taxpayer unaffected by Scottish thresholds (2026)
+# Income: £25,000 → taxable = £12,430 (after £12,570 PA)
+# Uses UK rates, not Scottish rates
+- name: English taxpayer unaffected by Scottish thresholds (2026)
+  period: 2026
+  absolute_error_margin: 5
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 25000
+    benunits:
+      benunit:
+        members:
+          - person
+    households:
+      household:
+        members:
+          - person
+        region: NORTH_EAST
+  output:
+    # UK basic rate (20%) on full £12,430: £2,486
+    income_tax: 2486
