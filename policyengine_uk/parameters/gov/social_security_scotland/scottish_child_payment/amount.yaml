@@ -6,7 +6,6 @@ values:
   2022-11-14: 25
   2024-04-01: 26.70
   2025-04-01: 27.15
-  2026-04-01: 28.20
 metadata:
   unit: currency-GBP
   period: week
@@ -16,5 +15,3 @@ metadata:
       href: https://www.legislation.gov.uk/ssi/2020/351/regulation/20
     - title: Scottish Government - Scottish Child Payment
       href: https://www.gov.scot/policies/social-security/scottish-child-payment/
-    - title: Scottish Budget 2026-27
-      href: https://www.gov.scot/news/a-budget-to-tackle-child-poverty/

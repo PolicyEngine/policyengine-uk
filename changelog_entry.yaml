@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    fixed:
+      - Reverted premature SCP 2026-27 rate increase (not yet law).
+      - Refactored SCP baby bonus reform to use £40/week total as the policy parameter instead of a fixed bonus amount.

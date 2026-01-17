@@ -1,0 +1,11 @@
+description: Total weekly Scottish Child Payment amount for children under 1.
+values:
+  0001-01-01: 0
+  2027-04-01: 40
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Scottish Child Payment total for under-1s
+  reference:
+    - title: Scottish Budget 2026 to 2027
+      href: https://www.gov.scot/publications/scottish-budget-2026-2027/pages/6/
