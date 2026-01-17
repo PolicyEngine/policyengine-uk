@@ -6,12 +6,13 @@ def create_scottish_child_payment_baby_bonus_reform() -> Reform:
     """
     Reform that implements SCP baby bonus for children under 1.
 
-    Policy: Children under 1 receive an additional weekly bonus on top of
-    the standard SCP rate. The bonus amount is parameterized at
-    gov.contrib.scotland.scottish_child_payment.baby_bonus.
+    Policy: Children under 1 receive a total of £40/week (the policy parameter).
+    The "bonus" is implicitly the difference between this total and the base rate.
 
     Source: Scottish Budget 2026-27
-    https://www.gov.scot/publications/scottish-budget-2026-2027-finance-secretarys-statement-13-january-2026-2/
+    https://www.gov.scot/publications/scottish-budget-2026-2027/pages/6/
+    "This will bring the total Scottish Child Payment amount to £40 a week
+    for children under 1."
     """
 
     class scottish_child_payment(Variable):
@@ -19,7 +20,7 @@ def create_scottish_child_payment_baby_bonus_reform() -> Reform:
         documentation = (
             "Scottish Child Payment amount for this child. "
             "Paid to eligible children in families receiving qualifying benefits. "
-            "When baby bonus reform is active, children under 1 receive additional payment."
+            "When baby bonus reform is active, children under 1 receive £40/week total."
         )
         entity = Person
         definition_period = YEAR
@@ -32,27 +33,33 @@ def create_scottish_child_payment_baby_bonus_reform() -> Reform:
         ]
 
         def formula(person, period, parameters):
-            # Get SCP parameters
+            # Get base SCP rate
             p = parameters(
                 period
             ).gov.social_security_scotland.scottish_child_payment
-            weekly_amount = p.amount
+            base_weekly = p.amount
 
-            # Get baby bonus parameter (age-bracketed)
-            baby_bonus_params = parameters(
+            # Get reform parameters
+            scp_reform = parameters(
                 period
-            ).gov.contrib.scotland.scottish_child_payment.baby_bonus
-            age = person("age", period)
-            baby_bonus = baby_bonus_params.calc(age)
+            ).gov.contrib.scotland.scottish_child_payment
+            in_effect = scp_reform.in_effect
+            under_one = scp_reform.under_one
 
-            # Total weekly amount = base + baby bonus
-            total_weekly = weekly_amount + baby_bonus
+            # For under-1s when reform in effect: use under_one total
+            # Otherwise: use base rate
+            age = person("age", period)
+            weekly_amount = where(
+                (age < 1) & in_effect,
+                under_one,
+                base_weekly,
+            )
 
             # Child-level take-up (generated stochastically in dataset)
             would_claim = person("would_claim_scp", period)
 
             # Convert to annual amount
-            return total_weekly * WEEKS_IN_YEAR * would_claim
+            return weekly_amount * WEEKS_IN_YEAR * would_claim
 
     class reform(Reform):
         def apply(self):

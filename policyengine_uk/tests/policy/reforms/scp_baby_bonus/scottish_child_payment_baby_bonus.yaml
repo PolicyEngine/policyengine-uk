@@ -1,8 +1,8 @@
 # Scottish Child Payment Baby Bonus Reform tests
-# Tests that the SCP baby bonus reform correctly applies additional
-# payment for children under 1 year old.
+# Tests that the SCP baby bonus reform correctly applies the £40/week
+# total for children under 1 year old.
 # Policy effective from 2027-28 fiscal year (April 2027).
-# Reform adds £12.85/week bonus for under-1s on top of standard rate.
+# Policy parameter: £40/week total for under-1s (not base + bonus).
 
 - name: SCP baby bonus for child under 1 (2028)
   period: 2028
@@ -24,7 +24,7 @@
         members: [parent, baby]
         region: SCOTLAND
   output:
-    # Base: £27.15/week + Bonus: £12.85/week = £40/week total
+    # Under-1s get £40/week total (policy parameter)
     # £40/week * 52 weeks = £2,080 per year
     # [parent, baby]
     scottish_child_payment: [0, 2080]
@@ -75,7 +75,7 @@
         members: [parent, baby, older_child]
         region: SCOTLAND
   output:
-    # Baby (age 0): £40/week * 52 = £2,080
+    # Baby (age 0): £40/week total * 52 = £2,080
     # Older child (age 5): £27.15/week * 52 = £1,411.80
     # [parent, baby, older_child]
     scottish_child_payment: [0, 2080, 1412]
@@ -124,7 +124,7 @@
         members: [parent, baby]
         region: SCOTLAND
   output:
-    # Before 2027-04-01 - baby bonus is £0, so standard rate only
+    # Before 2027-04-01 - under_one_total is £0, so standard rate applies
     # £27.15/week * 52 = £1,411.80
     # [parent, baby]
     scottish_child_payment: [0, 1412]
