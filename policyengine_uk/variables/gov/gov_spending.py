@@ -34,7 +34,7 @@ class gov_spending(Variable):
         "statutory_sick_pay",
         "statutory_maternity_pay",
         "ssmg",
-        "basic_income",
+        # basic_income excluded - added via basic_income_interactions reform
         "epg_subsidy",
         "cost_of_living_support_payment",
         "energy_bills_rebate",

@@ -38,11 +38,9 @@ class housing_benefit_applicable_income(Variable):
         credits = add(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefits + credits + benefits
 
-        # Default behavior: Basic income not included in means tests.
-        # Use basic_income_interactions reform to change this.
-        # Basic income is already in personal benefits via social_security_income,
-        # so deduct it to exclude from means test.
-        increased_income -= add(benunit, period, ["basic_income"])
+        # Note: basic_income handling is done via basic_income_interactions reform
+        # which overrides this variable when the reform is active.
+
         # Reduce increased income by pension contributions and tax
         pension_contributions = (
             add(benunit, period, ["pension_contributions"]) * 0.5
