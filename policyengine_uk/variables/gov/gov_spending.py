@@ -40,7 +40,7 @@ class gov_spending(Variable):
         "energy_bills_rebate",
         "winter_fuel_allowance",
         "pawhp",
-        "other_public_spending_budget_change",
+        # other_public_spending_budget_change excluded - added via contrib reform
         "tax_free_childcare",
         "extended_childcare_entitlement",
         "universal_childcare_entitlement",

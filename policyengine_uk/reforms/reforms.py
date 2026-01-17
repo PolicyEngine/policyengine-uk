@@ -19,6 +19,9 @@ from .policyengine.employer_ni_pension_exemption import (
 from .policyengine.salary_sacrifice_haircut import (
     create_salary_sacrifice_haircut_reform,
 )
+from .policyengine.contrib_aggregates import (
+    create_contrib_aggregates_reform,
+)
 from .scotland import create_scottish_child_payment_reform
 from .ubi_center import create_basic_income_interactions_reform
 from policyengine_core.model_api import *
@@ -39,6 +42,7 @@ def create_structural_reforms_from_parameters(parameters, period):
         create_employer_ni_pension_exemption_reform(parameters, period),
         create_salary_sacrifice_haircut_reform(parameters, period),
         create_basic_income_interactions_reform(parameters, period),
+        create_contrib_aggregates_reform(parameters, period),
     ]
     reforms = tuple(filter(lambda x: x is not None, reforms))
 

@@ -18,12 +18,10 @@ class household_tax(Variable):
         "domestic_rates",
         "fuel_duty",
         "tv_licence",
-        "wealth_tax",
-        "non_primary_residence_wealth_tax",
+        # wealth_tax, non_primary_residence_wealth_tax, LVT, carbon_tax
+        # excluded - added via contrib_taxes reform
         "income_tax",
         "national_insurance",
-        "LVT",
-        "carbon_tax",
         "vat_change",
         "capital_gains_tax",
         "private_school_vat",

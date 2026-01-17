@@ -33,6 +33,11 @@ from .two_child_limit_age_exemption import (
     create_two_child_limit_age_exemption_reform,
     two_child_limit_age_exemption_reform,
 )
+from .contrib_aggregates import (
+    create_contrib_aggregates,
+    create_contrib_aggregates_reform,
+    contrib_aggregates_reform,
+)
 
 __all__ = [
     "create_disable_simulated_benefits",
@@ -56,4 +61,7 @@ __all__ = [
     "create_two_child_limit_age_exemption",
     "create_two_child_limit_age_exemption_reform",
     "two_child_limit_age_exemption_reform",
+    "create_contrib_aggregates",
+    "create_contrib_aggregates_reform",
+    "contrib_aggregates_reform",
 ]
