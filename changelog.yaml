@@ -2196,3 +2196,10 @@
       2025 policy change that doubled free childcare from 15 to 30 hours per week
       for working parents.
   date: 2026-01-17 17:42:23
+- bump: patch
+  changes:
+    changed:
+    - Standardized all parameter labels to use sentence case, while preserving proper
+      names (e.g., "Bank of England", "Child Benefit") and acronyms (e.g., "HMRC",
+      "VAT", "NHS")
+  date: 2026-01-17 17:45:51
