@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 
 
-class scottish_child_payment_person(Variable):
-    label = "Scottish Child Payment (per child)"
+class scottish_child_payment(Variable):
+    label = "Scottish Child Payment"
     documentation = (
         "Scottish Child Payment amount for this child. "
         "Paid to eligible children in families receiving qualifying benefits."
@@ -29,22 +29,3 @@ class scottish_child_payment_person(Variable):
 
         # Convert to annual amount
         return weekly_amount * WEEKS_IN_YEAR * would_claim
-
-
-class scottish_child_payment(Variable):
-    label = "Scottish Child Payment"
-    documentation = (
-        "Scottish Child Payment provides financial support to low-income "
-        "families in Scotland. It is paid per eligible child to families "
-        "receiving qualifying benefits such as Universal Credit."
-    )
-    entity = BenUnit
-    definition_period = YEAR
-    value_type = float
-    unit = GBP
-    reference = [
-        "https://www.legislation.gov.uk/ssi/2020/351/contents",
-        "https://www.gov.scot/policies/social-security/scottish-child-payment/",
-    ]
-
-    adds = ["scottish_child_payment_person"]
