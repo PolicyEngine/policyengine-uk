@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_core.periods import period as period_
 
 
 def create_basic_income_interactions() -> Reform:
@@ -280,40 +279,24 @@ def create_basic_income_interactions_reform(
     parameters, period, bypass: bool = False
 ):
     """
-    Creates the basic income interactions reform based on parameter values.
+    Creates the basic income interactions reform.
+
+    This reform is ALWAYS applied because the formulas check parameters at
+    calculation time. This allows dynamic parameter setting (e.g., in YAML tests
+    or API calls) to work correctly.
 
     Args:
-        parameters: The parameter tree
-        period: The period to check
-        bypass: If True, return the reform unconditionally
+        parameters: The parameter tree (unused, kept for API consistency)
+        period: The period (unused, kept for API consistency)
+        bypass: If True, return the reform unconditionally (always True here)
 
     Returns:
-        Reform class or None
+        Reform class
     """
-    if bypass:
-        return create_basic_income_interactions()
-
-    p = parameters.gov.contrib.ubi_center.basic_income.interactions
-
-    # Check if any interaction is enabled in current period or next 5 years
-    reform_active = False
-    current_period = period_(period)
-
-    for i in range(5):
-        p_period = p(current_period)
-        if (
-            p_period.include_in_means_tests
-            or p_period.include_in_taxable_income
-            or p_period.withdraw_cb
-        ):
-            reform_active = True
-            break
-        current_period = current_period.offset(1, "year")
-
-    if reform_active:
-        return create_basic_income_interactions()
-    else:
-        return None
+    # Always apply this reform - the formulas check parameters internally
+    # This matches the US pattern where reforms are always active but
+    # their effect depends on parameter values at calculation time
+    return create_basic_income_interactions()
 
 
 # For direct import

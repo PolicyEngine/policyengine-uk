@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-def create_salary_sacrifice_haircut(haircut_rate: float) -> Reform:
+def create_salary_sacrifice_haircut() -> Reform:
     """
     Reform that applies a broad-base haircut to all workers' employment income
     due to employers spreading salary sacrifice cap costs.
@@ -11,8 +11,8 @@ def create_salary_sacrifice_haircut(haircut_rate: float) -> Reform:
     (not just salary sacrificers), as they cannot target only affected workers
     without those workers negotiating to recoup the loss.
 
-    Args:
-        haircut_rate: The rate at which employment income is reduced (e.g., 0.0016)
+    The haircut rate is read from parameters at calculation time, allowing
+    dynamic configuration through YAML tests or API calls.
     """
 
     class salary_sacrifice_broad_base_haircut(Variable):
@@ -46,6 +46,15 @@ def create_salary_sacrifice_haircut(haircut_rate: float) -> Reform:
             if np.isinf(cap):
                 return 0
 
+            # Get haircut rate from parameters at calculation time
+            haircut_rate = parameters(
+                period
+            ).gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate
+
+            # If no haircut rate set, return 0
+            if haircut_rate == 0:
+                return 0
+
             # Apply haircut to employment income before any salary sacrifice adjustments
             # Use employment_income_before_lsr to avoid circular dependency
             employment_income = person("employment_income_before_lsr", period)
@@ -66,26 +75,23 @@ def create_salary_sacrifice_haircut_reform(
     """
     Factory function to create the salary sacrifice haircut reform.
 
+    This reform is ALWAYS applied because the formula checks parameters at
+    calculation time. This allows dynamic parameter setting (e.g., in YAML tests
+    or API calls) to work correctly.
+
     Args:
-        parameters: The parameter tree
-        period: The time period
-        bypass: If True, always create the reform using the contrib parameter value
+        parameters: The parameter tree (unused, kept for API consistency)
+        period: The time period (unused, kept for API consistency)
+        bypass: If True, always create the reform (always True here)
 
     Returns:
-        A Reform class if haircut_rate > 0, otherwise None
+        A Reform class
     """
-    haircut_rate = parameters(
-        period
-    ).gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate
-
-    if bypass:
-        return create_salary_sacrifice_haircut(haircut_rate)
-
-    if haircut_rate > 0:
-        return create_salary_sacrifice_haircut(haircut_rate)
-    else:
-        return None
+    # Always apply this reform - the formula checks parameters internally
+    # This matches the US pattern where reforms are always active but
+    # their effect depends on parameter values at calculation time
+    return create_salary_sacrifice_haircut()
 
 
-# For direct import with default haircut rate
-salary_sacrifice_haircut_reform = create_salary_sacrifice_haircut(0.0016)
+# For direct import
+salary_sacrifice_haircut_reform = create_salary_sacrifice_haircut()
