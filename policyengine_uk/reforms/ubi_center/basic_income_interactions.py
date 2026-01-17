@@ -30,7 +30,9 @@ def create_basic_income_interactions() -> Reform:
             bi = parameters(period).gov.contrib.ubi_center.basic_income
             if bi.interactions.withdraw_cb:
                 eligible = (
-                    person.benunit.sum(person("basic_income", period.this_year))
+                    person.benunit.sum(
+                        person("basic_income", period.this_year)
+                    )
                     == 0
                 )
             is_eldest = person("is_eldest_child", period.this_year)
