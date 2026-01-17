@@ -1170,7 +1170,7 @@ wheels = [
 
 [[package]]
 name = "policyengine-core"
-version = "3.19.3"
+version = "3.23.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dpath" },
@@ -1190,14 +1190,14 @@ dependencies = [
     { name = "standard-imghdr" },
     { name = "wheel" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8d/fb/4425c2bba1095d78c5aa326e92eb697d84d1b88ffd84f7ce8e6a470b0579/policyengine_core-3.19.3.tar.gz", hash = "sha256:acf9d668f2d193949f307785c1d3dee63908d2df35f12b4eff7578d85d125290", size = 159388, upload-time = "2025-07-24T18:11:58.184Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/f2/3deb0bbe4aea68dfc4890dca5c66e7f500eb5f1fcdaa179f902d345dc521/policyengine_core-3.23.3.tar.gz", hash = "sha256:fe97d3e14eecd95127dba986183f6ddeaa3321ac3e24e5a9dceafa9ea0d950f3", size = 163035, upload-time = "2026-01-17T18:16:03.576Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1c/75/6f032d03c62011a5958a336bd2b7c1d83c1a6eb3fbd0df1daf117a48e9d5/policyengine_core-3.19.3-py3-none-any.whl", hash = "sha256:3bee1abce0eb27f26e4de7f639d099fb31f5e3ed5a8094144d6fdc4a2cc18af1", size = 220722, upload-time = "2025-07-24T18:11:56.407Z" },
+    { url = "https://files.pythonhosted.org/packages/d3/1a/91866d73f50fc7ba20a6acb587f20cb2ca0c2d3e5ae749fb665ea7a9d3ef/policyengine_core-3.23.3-py3-none-any.whl", hash = "sha256:a04244964140004a40214622b9af2f9fb99f8f71568fe30b60332fb8189d250f", size = 224888, upload-time = "2026-01-17T18:16:01.924Z" },
 ]
 
 [[package]]
 name = "policyengine-uk"
-version = "2.65.0"
+version = "2.71.1"
 source = { editable = "." }
 dependencies = [
     { name = "microdf-python" },
@@ -1233,7 +1233,7 @@ requires-dist = [
     { name = "jupyter-book", marker = "extra == 'dev'", specifier = ">=2.0.0a0" },
     { name = "linecheck", marker = "extra == 'dev'" },
     { name = "microdf-python", specifier = ">=1.0.2" },
-    { name = "policyengine-core", specifier = ">=3.19.3" },
+    { name = "policyengine-core", specifier = ">=3.23.0" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
@@ -1961,11 +1961,11 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.5.0"
+version = "2.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599c47dd506532914ce044817c7752a79b6a51286319bc/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760", size = 393185, upload-time = "2025-06-18T14:07:41.644Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795, upload-time = "2025-06-18T14:07:40.39Z" },
+    { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
 ]
 
 [[package]]
