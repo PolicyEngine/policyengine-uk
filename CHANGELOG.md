@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.71.1] - 2026-01-17 18:54:27
+
+### Fixed
+
+- Reverted premature SCP 2026-27 rate increase (not yet law).
+- Refactored SCP baby bonus reform to use £40/week total as the policy parameter instead of a fixed bonus amount.
+
 ## [2.71.0] - 2026-01-17 18:39:20
 
 ### Added
@@ -2574,6 +2581,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.71.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.71.0...2.71.1
 [2.71.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.7...2.71.0
 [2.70.7]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.6...2.70.7
 [2.70.6]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.5...2.70.6

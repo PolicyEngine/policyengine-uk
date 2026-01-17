@@ -2230,3 +2230,10 @@
     - Scottish Child Payment increased to 28.20/week for 2026-27, per Scottish Budget
       2026-27.
   date: 2026-01-17 18:39:20
+- bump: patch
+  changes:
+    fixed:
+    - Reverted premature SCP 2026-27 rate increase (not yet law).
+    - "Refactored SCP baby bonus reform to use \xA340/week total as the policy parameter\
+      \ instead of a fixed bonus amount."
+  date: 2026-01-17 18:54:27
