@@ -2182,3 +2182,9 @@
     - Fixed Scottish Child Payment test format to use array notation for person-level
       output
   date: 2026-01-17 17:17:54
+- bump: patch
+  changes:
+    added:
+    - Per-value legislative references for income tax allowances and minimum wage
+      rates
+  date: 2026-01-17 17:37:48
