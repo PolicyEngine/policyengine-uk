@@ -4,7 +4,7 @@ values:
 metadata:
   period: year
   unit: year
-  label: LHA shared accommodation age threshold
+  label: Lha shared accommodation age threshold
   reference:
     - title: The Housing Benefit Regulations 2006 - Schedule 4 - Paragraph 28
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28

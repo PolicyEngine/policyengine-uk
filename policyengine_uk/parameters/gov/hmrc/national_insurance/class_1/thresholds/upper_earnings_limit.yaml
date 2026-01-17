@@ -9,7 +9,7 @@ values:
   2021-04-06: 966.73
   2027-04-06: 966.73
 metadata:
-  label: NI Upper Earnings Limit
+  label: NI upper earnings limit
   unit: currency-GBP
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   period: week

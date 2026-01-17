@@ -2,7 +2,7 @@ description: The Department for Education qualifies recipients of the Working Ta
 metadata:
   unit: currency-GBP  
   period: year
-  label: income limit for tax credit recipients to access benefit-targeted free childcare
+  label: Income limit for tax credit recipients to access benefit-targeted free childcare
   reference:
     - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014, part 1.2.b
       href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/1/made

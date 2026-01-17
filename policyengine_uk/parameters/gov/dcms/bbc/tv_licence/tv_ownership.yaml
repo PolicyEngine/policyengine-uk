@@ -5,7 +5,7 @@ values:
   2019-01-01: 0.9544
 metadata:
   unit: /1
-  label: TV ownership rate
+  label: Tv ownership rate
   reference:
     - title: Television ownership in domestic households | closer.ac.uk
       href: https://www.closer.ac.uk/data/television-ownership-in-domestic-households/

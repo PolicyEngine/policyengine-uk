@@ -12,7 +12,7 @@ values:
   2024-04-01: 404
   2025-04-01: 411
 metadata:
-  label: Universal Credit Work Allowance with housing support
+  label: Universal Credit work allowance with housing support
   period: month
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi

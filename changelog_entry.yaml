@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    changed:
+      - Standardized all parameter labels to use sentence case, while preserving proper names (e.g., "Bank of England", "Child Benefit") and acronyms (e.g., "HMRC", "VAT", "NHS")

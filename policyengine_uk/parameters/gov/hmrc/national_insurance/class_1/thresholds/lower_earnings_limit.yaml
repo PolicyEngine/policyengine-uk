@@ -7,7 +7,7 @@ metadata:
   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
   unit: currency-GBP
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index
-  label: NI Lower Earnings Limit
+  label: NI lower earnings limit
 values:
   2015-04-06: 112
   2016-04-06: 112

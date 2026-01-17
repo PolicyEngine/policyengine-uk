@@ -2,5 +2,5 @@ values:
   2024-01-01: 200
 metadata:
   unit: currency-GBP
-  label: PAWHP lower amount
+  label: Pawhp lower amount
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

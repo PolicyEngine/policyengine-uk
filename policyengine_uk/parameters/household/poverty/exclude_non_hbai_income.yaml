@@ -2,4 +2,4 @@ description: Whether to exclude non-HBAI income from poverty calculations
 values:
   2010-01-01: true
 metadata:
-  label: Follow HBAI for poverty definitions
+  label: Follow hbai for poverty definitions

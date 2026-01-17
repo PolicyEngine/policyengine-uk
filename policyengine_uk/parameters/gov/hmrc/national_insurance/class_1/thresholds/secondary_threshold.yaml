@@ -1,6 +1,6 @@
 description: Secondary threshold for National Insurance
 metadata:
-  label: NI Secondary Threshold
+  label: NI secondary threshold
   period: week
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:

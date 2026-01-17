@@ -22,7 +22,7 @@ values:
         href: https://www.legislation.gov.uk/ukpga/2023/1/section/5
 metadata:
   name: dividend_allowance
-  label: Dividend Allowance
+  label: Dividend allowance
   period: year
   unit: currency-GBP
   reference: 
