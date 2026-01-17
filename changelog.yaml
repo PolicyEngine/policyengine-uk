@@ -2224,3 +2224,9 @@
     - Skip behavioral response tests when HUGGING_FACE_TOKEN is not available (enables
       Dependabot PRs to pass CI).
   date: 2026-01-17 18:37:47
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment increased to 28.20/week for 2026-27, per Scottish Budget
+      2026-27.
+  date: 2026-01-17 18:39:20
