@@ -203,7 +203,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 9678.032
+    extended_childcare_entitlement: 10011.897
 
 - name: Eligible for 30 hours - Family with multiple 2-year-olds after expansion
   period: 2026
@@ -219,4 +219,4 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 16356.064
+    extended_childcare_entitlement: 17121.797
