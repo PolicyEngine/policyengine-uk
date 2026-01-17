@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.70.6] - 2026-01-17 18:33:41
+
+### Fixed
+
+- Fixed Scottish Child Payment baby bonus reform to use Person-level variable structure, matching the refactored base variable. The reform now correctly uses parameterized baby bonus rates instead of hardcoded values.
+- Fixed SCP baby bonus effective date to 2027-04-01 (fiscal year 2027-28) per Scottish Budget 2026-27.
+
 ## [2.70.5] - 2026-01-17 18:05:46
 
 ### Fixed
@@ -2555,6 +2562,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.70.6]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.5...2.70.6
 [2.70.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.4...2.70.5
 [2.70.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.3...2.70.4
 [2.70.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.2...2.70.3
