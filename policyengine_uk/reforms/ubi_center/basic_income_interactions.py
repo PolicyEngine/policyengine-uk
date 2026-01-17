@@ -6,15 +6,11 @@ def create_basic_income_interactions() -> Reform:
     """
     Reform that modifies how basic income interacts with existing benefits.
 
-    When active, this reform:
-    1. Withdraws Child Benefit from basic income recipients
-    2. Includes basic income in taxable income
-    3. Includes basic income in means tests for:
-       - Tax Credits
-       - Pension Credit
-       - Income Support
-       - Housing Benefit
-       - Universal Credit
+    This reform checks the contrib parameters within each formula to allow
+    individual control over each interaction:
+    1. withdraw_cb - Withdraws Child Benefit from basic income recipients
+    2. include_in_taxable_income - Includes basic income in taxable income
+    3. include_in_means_tests - Includes basic income in means tests
     """
 
     class child_benefit_respective_amount(Variable):
@@ -31,11 +27,13 @@ def create_basic_income_interactions() -> Reform:
         defined_for = "is_child_or_QYP"
 
         def formula(person, period, parameters):
-            # When reform is active, CB is withdrawn for BI recipients
-            eligible = (
-                person.benunit.sum(person("basic_income", period.this_year))
-                == 0
-            )
+            eligible = True
+            bi = parameters(period).gov.contrib.ubi_center.basic_income
+            if bi.interactions.withdraw_cb:
+                eligible = (
+                    person.benunit.sum(person("basic_income", period.this_year))
+                    == 0
+                )
             is_eldest = person("is_eldest_child", period.this_year)
             child_benefit = parameters(period).gov.hmrc.child_benefit.amount
             amount = where(
@@ -62,8 +60,10 @@ def create_basic_income_interactions() -> Reform:
             # Find adjusted net income
             ani = add(person, period, adjusted_net_income_components)
 
-            # When reform is active, basic income is taxable
-            ani += person("basic_income", period)
+            # Add basic income if parameter is set
+            bi = parameters(period).gov.contrib.ubi_center.basic_income
+            if bi.interactions.include_in_taxable_income:
+                ani += person("basic_income", period)
 
             return max_(0, ani)
 
@@ -90,8 +90,10 @@ def create_basic_income_interactions() -> Reform:
                 "self_employment_income",
                 "social_security_income",
                 "miscellaneous_income",
-                "basic_income",  # Include when reform is active
             ]
+            bi = parameters(period).gov.contrib.ubi_center.basic_income
+            if bi.interactions.include_in_means_tests:
+                STEP_2_COMPONENTS.append("basic_income")
             income += add(benunit, period, STEP_2_COMPONENTS)
             EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
             on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
@@ -109,8 +111,9 @@ def create_basic_income_interactions() -> Reform:
             pc = parameters(period).gov.dwp.pension_credit
             sources = pc.guarantee_credit.income
             total = add(benunit, period, sources)
-            # Include basic income in means test when reform is active
-            total += add(benunit, period, ["basic_income"])
+            bi = parameters(period).gov.contrib.ubi_center.basic_income
+            if bi.interactions.include_in_means_tests:
+                total += add(benunit, period, ["basic_income"])
             pension_contributions = add(
                 benunit, period, ["pension_contributions"]
             )
@@ -133,8 +136,10 @@ def create_basic_income_interactions() -> Reform:
                 "self_employment_income",
                 "property_income",
                 "private_pension_income",
-                "basic_income",  # Include when reform is active
             ]
+            bi = parameters(period).gov.contrib.ubi_center.basic_income
+            if bi.interactions.include_in_means_tests:
+                INCOME_COMPONENTS.append("basic_income")
             income = add(benunit, period, INCOME_COMPONENTS)
             tax = add(
                 benunit,
@@ -195,6 +200,7 @@ def create_basic_income_interactions() -> Reform:
                 "property_income",
                 "private_pension_income",
             ]
+            bi = parameters(period).gov.contrib.ubi_center.basic_income
             # Add personal benefits, credits and total benefits to income
             benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
             income = add(benunit, period, INCOME_COMPONENTS)
@@ -202,9 +208,9 @@ def create_basic_income_interactions() -> Reform:
             credits = add(benunit, period, ["tax_credits"])
             increased_income = income + personal_benefits + credits + benefits
 
-            # When reform is active, basic income IS included in means tests
-            # (basic income is already in personal benefits via social_security_income,
-            # so no additional deduction needed)
+            if not bi.interactions.include_in_means_tests:
+                # Exclude basic income from means tests
+                increased_income -= add(benunit, period, ["basic_income"])
 
             # Reduce increased income by pension contributions and tax
             pension_contributions = (
@@ -243,8 +249,10 @@ def create_basic_income_interactions() -> Reform:
                 "employment_income",
                 "self_employment_income",
                 "miscellaneous_income",
-                "basic_income",  # Include when reform is active
             ]
+            bi = parameters(period).gov.contrib.ubi_center.basic_income
+            if bi.interactions.include_in_means_tests:
+                INCOME_COMPONENTS.append("basic_income")
             personal_gross_earned_income = add(
                 person, period, INCOME_COMPONENTS
             )
