@@ -10,6 +10,8 @@ on:
       - policyengine_uk/**
       - tests/**
       - .github/**
+      - pyproject.toml
+      - uv.lock
   workflow_dispatch:
 
 jobs:

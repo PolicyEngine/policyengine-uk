@@ -1,0 +1,5 @@
+- bump: patch
+  changes:
+    fixed:
+      - CI now runs on dependency updates (pyproject.toml, uv.lock changes)
+      - Fixed Scottish Child Payment test format to use array notation for person-level output
