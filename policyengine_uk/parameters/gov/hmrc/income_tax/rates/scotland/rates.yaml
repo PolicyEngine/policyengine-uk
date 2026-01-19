@@ -45,6 +45,8 @@ brackets:
         2023-04-06: 31_092
         2024-04-06: 31_092
         2025-04-06: 31_092
+        # Scottish Budget 2025-26 announced freeze through 2026-27
+        2026-04-06: 31_092
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -57,6 +59,8 @@ brackets:
         2023-04-06: 125_140
         2024-04-06: 62_430
         2025-04-06: 62_430
+        # Scottish Budget 2025-26 announced freeze through 2026-27
+        2026-04-06: 62_430
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -69,6 +73,8 @@ brackets:
         2017-04-06: null
         2024-04-06: 125_140
         2025-04-06: 125_140
+        # Scottish Budget 2025-26 announced freeze through 2026-27
+        2026-04-06: 125_140
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -81,3 +87,5 @@ metadata:
   reference:
     - title: GOV.UK
       href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+    - title: Scottish Budget 2025-26 - Higher rate threshold freeze
+      href: https://www.gov.scot/publications/scottish-budget-2025-26/
