@@ -2246,3 +2246,9 @@
       SFC forecasts.
     - CPI uprating for SCP parameters for projections beyond 2030-31.
   date: 2026-01-20 12:32:14
+- bump: patch
+  changes:
+    fixed:
+    - Add 2026-27 Scottish income tax threshold freeze to baseline (higher, advanced,
+      and top rates) per Scottish Budget 2025-26.
+  date: 2026-01-20 12:44:50
