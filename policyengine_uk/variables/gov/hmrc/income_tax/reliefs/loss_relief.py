@@ -1,6 +1,5 @@
 from policyengine_uk.model_api import *
 
-
 """
 The section detailing some tax reliefs applicable is section 24 of the Act, but others are described in the 2003 and 2005 Acts as deductions from the respective components.
 """

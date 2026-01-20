@@ -18,7 +18,6 @@ from pathlib import Path
 
 import yaml
 
-
 # Years to calculate rates for
 CALCULATION_YEARS = range(2026, 2031)
 
