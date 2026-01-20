@@ -2237,3 +2237,11 @@
     - "Refactored SCP baby bonus reform to use \xA340/week total as the policy parameter\
       \ instead of a fixed bonus amount."
   date: 2026-01-17 18:54:27
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment 2026-27 rate of £28.20/week per Scottish Fiscal Commission
+      forecasts.
+    - CPI uprating for Scottish Child Payment base amount and baby boost under-1 total,
+      enabling automatic future rate projections.
+  date: 2026-01-20 12:13:57

@@ -255,6 +255,28 @@
     # [parent, child_1]
     scottish_child_payment: [0, 1412]
 
+- name: SCP with 2026 amount (£28.20/week)
+  period: 2026
+  absolute_error_margin: 10
+  input:
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child_1]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, child_1]
+        region: SCOTLAND
+  output:
+    # £28.20/week * 52 weeks = £1,466.40
+    # [parent, child_1]
+    scottish_child_payment: [0, 1466]
+
 - name: CTC no longer qualifies from 2025 (after April 2024)
   period: 2025
   absolute_error_margin: 1

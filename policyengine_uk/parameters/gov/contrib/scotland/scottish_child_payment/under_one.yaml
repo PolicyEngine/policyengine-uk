@@ -6,6 +6,9 @@ metadata:
   unit: currency-GBP
   period: week
   label: Scottish Child Payment total for under-1s
+  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:
     - title: Scottish Budget 2026 to 2027
       href: https://www.gov.scot/publications/scottish-budget-2026-2027/pages/6/
+    - title: Scottish Fiscal Commission - Scotland's Economic and Fiscal Forecasts January 2026
+      href: https://fiscalcommission.scot/wp-content/uploads/2026/01/Scotlands-Economic-and-Fiscal-Forecasts-January-2026-revised-13-01-2026.pdf
