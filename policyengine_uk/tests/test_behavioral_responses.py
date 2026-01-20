@@ -16,7 +16,6 @@ from pathlib import Path
 from policyengine_uk import Microsimulation
 from policyengine_uk.model_api import Scenario
 
-
 # Check if HF token is available for data-dependent tests
 HF_TOKEN_AVAILABLE = bool(os.environ.get("HUGGING_FACE_TOKEN"))
 requires_hf_data = pytest.mark.skipif(

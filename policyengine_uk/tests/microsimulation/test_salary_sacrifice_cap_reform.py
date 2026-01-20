@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 from policyengine_uk import Microsimulation
 
-
 # Policy year when the salary sacrifice cap takes effect
 POLICY_YEAR = 2030  # Use 2030 to ensure cap is active (cap starts 2029-04-06)
 

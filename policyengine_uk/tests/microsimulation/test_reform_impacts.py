@@ -8,7 +8,6 @@ import yaml
 from pathlib import Path
 from policyengine_uk import Microsimulation
 
-
 # Load configuration from YAML file
 config_path = Path(__file__).parent / "reforms_config.yaml"
 with open(config_path, "r") as f:
