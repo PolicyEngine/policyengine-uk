@@ -24,10 +24,10 @@
         members: [parent, baby]
         region: SCOTLAND
   output:
-    # Under-1s get £40/week total (policy parameter)
-    # £40/week * 52 weeks = £2,080 per year
+    # Under-1s get £40.80/week total (2028-29 SFC forecast)
+    # £40.80/week * 52 weeks = £2,121.60 per year
     # [parent, baby]
-    scottish_child_payment: [0, 2080]
+    scottish_child_payment: [0, 2122]
 
 - name: SCP baby bonus - child over 1 gets standard rate (2028)
   period: 2028
@@ -49,9 +49,9 @@
         members: [parent, toddler]
         region: SCOTLAND
   output:
-    # Standard rate only: £27.15/week * 52 = £1,411.80
+    # Standard rate only: £29.45/week * 52 = £1,531.40
     # [parent, toddler]
-    scottish_child_payment: [0, 1412]
+    scottish_child_payment: [0, 1531]
 
 - name: SCP baby bonus - mixed ages (2028)
   period: 2028
@@ -75,10 +75,10 @@
         members: [parent, baby, older_child]
         region: SCOTLAND
   output:
-    # Baby (age 0): £40/week total * 52 = £2,080
-    # Older child (age 5): £27.15/week * 52 = £1,411.80
+    # Baby (age 0): £40.80/week total * 52 = £2,121.60
+    # Older child (age 5): £29.45/week * 52 = £1,531.40
     # [parent, baby, older_child]
-    scottish_child_payment: [0, 2080, 1412]
+    scottish_child_payment: [0, 2122, 1531]
 
 - name: SCP baby bonus - not in Scotland (2028)
   period: 2028
