@@ -1,0 +1,6 @@
+- bump: minor
+  changes:
+    added:
+      - Scottish Child Payment rates from 2026-27 to 2030-31 per Scottish Fiscal Commission forecasts.
+      - Scottish Child Payment baby boost under-1 total from 2027-28 to 2030-31 per SFC forecasts.
+      - CPI uprating for SCP parameters for projections beyond 2030-31.
