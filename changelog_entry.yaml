@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+      - Add 2026-27 Scottish income tax threshold freeze to baseline (higher, advanced, and top rates) per Scottish Budget 2025-26.
