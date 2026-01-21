@@ -1,0 +1,7 @@
+- bump: patch
+  changes:
+    fixed:
+    - Scottish top rate (48%) threshold corrected from 125,140 to 112,570 (above
+      personal allowance). The threshold was incorrectly stored as the total income
+      value instead of the amount above PA, causing the top rate to effectively start
+      at 137,710 instead of 125,140.
