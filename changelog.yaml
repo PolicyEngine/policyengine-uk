@@ -2252,3 +2252,11 @@
     - Add 2026-27 Scottish income tax threshold freeze to baseline (higher, advanced,
       and top rates) per Scottish Budget 2025-26.
   date: 2026-01-20 12:44:50
+- bump: patch
+  changes:
+    fixed:
+    - Scottish top rate (48%) threshold corrected from 125,140 to 112,570 (above personal
+      allowance). The threshold was incorrectly stored as the total income value instead
+      of the amount above PA, causing the top rate to effectively start at 137,710
+      instead of 125,140.
+  date: 2026-01-21 11:55:12
