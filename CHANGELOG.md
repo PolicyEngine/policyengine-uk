@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.72.3] - 2026-01-25 14:13:02
+
+### Changed
+
+- Bumped policyengine-core minimum version to 3.23.5 for pandas 3.0 compatibility
+
 ## [2.72.2] - 2026-01-21 11:55:12
 
 ### Fixed
@@ -2601,6 +2607,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.72.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.2...2.72.3
 [2.72.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.1...2.72.2
 [2.72.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.0...2.72.1
 [2.72.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.71.1...2.72.0

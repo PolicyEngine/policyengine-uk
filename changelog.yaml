@@ -2260,3 +2260,8 @@
       of the amount above PA, causing the top rate to effectively start at 137,710
       instead of 125,140.
   date: 2026-01-21 11:55:12
+- bump: patch
+  changes:
+    changed:
+    - Bumped policyengine-core minimum version to 3.23.5 for pandas 3.0 compatibility
+  date: 2026-01-25 14:13:02
