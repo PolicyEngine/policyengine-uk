@@ -1,0 +1,4 @@
+- bump: patch
+  changes:
+    fixed:
+      - Fix TypeError in uprate_rent when region.values.astype(str) returns a pandas StringArray instead of numpy array.
