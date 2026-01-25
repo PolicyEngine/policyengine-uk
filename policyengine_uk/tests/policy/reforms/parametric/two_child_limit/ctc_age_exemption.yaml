@@ -1,3 +1,7 @@
+# Child Tax Credit two-child limit age exemption tests
+# Tests that the age exemption reform correctly exempts families with children
+# under the threshold age from the two-child limit.
+
 - name: With no age exemption, only first 2 children get CTC
   period: 2023
   absolute_error_margin: 1
@@ -25,11 +29,12 @@
   output:
     CTC_child_element: 6470  # CTC for only the first 2 children
 
-- name: With age exemption, all children get CTC when any child is below threshold
+- name: With age exemption reform, all children get CTC when any child is below threshold
   period: 2023
   absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.policyengine.two_child_limit_age_exemption.ctc_age_exemption_3_reform
   input:
-    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3
     people:
       parent:
         age: 30
@@ -56,8 +61,9 @@
 - name: No exemption when all children above age threshold
   period: 2023
   absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.policyengine.two_child_limit_age_exemption.ctc_age_exemption_3_reform
   input:
-    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3
     people:
       parent:
         age: 30
@@ -70,7 +76,7 @@
         birth_year: 2019
       child_3:
         age: 3  # No child below threshold
-        birth_year: 2020  
+        birth_year: 2020
       child_4:
         age: 3
         birth_year: 2020
@@ -111,8 +117,9 @@
 - name: Shows increased CTC after applying age exemption reform
   period: 2023
   absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.policyengine.two_child_limit_age_exemption.ctc_age_exemption_3_reform
   input:
-    gov.contrib.two_child_limit.age_exemption.child_tax_credit: 3  # Exempt families with under-3s
     people:
       parent:
         age: 30

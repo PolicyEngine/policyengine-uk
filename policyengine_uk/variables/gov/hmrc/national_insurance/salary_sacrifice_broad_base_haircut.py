@@ -13,7 +13,10 @@ class salary_sacrifice_broad_base_haircut(Variable):
         "just salary sacrificers), as they cannot target only affected workers without "
         "those workers negotiating to recoup the loss. "
         "\n\n"
-        "See https://policyengine.org/uk/research/uk-salary-sacrifice-cap for methodology."
+        "See https://policyengine.org/uk/research/uk-salary-sacrifice-cap for methodology. "
+        "\n\n"
+        "By default, this returns 0 (no haircut). To apply a haircut, use the "
+        "salary_sacrifice_haircut reform from policyengine_uk.reforms.policyengine."
     )
     entity = Person
     definition_period = YEAR
@@ -22,22 +25,6 @@ class salary_sacrifice_broad_base_haircut(Variable):
     reference = "https://policyengine.org/uk/research/uk-salary-sacrifice-cap"
 
     def formula(person, period, parameters):
-        cap = parameters(
-            period
-        ).gov.hmrc.national_insurance.salary_sacrifice_pension_cap
-
-        # If cap is infinite, no haircut applies
-        if np.isinf(cap):
-            return 0
-
-        # Get the broad-base haircut rate (applies to ALL workers)
-        haircut_rate = parameters(
-            period
-        ).gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate
-
-        # Apply haircut to employment income before any salary sacrifice adjustments
-        # Use employment_income_before_lsr to avoid circular dependency
-        employment_income = person("employment_income_before_lsr", period)
-
-        # Return negative value (this reduces employment income for everyone)
-        return -employment_income * haircut_rate
+        # By default, no haircut applies.
+        # Use salary_sacrifice_haircut reform to apply a haircut rate.
+        return 0
