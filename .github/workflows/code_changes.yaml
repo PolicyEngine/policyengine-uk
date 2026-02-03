@@ -7,7 +7,7 @@ on:
       - main
 
     paths:
-      - policyengine_uk/**
+      - src/**
       - tests/**
       - .github/**
   workflow_dispatch:
