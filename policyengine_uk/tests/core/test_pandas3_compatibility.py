@@ -35,8 +35,22 @@ class TestRegionParameterLookupWithPandas3:
         sim = Simulation(
             situation={
                 "people": {
-                    "person1": {"age": {"2024": 30}},
-                    "person2": {"age": {"2024": 40}},
+                    "person1": {
+                        "age": {"2024": 30},
+                        "employment_income": {"2024": 30000},
+                    },
+                    "person2": {
+                        "age": {"2024": 40},
+                        "employment_income": {"2024": 50000},
+                    },
+                },
+                "benunits": {
+                    "benunit1": {
+                        "members": ["person1"],
+                    },
+                    "benunit2": {
+                        "members": ["person2"],
+                    },
                 },
                 "households": {
                     "household1": {
@@ -51,14 +65,17 @@ class TestRegionParameterLookupWithPandas3:
             }
         )
 
-        # This calculation involves region-based parameter lookups
+        # Calculate income_tax which uses region-based rates (Scotland
+        # has different income tax rates). This exercises vectorial
+        # parameter lookup with string arrays.
         # If pandas 3 StringArray handling is broken, this would raise:
         # TypeError: unhashable type: 'StringArray'
-        result = sim.calculate("household_net_income", "2024")
+        result = sim.calculate("income_tax", "2024")
 
-        # Basic sanity check - should return an array
+        # Basic sanity check - should return an array with values
         assert isinstance(result, np.ndarray)
-        assert len(result) == 2  # Two households
+        assert len(result) == 2  # Two people
+        assert np.all(result >= 0)
 
 
 class TestFilledArrayWithStringDtype:
