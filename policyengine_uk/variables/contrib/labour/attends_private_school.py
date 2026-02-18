@@ -80,13 +80,20 @@ class attends_private_school(Variable):
         # STUDENT_POPULATION_ADJUSTMENT_FACTOR = 0.78
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = population_adjustment_factor
 
+        # Precompute a 101-element lookup (one per integer percentile 0-100)
+        # using the 21 parameter breakpoints at multiples of 5, then index with
+        # the full percentile array. Replaces ~115k Python calls with numpy ops.
+        _breakpoints = list(range(0, 101, 5))
+        _rates = np.array(
+            [
+                float(private_school_attendance_rate[str(p)])
+                for p in _breakpoints
+            ]
+        )
+        _rate_by_percentile = np.interp(np.arange(101), _breakpoints, _rates)
+
         p_attends_private_school = (
-            np.array(
-                [
-                    interpolate_percentile(private_school_attendance_rate, p)
-                    for p in percentile
-                ]
-            )
+            _rate_by_percentile[percentile]
             * STUDENT_POPULATION_ADJUSTMENT_FACTOR
             * is_child
         )

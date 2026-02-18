@@ -15,7 +15,7 @@ format:
 
 test:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
-	pytest policyengine_uk/tests/ -m "not microsimulation" --cov=policyengine_uk --cov-report=xml --maxfail=0 -v
+	pytest policyengine_uk/tests/ --cov=policyengine_uk --cov-report=xml --maxfail=0 -v
 
 test-all:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk

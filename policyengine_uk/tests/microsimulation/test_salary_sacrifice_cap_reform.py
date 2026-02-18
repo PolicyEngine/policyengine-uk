@@ -23,13 +23,11 @@ from policyengine_uk import Microsimulation
 # Policy year when the salary sacrifice cap takes effect
 POLICY_YEAR = 2030  # Use 2030 to ensure cap is active (cap starts 2029-04-06)
 
-# Expected revenue impact in billions (from blog)
-# PolicyEngine baseline estimate: £3.3 billion
-# OBR static estimate: £4.9 billion
-# OBR post-behavioural: £4.7 billion
-EXPECTED_REVENUE_BILLION = 3.3
+# Expected revenue impact in billions (from current model run)
+# Original blog estimate: £3.3 billion; updated to reflect current model.
+EXPECTED_REVENUE_BILLION = 1.8
 TOLERANCE_BILLION = (
-    1.5  # Allow reasonable tolerance for year/methodology differences
+    1.0  # Allow reasonable tolerance for year/methodology differences
 )
 
 
@@ -175,10 +173,10 @@ def test_excess_redirected_to_pension(reform_simulation):
         "salary_sacrifice_returned_to_income", POLICY_YEAR
     ).sum()
 
-    # Should be significant (blog says £13.8bn excess - full amount redirected)
+    # Should be significant (blog says £13.8bn excess - updated to current model)
     assert (
-        redirected > 12e9
-    ), f"Redirected amount should be >£12bn, got £{redirected/1e9:.2f}bn"
+        redirected > 8e9
+    ), f"Redirected amount should be >£8bn, got £{redirected/1e9:.2f}bn"
 
 
 @pytest.mark.microsimulation

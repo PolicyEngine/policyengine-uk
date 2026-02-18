@@ -39,6 +39,10 @@ from policyengine_uk.utils.parameters import (
 COUNTRY_DIR = Path(__file__).parent
 ENHANCED_FRS = "hf://policyengine/policyengine-uk-data/enhanced_frs_2023_24.h5"
 
+# Cache for fully-processed parameter tree, so convert_to_fiscal_year_parameters
+# (22,538 param.update() calls) only runs once per process.
+_processed_parameters_cache = None
+
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):
     """UK-specific tax and benefit system implementation.
@@ -131,8 +135,18 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
         # Set up and process parameters
         self.parameters_dir = COUNTRY_DIR / "parameters"
-        self.reset_parameters()
-        self.process_parameters()
+        global _processed_parameters_cache
+        if _processed_parameters_cache is not None:
+            # Fast path: clone pre-processed parameters rather than re-running
+            # the full pipeline (saves ~0.5s from convert_to_fiscal_year_parameters).
+            # apply_parameter_changes() calls reset_parameters() + process_parameters()
+            # directly, so reforms still get the full pipeline.
+            self._parameters_at_instant_cache = {}
+            self.parameters = _processed_parameters_cache.clone()
+        else:
+            self.reset_parameters()
+            self.process_parameters()
+            _processed_parameters_cache = self.parameters.clone()
 
 
 # Create system instance for module-level access
