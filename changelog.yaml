@@ -2265,3 +2265,8 @@
     changed:
     - Bumped policyengine-core minimum version to 3.23.5 for pandas 3.0 compatibility
   date: 2026-01-25 14:13:02
+- bump: patch
+  changes:
+    changed:
+    - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
+  date: 2026-02-18 10:18:43
