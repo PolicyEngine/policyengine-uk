@@ -2270,3 +2270,10 @@
     changed:
     - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
   date: 2026-02-18 10:18:43
+- bump: minor
+  changes:
+    added:
+    - Student loan plan uprating in economic assumptions: re-labels Plan 1/2/5 each
+        year based on cohort start year, writes off loans after 29 years, and samples
+        new Plan 5 entrants for England using empirical age/income take-up probabilities.
+  date: 2026-02-19 17:30:26
