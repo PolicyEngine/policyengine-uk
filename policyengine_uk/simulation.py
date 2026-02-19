@@ -43,11 +43,14 @@ def _pre_encode_enum_columns(
     """Convert string enum columns in a dataset to int16 in-place.
 
     Run once before caching; subsequent loads use encode()'s fast integer path.
+    Also stores a mapping of column name -> possible_values on each
+    UKSingleYearDataset so callers can decode back to strings when needed.
     """
     for year in dataset.years:
         single_year = dataset[year]
+        enum_columns: dict = {}
         for table_name in single_year.table_names:
-            table = getattr(single_year, table_name)
+            table = getattr(single_year, f"_{table_name}")
             for col_name in list(table.columns):
                 if col_name not in tbs.variables:
                     continue
@@ -58,9 +61,13 @@ def _pre_encode_enum_columns(
                 if not isinstance(arr, np.ndarray):
                     arr = np.asarray(arr, dtype=object)
                 if arr.dtype.kind in ("i", "u"):
-                    continue  # already integer
+                    # Already integer - record possible_values if not yet seen
+                    enum_columns[col_name] = var_def.possible_values
+                    continue
                 encoded = var_def.possible_values.encode(arr)
                 table[col_name] = encoded.view(np.ndarray).astype(np.int16)
+                enum_columns[col_name] = var_def.possible_values
+        single_year._enum_columns = enum_columns
 
 
 class Simulation(CoreSimulation):
