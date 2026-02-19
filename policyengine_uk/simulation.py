@@ -50,7 +50,7 @@ def _pre_encode_enum_columns(
         single_year = dataset[year]
         enum_columns: dict = {}
         for table_name in single_year.table_names:
-            table = getattr(single_year, table_name)
+            table = getattr(single_year, f"_{table_name}")
             for col_name in list(table.columns):
                 if col_name not in tbs.variables:
                     continue
