@@ -2277,3 +2277,8 @@
         year based on cohort start year, writes off loans after 29 years, and samples
         new Plan 5 entrants for England using empirical age/income take-up probabilities.
   date: 2026-02-19 17:30:26
+- bump: patch
+  changes:
+    fixed:
+    - Skip student loan uprating if column doesn't exist yet during dataset creation.
+  date: 2026-02-19 17:57:15
