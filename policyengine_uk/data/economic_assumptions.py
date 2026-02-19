@@ -237,9 +237,7 @@ def uprate_student_loan_plans(
     year = int(current_year.time_period)
 
     person = current_year.person.copy()
-    household = current_year.household[
-        ["household_id", "region"]
-    ].copy()
+    household = current_year.household[["household_id", "region"]].copy()
 
     # Join region onto person via person_household_id.
     person = person.merge(
@@ -257,12 +255,13 @@ def uprate_student_loan_plans(
     has_loan = plan != "NONE"
     is_england = np.isin(region, list(_ENGLAND_REGIONS))
 
-    written_off = has_loan & (
-        uni_start_year + _PLAN1_WRITEOFF_YEARS <= year
-    )
+    written_off = has_loan & (uni_start_year + _PLAN1_WRITEOFF_YEARS <= year)
     is_plan1 = has_loan & ~written_off & (uni_start_year < 2012)
-    is_plan2_start = has_loan & ~written_off & (uni_start_year >= 2012) & (
-        uni_start_year < 2023
+    is_plan2_start = (
+        has_loan
+        & ~written_off
+        & (uni_start_year >= 2012)
+        & (uni_start_year < 2023)
     )
     is_plan5_start = has_loan & ~written_off & (uni_start_year >= 2023)
 
@@ -282,7 +281,9 @@ def uprate_student_loan_plans(
     plan_none = new_plan == "NONE"
     age_eligible = (age >= 21) & (age <= 30)
     started_2023_plus = age <= (year - 2005)
-    new_entrant_mask = plan_none & age_eligible & started_2023_plus & is_england
+    new_entrant_mask = (
+        plan_none & age_eligible & started_2023_plus & is_england
+    )
 
     if new_entrant_mask.any():
         import pandas as pd
@@ -307,12 +308,8 @@ def uprate_student_loan_plans(
                 )
             except ValueError:
                 deciles = np.zeros(len(inc_vals), dtype=int)
-            deciles = np.where(
-                pd.isna(deciles), 0, deciles
-            ).astype(int)
-            probs = np.array(
-                [take_up_probs[min(d, 9)] for d in deciles]
-            )
+            deciles = np.where(pd.isna(deciles), 0, deciles).astype(int)
+            probs = np.array([take_up_probs[min(d, 9)] for d in deciles])
             draws = rng.random(len(indices))
             sampled = draws < probs
             new_plan[indices[sampled]] = "PLAN_5"
