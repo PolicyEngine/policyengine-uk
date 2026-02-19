@@ -245,6 +245,11 @@ def uprate_student_loan_plans(
     For (2) and (3), we use highest_education == TERTIARY as the signal
     for who is a graduate, then apply a flat take-up probability.
     """
+    # Skip if student_loan_plan column doesn't exist yet (e.g., during
+    # initial dataset creation before imputation runs)
+    if "student_loan_plan" not in current_year.person.columns:
+        return current_year
+
     year = int(current_year.time_period)
 
     person = current_year.person.copy()
