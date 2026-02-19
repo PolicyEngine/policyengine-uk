@@ -6,7 +6,6 @@ from pathlib import Path
 import numpy as np
 import logging
 
-
 # fmt: off
 _PLAN5_TAKE_UP = {
     21: [0.013, 0.018, 0.023, 0.061, 0.111, 0.176, 0.750, 0.000, 0.000, 0.000],
