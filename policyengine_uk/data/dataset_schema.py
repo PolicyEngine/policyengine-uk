@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -74,6 +75,49 @@ class UKSingleYearDataset:
         self.data_format = "arrays"
         self.tables = (self.person, self.benunit, self.household)
         self.table_names = ("person", "benunit", "household")
+        # Populated by _pre_encode_enum_columns in simulation.py after the
+        # dataset is loaded and enum columns have been converted to int16.
+        self._enum_columns: dict = {}
+
+    def _decode_enum_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Return a copy of *df* with int16 enum columns decoded to strings.
+
+        Only columns present in self._enum_columns are touched; all other
+        columns are returned as-is.  The original DataFrame is not modified.
+        """
+        if not self._enum_columns:
+            return df
+        enum_cols_in_df = [
+            c for c in df.columns if c in self._enum_columns
+        ]
+        if not enum_cols_in_df:
+            return df
+        out = df.copy()
+        for col in enum_cols_in_df:
+            possible_values = self._enum_columns[col]
+            arr = out[col].values
+            if arr.dtype.kind not in ("i", "u"):
+                continue  # already strings, nothing to do
+            names = np.array(
+                [m.name for m in possible_values], dtype=object
+            )
+            out[col] = names[arr.astype(int)]
+        return out
+
+    @property
+    def decoded_person(self) -> pd.DataFrame:
+        """person DataFrame with enum columns decoded to string names."""
+        return self._decode_enum_df(self.person)
+
+    @property
+    def decoded_benunit(self) -> pd.DataFrame:
+        """benunit DataFrame with enum columns decoded to string names."""
+        return self._decode_enum_df(self.benunit)
+
+    @property
+    def decoded_household(self) -> pd.DataFrame:
+        """household DataFrame with enum columns decoded to string names."""
+        return self._decode_enum_df(self.household)
 
     def save(self, file_path: str):
         with pd.HDFStore(file_path) as f:
