@@ -81,9 +81,7 @@ class UKSingleYearDataset:
         """Return a copy of *df* with int16 enum columns decoded to strings."""
         if not self._enum_columns:
             return df
-        enum_cols_in_df = [
-            c for c in df.columns if c in self._enum_columns
-        ]
+        enum_cols_in_df = [c for c in df.columns if c in self._enum_columns]
         if not enum_cols_in_df:
             return df
         out = df.copy()
@@ -92,9 +90,7 @@ class UKSingleYearDataset:
             arr = out[col].values
             if arr.dtype.kind not in ("i", "u"):
                 continue
-            names = np.array(
-                [m.name for m in possible_values], dtype=object
-            )
+            names = np.array([m.name for m in possible_values], dtype=object)
             out[col] = names[arr.astype(int)]
         return out
 
