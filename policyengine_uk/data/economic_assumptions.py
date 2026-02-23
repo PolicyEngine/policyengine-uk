@@ -190,8 +190,9 @@ def uprate_rent(
         pass
     elif year < 2025:
         # We have regional growth rates for private rent.
+        # Convert to numpy array for vectorial parameter lookup
         regional_growth_rate = growth.ons.private_rental_prices(year)[
-            region.values.astype(str)
+            np.array(region.values.astype(str))
         ]
         current_year.household["rent"] = np.where(
             is_private_rented,
