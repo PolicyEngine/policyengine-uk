@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    fixed:
+      - Include employer pension contributions and salary sacrifice in the Annual Allowance tax charge calculation, per Finance Act 2004 s.233.
