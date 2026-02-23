@@ -1,0 +1,64 @@
+# Tests for personal_pension_contributions_tax (Annual Allowance charge)
+# Per Finance Act 2004 s.227 and s.233, the annual allowance charge applies
+# to total pension input amounts exceeding the annual allowance.
+# The pension input amount includes employer contributions (s.233(1)(b)).
+# https://www.legislation.gov.uk/ukpga/2004/12/section/227
+# https://www.legislation.gov.uk/ukpga/2004/12/section/233
+#
+# The pension annual allowance is £60,000 from 2023-04-06 (FA 2004 s.228,
+# as amended by Finance (No. 2) Act 2023).
+
+- name: Contributions within annual allowance - no tax charge
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 80_000
+    employee_pension_contributions_reported: 10_000
+    personal_pension_contributions: 5_000
+    employer_pension_contributions: 5_000
+  output:
+    # Total for AA: 10_000 + 5_000 + 5_000 = 20_000, below 60_000 AA
+    personal_pension_contributions_tax: 0
+
+- name: Employee-only contributions exceeding AA
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 100_000
+    employee_pension_contributions_reported: 70_000
+  output:
+    # Total for AA: 70_000, excess = 70_000 - 60_000 = 10_000
+    # pension_contributions_relief = min(100k, 70k) then min(70k, 60k) = 60_000
+    # taxed_income = 100_000 - 12_570 - 60_000 = 27_430
+    # Marginal rate at 27_430 = 20% (basic rate)
+    # Tax charge: 10_000 * 0.2 = 2_000
+    personal_pension_contributions_tax: 2_000
+
+- name: Employer contributions push total over AA
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 100_000
+    employee_pension_contributions_reported: 20_000
+    employer_pension_contributions: 50_000
+  output:
+    # Total for AA: 20_000 + 50_000 = 70_000, excess = 70_000 - 60_000 = 10_000
+    # pension_contributions_relief = min(100k, 20k) = 20_000
+    # taxed_income = 100_000 - 12_570 - 20_000 = 67_430
+    # Marginal rate at 67_430 = 40% (higher rate)
+    # Tax charge: 10_000 * 0.4 = 4_000
+    personal_pension_contributions_tax: 4_000
+
+- name: Only employer contributions exceed AA
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 100_000
+    employer_pension_contributions: 70_000
+  output:
+    # Total for AA: 70_000 (all employer), excess = 70_000 - 60_000 = 10_000
+    # pension_contributions_relief = 0 (no employee/personal contributions)
+    # taxed_income = 100_000 - 12_570 = 87_430
+    # Marginal rate at 87_430 = 40% (higher rate)
+    # Tax charge: 10_000 * 0.4 = 4_000
+    personal_pension_contributions_tax: 4_000

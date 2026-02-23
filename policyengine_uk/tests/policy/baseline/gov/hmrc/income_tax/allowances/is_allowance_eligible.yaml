@@ -30,9 +30,11 @@
 - name: Annual Allowance for Pension Contributions
   period: 2024
   input:
-    adjusted_net_income: 60000
-  output: 
-    pension_annual_allowance: 40000.0
+    adjusted_net_income: 60_000
+  output:
+    # AA = £60,000 from 2023-04-06 (FA 2004 s.228, amended by Finance (No. 2) Act 2023)
+    # ANI of £60,000 is below the taper threshold of £260,000, so full AA applies
+    pension_annual_allowance: 60_000
 
 - name: Trading Allowance Deduction
   period: 2024

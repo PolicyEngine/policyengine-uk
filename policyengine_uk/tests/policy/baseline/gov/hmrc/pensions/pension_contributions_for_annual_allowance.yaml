@@ -1,0 +1,79 @@
+# Tests for pension_contributions_for_annual_allowance
+# Per Finance Act 2004 s.233, the pension input amount for money purchase
+# arrangements includes BOTH individual contributions AND employer contributions.
+# https://www.legislation.gov.uk/ukpga/2004/12/section/233
+
+- name: No contributions
+  period: 2024
+  input:
+    employee_pension_contributions_reported: 0
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+  output:
+    pension_contributions_for_annual_allowance: 0
+
+- name: Employee contributions only
+  period: 2024
+  input:
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 0
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+  output:
+    pension_contributions_for_annual_allowance: 5_000
+
+- name: Personal contributions only
+  period: 2024
+  input:
+    employee_pension_contributions_reported: 0
+    personal_pension_contributions: 3_000
+    employer_pension_contributions: 0
+    pension_contributions_via_salary_sacrifice: 0
+  output:
+    pension_contributions_for_annual_allowance: 3_000
+
+- name: Employer contributions only
+  period: 2024
+  input:
+    employee_pension_contributions_reported: 0
+    personal_pension_contributions: 0
+    employer_pension_contributions: 10_000
+    pension_contributions_via_salary_sacrifice: 0
+  output:
+    pension_contributions_for_annual_allowance: 10_000
+
+- name: All contribution types (no salary sacrifice)
+  period: 2024
+  input:
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 3_000
+    employer_pension_contributions: 10_000
+    pension_contributions_via_salary_sacrifice: 0
+  output:
+    pension_contributions_for_annual_allowance: 18_000
+
+- name: With salary sacrifice (below cap, no excess)
+  period: 2024
+  input:
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 0
+    employer_pension_contributions: 2_000
+    pension_contributions_via_salary_sacrifice: 8_000
+  output:
+    # employee_pension_contributions = 5_000 + 0 (no excess) = 5_000
+    # pension_contributions_via_salary_sacrifice_adjusted = 8_000 (all below cap)
+    # Total: 5_000 + 0 + 2_000 + 8_000 = 15_000
+    pension_contributions_for_annual_allowance: 15_000
+
+- name: High employer contributions exceeding annual allowance
+  period: 2024
+  input:
+    employee_pension_contributions_reported: 10_000
+    personal_pension_contributions: 5_000
+    employer_pension_contributions: 50_000
+    pension_contributions_via_salary_sacrifice: 0
+  output:
+    # Total: 10_000 + 5_000 + 50_000 = 65_000
+    # This exceeds the 2024 AA of 40_000 (verified separately by AA tax charge test)
+    pension_contributions_for_annual_allowance: 65_000

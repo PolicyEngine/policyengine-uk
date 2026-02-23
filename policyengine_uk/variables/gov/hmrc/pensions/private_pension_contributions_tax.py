@@ -6,10 +6,16 @@ class personal_pension_contributions_tax(Variable):
     entity = Person
     label = "Reduction in taxable income from pension contributions to pensions other than the State Pension"
     definition_period = YEAR
-    reference = dict(
-        title="Finance Act 2004 s. 227",
-        href="https://www.legislation.gov.uk/ukpga/2004/12/section/227",
-    )
+    reference = [
+        dict(
+            title="Finance Act 2004 s. 227",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/227",
+        ),
+        dict(
+            title="Finance Act 2004 s. 233",
+            href="https://www.legislation.gov.uk/ukpga/2004/12/section/233",
+        ),
+    ]
     unit = GBP
 
     def formula(person, period, parameters):
@@ -17,8 +23,8 @@ class personal_pension_contributions_tax(Variable):
         taxed_income = person("taxed_income", period)
 
         personal_pension_contributions = person(
-            "employee_pension_contributions", period
-        ) + person("personal_pension_contributions", period)
+            "pension_contributions_for_annual_allowance", period
+        )
         pension_annual_allowance = person("pension_annual_allowance", period)
         taxable_contributions = (
             personal_pension_contributions - pension_annual_allowance
