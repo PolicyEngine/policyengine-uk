@@ -2282,3 +2282,10 @@
     fixed:
     - Skip student loan uprating if column doesn't exist yet during dataset creation.
   date: 2026-02-19 17:57:15
+- bump: patch
+  changes:
+    fixed:
+    - Enum columns now decode to string labels when accessing .person/.benunit/.household
+      on datasets loaded via non-URL paths (e.g. UKSingleYearDataset or UKMultiYearDataset
+      passed directly)
+  date: 2026-02-23 13:07:05
