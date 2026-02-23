@@ -1,5 +1,4 @@
-- bump: minor
+- bump: patch
   changes:
-    added:
-      - Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax Credits child element limit to infinity
-      - Salary sacrifice pension cap of £2,000 from April 2029 (Autumn Budget 2025)
+    fixed:
+      - Enum columns now decode to string labels when accessing .person/.benunit/.household on datasets loaded via non-URL paths (e.g. UKSingleYearDataset or UKMultiYearDataset passed directly)
