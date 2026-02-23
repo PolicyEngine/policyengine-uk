@@ -1,0 +1,57 @@
+# Tests for personal_pension_contributions_tax (Annual Allowance charge)
+# Per Finance Act 2004 s.227 and s.233, the annual allowance charge applies
+# to total pension input amounts exceeding the annual allowance.
+# The pension input amount includes employer contributions (s.233(1)(b)).
+# https://www.legislation.gov.uk/ukpga/2004/12/section/227
+# https://www.legislation.gov.uk/ukpga/2004/12/section/233
+#
+# The pension annual allowance parameter is 40,000 for 2024.
+
+- name: Contributions within annual allowance - no tax charge
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 80000
+    employee_pension_contributions_reported: 10000
+    personal_pension_contributions: 5000
+    employer_pension_contributions: 5000
+  output:
+    # Total for AA: 10000 + 5000 + 5000 = 20000, below 40000 AA
+    personal_pension_contributions_tax: 0
+
+- name: Employee-only contributions exceeding AA
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 100000
+    employee_pension_contributions_reported: 70000
+  output:
+    # Total for AA: 70000, excess = 70000 - 40000 = 30000
+    # taxed_income ~47430, marginal rate = 40%
+    # Tax charge: 30000 * 0.4 = 12000
+    personal_pension_contributions_tax: 12000
+
+- name: Employer contributions push total over AA
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 100000
+    employee_pension_contributions_reported: 20000
+    employer_pension_contributions: 50000
+  output:
+    # Total for AA: 20000 + 50000 = 70000, excess = 70000 - 40000 = 30000
+    # taxed_income ~67430, marginal rate = 40%
+    # Tax charge: 30000 * 0.4 = 12000
+    personal_pension_contributions_tax: 12000
+
+- name: Only employer contributions exceed AA
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 100000
+    employer_pension_contributions: 70000
+  output:
+    # Total for AA: 70000 (all employer), excess = 70000 - 40000 = 30000
+    # taxed_income ~87430, marginal rate = 40%
+    # Tax charge: 30000 * 0.4 = 12000
+    personal_pension_contributions_tax: 12000

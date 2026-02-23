@@ -1,6 +1,10 @@
 # Development Guidelines for PolicyEngine UK
 
-## Build Commands
+## Git workflow
+- **Always branch from `main`**: `git checkout main && git pull origin main && git checkout -b your-branch`
+- Default branch is `main` (not `master`)
+
+## Build commands
 - Install: `make install` or `pip install -e ".[dev]" --config-settings editable_mode=compat`
 - Format code: `make format` or `black . -l 79`
 - Run all tests: `make test`
