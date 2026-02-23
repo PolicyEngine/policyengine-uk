@@ -435,9 +435,7 @@ class Simulation(CoreSimulation):
         """
         # Ensure enum columns are encoded and _enum_columns is populated so
         # that .person/.benunit/.household properties can decode back to strings.
-        if not any(
-            dataset[y]._enum_columns for y in dataset.years
-        ):
+        if not any(dataset[y]._enum_columns for y in dataset.years):
             _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         # Use first year to establish entity structure
         first_year = dataset[dataset.years[0]]
