@@ -34,13 +34,13 @@ class gov_spending(Variable):
         "statutory_sick_pay",
         "statutory_maternity_pay",
         "ssmg",
-        "basic_income",
+        # basic_income excluded - added via basic_income_interactions reform
         "epg_subsidy",
         "cost_of_living_support_payment",
         "energy_bills_rebate",
         "winter_fuel_allowance",
         "pawhp",
-        "other_public_spending_budget_change",
+        # other_public_spending_budget_change excluded - added via contrib reform
         "tax_free_childcare",
         "extended_childcare_entitlement",
         "universal_childcare_entitlement",

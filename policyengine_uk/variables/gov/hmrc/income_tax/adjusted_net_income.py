@@ -18,13 +18,8 @@ class adjusted_net_income(Variable):
         ).gov.hmrc.income_tax.adjusted_net_income_components
 
         # Find adjusted net income
+        # Default behavior: Basic income not included in taxable income.
+        # Use basic_income_interactions reform to change this.
         ani = add(person, period, adjusted_net_income_components)
-
-        # For basic income contributions, add basic income
-        # Modifying param list directly is mutative, hence two-step process
-        if parameters(
-            period
-        ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
-            ani += person("basic_income", period)
 
         return max_(0, ani)

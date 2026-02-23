@@ -15,17 +15,11 @@ class child_benefit_respective_amount(Variable):
     defined_for = "is_child_or_QYP"
 
     def formula(person, period, parameters):
-        eligible = True
-        if parameters(
-            period
-        ).gov.contrib.ubi_center.basic_income.interactions.withdraw_cb:
-            eligible &= (
-                person.benunit.sum(person("basic_income", period.this_year))
-                == 0
-            )
+        # Default behavior: Child benefit not withdrawn for basic income
+        # recipients. Use basic_income_interactions reform to change this.
         is_eldest = person("is_eldest_child", period.this_year)
         child_benefit = parameters(period).gov.hmrc.child_benefit.amount
         amount = where(
             is_eldest, child_benefit.eldest, child_benefit.additional
         )
-        return eligible * amount * WEEKS_IN_YEAR / MONTHS_IN_YEAR
+        return amount * WEEKS_IN_YEAR / MONTHS_IN_YEAR

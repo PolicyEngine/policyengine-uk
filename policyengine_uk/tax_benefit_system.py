@@ -34,6 +34,8 @@ from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
+from policyengine_uk.reforms import create_structural_reforms_from_parameters
+from policyengine_core.periods import period as period_
 
 # Module constants
 COUNTRY_DIR = Path(__file__).parent
@@ -147,6 +149,16 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             self.reset_parameters()
             self.process_parameters()
             _processed_parameters_cache = self.parameters.clone()
+
+        # Apply structural reforms based on parameters
+        # This ensures reforms are applied even when using policyengine_core's
+        # test runner (YAML tests), which bypasses policyengine_uk's Simulation class
+        start_instant = period_(2025)
+        structural_reform = create_structural_reforms_from_parameters(
+            self.parameters, start_instant
+        )
+        if structural_reform is not None:
+            self.apply_reform_set(structural_reform)
 
 
 # Create system instance for module-level access

@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    changed:
+      - Refactor reforms to use two-layer pattern with bypass parameter, matching PolicyEngine US architecture. All gov.contrib parameter references have been removed from gov/ variables - contrib parameters now only affect behavior via reforms. Structural reforms are now applied at CountryTaxBenefitSystem initialization (in addition to Simulation), ensuring YAML tests work correctly with dynamic parameter setting. This enables programmatic reform application and cleaner separation between core law (gov/) and policy proposals (contrib/).

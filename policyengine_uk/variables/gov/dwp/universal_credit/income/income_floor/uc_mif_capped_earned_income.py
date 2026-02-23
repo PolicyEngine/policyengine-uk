@@ -12,14 +12,13 @@ class uc_mif_capped_earned_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        # Default behavior: Basic income not included in means tests.
+        # Use basic_income_interactions reform to change this.
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",
             "miscellaneous_income",
         ]
-        bi = parameters(period).gov.contrib.ubi_center.basic_income
-        if bi.interactions.include_in_means_tests:
-            INCOME_COMPONENTS.append("basic_income")
         personal_gross_earned_income = add(person, period, INCOME_COMPONENTS)
         floor = where(
             person("uc_mif_applies", period),
