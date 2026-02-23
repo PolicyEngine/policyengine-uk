@@ -2289,3 +2289,9 @@
       on datasets loaded via non-URL paths (e.g. UKSingleYearDataset or UKMultiYearDataset
       passed directly)
   date: 2026-02-23 13:07:05
+- bump: minor
+  changes:
+    fixed:
+    - Include employer pension contributions and salary sacrifice in the Annual Allowance
+      tax charge calculation, per Finance Act 2004 s.233.
+  date: 2026-02-23 13:44:25
