@@ -1,9 +1,12 @@
 description: Adjusted net income limit for tapering of the annual allowance
 values:
   2015-04-01: 240_000
+  2023-04-06: 260_000
 metadata:
   unit: currency-GBP
   label: Annual allowance taper threshold
-  reference: 
+  reference:
+  - title: Finance Act 2004 s. 228ZA
+    href: https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA
   - title: Tax on your private pension contributions
     href: https://www.gov.uk/tax-on-your-private-pension/annual-allowance

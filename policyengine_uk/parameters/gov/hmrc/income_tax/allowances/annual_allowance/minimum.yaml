@@ -1,9 +1,12 @@
 description: Minimum annual allowance for relief on pension contributions
 values:
   2015-04-01: 4_000
+  2023-04-06: 10_000
 metadata:
   unit: currency-GBP
   label: Minimum annual allowance for pension contributions
-  reference: 
+  reference:
+  - title: Finance Act 2004 s. 228ZA
+    href: https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA
   - title: Work out your reduced (tapered) annual allowance
     href: https://www.gov.uk/guidance/pension-schemes-work-out-your-tapered-annual-allowance
