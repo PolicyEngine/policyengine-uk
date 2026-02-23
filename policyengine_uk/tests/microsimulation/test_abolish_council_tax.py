@@ -1,8 +1,8 @@
 """
 Test that abolishing council tax has a budgetary impact.
 
-Regression test for GitHub issue #1153: setting abolish_council_tax to
-True previously had no effect because both household_tax and
+Regression test for GitHub issue #1153: setting abolish_council_tax
+to True previously had no effect because both household_tax and
 pre_budget_change_household_tax applied the same abolish check,
 making the reform-vs-baseline delta zero.
 """
@@ -35,22 +35,31 @@ SITUATION = {
 @pytest.fixture(scope="module")
 def baseline_net_income():
     sim = Microsimulation(situation=SITUATION)
-    return float(sim.calculate("household_net_income", YEAR).sum())
+    return float(
+        sim.calculate("household_net_income", YEAR).sum()
+    )
 
 
 @pytest.fixture(scope="module")
 def reform_net_income():
     scenario = Scenario(
         parameter_changes={
-            "gov.contrib.abolish_council_tax": {str(YEAR): True},
-        }
+            "gov.contrib.abolish_council_tax": {
+                str(YEAR): True,
+            },
+        },
     )
-    sim = Microsimulation(situation=SITUATION, scenario=scenario)
-    return float(sim.calculate("household_net_income", YEAR).sum())
+    sim = Microsimulation(
+        situation=SITUATION, scenario=scenario
+    )
+    return float(
+        sim.calculate("household_net_income", YEAR).sum()
+    )
 
 
 def test_abolish_council_tax_increases_net_income(
-    baseline_net_income, reform_net_income
+    baseline_net_income,
+    reform_net_income,
 ):
     """Abolishing council tax should increase household net income."""
     diff = reform_net_income - baseline_net_income
@@ -63,7 +72,8 @@ def test_abolish_council_tax_increases_net_income(
 
 
 def test_abolish_council_tax_increases_by_council_tax_amount(
-    baseline_net_income, reform_net_income
+    baseline_net_income,
+    reform_net_income,
 ):
     """Net income increase should approximate the council tax amount."""
     diff = reform_net_income - baseline_net_income
