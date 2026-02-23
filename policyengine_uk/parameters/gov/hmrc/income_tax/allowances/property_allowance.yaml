@@ -1,9 +1,13 @@
 description: Amount of income from property untaxed per year
 values:
-  2005-04-01: 1_000
+  2005-04-01:
+    value: 1_000
+    reference:
+      - title: Finance (No. 2) Act 2017 Sch. 3
+        href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/3
 metadata:
   name: property_allowance
-  label: Property Allowance
+  label: Property allowance
   period: year
   unit: currency-GBP
   reference: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past

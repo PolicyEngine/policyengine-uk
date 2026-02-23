@@ -9,8 +9,8 @@ class is_higher_earner(Variable):
 
     def formula(person, period, parameters):
         income = person("adjusted_net_income", period)
-        # Add noise to incomes in order to avoid ties
-        return (
-            person.get_rank(person.benunit, -income + random(person) * 1e-2)
-            == 0
-        )
+        # Use age as deterministic tie-breaker (older person wins ties)
+        age = person("age", period)
+        # Scale age to be tiny relative to income differences
+        tie_breaker = age * 1e-6
+        return person.get_rank(person.benunit, -income - tie_breaker) == 0

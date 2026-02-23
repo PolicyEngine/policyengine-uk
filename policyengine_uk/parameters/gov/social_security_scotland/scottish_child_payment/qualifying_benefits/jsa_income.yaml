@@ -1,0 +1,11 @@
+description: >
+  Whether income-based Jobseeker's Allowance is a qualifying benefit
+  for Scottish Child Payment.
+values:
+  0001-01-01: true
+metadata:
+  unit: bool
+  label: JSA (income-based) qualifies for SCP
+  reference:
+    - title: Social Security Scotland - Scottish Child Payment
+      href: https://www.socialsecurity.gov.scot/scottish-child-payment

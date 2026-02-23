@@ -1,7 +1,10 @@
 description: All variables that are added together to calculate total income tax
 metadata:
-  label: Additive components of total income tax
+  label: Additive components of total Income Tax
   unit: list
+  reference:
+    - title: Income Tax Act 2007 s. 23
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/23
 values:
   0000-01-01:
   - earned_income_tax

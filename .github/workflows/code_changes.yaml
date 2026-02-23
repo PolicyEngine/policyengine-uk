@@ -1,10 +1,10 @@
-# Workflow that runs on code changes to the master branch.
+# Workflow that runs on code changes to the main branch.
 
 name: Code changes
 on:
   push:
     branches:
-      - master
+      - main
 
     paths:
       - policyengine_uk/**
@@ -50,9 +50,14 @@ jobs:
           - name: UV sync
             run: uv sync
           - name: Run tests with coverage
-            run: make test
+            run: |
+              # Only export token if non-empty (defensive against missing secrets)
+              if [ -n "$HF_TOKEN_VALUE" ]; then
+                export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
+              fi
+              make test
             env:
-              HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+              HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
           - name: Upload coverage to Codecov
             uses: codecov/codecov-action@v4
             with:

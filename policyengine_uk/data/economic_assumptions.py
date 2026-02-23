@@ -6,6 +6,31 @@ from pathlib import Path
 import numpy as np
 import logging
 
+# Base year for the FRS dataset - used to calculate age offsets
+_FRS_BASE_YEAR = 2023  # FRS 2023-24 represents calendar year 2024
+
+# Approximate take-up rate for assigning loans to tertiary-educated NONE people.
+# This represents P(has loan AND earning above threshold | tertiary educated).
+# Derived from SLC forecasts (~4M Plan 2 above threshold) vs UK graduate
+# population (~8-10M in relevant age bands), giving roughly 40-50%.
+# We use a conservative 0.4 as many graduates have paid off loans or earn
+# below threshold.
+_GRADUATE_LOAN_TAKE_UP = 0.4
+
+_ENGLAND_REGIONS = {
+    "NORTH_EAST",
+    "NORTH_WEST",
+    "YORKSHIRE",
+    "EAST_MIDLANDS",
+    "WEST_MIDLANDS",
+    "EAST_OF_ENGLAND",
+    "LONDON",
+    "SOUTH_EAST",
+    "SOUTH_WEST",
+}
+
+_PLAN1_WRITEOFF_YEARS = 29
+
 
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
@@ -90,6 +115,10 @@ def apply_single_year_uprating(
 
     current_year = uprate_rent(current_year, previous_year, parameters)
 
+    current_year = uprate_student_loan_plans(
+        current_year, previous_year, parameters
+    )
+
     current_year.validate()
 
     return current_year
@@ -162,7 +191,7 @@ def uprate_rent(
     elif year < 2025:
         # We have regional growth rates for private rent.
         regional_growth_rate = growth.ons.private_rental_prices(year)[
-            region.values
+            region.values.astype(str)
         ]
         current_year.household["rent"] = np.where(
             is_private_rented,
@@ -192,6 +221,144 @@ def uprate_rent(
             prev_rent * (1 + private_rent_growth),
             prev_rent * (1 + social_rent_growth),
         )
+
+    return current_year
+
+
+def uprate_student_loan_plans(
+    current_year: UKSingleYearDataset,
+    previous_year: UKSingleYearDataset,
+    parameters: ParameterNode,
+) -> UKSingleYearDataset:
+    """Assign student loan plans based on cohort and add new entrants.
+
+    This function is idempotent: for any given year, it produces the same
+    cross-sectional snapshot regardless of whether previous years were
+    processed. It operates on the base year data, not accumulated state.
+
+    The FRS base year (2023-24) captures loan holders up to certain ages.
+    As we project forward, we need to:
+    1. Re-label existing holders to correct plan based on uni start year
+    2. Add Plan 1/2 holders in age bands beyond the base year's coverage
+    3. Add Plan 5 holders (new plan starting 2023)
+
+    For (2) and (3), we use highest_education == TERTIARY as the signal
+    for who is a graduate, then apply a flat take-up probability.
+    """
+    # Skip if student_loan_plan column doesn't exist yet (e.g., during
+    # initial dataset creation before imputation runs)
+    if "student_loan_plan" not in current_year.person.columns:
+        return current_year
+
+    year = int(current_year.time_period)
+
+    person = current_year.person.copy()
+    household = current_year.household[["household_id", "region"]].copy()
+
+    # Join region onto person via person_household_id.
+    person = person.merge(
+        household.rename(columns={"household_id": "person_household_id"}),
+        on="person_household_id",
+        how="left",
+    )
+
+    age = person["age"].values.astype(int)
+    base_plan = person["student_loan_plan"].values.copy().astype(str)
+    region = person["region"].values.astype(str)
+    highest_ed = person["highest_education"].values.astype(str)
+
+    # Age in the base year (used to identify "new" cohorts)
+    base_year_age = age - (year - _FRS_BASE_YEAR)
+
+    uni_start_year = year - age + 18
+    is_england = np.isin(region, list(_ENGLAND_REGIONS))
+    is_tertiary = highest_ed == "TERTIARY"
+
+    # Initialize output arrays
+    new_plan = base_plan.copy()
+    repayments = person["student_loan_repayments"].values.copy()
+
+    # Deterministic RNG seeded by year for reproducibility
+    rng = np.random.default_rng(seed=year)
+
+    # Helper to assign plans to eligible people
+    def assign_with_probability(mask, plan_value, prob=_GRADUATE_LOAN_TAKE_UP):
+        """Assign plan_value to a random subset of masked people."""
+        if not mask.any():
+            return
+        indices = np.where(mask)[0]
+        draws = rng.random(len(indices))
+        sampled = draws < prob
+        new_plan[indices[sampled]] = plan_value
+        repayments[indices[sampled]] = 0.0
+
+    # === Step 1: Re-label existing loan holders ===
+    has_loan = base_plan != "NONE"
+    written_off = has_loan & (uni_start_year + _PLAN1_WRITEOFF_YEARS <= year)
+    is_plan1_cohort = has_loan & ~written_off & (uni_start_year < 2012)
+    is_plan2_cohort = (
+        has_loan
+        & ~written_off
+        & (uni_start_year >= 2012)
+        & (uni_start_year < 2023)
+    )
+    is_plan5_cohort = has_loan & ~written_off & (uni_start_year >= 2023)
+
+    new_plan[written_off] = "NONE"
+    repayments[written_off] = 0.0
+    new_plan[is_plan1_cohort] = "PLAN_1"
+    new_plan[is_plan2_cohort] = "PLAN_2"
+    new_plan[is_plan5_cohort & is_england] = "PLAN_5"
+    new_plan[is_plan5_cohort & ~is_england] = "PLAN_2"
+
+    # === Step 2: Add Plan 1 holders in extended age bands ===
+    # In base year, Plan 1 holders exist up to ~age 40 (started pre-2012).
+    # By 2029, Plan 1 should include people up to age 46.
+    # Target: NONE people who are tertiary-educated, in the "new" age band,
+    # whose uni_start_year < 2012 and loan not written off.
+    max_plan1_age_base = 40  # Approximate max age of Plan 1 in base year
+    plan1_new_cohort = (
+        (new_plan == "NONE")
+        & is_tertiary
+        & (base_year_age > max_plan1_age_base)
+        & (uni_start_year < 2012)
+        & (uni_start_year + _PLAN1_WRITEOFF_YEARS > year)
+    )
+    assign_with_probability(plan1_new_cohort, "PLAN_1")
+
+    # === Step 3: Add Plan 2 holders in extended age bands ===
+    # In base year (2024), Plan 2 holders exist up to age 29 (started 2012).
+    # By 2029, Plan 2 should include people up to age 35.
+    # Target: NONE people who are tertiary-educated, in the "new" age band,
+    # whose uni_start_year is 2012-2022.
+    max_plan2_age_base = 29  # Max age of Plan 2 in base year
+    plan2_new_cohort = (
+        (new_plan == "NONE")
+        & is_tertiary
+        & (base_year_age > max_plan2_age_base)
+        & (uni_start_year >= 2012)
+        & (uni_start_year < 2023)
+    )
+    assign_with_probability(plan2_new_cohort, "PLAN_2")
+
+    # === Step 4: Add Plan 5 holders (new plan from 2023) ===
+    # Plan 5 didn't exist in base year. Eligible: tertiary-educated NONE
+    # people in England who would have started uni 2023+.
+    # Age constraint: must be 21+ (finished 3-year degree) to be repaying.
+    plan5_eligible = (
+        (new_plan == "NONE")
+        & is_tertiary
+        & is_england
+        & (uni_start_year >= 2023)
+        & (age >= 21)
+    )
+    assign_with_probability(plan5_eligible, "PLAN_5")
+
+    # Write back to the person table (without the merged region column).
+    person_out = current_year.person.copy()
+    person_out["student_loan_plan"] = new_plan
+    person_out["student_loan_repayments"] = repayments
+    current_year.person = person_out
 
     return current_year
 

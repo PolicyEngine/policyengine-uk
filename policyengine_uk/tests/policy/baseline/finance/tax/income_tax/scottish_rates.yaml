@@ -6,3 +6,29 @@
     region: SCOTLAND
   output:
     tax_band: STARTER
+
+- name: Scottish top rate applies at 125140 total income
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    # Top rate (48%) starts at 125,140 total income (112,570 above PA)
+    # At this income, PA is fully tapered, so taxable income = 125,140
+    # This exceeds the top rate threshold of 112,570
+    adjusted_net_income: 125140
+    region: SCOTLAND
+  output:
+    # TaxBand enum uses ADDITIONAL for both Advanced (45%) and Top (48%) rates
+    tax_band: ADDITIONAL
+
+- name: Scottish income above advanced threshold
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    # 100,000 income is above advanced rate threshold (62,430 above PA)
+    # but below top rate threshold (112,570 above PA)
+    # PA at 100,000 is 12,570 (not yet tapered), taxable = 87,430
+    adjusted_net_income: 100000
+    region: SCOTLAND
+  output:
+    # TaxBand enum uses ADDITIONAL for both Advanced (45%) and Top (48%) rates
+    tax_band: ADDITIONAL

@@ -2,7 +2,7 @@ description: The Department for Education provides targeted, extended, and unive
 metadata:
   period: year
   unit: week
-  label: childcare entitlement weeks per year
+  label: Childcare entitlement weeks per year
   reference:
     - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 4
       href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/4/made

@@ -1,0 +1,11 @@
+description: Whether the Scottish Child Payment baby bonus reform is in effect.
+values:
+  0001-01-01: false
+  2027-04-01: true
+metadata:
+  unit: bool
+  period: year
+  label: Scottish Child Payment baby bonus reform in effect
+  reference:
+    - title: Scottish Budget 2026 to 2027
+      href: https://www.gov.scot/publications/scottish-budget-2026-2027/pages/6/

@@ -3,7 +3,7 @@ description: Threshold in occupational and personal pensions, above which the Ho
 metadata:
   economy: false
   period: week
-  label: Housing Benefit (LHA) pension disregard
+  label: Housing benefit (lha) pension disregard
   reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
   unit: currency-GBP
 values:

@@ -1,10 +1,10 @@
 # Workflow that runs on versioning metadata updates.
 
-name: Versioning updates 
+name: Versioning updates
 on:
   push:
     branches:
-      - master
+      - main
 
     paths:
       - changelog_entry.yaml

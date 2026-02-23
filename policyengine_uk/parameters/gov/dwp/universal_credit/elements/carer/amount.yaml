@@ -16,5 +16,5 @@ metadata:
   label: Universal Credit carer element amount
   uprating: gov.benefit_uprating_cpi
   reference:
-    - title: The Universal Credit Regulations 2013 reg. 36
-      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/22/2021-04-12
+    - title: The Universal Credit Regulations 2013 reg. 29 (carer element), amounts in reg. 36
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36

@@ -3,4 +3,4 @@ values:
   2010-01-01: true
 metadata:
   unit: bool
-  label: triple lock
+  label: Triple lock

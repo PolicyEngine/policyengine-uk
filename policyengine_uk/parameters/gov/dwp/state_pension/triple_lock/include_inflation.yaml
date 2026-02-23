@@ -3,4 +3,4 @@ values:
   2012-01-01: true
 metadata:
   unit: bool
-  label: include inflation in triple lock
+  label: Include inflation in triple lock

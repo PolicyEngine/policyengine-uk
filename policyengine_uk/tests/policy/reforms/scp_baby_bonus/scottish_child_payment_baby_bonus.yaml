@@ -1,0 +1,130 @@
+# Scottish Child Payment Baby Bonus Reform tests
+# Tests that the SCP baby bonus reform correctly applies the £40/week
+# total for children under 1 year old.
+# Policy effective from 2027-28 fiscal year (April 2027).
+# Policy parameter: £40/week total for under-1s (not base + bonus).
+
+- name: SCP baby bonus for child under 1 (2028)
+  period: 2028
+  absolute_error_margin: 10
+  reforms:
+    - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
+  input:
+    people:
+      parent:
+        age: 30
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, baby]
+        region: SCOTLAND
+  output:
+    # Under-1s get £40.80/week total (2028-29 SFC forecast)
+    # £40.80/week * 52 weeks = £2,121.60 per year
+    # [parent, baby]
+    scottish_child_payment: [0, 2122]
+
+- name: SCP baby bonus - child over 1 gets standard rate (2028)
+  period: 2028
+  absolute_error_margin: 10
+  reforms:
+    - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
+  input:
+    people:
+      parent:
+        age: 30
+      toddler:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, toddler]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, toddler]
+        region: SCOTLAND
+  output:
+    # Standard rate only: £29.45/week * 52 = £1,531.40
+    # [parent, toddler]
+    scottish_child_payment: [0, 1531]
+
+- name: SCP baby bonus - mixed ages (2028)
+  period: 2028
+  absolute_error_margin: 10
+  reforms:
+    - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
+  input:
+    people:
+      parent:
+        age: 30
+      baby:
+        age: 0
+      older_child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, baby, older_child]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, baby, older_child]
+        region: SCOTLAND
+  output:
+    # Baby (age 0): £40.80/week total * 52 = £2,121.60
+    # Older child (age 5): £29.45/week * 52 = £1,531.40
+    # [parent, baby, older_child]
+    scottish_child_payment: [0, 2122, 1531]
+
+- name: SCP baby bonus - not in Scotland (2028)
+  period: 2028
+  absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
+  input:
+    people:
+      parent:
+        age: 30
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, baby]
+        region: NORTH_EAST
+  output:
+    # Not in Scotland - no SCP
+    # [parent, baby]
+    scottish_child_payment: [0, 0]
+
+- name: SCP baby bonus - before effective date (2025)
+  period: 2025
+  absolute_error_margin: 10
+  reforms:
+    - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
+  input:
+    people:
+      parent:
+        age: 30
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+        universal_credit: 5000
+    households:
+      household:
+        members: [parent, baby]
+        region: SCOTLAND
+  output:
+    # Before 2027-04-01 - under_one_total is £0, so standard rate applies
+    # £27.15/week * 52 = £1,411.80
+    # [parent, baby]
+    scottish_child_payment: [0, 1412]

@@ -1,12 +1,28 @@
 description: Amount of dividend income untaxed per year
 values:
-  2016-04-06: 5_000
-  2018-04-06: 2_000
-  2023-04-06: 1_000
-  2024-04-06: 500
+  2016-04-06:
+    value: 5_000
+    reference:
+      - title: Finance Act 2016 s. 5
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/5
+  2018-04-06:
+    value: 2_000
+    reference:
+      - title: Finance Act 2017 s. 5
+        href: https://www.legislation.gov.uk/ukpga/2017/32/section/5
+  2023-04-06:
+    value: 1_000
+    reference:
+      - title: Finance Act 2023 s. 5
+        href: https://www.legislation.gov.uk/ukpga/2023/1/section/5
+  2024-04-06:
+    value: 500
+    reference:
+      - title: Finance Act 2023 s. 5
+        href: https://www.legislation.gov.uk/ukpga/2023/1/section/5
 metadata:
   name: dividend_allowance
-  label: Dividend Allowance
+  label: Dividend allowance
   period: year
   unit: currency-GBP
   reference: 

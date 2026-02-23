@@ -3,7 +3,7 @@ metadata:
   type: single_amount
   threshold_unit: year
   amount_unit: bool
-  label: compulsory school age status
+  label: Compulsory school age status
   reference:
     - title: Education Act 1996 - Section 8 (Compulsory school age)
       href: https://www.legislation.gov.uk/ukpga/1996/56/section/8

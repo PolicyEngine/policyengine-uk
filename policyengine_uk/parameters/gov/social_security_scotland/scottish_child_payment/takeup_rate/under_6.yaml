@@ -1,0 +1,12 @@
+description: >
+  Take-up rate for Scottish Child Payment for families with children under 6.
+  Higher take-up due to automatic awards from Best Start Grant recipients.
+values:
+  0001-01-01: 0.97
+metadata:
+  unit: /1
+  period: year
+  label: Scottish Child Payment take-up rate (under 6)
+  reference:
+    - title: SPICe analysis of SCP coverage
+      href: https://spice-spotlight.scot/2024/07/31/scottish-child-payment-who-gets-it/

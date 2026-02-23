@@ -5,6 +5,227 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.73.1] - 2026-02-19 17:57:15
+
+### Fixed
+
+- Skip student loan uprating if column doesn't exist yet during dataset creation.
+
+## [2.73.0] - 2026-02-19 17:30:26
+
+### Added
+
+- {'Student loan plan uprating in economic assumptions': 're-labels Plan 1/2/5 each year based on cohort start year, writes off loans after 29 years, and samples new Plan 5 entrants for England using empirical age/income take-up probabilities.'}
+
+## [2.72.4] - 2026-02-18 10:18:43
+
+### Changed
+
+- Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
+
+## [2.72.3] - 2026-01-25 14:13:02
+
+### Changed
+
+- Bumped policyengine-core minimum version to 3.23.5 for pandas 3.0 compatibility
+
+## [2.72.2] - 2026-01-21 11:55:12
+
+### Fixed
+
+- Scottish top rate (48%) threshold corrected from 125,140 to 112,570 (above personal allowance). The threshold was incorrectly stored as the total income value instead of the amount above PA, causing the top rate to effectively start at 137,710 instead of 125,140.
+
+## [2.72.1] - 2026-01-20 12:44:50
+
+### Fixed
+
+- Add 2026-27 Scottish income tax threshold freeze to baseline (higher, advanced, and top rates) per Scottish Budget 2025-26.
+
+## [2.72.0] - 2026-01-20 12:32:14
+
+### Added
+
+- Scottish Child Payment rates from 2026-27 to 2030-31 per Scottish Fiscal Commission forecasts.
+- Scottish Child Payment baby boost under-1 total from 2027-28 to 2030-31 per SFC forecasts.
+- CPI uprating for SCP parameters for projections beyond 2030-31.
+
+## [2.71.1] - 2026-01-17 18:54:27
+
+### Fixed
+
+- Reverted premature SCP 2026-27 rate increase (not yet law).
+- Refactored SCP baby bonus reform to use £40/week total as the policy parameter instead of a fixed bonus amount.
+
+## [2.71.0] - 2026-01-17 18:39:20
+
+### Added
+
+- Scottish Child Payment increased to 28.20/week for 2026-27, per Scottish Budget 2026-27.
+
+## [2.70.7] - 2026-01-17 18:37:47
+
+### Fixed
+
+- Skip behavioral response tests when HUGGING_FACE_TOKEN is not available (enables Dependabot PRs to pass CI).
+
+## [2.70.6] - 2026-01-17 18:33:41
+
+### Fixed
+
+- Fixed Scottish Child Payment baby bonus reform to use Person-level variable structure, matching the refactored base variable. The reform now correctly uses parameterized baby bonus rates instead of hardcoded values.
+- Fixed SCP baby bonus effective date to 2027-04-01 (fiscal year 2027-28) per Scottish Budget 2026-27.
+
+## [2.70.5] - 2026-01-17 18:05:46
+
+### Fixed
+
+- CI workflows now handle missing HUGGING_FACE_TOKEN gracefully, allowing Dependabot PRs to run tests without failing on empty Bearer token errors.
+
+## [2.70.4] - 2026-01-17 17:45:51
+
+### Changed
+
+- Standardized all parameter labels to use sentence case, while preserving proper names (e.g., "Bank of England", "Child Benefit") and acronyms (e.g., "HMRC", "VAT", "NHS")
+
+## [2.70.3] - 2026-01-17 17:42:23
+
+### Fixed
+
+- Extended childcare entitlement hours expansion date corrected from 2026-01-01 to 2025-09-01 for children aged 9 months to 2 years, implementing the September 2025 policy change that doubled free childcare from 15 to 30 hours per week for working parents.
+
+## [2.70.2] - 2026-01-17 17:37:48
+
+### Added
+
+- Per-value legislative references for income tax allowances and minimum wage rates
+
+## [2.70.1] - 2026-01-17 17:17:54
+
+### Fixed
+
+- CI now runs on dependency updates (pyproject.toml, uv.lock changes)
+- Fixed Scottish Child Payment test format to use array notation for person-level output
+
+## [2.70.0] - 2026-01-17 04:45:58
+
+### Changed
+
+- Remove randomness from country package by moving stochastic variable generation to data package. Variables now read pre-computed values from datasets for deterministic, reproducible calculations.
+
+## [2.69.0] - 2026-01-15 15:17:19
+
+### Added
+
+- Scottish Child Payment baby bonus reform.
+
+## [2.68.1] - 2026-01-13 17:13:11
+
+### Fixed
+
+- Dataset uprating bug where region values weren't converted to strings for rent indexing
+- Salary sacrifice default behavior to be static (0) instead of fully optimized (1.0)
+
+## [2.68.0] - 2026-01-13 15:46:23
+
+### Added
+
+- 2025-26 Scottish income tax rates.
+
+## [2.67.0] - 2026-01-13 14:23:42
+
+### Added
+
+- Scottish Child Payment - a benefit provided by Social Security Scotland for eligible children under 16 in low-income families receiving qualifying benefits (UC, tax credits, etc.).
+
+## [2.66.0] - 2026-01-12 16:12:34
+
+### Fixed
+
+- LHA freeze parameter.
+
+## [2.65.9] - 2025-12-09 16:16:37
+
+### Fixed
+
+- Refactor variables with redundant adds/subtracts and formula definitions to prevent sync issues
+
+## [2.65.8] - 2025-12-09 10:09:16
+
+### Added
+
+- Legislative references for marriage allowance take-up rate (Income Tax Act 2007 s. 55B)
+- Legislative references for married couple's allowance deduction rate (Income Tax Act 2007 s. 46)
+- Legislative references for income tax additions and subtractions (Income Tax Act 2007 s. 23)
+- Labels for 11 HMRC income tax parameters including annual allowance, personal savings allowance, and savings starter rate parameters
+
+### Changed
+
+- All HMRC income tax parameters now have proper labels and legislative references
+
+## [2.65.7] - 2025-12-09 09:47:39
+
+### Added
+
+- Add savings, net_financial_wealth, gross_financial_wealth, and shareholding to total_wealth calculation
+
+## [2.65.6] - 2025-12-09 08:44:22
+
+### Fixed
+
+- Fixed employer_ni_fixed_employer_cost_change variable returning impacts in baseline scenarios by correcting baseline parameter access.
+
+## [2.65.5] - 2025-12-08 22:13:29
+
+### Fixed
+
+- Correct 2025-26 benefit cap rates (were incorrectly showing uprated values; benefit cap has been frozen since 2023)
+- Update UC parameter legislation references to point to exact regulation sections on legislation.gov.uk
+- Add missing 2025-26 Universal Credit non-dependent deduction amount (GBP 93.02)
+
+## [2.65.4] - 2025-12-08 21:37:03
+
+### Fixed
+
+- Basic state pension calculation.
+
+## [2.65.3] - 2025-12-08 10:54:42
+
+### Added
+
+- Salary sacrifice pension cap reform (GBP 2,000 cap from April 2029) with broad-base employer response modeling.
+
+## [2.65.2] - 2025-12-05 16:29:26
+
+### Fixed
+
+- Fix fuel duty rates to use OBR November 2025 RPI forecasts.
+
+## [2.65.1] - 2025-12-04 14:45:58
+
+### Changed
+
+- Bump policyengine-core to 3.23.0 (adds strict enum validation).
+
+## [2.65.0] - 2025-12-03 16:17:09
+
+### Fixed
+
+- Extend fiscal year parameter conversion to cover 2015-2040, fixing issues where policies changing on April 6 (UK fiscal year start) were not reflected in simulations for years 2026+.
+
+## [2.64.1] - 2025-12-03 12:45:46
+
+### Fixed
+
+- Print statement.
+
+## [2.64.0] - 2025-12-03 11:59:49
+
+### Added
+
+- Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax Credits child element limit to infinity
+- Salary sacrifice pension cap of �2,000 from April 2029 (Autumn Budget 2025)
+- Move inflation adjustment AHC back to BHC inflation.
+
 ## [2.63.0] - 2025-12-02 16:24:40
 
 ### Added
@@ -2404,6 +2625,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[2.73.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.73.0...2.73.1
+[2.73.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.4...2.73.0
+[2.72.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.3...2.72.4
+[2.72.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.2...2.72.3
+[2.72.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.1...2.72.2
+[2.72.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.72.0...2.72.1
+[2.72.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.71.1...2.72.0
+[2.71.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.71.0...2.71.1
+[2.71.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.7...2.71.0
+[2.70.7]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.6...2.70.7
+[2.70.6]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.5...2.70.6
+[2.70.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.4...2.70.5
+[2.70.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.3...2.70.4
+[2.70.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.2...2.70.3
+[2.70.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.1...2.70.2
+[2.70.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.70.0...2.70.1
+[2.70.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.69.0...2.70.0
+[2.69.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.68.1...2.69.0
+[2.68.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.68.0...2.68.1
+[2.68.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.67.0...2.68.0
+[2.67.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.66.0...2.67.0
+[2.66.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.9...2.66.0
+[2.65.9]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.8...2.65.9
+[2.65.8]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.7...2.65.8
+[2.65.7]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.6...2.65.7
+[2.65.6]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.5...2.65.6
+[2.65.5]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.4...2.65.5
+[2.65.4]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.3...2.65.4
+[2.65.3]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.2...2.65.3
+[2.65.2]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.1...2.65.2
+[2.65.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.65.0...2.65.1
+[2.65.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.64.1...2.65.0
+[2.64.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.64.0...2.64.1
+[2.64.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.63.0...2.64.0
 [2.63.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.1...2.63.0
 [2.62.1]: https://github.com/PolicyEngine/openfisca-uk/compare/2.62.0...2.62.1
 [2.62.0]: https://github.com/PolicyEngine/openfisca-uk/compare/2.61.4...2.62.0

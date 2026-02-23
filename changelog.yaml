@@ -2055,3 +2055,230 @@
       PA taper purposes, causing high earners (GBP 100k-125k) to receive less tax
       relief than legally entitled.
   date: 2025-12-02 16:24:40
+- bump: minor
+  changes:
+    added:
+    - Two child limit repeal from April 2026 (Autumn Budget 2025) - sets UC and Tax
+      Credits child element limit to infinity
+    - "Salary sacrifice pension cap of \uFFFD2,000 from April 2029 (Autumn Budget\
+      \ 2025)"
+    - Move inflation adjustment AHC back to BHC inflation.
+  date: 2025-12-03 11:59:49
+- bump: patch
+  changes:
+    fixed:
+    - Print statement.
+  date: 2025-12-03 12:45:46
+- bump: minor
+  changes:
+    fixed:
+    - Extend fiscal year parameter conversion to cover 2015-2040, fixing issues where
+      policies changing on April 6 (UK fiscal year start) were not reflected in simulations
+      for years 2026+.
+  date: 2025-12-03 16:17:09
+- bump: patch
+  changes:
+    changed:
+    - Bump policyengine-core to 3.23.0 (adds strict enum validation).
+  date: 2025-12-04 14:45:58
+- bump: patch
+  changes:
+    fixed:
+    - Fix fuel duty rates to use OBR November 2025 RPI forecasts.
+  date: 2025-12-05 16:29:26
+- bump: patch
+  changes:
+    added:
+    - Salary sacrifice pension cap reform (GBP 2,000 cap from April 2029) with broad-base
+      employer response modeling.
+  date: 2025-12-08 10:54:42
+- bump: patch
+  changes:
+    fixed:
+    - Basic state pension calculation.
+  date: 2025-12-08 21:37:03
+- bump: patch
+  changes:
+    fixed:
+    - Correct 2025-26 benefit cap rates (were incorrectly showing uprated values;
+      benefit cap has been frozen since 2023)
+    - Update UC parameter legislation references to point to exact regulation sections
+      on legislation.gov.uk
+    - Add missing 2025-26 Universal Credit non-dependent deduction amount (GBP 93.02)
+  date: 2025-12-08 22:13:29
+- bump: patch
+  changes:
+    fixed:
+    - Fixed employer_ni_fixed_employer_cost_change variable returning impacts in baseline
+      scenarios by correcting baseline parameter access.
+  date: 2025-12-09 08:44:22
+- bump: patch
+  changes:
+    added:
+    - Add savings, net_financial_wealth, gross_financial_wealth, and shareholding
+      to total_wealth calculation
+  date: 2025-12-09 09:47:39
+- bump: patch
+  changes:
+    added:
+    - Legislative references for marriage allowance take-up rate (Income Tax Act 2007
+      s. 55B)
+    - Legislative references for married couple's allowance deduction rate (Income
+      Tax Act 2007 s. 46)
+    - Legislative references for income tax additions and subtractions (Income Tax
+      Act 2007 s. 23)
+    - Labels for 11 HMRC income tax parameters including annual allowance, personal
+      savings allowance, and savings starter rate parameters
+    changed:
+    - All HMRC income tax parameters now have proper labels and legislative references
+  date: 2025-12-09 10:09:16
+- bump: patch
+  changes:
+    fixed:
+    - Refactor variables with redundant adds/subtracts and formula definitions to
+      prevent sync issues
+  date: 2025-12-09 16:16:37
+- bump: minor
+  changes:
+    fixed:
+    - LHA freeze parameter.
+  date: 2026-01-12 16:12:34
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment - a benefit provided by Social Security Scotland for
+      eligible children under 16 in low-income families receiving qualifying benefits
+      (UC, tax credits, etc.).
+  date: 2026-01-13 14:23:42
+- bump: minor
+  changes:
+    added:
+    - 2025-26 Scottish income tax rates.
+  date: 2026-01-13 15:46:23
+- bump: patch
+  changes:
+    fixed:
+    - Dataset uprating bug where region values weren't converted to strings for rent
+      indexing
+    - Salary sacrifice default behavior to be static (0) instead of fully optimized
+      (1.0)
+  date: 2026-01-13 17:13:11
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment baby bonus reform.
+  date: 2026-01-15 15:17:19
+- bump: minor
+  changes:
+    changed:
+    - Remove randomness from country package by moving stochastic variable generation
+      to data package. Variables now read pre-computed values from datasets for deterministic,
+      reproducible calculations.
+  date: 2026-01-17 04:45:58
+- bump: patch
+  changes:
+    fixed:
+    - CI now runs on dependency updates (pyproject.toml, uv.lock changes)
+    - Fixed Scottish Child Payment test format to use array notation for person-level
+      output
+  date: 2026-01-17 17:17:54
+- bump: patch
+  changes:
+    added:
+    - Per-value legislative references for income tax allowances and minimum wage
+      rates
+  date: 2026-01-17 17:37:48
+- bump: patch
+  changes:
+    fixed:
+    - Extended childcare entitlement hours expansion date corrected from 2026-01-01
+      to 2025-09-01 for children aged 9 months to 2 years, implementing the September
+      2025 policy change that doubled free childcare from 15 to 30 hours per week
+      for working parents.
+  date: 2026-01-17 17:42:23
+- bump: patch
+  changes:
+    changed:
+    - Standardized all parameter labels to use sentence case, while preserving proper
+      names (e.g., "Bank of England", "Child Benefit") and acronyms (e.g., "HMRC",
+      "VAT", "NHS")
+  date: 2026-01-17 17:45:51
+- bump: patch
+  changes:
+    fixed:
+    - CI workflows now handle missing HUGGING_FACE_TOKEN gracefully, allowing Dependabot
+      PRs to run tests without failing on empty Bearer token errors.
+  date: 2026-01-17 18:05:46
+- bump: patch
+  changes:
+    fixed:
+    - Fixed Scottish Child Payment baby bonus reform to use Person-level variable
+      structure, matching the refactored base variable. The reform now correctly uses
+      parameterized baby bonus rates instead of hardcoded values.
+    - Fixed SCP baby bonus effective date to 2027-04-01 (fiscal year 2027-28) per
+      Scottish Budget 2026-27.
+  date: 2026-01-17 18:33:41
+- bump: patch
+  changes:
+    fixed:
+    - Skip behavioral response tests when HUGGING_FACE_TOKEN is not available (enables
+      Dependabot PRs to pass CI).
+  date: 2026-01-17 18:37:47
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment increased to 28.20/week for 2026-27, per Scottish Budget
+      2026-27.
+  date: 2026-01-17 18:39:20
+- bump: patch
+  changes:
+    fixed:
+    - Reverted premature SCP 2026-27 rate increase (not yet law).
+    - "Refactored SCP baby bonus reform to use \xA340/week total as the policy parameter\
+      \ instead of a fixed bonus amount."
+  date: 2026-01-17 18:54:27
+- bump: minor
+  changes:
+    added:
+    - Scottish Child Payment rates from 2026-27 to 2030-31 per Scottish Fiscal Commission
+      forecasts.
+    - Scottish Child Payment baby boost under-1 total from 2027-28 to 2030-31 per
+      SFC forecasts.
+    - CPI uprating for SCP parameters for projections beyond 2030-31.
+  date: 2026-01-20 12:32:14
+- bump: patch
+  changes:
+    fixed:
+    - Add 2026-27 Scottish income tax threshold freeze to baseline (higher, advanced,
+      and top rates) per Scottish Budget 2025-26.
+  date: 2026-01-20 12:44:50
+- bump: patch
+  changes:
+    fixed:
+    - Scottish top rate (48%) threshold corrected from 125,140 to 112,570 (above personal
+      allowance). The threshold was incorrectly stored as the total income value instead
+      of the amount above PA, causing the top rate to effectively start at 137,710
+      instead of 125,140.
+  date: 2026-01-21 11:55:12
+- bump: patch
+  changes:
+    changed:
+    - Bumped policyengine-core minimum version to 3.23.5 for pandas 3.0 compatibility
+  date: 2026-01-25 14:13:02
+- bump: patch
+  changes:
+    changed:
+    - Vectorised BRMA LHA rate lookup for ~3s speedup on calculate calls.
+  date: 2026-02-18 10:18:43
+- bump: minor
+  changes:
+    added:
+    - Student loan plan uprating in economic assumptions: re-labels Plan 1/2/5 each
+        year based on cohort start year, writes off loans after 29 years, and samples
+        new Plan 5 entrants for England using empirical age/income take-up probabilities.
+  date: 2026-02-19 17:30:26
+- bump: patch
+  changes:
+    fixed:
+    - Skip student loan uprating if column doesn't exist yet during dataset creation.
+  date: 2026-02-19 17:57:15

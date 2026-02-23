@@ -2,7 +2,7 @@ description: The Department for Education limits Care to Learn eligibility to ca
 metadata:
   unit: year
   period: year
-  label: maximum age to be eligible for the Care to Learn scheme
+  label: Maximum age to be eligible for the Care to Learn scheme
   reference:
     - title: Documentation for Care to Learn scheme 
       href: https://www.gov.uk/care-to-learn

@@ -4,5 +4,5 @@ values:
   2025-01-01: 100
 metadata:
   unit: currency-GBP
-  label: PAWHP base payment
+  label: Pawhp base payment
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

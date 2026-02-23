@@ -1,6 +1,5 @@
 from policyengine_uk.model_api import *
 
-
 STATUTORY_CONSUMER_INCIDENCE = 0.5
 ECONOMIC_CONSUMER_INCIDENCE = 1
 

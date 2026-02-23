@@ -9,11 +9,19 @@ and that all the critical fixes are functioning:
 - The system correctly returns appropriate FTE responses
 """
 
+import os
 import pytest
 import yaml
 from pathlib import Path
 from policyengine_uk import Microsimulation
 from policyengine_uk.model_api import Scenario
+
+# Check if HF token is available for data-dependent tests
+HF_TOKEN_AVAILABLE = bool(os.environ.get("HUGGING_FACE_TOKEN"))
+requires_hf_data = pytest.mark.skipif(
+    not HF_TOKEN_AVAILABLE,
+    reason="Requires HUGGING_FACE_TOKEN for private data access",
+)
 
 
 # Load YAML test cases
@@ -43,6 +51,7 @@ class TestBehavioralResponses:
             assert "reforms" in test_case, f"Test case {i+1} missing 'reforms'"
             assert "output" in test_case, f"Test case {i+1} missing 'output'"
 
+    @requires_hf_data
     def test_obr_parameter_functionality(self):
         """Test that OBR parameter can be enabled and disabled"""
         # Test enabling OBR
@@ -74,6 +83,7 @@ class TestBehavioralResponses:
             obr_off == False
         ), "OBR parameter should be disabled when set to False"
 
+    @requires_hf_data
     def test_dynamics_no_crash_simple(self):
         """Test that dynamics application doesn't crash with simple scenarios"""
         situation = {
@@ -113,6 +123,7 @@ class TestBehavioralResponses:
                 # Re-raise other ValueError exceptions
                 raise
 
+    @requires_hf_data
     def test_basic_behavioral_response_enabled(self):
         """Test basic behavioral response mechanism with OBR enabled"""
         test_case = test_cases[0]  # First test case
@@ -135,6 +146,7 @@ class TestBehavioralResponses:
         dynamics = reformed.apply_dynamics(2025)
         # Test passes if no exception is raised
 
+    @requires_hf_data
     def test_behavioral_response_disabled(self):
         """Test behavioral response with OBR disabled"""
         test_case = test_cases[3]  # OBR disabled test case
@@ -159,6 +171,7 @@ class TestBehavioralResponses:
         dynamics = reformed.apply_dynamics(2025)
         assert dynamics is None, "Dynamics should be None when OBR is disabled"
 
+    @requires_hf_data
     def test_zero_income_handling(self):
         """Test that zero income cases don't cause NaN errors"""
         test_case = test_cases[5]  # Zero income test case
@@ -182,6 +195,7 @@ class TestBehavioralResponses:
                 # Other ValueError might be expected
                 pass
 
+    @requires_hf_data
     @pytest.mark.parametrize("test_case", test_cases)
     def test_all_yaml_cases_structure(self, test_case):
         """Test that all YAML test cases have valid structure and can create simulations"""

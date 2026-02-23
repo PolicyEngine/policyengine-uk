@@ -14,7 +14,7 @@ values:
           href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-b
 metadata:
   unit: currency-GBP
-  label: NI Class 2 Small Profits Threshold
+  label: NI class 2 small profits threshold
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

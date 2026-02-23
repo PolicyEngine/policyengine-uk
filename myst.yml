@@ -10,7 +10,7 @@ project:
     branch: master
     path: docs/book
   toc:
-    - file: docs/book/index
+    - file: docs/book/index.md
     - title: Usage
       children:
       - file: docs/book/usage/getting-started

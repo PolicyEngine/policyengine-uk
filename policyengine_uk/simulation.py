@@ -7,6 +7,7 @@ import pandas as pd
 
 # PolicyEngine core imports
 from policyengine_core.data import Dataset
+from policyengine_core.enums import Enum as CoreEnum
 from policyengine_core.periods import period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
@@ -24,10 +25,49 @@ from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
 from .tax_benefit_system import CountryTaxBenefitSystem
 
 from microdf import MicroDataFrame
+
+# Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
+# by URL. Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
+# encoding (0.67s) on every Simulation() call after the first.
+_url_dataset_cache: dict = {}
+
+
+def _pre_encode_enum_columns(
+    dataset: UKMultiYearDataset, tbs: "CountryTaxBenefitSystem"
+) -> None:
+    """Convert string enum columns in a dataset to int16 in-place.
+
+    Run once before caching; subsequent loads use encode()'s fast integer path.
+    Also stores a mapping of column name -> possible_values on each
+    UKSingleYearDataset so callers can decode back to strings when needed.
+    """
+    for year in dataset.years:
+        single_year = dataset[year]
+        enum_columns: dict = {}
+        for table_name in single_year.table_names:
+            table = getattr(single_year, f"_{table_name}")
+            for col_name in list(table.columns):
+                if col_name not in tbs.variables:
+                    continue
+                var_def = tbs.variables[col_name]
+                if var_def.value_type != CoreEnum:
+                    continue
+                arr = table[col_name].values
+                if not isinstance(arr, np.ndarray):
+                    arr = np.asarray(arr, dtype=object)
+                if arr.dtype.kind in ("i", "u"):
+                    # Already integer - record possible_values if not yet seen
+                    enum_columns[col_name] = var_def.possible_values
+                    continue
+                encoded = var_def.possible_values.encode(arr)
+                table[col_name] = encoded.view(np.ndarray).astype(np.int16)
+                enum_columns[col_name] = var_def.possible_values
+        single_year._enum_columns = enum_columns
 
 
 class Simulation(CoreSimulation):
@@ -121,8 +161,20 @@ class Simulation(CoreSimulation):
 
         self.tax_benefit_system.reset_parameter_caches()
 
+        # Apply structural reforms based on parameters
+        structural_reform = create_structural_reforms_from_parameters(
+            self.tax_benefit_system.parameters,
+            period_(self.default_input_period),
+        )
+        if structural_reform is not None:
+            self.apply_reform(structural_reform)
+
         self.move_values("capital_gains", "capital_gains_before_response")
         self.move_values("employment_income", "employment_income_before_lsr")
+        self.move_values(
+            "employee_pension_contributions",
+            "employee_pension_contributions_reported",
+        )
 
         self.input_variables = self.get_known_variables()
 
@@ -211,6 +263,14 @@ class Simulation(CoreSimulation):
                 f"Non-HuggingFace URLs are currently not supported."
             )
 
+        # Return early from in-memory cache if available: skips HDF5 reading,
+        # uprating and enum encoding (~2.2s on the first load).
+        if url in _url_dataset_cache:
+            multi_year_dataset = _url_dataset_cache[url]
+            self.build_from_multi_year_dataset(multi_year_dataset)
+            self.dataset = multi_year_dataset
+            return
+
         # Parse HuggingFace URL components
         owner, repo, filename = url.split("/")[-3:]
         if "@" in filename:
@@ -220,20 +280,34 @@ class Simulation(CoreSimulation):
             version = None
 
         # Download dataset from HuggingFace
-        dataset = download_huggingface_dataset(
+        dataset_file = download_huggingface_dataset(
             repo=f"{owner}/{repo}",
             repo_filename=filename,
             version=version,
         )
 
         # Determine dataset type and build accordingly
-        if UKMultiYearDataset.validate_file_path(dataset, False):
-            self.build_from_multi_year_dataset(UKMultiYearDataset(dataset))
-        elif UKSingleYearDataset.validate_file_path(dataset, False):
-            self.build_from_single_year_dataset(UKSingleYearDataset(dataset))
+        if UKMultiYearDataset.validate_file_path(dataset_file, False):
+            multi_year_dataset = UKMultiYearDataset(dataset_file)
+        elif UKSingleYearDataset.validate_file_path(dataset_file, False):
+            multi_year_dataset = extend_single_year_dataset(
+                UKSingleYearDataset(dataset_file),
+                self.tax_benefit_system.parameters,
+            )
         else:
-            dataset = Dataset.from_file(dataset, self.default_input_period)
+            dataset = Dataset.from_file(
+                dataset_file, self.default_input_period
+            )
             self.build_from_dataset(dataset)
+            return
+
+        # Pre-encode string enum columns to int16 once before caching so
+        # subsequent loads skip the expensive astype(str) + searchsorted path.
+        _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
+        _url_dataset_cache[url] = multi_year_dataset
+
+        self.build_from_multi_year_dataset(multi_year_dataset)
+        self.dataset = multi_year_dataset
 
     def build_from_dataframe(self, df: pd.DataFrame) -> None:
         """Build simulation from a pandas DataFrame.

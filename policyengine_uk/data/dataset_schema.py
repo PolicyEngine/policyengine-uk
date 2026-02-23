@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -9,10 +10,6 @@ import h5py
 
 
 class UKSingleYearDataset:
-    person: pd.DataFrame
-    benunit: pd.DataFrame
-    household: pd.DataFrame
-
     @staticmethod
     def validate_file_path(file_path: str, raise_exception: bool = True):
         if not file_path.endswith(".h5"):
@@ -57,23 +54,72 @@ class UKSingleYearDataset:
         if file_path is not None:
             self.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
-                self.person = f["person"]
-                self.benunit = f["benunit"]
-                self.household = f["household"]
+                self._person = f["person"]
+                self._benunit = f["benunit"]
+                self._household = f["household"]
                 self.time_period = str(f["time_period"].iloc[0])
         else:
             if person is None or benunit is None or household is None:
                 raise ValueError(
                     "Must provide either a file path or all three DataFrames (person, benunit, household)."
                 )
-            self.person = person
-            self.benunit = benunit
-            self.household = household
+            self._person = person
+            self._benunit = benunit
+            self._household = household
             self.time_period = str(fiscal_year)
 
         self.data_format = "arrays"
-        self.tables = (self.person, self.benunit, self.household)
+        # tables tuple points at the raw (int16) DataFrames used by the
+        # simulation engine internals - do not decode these.
+        self.tables = (self._person, self._benunit, self._household)
         self.table_names = ("person", "benunit", "household")
+        # Populated by _pre_encode_enum_columns in simulation.py after the
+        # dataset is loaded and enum columns have been converted to int16.
+        self._enum_columns: dict = {}
+
+    def _decode_enum_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Return a copy of *df* with int16 enum columns decoded to strings."""
+        if not self._enum_columns:
+            return df
+        enum_cols_in_df = [c for c in df.columns if c in self._enum_columns]
+        if not enum_cols_in_df:
+            return df
+        out = df.copy()
+        for col in enum_cols_in_df:
+            possible_values = self._enum_columns[col]
+            arr = out[col].values
+            if arr.dtype.kind not in ("i", "u"):
+                continue
+            names = np.array([m.name for m in possible_values], dtype=object)
+            out[col] = names[arr.astype(int)]
+        return out
+
+    @property
+    def person(self) -> pd.DataFrame:
+        return self._decode_enum_df(self._person)
+
+    @person.setter
+    def person(self, df: pd.DataFrame):
+        self._person = df
+        self.tables = (self._person, self._benunit, self._household)
+
+    @property
+    def benunit(self) -> pd.DataFrame:
+        return self._decode_enum_df(self._benunit)
+
+    @benunit.setter
+    def benunit(self, df: pd.DataFrame):
+        self._benunit = df
+        self.tables = (self._person, self._benunit, self._household)
+
+    @property
+    def household(self) -> pd.DataFrame:
+        return self._decode_enum_df(self._household)
+
+    @household.setter
+    def household(self, df: pd.DataFrame):
+        self._household = df
+        self.tables = (self._person, self._benunit, self._household)
 
     def save(self, file_path: str):
         with pd.HDFStore(file_path) as f:

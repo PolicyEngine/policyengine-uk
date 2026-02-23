@@ -13,6 +13,21 @@ def interpolate_percentile(param, percentile):
         return v1 + (v2 - v1) * (percentile - p1) / (p2 - p1)
 
 
+class attends_private_school_random_draw(Variable):
+    label = "Private school attendance random draw"
+    documentation = (
+        "Random draw for determining private school attendance. "
+        "Generated stochastically in the dataset."
+    )
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+
+    # No formula - when in dataset, OpenFisca uses dataset value automatically
+    # For policy calculator (non-dataset), defaults to 0.5
+    default_value = 0.5
+
+
 class attends_private_school(Variable):
     label = "attends private school"
     entity = Person
@@ -65,17 +80,26 @@ class attends_private_school(Variable):
         # STUDENT_POPULATION_ADJUSTMENT_FACTOR = 0.78
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = population_adjustment_factor
 
+        # Precompute a 101-element lookup (one per integer percentile 0-100)
+        # using the 21 parameter breakpoints at multiples of 5, then index with
+        # the full percentile array. Replaces ~115k Python calls with numpy ops.
+        _breakpoints = list(range(0, 101, 5))
+        _rates = np.array(
+            [
+                float(private_school_attendance_rate[str(p)])
+                for p in _breakpoints
+            ]
+        )
+        _rate_by_percentile = np.interp(np.arange(101), _breakpoints, _rates)
+
         p_attends_private_school = (
-            np.array(
-                [
-                    interpolate_percentile(private_school_attendance_rate, p)
-                    for p in percentile
-                ]
-            )
+            _rate_by_percentile[percentile]
             * STUDENT_POPULATION_ADJUSTMENT_FACTOR
             * is_child
         )
 
-        value = random(person) < p_attends_private_school
+        # Use pre-generated random draw from dataset instead of calling random()
+        random_draw = person("attends_private_school_random_draw", period)
+        value = random_draw < p_attends_private_school
 
         return value

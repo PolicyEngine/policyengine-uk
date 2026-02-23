@@ -11,7 +11,7 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  label: Housing Benefit younger couple personal allowance 
+  label: Housing benefit younger couple personal allowance
   uprating: gov.benefit_uprating_cpi
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1

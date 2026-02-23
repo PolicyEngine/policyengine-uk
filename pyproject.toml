@@ -1,6 +1,6 @@
 [project] 
 name = "policyengine-uk"
-version = "2.63.0"
+version = "2.73.1"
 description = "PolicyEngine tax and benefit system for the UK."
 readme = "README.md"
 authors = [
@@ -24,8 +24,8 @@ classifiers = [
 ]
 requires-python = ">=3.13,<3.14"
 dependencies = [
-    "policyengine-core>=3.19.3",
-    "microdf-python>=1.0.2",
+    "policyengine-core>=3.23.6",
+    "microdf-python>=1.2.1",
     "pydantic>=2.11.7",
     "tables>=3.10.2",
 ]
@@ -68,4 +68,9 @@ dev = [
     "jupyter-book>=2.0.0a0",
     "linecheck",
     "rich",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "microsimulation: marks tests that use full microsimulation (deselect with '-m \"not microsimulation\"')",
 ]

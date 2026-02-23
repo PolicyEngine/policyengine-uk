@@ -1,7 +1,12 @@
 description: Savings allowance in the additional threshold
 values:
-  2005-04-01: 0
+  2005-04-01:
+    value: 0
+    reference:
+      - title: Finance Act 2016 s. 4
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/4
 metadata:
   period: week
   unit: currency-GBP
+  label: Personal savings allowance (additional rate)
   reference: https://www.gov.uk/apply-tax-free-interest-on-savings

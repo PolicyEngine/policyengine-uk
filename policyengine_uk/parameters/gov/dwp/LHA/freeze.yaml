@@ -1,9 +1,12 @@
-description: While this parameter is true, LHA rates are frozen in cash terms.
+description: While this parameter is true, LHA rates are frozen in cash terms. When this parameter is set to false from being true the previous year, values are uplifted to the (default 30th) BRMA percentile.
 values:
   2015-01-01: false
   2020-01-01: true
-  2023-12-31: false
-  2024-01-01: true
+  2024-04-06: false
+  2025-04-06: true
 metadata:
   unit: bool
   label: LHA freeze
+  reference:
+    - title: April 2024 LHA reset to 30th percentile
+      href: https://www.gov.uk/government/news/local-housing-allowance-rates-to-be-uprated-to-the-30th-percentile-of-local-market-rents
