@@ -10,23 +10,16 @@ SITUATION = {
     "households": {"household": {"members": ["person"]}},
 }
 
+REFORM = {
+    "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD": {
+        "2025-01-01.2100-12-31": 800,
+    },
+}
+
 
 def test_uc_standard_allowance_responds_to_reform():
     baseline = Simulation(situation=SITUATION)
-    baseline_sa = float(
-        baseline.calculate("uc_standard_allowance", YEAR)[0]
-    )
-
-    reform = {
-        "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD": {
-            "2025-01-01.2100-12-31": 800,
-        },
-    }
-
-    reformed = Simulation(situation=SITUATION, reform=reform)
-    reformed_sa = float(
-        reformed.calculate("uc_standard_allowance", YEAR)[0]
-    )
-
-    ratio = reformed_sa / baseline_sa
-    assert ratio > 1.5
+    b = baseline.calculate("uc_standard_allowance", YEAR)[0]
+    reformed = Simulation(situation=SITUATION, reform=REFORM)
+    r = reformed.calculate("uc_standard_allowance", YEAR)[0]
+    assert r / b > 1.5
