@@ -14,7 +14,7 @@ class household_tax(Variable):
         "expected_lbtt",
         "corporate_sdlt",
         "business_rates",
-        "council_tax",
+        "council_tax_applicable",
         "domestic_rates",
         "fuel_duty",
         "tv_licence",
@@ -33,17 +33,3 @@ class household_tax(Variable):
         "employer_ni_response_consumer_incidence",
         "student_loan_repayments",
     ]
-
-    def formula(household, period, parameters):
-        if parameters(period).gov.contrib.abolish_council_tax:
-            return add(
-                household,
-                period,
-                [
-                    tax
-                    for tax in household_tax.adds
-                    if tax not in ["council_tax"]
-                ],
-            )
-        else:
-            return add(household, period, household_tax.adds)

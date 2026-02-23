@@ -57,12 +57,6 @@ class household_benefits(Variable):
         contrib = parameters(period).gov.contrib
         uprating = contrib.benefit_uprating
         benefits = household_benefits.adds
-        if contrib.abolish_council_tax:
-            benefits = [
-                benefit
-                for benefit in benefits
-                if benefit != "council_tax_benefit"
-            ]
         general_benefits = add(
             household,
             period,

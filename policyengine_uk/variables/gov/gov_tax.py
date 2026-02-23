@@ -16,7 +16,7 @@ class gov_tax(Variable):
         "expected_lbtt",
         "corporate_sdlt",
         "business_rates",
-        "council_tax",
+        "council_tax_applicable",
         "domestic_rates",
         "fuel_duty",
         "tv_licence",
@@ -34,12 +34,3 @@ class gov_tax(Variable):
         "student_loan_repayments",
         "vat",
     ]
-
-    def formula(household, period, parameters):
-        variables = list(gov_tax.adds)
-        if parameters(period).gov.contrib.abolish_council_tax:
-            variables = [
-                variable for variable in variables if variable != "council_tax"
-            ]
-
-        return add(household, period, variables)
