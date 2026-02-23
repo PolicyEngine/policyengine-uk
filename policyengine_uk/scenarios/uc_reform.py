@@ -33,16 +33,9 @@ def add_universal_credit_reform(sim: Microsimulation):
         )  # Monthly amount * 12
         sim.set_input("uc_LCWRA_element", year, current_health_element)
 
-    # https://bills.parliament.uk/publications/62123/documents/6889#page=14
-
-    uc_uplift = rebalancing.standard_allowance_uplift
-
-    for year in range(2026, 2030):
-        if not rebalancing.active(year):
-            continue
-        previous_value = sim.calculate("uc_standard_allowance", year - 1)
-        new_value = previous_value * (1 + uc_uplift(year))
-        sim.set_input("uc_standard_allowance", year, new_value)
+    # Standard allowance uplift is now handled in the uc_standard_allowance
+    # formula itself, so that user reforms to the base amount are respected.
+    # See: https://github.com/PolicyEngine/policyengine-uk/issues/1472
 
 
 universal_credit_july_2025_reform = Scenario(

@@ -11,4 +11,8 @@ class uc_standard_allowance(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.standard_allowance
         claimant_type = benunit("uc_standard_allowance_claimant_type", period)
-        return p.amount[claimant_type] * MONTHS_IN_YEAR
+        value = p.amount[claimant_type] * MONTHS_IN_YEAR
+        rebalancing = parameters(period).gov.dwp.universal_credit.rebalancing
+        if rebalancing.active:
+            value = value * (1 + rebalancing.standard_allowance_uplift)
+        return value
