@@ -7,9 +7,7 @@ from pathlib import Path
 
 def get_current_version(pyproject_path: Path) -> str:
     text = pyproject_path.read_text()
-    match = re.search(
-        r'^version\s*=\s*"(\d+\.\d+\.\d+)"', text, re.MULTILINE
-    )
+    match = re.search(r'^version\s*=\s*"(\d+\.\d+\.\d+)"', text, re.MULTILINE)
     if not match:
         print(
             "Could not find version in pyproject.toml",
