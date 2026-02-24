@@ -67,10 +67,44 @@ dev = [
     "snowballstemmer>=2,<3",
     "jupyter-book>=2.0.0a0",
     "linecheck",
-    "rich",
+    "rich",    "towncrier>=24.8.0",
+
 ]
 
 [tool.pytest.ini_options]
 markers = [
     "microsimulation: marks tests that use full microsimulation (deselect with '-m \"not microsimulation\"')",
 ]
+
+[tool.towncrier]
+package = "policyengine_uk"
+directory = "changelog.d"
+filename = "CHANGELOG.md"
+title_format = "## [{version}] - {project_date}"
+issue_format = ""
+underlines = ["", "", ""]
+
+[[tool.towncrier.type]]
+directory = "breaking"
+name = "Breaking changes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "changed"
+name = "Changed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "removed"
+name = "Removed"
+showcontent = true
