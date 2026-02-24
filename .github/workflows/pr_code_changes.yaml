@@ -42,7 +42,7 @@ jobs:
             with:
               workload_identity_provider: "projects/322898545428/locations/global/workloadIdentityPools/policyengine-research-id-pool/providers/prod-github-provider"
               service_account: "policyengine-research@policyengine-research.iam.gserviceaccount.com"
-              
+
           - name: Install package
             run: uv pip install -e .[dev] --system
           - name: Install policyengine
