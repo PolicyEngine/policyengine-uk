@@ -2,8 +2,31 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk import Microsimulation
 import numpy as np
 
+# Parameter paths that, when reformed, should prevent the UC rebalancing
+# from overriding uc_standard_allowance via set_input.
+UC_STANDARD_ALLOWANCE_PARAM_PREFIX = (
+    "gov.dwp.universal_credit.standard_allowance.amount"
+)
 
-def add_universal_credit_reform(sim: Microsimulation):
+
+def _reform_touches_uc_standard_allowance(reform) -> bool:
+    """Check whether a reform dict modifies UC standard allowance parameters.
+
+    Args:
+        reform: The original reform dict (parameter path -> value), or None.
+
+    Returns:
+        True if any parameter path in the reform starts with the UC
+        standard allowance amount prefix.
+    """
+    if reform is None or not isinstance(reform, dict):
+        return False
+    return any(
+        key.startswith(UC_STANDARD_ALLOWANCE_PARAM_PREFIX) for key in reform
+    )
+
+
+def add_universal_credit_reform(sim: Microsimulation, reform_dict=None):
     rebalancing = (
         sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
     )
@@ -35,6 +58,14 @@ def add_universal_credit_reform(sim: Microsimulation):
 
     # https://bills.parliament.uk/publications/62123/documents/6889#page=14
 
+    # Skip the standard allowance set_input override when the user's reform
+    # modifies UC standard allowance parameters directly.  The set_input call
+    # would cache values that prevent the formula from ever reading the
+    # reformed parameter tree, silently ignoring the user's reform.
+    # See: https://github.com/PolicyEngine/policyengine-uk/issues/1511
+    if _reform_touches_uc_standard_allowance(reform_dict):
+        return
+
     uc_uplift = rebalancing.standard_allowance_uplift
 
     for year in range(2026, 2030):
@@ -45,6 +76,8 @@ def add_universal_credit_reform(sim: Microsimulation):
         sim.set_input("uc_standard_allowance", year, new_value)
 
 
+# Kept for backwards compatibility; simulation.py now calls
+# add_universal_credit_reform() directly to pass the reform dict.
 universal_credit_july_2025_reform = Scenario(
     simulation_modifier=add_universal_credit_reform,
 )

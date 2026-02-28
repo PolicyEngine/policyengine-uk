@@ -153,9 +153,15 @@ class Simulation(CoreSimulation):
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
-        from policyengine_uk.scenarios import universal_credit_july_2025_reform
+        # Pass the original reform dict so the UC reform can skip set_input
+        # overrides for variables whose parameters the user is reforming.
+        # See: https://github.com/PolicyEngine/policyengine-uk/issues/1511
+        from policyengine_uk.scenarios.uc_reform import (
+            add_universal_credit_reform,
+        )
 
-        universal_credit_july_2025_reform.simulation_modifier(self)
+        reform_dict = reform if isinstance(reform, dict) else None
+        add_universal_credit_reform(self, reform_dict=reform_dict)
 
         # Apply structural modifiers
 
