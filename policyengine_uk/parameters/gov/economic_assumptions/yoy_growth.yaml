@@ -360,7 +360,7 @@ obr:
       label: Non-labour income growth
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   council_tax:
     england:
@@ -380,7 +380,7 @@ obr:
         unit: /1
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, expenditure, Table 4.1)
-            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
     scotland:
       description: Growth in the level of council tax receipts in Scotland.
       values:
@@ -398,7 +398,7 @@ obr:
         unit: /1
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, expenditure, Table 4.1)
-            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
     wales:
       description: Growth in the level of council tax receipts in Wales.
       values:
@@ -416,7 +416,7 @@ obr:
         unit: /1
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, expenditure, Table 4.1)
-            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   per_capita:
     gdp:
@@ -461,7 +461,7 @@ obr:
         label: Per capita mixed income growth
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
-            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
     non_labour_income:
       description: Per capita non-labour income year-on-year growth.
@@ -483,7 +483,7 @@ obr:
         label: Per capita non-labour income growth
         reference:
           - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.12)
-            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 
   house_prices:
     description: House prices year-on-year growth.
@@ -658,7 +658,7 @@ ons:
         - title: ONS National Accounts D.41g - Households interest received (HAXV series)
           href: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/haxv/ukea
         - title: OBR EFO November 2025 - Non-labour income growth used as proxy for 2025+ (Table 1.12)
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
   private_rental_prices:
     UNITED_KINGDOM:
       description: Private rental prices year-on-year growth in United Kingdom.
