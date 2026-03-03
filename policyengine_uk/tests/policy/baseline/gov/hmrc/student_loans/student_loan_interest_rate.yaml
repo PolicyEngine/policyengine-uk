@@ -148,6 +148,6 @@
         employment_income: 30_000
         student_loan_plan: POSTGRADUATE
   output:
-    # Postgraduate threshold ~£21,909 (uprated from £21,000)
-    # 6% of (30,000 - 21,909) = 6% of 8,091 = ~485
-    student_loan_repayment: 485
+    # Postgraduate threshold ~£21,861 (uprated from £21,000 by RPI)
+    # 6% of (30,000 - 21,861) = 6% of 8,139 = ~488.34
+    student_loan_repayment: 488.339

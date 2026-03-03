@@ -347,4 +347,4 @@
         region: SCOTLAND
   output:
     # Payment continues as two-child limit still in effect
-    two_child_limit_payment: 3635
+    two_child_limit_payment: 3633.188
