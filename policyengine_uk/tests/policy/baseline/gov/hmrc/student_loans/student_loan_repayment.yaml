@@ -116,8 +116,8 @@
         student_loan_plan: PLAN_2
   output:
     # Threshold resumes RPI uprating from 2030
-    # 9% of (40,000 - ~30,064) = 9% of ~9,936 = ~894.26
-    student_loan_repayment: 894.26
+    # 9% of (40,000 - ~30,061) = 9% of ~9,939 = ~894.52
+    student_loan_repayment: 894.522
 
 - name: Plan 2 - Income just below 2027 threshold
   period: 2027
