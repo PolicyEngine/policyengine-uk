@@ -1,4 +1,3 @@
-
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.highest_education import (
     EducationType,
