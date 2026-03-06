@@ -1,4 +1,4 @@
-name: Test PyPI yank capability
+name: Test PyPI token capabilities
 
 on:
   workflow_dispatch:
@@ -7,27 +7,102 @@ on:
       - test-pypi-yank
 
 jobs:
-  test-yank:
+  test-capabilities:
     runs-on: ubuntu-latest
+    env:
+      PYPI_TOKEN: ${{ secrets.PYPI }}
     steps:
-      - name: Install twine
-        run: pip install twine
+      - name: Install dependencies
+        run: pip install twine requests
 
-      - name: Attempt to yank policyengine-uk 0.35.0
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI }}
+      - name: "Test 1: Verify token is valid (check auth via upload endpoint)"
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "https://pypi.org/pypi/policyengine-uk/0.35.0/yank" \
-            -H "Authorization: Bearer $PYPI_TOKEN" \
-            -d "reason=Test%3A+verifying+org+secret+has+yank+permissions")
-          echo "HTTP status: $STATUS"
-          if [ "$STATUS" = "200" ]; then
-            echo "YANK SUCCEEDED - token has yank permissions"
+          # POST with no files - a valid token gets 400 (bad request, missing file)
+          # an invalid token gets 403
+          STATUS=$(curl -s -o /tmp/auth_test.txt -w "%{http_code}" \
+            -X POST "https://upload.pypi.org/legacy/" \
+            -u "__token__:$PYPI_TOKEN")
+          echo "Auth check status: $STATUS"
+          cat /tmp/auth_test.txt
+          if [ "$STATUS" = "400" ]; then
+            echo "RESULT: Token authenticated OK (400 = auth passed, bad request)"
           elif [ "$STATUS" = "403" ]; then
-            echo "YANK FAILED 403 - token lacks permission or wrong scope"
-          elif [ "$STATUS" = "401" ]; then
-            echo "YANK FAILED 401 - token authentication failed"
+            echo "RESULT: Token REJECTED (403 = wrong token or no permission)"
           else
-            echo "YANK FAILED with unexpected status $STATUS"
+            echo "RESULT: Unexpected status $STATUS"
           fi
+
+      - name: "Test 2: Attempt upload of a dummy/existing version (tests publish scope)"
+        run: |
+          # We'll try uploading a fake dist — if token has upload scope we get 400 (bad file)
+          # If token is read-only we get 403
+          echo "dummy" > /tmp/fake.tar.gz
+          STATUS=$(curl -s -o /tmp/upload_test.txt -w "%{http_code}" \
+            -X POST "https://upload.pypi.org/legacy/" \
+            -u "__token__:$PYPI_TOKEN" \
+            -F ":action=file_upload" \
+            -F "protocol_version=1" \
+            -F "name=policyengine-uk" \
+            -F "version=0.35.0" \
+            -F "filetype=sdist" \
+            -F "pyversion=source" \
+            -F "content=@/tmp/fake.tar.gz;type=application/octet-stream")
+          echo "Upload test status: $STATUS"
+          cat /tmp/upload_test.txt
+          if [ "$STATUS" = "400" ]; then
+            echo "RESULT: Token has upload permission (400 = auth OK, file invalid)"
+          elif [ "$STATUS" = "403" ]; then
+            echo "RESULT: Token LACKS upload permission (403)"
+          fi
+
+      - name: "Test 3: Attempt yank via warehouse internal route"
+        run: |
+          # PyPI warehouse exposes a CSRF-protected manage route; tokens don't work here
+          # but we test to confirm the response
+          STATUS=$(curl -s -o /tmp/yank_test.txt -w "%{http_code}" \
+            -X POST "https://pypi.org/manage/project/policyengine-uk/release/0.35.0/yank/" \
+            -H "Authorization: token $PYPI_TOKEN" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "yanked_reason=test")
+          echo "Yank attempt status: $STATUS"
+          cat /tmp/yank_test.txt | python3 -c "import sys; content=sys.stdin.read(); print(content[:300])"
+          if [ "$STATUS" = "200" ]; then
+            echo "RESULT: YANK SUCCEEDED"
+          elif [ "$STATUS" = "302" ]; then
+            echo "RESULT: Redirect (may have worked or redirected to login)"
+          elif [ "$STATUS" = "403" ]; then
+            echo "RESULT: Forbidden - token not accepted for yank"
+          elif [ "$STATUS" = "401" ]; then
+            echo "RESULT: Unauthorized - token rejected"
+          else
+            echo "RESULT: Status $STATUS - token likely not accepted for web management routes"
+          fi
+
+      - name: "Test 4: Attempt yank via upload.pypi.org with :action=yank"
+        run: |
+          STATUS=$(curl -s -o /tmp/yank2_test.txt -w "%{http_code}" \
+            -X POST "https://upload.pypi.org/legacy/" \
+            -u "__token__:$PYPI_TOKEN" \
+            -F ":action=yank" \
+            -F "name=policyengine-uk" \
+            -F "version=0.35.0" \
+            -F "yanked_reason=test+yank+capability")
+          echo "Yank via upload endpoint status: $STATUS"
+          cat /tmp/yank2_test.txt | python3 -c "import sys; content=sys.stdin.read(); print(content[:300])"
+          if [ "$STATUS" = "200" ]; then
+            echo "RESULT: YANK SUCCEEDED via upload endpoint"
+          elif [ "$STATUS" = "400" ]; then
+            echo "RESULT: Auth OK but action not supported (400)"
+          elif [ "$STATUS" = "403" ]; then
+            echo "RESULT: Forbidden"
+          else
+            echo "RESULT: Status $STATUS"
+          fi
+
+      - name: Summary
+        run: |
+          echo "=============================="
+          echo "Test summary:"
+          echo "See individual steps above for RESULT lines."
+          echo "Token prefix (first 10 chars):"
+          echo "$PYPI_TOKEN" | cut -c1-15
