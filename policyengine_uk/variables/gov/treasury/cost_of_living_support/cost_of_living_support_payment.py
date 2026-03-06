@@ -18,9 +18,7 @@ class cost_of_living_support_payment(Variable):
             )
             > 0
         )
-        means_test_bonus = (
-            col.means_tested_households.amount * on_means_tested_benefits
-        )
+        means_test_bonus = col.means_tested_households.amount * on_means_tested_benefits
 
         on_pensioner_benefits = (
             add(household, period, col.pensioners.qualifying_benefits) > 0

@@ -10,7 +10,5 @@ class land_transaction_tax(Variable):
     unit = GBP
 
     def formula(household, period):
-        ltt_if_liable = add(
-            household, period, ["ltt_on_transactions", "ltt_on_rent"]
-        )
+        ltt_if_liable = add(household, period, ["ltt_on_transactions", "ltt_on_rent"])
         return household("ltt_liable", period) * ltt_if_liable

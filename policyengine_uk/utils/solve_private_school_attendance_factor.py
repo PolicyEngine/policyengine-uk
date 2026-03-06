@@ -10,9 +10,7 @@ smallest_difference = float("inf")
 for factor in tqdm([round(x * 0.01, 2) for x in range(70, 91)]):
     # Define the reform with the current private_school_factor value
     reform = {
-        "gov.contrib.labour.private_school_vat": {
-            "2024-01-01.2100-12-31": 0.2
-        },
+        "gov.contrib.labour.private_school_vat": {"2024-01-01.2100-12-31": 0.2},
         "gov.simulation.private_school_vat.private_school_factor": {
             "2024-01-01.2100-12-31": factor
         },
@@ -22,9 +20,7 @@ for factor in tqdm([round(x * 0.01, 2) for x in range(70, 91)]):
     reformed = Microsimulation(
         reform=reform,
     )
-    reformed.baseline_simulation.get_holder(
-        "attends_private_school"
-    ).delete_arrays()
+    reformed.baseline_simulation.get_holder("attends_private_school").delete_arrays()
 
     # Calculate the number of students attending private school in thousands
     private_school_attendance = (

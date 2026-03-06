@@ -45,20 +45,14 @@ def disable_simulated_benefits(parameters, period):
                     reported_value = simulation.calculate(
                         variable + "_reported", time_period, map_to=entity
                     )
-                    for year in range(
-                        time_period, time_period + YEARS_IN_FUTURE
-                    ):
+                    for year in range(time_period, time_period + YEARS_IN_FUTURE):
                         simulation.set_input(variable, year, reported_value)
 
                     if variable in ["child_tax_credit", "working_tax_credit"]:
                         # CTC and WTC have their own pre_minimum variables because tax credits aren't paid if
                         # below a threshold.
                         variable = variable + "_pre_minimum"
-                        for year in range(
-                            time_period, time_period + YEARS_IN_FUTURE
-                        ):
-                            simulation.set_input(
-                                variable, year, reported_value
-                            )
+                        for year in range(time_period, time_period + YEARS_IN_FUTURE):
+                            simulation.set_input(variable, year, reported_value)
 
         return DisableSimulatedBenefits

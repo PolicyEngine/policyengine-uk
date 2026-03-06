@@ -21,9 +21,7 @@ class capital_gains_tax(Variable):
         basic_rate_limit = it.rates.uk.thresholds[1]
         remaining_basic_rate_band = max_(basic_rate_limit - ani, 0)
 
-        basic_rate_applicable_cg = min_(
-            gains_less_aea, remaining_basic_rate_band
-        )
+        basic_rate_applicable_cg = min_(gains_less_aea, remaining_basic_rate_band)
         higher_and_add_rate_applicable_cg = max_(
             gains_less_aea - remaining_basic_rate_band, 0
         )

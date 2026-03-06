@@ -23,9 +23,7 @@ class targeted_childcare_entitlement_eligible(Variable):
         )
 
         # Check if household receives any qualifying benefits
-        has_qualifying_benefits = (
-            add(benunit, period, p.qualifying_benefits) > 0
-        )
+        has_qualifying_benefits = add(benunit, period, p.qualifying_benefits) > 0
 
         # Check if household meets any additional qualifying criteria
         # from qualifying_criteria.yaml (UC/TC specific criteria)

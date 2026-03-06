@@ -12,9 +12,7 @@ def compare_simulations(
     variables: list[str],
 ):
     dfs = [
-        sim.calculate_dataframe(variables, year).rename(
-            columns=lambda x: f"{x}_{name}"
-        )
+        sim.calculate_dataframe(variables, year).rename(columns=lambda x: f"{x}_{name}")
         for sim, name in zip(simulations, names)
     ]
 

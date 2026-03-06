@@ -6,7 +6,9 @@ class severe_disability_premium(Variable):
     entity = BenUnit
     label = "Severe disability premium"
     definition_period = YEAR
-    reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+    reference = (
+        "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+    )
     unit = GBP
 
     def formula(benunit, period, parameters):

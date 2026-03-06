@@ -26,15 +26,12 @@ class basic_rate_savings_income(Variable):
         )
         savings_income_less_deductions = max_(
             0,
-            person("taxable_savings_interest_income", period)
-            - savings_deductions,
+            person("taxable_savings_interest_income", period) - savings_deductions,
         )
         basic_rate_amount_with = clip(
             other_income + savings_income_less_deductions,
             thresholds[0],
             thresholds[1],
         )
-        basic_rate_amount_without = clip(
-            other_income, thresholds[0], thresholds[1]
-        )
+        basic_rate_amount_without = clip(other_income, thresholds[0], thresholds[1])
         return max_(0, basic_rate_amount_with - basic_rate_amount_without)

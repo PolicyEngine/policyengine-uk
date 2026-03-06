@@ -31,9 +31,9 @@ class LHA_allowed_bedrooms(Variable):
         under_10 = age < 10
         child_over_10 = ~under_10 & under_16
         # One room each for over-16s outside the benefit unit
-        non_dependants = benunit.max(
-            person.household.sum(~under_16)
-        ) - benunit.sum(~under_16)
+        non_dependants = benunit.max(person.household.sum(~under_16)) - benunit.sum(
+            ~under_16
+        )
         boys_under_10 = benunit.sum(under_10 & male)
         boys_over_10 = benunit.sum(child_over_10 & male)
         girls_under_10 = benunit.sum(under_10 & ~male)
@@ -44,14 +44,8 @@ class LHA_allowed_bedrooms(Variable):
         space_for_boy_under_10 = boys_over_10 % 2
         space_for_girl_under_10 = girls_over_10 % 2
         # Have those spaces filled where possible by children under 10
-        left_over_boys_under_10 = max_(
-            boys_under_10 - space_for_boy_under_10, 0
-        )
-        left_over_girls_under_10 = max_(
-            girls_under_10 - space_for_girl_under_10, 0
-        )
+        left_over_boys_under_10 = max_(boys_under_10 - space_for_boy_under_10, 0)
+        left_over_girls_under_10 = max_(girls_under_10 - space_for_girl_under_10, 0)
         # The remaining children must share in pairs
-        under_10_rooms = (
-            left_over_boys_under_10 + left_over_girls_under_10 + 1
-        ) // 2
+        under_10_rooms = (left_over_boys_under_10 + left_over_girls_under_10 + 1) // 2
         return 1 + non_dependants + over_10_rooms + under_10_rooms

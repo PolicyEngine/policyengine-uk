@@ -19,9 +19,7 @@ class ni_class_4_maximum(Variable):
         step_2 = step_1 * main_rate
         step_3 = step_2 + 53 * ni.class_2.flat_rate
         class_2_contributions = person("ni_class_2", period)
-        primary_class_1_contributions = person(
-            "ni_class_1_employee_primary", period
-        )
+        primary_class_1_contributions = person("ni_class_1_employee_primary", period)
         step_4 = step_3 - class_2_contributions - primary_class_1_contributions
         class_4_main_contributions = person("ni_class_4_main", period)
         other_aggregate_contributions = (

@@ -3,9 +3,7 @@ from policyengine_uk.model_api import *
 
 class gov_tax(Variable):
     label = "government tax revenue"
-    documentation = (
-        "Government tax revenue impact in respect of this household."
-    )
+    documentation = "Government tax revenue impact in respect of this household."
     entity = Household
     definition_period = YEAR
     value_type = float

@@ -3,9 +3,7 @@ from policyengine_uk.model_api import *
 
 class ni_liable(Variable):
     label = "NI liable"
-    documentation = (
-        "Whether this person is liable for NI contributions by their age."
-    )
+    documentation = "Whether this person is liable for NI contributions by their age."
     entity = Person
     definition_period = YEAR
     value_type = bool

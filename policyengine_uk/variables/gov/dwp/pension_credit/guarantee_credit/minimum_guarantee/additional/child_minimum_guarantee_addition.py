@@ -16,9 +16,7 @@ class child_minimum_guarantee_addition(Variable):
         standard_disability_benefits = gc.child.disability.eligibility
         severe_disability_benefits = gc.child.disability.severe.eligibility
         is_disabled = add(person, period, standard_disability_benefits) > 0
-        is_severely_disabled = (
-            add(person, period, severe_disability_benefits) > 0
-        )
+        is_severely_disabled = add(person, period, severe_disability_benefits) > 0
         is_standard_disabled = is_disabled & ~is_severely_disabled
         is_not_disabled = ~is_disabled
         per_child_amount = (

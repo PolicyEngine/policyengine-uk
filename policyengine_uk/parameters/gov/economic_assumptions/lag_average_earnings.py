@@ -14,8 +14,7 @@ def add_lagged_earnings(
         "gov.economic_assumptions.yoy_growth.lagged_average_earnings",
         data={
             "values": {
-                f"{year}-01-01": earnings(year - 1)
-                for year in range(2022, 2030)
+                f"{year}-01-01": earnings(year - 1) for year in range(2022, 2030)
             },
         },
     )

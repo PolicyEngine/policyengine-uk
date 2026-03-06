@@ -23,9 +23,7 @@ def adjust_budgets(parameters, period):
     reforms = []
 
     for baseline_parameter, parameter, budget_variable in budgets:
-        budget_reform = adjust_budget(
-            baseline_parameter, parameter, budget_variable
-        )
+        budget_reform = adjust_budget(baseline_parameter, parameter, budget_variable)
         if budget_reform is not None:
             reforms.append(budget_reform)
 

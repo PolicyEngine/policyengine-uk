@@ -87,23 +87,13 @@ def apply_single_year_uprating(
     with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
         uprating = yaml.safe_load(f)
     for index_name, variables in uprating.items():
-        index_rel_change = parameters.get_child(index_name)(
-            current_year.time_period
-        )
+        index_rel_change = parameters.get_child(index_name)(current_year.time_period)
         for variable in variables:
-            for table_name, df in zip(
-                current_year.table_names, current_year.tables
-            ):
+            for table_name, df in zip(current_year.table_names, current_year.tables):
                 if variable in df.columns:
-                    prev_year_value = getattr(previous_year, table_name)[
-                        variable
-                    ]
-                    current_year_value = prev_year_value * (
-                        1 + index_rel_change
-                    )
-                    getattr(current_year, table_name)[
-                        variable
-                    ] = current_year_value
+                    prev_year_value = getattr(previous_year, table_name)[variable]
+                    current_year_value = prev_year_value * (1 + index_rel_change)
+                    getattr(current_year, table_name)[variable] = current_year_value
 
     # Next, apply custom uprating.
 
@@ -115,9 +105,7 @@ def apply_single_year_uprating(
 
     current_year = uprate_rent(current_year, previous_year, parameters)
 
-    current_year = uprate_student_loan_plans(
-        current_year, previous_year, parameters
-    )
+    current_year = uprate_student_loan_plans(current_year, previous_year, parameters)
 
     current_year.validate()
 
@@ -131,9 +119,7 @@ def uprate_council_tax(
 ):
     # Uprate council tax for a single year dataset.
 
-    council_tax = (
-        parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
-    )
+    council_tax = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
     region = current_year.household["region"]
     country = np.select(
         [
@@ -162,9 +148,9 @@ def uprate_council_tax(
         default=0,
     )
 
-    current_year.household["council_tax"] = previous_year.household[
-        "council_tax"
-    ] * (1 + growth_rates)
+    current_year.household["council_tax"] = previous_year.household["council_tax"] * (
+        1 + growth_rates
+    )
     return current_year
 
 
@@ -174,9 +160,7 @@ def uprate_rent(
     parameters: ParameterNode,
 ):
     # Uprate rent for a single year dataset.
-    is_private_rented = (
-        current_year.household["tenure_type"] == "RENT_PRIVATELY"
-    )
+    is_private_rented = current_year.household["tenure_type"] == "RENT_PRIVATELY"
     region = current_year.household["region"]
     prev_rent = previous_year.household["rent"]
     growth = parameters.gov.economic_assumptions.yoy_growth
@@ -204,9 +188,7 @@ def uprate_rent(
         PRIVATE_RENTAL_HOUSEHOLDS = 0.188
         SOCIAL_RENTAL_HOUSEHOLDS = 0.164
 
-        total_rental_households = (
-            PRIVATE_RENTAL_HOUSEHOLDS + SOCIAL_RENTAL_HOUSEHOLDS
-        )
+        total_rental_households = PRIVATE_RENTAL_HOUSEHOLDS + SOCIAL_RENTAL_HOUSEHOLDS
 
         private_weight = PRIVATE_RENTAL_HOUSEHOLDS / total_rental_households
         social_weight = SOCIAL_RENTAL_HOUSEHOLDS / total_rental_households
@@ -298,10 +280,7 @@ def uprate_student_loan_plans(
     written_off = has_loan & (uni_start_year + _PLAN1_WRITEOFF_YEARS <= year)
     is_plan1_cohort = has_loan & ~written_off & (uni_start_year < 2012)
     is_plan2_cohort = (
-        has_loan
-        & ~written_off
-        & (uni_start_year >= 2012)
-        & (uni_start_year < 2023)
+        has_loan & ~written_off & (uni_start_year >= 2012) & (uni_start_year < 2023)
     )
     is_plan5_cohort = has_loan & ~written_off & (uni_start_year >= 2023)
 

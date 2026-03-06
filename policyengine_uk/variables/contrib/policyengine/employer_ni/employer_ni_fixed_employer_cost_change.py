@@ -16,9 +16,7 @@ class employer_ni_fixed_employer_cost_change(Variable):
             return 0
 
         # First, calculate baseline and reformed employer NI contributions.
-        prior_employment_income = person(
-            "employment_income_before_lsr", period
-        )
+        prior_employment_income = person("employment_income_before_lsr", period)
         employment_income_behavioral_response = person(
             "employment_income_behavioral_response", period
         )
@@ -44,18 +42,14 @@ class employer_ni_fixed_employer_cost_change(Variable):
         # Calculate baseline employer cost
         if person.simulation.baseline is None:
             return 0
-        baseline_parameters = (
-            person.simulation.baseline.tax_benefit_system.parameters(period)
+        baseline_parameters = person.simulation.baseline.tax_benefit_system.parameters(
+            period
         )
 
-        baseline_class_1 = (
-            baseline_parameters.gov.hmrc.national_insurance.class_1
-        )
+        baseline_class_1 = baseline_parameters.gov.hmrc.national_insurance.class_1
         r_b = baseline_class_1.rates.employer
         t_b = baseline_class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
-        p_b = (
-            baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
-        )
+        p_b = baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_b = employer_pension_contributions if p_b else 0
 
         baseline_employer_ni = r_b * max_(
@@ -68,9 +62,7 @@ class employer_ni_fixed_employer_cost_change(Variable):
         reform_class_1 = reform_parameters.gov.hmrc.national_insurance.class_1
         r_r = reform_class_1.rates.employer
         t_r = reform_class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
-        p_r = (
-            reform_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
-        )
+        p_r = reform_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_r = employer_pension_contributions if p_r else 0
 
         # Early return if no change in parameters
@@ -80,9 +72,7 @@ class employer_ni_fixed_employer_cost_change(Variable):
         # Calculate new employment income keeping employer cost constant
         # Solve: c_b = new_ni_class_1_income + r_r * max(new_ni_class_1_income - pen_con_subtracted_r - t_r, 0)
         # Rearranging: new_ni_class_1_income = (c_b + r_r * (pen_con_subtracted_r + t_r)) / (1 + r_r)
-        new_ni_class_1_income = (c_b + r_r * (pen_con_subtracted_r + t_r)) / (
-            1 + r_r
-        )
+        new_ni_class_1_income = (c_b + r_r * (pen_con_subtracted_r + t_r)) / (1 + r_r)
 
         # Find difference in employment income
         previous_employment_income = (

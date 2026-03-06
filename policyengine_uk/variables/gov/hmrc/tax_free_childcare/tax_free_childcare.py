@@ -30,9 +30,7 @@ class tax_free_childcare(Variable):
 
         # Cap the contribution at the maximum amounts
         max_amount = (
-            where(
-                qualifies_for_higher_amount, p.disabled_child, p.standard_child
-            )
+            where(qualifies_for_higher_amount, p.disabled_child, p.standard_child)
             * ~is_parent
         )
 

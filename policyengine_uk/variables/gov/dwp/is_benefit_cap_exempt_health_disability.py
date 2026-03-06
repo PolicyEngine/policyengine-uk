@@ -4,9 +4,7 @@ from policyengine_uk.model_api import *
 class is_benefit_cap_exempt_health_disability(Variable):
     value_type = bool
     entity = BenUnit
-    label = (
-        "Whether exempt from the benefits cap because of health or disability"
-    )
+    label = "Whether exempt from the benefits cap because of health or disability"
     definition_period = YEAR
     reference = "https://www.gov.uk/benefit-cap/when-youre-not-affected"
 
@@ -18,9 +16,7 @@ class is_benefit_cap_exempt_health_disability(Variable):
 
         # UC-specific exemptions
         # Limited capability for work and work-related activity
-        has_lcwra = benunit.any(
-            person("uc_limited_capability_for_WRA", period)
-        )
+        has_lcwra = benunit.any(person("uc_limited_capability_for_WRA", period))
 
         # Carer element in UC indicates caring for someone with disability
         gets_uc_carer_element = benunit("uc_carer_element", period) > 0
@@ -52,12 +48,8 @@ class is_benefit_cap_exempt_health_disability(Variable):
             "working_tax_credit",  # If getting WTC, likely working enough
         ]
 
-        qualifying_personal_benefits = add(
-            benunit, period, QUAL_PERSONAL_BENEFITS
-        )
-        qualifying_benunit_benefits = add(
-            benunit, period, QUAL_BENUNIT_BENEFITS
-        )
+        qualifying_personal_benefits = add(benunit, period, QUAL_PERSONAL_BENEFITS)
+        qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
 
         # Check for Armed Forces Compensation Scheme payments
         afcs = benunit("afcs", period) > 0

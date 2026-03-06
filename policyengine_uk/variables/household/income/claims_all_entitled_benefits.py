@@ -6,9 +6,7 @@ class claims_all_entitled_benefits(Variable):
     entity = BenUnit
     label = "Claims all eligible benefits"
     definition_period = YEAR
-    documentation = (
-        "Whether this family would claim any benefit they are entitled to"
-    )
+    documentation = "Whether this family would claim any benefit they are entitled to"
 
     def formula(benunit, period, parameters):
         # Return false if we have any reported values in the simulation for benefits.

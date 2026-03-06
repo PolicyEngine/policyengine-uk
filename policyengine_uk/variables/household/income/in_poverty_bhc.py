@@ -4,9 +4,7 @@ from policyengine_uk.model_api import *
 class in_poverty_bhc(Variable):
     value_type = bool
     entity = Household
-    label = (
-        "Whether the household is in absolute poverty, before housing costs"
-    )
+    label = "Whether the household is in absolute poverty, before housing costs"
     definition_period = YEAR
 
     def formula(household, period, parameters):

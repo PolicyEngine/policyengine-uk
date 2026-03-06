@@ -15,6 +15,5 @@ class taxable_dividend_income(Variable):
     def formula(person, period, parameters):
         return max_(
             0,
-            person("dividend_income", period)
-            - person("deficiency_relief", period),
+            person("dividend_income", period) - person("deficiency_relief", period),
         )

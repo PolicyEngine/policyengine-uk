@@ -10,13 +10,9 @@ class meets_tax_credit_criteria_for_targeted_childcare_entitlement(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dfe.targeted_childcare_entitlement
 
-        tax_credits = add(
-            benunit, period, ["child_tax_credit", "working_tax_credit"]
-        )
+        tax_credits = add(benunit, period, ["child_tax_credit", "working_tax_credit"])
 
-        tax_credits_applicable_income = benunit(
-            "tax_credits_applicable_income", period
-        )
+        tax_credits_applicable_income = benunit("tax_credits_applicable_income", period)
 
         # Check Tax Credits eligibility
         # Legislation source for total (applicable) income limit:The Local Authority Regulations 2014, part 1.2.b

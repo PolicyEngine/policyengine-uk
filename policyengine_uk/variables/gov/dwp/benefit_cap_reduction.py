@@ -23,7 +23,6 @@ class benefit_cap_reduction(Variable):
             "sda",
         ]
         return max_(
-            add(benunit, period, CAPPED_BENEFITS)
-            - benunit("benefit_cap", period),
+            add(benunit, period, CAPPED_BENEFITS) - benunit("benefit_cap", period),
             0,
         )

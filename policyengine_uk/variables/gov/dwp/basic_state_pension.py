@@ -37,9 +37,7 @@ class basic_state_pension(Variable):
         # Apply triple lock uprating only when using dataset
         # (i.e., when data year differs from simulation period)
         if has_dataset:
-            triple_lock = (
-                parameters.gov.economic_assumptions.indices.triple_lock
-            )
+            triple_lock = parameters.gov.economic_assumptions.indices.triple_lock
             uprating = triple_lock(period) / triple_lock(data_year)
         else:
             uprating = 1

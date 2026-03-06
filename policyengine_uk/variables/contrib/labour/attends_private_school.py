@@ -42,9 +42,7 @@ class attends_private_school(Variable):
         # total number of students actually enrolled
 
         ps_vat_params = parameters(period).gov.simulation.private_school_vat
-        private_school_attendance_rate = (
-            ps_vat_params.private_school_attendance_rate
-        )
+        private_school_attendance_rate = ps_vat_params.private_school_attendance_rate
 
         population_adjustment_factor = ps_vat_params.private_school_factor
 
@@ -85,10 +83,7 @@ class attends_private_school(Variable):
         # the full percentile array. Replaces ~115k Python calls with numpy ops.
         _breakpoints = list(range(0, 101, 5))
         _rates = np.array(
-            [
-                float(private_school_attendance_rate[str(p)])
-                for p in _breakpoints
-            ]
+            [float(private_school_attendance_rate[str(p)]) for p in _breakpoints]
         )
         _rate_by_percentile = np.interp(np.arange(101), _breakpoints, _rates)
 

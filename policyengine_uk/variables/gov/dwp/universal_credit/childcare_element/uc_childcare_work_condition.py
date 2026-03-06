@@ -6,9 +6,7 @@ class uc_childcare_work_condition(Variable):
     entity = BenUnit
     label = "Meets Universal Credit childcare work condition"
     definition_period = YEAR
-    reference = (
-        "https://www.legislation.gov.uk/uksi/2013/376/regulation/32/2020-04-06"
-    )
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/32/2020-04-06"
 
     def formula(benunit, period, parameters):
         person = benunit.members

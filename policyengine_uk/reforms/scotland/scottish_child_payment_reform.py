@@ -34,15 +34,11 @@ def create_scottish_child_payment_baby_bonus_reform() -> Reform:
 
         def formula(person, period, parameters):
             # Get base SCP rate
-            p = parameters(
-                period
-            ).gov.social_security_scotland.scottish_child_payment
+            p = parameters(period).gov.social_security_scotland.scottish_child_payment
             base_weekly = p.amount
 
             # Get reform parameters
-            scp_reform = parameters(
-                period
-            ).gov.contrib.scotland.scottish_child_payment
+            scp_reform = parameters(period).gov.contrib.scotland.scottish_child_payment
             in_effect = scp_reform.in_effect
             under_one = scp_reform.under_one
 
@@ -68,9 +64,7 @@ def create_scottish_child_payment_baby_bonus_reform() -> Reform:
     return reform
 
 
-def create_scottish_child_payment_reform(
-    parameters, period, bypass: bool = False
-):
+def create_scottish_child_payment_reform(parameters, period, bypass: bool = False):
     if bypass:
         return create_scottish_child_payment_baby_bonus_reform()
 
@@ -92,6 +86,4 @@ def create_scottish_child_payment_reform(
         return None
 
 
-scottish_child_payment_reform = (
-    create_scottish_child_payment_baby_bonus_reform()
-)
+scottish_child_payment_reform = create_scottish_child_payment_baby_bonus_reform()

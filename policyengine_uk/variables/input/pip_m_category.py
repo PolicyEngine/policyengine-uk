@@ -14,9 +14,7 @@ class pip_m_category(Variable):
     def formula(person, period, parameters):
         pip_m = parameters(period).baseline.gov.dwp.pip.mobility
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
-        reported_weekly_pip_m = (
-            person("pip_m_reported", period) / WEEKS_IN_YEAR
-        )
+        reported_weekly_pip_m = person("pip_m_reported", period) / WEEKS_IN_YEAR
         return select(
             [
                 reported_weekly_pip_m >= pip_m.enhanced * (1 - SAFETY_MARGIN),

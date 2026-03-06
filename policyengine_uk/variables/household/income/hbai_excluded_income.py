@@ -3,9 +3,7 @@ from policyengine_uk.model_api import *
 
 class hbai_excluded_income(Variable):
     label = "HBAI-excluded income"
-    documentation = (
-        "Total value of income not included in HBAI household net income"
-    )
+    documentation = "Total value of income not included in HBAI household net income"
     entity = Household
     definition_period = YEAR
     value_type = float

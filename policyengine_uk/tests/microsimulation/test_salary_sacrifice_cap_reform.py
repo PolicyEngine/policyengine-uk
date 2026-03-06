@@ -26,9 +26,7 @@ POLICY_YEAR = 2030  # Use 2030 to ensure cap is active (cap starts 2029-04-06)
 # Expected revenue impact in billions (from current model run)
 # Original blog estimate: £3.3 billion; updated to reflect current model.
 EXPECTED_REVENUE_BILLION = 1.8
-TOLERANCE_BILLION = (
-    1.0  # Allow reasonable tolerance for year/methodology differences
-)
+TOLERANCE_BILLION = 1.0  # Allow reasonable tolerance for year/methodology differences
 
 
 def _create_no_cap_baseline():
@@ -58,9 +56,7 @@ def reform_simulation():
 
 
 @pytest.mark.microsimulation
-def test_salary_sacrifice_cap_revenue_impact(
-    baseline_simulation, reform_simulation
-):
+def test_salary_sacrifice_cap_revenue_impact(baseline_simulation, reform_simulation):
     """
     Test that the £2,000 salary sacrifice cap raises ~£3.3 billion.
 
@@ -72,14 +68,12 @@ def test_salary_sacrifice_cap_revenue_impact(
     baseline_gov_balance = baseline_simulation.calculate(
         "gov_balance", POLICY_YEAR
     ).sum()
-    reform_gov_balance = reform_simulation.calculate(
-        "gov_balance", POLICY_YEAR
-    ).sum()
+    reform_gov_balance = reform_simulation.calculate("gov_balance", POLICY_YEAR).sum()
 
     revenue_impact_billion = (reform_gov_balance - baseline_gov_balance) / 1e9
 
-    print(f"\nBaseline gov_balance: £{baseline_gov_balance/1e9:.3f} billion")
-    print(f"Reform gov_balance: £{reform_gov_balance/1e9:.3f} billion")
+    print(f"\nBaseline gov_balance: £{baseline_gov_balance / 1e9:.3f} billion")
+    print(f"Reform gov_balance: £{reform_gov_balance / 1e9:.3f} billion")
     print(f"Revenue impact: £{revenue_impact_billion:.3f} billion")
 
     # The reform should raise revenue (positive impact)
@@ -89,10 +83,7 @@ def test_salary_sacrifice_cap_revenue_impact(
     )
 
     # Revenue should be approximately £3.3 billion
-    assert (
-        abs(revenue_impact_billion - EXPECTED_REVENUE_BILLION)
-        < TOLERANCE_BILLION
-    ), (
+    assert abs(revenue_impact_billion - EXPECTED_REVENUE_BILLION) < TOLERANCE_BILLION, (
         f"Salary sacrifice cap revenue is {revenue_impact_billion:.2f} billion, "
         f"expected ~{EXPECTED_REVENUE_BILLION:.1f} billion "
         f"(±{TOLERANCE_BILLION:.1f} billion tolerance)"
@@ -116,19 +107,19 @@ def test_ni_increases_with_reform(baseline_simulation, reform_simulation):
 
     ni_increase = reform_ni - baseline_ni
 
-    print(f"\nBaseline NI: £{baseline_ni/1e9:.3f}bn")
-    print(f"Reform NI: £{reform_ni/1e9:.3f}bn")
-    print(f"NI increase: £{ni_increase/1e9:.3f}bn")
+    print(f"\nBaseline NI: £{baseline_ni / 1e9:.3f}bn")
+    print(f"Reform NI: £{reform_ni / 1e9:.3f}bn")
+    print(f"NI increase: £{ni_increase / 1e9:.3f}bn")
 
     # NI should increase with the reform
-    assert (
-        ni_increase > 0
-    ), f"NI should increase with cap, but change is £{ni_increase/1e9:.3f}bn"
+    assert ni_increase > 0, (
+        f"NI should increase with cap, but change is £{ni_increase / 1e9:.3f}bn"
+    )
 
     # NI increase should be significant (at least £1bn)
-    assert (
-        ni_increase > 1e9
-    ), f"NI increase should be >£1bn, got £{ni_increase/1e9:.3f}bn"
+    assert ni_increase > 1e9, (
+        f"NI increase should be >£1bn, got £{ni_increase / 1e9:.3f}bn"
+    )
 
 
 @pytest.mark.microsimulation
@@ -140,25 +131,23 @@ def test_income_tax_impact(baseline_simulation, reform_simulation):
     contributions for relief. Due to pension relief caps, some people
     don't get full relief, resulting in a small positive income tax impact.
     """
-    baseline_tax = baseline_simulation.calculate(
-        "income_tax", POLICY_YEAR
-    ).sum()
+    baseline_tax = baseline_simulation.calculate("income_tax", POLICY_YEAR).sum()
     reform_tax = reform_simulation.calculate("income_tax", POLICY_YEAR).sum()
 
     tax_change = reform_tax - baseline_tax
 
-    print(f"\nBaseline income tax: £{baseline_tax/1e9:.3f}bn")
-    print(f"Reform income tax: £{reform_tax/1e9:.3f}bn")
-    print(f"Income tax change: £{tax_change/1e9:.3f}bn")
+    print(f"\nBaseline income tax: £{baseline_tax / 1e9:.3f}bn")
+    print(f"Reform income tax: £{reform_tax / 1e9:.3f}bn")
+    print(f"Income tax change: £{tax_change / 1e9:.3f}bn")
 
     # Income tax change should be small and approximately neutral.
     # The reform redirects excess salary sacrifice to employee pension
     # contributions (which get income tax relief), while the total pension
     # input for Annual Allowance purposes stays the same (no AA charge
     # difference). Net effect is a small income tax decrease.
-    assert (
-        abs(tax_change) < 1e9
-    ), f"Income tax change should be small (<£1bn), got £{tax_change/1e9:.3f}bn"
+    assert abs(tax_change) < 1e9, (
+        f"Income tax change should be small (<£1bn), got £{tax_change / 1e9:.3f}bn"
+    )
 
 
 @pytest.mark.microsimulation
@@ -174,9 +163,9 @@ def test_excess_redirected_to_pension(reform_simulation):
     ).sum()
 
     # Should be significant (blog says £13.8bn excess - updated to current model)
-    assert (
-        redirected > 8e9
-    ), f"Redirected amount should be >£8bn, got £{redirected/1e9:.2f}bn"
+    assert redirected > 8e9, (
+        f"Redirected amount should be >£8bn, got £{redirected / 1e9:.2f}bn"
+    )
 
 
 @pytest.mark.microsimulation
@@ -194,12 +183,12 @@ def test_salary_sacrifice_data_exists(reform_simulation):
     num_contributors = (ss_contributions > 0).sum()
 
     # Should have significant SS contributions
-    assert (
-        total_ss > 20e9
-    ), f"Total SS contributions should be >£20bn, got £{total_ss/1e9:.2f}bn"
-    assert (
-        num_contributors > 4e6
-    ), f"Should have >4 million contributors, got {num_contributors/1e6:.1f}m"
+    assert total_ss > 20e9, (
+        f"Total SS contributions should be >£20bn, got £{total_ss / 1e9:.2f}bn"
+    )
+    assert num_contributors > 4e6, (
+        f"Should have >4 million contributors, got {num_contributors / 1e6:.1f}m"
+    )
 
 
 @pytest.mark.microsimulation
@@ -217,12 +206,12 @@ def test_affected_population(reform_simulation):
     affected_count = (ss_contributions > cap).sum()
 
     # Should be around 3.3 million
-    assert (
-        affected_count > 2.5e6
-    ), f"Expected >2.5 million affected, got {affected_count/1e6:.1f}m"
-    assert (
-        affected_count < 5e6
-    ), f"Expected <5 million affected, got {affected_count/1e6:.1f}m"
+    assert affected_count > 2.5e6, (
+        f"Expected >2.5 million affected, got {affected_count / 1e6:.1f}m"
+    )
+    assert affected_count < 5e6, (
+        f"Expected <5 million affected, got {affected_count / 1e6:.1f}m"
+    )
 
 
 @pytest.mark.microsimulation
@@ -253,8 +242,8 @@ def test_full_excess_redirected(reform_simulation):
 
     assert 0.95 < ratio < 1.05, (
         f"Full excess should be redirected (ratio ~1.0). "
-        f"Raw excess: £{raw_excess/1e9:.2f}bn, "
-        f"Redirected: £{redirected_total/1e9:.2f}bn, "
+        f"Raw excess: £{raw_excess / 1e9:.2f}bn, "
+        f"Redirected: £{redirected_total / 1e9:.2f}bn, "
         f"Ratio: {ratio:.2f}"
     )
 
@@ -283,10 +272,8 @@ def test_broad_base_haircut_affects_all_workers(reform_simulation):
     workers_with_employment = (has_employment * weights).sum()
     workers_with_haircut = (has_haircut * weights).sum()
 
-    print(
-        f"\nWorkers with employment income: {workers_with_employment/1e6:.1f}m"
-    )
-    print(f"Workers with haircut: {workers_with_haircut/1e6:.1f}m")
+    print(f"\nWorkers with employment income: {workers_with_employment / 1e6:.1f}m")
+    print(f"Workers with haircut: {workers_with_haircut / 1e6:.1f}m")
 
     # Most workers with employment income should have a haircut
     haircut_coverage = workers_with_haircut / workers_with_employment
@@ -352,16 +339,13 @@ def test_decile_impact_negative_for_higher_earners(
     results = []
 
     for decile_num in range(1, 11):
-        decile_data = decile_df[
-            decile_df["household_income_decile"] == decile_num
-        ]
+        decile_data = decile_df[decile_df["household_income_decile"] == decile_num]
         if len(decile_data) > 0:
             weighted_change = (
                 decile_data["income_change"] * decile_data["household_weight"]
             ).sum()
             weighted_baseline = (
-                decile_data["baseline_income"]
-                * decile_data["household_weight"]
+                decile_data["baseline_income"] * decile_data["household_weight"]
             ).sum()
             rel_change = (
                 (weighted_change / weighted_baseline) * 100
@@ -400,8 +384,8 @@ def test_decile_impact_negative_for_higher_earners(
 
     # Overall impact should be negative (reform takes money from households)
     total_change = sum(r["abs_change"] for r in results)
-    print(f"\nTotal household income change: £{total_change/1e9:.3f}bn")
+    print(f"\nTotal household income change: £{total_change / 1e9:.3f}bn")
     assert total_change < 0, (
         f"Total household income should decrease, "
-        f"got £{total_change/1e9:.3f}bn change"
+        f"got £{total_change / 1e9:.3f}bn change"
     )

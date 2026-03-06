@@ -10,9 +10,7 @@ class housing_benefit_applicable_income_disregard(Variable):
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
-        p = parameters(
-            period
-        ).gov.dwp.housing_benefit.means_test.income_disregard
+        p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         hours = add(benunit, period, ["weekly_hours"])
         # Calculate single, couple, lone parent, and worker disregards.
         single = benunit("is_single_person", period)
@@ -21,9 +19,7 @@ class housing_benefit_applicable_income_disregard(Variable):
         couple_disregard = couple * p.couple
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_disregard = lone_parent * p.lone_parent
-        hour_requirement = where(
-            lone_parent, WTC.min_hours.lower, p.worker_hours
-        )
+        hour_requirement = where(lone_parent, WTC.min_hours.lower, p.worker_hours)
         worker = hours > hour_requirement
         worker_disregard = worker * p.worker
         weekly_disregard = (

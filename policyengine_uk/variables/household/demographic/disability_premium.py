@@ -6,7 +6,9 @@ class disability_premium(Variable):
     entity = BenUnit
     label = "Disability premium"
     definition_period = YEAR
-    reference = "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+    reference = (
+        "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+    )
     unit = GBP
 
     def formula(benunit, period, parameters):
@@ -15,8 +17,6 @@ class disability_premium(Variable):
         couple = benunit("is_couple", period.this_year)
         single_premium = single * dis.disability_single
         couple_premium = couple * dis.disability_couple
-        has_disabled_adults = (
-            benunit("num_disabled_adults", period.this_year) > 0
-        )
+        has_disabled_adults = benunit("num_disabled_adults", period.this_year) > 0
         weekly_amount = single_premium + couple_premium
         return weekly_amount * WEEKS_IN_YEAR * has_disabled_adults

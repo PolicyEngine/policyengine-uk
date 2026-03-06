@@ -10,9 +10,7 @@ class uc_work_allowance(Variable):
     defined_for = "is_uc_work_allowance_eligible"
 
     def formula(benunit, period, parameters):
-        p = parameters(
-            period
-        ).gov.dwp.universal_credit.means_test.work_allowance
+        p = parameters(period).gov.dwp.universal_credit.means_test.work_allowance
         housing = benunit("uc_housing_costs_element", period)
         monthly_allowance = where(
             housing > 0,

@@ -9,9 +9,7 @@ class monthly_epg_consumption_level(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        energy_consumption = household(
-            "monthly_domestic_energy_consumption", period
-        )
+        energy_consumption = household("monthly_domestic_energy_consumption", period)
         ofgem = parameters.gov.ofgem
         price_cap = ofgem.energy_price_cap(period)
         price_guarantee = ofgem.energy_price_guarantee(period)

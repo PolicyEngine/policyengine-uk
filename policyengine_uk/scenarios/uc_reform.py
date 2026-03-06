@@ -4,9 +4,7 @@ import numpy as np
 
 
 def add_universal_credit_reform(sim: Microsimulation):
-    rebalancing = (
-        sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
-    )
+    rebalancing = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
 
     generator = np.random.default_rng(43)
 
@@ -26,9 +24,7 @@ def add_universal_credit_reform(sim: Microsimulation):
         current_health_element = sim.calculate("uc_LCWRA_element", year)
         # Set new claimants to £217.26/month from April 2026 (pre-2026 claimaints keep inflation-linked increases)
         # https://bills.parliament.uk/publications/62123/documents/6889#page=16
-        current_health_element[
-            (current_health_element > 0) & is_post_25_claimant
-        ] = (
+        current_health_element[(current_health_element > 0) & is_post_25_claimant] = (
             new_claimant_health_element(year) * 12
         )  # Monthly amount * 12
         sim.set_input("uc_LCWRA_element", year, current_health_element)

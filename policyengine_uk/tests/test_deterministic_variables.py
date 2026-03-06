@@ -172,9 +172,7 @@ class TestIsHigherEarner:
                     },
                 },
                 "benunits": {"benunit": {"members": ["person1", "person2"]}},
-                "households": {
-                    "household": {"members": ["person1", "person2"]}
-                },
+                "households": {"household": {"members": ["person1", "person2"]}},
             }
         )
         result = sim.calculate("is_higher_earner", 2024)
@@ -198,9 +196,7 @@ class TestIsHigherEarner:
                     },
                 },
                 "benunits": {"benunit": {"members": ["person1", "person2"]}},
-                "households": {
-                    "household": {"members": ["person1", "person2"]}
-                },
+                "households": {"household": {"members": ["person1", "person2"]}},
             }
         )
         result = sim.calculate("is_higher_earner", 2024)

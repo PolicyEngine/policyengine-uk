@@ -18,8 +18,6 @@ class dividend_income_tax(Variable):
             "taxed_savings_income", period
         )
         taxable_dividends = person("taxed_dividend_income", period)
-        tax_with_dividends = rates.dividends.calc(
-            other_income + taxable_dividends
-        )
+        tax_with_dividends = rates.dividends.calc(other_income + taxable_dividends)
         tax_without_dividends = rates.dividends.calc(other_income)
         return max_(0, tax_with_dividends - tax_without_dividends)

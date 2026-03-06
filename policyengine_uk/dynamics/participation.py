@@ -38,9 +38,7 @@ def calculate_participation_elasticities(
 
     # Get partner employment status for married individuals
     is_household_head = sim.calculate("is_household_head", map_to="person")
-    benunit_count_adults = sim.calculate(
-        "benunit_count_adults", map_to="person"
-    )
+    benunit_count_adults = sim.calculate("benunit_count_adults", map_to="person")
     employment_income = sim.calculate("employment_income")
     benunit_id = sim.calculate("benunit_id", map_to="person")
     adult_index = sim.calculate("adult_index")
@@ -56,14 +54,10 @@ def calculate_participation_elasticities(
     )
 
     # Calculate total employed adults per benunit
-    benunit_employed = (
-        df[df["is_adult"]].groupby("benunit_id")["employed"].sum()
-    )
+    benunit_employed = df[df["is_adult"]].groupby("benunit_id")["employed"].sum()
 
     # Map back to individuals
-    employed_adults_in_benunit = (
-        df["benunit_id"].map(benunit_employed).fillna(0)
-    )
+    employed_adults_in_benunit = df["benunit_id"].map(benunit_employed).fillna(0)
 
     # Partner is employed if: 2-adult benunit and (both employed OR person not employed but other is)
     partner_employed = (benunit_count_adults == 2) & (
@@ -79,9 +73,7 @@ def calculate_participation_elasticities(
         # Men (except lone fathers)
         "men": np.array([0.227, 0.182, 0.136, 0.091, 0.023]),
         # Single women without children
-        "single_women_no_children": np.array(
-            [0.216, 0.173, 0.130, 0.086, 0.022]
-        ),
+        "single_women_no_children": np.array([0.216, 0.173, 0.130, 0.086, 0.022]),
         # Women without children, non-working partner
         "women_no_children_nonworking_partner": np.array(
             [0.216, 0.173, 0.130, 0.086, 0.022]
@@ -96,43 +88,25 @@ def calculate_participation_elasticities(
         "lone_parent_6_10": np.array([1.195, 0.956, 0.717, 0.478, 0.120]),
         "lone_parent_11_plus": np.array([0.797, 0.637, 0.478, 0.319, 0.080]),
         # Women with non-working partner by youngest child age
-        "women_nonworking_partner_0_2": np.array(
-            [0.324, 0.259, 0.194, 0.129, 0.032]
-        ),
-        "women_nonworking_partner_3_5": np.array(
-            [0.421, 0.336, 0.253, 0.168, 0.042]
-        ),
-        "women_nonworking_partner_6_10": np.array(
-            [0.324, 0.259, 0.194, 0.130, 0.033]
-        ),
+        "women_nonworking_partner_0_2": np.array([0.324, 0.259, 0.194, 0.129, 0.032]),
+        "women_nonworking_partner_3_5": np.array([0.421, 0.336, 0.253, 0.168, 0.042]),
+        "women_nonworking_partner_6_10": np.array([0.324, 0.259, 0.194, 0.130, 0.033]),
         "women_nonworking_partner_11_plus": np.array(
             [0.216, 0.173, 0.130, 0.086, 0.021]
         ),
         # Women with working partner by youngest child age
-        "women_working_partner_0_2": np.array(
-            [0.755, 0.604, 0.453, 0.302, 0.076]
-        ),
-        "women_working_partner_3_5": np.array(
-            [0.982, 0.786, 0.589, 0.393, 0.098]
-        ),
-        "women_working_partner_6_10": np.array(
-            [0.755, 0.604, 0.453, 0.302, 0.076]
-        ),
-        "women_working_partner_11_plus": np.array(
-            [0.504, 0.403, 0.302, 0.201, 0.051]
-        ),
+        "women_working_partner_0_2": np.array([0.755, 0.604, 0.453, 0.302, 0.076]),
+        "women_working_partner_3_5": np.array([0.982, 0.786, 0.589, 0.393, 0.098]),
+        "women_working_partner_6_10": np.array([0.755, 0.604, 0.453, 0.302, 0.076]),
+        "women_working_partner_11_plus": np.array([0.504, 0.403, 0.302, 0.201, 0.051]),
     }
 
     # Vectorized assignment function
     def assign_elasticities(mask, elasticity_key):
         if mask.any():
             # Ensure quintiles are in valid range
-            valid_quintiles = np.clip(
-                earnings_quintile[mask] - 1, 0, 4
-            ).astype(int)
-            elasticities[mask] = elasticity_matrices[elasticity_key][
-                valid_quintiles
-            ]
+            valid_quintiles = np.clip(earnings_quintile[mask] - 1, 0, 4).astype(int)
+            elasticities[mask] = elasticity_matrices[elasticity_key][valid_quintiles]
 
     # Men (except lone fathers)
     men_not_lone_parent = (gender == "MALE") & ~(is_single & has_children)
@@ -155,9 +129,7 @@ def calculate_participation_elasticities(
 
     # Lone parents by youngest child age
     lone_parents = (gender == "FEMALE") & is_single & has_children
-    assign_elasticities(
-        lone_parents & (youngest_child_age <= 2), "lone_parent_0_2"
-    )
+    assign_elasticities(lone_parents & (youngest_child_age <= 2), "lone_parent_0_2")
     assign_elasticities(
         lone_parents & (youngest_child_age >= 3) & (youngest_child_age <= 5),
         "lone_parent_3_5",
@@ -203,15 +175,11 @@ def calculate_participation_elasticities(
         "women_working_partner_0_2",
     )
     assign_elasticities(
-        women_working_partner
-        & (youngest_child_age >= 3)
-        & (youngest_child_age <= 5),
+        women_working_partner & (youngest_child_age >= 3) & (youngest_child_age <= 5),
         "women_working_partner_3_5",
     )
     assign_elasticities(
-        women_working_partner
-        & (youngest_child_age >= 6)
-        & (youngest_child_age <= 10),
+        women_working_partner & (youngest_child_age >= 6) & (youngest_child_age <= 10),
         "women_working_partner_6_10",
     )
     assign_elasticities(
@@ -245,9 +213,7 @@ def impute_wages_for_nonworkers(
 
     # Calculate hourly wages for workers
     working_mask = (employment_income > 0) & (hours_worked > 0)
-    hourly_wages = np.where(
-        working_mask, employment_income / (hours_worked * 52), 0
-    )
+    hourly_wages = np.where(working_mask, employment_income / (hours_worked * 52), 0)
 
     # Get elasticity groups for wage calculation
     earnings_quintile = calculate_earnings_quintile(
@@ -300,16 +266,12 @@ def calculate_gain_to_work(
     # Get current employment status and income
     employment_income = sim.calculate("employment_income", year)
     hours_worked = sim.calculate("hours_worked", year)
-    household_net_income = sim.calculate(
-        "household_net_income", year, map_to="person"
-    )
+    household_net_income = sim.calculate("household_net_income", year, map_to="person")
     adult_index = sim.calculate("adult_index")
 
     # Impute wages for non-workers if requested
     if impute_nonworker_wages:
-        imputed_wages = impute_wages_for_nonworkers(
-            sim, year, hours_for_new_entrants
-        )
+        imputed_wages = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
         # For non-workers, use imputed wages; for workers, use actual income
         working_mask = employment_income > 0
         employment_income_with_imputation = np.where(
@@ -436,9 +398,7 @@ def apply_participation_responses(
     # Calculate excluded individuals
     from .labour_supply import calculate_excluded_from_labour_supply_responses
 
-    excluded = calculate_excluded_from_labour_supply_responses(
-        sim, count_adults
-    )
+    excluded = calculate_excluded_from_labour_supply_responses(sim, count_adults)
 
     # Get employment status
     employment_income = sim.calculate("employment_income", year)
@@ -493,9 +453,7 @@ def apply_participation_responses(
     replacement_rate[positive_in_work] = (
         out_of_work_income[positive_in_work] / in_work_income[positive_in_work]
     )
-    replacement_rate = np.clip(
-        replacement_rate, 0, 1
-    )  # Ensure between 0 and 1
+    replacement_rate = np.clip(replacement_rate, 0, 1)  # Ensure between 0 and 1
 
     # Transform elasticities
     elasticities = elasticities_wrt_income * (1 - replacement_rate)
@@ -511,9 +469,7 @@ def apply_participation_responses(
     # that pushes non-workers further away from employment
 
     # Group people by elasticity group for surplus calculation
-    elasticity_groups = pd.cut(
-        elasticities, bins=20, labels=False, duplicates="drop"
-    )
+    elasticity_groups = pd.cut(elasticities, bins=20, labels=False, duplicates="drop")
 
     surplus_participation_change = np.zeros_like(direct_participation_change)
 
@@ -536,9 +492,7 @@ def apply_participation_responses(
             )
 
             # Similarly, non-worker GTW changes affect workers (pushing them out if negative)
-            avg_nonworker_gtw_change = np.mean(
-                gtw_pct_change[nonworkers_in_group]
-            )
+            avg_nonworker_gtw_change = np.mean(gtw_pct_change[nonworkers_in_group])
             surplus_participation_change[workers_in_group] = (
                 elasticities[workers_in_group]
                 * avg_nonworker_gtw_change
@@ -546,9 +500,7 @@ def apply_participation_responses(
             )
 
     # Total participation change includes both direct and surplus effects
-    participation_change = (
-        direct_participation_change + surplus_participation_change
-    )
+    participation_change = direct_participation_change + surplus_participation_change
 
     # Apply stochastic participation responses
     new_employment_income = employment_income.copy()
@@ -565,9 +517,7 @@ def apply_participation_responses(
             participation_response[i] = True  # Exited work
 
     # For currently non-working individuals: chance of entering work
-    imputed_wages = impute_wages_for_nonworkers(
-        sim, year, hours_for_new_entrants
-    )
+    imputed_wages = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
     for i in np.where(currently_not_working)[0]:
         # Positive participation change means higher probability of working
         entry_probability = max(
@@ -624,6 +574,4 @@ def apply_participation_responses(
 
     weighted_results = MicroDataFrame(results, weights=weights)
 
-    return weighted_results[~weighted_results.excluded].drop(
-        columns=["excluded"]
-    )
+    return weighted_results[~weighted_results.excluded].drop(columns=["excluded"])

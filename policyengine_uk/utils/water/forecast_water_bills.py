@@ -24,12 +24,8 @@ def project_water_bills():
         df_pre_2025["Oftwat avg bills (nominal)"].pct_change() * 100
     ).round(1)
 
-    proposed_increases = pd.read_csv(
-        Path(__file__).parent / "ofwat_increases.csv"
-    )
-    proposed_increases = MicroDataFrame(
-        proposed_increases, weights="Customers"
-    )
+    proposed_increases = pd.read_csv(Path(__file__).parent / "ofwat_increases.csv")
+    proposed_increases = MicroDataFrame(proposed_increases, weights="Customers")
     avg_bills_2025_onwards = (
         proposed_increases[proposed_increases.columns[2:]].mean().values
     )
@@ -61,9 +57,9 @@ def project_water_bills():
             df_post_2025["Year"] == year - 1, "Avg bills (nominal)"
         ].values[0] * (cpi_change / 100)
         # Add addition to this and future years
-        df_post_2025.loc[
-            df_post_2025["Year"] >= year, "Avg bills (nominal)"
-        ] += addition
+        df_post_2025.loc[df_post_2025["Year"] >= year, "Avg bills (nominal)"] += (
+            addition
+        )
 
     df_post_2025["Relative change"] = (
         df_post_2025["Avg bills (nominal)"].pct_change() * 100

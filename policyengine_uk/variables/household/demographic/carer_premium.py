@@ -6,9 +6,7 @@ class carer_premium(Variable):
     entity = BenUnit
     label = "Carer premium"
     definition_period = YEAR
-    reference = (
-        "The Social Security Amendment (Carer Premium) Regulations 2002"
-    )
+    reference = "The Social Security Amendment (Carer Premium) Regulations 2002"
     unit = GBP
 
     def formula(benunit, period, parameters):

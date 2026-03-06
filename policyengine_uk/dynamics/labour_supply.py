@@ -44,9 +44,7 @@ def calculate_excluded_from_labour_supply_responses(
     """
     # Exclude self-employed, full-time students, aged 60+, and adult_index == (0, >= count_adults + 1)
     employment_status = sim.calculate("employment_status")
-    self_employed = np.isin(
-        employment_status, ["FT_SELF_EMPLOYED", "PT_SELF_EMPLOYED"]
-    )
+    self_employed = np.isin(employment_status, ["FT_SELF_EMPLOYED", "PT_SELF_EMPLOYED"])
     student = employment_status == "STUDENT"
     age = sim.calculate("age")
     age_60_plus = age >= 60
@@ -120,16 +118,16 @@ def apply_labour_supply_responses(
     Returns:
         DataFrame with labour supply response information
     """
-    follow_obr = sim.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(
-        year
+    follow_obr = (
+        sim.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(
+            year
+        )
     )
     if (not follow_obr) or (sim.baseline is None):
         return
 
     # Calculate income changes using household_net_income
-    baseline_income = sim.baseline.calculate(
-        target_variable, year, map_to="person"
-    )
+    baseline_income = sim.baseline.calculate(target_variable, year, map_to="person")
     reform_income = sim.calculate(target_variable, year, map_to="person")
 
     baseline_income = baseline_income
@@ -164,9 +162,7 @@ def apply_labour_supply_responses(
         substitution_response_ftes=progression_responses[
             "substitution_response_ftes"
         ].sum(),
-        income_response_ftes=progression_responses[
-            "income_response_ftes"
-        ].sum(),
+        income_response_ftes=progression_responses["income_response_ftes"].sum(),
         total_response_ftes=progression_responses["total_response_ftes"].sum(),
         participation_response_employment=(
             participation_responses["participation_change"].sum()
@@ -248,17 +244,12 @@ def apply_progression_responses(
         gross_wage * derivative_changes["deriv_scenario"]
     )
     derivative_changes["wage_rel_change"] = (
-        (
-            derivative_changes["wage_scenario"]
-            / derivative_changes["wage_baseline"]
-            - 1
-        )
+        (derivative_changes["wage_scenario"] / derivative_changes["wage_baseline"] - 1)
         .replace([np.inf, -np.inf, np.nan], 0)
         .fillna(0)
     )
     derivative_changes["wage_abs_change"] = (
-        derivative_changes["wage_scenario"]
-        - derivative_changes["wage_baseline"]
+        derivative_changes["wage_scenario"] - derivative_changes["wage_baseline"]
     )
 
     # Calculate changes in income levels (drives income effects)
@@ -273,9 +264,7 @@ def apply_progression_responses(
             }
         )
     else:
-        income_changes = calculate_relative_income_change(
-            sim, target_variable, year
-        )
+        income_changes = calculate_relative_income_change(sim, target_variable, year)
 
     income_changes = income_changes.rename(
         columns={col: f"income_{col}" for col in income_changes.columns}
@@ -315,10 +304,7 @@ def apply_progression_responses(
         "total_response",
     ]:
         df[f"{response_type}_ftes"] = (
-            df[response_type]
-            / df["employment_income"]
-            * df["hours_per_week"]
-            / 37.5
+            df[response_type] / df["employment_income"] * df["hours_per_week"] / 37.5
         )
 
     excluded = calculate_excluded_from_labour_supply_responses(

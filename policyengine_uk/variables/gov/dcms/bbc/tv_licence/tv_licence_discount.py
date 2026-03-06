@@ -20,13 +20,9 @@ class tv_licence_discount(Variable):
         aged = person("age", period) >= tv_licence.discount.aged.min_age
         has_aged = household.any(aged)
         claims_pc = add(household, period, ["pension_credit"]) > 0
-        meets_pc_requirement = (
-            not_(tv_licence.discount.aged.must_claim_pc) | claims_pc
-        )
+        meets_pc_requirement = not_(tv_licence.discount.aged.must_claim_pc) | claims_pc
         eligible_for_aged_discount = has_aged & meets_pc_requirement
-        aged_discount = (
-            eligible_for_aged_discount * tv_licence.discount.aged.discount
-        )
+        aged_discount = eligible_for_aged_discount * tv_licence.discount.aged.discount
 
         # Blind discount
         is_blind = person("is_blind", period)

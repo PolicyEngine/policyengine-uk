@@ -29,9 +29,7 @@ class TestTwoChildLimitRepeal:
     def test_two_child_limit_fiscal_year_2025(self, uk_system):
         """Test that the two-child limit is 2 for fiscal year 2025/26."""
         params = uk_system.get_parameters_at_instant("2025")
-        child_limit = (
-            params.gov.dwp.universal_credit.elements.child.limit.child_count
-        )
+        child_limit = params.gov.dwp.universal_credit.elements.child.limit.child_count
         assert child_limit == 2
 
     def test_two_child_limit_fiscal_year_2026(self, uk_system):
@@ -42,9 +40,7 @@ class TestTwoChildLimitRepeal:
         as the reference date, which is AFTER the repeal date.
         """
         params = uk_system.get_parameters_at_instant("2026")
-        child_limit = (
-            params.gov.dwp.universal_credit.elements.child.limit.child_count
-        )
+        child_limit = params.gov.dwp.universal_credit.elements.child.limit.child_count
         assert child_limit == float("inf"), (
             f"Expected infinity for 2026 fiscal year, got {child_limit}. "
             "The fiscal year conversion may not be covering 2026."
@@ -94,18 +90,14 @@ class TestFiscalYearBoundary:
         April 30, 2026 value (infinity, post-repeal).
         """
         params = uk_system.get_parameters_at_instant("2026-01-15")
-        child_limit = (
-            params.gov.dwp.universal_credit.elements.child.limit.child_count
-        )
+        child_limit = params.gov.dwp.universal_credit.elements.child.limit.child_count
         # This returns inf because the whole year 2026 is set to fiscal year value
         assert child_limit == float("inf")
 
     def test_december_2025_returns_fiscal_year_2025_value(self, uk_system):
         """December 2025 should return fiscal year 2025/26 value."""
         params = uk_system.get_parameters_at_instant("2025-12-15")
-        child_limit = (
-            params.gov.dwp.universal_credit.elements.child.limit.child_count
-        )
+        child_limit = params.gov.dwp.universal_credit.elements.child.limit.child_count
         # The year 2025 is set to April 30, 2025 value (2, pre-repeal)
         assert child_limit == 2
 
@@ -113,9 +105,7 @@ class TestFiscalYearBoundary:
 class TestFiscalYearCoverage:
     """Tests to verify fiscal year conversion covers all needed years."""
 
-    @pytest.mark.parametrize(
-        "year", [2025, 2026, 2027, 2028, 2029, 2030, 2040]
-    )
+    @pytest.mark.parametrize("year", [2025, 2026, 2027, 2028, 2029, 2030, 2040])
     def test_year_in_conversion_range(self, uk_system, year):
         """
         Test that years from 2025-2040 can be queried.

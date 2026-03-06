@@ -26,8 +26,7 @@ class add_rate_savings_income(Variable):
         )
         savings_income_less_deductions = max_(
             0,
-            person("taxable_savings_interest_income", period)
-            - savings_deductions,
+            person("taxable_savings_interest_income", period) - savings_deductions,
         )
         add_rate_amount_with = clip(
             other_income + savings_income_less_deductions,

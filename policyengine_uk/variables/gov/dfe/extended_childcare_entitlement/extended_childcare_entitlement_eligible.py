@@ -24,8 +24,7 @@ class extended_childcare_entitlement_eligible(Variable):
 
         # Check work condition
         work_eligible = (
-            benunit("extended_childcare_entitlement_work_condition", period)
-            > 0
+            benunit("extended_childcare_entitlement_work_condition", period) > 0
         )
 
         return in_england & meets_income_condition & work_eligible

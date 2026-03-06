@@ -9,7 +9,5 @@ class num_severely_disabled_adults(Variable):
 
     def formula(benunit, period, parameters):
         adult = benunit.members("is_adult", period)
-        severely_disabled = benunit.members(
-            "is_severely_disabled_for_benefits", period
-        )
+        severely_disabled = benunit.members("is_severely_disabled_for_benefits", period)
         return benunit.sum(adult & severely_disabled)

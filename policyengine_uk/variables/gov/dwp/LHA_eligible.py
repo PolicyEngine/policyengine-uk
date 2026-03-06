@@ -10,9 +10,7 @@ class LHA_eligible(Variable):
     value_type = bool
     entity = BenUnit
     label = "Eligibility for Local Housing Allowance"
-    documentation = (
-        "Whether benefit unit is eligible for Local Housing Allowance"
-    )
+    documentation = "Whether benefit unit is eligible for Local Housing Allowance"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

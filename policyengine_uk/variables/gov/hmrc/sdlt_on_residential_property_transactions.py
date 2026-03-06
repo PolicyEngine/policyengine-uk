@@ -35,6 +35,4 @@ class sdlt_on_residential_property_transactions(Variable):
         additional_residential_purchase_tax = (
             stamp_duty.residential.purchase.additional.rate.calc(price)
         )
-        return (
-            main_residential_purchase_tax + additional_residential_purchase_tax
-        )
+        return main_residential_purchase_tax + additional_residential_purchase_tax

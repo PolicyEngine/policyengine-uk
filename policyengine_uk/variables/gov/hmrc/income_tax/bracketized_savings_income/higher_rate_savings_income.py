@@ -26,15 +26,12 @@ class higher_rate_savings_income(Variable):
         )
         savings_income_less_deductions = max_(
             0,
-            person("taxable_savings_interest_income", period)
-            - savings_deductions,
+            person("taxable_savings_interest_income", period) - savings_deductions,
         )
         higher_rate_amount_with = clip(
             other_income + savings_income_less_deductions,
             thresholds[1],
             thresholds[2],
         )
-        higher_rate_amount_without = clip(
-            other_income, thresholds[1], thresholds[2]
-        )
+        higher_rate_amount_without = clip(other_income, thresholds[1], thresholds[2])
         return max_(0, higher_rate_amount_with - higher_rate_amount_without)

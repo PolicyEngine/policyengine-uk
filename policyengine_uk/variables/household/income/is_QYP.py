@@ -10,7 +10,5 @@ class is_QYP(Variable):
     def formula(person, period, parameters):
         education = person("current_education", period)
         under_20 = person("age", period) < 20
-        in_education = ~(
-            education == education.possible_values.NOT_IN_EDUCATION
-        )
+        in_education = ~(education == education.possible_values.NOT_IN_EDUCATION)
         return under_20 & in_education

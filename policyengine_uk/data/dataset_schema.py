@@ -14,9 +14,7 @@ class UKSingleYearDataset:
     def validate_file_path(file_path: str, raise_exception: bool = True):
         if not file_path.endswith(".h5"):
             if raise_exception:
-                raise ValueError(
-                    "File path must end with '.h5' for UKDataset."
-                )
+                raise ValueError("File path must end with '.h5' for UKDataset.")
             return False
         if not Path(file_path).exists():
             if raise_exception:
@@ -125,9 +123,7 @@ class UKSingleYearDataset:
         with pd.HDFStore(file_path) as f:
             f.put("person", self.person, format="table", data_columns=True)
             f.put("benunit", self.benunit, format="table", data_columns=True)
-            f.put(
-                "household", self.household, format="table", data_columns=True
-            )
+            f.put("household", self.household, format="table", data_columns=True)
             f.put("time_period", pd.Series([self.time_period]), format="table")
 
     def load(self):
@@ -154,9 +150,7 @@ class UKSingleYearDataset:
                     raise ValueError(f"Column '{col}' contains NaN values.")
 
     @staticmethod
-    def from_simulation(
-        simulation: "Microsimulation", fiscal_year: int = 2025
-    ):
+    def from_simulation(simulation: "Microsimulation", fiscal_year: int = 2025):
         entity_dfs = {}
 
         for entity in ["person", "benunit", "household"]:
@@ -231,9 +225,7 @@ class UKMultiYearDataset:
         return self.get_year(fiscal_year)
 
     def save(self, file_path: str):
-        Path(file_path).unlink(
-            missing_ok=True
-        )  # Remove existing file if it exists
+        Path(file_path).unlink(missing_ok=True)  # Remove existing file if it exists
         with pd.HDFStore(file_path) as f:
             for year, dataset in self.datasets.items():
                 f.put(
@@ -262,9 +254,7 @@ class UKMultiYearDataset:
                 )
 
     def copy(self):
-        new_datasets = {
-            year: dataset.copy() for year, dataset in self.datasets.items()
-        }
+        new_datasets = {year: dataset.copy() for year, dataset in self.datasets.items()}
         return UKMultiYearDataset(datasets=list(new_datasets.values()))
 
     @staticmethod

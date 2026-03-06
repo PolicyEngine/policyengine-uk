@@ -10,6 +10,4 @@ class diesel_litres(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        return household("diesel_spending", period) / household(
-            "diesel_price", period
-        )
+        return household("diesel_spending", period) / household("diesel_price", period)

@@ -10,9 +10,7 @@ class housing_benefit_entitlement(Variable):
 
     def formula(benunit, period, parameters):
         rent = benunit("benunit_rent", period)
-        applicable_amount = benunit(
-            "housing_benefit_applicable_amount", period
-        )
+        applicable_amount = benunit("housing_benefit_applicable_amount", period)
         income = benunit("housing_benefit_applicable_income", period)
         withdrawal_rate = parameters(
             period
@@ -22,6 +20,4 @@ class housing_benefit_entitlement(Variable):
         capped_final_amount = min_(final_amount, benunit("LHA_cap", period))
         lha_eligible = benunit("LHA_eligible", period.this_year)
         amount = where(lha_eligible, capped_final_amount, final_amount)
-        return max_(
-            0, amount - benunit("housing_benefit_non_dep_deductions", period)
-        )
+        return max_(0, amount - benunit("housing_benefit_non_dep_deductions", period))

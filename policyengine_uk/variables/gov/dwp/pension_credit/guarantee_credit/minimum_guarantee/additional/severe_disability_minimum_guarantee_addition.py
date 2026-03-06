@@ -7,9 +7,7 @@ class severe_disability_minimum_guarantee_addition(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    reference = (
-        "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/1"
-    )
+    reference = "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/1"
 
     def formula(benunit, period, parameters):
         # 1. At least one adult receives a qualifying benefit
@@ -20,9 +18,7 @@ class severe_disability_minimum_guarantee_addition(Variable):
         ).gov.dwp.pension_credit.guarantee_credit.severe_disability
         relevant_benefits = severe_disability.relevant_benefits
         person = benunit.members
-        person_receives_qualifying_benefits = (
-            add(person, period, relevant_benefits) > 0
-        )
+        person_receives_qualifying_benefits = add(person, period, relevant_benefits) > 0
         is_adult = person("is_adult", period)
         count_eligible_adults = benunit.sum(
             is_adult & person_receives_qualifying_benefits
@@ -30,9 +26,7 @@ class severe_disability_minimum_guarantee_addition(Variable):
         any_children_without_benefits = (
             benunit.sum(~is_adult & ~person_receives_qualifying_benefits) > 0
         )
-        carers_allowance_received = (
-            add(benunit, period, ["carers_allowance"]) > 0
-        )
+        carers_allowance_received = add(benunit, period, ["carers_allowance"]) > 0
         eligible = ~any_children_without_benefits & ~carers_allowance_received
         return (
             eligible

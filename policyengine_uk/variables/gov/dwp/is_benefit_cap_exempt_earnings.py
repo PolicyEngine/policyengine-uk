@@ -16,9 +16,7 @@ class is_benefit_cap_exempt_earnings(Variable):
 
         # UC-specific exemptions
         # Limited capability for work and work-related activity
-        has_lcwra = benunit.any(
-            person("uc_limited_capability_for_WRA", period)
-        )
+        has_lcwra = benunit.any(person("uc_limited_capability_for_WRA", period))
 
         # Carer element in UC indicates caring for someone with disability
         gets_uc_carer_element = benunit("uc_carer_element", period) > 0
@@ -50,12 +48,8 @@ class is_benefit_cap_exempt_earnings(Variable):
             "working_tax_credit",  # If getting WTC, likely working enough
         ]
 
-        qualifying_personal_benefits = add(
-            benunit, period, QUAL_PERSONAL_BENEFITS
-        )
-        qualifying_benunit_benefits = add(
-            benunit, period, QUAL_BENUNIT_BENEFITS
-        )
+        qualifying_personal_benefits = add(benunit, period, QUAL_PERSONAL_BENEFITS)
+        qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
 
         # Check for Armed Forces Compensation Scheme payments
         afcs = benunit("afcs", period) > 0
