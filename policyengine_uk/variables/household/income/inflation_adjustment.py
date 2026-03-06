@@ -4,18 +4,14 @@ import numpy as np
 
 
 class inflation_adjustment(Variable):
-    label = (
-        f"inflation multiplier to get {datetime.datetime.now().year} prices"
-    )
+    label = f"inflation multiplier to get {datetime.datetime.now().year} prices"
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = "/1"
 
     def formula(household, period, parameters):
-        cpi = (
-            parameters.gov.economic_assumptions.indices.obr.consumer_price_index
-        )
+        cpi = parameters.gov.economic_assumptions.indices.obr.consumer_price_index
         current_period_cpi = cpi(period)
         now_cpi = cpi(datetime.datetime.now().strftime("%Y-01-01"))
         return now_cpi / current_period_cpi
@@ -29,9 +25,7 @@ class inflation_adjustment_ahc(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        cpi = (
-            parameters.gov.economic_assumptions.indices.obr.consumer_price_index
-        )
+        cpi = parameters.gov.economic_assumptions.indices.obr.consumer_price_index
         cpi_ahc = (
             parameters.gov.economic_assumptions.indices.obr.consumer_price_index_ahc
         )

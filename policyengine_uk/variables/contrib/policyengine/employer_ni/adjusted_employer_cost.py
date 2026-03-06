@@ -31,16 +31,12 @@ class adjusted_employer_cost(Variable):
         class_1 = parameters.gov.hmrc.national_insurance.class_1
         r_r = class_1.rates.employer
         t_r = class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
-        p_r = (
-            parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
-        )
+        p_r = parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_r = employer_pension_contributions
         if p_r:
             pen_con_subtracted_r = employer_pension_contributions
         else:
             pen_con_subtracted_r = 0
 
-        employer_ni = r_r * max_(
-            0, ni_class_1_income - pen_con_subtracted_r - t_r
-        )
+        employer_ni = r_r * max_(0, ni_class_1_income - pen_con_subtracted_r - t_r)
         return ni_class_1_income + employer_ni

@@ -20,9 +20,7 @@ class salary_sacrifice_returned_to_income(Variable):
     reference = "https://policyengine.org/uk/research/uk-salary-sacrifice-cap"
 
     def formula(person, period, parameters):
-        intended_ss = person(
-            "pension_contributions_via_salary_sacrifice", period
-        )
+        intended_ss = person("pension_contributions_via_salary_sacrifice", period)
         cap = parameters(
             period
         ).gov.hmrc.national_insurance.salary_sacrifice_pension_cap

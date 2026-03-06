@@ -52,9 +52,7 @@ def calculate_dependency_contributions(
     original_values = sim.calculate(variable_name, year)
 
     if map_to is not None:
-        source_entity = sim.tax_benefit_system.get_variable(
-            variable_name
-        ).entity.key
+        source_entity = sim.tax_benefit_system.get_variable(variable_name).entity.key
         original_values_mapped = sim.map_result(
             original_values,
             source_entity,
@@ -127,9 +125,7 @@ def create_waterfall_chart(sim, variable_name, year, top_n=5):
             "Simulation must have trace enabled to create a waterfall chart."
         )
 
-    df = calculate_dependency_contributions(
-        sim, variable_name, year, top_n=top_n
-    )
+    df = calculate_dependency_contributions(sim, variable_name, year, top_n=top_n)
 
     # make a waterfall chart
 

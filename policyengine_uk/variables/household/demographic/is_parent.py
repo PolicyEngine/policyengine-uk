@@ -20,13 +20,11 @@ class is_parent(Variable):
         family_types = family_type.possible_values
 
         # For lone parents (FamilyType.LONE_PARENT), only the eldest is parent
-        is_lone_parent = (family_type == family_types.LONE_PARENT) & (
-            adult_index == 1
-        )
+        is_lone_parent = (family_type == family_types.LONE_PARENT) & (adult_index == 1)
 
         # For couples with children (FamilyType.COUPLE_WITH_CHILDREN), two eldest are parents
-        is_couple_parent = (
-            family_type == family_types.COUPLE_WITH_CHILDREN
-        ) & ((adult_index == 1) | (adult_index == 2))
+        is_couple_parent = (family_type == family_types.COUPLE_WITH_CHILDREN) & (
+            (adult_index == 1) | (adult_index == 2)
+        )
 
         return is_lone_parent | is_couple_parent

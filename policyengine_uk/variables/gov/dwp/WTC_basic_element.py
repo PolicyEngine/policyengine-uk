@@ -11,6 +11,4 @@ class WTC_basic_element(Variable):
     defined_for = "is_WTC_eligible"
 
     def formula(benunit, period, parameters):
-        return parameters(
-            period
-        ).gov.dwp.tax_credits.working_tax_credit.elements.basic
+        return parameters(period).gov.dwp.tax_credits.working_tax_credit.elements.basic

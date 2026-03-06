@@ -100,6 +100,4 @@ class Microsimulation(Simulation):
         df = super().compare(
             other, variables=variables, period=period, change_only=change_only
         )
-        return MicroDataFrame(
-            df, weights=self.get_weights(variables[0], period)
-        )
+        return MicroDataFrame(df, weights=self.get_weights(variables[0], period))

@@ -3,9 +3,7 @@ from policyengine_uk.model_api import *
 
 class baseline_business_rates(Variable):
     label = "Baseline business rates incidence"
-    documentation = (
-        "Total incidence from business rates exposure in the baseline"
-    )
+    documentation = "Total incidence from business rates exposure in the baseline"
     entity = Household
     definition_period = YEAR
     value_type = float

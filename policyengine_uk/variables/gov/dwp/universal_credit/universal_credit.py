@@ -10,8 +10,6 @@ class universal_credit(Variable):
     defined_for = "would_claim_uc"
 
     def formula(benunit, period, parameters):
-        uc_max_entitlement = benunit(
-            "universal_credit_pre_benefit_cap", period
-        )
+        uc_max_entitlement = benunit("universal_credit_pre_benefit_cap", period)
         benefit_cap_reduction = benunit("benefit_cap_reduction", period)
         return max_(uc_max_entitlement - benefit_cap_reduction, 0)

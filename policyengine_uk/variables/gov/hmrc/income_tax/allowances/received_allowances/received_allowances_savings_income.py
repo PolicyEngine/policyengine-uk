@@ -14,9 +14,7 @@ class received_allowances_savings_income(Variable):
         received_allowances_earned_income = person(
             "received_allowances_earned_income", period
         )
-        remaining_allowance = (
-            all_allowances - received_allowances_earned_income
-        )
+        remaining_allowance = all_allowances - received_allowances_earned_income
 
         savings_income = person("taxable_savings_interest_income", period)
 

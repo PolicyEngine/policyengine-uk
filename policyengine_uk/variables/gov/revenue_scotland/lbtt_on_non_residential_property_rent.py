@@ -3,9 +3,7 @@ from policyengine_uk.model_api import *
 
 class lbtt_on_non_residential_property_rent(Variable):
     label = "LBTT on non-residential property"
-    documentation = (
-        "LBTT charge from purchase or rental of non-residential property"
-    )
+    documentation = "LBTT charge from purchase or rental of non-residential property"
     entity = Household
     definition_period = YEAR
     value_type = float

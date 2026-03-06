@@ -10,6 +10,4 @@ class trading_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return parameters(
-            period
-        ).gov.hmrc.income_tax.allowances.trading_allowance
+        return parameters(period).gov.hmrc.income_tax.allowances.trading_allowance

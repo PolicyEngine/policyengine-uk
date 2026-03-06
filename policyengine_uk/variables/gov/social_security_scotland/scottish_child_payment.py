@@ -19,9 +19,7 @@ class scottish_child_payment(Variable):
 
     def formula(person, period, parameters):
         # Get SCP parameters
-        p = parameters(
-            period
-        ).gov.social_security_scotland.scottish_child_payment
+        p = parameters(period).gov.social_security_scotland.scottish_child_payment
         weekly_amount = p.amount
 
         # Child-level take-up (generated stochastically in dataset)

@@ -15,14 +15,11 @@ class extended_childcare_entitlement_work_condition(Variable):
 
         # Get disability status
         p = parameters(period).gov.dfe.extended_childcare_entitlement
-        eligible_based_on_disability = (
-            add(person, period, p.disability_criteria) > 0
-        )
+        eligible_based_on_disability = add(person, period, p.disability_criteria) > 0
 
         # Adjust eligibility based on the summed UC Carer Element: 11A(1)(c)
-        eligible_based_on_disability_or_carer = (
-            eligible_based_on_disability
-            | (benunit("uc_carer_element", period) > 0)
+        eligible_based_on_disability_or_carer = eligible_based_on_disability | (
+            benunit("uc_carer_element", period) > 0
         )
 
         # Count parents in benefit unit
@@ -32,12 +29,8 @@ class extended_childcare_entitlement_work_condition(Variable):
         lone_parent_eligible = (parent_count == 1) & in_work
 
         # Break out the complex nested conditions for couples
-        all_parents_working = benunit.all(
-            in_work | ~person("is_parent", period)
-        )
-        some_parents_working = benunit.any(
-            in_work & person("is_parent", period)
-        )
+        all_parents_working = benunit.all(in_work | ~person("is_parent", period))
+        some_parents_working = benunit.any(in_work & person("is_parent", period))
         any_parent_disability_eligible = benunit.any(
             eligible_based_on_disability_or_carer & person("is_parent", period)
         )

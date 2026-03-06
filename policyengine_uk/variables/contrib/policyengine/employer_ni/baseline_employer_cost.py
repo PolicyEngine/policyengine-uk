@@ -9,9 +9,7 @@ class baseline_employer_cost(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        prior_employment_income = person(
-            "employment_income_before_lsr", period
-        )
+        prior_employment_income = person("employment_income_before_lsr", period)
         employment_income_behavioral_response = person(
             "employment_income_behavioral_response", period
         )
@@ -37,17 +35,13 @@ class baseline_employer_cost(Variable):
         # Calculate baseline employer cost
         if person.simulation.baseline is None:
             return 0
-        baseline_parameters = (
-            person.simulation.baseline.tax_benefit_system.parameters(period)
+        baseline_parameters = person.simulation.baseline.tax_benefit_system.parameters(
+            period
         )
-        baseline_class_1 = (
-            baseline_parameters.gov.hmrc.national_insurance.class_1
-        )
+        baseline_class_1 = baseline_parameters.gov.hmrc.national_insurance.class_1
         r_b = baseline_class_1.rates.employer
         t_b = baseline_class_1.thresholds.secondary_threshold * WEEKS_IN_YEAR
-        p_b = (
-            baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
-        )
+        p_b = baseline_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_b = employer_pension_contributions
         if p_b:
             pen_con_subtracted_b = employer_pension_contributions

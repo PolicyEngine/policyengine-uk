@@ -50,8 +50,7 @@ def create_economic_assumption_indices(
                 name=descendant.name.replace("yoy_growth", "indices"),
                 data={
                     "values": {
-                        f"{year}-01-01": value
-                        for year, value in values.items()
+                        f"{year}-01-01": value for year, value in values.items()
                     },
                 },
             )

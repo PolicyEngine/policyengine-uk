@@ -5,9 +5,7 @@ class uc_maximum_amount(Variable):
     value_type = float
     entity = BenUnit
     label = "maximum Universal Credit amount"
-    documentation = (
-        "This is your total entitlement, before reduction due to income."
-    )
+    documentation = "This is your total entitlement, before reduction due to income."
     definition_period = YEAR
     unit = GBP
     defined_for = "is_uc_eligible"

@@ -5,10 +5,10 @@ class uc_mif_applies(Variable):
     value_type = bool
     entity = Person
     label = "Universal Credit minimum income floor applies"
-    documentation = "Whether the Minimum Income Floor should be used to determine UC entitlement"
-    reference = (
-        "https://www.legislation.gov.uk/uksi/2013/376/regulation/62/2021-04-06"
+    documentation = (
+        "Whether the Minimum Income Floor should be used to determine UC entitlement"
     )
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/62/2021-04-06"
     definition_period = YEAR
 
     def formula(person, period, parameters):

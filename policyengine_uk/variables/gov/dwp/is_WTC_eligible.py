@@ -29,15 +29,11 @@ class is_WTC_eligible(Variable):
         higher_req = eldest_25_plus & youngest_under_60
         # Calculate eligibility for each WTC group.
         meets_lower = total_hours >= WTC.min_hours.lower
-        meets_medium_total_hours = (
-            total_hours >= WTC.min_hours.couple_with_children
-        )
+        meets_medium_total_hours = total_hours >= WTC.min_hours.couple_with_children
         meets_medium_person_hours = max_person_hours >= WTC.min_hours.lower
         meets_medium = meets_medium_total_hours & meets_medium_person_hours
         meets_higher = total_hours >= WTC.min_hours.default
-        already_claiming = (
-            add(benunit, period, ["working_tax_credit_reported"]) > 0
-        )
+        already_claiming = add(benunit, period, ["working_tax_credit_reported"]) > 0
         return (
             (lower_req & meets_lower)
             | (medium_req & meets_medium)

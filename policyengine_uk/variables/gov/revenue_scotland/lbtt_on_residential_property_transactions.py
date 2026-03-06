@@ -26,10 +26,6 @@ class lbtt_on_residential_property_transactions(Variable):
             "additional_residential_property_purchased", period
         )
         lbtt2 = lbtt.residential.rate.calc(second_home_price)
-        surcharge = (
-            lbtt.residential.additional_residence_surcharge * second_home_price
-        )
+        surcharge = lbtt.residential.additional_residence_surcharge * second_home_price
         additional_residential_purchase_tax = lbtt2 + surcharge
-        return (
-            main_residential_purchase_tax + additional_residential_purchase_tax
-        )
+        return main_residential_purchase_tax + additional_residential_purchase_tax

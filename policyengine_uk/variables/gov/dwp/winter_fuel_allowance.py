@@ -9,9 +9,7 @@ class winter_fuel_allowance(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        in_scotland = (
-            household("country", period).decode_to_str() == "SCOTLAND"
-        )
+        in_scotland = household("country", period).decode_to_str() == "SCOTLAND"
         age = household.members("age", period)
         is_SP_age = household.members("is_SP_age", period)
         wfp = parameters(period).gov.dwp.winter_fuel_payment
@@ -45,9 +43,7 @@ class winter_fuel_allowance(Variable):
         )
 
         meets_mtb_requirement = (
-            on_mtb
-            | (not wfp.eligibility.require_benefits)
-            | meets_income_passport
+            on_mtb | (not wfp.eligibility.require_benefits) | meets_income_passport
         )
         meets_spa_requirement = household.any(is_SP_age) | (
             not wfp.eligibility.state_pension_age_requirement
@@ -56,9 +52,7 @@ class winter_fuel_allowance(Variable):
             age >= wfp.eligibility.higher_age_requirement
         )
         qualifies_for_higher = (
-            meets_mtb_requirement
-            & meets_spa_requirement
-            & meets_higher_age_requirement
+            meets_mtb_requirement & meets_spa_requirement & meets_higher_age_requirement
         )
         qualifies_for_lower = (
             meets_mtb_requirement

@@ -14,9 +14,7 @@ class household_income_decile(Variable):
         income = household("equiv_hbai_household_net_income", period)
         count_people = household("household_count_people", period)
         household_weight = household("household_weight", period)
-        weighted_income = MicroSeries(
-            income, weights=household_weight * count_people
-        )
+        weighted_income = MicroSeries(income, weights=household_weight * count_people)
         decile = weighted_income.decile_rank().values
         # Set negatives to -1.
         # This avoids the bottom decile summing to a negative number,

@@ -6,14 +6,14 @@
 
 ## Build commands
 - Install: `make install` or `pip install -e ".[dev]" --config-settings editable_mode=compat`
-- Format code: `make format` or `black . -l 79`
+- Format code: `make format` or `ruff format .`
 - Run all tests: `make test`
 - Run single test: `pytest policyengine_uk/tests/path/to/test_file.py::test_function -v`
 - Generate documentation: `make documentation`
 - Update changelog: `make changelog`
 
 ## Code Standards
-- **Formatting**: Use Black with 79-character line length
+- **Formatting**: Use Ruff formatter with 88-character line length
 - **Imports**: Group imports by stdlib, third-party, local with each group alphabetized
 - **Naming**: Use snake_case for variables/functions, CamelCase for classes
 - **Type Hints**: Use Python type hints where possible

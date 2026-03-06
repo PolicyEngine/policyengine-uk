@@ -16,9 +16,7 @@ class dla_sc_category(Variable):
     def formula(person, period, parameters):
         dla_sc = parameters(period).baseline.gov.dwp.dla.self_care
         SAFETY_MARGIN = 0.1  # Survey reported values could be slightly below eligible values when they should be above due to data manipulation
-        reported_weekly_dla_sc = (
-            person("dla_sc_reported", period) / WEEKS_IN_YEAR
-        )
+        reported_weekly_dla_sc = person("dla_sc_reported", period) / WEEKS_IN_YEAR
         return select(
             [
                 reported_weekly_dla_sc >= dla_sc.higher * (1 - SAFETY_MARGIN),

@@ -19,12 +19,8 @@ initial_weights = {
     "w_repair": 2.9902 / 1000,
 }
 
-cpi = (
-    system.parameters.gov.economic_assumptions.indices.obr.consumer_price_index
-)
-water_index = (
-    system.parameters.gov.economic_assumptions.indices.ofwat.water_bills
-)
+cpi = system.parameters.gov.economic_assumptions.indices.obr.consumer_price_index
+water_index = system.parameters.gov.economic_assumptions.indices.ofwat.water_bills
 rent_index = system.parameters.gov.economic_assumptions.indices.obr.rent
 
 
@@ -104,9 +100,7 @@ def create_modified_cpi_forecast(
             + current_weights["w_rent"] * pi_rent
         )
 
-        pi_other = (pi_total - housing_contribution) / current_weights[
-            "w_other"
-        ]
+        pi_other = (pi_total - housing_contribution) / current_weights["w_other"]
 
         new_modified_index = last_modified_index * (1 + pi_other)
 
@@ -146,9 +140,7 @@ def create_modified_cpi_forecast(
             current_weights["w_rent"] * (1 + pi_rent) / total_weighted_growth
         )
         current_weights["w_repair"] = (
-            current_weights["w_repair"]
-            * (1 + pi_repair)
-            / total_weighted_growth
+            current_weights["w_repair"] * (1 + pi_repair) / total_weighted_growth
         )
         current_weights["w_other"] = (
             current_weights["w_other"] * (1 + pi_other) / total_weighted_growth

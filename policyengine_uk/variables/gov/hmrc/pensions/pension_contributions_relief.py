@@ -18,9 +18,7 @@ class pension_contributions_relief(Variable):
         age_limit = parameters(
             period
         ).gov.hmrc.pensions.pension_contributions_relief_age_limit
-        income = add(
-            person, period, ["employment_income", "self_employment_income"]
-        )
+        income = add(person, period, ["employment_income", "self_employment_income"])
         under_age_limit = person("age", period) < age_limit
         basic_amount = parameters(
             period

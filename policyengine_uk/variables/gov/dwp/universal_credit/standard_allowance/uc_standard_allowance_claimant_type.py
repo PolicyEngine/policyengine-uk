@@ -14,19 +14,13 @@ class uc_standard_allowance_claimant_type(Variable):
     default_value = UCClaimantType.SINGLE_YOUNG
     entity = BenUnit
     label = "Universal Credit claimant type"
-    documentation = (
-        "The category of the UC claimant, assuming their eligibilty to UC"
-    )
+    documentation = "The category of the UC claimant, assuming their eligibilty to UC"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
         is_single = benunit("is_single", period)
-        p = parameters(
-            period
-        ).gov.dwp.universal_credit.standard_allowance.claimant_type
-        any_over_25 = (
-            benunit("eldest_adult_age", period.this_year) >= p.age_threshold
-        )
+        p = parameters(period).gov.dwp.universal_credit.standard_allowance.claimant_type
+        any_over_25 = benunit("eldest_adult_age", period.this_year) >= p.age_threshold
         return select(
             [
                 is_single & ~any_over_25,

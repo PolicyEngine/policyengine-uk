@@ -58,9 +58,9 @@ def test_reform_fiscal_impacts(baseline, reform, reform_name, expected_impact):
     impact = get_fiscal_impact(baseline, reform)
 
     # Allow for small numerical differences (1 billion tolerance)
-    assert (
-        abs(impact - expected_impact) < 1.0
-    ), f"Impact for {reform_name} is {impact:.1f} billion, expected {expected_impact:.1f} billion"
+    assert abs(impact - expected_impact) < 1.0, (
+        f"Impact for {reform_name} is {impact:.1f} billion, expected {expected_impact:.1f} billion"
+    )
 
 
 def test_config_file_exists():
@@ -76,11 +76,9 @@ def test_all_reforms_have_required_fields():
 
     for i, reform in enumerate(reforms_data):
         for field in required_fields:
-            assert (
-                field in reform
-            ), f"Reform {i} missing required field: {field}"
+            assert field in reform, f"Reform {i} missing required field: {field}"
 
-        assert isinstance(
-            reform["parameters"], dict
-        ), f"Reform {i} parameters must be a dictionary"
+        assert isinstance(reform["parameters"], dict), (
+            f"Reform {i} parameters must be a dictionary"
+        )
         assert len(reform["parameters"]) > 0, f"Reform {i} has no parameters"

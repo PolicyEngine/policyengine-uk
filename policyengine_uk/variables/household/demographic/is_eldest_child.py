@@ -4,9 +4,7 @@ import pandas as pd
 
 class is_eldest_child(Variable):
     label = "Is the eldest child"
-    documentation = (
-        "Whether this person is the eldest child in the benefit unit"
-    )
+    documentation = "Whether this person is the eldest child in the benefit unit"
     entity = Person
     definition_period = YEAR
     value_type = bool

@@ -14,7 +14,6 @@ class corporate_land_value(Variable):
         wealth = parameters(period).household.wealth
         corporate_wealth = household("corporate_wealth", period)
         corporate_wealth_intensity = (
-            wealth.land.value.aggregate_corporate_land_value
-            / wealth.corporate_wealth
+            wealth.land.value.aggregate_corporate_land_value / wealth.corporate_wealth
         )
         return corporate_wealth * corporate_wealth_intensity

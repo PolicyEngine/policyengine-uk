@@ -14,9 +14,7 @@ class tax_free_childcare_meets_income_requirements(Variable):
         p = parameters(period).gov.hmrc.tax_free_childcare
 
         # Calculate eligible income by summing countable sources
-        yearly_eligible_income = add(
-            person, period, p.income.countable_sources
-        )
+        yearly_eligible_income = add(person, period, p.income.countable_sources)
         quarterly_income = yearly_eligible_income / 4
 
         # Get minimum wage rate using existing variable
@@ -29,6 +27,4 @@ class tax_free_childcare_meets_income_requirements(Variable):
         # Get adjusted net income and check against max threshold
         ani = person("adjusted_net_income", period)
 
-        return (quarterly_income > required_threshold) & (
-            ani < p.income.income_limit
-        )
+        return (quarterly_income > required_threshold) & (ani < p.income.income_limit)

@@ -17,13 +17,13 @@ class is_CTC_child_limit_exempt(Variable):
         born_before_limit = person("birth_year", period) < limit_year
 
         # Reform proposal
-        age_exemption = parameters.gov.contrib.two_child_limit.age_exemption.child_tax_credit(
-            period
+        age_exemption = (
+            parameters.gov.contrib.two_child_limit.age_exemption.child_tax_credit(
+                period
+            )
         )
         if age_exemption > 0:
-            is_exempt = person.benunit.any(
-                person("age", period) < age_exemption
-            )
+            is_exempt = person.benunit.any(person("age", period) < age_exemption)
             return born_before_limit | is_exempt
 
         return born_before_limit

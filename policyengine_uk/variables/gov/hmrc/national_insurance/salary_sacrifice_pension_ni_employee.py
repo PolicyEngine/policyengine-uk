@@ -23,9 +23,7 @@ class salary_sacrifice_pension_ni_employee(Variable):
         # Use existing NI Class 1 parameters
         ni_params = parameters(period).gov.hmrc.national_insurance.class_1
         employment_income = person("employment_income", period)
-        upper_earnings_limit = (
-            ni_params.thresholds.upper_earnings_limit * WEEKS_IN_YEAR
-        )
+        upper_earnings_limit = ni_params.thresholds.upper_earnings_limit * WEEKS_IN_YEAR
 
         # Apply appropriate NI rate based on income level
         # Main rate (8%) for income <= UEL, additional rate (2%) for income > UEL

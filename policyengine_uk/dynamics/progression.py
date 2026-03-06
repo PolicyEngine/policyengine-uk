@@ -43,9 +43,7 @@ def calculate_derivative(
     entity_key = sim.tax_benefit_system.variables[input_variable].entity.key
 
     # Calculate baseline target values
-    original_target_values = sim.calculate(
-        target_variable, year, map_to=entity_key
-    )
+    original_target_values = sim.calculate(target_variable, year, map_to=entity_key)
     new_target_values = original_target_values.copy()
 
     # Apply delta change to each adult sequentially to calculate marginal effects
@@ -63,9 +61,9 @@ def calculate_derivative(
     rel_marginal_wages = (new_target_values - original_target_values) / delta
 
     # Set non-adult observations to NaN
-    rel_marginal_wages[
-        ~pd.Series(adult_index).isin(range(1, count_adults + 1))
-    ] = np.nan
+    rel_marginal_wages[~pd.Series(adult_index).isin(range(1, count_adults + 1))] = (
+        np.nan
+    )
 
     # Reset simulation to original state
     sim.reset_calculations()
@@ -97,9 +95,7 @@ def calculate_relative_income_change(
     original_target_values = sim.baseline.calculate(
         target_variable, year, map_to="person"
     )
-    reformed_target_values = sim.calculate(
-        target_variable, year, map_to="person"
-    )
+    reformed_target_values = sim.calculate(target_variable, year, map_to="person")
     original_target_values = pd.Series(
         original_target_values, index=reformed_target_values.index
     )
@@ -290,9 +286,9 @@ def calculate_labour_net_income_elasticities(
     )
 
     # Stronger negative income effects with younger children
-    elasticities[married_women & has_children & (youngest_child_age <= 2)] = (
-        -0.185
-    )  # 0-2 years
+    elasticities[
+        married_women & has_children & (youngest_child_age <= 2)
+    ] = -0.185  # 0-2 years
     elasticities[
         married_women
         & has_children
@@ -305,15 +301,13 @@ def calculate_labour_net_income_elasticities(
         & (youngest_child_age >= 5)
         & (youngest_child_age <= 10)
     ] = -0.102  # 5-10 years
-    elasticities[married_women & has_children & (youngest_child_age >= 11)] = (
-        -0.063
-    )  # 11+ years
+    elasticities[
+        married_women & has_children & (youngest_child_age >= 11)
+    ] = -0.063  # 11+ years
 
     # Lone parents - smaller negative income effects than married women
     lone_parents = (gender == "FEMALE") & ~is_married & has_children
-    elasticities[lone_parents & (youngest_child_age <= 4)] = (
-        -0.037
-    )  # 0-4 years
+    elasticities[lone_parents & (youngest_child_age <= 4)] = -0.037  # 0-4 years
     elasticities[
         lone_parents & (youngest_child_age >= 5) & (youngest_child_age <= 10)
     ] = -0.075  # 5-10 years
@@ -362,9 +356,7 @@ def calculate_employment_income_change(
 
     # Calculate income effect: response to changes in unearned income
     income_response = (
-        employment_income
-        * income_changes["income_rel_change"]
-        * income_elasticities
+        employment_income * income_changes["income_rel_change"] * income_elasticities
     )
 
     # Total labour supply response is sum of substitution and income effects

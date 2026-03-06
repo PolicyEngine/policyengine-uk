@@ -9,7 +9,5 @@ class in_deep_poverty_bhc(Variable):
 
     def formula(household, period, parameters):
         income = household("equiv_hbai_household_net_income", period)
-        threshold = parameters(
-            period
-        ).household.poverty.absolute_poverty_threshold_bhc
+        threshold = parameters(period).household.poverty.absolute_poverty_threshold_bhc
         return income < (threshold * WEEKS_IN_YEAR / 2)

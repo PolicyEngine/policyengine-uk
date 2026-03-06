@@ -5,9 +5,7 @@ class child_tax_credit_pre_minimum(Variable):
     value_type = float
     entity = BenUnit
     label = "Child Tax Credit pre-minimum"
-    documentation = (
-        "Child Tax Credit amount before the minimum tax credit is applied"
-    )
+    documentation = "Child Tax Credit amount before the minimum tax credit is applied"
     defined_for = "would_claim_CTC"
     definition_period = YEAR
     unit = GBP

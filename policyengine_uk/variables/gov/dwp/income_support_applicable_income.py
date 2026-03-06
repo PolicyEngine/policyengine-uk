@@ -39,9 +39,7 @@ class income_support_applicable_income(Variable):
             benunit("is_couple", period) * mt.income_disregard_couple
         )
         lone_parent = family_type == families.LONE_PARENT
-        income_disregard_lone_parent = (
-            lone_parent * mt.income_disregard_lone_parent
-        )
+        income_disregard_lone_parent = lone_parent * mt.income_disregard_lone_parent
         income_disregard = (
             income_disregard_single
             + income_disregard_couple

@@ -15,9 +15,7 @@ class extended_childcare_entitlement_meets_income_requirements(Variable):
         p = parameters(period).gov.dfe.extended_childcare_entitlement
 
         # Calculate eligible income by summing countable sources
-        yearly_eligible_income = add(
-            person, period, p.income.countable_sources
-        )
+        yearly_eligible_income = add(person, period, p.income.countable_sources)
         quarterly_income = yearly_eligible_income / 4
 
         # Get minimum wage rate using existing variable

@@ -28,12 +28,8 @@ class relative_capital_gains_mtr_change(Variable):
             period,
             person("capital_gains_before_response", period),
         )
-        baseline_mtr = baseline_person(
-            "marginal_tax_rate_on_capital_gains", period
-        )
-        del simulation.branches["baseline"].branches[
-            "baseline_cgr_measurement"
-        ]
+        baseline_mtr = baseline_person("marginal_tax_rate_on_capital_gains", period)
+        del simulation.branches["baseline"].branches["baseline_cgr_measurement"]
 
         measurement_branch = simulation.get_branch("cgr_measurement")
         measurement_branch.tax_benefit_system.neutralize_variable(
@@ -45,9 +41,7 @@ class relative_capital_gains_mtr_change(Variable):
             person("capital_gains_before_response", period),
         )
         measurement_person = measurement_branch.populations["person"]
-        reform_mtr = measurement_person(
-            "marginal_tax_rate_on_capital_gains", period
-        )
+        reform_mtr = measurement_person("marginal_tax_rate_on_capital_gains", period)
         del simulation.branches["cgr_measurement"]
 
         # Handle zeros in tax rates to prevent log(0)

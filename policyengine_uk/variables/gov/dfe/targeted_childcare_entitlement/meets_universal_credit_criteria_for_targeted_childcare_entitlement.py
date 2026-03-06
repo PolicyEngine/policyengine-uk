@@ -1,14 +1,10 @@
 from policyengine_uk.model_api import *
 
 
-class meets_universal_credit_criteria_for_targeted_childcare_entitlement(
-    Variable
-):
+class meets_universal_credit_criteria_for_targeted_childcare_entitlement(Variable):
     value_type = bool
     entity = BenUnit
-    label = (
-        "meets Universal Credit criteria for targeted childcare entitlement"
-    )
+    label = "meets Universal Credit criteria for targeted childcare entitlement"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

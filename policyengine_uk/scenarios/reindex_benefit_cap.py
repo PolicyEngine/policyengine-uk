@@ -19,9 +19,7 @@ def index_benefit_cap(simulation: Simulation):
         parameter: Parameter  # Type annotation
         # Delete all values after 2025
         parameter.values_list = [
-            entry
-            for entry in parameter.values_list
-            if entry.instant_str < "2026-01-01"
+            entry for entry in parameter.values_list if entry.instant_str < "2026-01-01"
         ]
         parameter.metadata.update(
             uprating="gov.benefit_uprating_cpi",

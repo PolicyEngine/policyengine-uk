@@ -3,9 +3,7 @@ from policyengine_uk.model_api import *
 
 class lbtt_on_rent(Variable):
     label = "LBTT on property rental"
-    documentation = (
-        "Land and Buildings Transaction Tax on property rental agreements"
-    )
+    documentation = "Land and Buildings Transaction Tax on property rental agreements"
     entity = Household
     definition_period = YEAR
     value_type = float

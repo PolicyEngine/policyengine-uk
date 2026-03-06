@@ -9,7 +9,5 @@ class uc_childcare_element_eligible_children(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        eligible_child = (
-            benunit.members("uc_individual_child_element", period) > 0
-        )
+        eligible_child = benunit.members("uc_individual_child_element", period) > 0
         return benunit.sum(eligible_child)

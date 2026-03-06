@@ -4,9 +4,7 @@ import warnings
 
 class bi_household_phaseout(Variable):
     label = "Basic income phase-out (household)"
-    documentation = (
-        "Reduction in basic income from household-level phase-outs."
-    )
+    documentation = "Reduction in basic income from household-level phase-outs."
     entity = Person
     definition_period = YEAR
     value_type = float
@@ -26,14 +24,10 @@ class bi_household_phaseout(Variable):
             household_income - bi.phase_out.household.threshold,
             0,
         )
-        uncapped_deduction = (
-            bi.phase_out.household.rate * income_over_threshold
-        )
+        uncapped_deduction = bi.phase_out.household.rate * income_over_threshold
         capped_deduction = min_(household_bi, uncapped_deduction)
 
         warnings.filterwarnings("ignore")
 
-        percent_reduction = where(
-            household_bi > 0, capped_deduction / household_bi, 0
-        )
+        percent_reduction = where(household_bi > 0, capped_deduction / household_bi, 0)
         return percent_reduction * remaining_bi

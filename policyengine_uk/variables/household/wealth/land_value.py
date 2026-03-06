@@ -3,9 +3,7 @@ from policyengine_uk.model_api import *
 
 class land_value(Variable):
     label = "Land value"
-    documentation = (
-        "Estimated total land value (directly and indirectly owned)"
-    )
+    documentation = "Estimated total land value (directly and indirectly owned)"
     entity = Household
     definition_period = YEAR
     value_type = float

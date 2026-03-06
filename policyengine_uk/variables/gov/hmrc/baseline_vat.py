@@ -10,9 +10,7 @@ class baseline_vat(Variable):
 
     def formula(household, period, parameters):
         full_rate_consumption = household("full_rate_vat_consumption", period)
-        reduced_rate_consumption = household(
-            "reduced_rate_vat_consumption", period
-        )
+        reduced_rate_consumption = household("reduced_rate_vat_consumption", period)
         p = parameters(period).baseline.gov
         raw_vat = (
             full_rate_consumption * p.hmrc.vat.standard_rate

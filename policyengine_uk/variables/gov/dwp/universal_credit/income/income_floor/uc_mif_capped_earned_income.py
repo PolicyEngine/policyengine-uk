@@ -5,9 +5,7 @@ class uc_mif_capped_earned_income(Variable):
     value_type = float
     entity = Person
     label = "Universal Credit gross earned income (incl. MIF)"
-    documentation = (
-        "Gross earned income for UC, with MIF applied where applicable"
-    )
+    documentation = "Gross earned income for UC, with MIF applied where applicable"
     definition_period = YEAR
     unit = GBP
 

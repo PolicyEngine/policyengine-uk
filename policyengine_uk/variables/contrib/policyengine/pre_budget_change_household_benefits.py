@@ -46,18 +46,12 @@ class pre_budget_change_household_benefits(Variable):
         benefits = pre_budget_change_household_benefits.adds
         if contrib.abolish_council_tax:
             benefits = [
-                benefit
-                for benefit in benefits
-                if benefit != "council_tax_benefit"
+                benefit for benefit in benefits if benefit != "council_tax_benefit"
             ]
         general_benefits = add(
             household,
             period,
-            [
-                benefit
-                for benefit in benefits
-                if benefit not in ["basic_income"]
-            ],
+            [benefit for benefit in benefits if benefit not in ["basic_income"]],
         )
         non_sp_benefits = add(
             household,

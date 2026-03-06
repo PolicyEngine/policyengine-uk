@@ -26,9 +26,7 @@ requires_hf_data = pytest.mark.skipif(
 
 # Load YAML test cases
 yaml_file = (
-    Path(__file__).parent
-    / "behavioral_responses"
-    / "test_labor_supply_responses.yaml"
+    Path(__file__).parent / "behavioral_responses" / "test_labor_supply_responses.yaml"
 )
 with open(yaml_file, "r") as f:
     yaml_content = f.read()
@@ -40,16 +38,14 @@ class TestBehavioralResponses:
 
     def test_yaml_file_structure(self):
         """Test that YAML file loads correctly and has expected structure"""
-        assert (
-            len(test_cases) == 6
-        ), f"Expected 6 test cases, got {len(test_cases)}"
+        assert len(test_cases) == 6, f"Expected 6 test cases, got {len(test_cases)}"
 
         for i, test_case in enumerate(test_cases):
-            assert "name" in test_case, f"Test case {i+1} missing 'name'"
-            assert "period" in test_case, f"Test case {i+1} missing 'period'"
-            assert "input" in test_case, f"Test case {i+1} missing 'input'"
-            assert "reforms" in test_case, f"Test case {i+1} missing 'reforms'"
-            assert "output" in test_case, f"Test case {i+1} missing 'output'"
+            assert "name" in test_case, f"Test case {i + 1} missing 'name'"
+            assert "period" in test_case, f"Test case {i + 1} missing 'period'"
+            assert "input" in test_case, f"Test case {i + 1} missing 'input'"
+            assert "reforms" in test_case, f"Test case {i + 1} missing 'reforms'"
+            assert "output" in test_case, f"Test case {i + 1} missing 'output'"
 
     @requires_hf_data
     def test_obr_parameter_functionality(self):
@@ -76,12 +72,8 @@ class TestBehavioralResponses:
             "2025"
         )
 
-        assert (
-            obr_on == True
-        ), "OBR parameter should be enabled when set to True"
-        assert (
-            obr_off == False
-        ), "OBR parameter should be disabled when set to False"
+        assert obr_on == True, "OBR parameter should be enabled when set to True"
+        assert obr_off == False, "OBR parameter should be disabled when set to False"
 
     @requires_hf_data
     def test_dynamics_no_crash_simple(self):
@@ -109,13 +101,12 @@ class TestBehavioralResponses:
             dynamics = reformed.apply_dynamics(2025)
             # If successful, dynamics may be None if no income change
             if dynamics is not None:
-                assert hasattr(
-                    dynamics, "fte_impacts"
-                ), "Dynamics should have fte_impacts attribute"
+                assert hasattr(dynamics, "fte_impacts"), (
+                    "Dynamics should have fte_impacts attribute"
+                )
         except ValueError as e:
             if (
-                "Bin labels must be one fewer than the number of bin edges"
-                in str(e)
+                "Bin labels must be one fewer than the number of bin edges" in str(e)
             ) or ("assignment destination is read-only" in str(e)):
                 # Bin edge error: expected with single-person scenarios
                 # Read-only error: pandas 3.x copy-on-write; fix pending in core
@@ -220,17 +211,15 @@ class TestBehavioralResponses:
             reformed = Microsimulation(situation=situation)
 
         # Basic validation - should have people
-        assert (
-            len(situation["people"]) > 0
-        ), f"Test case '{test_case['name']}' should have people"
+        assert len(situation["people"]) > 0, (
+            f"Test case '{test_case['name']}' should have people"
+        )
 
         # Should be able to calculate basic variables
-        employment_income = reformed.calculate(
-            "employment_income", test_case["period"]
+        employment_income = reformed.calculate("employment_income", test_case["period"])
+        assert employment_income is not None, (
+            f"Should be able to calculate employment_income for '{test_case['name']}'"
         )
-        assert (
-            employment_income is not None
-        ), f"Should be able to calculate employment_income for '{test_case['name']}'"
 
 
 if __name__ == "__main__":

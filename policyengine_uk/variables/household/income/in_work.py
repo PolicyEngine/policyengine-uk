@@ -11,8 +11,6 @@ class in_work(Variable):
 
     def formula(person, period, parameters):
         has_hours_worked = person("hours_worked", period) > 0
-        earnings = add(
-            person, period, ["employment_income", "self_employment_income"]
-        )
+        earnings = add(person, period, ["employment_income", "self_employment_income"])
         has_earnings = earnings > 0
         return has_hours_worked | has_earnings

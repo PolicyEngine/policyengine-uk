@@ -8,14 +8,10 @@ class nhs_budget_change(Variable):
     value_type = float
 
     def formula(household, period, parameters):
-        budget_increase = (
-            parameters(period).gov.contrib.policyengine.budget.nhs * 1e9
-        )
+        budget_increase = parameters(period).gov.contrib.policyengine.budget.nhs * 1e9
         if budget_increase == 0:
             return 0
-        decile = household(
-            "pre_budget_change_ons_household_income_decile", period
-        )
+        decile = household("pre_budget_change_ons_household_income_decile", period)
         weight = household("household_weight", period)
         DECILE_INCIDENCE = {
             1: 0.095,
@@ -36,9 +32,7 @@ class nhs_budget_change(Variable):
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
         if household.simulation.dataset is not None:
-            households_per_decile = (
-                pd.Series(weight).groupby(decile).sum().to_dict()
-            )
+            households_per_decile = pd.Series(weight).groupby(decile).sum().to_dict()
         else:
             households_per_decile = {i: 28e5 for i in range(1, 11)}
 

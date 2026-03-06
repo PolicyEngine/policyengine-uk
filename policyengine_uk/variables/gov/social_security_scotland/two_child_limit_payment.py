@@ -17,9 +17,7 @@ class two_child_limit_payment(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        in_scotland = (
-            benunit.household("country", period).decode_to_str() == "SCOTLAND"
-        )
+        in_scotland = benunit.household("country", period).decode_to_str() == "SCOTLAND"
 
         # Check if payment is in effect (from December 2024)
         in_effect = parameters(
@@ -32,9 +30,7 @@ class two_child_limit_payment(Variable):
         ).gov.dwp.universal_credit.elements.child.amount
 
         # Count children affected by the two-child limit
-        is_child_limit_affected = benunit.members(
-            "uc_is_child_limit_affected", period
-        )
+        is_child_limit_affected = benunit.members("uc_is_child_limit_affected", period)
         affected_children = benunit.sum(is_child_limit_affected)
 
         # Payment equals the UC child element for each affected child

@@ -11,7 +11,7 @@ install:
 	pip install huggingface_hub
 
 format:
-	black . -l 79
+	ruff format .
 
 test:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk

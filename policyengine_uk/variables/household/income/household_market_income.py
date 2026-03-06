@@ -25,7 +25,5 @@ class household_market_income(Variable):
 
     def formula(person, period, parameters):
         total = add(person, period, household_market_income.adds)
-        contrib = parameters(
-            period
-        ).gov.contrib.policyengine.economy.gdp_per_capita
+        contrib = parameters(period).gov.contrib.policyengine.economy.gdp_per_capita
         return total * (contrib + 1)

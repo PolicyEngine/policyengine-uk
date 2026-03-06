@@ -30,9 +30,7 @@ class marriage_allowance(Variable):
         eligible = married & person(
             "meets_marriage_allowance_income_conditions", period
         )
-        transferable_amount = person(
-            "partners_unused_personal_allowance", period
-        )
+        transferable_amount = person("partners_unused_personal_allowance", period)
         allowances = parameters(period).gov.hmrc.income_tax.allowances
         capped_percentage = allowances.marriage_allowance.max
         max_amount = allowances.personal_allowance.amount * capped_percentage

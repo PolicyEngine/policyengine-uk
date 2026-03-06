@@ -10,6 +10,4 @@ class petrol_litres(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        return household("petrol_spending", period) / household(
-            "petrol_price", period
-        )
+        return household("petrol_spending", period) / household("petrol_price", period)

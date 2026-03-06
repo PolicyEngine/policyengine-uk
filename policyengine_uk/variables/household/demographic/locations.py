@@ -217,9 +217,7 @@ class LocalAuthority(Enum):
     ANTRIM_AND_NEWTOWNABBEY = "Antrim and Newtownabbey"
     ARDS_AND_NORTH_DOWN = "Ards and North Down"
     ARGYLL_AND_BUTE = "Argyll and Bute"
-    ARMAGH_CITY_BANBRIDGE_AND_CRAIGAVON = (
-        "Armagh City, Banbridge and Craigavon"
-    )
+    ARMAGH_CITY_BANBRIDGE_AND_CRAIGAVON = "Armagh City, Banbridge and Craigavon"
     ARUN = "Arun"
     ASHFIELD = "Ashfield"
     ASHFORD = "Ashford"

@@ -85,9 +85,7 @@ class Scenario(BaseModel):
         )
 
     @classmethod
-    def from_reform(
-        cls, reform: Union[tuple, dict, Type[Reform]]
-    ) -> "Scenario":
+    def from_reform(cls, reform: Union[tuple, dict, Type[Reform]]) -> "Scenario":
         """Create a Scenario from various reform representations.
 
         Args:
@@ -141,9 +139,7 @@ class Scenario(BaseModel):
                         stop = None
                         period_ = None
 
-                        sim.tax_benefit_system.parameters.get_child(
-                            parameter
-                        ).update(
+                        sim.tax_benefit_system.parameters.get_child(parameter).update(
                             start=start,
                             stop=stop,
                             period=period_,
@@ -217,9 +213,7 @@ class Scenario(BaseModel):
         """String representation of the Scenario."""
         parts = []
         if self.parameter_changes:
-            parts.append(
-                f"parameter_changes={len(self.parameter_changes)} items"
-            )
+            parts.append(f"parameter_changes={len(self.parameter_changes)} items")
         if self.simulation_modifier:
             parts.append("simulation_modifier=<function>")
         return f"Scenario({', '.join(parts)})"

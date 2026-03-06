@@ -39,11 +39,7 @@ class household_tax(Variable):
             return add(
                 household,
                 period,
-                [
-                    tax
-                    for tax in household_tax.adds
-                    if tax not in ["council_tax"]
-                ],
+                [tax for tax in household_tax.adds if tax not in ["council_tax"]],
             )
         else:
             return add(household, period, household_tax.adds)

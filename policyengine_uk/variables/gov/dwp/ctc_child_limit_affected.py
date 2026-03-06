@@ -20,6 +20,5 @@ class ctc_child_limit_affected(Variable):
             spaces_left, benunit.sum(is_child_for_CTC) - exempt_children
         )
         return (
-            exempt_children + non_exempt_children
-            < benunit.sum(is_child_for_CTC)
+            exempt_children + non_exempt_children < benunit.sum(is_child_for_CTC)
         ) & (benunit("child_tax_credit", period) > 0)

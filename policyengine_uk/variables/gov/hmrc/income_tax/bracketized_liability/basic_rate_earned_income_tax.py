@@ -14,6 +14,4 @@ class basic_rate_earned_income_tax(Variable):
 
     def formula(person, period, parameters):
         amount = person("basic_rate_earned_income", period)
-        return (
-            parameters(period).gov.hmrc.income_tax.rates.uk.rates[0] * amount
-        )
+        return parameters(period).gov.hmrc.income_tax.rates.uk.rates[0] * amount

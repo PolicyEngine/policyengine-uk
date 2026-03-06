@@ -6,7 +6,9 @@ from policyengine_uk.variables.gov.hmrc.baseline_business_rates import (
 
 class business_rates(Variable):
     label = "Business rates incidence"
-    documentation = "Total incidence from exposure to business rates via corporate shareholdings"
+    documentation = (
+        "Total incidence from exposure to business rates via corporate shareholdings"
+    )
     entity = Household
     definition_period = YEAR
     value_type = float

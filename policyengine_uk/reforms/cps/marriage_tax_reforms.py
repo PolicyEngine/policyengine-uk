@@ -16,9 +16,7 @@ def create_expanded_ma_reform(
             # There is a child who either meets the age condition or the education condition
             benunit = person.benunit
             if max_child_age is not None:
-                child_meets_age_condition = (
-                    person("age", period) <= max_child_age
-                )
+                child_meets_age_condition = person("age", period) <= max_child_age
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
                 child_meets_education_condition = np.is_in(
@@ -54,9 +52,7 @@ def create_expanded_ma_reform(
         entity = Person
         label = "Marriage Allowance"
         definition_period = YEAR
-        reference = (
-            "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
-        )
+        reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
         unit = GBP
 
         def formula(person, period, parameters):
@@ -65,9 +61,7 @@ def create_expanded_ma_reform(
             eligible = married & person(
                 "meets_marriage_allowance_income_conditions", period
             )
-            transferable_amount = person(
-                "partners_unused_personal_allowance", period
-            )
+            transferable_amount = person("partners_unused_personal_allowance", period)
             allowances = parameters(period).gov.hmrc.income_tax.allowances
             takeup_rate = allowances.marriage_allowance.takeup_rate
             capped_percentage = allowances.marriage_allowance.max
@@ -79,16 +73,10 @@ def create_expanded_ma_reform(
                 expanded_ma_cap,
                 capped_percentage,
             )
-            max_amount = (
-                allowances.personal_allowance.amount * capped_percentage
-            )
-            amount_if_eligible_pre_rounding = min_(
-                transferable_amount, max_amount
-            )
+            max_amount = allowances.personal_allowance.amount * capped_percentage
+            amount_if_eligible_pre_rounding = min_(transferable_amount, max_amount)
             # Round up.
-            rounding_increment = (
-                allowances.marriage_allowance.rounding_increment
-            )
+            rounding_increment = allowances.marriage_allowance.rounding_increment
             amount_if_eligible = (
                 np.ceil(amount_if_eligible_pre_rounding / rounding_increment)
                 * rounding_increment
@@ -119,9 +107,7 @@ def create_marriage_neutral_income_tax_reform(
             # There is a child who either meets the age condition or the education condition
             benunit = person.benunit
             if max_child_age is not None:
-                child_meets_age_condition = (
-                    person("age", period) <= max_child_age
-                )
+                child_meets_age_condition = person("age", period) <= max_child_age
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
                 child_meets_education_condition = np.is_in(
@@ -187,9 +173,7 @@ def create_marriage_neutral_income_tax_reform(
             split_income_branch = person.simulation.get_branch(
                 "split_income", clone_system=True
             )
-            split_income_branch.set_input(
-                "adjusted_net_income", period, split_income
-            )
+            split_income_branch.set_input("adjusted_net_income", period, split_income)
             split_income_tax = person.benunit.sum(
                 split_income_branch.calculate("income_tax", period)
             )

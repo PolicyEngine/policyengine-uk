@@ -7,7 +7,9 @@ class tax_credits_applicable_income(Variable):
     label = "Applicable income for Tax Credits"
     definition_period = YEAR
     unit = GBP
-    reference = "The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3"
+    reference = (
+        "The Tax Credits (Definition and Calculation of Income) Regulations 2002 s. 3"
+    )
 
     def formula(benunit, period, parameters):
         TC = parameters(period).gov.dwp.tax_credits

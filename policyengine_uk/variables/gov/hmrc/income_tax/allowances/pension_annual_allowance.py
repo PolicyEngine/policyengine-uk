@@ -9,9 +9,7 @@ class pension_annual_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        allowance = parameters(
-            period
-        ).gov.hmrc.income_tax.allowances.annual_allowance
+        allowance = parameters(period).gov.hmrc.income_tax.allowances.annual_allowance
         ANI = person("adjusted_net_income", period)
         reduction = max_(0, ANI - allowance.taper) * allowance.reduction_rate
         return max_(allowance.minimum, allowance.default - reduction)

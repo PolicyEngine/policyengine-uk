@@ -14,9 +14,7 @@ class income_support_eligible(Variable):
         has_carers = add(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_esa_income = benunit("esa_income", period) > 0
-        already_claiming = (
-            add(benunit, period, ["income_support_reported"]) > 0
-        )
+        already_claiming = add(benunit, period, ["income_support_reported"]) > 0
         return (
             (has_carers | lone_parent_with_young_child)
             & none_SP_age

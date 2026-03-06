@@ -101,9 +101,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters = propagate_parameter_metadata(self.parameters)
         self.parameters = uprate_parameters(self.parameters)
         self.parameters = backdate_parameters(self.parameters, "2015-01-01")
-        self.parameters.gov = convert_to_fiscal_year_parameters(
-            self.parameters.gov
-        )
+        self.parameters.gov = convert_to_fiscal_year_parameters(self.parameters.gov)
         self.reset_parameter_caches()
 
     def __init__(self):
