@@ -1,6 +1,6 @@
-from policyengine_uk import Microsimulation
-from policyengine_core.reforms import Reform
 from tqdm import tqdm
+
+from policyengine_uk import Microsimulation
 
 # Initialize variables to track the best private_school_factor and its result
 best_factor = None

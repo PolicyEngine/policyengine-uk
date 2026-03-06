@@ -15,9 +15,10 @@ Expected revenue: ~£3.3 billion in 2029-30
 Reference: https://policyengine.org/uk/research/uk-salary-sacrifice-cap
 """
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+
 from policyengine_uk import Microsimulation
 
 # Policy year when the salary sacrifice cap takes effect

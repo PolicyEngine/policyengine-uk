@@ -1,6 +1,7 @@
-from policyengine_uk.model_api import Scenario
-from policyengine_uk import Simulation
 from policyengine_core.parameters import Parameter
+
+from policyengine_uk import Simulation
+from policyengine_uk.model_api import Scenario
 
 
 def index_benefit_cap(simulation: Simulation):

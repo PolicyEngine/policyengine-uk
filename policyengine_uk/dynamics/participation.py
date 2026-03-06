@@ -7,10 +7,11 @@ methodology from the OBR's labour supply elasticity framework.
 Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf
 """
 
+
 import numpy as np
 import pandas as pd
+
 from policyengine_uk import Simulation
-import warnings
 
 
 def calculate_participation_elasticities(

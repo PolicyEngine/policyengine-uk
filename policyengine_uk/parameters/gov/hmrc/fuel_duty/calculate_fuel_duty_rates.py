@@ -12,8 +12,8 @@ Usage:
 
 import argparse
 import re
-from datetime import date
 from calendar import isleap
+from datetime import date
 from pathlib import Path
 
 import yaml

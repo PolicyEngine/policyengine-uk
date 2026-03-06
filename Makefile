@@ -11,6 +11,7 @@ install:
 	pip install huggingface_hub
 
 format:
+	ruff check . --fix
 	ruff format .
 
 test:

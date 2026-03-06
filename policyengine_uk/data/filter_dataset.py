@@ -8,7 +8,6 @@ if typing.TYPE_CHECKING:
 def filter_dataset(
     sim: "Microsimulation", household_id: int, year: int = 2026
 ) -> "UKSingleYearDataset":
-    from policyengine_uk import Microsimulation
     from policyengine_uk.data import UKSingleYearDataset
 
     """

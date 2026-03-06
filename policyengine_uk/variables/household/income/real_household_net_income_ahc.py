@@ -1,6 +1,6 @@
-from policyengine_uk.model_api import *
 import datetime
-import numpy as np
+
+from policyengine_uk.model_api import *
 
 
 class real_household_net_income_ahc(Variable):

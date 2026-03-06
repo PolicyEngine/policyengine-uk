@@ -1,6 +1,5 @@
 import re
-from policyengine_uk.system import system
-import plotly.express as px
+
 import pandas as pd
 from plotly import graph_objects as go
 

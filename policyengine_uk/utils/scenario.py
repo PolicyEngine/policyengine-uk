@@ -1,8 +1,9 @@
-from pydantic import BaseModel
-from typing import Optional, Callable, Dict, Type, Union
-from policyengine_core.simulations import Simulation
+from typing import Callable, Dict, Optional, Type, Union
+
+from policyengine_core.periods import instant, period
 from policyengine_core.reforms import Reform
-from policyengine_core.periods import period, instant
+from policyengine_core.simulations import Simulation
+from pydantic import BaseModel
 
 
 class Scenario(BaseModel):

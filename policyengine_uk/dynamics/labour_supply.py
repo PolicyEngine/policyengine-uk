@@ -8,22 +8,21 @@ affect employment and working hours.
 Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf
 """
 
+from typing import Optional
+
 import numpy as np
 import pandas as pd
-from policyengine_uk import Simulation
 from microdf import MicroDataFrame
 from pydantic import BaseModel
-from typing import Optional
+
+from policyengine_uk import Simulation
 
 from .progression import (
     calculate_derivative_change,
-    calculate_relative_income_change,
-    calculate_labour_substitution_elasticities,
-    calculate_labour_net_income_elasticities,
     calculate_employment_income_change,
-)
-from .participation import (
-    apply_participation_responses,
+    calculate_labour_net_income_elasticities,
+    calculate_labour_substitution_elasticities,
+    calculate_relative_income_change,
 )
 
 

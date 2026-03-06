@@ -1,11 +1,13 @@
-import pandas as pd
-import numpy as np
 from typing import TYPE_CHECKING
+
+import numpy as np
+import pandas as pd
 
 if TYPE_CHECKING:
     from policyengine_uk import Microsimulation
 
 from pathlib import Path
+
 import h5py
 
 

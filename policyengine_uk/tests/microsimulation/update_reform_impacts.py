@@ -3,23 +3,24 @@ Script to update the expected impacts in reforms_config.yaml with current model 
 This should be run when you want to update the baseline expectations after model changes.
 """
 
-import yaml
-from pathlib import Path
-from policyengine_uk import Microsimulation
 import argparse
+import traceback
 from datetime import datetime
+from pathlib import Path
+
+import yaml
 from rich.console import Console
-from rich.table import Table
+from rich.panel import Panel
 from rich.progress import (
+    BarColumn,
     Progress,
     SpinnerColumn,
-    TextColumn,
-    BarColumn,
     TaskProgressColumn,
+    TextColumn,
 )
-from rich.panel import Panel
-from rich import print as rprint
-import traceback
+from rich.table import Table
+
+from policyengine_uk import Microsimulation
 
 baseline = Microsimulation()
 

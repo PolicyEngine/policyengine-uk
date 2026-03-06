@@ -1,5 +1,6 @@
+from typing import Optional
+
 from policyengine_uk.model_api import *
-from typing import Union, Optional
 
 
 def create_expanded_ma_reform(

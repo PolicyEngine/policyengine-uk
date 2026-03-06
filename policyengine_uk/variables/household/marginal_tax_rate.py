@@ -1,5 +1,6 @@
-from policyengine_uk.model_api import *
 from policyengine_core.variables import Variable
+
+from policyengine_uk.model_api import *
 
 
 class marginal_tax_rate(Variable):

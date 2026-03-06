@@ -1,5 +1,5 @@
+
 from policyengine_uk.model_api import *
-from numpy import ceil
 
 
 class meets_marriage_allowance_income_conditions(Variable):

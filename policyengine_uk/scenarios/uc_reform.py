@@ -1,6 +1,7 @@
-from policyengine_uk.model_api import Scenario
-from policyengine_uk import Microsimulation
 import numpy as np
+
+from policyengine_uk import Microsimulation
+from policyengine_uk.model_api import Scenario
 
 
 def add_universal_credit_reform(sim: Microsimulation):

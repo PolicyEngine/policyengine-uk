@@ -1,6 +1,6 @@
+
+
 from policyengine_uk.model_api import *
-import datetime
-import numpy as np
 
 
 class base_net_income(Variable):

@@ -1,8 +1,6 @@
+
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.locations import BRMAName
-from policyengine_uk.variables.household.demographic.geography import Region
-import pandas as pd
-import numpy as np
 
 
 class brma(Variable):

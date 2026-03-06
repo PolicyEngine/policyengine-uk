@@ -1,4 +1,5 @@
 from policyengine_core.model_api import Enum
+
 from policyengine_uk.system import variables as BASELINE_VARIABLES
 
 
@@ -13,7 +14,7 @@ def test_variable_names_match_return_types():
                 assert variable.value_type == bool
             else:
                 assert variable.value_type in (Enum, float, bool, str, int)
-        except Exception as e:
+        except Exception:
             exceptions += [f"{var_name} returns {variable.value_type}"]
     print(
         f"Total variables: {len(BASELINE_VARIABLES)}, variable name violations: {len(exceptions)}."

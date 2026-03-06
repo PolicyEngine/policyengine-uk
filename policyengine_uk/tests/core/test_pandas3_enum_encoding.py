@@ -4,10 +4,7 @@ This test verifies that policyengine-core 3.23.5+ correctly handles
 pandas Series with StringDtype index when encoding enums.
 """
 
-import numpy as np
 import pandas as pd
-import pytest
-
 from policyengine_core.enums import Enum
 
 

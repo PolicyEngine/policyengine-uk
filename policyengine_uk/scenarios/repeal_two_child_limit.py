@@ -1,5 +1,6 @@
-from policyengine_uk.model_api import Scenario
 import numpy as np
+
+from policyengine_uk.model_api import Scenario
 
 repeal_two_child_limit = Scenario(
     parameter_changes={

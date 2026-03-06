@@ -1,5 +1,6 @@
-from policyengine_uk.model_api import *
 import warnings
+
+from policyengine_uk.model_api import *
 
 
 class bi_household_phaseout(Variable):

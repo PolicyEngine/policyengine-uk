@@ -1,5 +1,5 @@
+
 from policyengine_uk.model_api import *
-from numpy import ceil
 
 
 class partners_unused_personal_allowance(Variable):

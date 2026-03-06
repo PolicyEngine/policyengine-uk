@@ -1,15 +1,16 @@
 # Standard library imports
-from typing import Dict, Optional, Union, Type, List
+from typing import Dict, List, Optional, Type, Union
 
 # Third-party imports
 import numpy as np
 import pandas as pd
+from microdf import MicroDataFrame
 
 # PolicyEngine core imports
 from policyengine_core.data import Dataset
 from policyengine_core.enums import Enum as CoreEnum
-from policyengine_core.periods import period as period_
 from policyengine_core.parameters import Parameter
+from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
@@ -20,16 +21,14 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
 )
-from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
+from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.scenario import Scenario
 
 from .tax_benefit_system import CountryTaxBenefitSystem
-
-from microdf import MicroDataFrame
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
 # by URL. Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
@@ -253,7 +252,7 @@ class Simulation(CoreSimulation):
             ValueError: If URL is not a HuggingFace URL
         """
         if "hf://" not in url:
-            raise ValueError(f"Non-HuggingFace URLs are currently not supported.")
+            raise ValueError("Non-HuggingFace URLs are currently not supported.")
 
         # Return early from in-memory cache if available: skips HDF5 reading,
         # uprating and enum encoding (~2.2s on the first load).
@@ -580,7 +579,7 @@ class Simulation(CoreSimulation):
                         variable, self._example_simulation
                     )
                     self._variable_dependencies[variable] = dependencies
-                except Exception as e:
+                except Exception:
                     self._variable_dependencies[variable] = []
 
         if variable_name not in self._variable_dependencies:

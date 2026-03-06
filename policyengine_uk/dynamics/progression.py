@@ -9,6 +9,7 @@ Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note
 
 import numpy as np
 import pandas as pd
+
 from policyengine_uk import Simulation
 
 

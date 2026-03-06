@@ -1,10 +1,11 @@
-from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+import logging
+from pathlib import Path
 
+import numpy as np
 import yaml
 from policyengine_core.parameters import ParameterNode
-from pathlib import Path
-import numpy as np
-import logging
+
+from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 
 # Base year for the FRS dataset - used to calculate age offsets
 _FRS_BASE_YEAR = 2023  # FRS 2023-24 represents calendar year 2024
@@ -55,7 +56,6 @@ def apply_uprating(
     dataset: UKMultiYearDataset,
     tax_benefit_system_parameters: ParameterNode = None,
 ):
-    from policyengine_uk.system import system
 
     # Apply uprating to the dataset.
     dataset = dataset.copy()

@@ -1,7 +1,8 @@
-from policyengine_uk.model_api import *
-import pandas as pd
 import warnings
+
 from policyengine_core.model_api import *
+
+from policyengine_uk.model_api import *
 
 warnings.filterwarnings("ignore")
 

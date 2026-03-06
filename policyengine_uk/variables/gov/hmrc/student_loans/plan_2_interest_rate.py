@@ -1,5 +1,6 @@
-from policyengine_uk.model_api import *
 import numpy as np
+
+from policyengine_uk.model_api import *
 
 
 class plan_2_interest_rate(Variable):

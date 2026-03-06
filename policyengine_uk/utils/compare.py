@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import TYPE_CHECKING
+
+import pandas as pd
 
 if TYPE_CHECKING:
     from policyengine_uk.simulation import Microsimulation

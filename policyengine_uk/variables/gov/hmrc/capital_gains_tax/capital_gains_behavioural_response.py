@@ -1,5 +1,6 @@
-from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
+
+from policyengine_uk.model_api import *
 
 
 class capital_gains_behavioural_response(Variable):

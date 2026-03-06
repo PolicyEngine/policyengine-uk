@@ -1,6 +1,6 @@
 from policyengine_core.parameters import (
-    ParameterNode,
     Parameter,
+    ParameterNode,
 )
 
 YEARS = list(range(2020, 2035))

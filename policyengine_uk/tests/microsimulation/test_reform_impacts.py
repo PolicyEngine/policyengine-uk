@@ -3,9 +3,11 @@ Test suite for PolicyEngine UK reform fiscal impacts.
 This file tests that model changes don't unexpectedly change reform impacts.
 """
 
+from pathlib import Path
+
 import pytest
 import yaml
-from pathlib import Path
+
 from policyengine_uk import Microsimulation
 
 # Load configuration from YAML file

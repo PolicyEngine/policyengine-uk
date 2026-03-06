@@ -1,6 +1,6 @@
-from policyengine_uk.system import system
 from policyengine_core.model_api import Parameter
-import pytest
+
+from policyengine_uk.system import system
 
 parameters = list(
     filter(

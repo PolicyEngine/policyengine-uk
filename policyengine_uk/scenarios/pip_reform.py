@@ -1,6 +1,7 @@
-from policyengine_uk.model_api import Scenario
-from policyengine_uk import Simulation
 import numpy as np
+
+from policyengine_uk import Simulation
+from policyengine_uk.model_api import Scenario
 
 
 def modify_simulation(sim: Simulation):

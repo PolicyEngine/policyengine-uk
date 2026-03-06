@@ -6,7 +6,6 @@ These tests verify that variables which previously used random() now:
 3. Produce deterministic results
 """
 
-import pytest
 from policyengine_uk import Simulation
 
 

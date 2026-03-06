@@ -10,9 +10,11 @@ and that all the critical fixes are functioning:
 """
 
 import os
+from pathlib import Path
+
 import pytest
 import yaml
-from pathlib import Path
+
 from policyengine_uk import Microsimulation
 from policyengine_uk.model_api import Scenario
 
