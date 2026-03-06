@@ -2,6 +2,9 @@ name: Test PyPI yank capability
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - test-pypi-yank
 
 jobs:
   test-yank:
