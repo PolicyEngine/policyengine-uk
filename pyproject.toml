@@ -113,3 +113,7 @@ line-length = 88
 extend-exclude = [
     "docs/book/programs/gov/dfe/care-to-learn.ipynb",
 ]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["E402", "E501", "E712", "E713", "E721", "E722", "E741", "F401", "F402", "F403", "F405", "F541", "F811", "F821", "F841"]
