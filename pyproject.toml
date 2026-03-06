@@ -110,3 +110,6 @@ showcontent = true
 
 [tool.ruff]
 line-length = 88
+extend-exclude = [
+    "docs/book/programs/gov/dfe/care-to-learn.ipynb",
+]
