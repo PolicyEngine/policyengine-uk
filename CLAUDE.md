@@ -23,6 +23,14 @@
 - **Versioning**: Follow SemVer (increment patch for fixes, minor for features, major for breaking changes)
 - **Pull Requests**: Must include a changelog.d/ file describing the changes (GitHub Actions will automatically run `make changelog` to update the changelog)
 
+## Program registry (programs.yaml)
+- `policyengine_uk/programs.yaml` is the single source of truth for program coverage metadata
+- Served via the `/uk/metadata` API and consumed by the model coverage page
+- **When adding a new program**: add an entry with `id`, `name`, `full_name`, `category`, `agency`, `status`, `coverage`, `variable`, `parameter_prefix`
+- **When extending year coverage**: update `verified_years` after verifying parameters and tests cover the new year
+- **When adding devolved programs**: use the appropriate agency (e.g., `Revenue Scotland`, `Social Security Scotland`)
+- **Status values**: `complete`, `partial`, `in_progress`
+
 ## Repository Structure
 - **parameters/**: YAML files that define tax rates, thresholds, and other policy parameters
   - Organized by government department (e.g., gov/hmrc/, gov/dwp/, gov/dfe/)
