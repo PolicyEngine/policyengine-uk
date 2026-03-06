@@ -15,8 +15,19 @@ jobs:
 
       - name: Attempt to yank policyengine-uk 0.35.0
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI }}
+          PYPI_TOKEN: ${{ secrets.PYPI }}
         run: |
-          pip install twine
-          twine yank policyengine-uk 0.35.0 --reason "Test: verifying org secret has yank permissions" || echo "YANK FAILED (exit $?)"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "https://pypi.org/pypi/policyengine-uk/0.35.0/yank" \
+            -H "Authorization: Bearer $PYPI_TOKEN" \
+            -d "reason=Test%3A+verifying+org+secret+has+yank+permissions")
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "YANK SUCCEEDED - token has yank permissions"
+          elif [ "$STATUS" = "403" ]; then
+            echo "YANK FAILED 403 - token lacks permission or wrong scope"
+          elif [ "$STATUS" = "401" ]; then
+            echo "YANK FAILED 401 - token authentication failed"
+          else
+            echo "YANK FAILED with unexpected status $STATUS"
+          fi
