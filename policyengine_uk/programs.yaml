@@ -1,0 +1,417 @@
+# Modelled policies metadata for PolicyEngine UK
+# This is the single source of truth for program coverage information.
+# Served via the /uk/metadata API as modelled_policies.
+# Consumed by policyengine-model to render the model coverage page.
+
+programs:
+  # --- HMRC programs ---
+  - id: income_tax
+    name: Income tax
+    full_name: Income Tax
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: income_tax
+    parameter_prefix: gov.hmrc.income_tax
+    verified_years: "2019-2028"
+    notes: Includes Scottish rates via devolved tax bands
+
+  - id: national_insurance
+    name: National Insurance
+    full_name: National Insurance contributions
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: national_insurance
+    parameter_prefix: gov.hmrc.national_insurance
+    verified_years: "2019-2028"
+    notes: Classes 1, 2, 3, and 4
+
+  - id: capital_gains_tax
+    name: Capital gains tax
+    full_name: Capital Gains Tax
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: capital_gains_tax
+    parameter_prefix: gov.hmrc.cgt
+    verified_years: "2022-2028"
+
+  - id: child_benefit
+    name: Child Benefit
+    full_name: Child Benefit
+    category: Benefits
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: child_benefit
+    parameter_prefix: gov.hmrc.child_benefit
+    verified_years: "2019-2028"
+    notes: Includes High Income Child Benefit Charge
+
+  - id: stamp_duty_land_tax
+    name: Stamp Duty Land Tax
+    full_name: Stamp Duty Land Tax
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: England and Northern Ireland
+    variable: stamp_duty_land_tax
+    parameter_prefix: gov.hmrc.stamp_duty
+    verified_years: "2022-2028"
+
+  - id: vat
+    name: VAT
+    full_name: Value Added Tax
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: vat
+    parameter_prefix: gov.hmrc.vat
+    verified_years: "2022-2028"
+
+  - id: fuel_duty
+    name: Fuel duty
+    full_name: Fuel Duty
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: fuel_duty
+    parameter_prefix: gov.hmrc.fuel_duty
+    verified_years: "2022-2028"
+
+  - id: student_loans
+    name: Student loan repayments
+    full_name: Student Loan Repayments
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: student_loan_repayment
+    parameter_prefix: gov.hmrc.student_loans
+    verified_years: "2022-2028"
+
+  - id: tax_free_childcare
+    name: Tax-Free Childcare
+    full_name: Tax-Free Childcare
+    category: Benefits
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: tax_free_childcare
+    parameter_prefix: gov.hmrc.tax_free_childcare
+
+  - id: pensions_allowance
+    name: Pensions allowance
+    full_name: Pensions Annual and Lifetime Allowance
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    parameter_prefix: gov.hmrc.pensions
+    verified_years: "2022-2028"
+
+  - id: business_rates
+    name: Business rates
+    full_name: Business Rates
+    category: Taxes
+    agency: HMRC
+    status: complete
+    coverage: UK
+    variable: business_rates
+    parameter_prefix: gov.hmrc.business_rates
+    verified_years: "2022-2028"
+
+  - id: minimum_wage
+    name: National Minimum Wage
+    full_name: National Minimum Wage / National Living Wage
+    category: Other
+    agency: HMRC
+    status: complete
+    coverage: UK
+    parameter_prefix: gov.hmrc
+    verified_years: "2022-2028"
+
+  # --- DWP programs ---
+  - id: universal_credit
+    name: Universal Credit
+    full_name: Universal Credit
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: universal_credit
+    parameter_prefix: gov.dwp.universal_credit
+    verified_years: "2019-2028"
+    notes: Includes standard allowance, child element, housing costs, work allowances, and taper
+
+  - id: pension_credit
+    name: Pension Credit
+    full_name: Pension Credit
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: pension_credit
+    parameter_prefix: gov.dwp.pension_credit
+    verified_years: "2022-2028"
+    notes: Guarantee Credit and Savings Credit
+
+  - id: state_pension
+    name: State Pension
+    full_name: State Pension
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: state_pension
+    parameter_prefix: gov.dwp.state_pension
+    verified_years: "2022-2028"
+    notes: New State Pension and basic State Pension
+
+  - id: housing_benefit
+    name: Housing Benefit
+    full_name: Housing Benefit
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: housing_benefit
+    parameter_prefix: gov.dwp.housing_benefit
+    verified_years: "2022-2028"
+    notes: Legacy benefit being replaced by Universal Credit
+
+  - id: income_support
+    name: Income Support
+    full_name: Income Support
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: income_support
+    parameter_prefix: gov.dwp.income_support
+    verified_years: "2022-2028"
+
+  - id: jsa
+    name: JSA
+    full_name: Jobseeker's Allowance
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: JSA
+    parameter_prefix: gov.dwp.JSA
+    verified_years: "2022-2028"
+    notes: Income-based and contribution-based
+
+  - id: esa
+    name: ESA
+    full_name: Employment and Support Allowance
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: ESA
+    parameter_prefix: gov.dwp.ESA
+    verified_years: "2022-2028"
+    notes: Income-related and contribution-based
+
+  - id: attendance_allowance
+    name: Attendance Allowance
+    full_name: Attendance Allowance
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: attendance_allowance
+    parameter_prefix: gov.dwp.attendance_allowance
+    verified_years: "2022-2028"
+
+  - id: carers_allowance
+    name: Carer's Allowance
+    full_name: Carer's Allowance
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: carers_allowance
+    parameter_prefix: gov.dwp.carers_allowance
+    verified_years: "2022-2028"
+
+  - id: dla
+    name: DLA
+    full_name: Disability Living Allowance
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: DLA
+    parameter_prefix: gov.dwp.dla
+    verified_years: "2022-2028"
+
+  - id: pip
+    name: PIP
+    full_name: Personal Independence Payment
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: pip
+    parameter_prefix: gov.dwp.pip
+    verified_years: "2022-2028"
+
+  - id: benefit_cap
+    name: Benefit cap
+    full_name: Benefit Cap
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: benefit_cap
+    parameter_prefix: gov.dwp
+    verified_years: "2022-2028"
+
+  - id: tax_credits
+    name: Tax credits
+    full_name: Tax Credits (Working Tax Credit and Child Tax Credit)
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: tax_credits
+    parameter_prefix: gov.dwp.tax_credits
+    verified_years: "2022-2028"
+    notes: Legacy benefit being replaced by Universal Credit
+
+  - id: sda
+    name: SDA
+    full_name: Severe Disablement Allowance
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: sda
+    parameter_prefix: gov.dwp.sda
+
+  - id: winter_fuel_payment
+    name: Winter Fuel Payment
+    full_name: Winter Fuel Payment
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: winter_fuel_payment
+    parameter_prefix: gov.dwp.winter_fuel_payment
+    verified_years: "2022-2028"
+
+  - id: ssmg
+    name: Sure Start Maternity Grant
+    full_name: Sure Start Maternity Grant
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: ssmg
+    parameter_prefix: gov.dwp.ssmg
+
+  - id: maternity_allowance
+    name: Maternity Allowance
+    full_name: Maternity Allowance
+    category: Benefits
+    agency: DWP
+    status: complete
+    coverage: UK
+    variable: maternity_allowance
+    parameter_prefix: gov.dwp
+
+  # --- DfE programs ---
+  - id: childcare_entitlements
+    name: Childcare entitlements
+    full_name: Free Childcare Entitlements
+    category: Education
+    agency: DfE
+    status: complete
+    coverage: England
+    parameter_prefix: gov.dfe
+    notes: Universal (15h), extended (30h), and targeted entitlements
+
+  # --- DCMS programs ---
+  - id: tv_licence
+    name: TV Licence
+    full_name: TV Licence
+    category: Taxes
+    agency: DCMS
+    status: complete
+    coverage: UK
+    variable: tv_licence
+    parameter_prefix: gov.dcms.bbc
+    verified_years: "2022-2028"
+
+  # --- Local programs ---
+  - id: council_tax
+    name: Council Tax
+    full_name: Council Tax
+    category: Taxes
+    agency: Local
+    status: complete
+    coverage: UK
+    variable: council_tax
+    verified_years: "2022-2028"
+
+  # --- Treasury programs ---
+  - id: cost_of_living_support
+    name: Cost of Living Support
+    full_name: Cost of Living Support Payments
+    category: Benefits
+    agency: Treasury
+    status: complete
+    coverage: UK
+    parameter_prefix: gov.treasury.cost_of_living_support
+
+  # --- Ofgem programs ---
+  - id: energy_price_guarantee
+    name: Energy Price Guarantee
+    full_name: Energy Price Guarantee
+    category: Benefits
+    agency: Ofgem
+    status: complete
+    coverage: UK
+    parameter_prefix: gov.ofgem
+
+  # --- Scotland programs ---
+  - id: scottish_income_tax
+    name: Scottish income tax
+    full_name: Scottish Income Tax Rates
+    category: Taxes
+    agency: Revenue Scotland
+    status: complete
+    coverage: Scotland
+    verified_years: "2019-2028"
+    notes: Devolved tax bands applied via income tax system
+
+  - id: lbtt
+    name: LBTT
+    full_name: Land and Buildings Transaction Tax
+    category: Taxes
+    agency: Revenue Scotland
+    status: complete
+    coverage: Scotland
+    variable: land_and_buildings_transaction_tax
+    parameter_prefix: gov.revenue_scotland.lbtt
+    verified_years: "2022-2028"
+
+  - id: scottish_child_payment
+    name: Scottish Child Payment
+    full_name: Scottish Child Payment
+    category: Benefits
+    agency: Social Security Scotland
+    status: complete
+    coverage: Scotland
+    variable: scottish_child_payment
+    parameter_prefix: gov.social_security_scotland.scottish_child_payment
+    verified_years: "2022-2028"

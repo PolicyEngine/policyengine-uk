@@ -58,7 +58,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         "employment_income",
         "age",
     ]
-    modelled_policies = COUNTRY_DIR / "modelled_policies.yaml"
+    modelled_policies = COUNTRY_DIR / "programs.yaml"
     auto_carry_over_input_variables: bool = True
 
     variables: Dict[str, Variable]
