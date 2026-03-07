@@ -1,0 +1,1 @@
+Add separate `electricity_consumption` and `gas_consumption` input variables, surfacing the NEED 2023-calibrated imputations from policyengine-uk-data 1.41.0.
