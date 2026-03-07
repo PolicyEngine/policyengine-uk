@@ -40,7 +40,12 @@ def get_fiscal_impact(baseline, reform: dict) -> float:
 
 # Extract test parameters from configuration
 test_params = [
-    (reform["parameters"], reform["name"], reform["expected_impact"], reform.get("tolerance", 1.0))
+    (
+        reform["parameters"],
+        reform["name"],
+        reform["expected_impact"],
+        reform.get("tolerance", 1.0),
+    )
     for reform in reforms_data
 ]
 
@@ -53,7 +58,9 @@ reform_names = [reform["name"] for reform in reforms_data]
     test_params,
     ids=reform_names,
 )
-def test_reform_fiscal_impacts(baseline, reform, reform_name, expected_impact, tolerance):
+def test_reform_fiscal_impacts(
+    baseline, reform, reform_name, expected_impact, tolerance
+):
     """Test that each reform produces the expected fiscal impact."""
     impact = get_fiscal_impact(baseline, reform)
 
