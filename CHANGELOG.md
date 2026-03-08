@@ -1,3 +1,24 @@
+## [2.75.0] - 2026-03-08
+
+### Added
+
+- Add separate `electricity_consumption` and `gas_consumption` input variables, surfacing the NEED 2023-calibrated imputations from policyengine-uk-data 1.41.0.
+- Added ruff check linting configuration with E and F rules to catch common Python errors.
+
+### Changed
+
+- Replace modelled_policies.yaml with structured programs.yaml containing rich metadata for all 37 modelled programs.
+- Migrated from changelog_entry.yaml to towncrier fragments to eliminate merge conflicts.
+- Switch from black to ruff format.
+- Update OBR economic forecasts to March 2026 EFO.
+- Update remaining OBR economic forecasts to March 2026 EFO detailed tables (CPIH, rent, mortgage interest, council tax, non-labour income, mixed income, household interest income, CPI AHC).
+- Add Python 3.14 classifier and remove upper bound on requires-python.
+
+### Fixed
+
+- Fix verified_years in programs.yaml based on parameter and test audit.
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
