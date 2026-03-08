@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
 
-git tag `python setup.py --version`
-git push --tags || true  # update the repository version
+VERSION=$(python -c "import re; print(re.search(r'version = \"(.+?)\"', open('pyproject.toml').read()).group(1))")
+git tag "$VERSION"
+git push --tags || true
