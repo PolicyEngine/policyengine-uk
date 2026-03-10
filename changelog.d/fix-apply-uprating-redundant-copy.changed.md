@@ -1,1 +1,0 @@
-Added `copy` parameter to `apply_uprating` (default `True`); `extend_single_year_dataset` now passes `copy=False` to skip the redundant deep copy of the multi-year dataset since each year is already copied individually.
