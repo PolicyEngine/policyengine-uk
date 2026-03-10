@@ -48,20 +48,22 @@ def extend_single_year_dataset(
     return apply_uprating(
         multi_year_dataset,
         tax_benefit_system_parameters=tax_benefit_system_parameters,
+        copy=False,
     )
 
 
 def apply_uprating(
     dataset: UKMultiYearDataset,
     tax_benefit_system_parameters: ParameterNode = None,
+    copy: bool = True,
 ):
     from policyengine_uk.system import system
 
-    # Apply uprating to the dataset.
-    dataset = dataset.copy()
-
     if not isinstance(dataset, UKMultiYearDataset):
         raise TypeError("dataset must be of type UKMultiYearDataset.")
+
+    if copy:
+        dataset = dataset.copy()
 
     for year in dataset.datasets.keys():
         if year == min(dataset.datasets.keys()):
