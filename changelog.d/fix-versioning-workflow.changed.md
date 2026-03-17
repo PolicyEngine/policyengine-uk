@@ -1,0 +1,1 @@
+Replaced personal PAT with `GITHUB_TOKEN` in versioning workflow. Publish now runs as a sequential job instead of requiring a re-triggered workflow, removing the dependency on a personal access token for same-repo operations.
