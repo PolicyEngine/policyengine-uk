@@ -1,0 +1,1 @@
+Fixed `hbai_household_net_income` to respect `abolish_council_tax` parameter and include LVT in subtracts, so that poverty statistics correctly respond to council tax abolition and land value tax reforms.
