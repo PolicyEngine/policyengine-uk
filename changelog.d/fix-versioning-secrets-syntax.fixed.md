@@ -1,0 +1,1 @@
+Fixed invalid `secrets` reference in versioning workflow step condition that prevented the workflow from running.
