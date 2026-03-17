@@ -1,0 +1,76 @@
+- name: Abolishing council tax increases HBAI household net income
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.contrib.abolish_council_tax: true
+    people:
+      person:
+        age: 30
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: ["person"]
+    households:
+      household:
+        members: ["person"]
+        council_tax: 2_000
+  output:
+    hbai_household_net_income: 39_520
+
+- name: HBAI subtracts council tax when not abolished
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: ["person"]
+    households:
+      household:
+        members: ["person"]
+        council_tax: 2_000
+  output:
+    hbai_household_net_income: 37_520
+
+- name: LVT reduces HBAI household net income
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.land_value_tax.rate: 0.02
+    people:
+      person:
+        age: 30
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: ["person"]
+    households:
+      household:
+        members: ["person"]
+        land_value: 500_000
+  output:
+    hbai_household_net_income: 29_520
+
+- name: Abolish council tax and add LVT together affect HBAI income
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    gov.contrib.abolish_council_tax: true
+    gov.contrib.ubi_center.land_value_tax.rate: 0.02
+    people:
+      person:
+        age: 30
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: ["person"]
+    households:
+      household:
+        members: ["person"]
+        council_tax: 2_000
+        land_value: 500_000
+  output:
+    hbai_household_net_income: 29_520
