@@ -1,3 +1,15 @@
+## [2.75.2] - 2026-03-17
+
+### Changed
+
+- Replaced personal PAT with `GITHUB_TOKEN` in versioning workflow. Publish now runs as a sequential job instead of requiring a re-triggered workflow, removing the dependency on a personal access token for same-repo operations.
+
+### Fixed
+
+- Fixed `hbai_household_net_income` to respect `abolish_council_tax` parameter and include LVT in subtracts, so that poverty statistics correctly respond to council tax abolition and land value tax reforms.
+- Fixed invalid `secrets` reference in versioning workflow step condition that prevented the workflow from running.
+
+
 ## [2.75.1] - 2026-03-10
 
 ### Changed
