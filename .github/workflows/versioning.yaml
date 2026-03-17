@@ -79,7 +79,11 @@ jobs:
           password: ${{ secrets.PYPI }}
           skip_existing: true
       - name: Update API
-        if: ${{ secrets.POLICYENGINE_GITHUB != '' }}
-        run: python .github/update_api.py
+        run: |
+          if [ -n "$CROSS_REPO_TOKEN" ]; then
+            GITHUB_TOKEN="$CROSS_REPO_TOKEN" python .github/update_api.py
+          else
+            echo "Skipping cross-repo API update (POLICYENGINE_GITHUB secret not set)"
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
+          CROSS_REPO_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
