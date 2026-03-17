@@ -1,4 +1,6 @@
 # Workflow that runs on versioning metadata updates.
+# Uses GITHUB_TOKEN (not a personal PAT) for same-repo operations.
+# Cross-repo API updates require POLICYENGINE_GITHUB secret (org-level PAT).
 
 name: Versioning updates
 on:
@@ -11,16 +13,20 @@ on:
       - pyproject.toml
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   Versioning:
     runs-on: ubuntu-latest
     if: |
       (!(github.event.head_commit.message == 'Update package version'))
+    outputs:
+      committed: ${{ steps.commit.outputs.committed }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.POLICYENGINE_GITHUB }}
           fetch-depth: 0
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -35,18 +41,20 @@ jobs:
           python .github/bump_version.py
           towncrier build --yes --version $(python -c "import re; print(re.search(r'version = \"(.+?)\"', open('pyproject.toml').read()).group(1))")
       - name: Update changelog
+        id: commit
         uses: EndBug/add-and-commit@v9
         with:
           add: "."
           message: Update package version
   Publish:
     runs-on: ubuntu-latest
-    if: (github.event.head_commit.message == 'Update package version')
-    env:
-      GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
+    needs: Versioning
+    if: needs.Versioning.outputs.committed == 'true'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
@@ -71,6 +79,7 @@ jobs:
           password: ${{ secrets.PYPI }}
           skip_existing: true
       - name: Update API
+        if: ${{ secrets.POLICYENGINE_GITHUB != '' }}
         run: python .github/update_api.py
         env:
           GITHUB_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
