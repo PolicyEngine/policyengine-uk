@@ -86,6 +86,6 @@ We acknowledge contributions from all PolicyEngine UK contributors, and thank th
 
 # AI Usage Disclosure
 
-Generative AI tools (Claude by Anthropic, 2024–2026) were used to assist with code refactoring, test scaffolding, and drafting of this paper. All AI-assisted outputs were reviewed, edited, and validated by human authors, who made all core design decisions regarding software architecture, policy modelling, and parameter implementation. The authors remain fully responsible for the accuracy, originality, and correctness of all submitted materials.
+Generative AI tools (Claude by Anthropic, 2024–2026 [@claude2025]) were used to assist with code refactoring, test scaffolding, and drafting of this paper. All AI-assisted outputs were reviewed, edited, and validated by human authors, who made all core design decisions regarding software architecture, policy modelling, and parameter implementation. The authors remain fully responsible for the accuracy, originality, and correctness of all submitted materials.
 
 # References
