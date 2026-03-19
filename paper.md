@@ -37,7 +37,7 @@ PolicyEngine UK addresses this gap by providing a fully open-source, publicly ac
 
 # State of the Field
 
-The primary UK microsimulation models include UKMOD, maintained by the University of Essex as part of the EUROMOD family [@sutherland2014euromod], and models maintained internally by HM Treasury and the Institute for Fiscal Studies. UKMOD provides comprehensive coverage of the UK tax-benefit system but requires institutional access and uses a bespoke modelling language. OpenFisca [@openfisca] pioneered the open-source approach to tax-benefit microsimulation in France, and PolicyEngine UK builds on this foundation through the PolicyEngine Core framework [@policyengine_core]. We acknowledge the UKMOD team at the Institute for Social and Economic Research (ISER), University of Essex, for their contributions to model descriptions that informed the development of PolicyEngine UK.
+The primary UK microsimulation models include UKMOD, maintained by the Centre for Microsimulation and Policy Analysis at the Institute for Social and Economic Research (ISER), University of Essex, as part of the EUROMOD family [@sutherland2014euromod], and models maintained internally by HM Treasury and the Institute for Fiscal Studies. OpenFisca [@openfisca] pioneered the open-source approach to tax-benefit microsimulation in France. PolicyEngine UK originated as OpenFisca UK and builds on this foundation through the PolicyEngine Core framework [@policyengine_core]. The UKMOD team's published model descriptions accelerated the early development of the model.
 
 PolicyEngine UK differentiates itself in several ways:
 
