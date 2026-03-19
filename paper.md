@@ -6,7 +6,7 @@ tags:
   - tax
   - benefit
   - public policy
-  - distributional analysis
+  - economic analysis
 authors:
   - name: Max Ghenis
     orcid: 0000-0000-0000-0000
