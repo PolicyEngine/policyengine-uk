@@ -76,8 +76,6 @@ PolicyEngine UK has demonstrated research impact across government, academia, an
 
 **Policy research.** The National Institute of Economic and Social Research (NIESR) used PolicyEngine in their UK Living Standards Review 2025, acknowledging "the expertise and generosity of Nikhil Woodruff and Vahid Ahmadi in helping us maximise the benefits of using PolicyEngine" [@niesr2025living]. The Institute of Economic Affairs has published reports using PolicyEngine's microsimulation model to analyse employer National Insurance contributions [@woodruff2024nic] and the distributional impact of 2025–2026 tax changes on UK households [@woodruff2025tax].
 
-The open-source model has attracted contributions from over 25 developers and has been iteratively developed since 2021, with over 2,700 commits and regular tagged releases. The project uses continuous integration, automated testing, and comprehensive documentation including Jupyter notebook tutorials covering programme-specific validation against administrative data (e.g., HBAI comparisons).
-
 # Acknowledgements
 
 This work was supported by the Nuffield Foundation since September 2024 [@nuffield2024grant]. The Nuffield Foundation had no involvement in the design, development, or content of this software or paper.
