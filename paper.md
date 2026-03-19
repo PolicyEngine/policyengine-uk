@@ -60,7 +60,7 @@ PolicyEngine UK is built on the PolicyEngine Core framework, which extends the O
 
 The model supports two input modes. The `Simulation` class accepts programmatically defined household situations — specifying ages, incomes, housing costs, and household composition — for individual-level analysis. The `Microsimulation` class loads population-level survey microdata from the `policyengine-uk-data` repository [@pe_uk_data] with calibrated weights, enabling computation of aggregate statistics including poverty rates, inequality metrics, and budgetary impacts. Revenue impacts are computed via the accounting identity: when household net income decreases under a reform, government revenue increases by the equivalent amount.
 
-The dynamics module extends the static microsimulation with labour supply behavioural responses. It applies group-specific substitution elasticities (ranging from 0.14 to 0.30) and income elasticities (ranging from −0.185 to 0) based on OBR estimates, computing individual-level employment income adjustments and aggregate full-time equivalent (FTE) employment changes.
+The dynamics module extends the static microsimulation with labour supply behavioural responses. It applies group-specific substitution and income elasticities based on OBR estimates, computing individual-level employment income adjustments and aggregate full-time equivalent (FTE) employment changes.
 
 All code examples in the documentation are automatically re-executed with each new release to ensure correctness.
 
