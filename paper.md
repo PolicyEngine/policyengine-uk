@@ -5,8 +5,7 @@ tags:
   - microsimulation
   - tax
   - benefit
-  - public policy
-  - United Kingdom
+  - distributional analysis
 authors:
   - name: Max Ghenis
     orcid: 0000-0000-0000-0000
