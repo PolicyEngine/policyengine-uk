@@ -80,7 +80,7 @@ PolicyEngine UK has demonstrated research impact across government, academia, an
 
 This work was supported by the Nuffield Foundation since September 2024 [@nuffield2024grant]. The Nuffield Foundation had no involvement in the design, development, or content of this software or paper.
 
-We acknowledge contributions from all PolicyEngine UK contributors, and thank the OpenFisca community for the foundational microsimulation framework. We acknowledge the UKMOD team at the Institute for Social and Economic Research (ISER), University of Essex, for their contributions to model descriptions. We also acknowledge the UK Data Service and the Department for Work and Pensions for providing access to the Family Resources Survey.
+We acknowledge contributions from all PolicyEngine UK contributors, and thank the OpenFisca community for the foundational microsimulation framework [@openfisca]. We acknowledge the UKMOD team at the Institute for Social and Economic Research (ISER), University of Essex, for their contributions to model descriptions [@sutherland2014euromod]. We also acknowledge the UK Data Service and the Department for Work and Pensions for providing access to the Family Resources Survey.
 
 # AI Usage Disclosure
 
