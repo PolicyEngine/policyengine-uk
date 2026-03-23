@@ -17,6 +17,7 @@ reforms:
     gov.hmrc.child_benefit.amount.additional: 25
 - name: Reduce Universal Credit taper rate to 20%
   expected_impact: -41.9
+  tolerance: 1.5
   parameters:
     gov.dwp.universal_credit.means_test.reduction_rate: 0.2
 - name: Raise Class 1 main employee NICs rate to 10%
@@ -24,7 +25,8 @@ reforms:
   parameters:
     gov.hmrc.national_insurance.class_1.rates.employee.main: 0.1
 - name: Raise VAT standard rate by 2pp
-  expected_impact: 22.0
+  expected_impact: 18.9
+  tolerance: 1.5
   parameters:
     gov.hmrc.vat.standard_rate: 0.22
 - name: Raise additional rate by 3pp

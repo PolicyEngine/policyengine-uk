@@ -1,6 +1,6 @@
 [project] 
 name = "policyengine-uk"
-version = "2.74.0"
+version = "2.75.2"
 description = "PolicyEngine tax and benefit system for the UK."
 readme = "README.md"
 authors = [
@@ -63,11 +63,10 @@ dev = [
     "sphinx-argparse>=0.3.2,<1",
     "sphinx-math-dollar>=1.2.1,<2",
     "wheel",
-    "yaml-changelog>=0.1.7",
+    "towncrier>=24.8.0",
     "snowballstemmer>=2,<3",
     "jupyter-book>=2.0.0a0",
     "rich",
-    "towncrier>=24.8.0",
 ]
 
 [tool.pytest.ini_options]
@@ -113,3 +112,7 @@ line-length = 88
 extend-exclude = [
     "docs/book/programs/gov/dfe/care-to-learn.ipynb",
 ]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["E402", "E501", "E712", "E713", "E721", "E722", "E741", "F401", "F402", "F403", "F405", "F541", "F811", "F821", "F841"]

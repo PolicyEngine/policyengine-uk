@@ -67,7 +67,23 @@ class hbai_household_net_income(Variable):
         "personal_pension_contributions",
         "maintenance_expenses",
         "external_child_payments",
+        "LVT",
     ]
+
+    def formula(household, period, parameters):
+        if parameters(period).gov.contrib.abolish_council_tax:
+            return add(
+                household,
+                period,
+                hbai_household_net_income.adds,
+            ) - add(
+                household,
+                period,
+                [s for s in hbai_household_net_income.subtracts if s != "council_tax"],
+            )
+        return add(household, period, hbai_household_net_income.adds) - add(
+            household, period, hbai_household_net_income.subtracts
+        )
 
 
 class real_hbai_household_net_income(Variable):

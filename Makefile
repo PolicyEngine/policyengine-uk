@@ -12,6 +12,7 @@ install:
 
 format:
 	ruff format .
+	ruff check .
 
 test:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk

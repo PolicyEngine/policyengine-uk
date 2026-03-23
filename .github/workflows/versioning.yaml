@@ -1,4 +1,6 @@
 # Workflow that runs on versioning metadata updates.
+# Uses GITHUB_TOKEN (not a personal PAT) for same-repo operations.
+# Cross-repo API updates require POLICYENGINE_GITHUB secret (org-level PAT).
 
 name: Versioning updates
 on:
@@ -7,42 +9,52 @@ on:
       - main
 
     paths:
-      - changelog_entry.yaml
-      - .github/**
+      - changelog.d/**
+      - pyproject.toml
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   Versioning:
-    if: (github.event.head_commit.message != 'Update package version')
     runs-on: ubuntu-latest
+    if: |
+      (!(github.event.head_commit.message == 'Update package version'))
+    outputs:
+      committed: ${{ steps.commit.outputs.committed }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.POLICYENGINE_GITHUB }}
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
-      - name: Build changelog
-        run: pip install yaml-changelog && make changelog
-      - name: Preview changelog update
-        run: ".github/get-changelog-diff.sh"
+      - name: Install towncrier
+        run: uv pip install towncrier --system
+      - name: Bump version and build changelog
+        run: |
+          python .github/bump_version.py
+          towncrier build --yes --version $(python -c "import re; print(re.search(r'version = \"(.+?)\"', open('pyproject.toml').read()).group(1))")
       - name: Update changelog
+        id: commit
         uses: EndBug/add-and-commit@v9
         with:
           add: "."
           message: Update package version
   Publish:
     runs-on: ubuntu-latest
-    if: (github.event.head_commit.message == 'Update package version')
-    env:
-      GH_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
+    needs: Versioning
+    if: needs.Versioning.outputs.committed == 'true'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
@@ -67,6 +79,11 @@ jobs:
           password: ${{ secrets.PYPI }}
           skip_existing: true
       - name: Update API
-        run: python .github/update_api.py
+        run: |
+          if [ -n "$CROSS_REPO_TOKEN" ]; then
+            GITHUB_TOKEN="$CROSS_REPO_TOKEN" python .github/update_api.py
+          else
+            echo "Skipping cross-repo API update (POLICYENGINE_GITHUB secret not set)"
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
+          CROSS_REPO_TOKEN: ${{ secrets.POLICYENGINE_GITHUB }}
