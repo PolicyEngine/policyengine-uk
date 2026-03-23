@@ -47,8 +47,8 @@ def is_stroud_working_age(local_authority, country, has_pensioner):
 
 
 def is_warrington_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_warrington(
-        local_authority
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_warrington(local_authority)
     )
 
 

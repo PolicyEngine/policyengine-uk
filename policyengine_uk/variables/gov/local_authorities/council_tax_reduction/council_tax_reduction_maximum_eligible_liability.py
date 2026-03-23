@@ -14,7 +14,9 @@ class council_tax_reduction_maximum_eligible_liability(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        england_council_tax = parameters(period).gov.local_authorities.england.council_tax
+        england_council_tax = parameters(
+            period
+        ).gov.local_authorities.england.council_tax
         dudley_ctr = parameters(
             period
         ).gov.local_authorities.dudley.council_tax_reduction

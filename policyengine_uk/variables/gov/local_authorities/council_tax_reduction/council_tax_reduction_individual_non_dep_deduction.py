@@ -30,7 +30,9 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             person("employment_income", period)
             + person("self_employment_income", period)
         ) / WEEKS_IN_YEAR
-        classic_deduction = p.amount.calc(weekly_total_income, right=True) * WEEKS_IN_YEAR
+        classic_deduction = (
+            p.amount.calc(weekly_total_income, right=True) * WEEKS_IN_YEAR
+        )
 
         household = person.household
         local_authority = household("local_authority", period)

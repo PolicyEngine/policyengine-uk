@@ -25,7 +25,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         )
         wales_ctr = local_authority_parameters.wales.council_tax_reduction
         scotland_ctr = local_authority_parameters.scotland.council_tax_reduction
-        east_herts_ctr = local_authority_parameters.east_hertfordshire.council_tax_reduction
+        east_herts_ctr = (
+            local_authority_parameters.east_hertfordshire.council_tax_reduction
+        )
         stroud_ctr = local_authority_parameters.stroud.council_tax_reduction
         warrington_ctr = local_authority_parameters.warrington.council_tax_reduction
         dudley_ctr = local_authority_parameters.dudley.council_tax_reduction
