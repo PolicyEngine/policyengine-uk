@@ -1,0 +1,10 @@
+description: Capital limit under the East Hertfordshire Council Tax Reduction means test.
+values:
+  2025-04-01: 16000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: East Hertfordshire Council Tax Reduction capital limit
+  reference:
+    - title: East Hertfordshire District Council Council Tax Reduction Scheme 2025/26
+      href: https://cdn-eastherts.onwebcurl.com/s3fs-public/2025-03/East%20Herts%20S13a%20202526%20Scheme%20Final.pdf

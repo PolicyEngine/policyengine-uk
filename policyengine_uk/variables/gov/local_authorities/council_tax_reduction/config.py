@@ -10,8 +10,16 @@ def is_dudley(local_authority):
     return local_authority == LocalAuthority.DUDLEY
 
 
+def is_east_hertfordshire(local_authority):
+    return local_authority == LocalAuthority.EAST_HERTFORDSHIRE
+
+
 def is_stroud(local_authority):
     return local_authority == LocalAuthority.STROUD
+
+
+def is_warrington(local_authority):
+    return local_authority == LocalAuthority.WARRINGTON
 
 
 def is_england_pensioner_scheme(country, has_pensioner):
@@ -26,8 +34,22 @@ def is_wales_scheme(country):
     return country == Country.WALES
 
 
+def is_east_hertfordshire_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_east_hertfordshire(local_authority)
+    )
+
+
 def is_stroud_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_stroud(local_authority)
+
+
+def is_warrington_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_warrington(
+        local_authority
+    )
 
 
 def is_supported_scheme(local_authority, country, has_pensioner):
@@ -35,7 +57,13 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         is_england_pensioner_scheme(country, has_pensioner)
         | is_scotland_scheme(country)
         | is_wales_scheme(country)
+        | is_east_hertfordshire_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         | is_stroud_working_age(local_authority, country, has_pensioner)
+        | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)
     )
 
