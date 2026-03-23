@@ -1,0 +1,28 @@
+- name: HBAI subtracts net council tax after CTR rather than gross council tax
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 500
+        employment_income: 10000
+    benunits:
+      benunit:
+        members: [claimant]
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_less_benefit: 1300
+    hbai_household_net_income: 8700
