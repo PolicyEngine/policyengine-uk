@@ -192,7 +192,7 @@
   output:
     council_tax_reduction: 640
 
-- name: Welsh household uses the classic full-support scheme
+- name: Welsh household uses the national Welsh CTR scheme
   period: 2025
   absolute_error_margin: 0.5
   input:
@@ -221,7 +221,7 @@
     council_tax_reduction_scheme_supported: true
     council_tax_reduction: 1800
 
-- name: Scottish household uses the classic full-support scheme
+- name: Scottish household uses the national Scottish CTR scheme
   period: 2025
   absolute_error_margin: 0.5
   input:

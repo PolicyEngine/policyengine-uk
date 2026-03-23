@@ -2,8 +2,10 @@
 
 This implementation currently simulates:
 
-- The national-style legacy/default CTR calculation for households in Wales, Scotland, and English pension-age cases.
-- Explicit working-age overrides for Stroud and Dudley.
+- The statutory CTR scheme for pensioner households in England.
+- The national CTR scheme in Wales.
+- The national CTR scheme in Scotland.
+- Working-age local schemes for Stroud and Dudley.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 

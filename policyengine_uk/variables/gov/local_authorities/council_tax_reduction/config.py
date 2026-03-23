@@ -5,14 +5,6 @@ from policyengine_uk.variables.household.demographic.locations import (
 )
 from policyengine_uk.variables.input.council_tax_band import CouncilTaxBand
 
-CLASSIC_MAX_SUPPORT_RATE = 1.0
-CLASSIC_WITHDRAWAL_RATE = 0.2
-DUDLEY_WORKING_AGE_MAX_SUPPORT_RATE = 0.4
-DUDLEY_WORKING_AGE_NON_DEP_WEEKLY_DEDUCTION = 5.0
-CAPITAL_LIMIT_GBP = 16_000
-
-ENGLISH_BAND_C_RATIO = 8 / 9
-
 
 def is_dudley(local_authority):
     return local_authority == LocalAuthority.DUDLEY
@@ -22,38 +14,37 @@ def is_stroud(local_authority):
     return local_authority == LocalAuthority.STROUD
 
 
-def is_classic_scheme(local_authority, country, has_pensioner):
-    return (
-        (country == Country.SCOTLAND)
-        | (country == Country.WALES)
-        | ((country == Country.ENGLAND) & has_pensioner)
-        | is_stroud(local_authority)
-    )
+def is_england_pensioner_scheme(country, has_pensioner):
+    return (country == Country.ENGLAND) & has_pensioner
+
+
+def is_scotland_scheme(country):
+    return country == Country.SCOTLAND
+
+
+def is_wales_scheme(country):
+    return country == Country.WALES
+
+
+def is_stroud_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_stroud(local_authority)
 
 
 def is_supported_scheme(local_authority, country, has_pensioner):
-    return is_classic_scheme(local_authority, country, has_pensioner) | (
-        (country == Country.ENGLAND)
-        & ~has_pensioner
-        & is_dudley(local_authority)
+    return (
+        is_england_pensioner_scheme(country, has_pensioner)
+        | is_scotland_scheme(country)
+        | is_wales_scheme(country)
+        | is_stroud_working_age(local_authority, country, has_pensioner)
+        | is_dudley_working_age(local_authority, country, has_pensioner)
     )
 
 
-def maximum_support_rate(local_authority, country, has_pensioner):
-    classic = is_classic_scheme(local_authority, country, has_pensioner)
-    dudley = (
-        (country == Country.ENGLAND)
-        & ~has_pensioner
-        & is_dudley(local_authority)
-    )
-    return select(
-        [classic, dudley],
-        [CLASSIC_MAX_SUPPORT_RATE, DUDLEY_WORKING_AGE_MAX_SUPPORT_RATE],
-        default=0.0,
-    )
+def is_dudley_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_dudley(local_authority)
 
 
-def english_council_tax_band_ratio(council_tax_band):
+def english_council_tax_band_ratio(council_tax_band, band_ratios):
     return select(
         [
             council_tax_band == CouncilTaxBand.A,
@@ -66,6 +57,16 @@ def english_council_tax_band_ratio(council_tax_band):
             council_tax_band == CouncilTaxBand.H,
             council_tax_band == CouncilTaxBand.I,
         ],
-        [6 / 9, 7 / 9, 8 / 9, 1.0, 11 / 9, 13 / 9, 15 / 9, 18 / 9, 21 / 9],
-        default=1.0,
+        [
+            band_ratios.A,
+            band_ratios.B,
+            band_ratios.C,
+            band_ratios.D,
+            band_ratios.E,
+            band_ratios.F,
+            band_ratios.G,
+            band_ratios.H,
+            band_ratios.I,
+        ],
+        default=band_ratios.D,
     )

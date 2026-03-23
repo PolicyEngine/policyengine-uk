@@ -1,9 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
-    DUDLEY_WORKING_AGE_NON_DEP_WEEKLY_DEDUCTION,
-    is_dudley,
+    is_dudley_working_age,
 )
-from policyengine_uk.variables.household.demographic.country import Country
 
 
 class council_tax_reduction_individual_non_dep_deduction(Variable):
@@ -16,6 +14,9 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
+        dudley_params = parameters(
+            period
+        ).gov.local_authorities.dudley.council_tax_reduction
         weekly_income = person("total_income", period) / WEEKS_IN_YEAR
         classic_deduction = p.amount.calc(weekly_income, right=True) * WEEKS_IN_YEAR
 
@@ -25,14 +26,12 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         has_pensioner = household(
             "council_tax_reduction_household_has_pensioner", period
         )
-        dudley_working_age = (
-            (country == Country.ENGLAND)
-            & ~has_pensioner
-            & is_dudley(local_authority)
+        dudley_working_age = is_dudley_working_age(
+            local_authority,
+            country,
+            has_pensioner,
         )
-        dudley_deduction = (
-            DUDLEY_WORKING_AGE_NON_DEP_WEEKLY_DEDUCTION * WEEKS_IN_YEAR
-        )
+        dudley_deduction = dudley_params.non_dep_deduction.amount * WEEKS_IN_YEAR
         claimant_exempt = person.household(
             "council_tax_reduction_household_has_non_dep_exemption", period
         )

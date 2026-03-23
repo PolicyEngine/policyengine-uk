@@ -79,7 +79,11 @@ class hbai_household_net_income(Variable):
             ) - add(
                 household,
                 period,
-                [s for s in hbai_household_net_income.subtracts if s != "council_tax"],
+                [
+                    s
+                    for s in hbai_household_net_income.subtracts
+                    if s != "council_tax_less_benefit"
+                ],
             )
         return add(household, period, hbai_household_net_income.adds) - add(
             household, period, hbai_household_net_income.subtracts

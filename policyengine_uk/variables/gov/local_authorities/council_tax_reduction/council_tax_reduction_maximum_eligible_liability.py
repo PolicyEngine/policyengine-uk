@@ -1,10 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
-    ENGLISH_BAND_C_RATIO,
     english_council_tax_band_ratio,
-    is_dudley,
+    is_dudley_working_age,
 )
-from policyengine_uk.variables.household.demographic.country import Country
 
 
 class council_tax_reduction_maximum_eligible_liability(Variable):
@@ -15,6 +13,10 @@ class council_tax_reduction_maximum_eligible_liability(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
+        dudley_council_tax = parameters(period).gov.local_authorities.dudley.council_tax
+        dudley_ctr = parameters(
+            period
+        ).gov.local_authorities.dudley.council_tax_reduction
         council_tax = household("council_tax", period)
         local_authority = household("local_authority", period)
         country = household("country", period)
@@ -23,12 +25,16 @@ class council_tax_reduction_maximum_eligible_liability(Variable):
             "council_tax_reduction_household_has_pensioner", period
         )
 
-        band_ratio = english_council_tax_band_ratio(council_tax_band)
-        band_c_liability = council_tax * ENGLISH_BAND_C_RATIO / band_ratio
-        dudley_working_age = (
-            (country == Country.ENGLAND)
-            & ~has_pensioner
-            & is_dudley(local_authority)
+        band_ratio = english_council_tax_band_ratio(
+            council_tax_band,
+            dudley_council_tax.band_ratio,
         )
-        capped = dudley_working_age & (band_ratio > ENGLISH_BAND_C_RATIO)
+        cap_band_ratio = dudley_ctr.maximum_liability.cap_band_ratio
+        band_c_liability = council_tax * cap_band_ratio / band_ratio
+        dudley_working_age = is_dudley_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        capped = dudley_working_age & (band_ratio > cap_band_ratio)
         return where(capped, band_c_liability, council_tax)

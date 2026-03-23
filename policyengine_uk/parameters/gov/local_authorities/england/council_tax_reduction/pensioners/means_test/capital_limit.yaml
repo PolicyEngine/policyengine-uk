@@ -1,0 +1,10 @@
+description: Capital limit for pensioner households under the England Council Tax Reduction scheme.
+values:
+  2013-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: England Council Tax Reduction pensioner capital limit
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012
+      href: https://www.legislation.gov.uk/uksi/2012/2885/contents/made

@@ -11,8 +11,6 @@ class would_claim_council_tax_reduction(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        claims_all_entitled_benefits = benunit(
-            "claims_all_entitled_benefits", period
-        )
+        claims_all_entitled_benefits = benunit("claims_all_entitled_benefits", period)
         reported_ctr = benunit("council_tax_benefit_reported", period) > 0
         return claims_all_entitled_benefits | reported_ctr

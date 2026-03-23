@@ -8,6 +8,6 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return (
-            person("age", period) >= 18
-        ) & ~person.benunit("benunit_contains_household_head", period)
+        return (person("age", period) >= 18) & ~person.benunit(
+            "benunit_contains_household_head", period
+        )
