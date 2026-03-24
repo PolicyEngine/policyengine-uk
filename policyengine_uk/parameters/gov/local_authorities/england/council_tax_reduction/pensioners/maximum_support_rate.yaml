@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered for pensioner households under the England Council Tax Reduction scheme.
+values:
+  2013-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: England Council Tax Reduction pensioner maximum support rate
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012
+      href: https://www.legislation.gov.uk/uksi/2012/2885/contents/made

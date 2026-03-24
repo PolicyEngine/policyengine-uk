@@ -1,0 +1,1 @@
+Added an initial `council_tax_reduction` framework covering Wales, Scotland, English pension-age households, and explicit working-age overrides for Stroud and Dudley, and netted Council Tax Reduction against household council tax in downstream income measures.

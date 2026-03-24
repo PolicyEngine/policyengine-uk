@@ -1,0 +1,10 @@
+description: Capital limit under the Wales Council Tax Reduction scheme.
+values:
+  2013-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Wales Council Tax Reduction capital limit
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012
+      href: https://www.legislation.gov.uk/wsi/2012/3144/contents/made

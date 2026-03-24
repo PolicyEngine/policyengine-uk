@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered under the Wales Council Tax Reduction scheme.
+values:
+  2013-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Wales Council Tax Reduction maximum support rate
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012
+      href: https://www.legislation.gov.uk/wsi/2012/3144/contents/made

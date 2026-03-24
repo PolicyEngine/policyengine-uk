@@ -58,7 +58,7 @@ class hbai_household_net_income(Variable):
         # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
     ]
     subtracts = [
-        "council_tax",
+        "council_tax_less_benefit",
         "domestic_rates",
         "income_tax",
         "national_insurance",
@@ -79,7 +79,11 @@ class hbai_household_net_income(Variable):
             ) - add(
                 household,
                 period,
-                [s for s in hbai_household_net_income.subtracts if s != "council_tax"],
+                [
+                    s
+                    for s in hbai_household_net_income.subtracts
+                    if s != "council_tax_less_benefit"
+                ],
             )
         return add(household, period, hbai_household_net_income.adds) - add(
             household, period, hbai_household_net_income.subtracts

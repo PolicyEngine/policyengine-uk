@@ -371,6 +371,17 @@ programs:
     variable: council_tax
     verified_start_year: 2022
 
+  - id: council_tax_reduction
+    name: Council Tax Reduction
+    full_name: Council Tax Reduction
+    category: Benefits
+    agency: Local
+    status: partial
+    coverage: UK
+    variable: council_tax_reduction
+    verified_years: "2025-2025"
+    notes: Wales, Scotland, and English pension-age households use national or default-style rules; working-age England currently has explicit overrides for Stroud and Dudley, with unsupported authorities falling back to reported baseline data.
+
   # --- Treasury programs ---
   - id: cost_of_living_support
     name: Cost of Living Support
