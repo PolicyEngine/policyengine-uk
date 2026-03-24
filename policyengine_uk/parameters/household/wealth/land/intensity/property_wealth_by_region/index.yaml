@@ -1,0 +1,8 @@
+description: Region-specific land intensity of property wealth
+metadata:
+  label: Regional property wealth land intensity
+  reference:
+    - title: MHCLG Land Value Estimates for Policy Appraisal 2023
+      href: https://www.gov.uk/government/publications/land-value-estimates-for-policy-appraisal-2023
+    - title: UK House Price Index Dec 2025
+      href: https://www.gov.uk/government/statistics/uk-house-price-index-for-december-2025
