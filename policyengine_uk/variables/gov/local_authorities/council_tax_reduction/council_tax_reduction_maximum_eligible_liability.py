@@ -39,6 +39,13 @@ class council_tax_reduction_maximum_eligible_liability(Variable):
                 period,
             )
         )
+        claimant_relevant_income_based_benefit = household.any(
+            claimant_benunit
+            & person.benunit(
+                "council_tax_reduction_relevant_income_based_benefit",
+                period,
+            )
+        )
 
         band_ratio = english_council_tax_band_ratio(
             council_tax_band,
@@ -62,6 +69,7 @@ class council_tax_reduction_maximum_eligible_liability(Variable):
         warrington_capped = (
             warrington_working_age
             & ~claimant_income_below_applicable_amount
+            & ~claimant_relevant_income_based_benefit
             & (band_ratio > warrington_cap_band_ratio)
         )
         capped_liability = where(dudley_capped, band_c_liability, council_tax)

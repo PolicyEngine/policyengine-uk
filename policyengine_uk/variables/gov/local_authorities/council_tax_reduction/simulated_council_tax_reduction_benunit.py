@@ -50,8 +50,9 @@ class simulated_council_tax_reduction_benunit(Variable):
             "council_tax_reduction_income_below_applicable_amount",
             period,
         )
-        east_herts_relevant_benefit = (
-            add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
+        relevant_income_based_benefit = benunit(
+            "council_tax_reduction_relevant_income_based_benefit",
+            period,
         )
 
         england_pensioners = is_england_pensioner_scheme(country, has_pensioner)
@@ -88,9 +89,22 @@ class simulated_council_tax_reduction_benunit(Variable):
             has_pensioner,
         )
         warrington_band_a = council_tax_band == CouncilTaxBand.A
-        warrington_class_d = warrington_working_age & income_below_applicable_amount
+        warrants_like_legacy_scheme = (
+            chesterfield_working_age
+            | east_herts_working_age
+            | stevenage_working_age
+            | stroud_working_age
+            | warrington_working_age
+            | dudley_working_age
+        )
+        legacy_passported_claimant = (
+            warrants_like_legacy_scheme & relevant_income_based_benefit
+        )
+        warrington_class_d = warrington_working_age & (
+            income_below_applicable_amount | relevant_income_based_benefit
+        )
         east_herts_class_d = east_herts_working_age & (
-            income_below_applicable_amount | east_herts_relevant_benefit
+            income_below_applicable_amount | relevant_income_based_benefit
         )
         warrington_max_support = select(
             [
@@ -183,9 +197,11 @@ class simulated_council_tax_reduction_benunit(Variable):
             default=0.0,
         )
         excess_income = max_(0, applicable_income - applicable_amount)
-        # East Herts class D claimants keep the full maximum award if they are
-        # passported by income-based JSA, income support, or income-related ESA.
-        excess_income = where(east_herts_class_d, 0, excess_income)
+        # The currently encoded English working-age schemes follow the legacy
+        # CTB-style treatment of income-based JSA, income support, and
+        # income-related ESA claimants. Those cases keep the maximum local
+        # award instead of entering the taper.
+        excess_income = where(legacy_passported_claimant, 0, excess_income)
         preliminary_award = max_(
             0,
             liability * max_support

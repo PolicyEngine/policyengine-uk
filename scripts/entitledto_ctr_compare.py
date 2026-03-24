@@ -7,7 +7,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional, Sequence
 from urllib.parse import urljoin
 
 import requests
@@ -24,8 +24,11 @@ USER_AGENT = (
 @dataclass(frozen=True)
 class Scenario:
     description: str
+    household_overrides: Optional[Dict[str, str]]
     age_overrides: Dict[str, str]
     benefits_overrides: Dict[str, str]
+    partner_age_overrides: Optional[Dict[str, str]] = None
+    child_overrides: Optional[Sequence[Dict[str, str]]] = None
     disability_overrides: Optional[Dict[str, str]] = None
     net_income_overrides: Optional[Dict[str, str]] = None
     housing_costs_overrides: Optional[Dict[str, str]] = None
@@ -34,6 +37,7 @@ class Scenario:
 SCENARIOS = {
     "single_jsa": Scenario(
         description="Single working-age claimant on income-based JSA.",
+        household_overrides=None,
         age_overrides={
             "Age": "35",
             "Gender": "Male",
@@ -63,6 +67,7 @@ SCENARIOS = {
     ),
     "single_jsa_pip_standard": Scenario(
         description="Single working-age claimant on income-based JSA with standard daily living PIP.",
+        household_overrides=None,
         age_overrides={
             "Age": "35",
             "Gender": "Male",
@@ -97,6 +102,7 @@ SCENARIOS = {
     ),
     "single_pension_credit": Scenario(
         description="Single pension-age claimant with Pension Credit and State Pension.",
+        household_overrides=None,
         age_overrides={
             "Age": "70",
             "DOB_Day": "1",
@@ -115,6 +121,93 @@ SCENARIOS = {
             "ClientRetirementPension.SelectedOption": "1",
             "ClientRetirementPension.Value": "185.15",
             "ClientRetirementPension.PaymentPeriod": "2",
+            "ClientReceivesOtherBenefits": "False",
+        },
+        net_income_overrides={
+            "IsClientIncomeNonStatePensions": "False",
+            "IsFosteringAllowanceOption": "False",
+            "IncomeFromSavingsChk": "False",
+            "IsIncomeFromMaintenancePaymentsOption": "False",
+            "IsIncomeFromVoluntaryCharitablePaymentsOption": "False",
+            "OwnOtherProperty": "False",
+            "IsOtherSourcesIncome": "False",
+        },
+    ),
+    "couple_jsa": Scenario(
+        description="Couple with no children on income-based JSA.",
+        household_overrides={
+            "HasPartner": "True",
+        },
+        age_overrides={
+            "Age": "35",
+            "Gender": "Male",
+            "ClientWorkStatus": "NotEmployed",
+            "WeekWorkHoursAmount": "0",
+            "WorkStatus": "False",
+            "ClientDisbens": "NotClaimed",
+            "ClientDisabledNotClaiming": "False",
+            "ClientCareForDisabled": "False",
+        },
+        partner_age_overrides={
+            "Age": "35",
+            "Gender": "Female",
+            "ClientWorkStatus": "NotEmployed",
+            "WeekWorkHoursAmount": "0",
+            "WorkStatus": "False",
+            "ClientDisbens": "NotClaimed",
+            "ClientDisabledNotClaiming": "False",
+            "ClientCareForDisabled": "False",
+        },
+        benefits_overrides={
+            "ReceiveUniversalCredit": "False",
+            "ReceiveTransitionalElement": "False",
+            "IncomeBasedBenefit": "jobseekerallowanceincomebased",
+            "ReceivedManagedMigrationNotice": "False",
+            "ClientReceivesOtherBenefits": "False",
+        },
+        net_income_overrides={
+            "IsClientIncomeNonStatePensions": "False",
+            "IsFosteringAllowanceOption": "False",
+            "IncomeFromSavingsChk": "False",
+            "IsIncomeFromMaintenancePaymentsOption": "False",
+            "IsIncomeFromVoluntaryCharitablePaymentsOption": "False",
+            "OwnOtherProperty": "False",
+            "IsOtherSourcesIncome": "False",
+        },
+    ),
+    "lone_parent_one_child_jsa": Scenario(
+        description="Lone parent with one child on income-based JSA.",
+        household_overrides={
+            "HouseholdChildrenNumber": "1",
+        },
+        age_overrides={
+            "Age": "35",
+            "Gender": "Male",
+            "ClientWorkStatus": "NotEmployed",
+            "WeekWorkHoursAmount": "0",
+            "WorkStatus": "False",
+            "ClientDisbens": "NotClaimed",
+            "ClientDisabledNotClaiming": "False",
+            "ClientCareForDisabled": "False",
+        },
+        child_overrides=[
+            {
+                "Age": "5",
+                "DOB_Day": "1",
+                "DOB_Month": "1",
+                "DOB_Year": "2021",
+                "PayForChildcare": "False",
+                "ChildcarePeriod": "2",
+                "ChildcareAmount": "0",
+                "IsDisabledPerson": "False",
+                "IsDisabledNotClaiming": "False",
+            }
+        ],
+        benefits_overrides={
+            "ReceiveUniversalCredit": "False",
+            "ReceiveTransitionalElement": "False",
+            "IncomeBasedBenefit": "jobseekerallowanceincomebased",
+            "ReceivedManagedMigrationNotice": "False",
             "ClientReceivesOtherBenefits": "False",
         },
         net_income_overrides={
@@ -182,6 +275,17 @@ def load_session(storage_state_path: Path) -> requests.Session:
         }
     )
     return session
+
+
+def find_resume_cid(session: requests.Session) -> Optional[str]:
+    for cookie in session.cookies:
+        match = re.match(
+            r"f_/benefits-calculator/Intro/Home\?cid([0-9a-f-]{36})",
+            cookie.name,
+        )
+        if match:
+            return match.group(1)
+    return None
 
 
 def extract_primary_form(html: str, current_url: str) -> tuple[str, Dict[str, str]]:
@@ -263,21 +367,31 @@ def page_title(html: str) -> str:
     return soup.title.get_text(strip=True) if soup.title else ""
 
 
-def bootstrap_single_adult(
+def bootstrap_calculation(
     session: requests.Session,
     postcode: str,
     housing_status: str,
+    household_overrides: Optional[Dict[str, str]] = None,
 ) -> requests.Response:
     response = None
     action = None
     payload = None
-    for _ in range(3):
+    resume_cid = find_resume_cid(session)
+    if resume_cid is not None:
         response = session.get(
-            "https://www.entitledto.co.uk/benefits-calculator/", timeout=30
+            f"https://www.entitledto.co.uk/benefits-calculator/Intro/Home?cid={resume_cid}",
+            timeout=30,
         )
+    else:
+        response = session.get(
+            "https://www.entitledto.co.uk/benefits-calculator/",
+            timeout=30,
+        )
+    for _ in range(5):
         action, payload = extract_primary_form(response.text, response.url)
         if "CalcIdent" in payload:
             break
+        response = follow_post(session, action, payload)
     if response is None or action is None or payload is None or "CalcIdent" not in payload:
         raise RuntimeError(
             "entitledto did not return the calculator start page with a CalcIdent"
@@ -293,6 +407,7 @@ def bootstrap_single_adult(
     action, household_defaults = extract_primary_form(response.text, response.url)
     household_payload["CalcIdent"] = household_defaults["CalcIdent"]
     household_payload["StartTime"] = household_defaults["StartTime"]
+    household_payload.update(household_overrides or {})
     return follow_post(session, action, household_payload)
 
 
@@ -304,6 +419,20 @@ def post_form_overrides(
     action, payload = extract_primary_form(response.text, response.url)
     payload.update(overrides or {})
     return follow_post(session, action, payload)
+
+
+def post_until(
+    session: requests.Session,
+    response: requests.Response,
+    overrides: Optional[Dict[str, str]],
+    predicate: Callable[[requests.Response], bool],
+    attempts: int = 3,
+) -> requests.Response:
+    for _ in range(attempts):
+        response = post_form_overrides(session, response, overrides)
+        if predicate(response):
+            return response
+    return response
 
 
 def require_page(response: requests.Response, fragment: str) -> None:
@@ -373,19 +502,77 @@ def run_scenario(
     save_html_dir: Optional[Path],
 ) -> Dict[str, Optional[str]]:
     scenario = SCENARIOS[scenario_name]
-    response = bootstrap_single_adult(session, postcode, housing_status)
+    response = bootstrap_calculation(
+        session,
+        postcode,
+        housing_status,
+        household_overrides=scenario.household_overrides,
+    )
     require_page(response, "/AgeDisabilityStatus")
-    response = post_form_overrides(session, response, scenario.age_overrides)
+    if scenario.partner_age_overrides is not None:
+        response = post_until(
+            session,
+            response,
+            scenario.age_overrides,
+            lambda resp: "client=Partner" in resp.url,
+        )
+    elif scenario.child_overrides is not None:
+        response = post_until(
+            session,
+            response,
+            scenario.age_overrides,
+            lambda resp: "/Children" in resp.url,
+        )
+    else:
+        response = post_until(
+            session,
+            response,
+            scenario.age_overrides,
+            lambda resp: (
+                "/BenefitsYouCurrentlyReceive" in resp.url
+                or "/DisabilityBenefits" in resp.url
+            ),
+        )
+
+    if scenario.partner_age_overrides is not None:
+        require_page(response, "/AgeDisabilityStatus")
+        response = post_until(
+            session,
+            response,
+            scenario.partner_age_overrides,
+            lambda resp: "/BenefitsYouCurrentlyReceive" in resp.url,
+        )
+
+    if scenario.child_overrides is not None:
+        for child_overrides in scenario.child_overrides:
+            require_page(response, "/Children")
+            response = post_until(
+                session,
+                response,
+                child_overrides,
+                lambda resp: "/BenefitsYouCurrentlyReceive" in resp.url
+                or "/Children" in resp.url,
+            )
 
     if "/DisabilityBenefits" in response.url:
         if scenario.disability_overrides is None:
             raise RuntimeError(
                 f"{scenario_name} reached DisabilityBenefits without a disability payload"
             )
-        response = post_form_overrides(session, response, scenario.disability_overrides)
+        response = post_until(
+            session,
+            response,
+            scenario.disability_overrides,
+            lambda resp: "/BenefitsYouCurrentlyReceive" in resp.url,
+        )
 
     require_page(response, "/BenefitsYouCurrentlyReceive")
-    response = post_form_overrides(session, response, scenario.benefits_overrides)
+    response = post_until(
+        session,
+        response,
+        scenario.benefits_overrides,
+        lambda resp: "/NetIncome" in resp.url,
+    )
     require_page(response, "/NetIncome")
     response = post_form_overrides(
         session,
@@ -393,7 +580,12 @@ def run_scenario(
         {**EMPTY_NET_INCOME, **(scenario.net_income_overrides or {})},
     )
     require_page(response, "/HousingCosts")
-    response = post_form_overrides(session, response, scenario.housing_costs_overrides)
+    response = post_until(
+        session,
+        response,
+        scenario.housing_costs_overrides,
+        lambda resp: "/CouncilTax" in resp.url,
+    )
     require_page(response, "/CouncilTax")
     response = post_form_overrides(
         session,

@@ -56,6 +56,70 @@
     council_tax_reduction: 1866.47
     council_tax_less_benefit: 0
 
+- name: Stroud claimant on income-based JSA keeps full support on the billed liability
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        jsa_income_reported: 4_786.6
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: STROUD
+        council_tax_band: D
+        council_tax: 1777.08
+        savings: 0
+  output:
+    council_tax_reduction: 1777.08
+    council_tax_less_benefit: 0
+
+- name: Stroud lone parent on income-based JSA keeps full support on the billed liability
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        jsa_income_reported: 4_786.6
+        council_tax_benefit_reported: 1
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: STROUD
+        council_tax_band: D
+        council_tax: 1777.08
+        savings: 0
+  output:
+    council_tax_reduction: 1777.08
+    council_tax_less_benefit: 0
+
 - name: Dudley working-age claimant faces 60 percent minimum payment and band C cap
   period: 2025
   absolute_error_margin: 0.5
@@ -135,6 +199,37 @@
       benunit:
         members: [claimant]
         claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: DUDLEY
+        council_tax_band: C
+        council_tax: 1359.05
+        savings: 0
+  output:
+    council_tax_reduction: 543.62
+    council_tax_less_benefit: 815.43
+
+- name: Dudley single claimant on income-based JSA keeps the full published 40 percent maximum award
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        jsa_income_reported: 4_786.6
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
         would_claim_uc: false
         is_single_person: true
         is_couple: false
@@ -459,6 +554,70 @@
   output:
     council_tax_reduction: 1647
     council_tax_less_benefit: 153
+
+- name: Warrington single claimant on income-based JSA stays in class D and keeps 91.5 percent support
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        jsa_income_reported: 4_786.6
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WARRINGTON
+        council_tax_band: C
+        council_tax: 1520.88
+        savings: 0
+  output:
+    council_tax_reduction: 1391.61
+    council_tax_less_benefit: 129.27
+
+- name: Warrington lone parent on income-based JSA stays in class D and keeps 91.5 percent support
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        jsa_income_reported: 4_786.6
+        council_tax_benefit_reported: 1
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: WARRINGTON
+        council_tax_band: C
+        council_tax: 1520.88
+        savings: 0
+  output:
+    council_tax_reduction: 1391.61
+    council_tax_less_benefit: 129.27
 
 - name: Warrington class E working-age claimant above Band A is capped to Band A liability
   period: 2025
