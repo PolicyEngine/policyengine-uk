@@ -25,6 +25,10 @@ It does not yet cover couples, children, or other-adult/non-dependant household 
 
 `uv run --with requests --with beautifulsoup4 python scripts/entitledto_ctr_compare.py output/playwright/entitledto-live-state.json --postcode SG13 8EQ --band D --council-tax 1800 --scenario single_jsa`
 
+There is also a requests-based Turn2us probe at `scripts/turn2us_ctr_compare.py`. It currently replays the public Turn2us calculator for a single working-age JSA claimant and records the benefits that appear on the final results page for the supplied postcode. A typical multi-authority run is:
+
+`uv run --with requests python scripts/turn2us_ctr_compare.py "SG13 8EQ" "WA1 1UH" "DY1 1HF" "GL5 4UB"`
+
 ## Validation notes
 
 Spot checks against public calculators and scheme sources currently show:
@@ -37,8 +41,15 @@ Spot checks against public calculators and scheme sources currently show:
 - Stevenage (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Chesterfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Warrington (`WA1 1UH`, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA): entitledto returns `GBP 26.69` per week of Council Tax Support and `GBP 2.48` per week left to pay on a displayed bill of `GBP 29.17` per week, which is a `91.5%` maximum award on the displayed weekly bill. PolicyEngine UK applies the same rule structure.
+- Policy in Practice Better Off Calculator (`SG13 8EQ`, East Hertfordshire, band `D`, single working-age owner-occupier, no children, no savings, income-based JSA, monthly council tax liability `GBP 150`): the public calculator resolves East Hertfordshire from postcode and returns `GBP 137.25` per month of Council Tax Support. That is exactly a `91.5%` award on the entered liability, matching the scheme structure and the PolicyEngine UK rule.
+- Policy in Practice Better Off Calculator (`DY1 1HF`, Dudley, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA, monthly council tax liability `GBP 113.25` with single-person discount): the public calculator resolves Dudley from postcode and returns `GBP 45.30` per month of Council Tax Support. That is exactly a `40%` award on the entered liability, matching Dudley's published scheme structure and the PolicyEngine UK rule.
+- Policy in Practice Better Off Calculator (`WA1 1UH`, Warrington, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA, monthly council tax liability `GBP 126.74` with single-person discount): the public calculator resolves Warrington from postcode and returns `GBP 95.06` per month of Council Tax Support. That is a `75%` award on the entered liability, which does not match Warrington's published 2025/26 Class D passported-JSA scheme, entitledto's `91.5%` result for the same scenario, or the current PolicyEngine UK encoding.
+- Policy in Practice Better Off Calculator (`GL5 4UB`, Stroud, band `D`, single working-age owner-occupier, no children, no savings, income-based JSA, monthly council tax liability `GBP 148.09` with single-person discount): the public calculator resolves Stroud from postcode and returns `GBP 148.09` per month of Council Tax Support. That is full support on the entered liability, matching entitledto's behavior and the published Stroud scheme summary.
+- Turn2us public calculator checks on the same four single working-age owner-occupier income-based JSA cases in East Hertfordshire, Warrington, Dudley, and Stroud all reached the final results page, but returned the same `Income-based Jobseekers Allowance` and `Universal Credit` lines for all four authorities and no CTR output. In these cases, Turn2us was not acting as an authority-specific CTR comparator.
 
 For the East Hertfordshire and Warrington calculator checks, entitledto's annual tab appears to multiply rounded weekly outputs by `52`, so the weekly figures are the closest comparison point. Additional browser-only probing suggests that reusing an existing entitledto calculation ID is good enough for lone-parent and couple spot checks, but not yet good enough for other-adult/non-dependant cases: the later pages can retain stale branch state, so those results should not be treated as validated until the flow is replayed from a fresh entitledto session.
+
+The public Policy in Practice calculator is testable through the browser, but not through a simple documented one-shot API. The frontend is a token-gated SPA on `betteroffcalculator.co.uk` backed by `api.betteroffcalculator.co.uk`; raw ad hoc `POST /api` requests return default baseline results unless the full calculator state has already been established in the session.
 
 Dudley references:
 
