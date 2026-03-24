@@ -15,6 +15,16 @@ The current implementation does not yet model:
 - Alternative maximum / second adult rebate cases.
 - Universal Credit-specific CTR adjustments beyond the standard income treatment used here.
 
+There is also a requests-based entitledto comparison harness at `scripts/entitledto_ctr_compare.py`. It replays the calculator from a saved browser storage state and currently covers three single-adult claimant variants:
+
+- `single_jsa`
+- `single_jsa_pip_standard`
+- `single_pension_credit`
+
+It does not yet cover couples, children, or other-adult/non-dependant household shapes. entitledto's session handling is also inconsistent enough that rerunning with a fresh storage state is sometimes necessary. A typical single-scenario run is:
+
+`uv run --with requests --with beautifulsoup4 python scripts/entitledto_ctr_compare.py output/playwright/entitledto-live-state.json --postcode SG13 8EQ --band D --council-tax 1800 --scenario single_jsa`
+
 ## Validation notes
 
 Spot checks against public calculators and scheme sources currently show:
