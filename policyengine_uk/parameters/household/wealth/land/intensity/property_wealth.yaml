@@ -1,6 +1,0 @@
-description: National average land intensity of property wealth (used as fallback for regions without specific estimates)
-values:
-  2019-01-01: 0.635
-  2022-01-01: 0.673
-metadata:
-  unit: /1
