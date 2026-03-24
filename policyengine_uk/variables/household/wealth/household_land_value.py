@@ -17,10 +17,9 @@ class household_land_value(Variable):
         property_wealth = household("property_wealth", period)
         owned_land = household("owned_land", period)
 
-        regional = (
-            parameters(period)
-            .household.wealth.land.intensity.property_wealth_by_region
-        )
+        regional = parameters(
+            period
+        ).household.wealth.land.intensity.property_wealth_by_region
 
         property_wealth_intensity = np.select(
             [
