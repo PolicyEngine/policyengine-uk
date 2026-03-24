@@ -50,6 +50,9 @@ class simulated_council_tax_reduction_benunit(Variable):
             "council_tax_reduction_income_below_applicable_amount",
             period,
         )
+        east_herts_relevant_benefit = (
+            add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
+        )
 
         england_pensioners = is_england_pensioner_scheme(country, has_pensioner)
         wales = is_wales_scheme(country)
@@ -86,6 +89,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         )
         warrington_band_a = council_tax_band == CouncilTaxBand.A
         warrington_class_d = warrington_working_age & income_below_applicable_amount
+        east_herts_class_d = east_herts_working_age & (
+            income_below_applicable_amount | east_herts_relevant_benefit
+        )
         warrington_max_support = select(
             [
                 warrington_class_d & warrington_band_a,
@@ -177,6 +183,9 @@ class simulated_council_tax_reduction_benunit(Variable):
             default=0.0,
         )
         excess_income = max_(0, applicable_income - applicable_amount)
+        # East Herts class D claimants keep the full maximum award if they are
+        # passported by income-based JSA, income support, or income-related ESA.
+        excess_income = where(east_herts_class_d, 0, excess_income)
         preliminary_award = max_(
             0,
             liability * max_support

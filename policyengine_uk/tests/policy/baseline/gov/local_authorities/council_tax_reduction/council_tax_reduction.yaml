@@ -221,6 +221,38 @@
     council_tax_reduction: 1647
     council_tax_less_benefit: 153
 
+- name: East Hertfordshire lone parent on income-based JSA keeps the full class D award
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        jsa_income_reported: 1
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: EAST_HERTFORDSHIRE
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction: 1647
+    council_tax_less_benefit: 153
+
 - name: Stevenage working-age claimant pays the 8.5 percent minimum contribution
   period: 2025
   absolute_error_margin: 0.5
