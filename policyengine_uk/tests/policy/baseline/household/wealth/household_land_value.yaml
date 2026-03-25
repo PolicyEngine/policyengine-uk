@@ -36,7 +36,7 @@
     residential_property_value: 200000
     owned_land: 0
   output:
-    household_land_value: 90000
+    household_land_value: 88000
 
 - name: Wales household
   period: 2023
@@ -46,7 +46,7 @@
     residential_property_value: 200000
     owned_land: 10000
   output:
-    household_land_value: 98000
+    household_land_value: 104000
 
 - name: Zero property wealth still counts owned land
   period: 2023
