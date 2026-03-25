@@ -1,20 +1,6 @@
-description: Land intensity by asset type (where microsimulation data is not available)
+description: Regional land intensity of property wealth
 metadata:
   unit: /1
-property_wealth:
-  description: National average land intensity of property wealth (used as fallback for regions without specific estimates)
-  values:
-    2019-01-01: 0.635
-    2022-01-01: 0.673
-  metadata:
-    unit: /1
-corporate_wealth:
-  description: Land intensity of corporate wealth
-  values:
-    2019-01-01: 0.349
-    2022-01-01: 0.321
-  metadata:
-    unit: /1
 property_wealth_by_region:
   description: >
     Region-specific land intensity of property wealth, i.e. the fraction of
