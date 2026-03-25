@@ -16,7 +16,13 @@ corporate_wealth:
   metadata:
     unit: /1
 property_wealth_by_region:
-  description: Region-specific land intensity of property wealth
+  description: >
+    Region-specific land intensity of property wealth, i.e. the fraction of
+    average house price attributable to land.  Derived via the residual method:
+    intensity = (mhclg_land_per_ha / dwellings_per_ha) / avg_house_price,
+    using MHCLG 2023 central-scenario densities and UK HPI Dec 2025 prices.
+    England regions use MHCLG local authority data aggregated to region.
+    Scotland and Wales are estimates (MHCLG covers England only).
   metadata:
     label: Regional property wealth land intensity
     unit: /1
