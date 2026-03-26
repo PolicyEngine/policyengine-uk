@@ -1,0 +1,89 @@
+- name: London household - high land intensity (0.85)
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: LONDON
+    residential_property_value: 500000
+    owned_land: 0
+  output:
+    household_land_value: 425000
+
+- name: North East household - low land intensity (0.42)
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: NORTH_EAST
+    residential_property_value: 500000
+    owned_land: 0
+  output:
+    household_land_value: 210000
+
+- name: South East household with owned land
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: SOUTH_EAST
+    residential_property_value: 400000
+    owned_land: 50000
+  output:
+    household_land_value: 310000
+
+- name: Scotland household
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: SCOTLAND
+    residential_property_value: 200000
+    owned_land: 0
+  output:
+    household_land_value: 88000
+
+- name: Wales household
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: WALES
+    residential_property_value: 200000
+    owned_land: 10000
+  output:
+    household_land_value: 104000
+
+- name: Zero property wealth still counts owned land
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    residential_property_value: 0
+    owned_land: 25000
+  output:
+    household_land_value: 25000
+
+- name: Unknown region uses national average (0.673)
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: UNKNOWN
+    residential_property_value: 300000
+    owned_land: 0
+  output:
+    household_land_value: 201900
+
+- name: East Midlands household
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: EAST_MIDLANDS
+    residential_property_value: 250000
+    owned_land: 0
+  output:
+    household_land_value: 120000
+
+- name: Northern Ireland household
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    region: NORTHERN_IRELAND
+    residential_property_value: 200000
+    owned_land: 0
+  output:
+    household_land_value: 88000
