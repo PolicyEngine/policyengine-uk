@@ -1,1 +1,0 @@
-Replace flat national land intensity ratio (0.673) with region-specific ratios from MHCLG 2023 land value estimates, so household_land_value reflects the much higher land share in London (0.85) vs the North East (0.42).
