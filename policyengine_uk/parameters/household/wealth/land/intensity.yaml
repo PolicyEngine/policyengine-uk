@@ -57,7 +57,7 @@ property_wealth_by_region:
       2023-01-01: 0.42
   NORTHERN_IRELAND:
     values:
-      2023-01-01: 0.44
+      2023-01-01: 0.673
   UNKNOWN:
     values:
       2023-01-01: 0.673
