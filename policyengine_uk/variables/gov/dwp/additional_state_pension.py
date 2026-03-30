@@ -18,12 +18,17 @@ class additional_state_pension(Variable):
             data_year = period.start.year
         reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
         type = person("state_pension_type", data_year)
-        maximum_basic_sp = parameters(
-            data_year
-        ).gov.dwp.state_pension.basic_state_pension.amount
+        sp_amount = parameters.gov.dwp.state_pension.basic_state_pension.amount
+        max_sp_data_year = sp_amount(data_year)
+        max_sp_period = sp_amount(period)
         amount_in_data_year = where(
             type == type.possible_values.BASIC,
-            max_(reported - maximum_basic_sp, 0),
+            max_(reported - max_sp_data_year, 0),
             0,
         )
-        return amount_in_data_year * WEEKS_IN_YEAR
+        uprating = where(
+            max_sp_data_year > 0,
+            max_sp_period / max_sp_data_year,
+            1,
+        )
+        return amount_in_data_year * uprating * WEEKS_IN_YEAR
