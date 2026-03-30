@@ -1,6 +1,8 @@
 """
 Test suite for PolicyEngine UK reform fiscal impacts.
 This file tests that model changes don't unexpectedly change reform impacts.
+Expected impacts come from the repo's current-model regression fixtures in
+reforms_config.yaml, not from external policy costings unless noted there.
 """
 
 import pytest
@@ -61,7 +63,7 @@ reform_names = [reform["name"] for reform in reforms_data]
 def test_reform_fiscal_impacts(
     baseline, reform, reform_name, expected_impact, tolerance
 ):
-    """Test that each reform produces the expected fiscal impact."""
+    """Test that each reform still matches its current-model regression target."""
     impact = get_fiscal_impact(baseline, reform)
 
     assert abs(impact - expected_impact) < tolerance, (
