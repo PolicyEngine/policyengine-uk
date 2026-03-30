@@ -1,3 +1,7 @@
+# Regression fixtures for microsimulation reform impacts.
+# These expected impacts are derived from current model output and are used to
+# catch unintended behavior changes. They are not external fiscal estimates
+# unless a reform entry is explicitly annotated otherwise.
 reforms:
 - name: Raise basic rate by 1pp
   expected_impact: 7.8
