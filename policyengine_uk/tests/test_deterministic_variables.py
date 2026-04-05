@@ -154,6 +154,29 @@ class TestExplicitOverrides:
         assert result[0] == False
 
 
+class TestDefaultDatasetUrl:
+    """Test that the default dataset URL points at the private HF repo."""
+
+    def test_simulation_defaults_to_private_hf_repo(self, monkeypatch):
+        captured = {}
+
+        class _StopDefaultDatasetLoad(Exception):
+            pass
+
+        def fake_build_from_url(self, url):
+            captured["url"] = url
+            raise _StopDefaultDatasetLoad
+
+        monkeypatch.setattr(Simulation, "build_from_url", fake_build_from_url)
+
+        with pytest.raises(_StopDefaultDatasetLoad):
+            Simulation()
+
+        assert captured["url"] == (
+            "hf://policyengine/policyengine-uk-data-private/enhanced_frs_2023_24.h5"
+        )
+
+
 class TestIsHigherEarner:
     """Test deterministic tie-breaking for is_higher_earner."""
 
