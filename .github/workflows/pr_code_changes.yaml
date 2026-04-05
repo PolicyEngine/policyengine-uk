@@ -48,7 +48,7 @@ jobs:
           - name: Install policyengine
             run: uv pip install policyengine --system
           - name: UV sync
-            run: uv sync
+            run: uv sync --extra dev
           - name: Run tests with coverage
             run: |
               # Only export token if non-empty (avoids 'Bearer ' error for Dependabot PRs)
