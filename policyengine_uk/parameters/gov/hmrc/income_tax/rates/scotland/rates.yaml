@@ -19,6 +19,7 @@ brackets:
         2023-04-06: 2_162
         2024-04-06: 2_306
         2025-04-06: 2_827
+        2026-04-06: 3_967
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
@@ -32,6 +33,7 @@ brackets:
         2023-04-06: 13_118
         2024-04-06: 13_991
         2025-04-06: 14_921
+        2026-04-06: 16_956
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
