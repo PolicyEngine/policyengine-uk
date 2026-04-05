@@ -1,3 +1,10 @@
+## [2.75.4] - 2026-04-05
+
+### Fixed
+
+- - Ensure `uprate_rent` passes a NumPy array into vectorial parameter lookup for regional private rent growth.
+
+
 ## [2.75.3] - 2026-03-26
 
 ### Changed

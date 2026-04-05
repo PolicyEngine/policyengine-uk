@@ -1,1 +1,0 @@
-- Ensure `uprate_rent` passes a NumPy array into vectorial parameter lookup for regional private rent growth.
