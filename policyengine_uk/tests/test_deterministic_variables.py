@@ -173,7 +173,7 @@ class TestDefaultDatasetUrl:
             Simulation()
 
         assert captured["url"] == (
-            "hf://policyengine/policyengine-uk-data-private/enhanced_frs_2023_24.h5"
+            "hf://policyengine/policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.40.3"
         )
 
 
