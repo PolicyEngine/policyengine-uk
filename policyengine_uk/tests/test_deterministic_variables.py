@@ -155,9 +155,15 @@ class TestExplicitOverrides:
 
 
 class TestDefaultDatasetUrl:
-    """Test that the default dataset URL points at the private HF repo."""
+    """Test explicit handling of the default dataset URL."""
 
-    def test_simulation_defaults_to_private_hf_repo(self, monkeypatch):
+    def test_simulation_requires_explicit_default_dataset(self, monkeypatch):
+        monkeypatch.delenv("POLICYENGINE_UK_DEFAULT_DATASET", raising=False)
+
+        with pytest.raises(ValueError, match="requires an explicit dataset"):
+            Simulation()
+
+    def test_simulation_uses_opt_in_default_dataset(self, monkeypatch):
         captured = {}
 
         class _StopDefaultDatasetLoad(Exception):
@@ -168,12 +174,16 @@ class TestDefaultDatasetUrl:
             raise _StopDefaultDatasetLoad
 
         monkeypatch.setattr(Simulation, "build_from_url", fake_build_from_url)
+        monkeypatch.setenv(
+            "POLICYENGINE_UK_DEFAULT_DATASET",
+            "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5",
+        )
 
         with pytest.raises(_StopDefaultDatasetLoad):
             Simulation()
 
         assert captured["url"] == (
-            "hf://policyengine/policyengine-uk-data-private/enhanced_frs_2023_24.h5"
+            "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
         )
 
 

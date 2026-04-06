@@ -1,4 +1,5 @@
 # Standard library imports
+import os
 from typing import Dict, Optional, Union, Type, List
 
 # Third-party imports
@@ -27,7 +28,7 @@ from policyengine_uk.data.economic_assumptions import (
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 
-from .tax_benefit_system import CountryTaxBenefitSystem
+from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
 
 from microdf import MicroDataFrame
 
@@ -35,6 +36,16 @@ from microdf import MicroDataFrame
 # by URL. Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
 # encoding (0.67s) on every Simulation() call after the first.
 _url_dataset_cache: dict = {}
+
+
+def get_default_dataset_url() -> str:
+    dataset_url = os.environ.get(DEFAULT_DATASET_ENV_VAR)
+    if dataset_url:
+        return dataset_url
+    raise ValueError(
+        "Simulation() requires an explicit dataset when no situation is provided. "
+        f"Pass dataset=..., or set {DEFAULT_DATASET_ENV_VAR} to opt into a default dataset."
+    )
 
 
 def _pre_encode_enum_columns(
@@ -143,9 +154,7 @@ class Simulation(CoreSimulation):
         elif isinstance(dataset, UKMultiYearDataset):
             self.build_from_multi_year_dataset(dataset)
         elif dataset is None:
-            self.build_from_url(
-                "hf://policyengine/policyengine-uk-data-private/enhanced_frs_2023_24.h5"
-            )
+            self.build_from_url(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 

@@ -37,7 +37,7 @@ from policyengine_uk.utils.parameters import (
 
 # Module constants
 COUNTRY_DIR = Path(__file__).parent
-ENHANCED_FRS = "hf://policyengine/policyengine-uk-data-private/enhanced_frs_2023_24.h5"
+DEFAULT_DATASET_ENV_VAR = "POLICYENGINE_UK_DEFAULT_DATASET"
 
 # Cache for fully-processed parameter tree, so convert_to_fiscal_year_parameters
 # (22,538 param.update() calls) only runs once per process.
