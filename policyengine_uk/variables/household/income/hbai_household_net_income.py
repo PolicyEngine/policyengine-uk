@@ -71,7 +71,8 @@ class hbai_household_net_income(Variable):
     ]
 
     def formula(household, period, parameters):
-        if parameters(period).gov.contrib.abolish_council_tax:
+        abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
+        if abolish_council_tax:
             return add(
                 household,
                 period,
