@@ -12,9 +12,7 @@ BENEFIT_CAP_FAMILY = {
         "child3": {"age": {2026: 1}},
     },
     "benunits": {
-        "family": {
-            "members": ["parent1", "parent2", "child1", "child2", "child3"]
-        }
+        "family": {"members": ["parent1", "parent2", "child1", "child2", "child3"]}
     },
     "households": {
         "home": {
