@@ -1,3 +1,10 @@
+## [2.77.1] - 2026-04-07
+
+### Fixed
+
+- Tax-Free Childcare now requires childcare expenses to be paid to a qualifying provider when that input is supplied.
+
+
 ## [2.77.0] - 2026-04-07
 
 ### Added
