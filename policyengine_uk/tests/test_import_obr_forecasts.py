@@ -52,11 +52,7 @@ def make_test_xlsx() -> bytes:
 
     sheet_16 = make_sheet(
         {
-            3: [
-                make_inline_cell(
-                    "Q3", "Average weekly earnings growth (per cent)"
-                )
-            ],
+            3: [make_inline_cell("Q3", "Average weekly earnings growth (per cent)")],
             97: [
                 make_inline_cell("B97", "2025"),
                 make_number_cell("Q97", 5.17),
@@ -142,9 +138,7 @@ def test_extract_annual_series_from_xlsx():
 
 
 def test_release_inference_helpers():
-    assert infer_release(
-        "Economy_Detailed_forecast_tables_November_2025.xlsx"
-    ) == (
+    assert infer_release("Economy_Detailed_forecast_tables_November_2025.xlsx") == (
         "November",
         2025,
     )
@@ -246,12 +240,9 @@ def test_update_yoy_growth_yaml_updates_forecast_window_only(tmp_path):
     assert "2025-01-01: 0.0280" in content
     assert "2026-01-01: 0.0240" in content
     assert (
-        "OBR EFO March 2026 (detailed forecast tables, economy, Table 1.16)"
-        in content
+        "OBR EFO March 2026 (detailed forecast tables, economy, Table 1.16)" in content
     )
-    assert (
-        "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/" in content
-    )
+    assert "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/" in content
 
 
 def test_update_yoy_growth_yaml_keeps_existing_values_when_obr_has_blank_years(

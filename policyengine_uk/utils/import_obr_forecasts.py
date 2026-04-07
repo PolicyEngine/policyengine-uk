@@ -126,9 +126,7 @@ def read_url_bytes(url: str) -> bytes:
         return response.read()
 
 
-def load_source_bytes(
-    url: str | None, file_path: str | None
-) -> tuple[str, bytes]:
+def load_source_bytes(url: str | None, file_path: str | None) -> tuple[str, bytes]:
     if bool(url) == bool(file_path):
         raise ValueError("Pass exactly one of --url or --file")
 
@@ -157,13 +155,10 @@ def extract_economy_workbook_bytes(
         candidates = [
             name
             for name in archive.namelist()
-            if name.lower().endswith(".xlsx")
-            and "economy" in Path(name).name.lower()
+            if name.lower().endswith(".xlsx") and "economy" in Path(name).name.lower()
         ]
         if not candidates:
-            raise ValueError(
-                "Could not find an economy workbook in the source"
-            )
+            raise ValueError("Could not find an economy workbook in the source")
         candidates.sort()
         workbook_name = candidates[0]
         return Path(workbook_name).name, archive.read(workbook_name)
@@ -176,9 +171,7 @@ def _load_shared_strings(archive: ZipFile) -> list[str]:
     root = ET.fromstring(archive.read("xl/sharedStrings.xml"))
     values: list[str] = []
     for item in root.findall("main:si", WORKBOOK_NS):
-        parts = [
-            node.text or "" for node in item.iterfind(".//main:t", WORKBOOK_NS)
-        ]
+        parts = [node.text or "" for node in item.iterfind(".//main:t", WORKBOOK_NS)]
         values.append("".join(parts))
     return values
 
@@ -215,9 +208,7 @@ def _cell_value(cell: ET.Element, shared_strings: list[str]) -> str | None:
     return None
 
 
-def read_sheet_rows(
-    xlsx_bytes: bytes, sheet_name: str
-) -> list[dict[str, str | None]]:
+def read_sheet_rows(xlsx_bytes: bytes, sheet_name: str) -> list[dict[str, str | None]]:
     with ZipFile(BytesIO(xlsx_bytes)) as archive:
         shared_strings = _load_shared_strings(archive)
         sheet_path = _sheet_paths(archive)[sheet_name]
@@ -234,33 +225,23 @@ def read_sheet_rows(
     return rows
 
 
-def find_series_column(
-    rows: list[dict[str, str | None]], spec: SeriesSpec
-) -> str:
+def find_series_column(rows: list[dict[str, str | None]], spec: SeriesSpec) -> str:
     headers: dict[str, str] = {}
     for row in rows[:4]:
         for column, value in row.items():
             label = normalise_label(value)
-            if label and (
-                column not in headers or is_generic_header(headers[column])
-            ):
+            if label and (column not in headers or is_generic_header(headers[column])):
                 headers[column] = label
 
     header = headers.get(spec.column, "")
     if spec.mode == "exact" and header in spec.needles:
         return spec.column
-    if spec.mode == "contains" and any(
-        needle in header for needle in spec.needles
-    ):
+    if spec.mode == "contains" and any(needle in header for needle in spec.needles):
         return spec.column
-    if spec.mode == "contains_all" and all(
-        needle in header for needle in spec.needles
-    ):
+    if spec.mode == "contains_all" and all(needle in header for needle in spec.needles):
         return spec.column
 
-    raise ValueError(
-        f"Could not find a column for {spec.key} in sheet {spec.sheet}"
-    )
+    raise ValueError(f"Could not find a column for {spec.key} in sheet {spec.sheet}")
 
 
 def extract_annual_series_from_xlsx(
@@ -328,14 +309,10 @@ def replace_year_value(section: str, year: int, value: float) -> str:
 
 
 def replace_first_reference(section: str, title: str, href: str) -> str:
-    title_pattern = re.compile(
-        r"(^        - title:\s*).*$", flags=re.MULTILINE
-    )
+    title_pattern = re.compile(r"(^        - title:\s*).*$", flags=re.MULTILINE)
     href_pattern = re.compile(r"(^          href:\s*).*$", flags=re.MULTILINE)
 
-    updated, title_count = title_pattern.subn(
-        rf"\g<1>{title}", section, count=1
-    )
+    updated, title_count = title_pattern.subn(rf"\g<1>{title}", section, count=1)
     if title_count == 0:
         raise ValueError("Could not find reference title in section")
 
@@ -345,9 +322,7 @@ def replace_first_reference(section: str, title: str, href: str) -> str:
     return updated
 
 
-def replace_series_section(
-    content: str, series_key: str, updated_section: str
-) -> str:
+def replace_series_section(content: str, series_key: str, updated_section: str) -> str:
     pattern = re.compile(
         rf"(^  {series_key}:\n.*?)(?=^  [a-z_]+:|\Z)",
         flags=re.MULTILINE | re.DOTALL,
@@ -383,9 +358,7 @@ def update_yoy_growth_yaml(
 
         available_years = [
             target_year
-            for target_year in range(
-                forecast_start_year, forecast_end_year + 1
-            )
+            for target_year in range(forecast_start_year, forecast_end_year + 1)
             if target_year in series_values[spec.key]
         ]
         if not available_years:
@@ -487,14 +460,12 @@ def main(argv: list[str] | None = None) -> int:
         month = args.release_month.capitalize()
         year = args.release_year
     elif args.release_month or args.release_year:
-        raise ValueError(
-            "Pass both --release-month and --release-year together"
-        )
+        raise ValueError("Pass both --release-month and --release-year together")
     else:
         month, year = infer_release(f"{source_name} {workbook_name}")
 
-    forecast_start_year = (
-        args.forecast_start_year or infer_forecast_start_year(month, year)
+    forecast_start_year = args.forecast_start_year or infer_forecast_start_year(
+        month, year
     )
     print_summary(series_values, forecast_start_year, args.forecast_years)
 
