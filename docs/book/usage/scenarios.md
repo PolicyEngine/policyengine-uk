@@ -268,6 +268,18 @@ reformed_cap = reformed_sim.calculate("benefit_cap", 2026).mean()
 print(f"Benefit cap - frozen: £{baseline_cap:.0f}/year, indexed: £{reformed_cap:.0f}/year")
 ```
 
+If you want to remove the cap entirely for a poverty-analysis package, PolicyEngine
+UK also exposes a reusable scenario:
+
+```python
+from policyengine_uk import Simulation
+from policyengine_uk.scenarios import abolish_benefit_cap
+
+sim = Simulation(situation=benefit_cap_family, scenario=abolish_benefit_cap)
+benefit_cap_reduction = sim.calculate("benefit_cap_reduction", 2026).mean()
+print(f"Benefit cap reduction after abolition: £{benefit_cap_reduction:.0f}")
+```
+
 ## Advanced scenario techniques
 
 ### Time-varying parameters
