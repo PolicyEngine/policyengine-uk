@@ -315,3 +315,55 @@ class TestDeterminism:
             results.append(tuple(sim.calculate("marriage_allowance", 2024)))
 
         assert results[0] == results[1] == results[2]
+
+
+class TestHeadOrdering:
+    """Test deterministic ordering for household and benefit unit heads."""
+
+    def test_oldest_person_is_head_and_gets_rent(self):
+        sim = Simulation(
+            situation={
+                "people": {
+                    "older": {"age": {2024: 40}},
+                    "younger": {"age": {2024: 30}},
+                },
+                "benunits": {"benunit": {"members": ["older", "younger"]}},
+                "households": {
+                    "household": {
+                        "members": ["older", "younger"],
+                        "rent": {2024: 1200},
+                    }
+                },
+            }
+        )
+
+        assert sim.calculate("is_household_head", 2024).tolist() == [True, False]
+        assert sim.calculate("is_benunit_head", 2024).tolist() == [True, False]
+        assert sim.calculate("personal_rent", 2024).tolist() == [1200.0, 0.0]
+
+    def test_equal_age_ties_follow_input_order(self):
+        first = Simulation(
+            situation={
+                "people": {
+                    "alice": {"age": {2024: 40}},
+                    "bob": {"age": {2024: 40}},
+                },
+                "benunits": {"benunit": {"members": ["alice", "bob"]}},
+                "households": {"household": {"members": ["alice", "bob"]}},
+            }
+        )
+        second = Simulation(
+            situation={
+                "people": {
+                    "bob": {"age": {2024: 40}},
+                    "alice": {"age": {2024: 40}},
+                },
+                "benunits": {"benunit": {"members": ["bob", "alice"]}},
+                "households": {"household": {"members": ["bob", "alice"]}},
+            }
+        )
+
+        assert first.calculate("is_household_head", 2024).tolist() == [True, False]
+        assert second.calculate("is_household_head", 2024).tolist() == [True, False]
+        assert first.calculate("adult_index", 2024).tolist() == [1, 2]
+        assert second.calculate("adult_index", 2024).tolist() == [1, 2]

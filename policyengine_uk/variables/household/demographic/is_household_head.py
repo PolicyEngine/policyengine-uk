@@ -9,4 +9,4 @@ class is_household_head(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person.get_rank(person.household, person("age", period)) == 0
+        return person.get_rank(person.household, -person("age", period)) == 0
