@@ -131,6 +131,7 @@ class Simulation(CoreSimulation):
         self.max_spiral_loops: int = 10
         self.memory_config = None
         self._data_storage_dir: Optional[str] = None
+        self.disable_economic_assumptions: bool = False
 
         self.branches: Dict[str, Simulation] = {}
 
@@ -424,6 +425,10 @@ class Simulation(CoreSimulation):
         Args:
             dataset: UKMultiYearDataset containing multiple years of data
         """
+        if self.disable_economic_assumptions:
+            dataset = dataset.copy()
+            dataset.reset_uprating()
+
         # Ensure enum columns are encoded and _enum_columns is populated so
         # that .person/.benunit/.household properties can decode back to strings.
         if not any(dataset[y]._enum_columns for y in dataset.years):
