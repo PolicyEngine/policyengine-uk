@@ -15,6 +15,7 @@ class gov_tax(Variable):
         "corporate_sdlt",
         "business_rates",
         "council_tax",
+        "high_value_council_tax_surcharge",
         "domestic_rates",
         "fuel_duty",
         "tv_licence",
