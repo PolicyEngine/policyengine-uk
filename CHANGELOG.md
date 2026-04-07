@@ -1,3 +1,10 @@
+## [2.77.3] - 2026-04-07
+
+### Fixed
+
+- Fixed `gov.contrib.cec.state_pension_increase` so state pension reforms affect microsimulation outputs and budget impacts.
+
+
 ## [2.77.2] - 2026-04-07
 
 ### Fixed
