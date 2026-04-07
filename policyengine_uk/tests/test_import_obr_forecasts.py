@@ -11,9 +11,7 @@ from policyengine_uk.utils.import_obr_forecasts import (
 
 
 def make_inline_cell(ref: str, value: str) -> str:
-    return (
-        f'<c r="{ref}" t="inlineStr"><is><t>{value}</t></is></c>'
-    )
+    return f'<c r="{ref}" t="inlineStr"><is><t>{value}</t></is></c>'
 
 
 def make_number_cell(ref: str, value: float) -> str:
@@ -23,13 +21,11 @@ def make_number_cell(ref: str, value: float) -> str:
 def make_sheet(rows: dict[int, list[str]]) -> bytes:
     row_xml = []
     for row_num in sorted(rows):
-        row_xml.append(
-            f'<row r="{row_num}">{"".join(rows[row_num])}</row>'
-        )
+        row_xml.append(f'<row r="{row_num}">{"".join(rows[row_num])}</row>')
     xml = (
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-        f'<sheetData>{"".join(row_xml)}</sheetData>'
+        f"<sheetData>{''.join(row_xml)}</sheetData>"
         "</worksheet>"
     )
     return xml.encode()
@@ -56,9 +52,7 @@ def make_test_xlsx() -> bytes:
 
     sheet_16 = make_sheet(
         {
-            3: [
-                make_inline_cell("Q3", "Average weekly earnings growth (per cent)")
-            ],
+            3: [make_inline_cell("Q3", "Average weekly earnings growth (per cent)")],
             97: [make_inline_cell("B97", "2025"), make_number_cell("Q97", 5.17)],
             98: [make_inline_cell("B98", "2026"), make_number_cell("Q98", 3.33)],
         }
@@ -234,11 +228,15 @@ def test_update_yoy_growth_yaml_updates_forecast_window_only(tmp_path):
     assert "2031-01-01: 0.0230" in content
     assert "2025-01-01: 0.0280" in content
     assert "2026-01-01: 0.0240" in content
-    assert "OBR EFO March 2026 (detailed forecast tables, economy, Table 1.16)" in content
+    assert (
+        "OBR EFO March 2026 (detailed forecast tables, economy, Table 1.16)" in content
+    )
     assert "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/" in content
 
 
-def test_update_yoy_growth_yaml_keeps_existing_values_when_obr_has_blank_years(tmp_path):
+def test_update_yoy_growth_yaml_keeps_existing_values_when_obr_has_blank_years(
+    tmp_path,
+):
     yaml_path = tmp_path / "yoy_growth.yaml"
     yaml_path.write_text(
         """obr:

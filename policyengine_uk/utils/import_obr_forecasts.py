@@ -155,8 +155,7 @@ def extract_economy_workbook_bytes(
         candidates = [
             name
             for name in archive.namelist()
-            if name.lower().endswith(".xlsx")
-            and "economy" in Path(name).name.lower()
+            if name.lower().endswith(".xlsx") and "economy" in Path(name).name.lower()
         ]
         if not candidates:
             raise ValueError("Could not find an economy workbook in the source")
@@ -226,9 +225,7 @@ def read_sheet_rows(xlsx_bytes: bytes, sheet_name: str) -> list[dict[str, str | 
     return rows
 
 
-def find_series_column(
-    rows: list[dict[str, str | None]], spec: SeriesSpec
-) -> str:
+def find_series_column(rows: list[dict[str, str | None]], spec: SeriesSpec) -> str:
     headers: dict[str, str] = {}
     for row in rows[:4]:
         for column, value in row.items():
@@ -241,9 +238,7 @@ def find_series_column(
         return spec.column
     if spec.mode == "contains" and any(needle in header for needle in spec.needles):
         return spec.column
-    if spec.mode == "contains_all" and all(
-        needle in header for needle in spec.needles
-    ):
+    if spec.mode == "contains_all" and all(needle in header for needle in spec.needles):
         return spec.column
 
     raise ValueError(f"Could not find a column for {spec.key} in sheet {spec.sheet}")
