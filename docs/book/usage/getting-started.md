@@ -91,9 +91,14 @@ Policy parameters use a hierarchical structure - here we're changing the first U
 To analyse policies across the entire population, you'll need survey data. PolicyEngine provides processed datasets via HuggingFace, but you'll need an account and access token.
 ```
 
-1. Create a [HuggingFace account](https://huggingface.co)
-2. Generate a personal access token in your settings
-3. Set it as an environment variable:
+1. Create a [HuggingFace account](https://huggingface.co).
+2. If you need access to restricted UK datasets, first request access from PolicyEngine. Include your HuggingFace username and enough information to verify your licensed access to the underlying UK Data Service source data when you email [contact@policyengine.org](mailto:contact@policyengine.org).
+3. Once access has been granted, generate a personal access token in your HuggingFace settings.
+4. Set it as an environment variable:
+
+```{note}
+PolicyEngine does not issue the token itself. We grant your HuggingFace account access to the private dataset repository, and you then create your own personal access token in HuggingFace.
+```
 
 ```bash
 export HUGGING_FACE_TOKEN=your_token_here
