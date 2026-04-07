@@ -1,3 +1,10 @@
+## [2.76.0] - 2026-04-07
+
+### Added
+
+- Added an OBR detailed forecast table importer script for updating economic forecast values in `yoy_growth.yaml`.
+
+
 ## [2.75.4] - 2026-04-05
 
 ### Fixed
