@@ -24,6 +24,7 @@ from policyengine_uk.data.dataset_schema import (
 from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
+    reset_growthfactor_uprating,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
@@ -427,7 +428,7 @@ class Simulation(CoreSimulation):
         """
         if self.disable_economic_assumptions:
             dataset = dataset.copy()
-            dataset.reset_uprating()
+            reset_growthfactor_uprating(dataset)
 
         # Ensure enum columns are encoded and _enum_columns is populated so
         # that .person/.benunit/.household properties can decode back to strings.

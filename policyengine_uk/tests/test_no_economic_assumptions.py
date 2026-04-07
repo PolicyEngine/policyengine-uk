@@ -92,6 +92,7 @@ def test_no_economic_assumptions_resets_multi_year_dataset_without_mutating_inpu
     assert float(reformed.calculate("employment_income", 2026)[0]) == pytest.approx(
         30_000.0
     )
+    assert int(reformed.calculate("age", 2026)[0]) == 41
     assert dataset[2026].person["employment_income"].iloc[0] == pytest.approx(
         31_019.96875
     )

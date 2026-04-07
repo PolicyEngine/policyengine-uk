@@ -357,3 +357,31 @@ def reset_uprating(
             dataset.datasets[year].time_period = str(year)
 
     return dataset
+
+
+def reset_growthfactor_uprating(
+    dataset: UKMultiYearDataset,
+):
+    with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
+        uprating = yaml.safe_load(f)
+
+    growthfactor_uprated_variables = {
+        variable for variables in uprating.values() for variable in variables
+    }
+    growthfactor_uprated_variables.update({"council_tax", "rent"})
+
+    first_year = min(dataset.datasets.keys())
+    base_year_dataset = dataset.datasets[first_year]
+
+    for year in dataset.datasets:
+        if year == first_year:
+            continue
+        current_year_dataset = dataset.datasets[year]
+        for table_name in current_year_dataset.table_names:
+            base_table = getattr(base_year_dataset, table_name)
+            current_table = getattr(current_year_dataset, table_name)
+            for variable in growthfactor_uprated_variables:
+                if variable in current_table.columns and variable in base_table.columns:
+                    current_table[variable] = base_table[variable].values
+
+    return dataset
