@@ -9,4 +9,4 @@ class is_benunit_head(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person.get_rank(person.benunit, person("age", period)) == 0
+        return person.get_rank(person.benunit, -person("age", period)) == 0
