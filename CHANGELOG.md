@@ -1,3 +1,10 @@
+## [2.77.4] - 2026-04-07
+
+### Fixed
+
+- Add regression coverage to keep income decile outputs in `-1` or `1..10`.
+
+
 ## [2.77.3] - 2026-04-07
 
 ### Fixed
