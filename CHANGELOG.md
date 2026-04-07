@@ -1,3 +1,10 @@
+## [2.77.2] - 2026-04-07
+
+### Fixed
+
+- Documented how to request access to restricted UK datasets before setting `HUGGING_FACE_TOKEN`.
+
+
 ## [2.77.1] - 2026-04-07
 
 ### Fixed
