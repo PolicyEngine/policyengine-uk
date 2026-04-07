@@ -70,9 +70,7 @@ def _cpi_protected_uc_award_monthly(
 
 
 @pytest.mark.parametrize("age_2025", [20, 30])
-def test_existing_claimants_keep_combined_award_cpi_protected(
-    monkeypatch, age_2025
-):
+def test_existing_claimants_keep_combined_award_cpi_protected(monkeypatch, age_2025):
     _force_uc_seed(monkeypatch, [0.99])
     sim = Simulation(situation=_uc_claimant(age_2025))
     claimant_type = "SINGLE_YOUNG" if age_2025 < 25 else "SINGLE_OLD"
@@ -80,12 +78,10 @@ def test_existing_claimants_keep_combined_award_cpi_protected(
     for year in range(2026, 2030):
         standard_allowance = sim.calculate("uc_standard_allowance", year)[0] / 12
         health_element = sim.calculate("uc_LCWRA_element", year)[0] / 12
-        new_claimant_health_element = (
-            float(
-                sim.tax_benefit_system.parameters(
-                    str(year)
-                ).gov.dwp.universal_credit.rebalancing.new_claimant_health_element
-            )
+        new_claimant_health_element = float(
+            sim.tax_benefit_system.parameters(
+                str(year)
+            ).gov.dwp.universal_credit.rebalancing.new_claimant_health_element
         )
 
         assert health_element > new_claimant_health_element
@@ -100,12 +96,10 @@ def test_new_claimants_use_fixed_health_element(monkeypatch):
 
     for year in range(2026, 2030):
         health_element = sim.calculate("uc_LCWRA_element", year)[0] / 12
-        expected_health = (
-            float(
-                sim.tax_benefit_system.parameters(
-                    str(year)
-                ).gov.dwp.universal_credit.rebalancing.new_claimant_health_element
-            )
+        expected_health = float(
+            sim.tax_benefit_system.parameters(
+                str(year)
+            ).gov.dwp.universal_credit.rebalancing.new_claimant_health_element
         )
 
         assert health_element == pytest.approx(expected_health)

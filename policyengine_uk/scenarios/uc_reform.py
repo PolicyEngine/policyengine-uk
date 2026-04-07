@@ -49,9 +49,7 @@ def _protected_single_young_health_element_monthly(
 ) -> float:
     baseline = sim.tax_benefit_system.parameters(str(BASELINE_UC_REBALANCING_YEAR))
     protected_combined_award = _benefit_uprating_ratio(sim, year) * (
-        float(
-            baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG
-        )
+        float(baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG)
         + float(baseline.gov.dwp.universal_credit.elements.disabled.amount)
     )
     return protected_combined_award - _rebalanced_standard_allowance_monthly(
@@ -85,9 +83,9 @@ def add_universal_credit_reform(sim: Microsimulation):
             _protected_existing_health_element_monthly(sim, year) * 12,
             dtype=current_health_element.dtype,
         )
-        protected_health_element[
-            claimant_type == UCClaimantType.SINGLE_YOUNG.name
-        ] = _protected_single_young_health_element_monthly(sim, year) * 12
+        protected_health_element[claimant_type == UCClaimantType.SINGLE_YOUNG.name] = (
+            _protected_single_young_health_element_monthly(sim, year) * 12
+        )
         current_health_element[has_health_element & ~is_post_2025_claimant] = (
             protected_health_element[has_health_element & ~is_post_2025_claimant]
         )
