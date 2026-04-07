@@ -1,3 +1,11 @@
+## [2.77.5] - 2026-04-07
+
+### Fixed
+
+- Prevent labor supply response formulas and progression dynamics from
+  flipping sign when baseline employment income is negative.
+
+
 ## [2.77.4] - 2026-04-07
 
 ### Fixed
