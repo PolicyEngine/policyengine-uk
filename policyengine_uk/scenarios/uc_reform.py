@@ -9,22 +9,13 @@ import numpy as np
 BASELINE_UC_REBALANCING_YEAR = 2025
 
 
-def _cpi_protected_uc_award_monthly(
-    sim: Microsimulation, year: int, claimant_type: str
-) -> float:
+def _benefit_uprating_ratio(sim: Microsimulation, year: int) -> float:
     parameters = sim.tax_benefit_system.parameters
-    baseline = parameters(str(BASELINE_UC_REBALANCING_YEAR))
-    current = parameters(str(year))
-    cpi_factor = float(current.gov.benefit_uprating_cpi) / float(
-        baseline.gov.benefit_uprating_cpi
+    current_index = float(parameters(str(year)).gov.benefit_uprating_cpi)
+    baseline_index = float(
+        parameters(str(BASELINE_UC_REBALANCING_YEAR)).gov.benefit_uprating_cpi
     )
-    baseline_standard_allowance = float(
-        baseline.gov.dwp.universal_credit.standard_allowance.amount[claimant_type]
-    )
-    baseline_health_element = float(
-        baseline.gov.dwp.universal_credit.elements.disabled.amount
-    )
-    return (baseline_standard_allowance + baseline_health_element) * cpi_factor
+    return current_index / baseline_index
 
 
 def _rebalanced_standard_allowance_monthly(
@@ -43,21 +34,28 @@ def _rebalanced_standard_allowance_monthly(
 def _protected_existing_health_element_monthly(
     sim: Microsimulation, year: int
 ) -> float:
-    return _cpi_protected_uc_award_monthly(
+    baseline = sim.tax_benefit_system.parameters(str(BASELINE_UC_REBALANCING_YEAR))
+    protected_combined_award = _benefit_uprating_ratio(sim, year) * (
+        float(baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD)
+        + float(baseline.gov.dwp.universal_credit.elements.disabled.amount)
+    )
+    return protected_combined_award - _rebalanced_standard_allowance_monthly(
         sim, year, "SINGLE_OLD"
-    ) - _rebalanced_standard_allowance_monthly(sim, year, "SINGLE_OLD")
+    )
 
 
-def _single_young_standard_allowance_topup_monthly(
+def _protected_single_young_health_element_monthly(
     sim: Microsimulation, year: int
 ) -> float:
-    protected_young_award = _cpi_protected_uc_award_monthly(sim, year, "SINGLE_YOUNG")
-    standard_allowance = _rebalanced_standard_allowance_monthly(
-        sim, year, "SINGLE_YOUNG"
+    baseline = sim.tax_benefit_system.parameters(str(BASELINE_UC_REBALANCING_YEAR))
+    protected_combined_award = _benefit_uprating_ratio(sim, year) * (
+        float(
+            baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG
+        )
+        + float(baseline.gov.dwp.universal_credit.elements.disabled.amount)
     )
-    protected_health_element = _protected_existing_health_element_monthly(sim, year)
-    return max(
-        0.0, protected_young_award - standard_allowance - protected_health_element
+    return protected_combined_award - _rebalanced_standard_allowance_monthly(
+        sim, year, "SINGLE_YOUNG"
     )
 
 
@@ -79,24 +77,19 @@ def add_universal_credit_reform(sim: Microsimulation):
         if not rebalancing.active(year):
             continue
         is_post_2025_claimant = uc_seed < post_2025_claimant_share[year]
-
-        claimant_type = sim.calculate("uc_standard_allowance_claimant_type", year)
-        current_standard_allowance = sim.calculate("uc_standard_allowance", year)
-        single_young_topup = (
-            _single_young_standard_allowance_topup_monthly(sim, year) * 12
-        )
-        current_standard_allowance[
-            claimant_type == UCClaimantType.SINGLE_YOUNG.name
-        ] += single_young_topup
-        sim.set_input("uc_standard_allowance", year, current_standard_allowance)
-
         current_health_element = sim.calculate("uc_LCWRA_element", year)
+        claimant_type = sim.calculate("uc_standard_allowance_claimant_type", year)
         has_health_element = current_health_element > 0
-        protected_health_element = (
-            _protected_existing_health_element_monthly(sim, year) * 12
+        protected_health_element = np.full(
+            current_health_element.shape,
+            _protected_existing_health_element_monthly(sim, year) * 12,
+            dtype=current_health_element.dtype,
         )
+        protected_health_element[
+            claimant_type == UCClaimantType.SINGLE_YOUNG.name
+        ] = _protected_single_young_health_element_monthly(sim, year) * 12
         current_health_element[has_health_element & ~is_post_2025_claimant] = (
-            protected_health_element
+            protected_health_element[has_health_element & ~is_post_2025_claimant]
         )
         # Set post-April 2026 claimants to £217.26/month.
         # https://bills.parliament.uk/publications/62123/documents/6889#page=16

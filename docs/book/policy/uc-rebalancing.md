@@ -14,7 +14,7 @@ The reforms combine a higher standard allowance, protected awards for existing h
 
 2. **Health element changes for new claimants**: New Universal Credit claimants from April 2026 onwards receive a fixed monthly health element amount of £217.26, rather than the protected existing-claimant amount.
 
-3. **Standard allowance uplifts**: The standard allowance receives additional uplifts beyond the annual inflationary increase from 2026-2029. Single claimants under 25 receive a further top-up so their protected combined award also keeps pace with inflation.
+3. **Standard allowance uplifts**: The standard allowance receives additional uplifts beyond the annual inflationary increase from 2026-2029.
 
 ## Health element changes
 
@@ -22,10 +22,10 @@ From April 2026, new Universal Credit claimants who qualify for the Limited Capa
 
 Existing recipients are treated differently. Their LCWRA amount is uprated so that the combined value of:
 
-- the single-over-25 standard allowance, and
-- the health element
+- their standard allowance, and
+- their health element
 
-rises at least in line with CPI inflation. Because that flat protected health element is calibrated against the single-over-25 rate, single claimants under 25 receive an additional standard allowance top-up to preserve the same real-terms protection.
+rises at least in line with CPI inflation. The model implements that protection through the health element itself, preserving the combined award outcome without separately modelling the small administrative split between protected LCWRA amounts and any under-25 standard allowance supplement.
 
 The implementation uses transition probabilities based on WPI Economics analysis for the Trussell Trust, derived from administrative Personal Independence Payment data. The probability of being a new claimant varies by year:
 
@@ -52,7 +52,7 @@ The reforms are implemented through parameters, scenario modifiers, and scenario
 ```
 
 - **Parameters**: Three YAML files define the reform's activation status, health element amount for new claimants, and standard allowance uplift rates.
-- **Scenario modifier**: The `add_universal_credit_reform` function applies the protected existing-claimant health-element path and the single-under-25 top-up during microsimulation.
+- **Scenario modifier**: The `add_universal_credit_reform` function applies the protected existing-claimant health-element path during microsimulation.
 - **Scenario**: The `universal_credit_july_2025_reform` scenario enables the reforms in policy analysis.
 
 ## Examples

@@ -436,7 +436,7 @@ def modify_uc_for_new_claimants(sim: Microsimulation):
         
         # General standard allowance uplifts are already handled in the
         # uc_standard_allowance formula. Scenario modifiers only need to add
-        # claimant-specific overrides such as protected top-ups.
+        # claimant-specific overrides such as protected health elements.
 
 # Create the UC rebalancing scenario
 uc_rebalancing = Scenario(simulation_modifier=modify_uc_for_new_claimants)
