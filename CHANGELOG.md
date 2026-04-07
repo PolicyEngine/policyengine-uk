@@ -1,3 +1,10 @@
+## [2.77.0] - 2026-04-07
+
+### Added
+
+- Added an `abolish_benefit_cap` scenario for benefit-cap removal analysis.
+
+
 ## [2.76.0] - 2026-04-07
 
 ### Added
