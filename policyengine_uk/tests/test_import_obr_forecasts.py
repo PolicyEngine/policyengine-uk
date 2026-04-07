@@ -52,9 +52,19 @@ def make_test_xlsx() -> bytes:
 
     sheet_16 = make_sheet(
         {
-            3: [make_inline_cell("Q3", "Average weekly earnings growth (per cent)")],
-            97: [make_inline_cell("B97", "2025"), make_number_cell("Q97", 5.17)],
-            98: [make_inline_cell("B98", "2026"), make_number_cell("Q98", 3.33)],
+            3: [
+                make_inline_cell(
+                    "Q3", "Average weekly earnings growth (per cent)"
+                )
+            ],
+            97: [
+                make_inline_cell("B97", "2025"),
+                make_number_cell("Q97", 5.17),
+            ],
+            98: [
+                make_inline_cell("B98", "2026"),
+                make_number_cell("Q98", 3.33),
+            ],
         }
     )
     sheet_17 = make_sheet(
@@ -94,11 +104,18 @@ def make_test_xlsx() -> bytes:
         {
             3: [
                 make_inline_cell(
-                    "D3", "House price index (per cent change on a year earlier)"
+                    "D3",
+                    "House price index (per cent change on a year earlier)",
                 )
             ],
-            97: [make_inline_cell("B97", "2025"), make_number_cell("D97", 2.80)],
-            98: [make_inline_cell("B98", "2026"), make_number_cell("D98", 2.40)],
+            97: [
+                make_inline_cell("B97", "2025"),
+                make_number_cell("D97", 2.80),
+            ],
+            98: [
+                make_inline_cell("B98", "2026"),
+                make_number_cell("D98", 2.40),
+            ],
         }
     )
 
@@ -125,7 +142,9 @@ def test_extract_annual_series_from_xlsx():
 
 
 def test_release_inference_helpers():
-    assert infer_release("Economy_Detailed_forecast_tables_November_2025.xlsx") == (
+    assert infer_release(
+        "Economy_Detailed_forecast_tables_November_2025.xlsx"
+    ) == (
         "November",
         2025,
     )
@@ -137,8 +156,7 @@ def test_release_inference_helpers():
 
 def test_update_yoy_growth_yaml_updates_forecast_window_only(tmp_path):
     yaml_path = tmp_path / "yoy_growth.yaml"
-    yaml_path.write_text(
-        """obr:
+    yaml_path.write_text("""obr:
   rpi:
     values:
       2024-01-01: 0.0300
@@ -209,8 +227,7 @@ def test_update_yoy_growth_yaml_updates_forecast_window_only(tmp_path):
       reference:
         - title: Old
           href: https://example.com/old
-"""
-    )
+""")
 
     update_yoy_growth_yaml(
         yaml_path=yaml_path,
@@ -229,17 +246,19 @@ def test_update_yoy_growth_yaml_updates_forecast_window_only(tmp_path):
     assert "2025-01-01: 0.0280" in content
     assert "2026-01-01: 0.0240" in content
     assert (
-        "OBR EFO March 2026 (detailed forecast tables, economy, Table 1.16)" in content
+        "OBR EFO March 2026 (detailed forecast tables, economy, Table 1.16)"
+        in content
     )
-    assert "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/" in content
+    assert (
+        "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/" in content
+    )
 
 
 def test_update_yoy_growth_yaml_keeps_existing_values_when_obr_has_blank_years(
     tmp_path,
 ):
     yaml_path = tmp_path / "yoy_growth.yaml"
-    yaml_path.write_text(
-        """obr:
+    yaml_path.write_text("""obr:
   mortgage_interest:
     values:
       2025-01-01: 0.0000
@@ -303,8 +322,7 @@ def test_update_yoy_growth_yaml_keeps_existing_values_when_obr_has_blank_years(
       reference:
         - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
-"""
-    )
+""")
 
     update_yoy_growth_yaml(
         yaml_path=yaml_path,
