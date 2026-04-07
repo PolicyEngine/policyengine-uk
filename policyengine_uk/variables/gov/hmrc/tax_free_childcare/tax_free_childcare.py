@@ -24,9 +24,13 @@ class tax_free_childcare(Variable):
 
         # Get childcare expenses
         childcare_expense = person("childcare_expenses", period)
+        uses_qualifying_provider = person(
+            "tax_free_childcare_uses_qualifying_provider", period
+        )
+        eligible_childcare_expense = childcare_expense * uses_qualifying_provider
 
         # Calculate contribution using rate from parameters
-        contribution = (childcare_expense * p.rate) / (1 - p.rate)
+        contribution = (eligible_childcare_expense * p.rate) / (1 - p.rate)
 
         # Cap the contribution at the maximum amounts
         max_amount = (

@@ -40,6 +40,54 @@
   output:
     tax_free_childcare_eligible: false
 
+- name: Fails qualifying provider condition only
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_parent: true
+        tax_free_childcare_meets_income_requirements: true
+      child:
+        age: 4
+        childcare_expenses: 10_000
+        tax_free_childcare_child_age_eligible: true
+        tax_free_childcare_uses_qualifying_provider: false
+    benunits:
+      benunit:
+        members: [parent, child]
+        tax_free_childcare_program_eligible: true
+        tax_free_childcare_work_condition: true
+    households:
+      household:
+        members: [parent, child]
+  output:
+    tax_free_childcare_eligible: [false, false]
+
+- name: Qualifying provider flag does not block zero-expense cases
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_parent: true
+        tax_free_childcare_meets_income_requirements: true
+      child:
+        age: 4
+        childcare_expenses: 0
+        tax_free_childcare_child_age_eligible: true
+        tax_free_childcare_uses_qualifying_provider: false
+    benunits:
+      benunit:
+        members: [parent, child]
+        tax_free_childcare_program_eligible: true
+        tax_free_childcare_work_condition: true
+    households:
+      household:
+        members: [parent, child]
+  output:
+    tax_free_childcare_eligible: [true, true]
+
 - name: Fails all conditions
   period: 2025
   input:
@@ -49,4 +97,3 @@
     tax_free_childcare_work_condition: false
   output:
     tax_free_childcare_eligible: false
-

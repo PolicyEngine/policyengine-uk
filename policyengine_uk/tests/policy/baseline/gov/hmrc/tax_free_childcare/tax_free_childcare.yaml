@@ -68,3 +68,14 @@
     childcare_expenses: 1_000 
   output:
     tax_free_childcare: 250
+
+- name: Non-qualifying provider gets no support
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    is_parent: false
+    is_disabled_for_benefits: false
+    childcare_expenses: 10_000
+    tax_free_childcare_uses_qualifying_provider: false
+  output:
+    tax_free_childcare: 0
