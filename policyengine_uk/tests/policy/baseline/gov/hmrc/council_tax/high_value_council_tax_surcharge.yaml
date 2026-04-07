@@ -1,0 +1,51 @@
+- name: High value council tax surcharge starts in 2028
+  period: 2027
+  input:
+    region: LONDON
+    main_residence_value: 3_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 0
+- name: High value council tax surcharge applies in England and flows into aggregates
+  period: 2028
+  input:
+    region: LONDON
+    main_residence_value: 2_554_326.811538164
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 2_500
+    household_tax: 2_500
+    gov_tax: 2_500
+- name: High value council tax surcharge is uprated from 2029
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    main_residence_value: 2_629_940.453174542
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 2_550
+    household_tax: 2_550
+    gov_tax: 2_550
+- name: High value council tax surcharge only applies in England
+  period: 2028
+  input:
+    region: SCOTLAND
+    main_residence_value: 7_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 0
+    household_tax: 0
+    gov_tax: 0
