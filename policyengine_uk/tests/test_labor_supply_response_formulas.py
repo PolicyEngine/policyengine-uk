@@ -1,7 +1,11 @@
 from types import SimpleNamespace
 
 import numpy as np
+import pandas as pd
 
+from policyengine_uk.dynamics.progression import (
+    calculate_employment_income_change,
+)
 from policyengine_uk.variables.gov.simulation.labor_supply_response.income_elasticity_lsr import (
     income_elasticity_lsr,
 )
@@ -61,3 +65,17 @@ def test_substitution_elasticity_lsr_clips_negative_earnings():
     )
 
     assert np.allclose(result, np.array([0.0, 0.0, 40.0]))
+
+
+def test_progression_labor_supply_response_clips_negative_earnings():
+    result = calculate_employment_income_change(
+        employment_income=np.array([-1_000.0, 0.0, 1_000.0]),
+        derivative_changes=pd.DataFrame({"wage_rel_change": [0.1, 0.1, 0.1]}),
+        income_changes=pd.DataFrame({"income_rel_change": [0.2, 0.2, 0.2]}),
+        substitution_elasticities=np.array([0.15, 0.15, 0.15]),
+        income_elasticities=np.array([-0.05, -0.05, -0.05]),
+    )
+
+    assert np.allclose(result["substitution_response"], [0.0, 0.0, 15.0])
+    assert np.allclose(result["income_response"], [0.0, 0.0, -10.0])
+    assert np.allclose(result["total_response"], [0.0, 0.0, 5.0])
