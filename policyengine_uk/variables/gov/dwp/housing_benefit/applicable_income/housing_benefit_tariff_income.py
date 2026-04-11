@@ -12,6 +12,7 @@ class housing_benefit_tariff_income(Variable):
     def formula(benunit, period, parameters):
         capital = benunit("housing_benefit_assessable_capital", period)
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         lower_threshold = where(
             any_over_SP_age,
@@ -30,4 +31,5 @@ class housing_benefit_tariff_income(Variable):
         )
         excess_capital = max_(0, capital - lower_threshold)
         steps = np.ceil(excess_capital / step)
-        return steps * amount * WEEKS_IN_YEAR
+        tariff_income = steps * amount * WEEKS_IN_YEAR
+        return where(guarantee_credit, 0, tariff_income)
