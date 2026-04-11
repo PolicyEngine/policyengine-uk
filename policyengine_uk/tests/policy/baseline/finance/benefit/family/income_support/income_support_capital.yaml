@@ -152,11 +152,61 @@
     benunits:
       b1:
         members: [p1]
+        would_claim_IS: false
       b2:
         members: [p2, p3]
+        would_claim_IS: false
     households:
       household:
         members: [p1, p2, p3]
         savings: 18_000
   output:
     income_support_assessable_capital: [6_000, 12_000]
+
+- name: Income Support does not dilute claimant capital across unrelated non-claiming adults
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      claimant:
+        age: 26
+      unrelated_adult:
+        age: 30
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_IS: true
+      unrelated_benunit:
+        members: [unrelated_adult]
+        would_claim_IS: false
+    households:
+      household:
+        members: [claimant, unrelated_adult]
+        savings: 18_000
+  output:
+    income_support_assessable_capital: [18_000, 0]
+
+- name: Income Support does not dilute household capital across multiple claiming benunits
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      claimant_1:
+        age: 26
+        income_support_reported: true
+      claimant_2:
+        age: 30
+        income_support_reported: true
+    benunits:
+      benunit_1:
+        members: [claimant_1]
+        would_claim_IS: true
+      benunit_2:
+        members: [claimant_2]
+        would_claim_IS: true
+    households:
+      household:
+        members: [claimant_1, claimant_2]
+        savings: 18_000
+  output:
+    income_support_assessable_capital: [18_000, 18_000]
