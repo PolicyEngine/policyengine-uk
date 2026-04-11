@@ -62,6 +62,25 @@
   output:
     is_uc_eligible: false
 
+- name: Capital-derived income alone does not change the UC capital limit test
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 20
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_990
+  output:
+    uc_assessable_capital: 15_990
+    is_uc_eligible: true
+
 - name: Multi-benunit households use benunit-reported capital
   period: 2025
   absolute_error_margin: 0
@@ -86,7 +105,7 @@
     uc_assessable_capital: [10_000, 10_000]
     is_uc_eligible: [true, true]
 
-- name: Multi-benunit households default household capital to the head benunit
+- name: Multi-benunit households split proxy capital equally across adults
   period: 2025
   absolute_error_margin: 0
   input:
@@ -105,8 +124,8 @@
         members: [person_1, person_2]
         savings: 20_000
   output:
-    uc_assessable_capital: [20_000, 0]
-    is_uc_eligible: [false, true]
+    uc_assessable_capital: [10_000, 10_000]
+    is_uc_eligible: [true, true]
 
 - name: Reported capital can still exceed the upper threshold
   period: 2025
@@ -132,26 +151,136 @@
     uc_assessable_capital: [20_000, 20_000]
     is_uc_eligible: [false, false]
 
-- name: Savings interest can push capital over the upper threshold
+- name: Mixed reported and unreported benunits use residual household capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 32
+      person_2:
+        age: 30
+    benunits:
+      benunit_1:
+        members: person_1
+        uc_reported_capital: 12_000
+      benunit_2:
+        members: person_2
+    households:
+      household:
+        members: [person_1, person_2]
+        savings: 20_000
+  output:
+    uc_assessable_capital: [12_000, 8_000]
+    is_uc_eligible: [true, true]
+
+- name: Multi-benunit proxy capital is weighted by adults in each benunit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 40
+      person_2:
+        age: 38
+      person_3:
+        age: 30
+    benunits:
+      benunit_1:
+        members: [person_1, person_2]
+      benunit_2:
+        members: person_3
+    households:
+      household:
+        members: [person_1, person_2, person_3]
+        savings: 30_000
+  output:
+    uc_assessable_capital: [20_000, 10_000]
+    is_uc_eligible: [false, true]
+
+- name: Mixed claimant and pensioner benunits share the residual household proxy
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+      pensioner:
+        age: 70
+    benunits:
+      claimant_benunit:
+        members: claimant
+      pensioner_benunit:
+        members: pensioner
+    households:
+      household:
+        members: [claimant, pensioner]
+        savings: 20_000
+  output:
+    uc_assessable_capital: [10_000, 10_000]
+    is_uc_eligible: [true, false]
+
+- name: Reported zero capital overrides the household proxy
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 32
+      person_2:
+        age: 30
+    benunits:
+      benunit_1:
+        members: person_1
+        uc_reported_capital: 0
+      benunit_2:
+        members: person_2
+        uc_reported_capital: 20_000
+    households:
+      household:
+        members: [person_1, person_2]
+        savings: 20_000
+  output:
+    uc_assessable_capital: [0, 20_000]
+    is_uc_eligible: [true, false]
+
+- name: Countable other residential property can push capital over the upper threshold
   period: 2025
   absolute_error_margin: 0
   input:
     people:
       person:
         age: 30
-        savings_interest_income: 20
     benunits:
       benunit:
         members: person
     households:
       household:
         members: person
-        savings: 15_990
+        other_residential_property_value: 50_000
   output:
-    uc_assessable_capital: 16_010
+    uc_assessable_capital: 50_000
     is_uc_eligible: false
 
-- name: Corporate wealth can push capital over the upper threshold
+- name: Countable non-residential property can push capital over the upper threshold
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        non_residential_property_value: 50_000
+  output:
+    uc_assessable_capital: 50_000
+    is_uc_eligible: false
+
+- name: Countable corporate wealth can push capital over the upper threshold
   period: 2025
   absolute_error_margin: 0
   input:
@@ -168,3 +297,21 @@
   output:
     uc_assessable_capital: 50_000
     is_uc_eligible: false
+
+- name: Main residence value is excluded from Universal Credit capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        main_residence_value: 1_000_000
+  output:
+    uc_assessable_capital: 0
+    is_uc_eligible: true

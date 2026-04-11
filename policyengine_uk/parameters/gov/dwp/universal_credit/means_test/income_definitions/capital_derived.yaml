@@ -1,8 +1,19 @@
 description: >
-  Universal Credit unearned income sources that derive from capital currently
-  represented in the model's capital base. Regulation 72(3) treats income
-  derived from capital that is yielding tariff income as part of capital rather
-  than a separate unearned-income reduction.
+  Model income variables treated as capital-derived income for Universal Credit
+  when tariff income applies. Regulation 72(3) covers actual income derived
+  from capital, for example rental, interest or dividends. In the current
+  model, those map to `property_income` when countable property capital is
+  present, `savings_interest_income` when savings are present, and
+  `dividend_income` when corporate wealth is present. Those linked income
+  streams are removed from `uc_unearned_income` once `uc_tariff_income`
+  applies to avoid double counting the same capital. The model does not add
+  annual income flows back into `uc_assessable_capital`, because the dataset
+  does not identify whether those receipts are retained as capital within the
+  assessment year. When benunit-level `uc_reported_capital` is provided, the
+  model treats that as sufficient evidence of countable capital for all listed
+  capital-derived income variables, so `savings_interest_income`,
+  `dividend_income`, and `property_income` are all suppressed once tariff
+  income applies.
 metadata:
   economy: false
   label: Universal Credit capital-derived unearned income sources
@@ -10,8 +21,8 @@ metadata:
   period: year
   unit: list
   reference:
-    - title: The Universal Credit Regulations 2013 reg. 72
-      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/72
+    - title: The Universal Credit Regulations 2013 reg. 72(3)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/72/3
 values:
   2013-04-29:
     - savings_interest_income

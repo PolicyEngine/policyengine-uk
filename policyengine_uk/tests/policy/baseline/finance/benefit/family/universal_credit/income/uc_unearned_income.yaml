@@ -46,6 +46,124 @@
     uc_tariff_income: 4.35 * 12
     uc_unearned_income: 4.35 * 12
 
+- name: Dividend income is folded into capital when tariff income applies
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        dividend_income: 120
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+        corporate_wealth: 1
+  output:
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 4.35 * 12
+
+- name: Property income is folded into capital when tariff income applies
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        property_income: 120
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+        other_residential_property_value: 1
+  output:
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 4.35 * 12
+
+- name: Non-residential property income is folded into capital when tariff income applies
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        property_income: 120
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+        non_residential_property_value: 1
+  output:
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 4.35 * 12
+
+- name: Dividend income stays in unearned income without corporate wealth
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        dividend_income: 120
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+  output:
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 120 + 4.35 * 12
+
+- name: Property income stays in unearned income without countable property capital
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        property_income: 120
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+  output:
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 120 + 4.35 * 12
+
+- name: Main residence value alone does not suppress property income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        property_income: 120
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+        main_residence_value: 1_000_000
+  output:
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 120 + 4.35 * 12
+
 - name: Reported capital drives tariff income for multi-benunit households
   period: 2025
   absolute_error_margin: 0.01
@@ -53,6 +171,7 @@
     people:
       person_1:
         age: 30
+        savings_interest_income: 120
       person_2:
         age: 32
     benunits:
@@ -68,3 +187,43 @@
   output:
     uc_tariff_income: [52.2, 0]
     uc_unearned_income: [52.2, 0]
+
+- name: Reported capital suppresses dividend income without household asset detail
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        dividend_income: 120
+    benunits:
+      benunit:
+        members: person
+        uc_reported_capital: 6_001
+    households:
+      household:
+        members: person
+        savings: 0
+  output:
+    uc_tariff_income: 52.2
+    uc_unearned_income: 52.2
+
+- name: Reported capital suppresses property income without household asset detail
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        property_income: 120
+    benunits:
+      benunit:
+        members: person
+        uc_reported_capital: 6_001
+    households:
+      household:
+        members: person
+        savings: 0
+  output:
+    uc_tariff_income: 52.2
+    uc_unearned_income: 52.2
