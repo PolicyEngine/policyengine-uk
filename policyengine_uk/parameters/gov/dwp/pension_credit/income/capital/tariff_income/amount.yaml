@@ -1,0 +1,11 @@
+description: Weekly deemed income amount for each Pension Credit capital step.
+metadata:
+  unit: currency-GBP
+  period: week
+  reference:
+    - href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/15
+      title: State Pension Credit Regulations 2002 reg. 15(6)
+    - href: https://www.gov.uk/pension-credit/eligibility
+      title: Pension Credit eligibility guidance
+values:
+  2003-10-06: 1

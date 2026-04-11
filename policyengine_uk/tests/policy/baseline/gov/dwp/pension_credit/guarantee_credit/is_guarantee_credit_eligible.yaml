@@ -13,3 +13,22 @@
     minimum_guarantee: 180
   output:
     is_guarantee_credit_eligible: false
+
+- name: Pension Credit deemed income from capital can remove Guarantee Credit eligibility.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+        minimum_guarantee: 100
+    households:
+      household:
+        members: person
+        savings: 10_501
+  output:
+    pension_credit_deemed_income: 104
+    pension_credit_income: 104
+    is_guarantee_credit_eligible: false

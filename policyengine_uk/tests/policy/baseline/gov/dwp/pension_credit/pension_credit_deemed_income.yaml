@@ -1,0 +1,88 @@
+- name: Pension Credit has no deemed income at the capital disregard.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_000
+  output:
+    pension_credit_assessable_capital: 10_000
+    pension_credit_deemed_income: 0
+
+- name: Pension Credit rounds the first capital step up.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_001
+  output:
+    pension_credit_assessable_capital: 10_001
+    pension_credit_deemed_income: 52
+
+- name: Pension Credit keeps one deemed-income step through the interval.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_500
+  output:
+    pension_credit_assessable_capital: 10_500
+    pension_credit_deemed_income: 52
+
+- name: Pension Credit rounds the second capital step up.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_501
+  output:
+    pension_credit_assessable_capital: 10_501
+    pension_credit_deemed_income: 104
+
+- name: Pension Credit does not dilute pensioner capital across unrelated adult benunits.
+  period: 2021
+  input:
+    people:
+      pensioner:
+        age: 70
+      adult_child:
+        age: 30
+    benunits:
+      pensioner_benunit:
+        members: [pensioner]
+      child_benunit:
+        members: [adult_child]
+    households:
+      household:
+        members: [pensioner, adult_child]
+        savings: 10_501
+  output:
+    pension_credit_assessable_capital: [10_501, 0]
+    pension_credit_deemed_income: [104, 0]
