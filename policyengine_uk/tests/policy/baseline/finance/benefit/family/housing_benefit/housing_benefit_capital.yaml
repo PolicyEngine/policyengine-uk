@@ -108,7 +108,7 @@
     housing_benefit_assessable_capital: 16_001
     housing_benefit_eligible: false
 
-- name: Housing Benefit ignores pension-blended corporate wealth until it is split from pensions
+- name: Housing Benefit counts corporate wealth as a broad financial-capital proxy
   period: 2025
   absolute_error_margin: 0
   input:
@@ -126,8 +126,8 @@
         members: person
         corporate_wealth: 50_000
   output:
-    housing_benefit_assessable_capital: 0
-    housing_benefit_eligible: true
+    housing_benefit_assessable_capital: 50_000
+    housing_benefit_eligible: false
 
 - name: Mixed benunits split household Housing Benefit capital by adult share
   period: 2025
@@ -198,6 +198,28 @@
     housing_benefit_tariff_income: 52
     housing_benefit_applicable_income: 52
     housing_benefit_eligible: true
+
+- name: Pension-age Housing Benefit is ineligible above the upper capital limit without Guarantee Credit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 70
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        guarantee_credit: 0
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        savings: 16_001
+  output:
+    housing_benefit_assessable_capital: 16_001
+    housing_benefit_eligible: false
 
 - name: Guarantee Credit passports Housing Benefit income and capital
   period: 2025
