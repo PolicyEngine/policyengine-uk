@@ -6,7 +6,5 @@ metadata:
   period: year
   unit: currency-GBP
   reference:
-    - title: Universal Credit Eligibility
-      href: https://www.gov.uk/universal-credit/eligibility
-    - title: Benefit and pension rates 2025 to 2026
-      href: https://assets.publishing.service.gov.uk/media/67efe453cb0feef57df7e571/benefit_and_pension_rates_2025_to_2026.pdf
+    - title: The Universal Credit Regulations 2013 reg. 18
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/18

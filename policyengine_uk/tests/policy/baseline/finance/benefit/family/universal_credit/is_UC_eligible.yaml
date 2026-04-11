@@ -61,3 +61,47 @@
         savings: 16_001
   output:
     is_uc_eligible: false
+
+- name: Household capital is apportioned across benunits
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 30
+      person_2:
+        age: 32
+    benunits:
+      benunit_1:
+        members: person_1
+      benunit_2:
+        members: person_2
+    households:
+      household:
+        members: [person_1, person_2]
+        savings: 20_000
+  output:
+    uc_assessable_capital: [10_000, 10_000]
+    is_uc_eligible: [true, true]
+
+- name: Apportioned capital can still exceed the upper threshold
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 30
+      person_2:
+        age: 32
+    benunits:
+      benunit_1:
+        members: person_1
+      benunit_2:
+        members: person_2
+    households:
+      household:
+        members: [person_1, person_2]
+        savings: 40_000
+  output:
+    uc_assessable_capital: [20_000, 20_000]
+    is_uc_eligible: [false, false]

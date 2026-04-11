@@ -38,7 +38,6 @@
     benunits:
       benunit:
         uc_earned_income: 0
-        uc_unearned_income: 0
         uc_maximum_amount: 5_000
         members: person
     households:

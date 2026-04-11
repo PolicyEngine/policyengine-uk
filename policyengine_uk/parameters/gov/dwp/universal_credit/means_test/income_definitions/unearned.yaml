@@ -11,10 +11,11 @@ metadata:
 
 
 values:
-  2010-01-01:
+  2013-04-29:
   - carers_allowance
   - jsa_contrib
   - private_pension_income
+  - uc_tariff_income
   - savings_interest_income
   - dividend_income
   - property_income

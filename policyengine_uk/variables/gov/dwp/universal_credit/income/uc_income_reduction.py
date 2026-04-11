@@ -14,11 +14,8 @@ class uc_income_reduction(Variable):
         earned_income = benunit("uc_earned_income", period)
         earned_income_reduction = p.reduction_rate * earned_income
         unearned_income_reduction = benunit("uc_unearned_income", period)
-        capital_tariff_income = benunit("uc_tariff_income", period)
         maximum_credit = benunit("uc_maximum_amount", period)
-        total_reduction = (
-            earned_income_reduction + unearned_income_reduction + capital_tariff_income
-        )
+        total_reduction = earned_income_reduction + unearned_income_reduction
         return min_(
             maximum_credit,
             total_reduction,

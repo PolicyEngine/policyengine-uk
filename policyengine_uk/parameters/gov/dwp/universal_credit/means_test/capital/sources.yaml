@@ -1,0 +1,19 @@
+description: >
+  Household asset variables currently counted towards Universal Credit capital.
+  Regulation 46 takes all capital into account unless it is treated as income or
+  disregarded under regulation 48 and Schedule 10. The current modelled proxy is
+  limited to liquid savings.
+metadata:
+  label: Universal Credit countable capital sources
+  period: year
+  unit: list
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 46
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/46
+    - title: The Universal Credit Regulations 2013 reg. 48
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/48
+    - title: The Universal Credit Regulations 2013 Schedule 10
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10
+values:
+  2013-04-29:
+    - savings
