@@ -19,7 +19,9 @@ class housing_benefit_assessable_capital(Variable):
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = add(household, period, p.sources)
         benunit_adults = add(benunit, period, ["is_adult"])
-        household_adults = benunit.max(household.sum(person("is_adult", period)))
+        household_adults = benunit.max(
+            person.household.sum(person.household.members("is_adult", period))
+        )
         adult_divisor = max_(1, household_adults)
         household_capital_proxy = where(
             household_adults > 0,
