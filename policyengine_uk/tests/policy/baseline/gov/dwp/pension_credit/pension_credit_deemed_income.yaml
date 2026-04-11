@@ -86,3 +86,24 @@
   output:
     pension_credit_assessable_capital: [10_501, 0]
     pension_credit_deemed_income: [104, 0]
+
+- name: Pension Credit splits capital across separate pension-age benunits.
+  period: 2021
+  input:
+    people:
+      pensioner_1:
+        age: 70
+      pensioner_2:
+        age: 72
+    benunits:
+      benunit_1:
+        members: [pensioner_1]
+      benunit_2:
+        members: [pensioner_2]
+    households:
+      household:
+        members: [pensioner_1, pensioner_2]
+        savings: 20_002
+  output:
+    pension_credit_assessable_capital: [10_001, 10_001]
+    pension_credit_deemed_income: [52, 52]
