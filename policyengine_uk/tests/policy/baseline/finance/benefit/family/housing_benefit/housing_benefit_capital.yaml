@@ -1,0 +1,137 @@
+- name: Working-age Housing Benefit remains eligible at the upper capital limit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        savings: 16_000
+  output:
+    housing_benefit_assessable_capital: 16_000
+    housing_benefit_eligible: true
+
+- name: Working-age Housing Benefit is ineligible above the upper capital limit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        savings: 16_001
+  output:
+    housing_benefit_assessable_capital: 16_001
+    housing_benefit_eligible: false
+
+- name: Working-age Housing Benefit tariff income rounds incomplete capital steps up
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      household:
+        members: person
+        savings: 6_001
+  output:
+    housing_benefit_tariff_income: 52
+    housing_benefit_applicable_income: 52
+
+- name: Mixed benunits split household Housing Benefit capital by adult share
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 32
+      person_2:
+        age: 30
+    benunits:
+      benunit_1:
+        members: person_1
+      benunit_2:
+        members: person_2
+    households:
+      household:
+        members: [person_1, person_2]
+        savings: 20_000
+  output:
+    housing_benefit_assessable_capital: [10_000, 10_000]
+
+- name: Pension-age Housing Benefit uses the £500 tariff-income step above £10,000
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 70
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        guarantee_credit: 0
+        would_claim_uc: false
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      household:
+        members: person
+        savings: 10_001
+  output:
+    housing_benefit_tariff_income: 52
+    housing_benefit_applicable_income: 52
+    housing_benefit_eligible: true
+
+- name: Guarantee Credit passports Housing Benefit income and capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 70
+        in_social_housing: true
+        housing_benefit_reported: 1
+        private_pension_income: 10_000
+    benunits:
+      benunit:
+        members: person
+        guarantee_credit: 1
+        would_claim_uc: false
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      household:
+        members: person
+        savings: 50_000
+  output:
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_eligible: true

@@ -1,0 +1,10 @@
+description: Weekly working-age Housing Benefit tariff income for each capital step above the lower threshold.
+metadata:
+  label: Working-age Housing Benefit weekly tariff income per capital step
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 52(6)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/52
+values:
+  2006-04-10: 1

@@ -1,0 +1,10 @@
+description: Pension-age Housing Benefit upper capital threshold.
+metadata:
+  label: Pension-age Housing Benefit upper capital threshold
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 43
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/43
+values:
+  2006-04-10: 16000
