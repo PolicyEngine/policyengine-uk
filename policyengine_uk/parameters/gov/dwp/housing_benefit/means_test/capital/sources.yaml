@@ -2,14 +2,17 @@ description: >
   Model variables currently mapped to countable Housing Benefit capital.
   The Housing Benefit Regulations 2006 treat the whole of a claimant's capital
   as assessable unless it is disregarded under Schedule 6. The current mappings
-  are `savings` for liquid capital, `other_residential_property_value` for
-  residential property other than the home, `non_residential_property_value`
-  for other land and premises, and `corporate_wealth` for shares and similar
-  investment assets. `main_residence_value` is excluded because Schedule 6
-  paragraph 1 disregards premises occupied as the claimant's home. Other
-  Schedule 6 disregards within these broad asset classes are not yet split out
-  separately. Because the dataset only provides household-level capital stocks,
-  the model allocates them across benunits using an adult-share proxy.
+  are `savings` for liquid capital, `owned_land` for land held directly,
+  `other_residential_property_value` for residential property other than the
+  home, and `non_residential_property_value` for other land and premises.
+  `main_residence_value` is excluded because Schedule 6 paragraph 1 disregards
+  premises occupied as the claimant's home. `corporate_wealth` is also
+  excluded for now because the current dataset definition bundles pension pots
+  together with shares and investment ISAs, and Housing Benefit pension-capital
+  treatment is not separately modelled yet. Other Schedule 6 disregards within
+  these broad asset classes are not yet split out separately. Because the
+  dataset only provides household-level capital stocks, the model allocates
+  them across benunits using an adult-share proxy.
 metadata:
   label: Housing Benefit countable capital sources
   period: year
@@ -26,6 +29,6 @@ metadata:
 values:
   2006-04-10:
     - savings
+    - owned_land
     - other_residential_property_value
     - non_residential_property_value
-    - corporate_wealth

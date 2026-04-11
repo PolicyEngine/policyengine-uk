@@ -17,6 +17,7 @@
         savings: 16_000
   output:
     housing_benefit_assessable_capital: 16_000
+    housing_benefit_tariff_income: 2_080
     housing_benefit_eligible: true
 
 - name: Working-age Housing Benefit is ineligible above the upper capital limit
@@ -39,6 +40,29 @@
   output:
     housing_benefit_assessable_capital: 16_001
     housing_benefit_eligible: false
+
+- name: Working-age Housing Benefit has no tariff income at the lower capital disregard
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      household:
+        members: person
+        savings: 6_000
+  output:
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
 
 - name: Working-age Housing Benefit tariff income rounds incomplete capital steps up
   period: 2025
@@ -63,6 +87,48 @@
     housing_benefit_tariff_income: 52
     housing_benefit_applicable_income: 52
 
+- name: Housing Benefit counts direct land holdings as capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        owned_land: 16_001
+  output:
+    housing_benefit_assessable_capital: 16_001
+    housing_benefit_eligible: false
+
+- name: Housing Benefit ignores pension-blended corporate wealth until it is split from pensions
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        corporate_wealth: 50_000
+  output:
+    housing_benefit_assessable_capital: 0
+    housing_benefit_eligible: true
+
 - name: Mixed benunits split household Housing Benefit capital by adult share
   period: 2025
   absolute_error_margin: 0
@@ -83,6 +149,30 @@
         savings: 20_000
   output:
     housing_benefit_assessable_capital: [10_000, 10_000]
+
+- name: Pension-age Housing Benefit has no tariff income at the capital disregard
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 70
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        guarantee_credit: 0
+        would_claim_uc: false
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      household:
+        members: person
+        savings: 10_000
+  output:
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
 
 - name: Pension-age Housing Benefit uses the £500 tariff-income step above £10,000
   period: 2025
