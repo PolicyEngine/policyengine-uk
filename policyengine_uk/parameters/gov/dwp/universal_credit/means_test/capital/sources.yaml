@@ -1,8 +1,11 @@
 description: >
   Household asset variables currently counted towards Universal Credit capital.
   Regulation 46 takes all capital into account unless it is treated as income or
-  disregarded under regulation 48 and Schedule 10. The current modelled proxy is
-  limited to liquid savings.
+  disregarded under regulation 48 and Schedule 10. These household-level sources
+  are used directly when a household contains a single benefit unit. For
+  multi-benunit households, the model falls back to the household-head benunit's
+  household-level capital proxy unless a benunit-specific `uc_reported_capital`
+  override is provided.
 metadata:
   label: Universal Credit countable capital sources
   period: year
@@ -17,3 +20,6 @@ metadata:
 values:
   2013-04-29:
     - savings
+    - other_residential_property_value
+    - non_residential_property_value
+    - corporate_wealth

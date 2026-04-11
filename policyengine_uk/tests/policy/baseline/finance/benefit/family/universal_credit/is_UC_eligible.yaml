@@ -62,7 +62,7 @@
   output:
     is_uc_eligible: false
 
-- name: Household capital is apportioned across benunits
+- name: Multi-benunit households use benunit-reported capital
   period: 2025
   absolute_error_margin: 0
   input:
@@ -71,6 +71,30 @@
         age: 30
       person_2:
         age: 32
+    benunits:
+      benunit_1:
+        members: person_1
+        uc_reported_capital: 10_000
+      benunit_2:
+        members: person_2
+        uc_reported_capital: 10_000
+    households:
+      household:
+        members: [person_1, person_2]
+        savings: 20_000
+  output:
+    uc_assessable_capital: [10_000, 10_000]
+    is_uc_eligible: [true, true]
+
+- name: Multi-benunit households default household capital to the head benunit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 32
+      person_2:
+        age: 30
     benunits:
       benunit_1:
         members: person_1
@@ -81,23 +105,25 @@
         members: [person_1, person_2]
         savings: 20_000
   output:
-    uc_assessable_capital: [10_000, 10_000]
-    is_uc_eligible: [true, true]
+    uc_assessable_capital: [20_000, 0]
+    is_uc_eligible: [false, true]
 
-- name: Apportioned capital can still exceed the upper threshold
+- name: Reported capital can still exceed the upper threshold
   period: 2025
   absolute_error_margin: 0
   input:
     people:
       person_1:
-        age: 30
-      person_2:
         age: 32
+      person_2:
+        age: 30
     benunits:
       benunit_1:
         members: person_1
+        uc_reported_capital: 20_000
       benunit_2:
         members: person_2
+        uc_reported_capital: 20_000
     households:
       household:
         members: [person_1, person_2]
@@ -105,3 +131,40 @@
   output:
     uc_assessable_capital: [20_000, 20_000]
     is_uc_eligible: [false, false]
+
+- name: Savings interest can push capital over the upper threshold
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 20
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_990
+  output:
+    uc_assessable_capital: 16_010
+    is_uc_eligible: false
+
+- name: Corporate wealth can push capital over the upper threshold
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        corporate_wealth: 50_000
+  output:
+    uc_assessable_capital: 50_000
+    is_uc_eligible: false

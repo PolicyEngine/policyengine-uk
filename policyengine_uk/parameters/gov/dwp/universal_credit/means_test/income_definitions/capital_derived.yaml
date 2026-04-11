@@ -1,8 +1,8 @@
 description: >
   Universal Credit unearned income sources that derive from capital currently
-  represented in the model's capital base. When tariff income applies under
-  regulation 72, these actual returns are folded into capital instead of being
-  counted separately as unearned income.
+  represented in the model's capital base. Regulation 72(3) treats income
+  derived from capital that is yielding tariff income as part of capital rather
+  than a separate unearned-income reduction.
 metadata:
   economy: false
   label: Universal Credit capital-derived unearned income sources
@@ -15,3 +15,5 @@ metadata:
 values:
   2013-04-29:
     - savings_interest_income
+    - dividend_income
+    - property_income

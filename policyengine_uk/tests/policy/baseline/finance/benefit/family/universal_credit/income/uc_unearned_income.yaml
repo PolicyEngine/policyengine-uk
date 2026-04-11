@@ -45,3 +45,26 @@
   output:
     uc_tariff_income: 4.35 * 12
     uc_unearned_income: 4.35 * 12
+
+- name: Reported capital drives tariff income for multi-benunit households
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person_1:
+        age: 30
+      person_2:
+        age: 32
+    benunits:
+      benunit_1:
+        members: person_1
+        uc_reported_capital: 6_001
+      benunit_2:
+        members: person_2
+    households:
+      household:
+        members: [person_1, person_2]
+        savings: 0
+  output:
+    uc_tariff_income: [52.2, 0]
+    uc_unearned_income: [52.2, 0]
