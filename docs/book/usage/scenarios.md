@@ -280,6 +280,30 @@ benefit_cap_reduction = sim.calculate("benefit_cap_reduction", 2026).mean()
 print(f"Benefit cap reduction after abolition: £{benefit_cap_reduction:.0f}")
 ```
 
+### Removing economic assumptions
+
+If you want to isolate policy effects from forecast-driven uprating, use the
+`no_economic_assumptions` scenario. It applies before data load, so it freezes
+both parameter uprating and any dataset extension that depends on forecast
+growth rates.
+
+```python
+from policyengine_uk import Simulation
+from policyengine_uk.scenarios import no_economic_assumptions
+
+situation = {
+    "people": {"person": {"age": {2025: 40}, "employment_income": {2025: 30_000}}},
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+
+baseline = Simulation(situation=situation)
+static = Simulation(situation=situation, scenario=no_economic_assumptions)
+
+print(float(baseline.calculate("employment_income", 2026)[0]))
+print(float(static.calculate("employment_income", 2026)[0]))
+```
+
 ## Advanced scenario techniques
 
 ### Time-varying parameters
