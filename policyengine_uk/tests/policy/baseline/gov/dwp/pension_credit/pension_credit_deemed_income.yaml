@@ -66,6 +66,23 @@
     pension_credit_assessable_capital: 10_501
     pension_credit_deemed_income: 104
 
+- name: Pension Credit counts direct land holdings as capital.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        owned_land: 10_001
+  output:
+    pension_credit_assessable_capital: 10_001
+    pension_credit_deemed_income: 52
+
 - name: Pension Credit does not dilute pensioner capital across unrelated adult benunits.
   period: 2021
   input:
