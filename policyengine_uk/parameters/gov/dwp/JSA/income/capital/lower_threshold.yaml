@@ -1,0 +1,11 @@
+description: Lower capital threshold for income-based JSA tariff income.
+metadata:
+  label: Income-based JSA lower capital threshold
+  period: year
+  reference:
+    - title: Benefit and pension rates 2026 to 2027
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+  unit: GBP
+
+values:
+  2015-04-01: 6000

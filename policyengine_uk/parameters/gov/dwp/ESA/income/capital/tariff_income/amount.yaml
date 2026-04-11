@@ -1,0 +1,11 @@
+description: Weekly amount of income-related ESA tariff income per capital step.
+metadata:
+  label: Income-related ESA tariff income amount
+  period: year
+  reference:
+    - title: Benefit and pension rates 2026 to 2027
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+  unit: GBP
+
+values:
+  2015-04-01: 1

@@ -1,0 +1,167 @@
+- name: Income-based JSA capital test ignores the main residence
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 1_000
+    benunits:
+      benunit:
+        members: claimant
+    households:
+      household:
+        members: claimant
+        savings: 1_000
+        owned_land: 500
+        corporate_wealth: 2_000
+        main_residence_value: 300_000
+        other_residential_property_value: 3_000
+        non_residential_property_value: 4_000
+  output:
+    jsa_income_assessable_capital: 10_500
+
+- name: Income-based JSA has no tariff income at the lower capital threshold
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 1_000
+    benunits:
+      benunit:
+        members: claimant
+    households:
+      household:
+        members: claimant
+        savings: 6_000
+  output:
+    jsa_income_tariff_income: 0
+    jsa_income: 1_000
+
+- name: Income-based JSA tariff income rounds incomplete capital steps up
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 1_000
+    benunits:
+      benunit:
+        members: claimant
+    households:
+      household:
+        members: claimant
+        savings: 6_001
+  output:
+    jsa_income_tariff_income: 52
+    jsa_income: 948
+
+- name: Income-based JSA remains eligible at the upper capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: claimant
+    households:
+      household:
+        members: claimant
+        savings: 16_000
+  output:
+    jsa_income_eligible: true
+    jsa_income_tariff_income: 2_080
+    jsa_income: 920
+
+- name: Income-based JSA is not eligible above the capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: claimant
+    households:
+      household:
+        members: claimant
+        savings: 16_001
+  output:
+    jsa_income_eligible: false
+    jsa_income: 0
+
+- name: Income-based JSA allocates household capital by adult share when nobody reports the award
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      adult_1:
+        age: 30
+      adult_2:
+        age: 32
+      adult_3:
+        age: 34
+    benunits:
+      benunit_1:
+        members: adult_1
+      benunit_2:
+        members: [adult_2, adult_3]
+    households:
+      household:
+        members: [adult_1, adult_2, adult_3]
+        savings: 18_000
+  output:
+    jsa_income_assessable_capital: [6_000, 12_000]
+
+- name: Income-based JSA does not dilute claimant capital across unrelated non-claiming adults
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 1_000
+      unrelated_adult:
+        age: 34
+    benunits:
+      claimant_benunit:
+        members: claimant
+      unrelated_benunit:
+        members: unrelated_adult
+    households:
+      household:
+        members: [claimant, unrelated_adult]
+        savings: 18_000
+  output:
+    jsa_income_assessable_capital: [18_000, 0]
+
+- name: Income-based JSA does not dilute household capital across multiple claiming benunits
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant_1:
+        age: 30
+        jsa_income_reported: 1_000
+      claimant_2:
+        age: 34
+        jsa_income_reported: 1_000
+    benunits:
+      benunit_1:
+        members: claimant_1
+      benunit_2:
+        members: claimant_2
+    households:
+      household:
+        members: [claimant_1, claimant_2]
+        savings: 18_000
+  output:
+    jsa_income_assessable_capital: [18_000, 18_000]
