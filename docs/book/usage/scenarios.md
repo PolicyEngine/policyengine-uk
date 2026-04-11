@@ -391,14 +391,14 @@ for year in [2025, 2027, 2029]:
 
 ### Building Universal Credit scenarios with dynamic changes
 
-Some scenarios need to make changes that depend on the simulation's own data. Here's how to create a UC scenario that adjusts payments based on claimant characteristics:
+Some scenarios need to make changes that depend on the simulation's own data. Here's how to create a UC scenario that adjusts health-element payments based on claimant characteristics:
 
 ```python
 from policyengine_uk import Scenario, Microsimulation
 import numpy as np
 
 def modify_uc_for_new_claimants(sim: Microsimulation):
-    """Reduce health elements for new UC claimants while increasing standard allowances"""
+    """Reduce health elements for new UC claimants while preserving claimant protections"""
     # Access the parameter system to check if reforms are active
     rebalancing_params = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
     
@@ -434,11 +434,9 @@ def modify_uc_for_new_claimants(sim: Microsimulation):
         
         sim.set_input("uc_LCWRA_element", year, current_health_element)
         
-        # Increase standard allowances for everyone
-        uplift_rate = rebalancing_params.standard_allowance_uplift(year)
-        previous_allowance = sim.calculate("uc_standard_allowance", year - 1)
-        new_allowance = previous_allowance * (1 + uplift_rate)
-        sim.set_input("uc_standard_allowance", year, new_allowance)
+        # General standard allowance uplifts are already handled in the
+        # uc_standard_allowance formula. Scenario modifiers only need to add
+        # claimant-specific overrides such as protected health elements.
 
 # Create the UC rebalancing scenario
 uc_rebalancing = Scenario(simulation_modifier=modify_uc_for_new_claimants)
