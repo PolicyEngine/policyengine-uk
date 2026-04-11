@@ -1,0 +1,50 @@
+- name: No tariff income below the lower capital threshold
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_000
+  output:
+    uc_tariff_income: 0
+
+- name: Tariff income rounds capital up to the next step
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+  output:
+    uc_tariff_income: 4.35 * 12
+
+- name: Tariff income applies through the upper capital limit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 16_000
+  output:
+    uc_tariff_income: 40 * 4.35 * 12

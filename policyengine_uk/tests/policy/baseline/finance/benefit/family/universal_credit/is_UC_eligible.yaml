@@ -27,3 +27,37 @@
         members: [person_1, person_2]
   output:
     is_uc_eligible: true
+
+- name: Working-age adult remains eligible at the upper capital limit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 16_000
+  output:
+    is_uc_eligible: true
+
+- name: Working-age adult is ineligible above the upper capital limit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 16_001
+  output:
+    is_uc_eligible: false

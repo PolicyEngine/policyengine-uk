@@ -1,0 +1,12 @@
+description: Capital step used to calculate Universal Credit tariff income.
+values:
+  2013-04-29: 250
+metadata:
+  label: Universal Credit capital step for tariff income
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Universal Credit money, savings and investments
+      href: https://www.gov.uk/guidance/universal-credit-money-savings-and-investments
+    - title: Benefit and pension rates 2025 to 2026
+      href: https://assets.publishing.service.gov.uk/media/67efe453cb0feef57df7e571/benefit_and_pension_rates_2025_to_2026.pdf

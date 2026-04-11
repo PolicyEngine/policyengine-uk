@@ -27,3 +27,23 @@
     uc_maximum_amount: 5_000
   output:
     uc_income_reduction: 950
+
+- name: Capital tariff income reduces Universal Credit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 5_000
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_300
+  output:
+    uc_income_reduction: 8.70 * 12

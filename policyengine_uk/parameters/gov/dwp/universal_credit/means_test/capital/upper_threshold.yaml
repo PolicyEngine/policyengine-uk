@@ -1,0 +1,12 @@
+description: Universal Credit upper capital threshold.
+values:
+  2013-04-29: 16_000
+metadata:
+  label: Universal Credit upper capital threshold
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Universal Credit Eligibility
+      href: https://www.gov.uk/universal-credit/eligibility
+    - title: Benefit and pension rates 2025 to 2026
+      href: https://assets.publishing.service.gov.uk/media/67efe453cb0feef57df7e571/benefit_and_pension_rates_2025_to_2026.pdf
