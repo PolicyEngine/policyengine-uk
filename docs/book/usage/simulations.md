@@ -209,6 +209,75 @@ print(f"Total income tax from all people: £{total_tax:.2f}")
 The column naming follows the pattern `variable_name__year` for time-varying variables. Note the double underscore `__` between the variable name and year.
 ```
 
+### From entity tables with `UKSingleYearDataset` and `UKMultiYearDataset`
+
+If your data is already split into person-, benefit-unit-, and household-level
+tables, use the UK dataset classes directly:
+
+```python
+import pandas as pd
+
+from policyengine_uk import Simulation
+from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+
+person_2025 = pd.DataFrame({
+    "person_id": [1, 2],
+    "person_benunit_id": [1, 1],
+    "person_household_id": [1, 1],
+    "age": [35, 7],
+    "employment_income": [32_000, 0],
+})
+
+benunit_2025 = pd.DataFrame({
+    "benunit_id": [1],
+})
+
+household_2025 = pd.DataFrame({
+    "household_id": [1],
+    "region": ["LONDON"],
+    "council_tax": [1_800],
+})
+
+dataset_2025 = UKSingleYearDataset(
+    person=person_2025,
+    benunit=benunit_2025,
+    household=household_2025,
+    fiscal_year=2025,
+)
+
+sim = Simulation(dataset=dataset_2025)
+print(sim.calculate("income_tax", 2025))
+```
+
+Each table should contain the ID columns needed to link entities together:
+
+- `person`: `person_id`, `person_benunit_id`, `person_household_id`, plus any person-level variables
+- `benunit`: `benunit_id`, plus any benefit-unit variables
+- `household`: `household_id`, plus any household-level variables
+
+Use `UKSingleYearDataset` when you have one cross-section and want PolicyEngine
+UK to extend it forward using its standard uprating assumptions.
+
+Use `UKMultiYearDataset` when you already have explicit tables for multiple
+years and want those year-by-year values loaded as-is:
+
+```python
+dataset = UKMultiYearDataset(
+    datasets=[
+        dataset_2025,
+        UKSingleYearDataset(
+            person=person_2026,
+            benunit=benunit_2026,
+            household=household_2026,
+            fiscal_year=2026,
+        ),
+    ]
+)
+
+sim = Simulation(dataset=dataset)
+print(sim.calculate("household_net_income", 2026))
+```
+
 ### From survey datasets
 
 For population-level analysis, use survey data:
