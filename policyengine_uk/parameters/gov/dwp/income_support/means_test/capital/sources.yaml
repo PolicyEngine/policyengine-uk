@@ -1,0 +1,20 @@
+description: Capital sources included in the Income Support capital test.
+metadata:
+  label: Income Support capital sources
+  period: year
+  propagate_metadata_to_children: true
+  reference:
+    - title: Income Support (General) Regulations 1987 reg. 46(1)-(2)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/data.pdf#page=70
+    - title: Income Support (General) Regulations 1987 reg. 48(4)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/data.pdf#page=70
+    - title: Income Support (General) Regulations 1987 Sch. 10
+      href: https://www.legislation.gov.uk/uksi/1987/1967/data.pdf#page=188
+  unit: list
+
+values:
+  2010-01-01:
+  - savings
+  - corporate_wealth
+  - other_residential_property_value
+  - non_residential_property_value
