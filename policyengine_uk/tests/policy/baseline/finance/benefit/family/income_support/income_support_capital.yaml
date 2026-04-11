@@ -92,3 +92,26 @@
   output:
     income_support_eligible: false
     income_support: 0
+
+- name: Income Support allocates household capital by adult share across benunits
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      p1:
+        age: 26
+      p2:
+        age: 30
+      p3:
+        age: 32
+    benunits:
+      b1:
+        members: [p1]
+      b2:
+        members: [p2, p3]
+    households:
+      household:
+        members: [p1, p2, p3]
+        savings: 18_000
+  output:
+    income_support_assessable_capital: [6_000, 12_000]
