@@ -15,6 +15,7 @@ metadata:
 values:
   2010-01-01:
   - savings
+  - owned_land
   - corporate_wealth
   - other_residential_property_value
   - non_residential_property_value

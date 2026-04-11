@@ -17,12 +17,35 @@
       household:
         members: [p1, c1]
         savings: 1000
+        owned_land: 500
         corporate_wealth: 2000
         main_residence_value: 300000
         other_residential_property_value: 3000
         non_residential_property_value: 4000
   output:
-    income_support_assessable_capital: 10000
+    income_support_assessable_capital: 10500
+
+- name: Income Support has no tariff income at the lower capital threshold
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      p1:
+        age: 26
+        income_support_reported: true
+      c1:
+        age: 4
+        is_child: true
+    benunits:
+      b1:
+        members: [p1, c1]
+        would_claim_IS: true
+    households:
+      household:
+        members: [p1, c1]
+        savings: 6000
+  output:
+    income_support_tariff_income: 0
 
 - name: Income Support tariff income rounds up to the next 250 pounds
   period: 2021
@@ -69,6 +92,28 @@
     income_support_eligible: true
     income_support_tariff_income: 104
     income_support: 4209.82
+
+- name: Income Support remains eligible at the upper capital limit
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    people:
+      p1:
+        age: 26
+        income_support_reported: true
+      c1:
+        age: 4
+        is_child: true
+    benunits:
+      b1:
+        members: [p1, c1]
+        would_claim_IS: true
+    households:
+      household:
+        members: [p1, c1]
+        savings: 16000
+  output:
+    income_support_eligible: true
 
 - name: Income Support is not eligible above the capital limit
   period: 2021
