@@ -22,9 +22,7 @@ class pension_credit_assessable_capital(Variable):
         any_pension_age = benunit.any(person("is_SP_age", period))
         benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
         household_pension_age_adults = benunit.max(
-            person.household.sum(
-                person.household.members("is_SP_age", period)
-            )
+            person.household.sum(person.household.members("is_SP_age", period))
         )
         adult_divisor = max_(1, household_pension_age_adults)
         household_capital_proxy = (
