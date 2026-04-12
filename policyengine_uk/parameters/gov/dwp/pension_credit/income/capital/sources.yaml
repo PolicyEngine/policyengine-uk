@@ -1,0 +1,22 @@
+description: >
+  PolicyEngine approximation of Pension Credit capital sources that count
+  toward deemed income from capital, excluding the claimant's main home.
+metadata:
+  label: Pension Credit capital sources
+  name: pension_credit_capital_sources
+  unit: list
+  reference:
+    - href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/15
+      title: State Pension Credit Regulations 2002 reg. 15
+    - href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/5
+      title: State Pension Credit Regulations 2002 Sch. 5
+    - href: https://www.gov.uk/government/publications/pension-credit-technical-guidance/a-detailed-guide-to-pension-credit-for-advisers-and-others
+      title: Pension Credit technical guidance
+  propagate_metadata_to_children: true
+values:
+  2003-10-06:
+    - savings
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
+    - corporate_wealth

@@ -1,13 +1,60 @@
 - name: All income sources are included.
   period: 2021
   input:
-    employment_income: 1
-    working_tax_credit: 2
-    state_pension: 4
-    private_pension_income: 8
-    capital_income: 16
-    esa_contrib: 32
-    jsa_contrib: 64
-    self_employment_income: 128
+    people:
+      person:
+        age: 70
+        employment_income: 1
+        state_pension: 4
+        private_pension_income: 8
+        esa_contrib: 32
+        jsa_contrib: 64
+        self_employment_income: 128
+    benunits:
+      benunit:
+        members: person
+        working_tax_credit: 2
+    households:
+      household:
+        members: person
+        savings: 11_000
   output:
-    pension_credit_income: 255
+    pension_credit_deemed_income: 104
+    pension_credit_income: 343
+
+- name: Interest and dividends are not counted directly in Pension Credit income.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+        savings_interest_income: 500
+        dividend_income: 300
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_000
+  output:
+    pension_credit_deemed_income: 0
+    pension_credit_income: 0
+
+- name: Pension Credit deemed income starts above the capital disregard.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_001
+  output:
+    pension_credit_assessable_capital: 10_001
+    pension_credit_deemed_income: 52
+    pension_credit_income: 52
