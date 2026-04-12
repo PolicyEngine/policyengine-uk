@@ -51,14 +51,11 @@ def _get_git_sha() -> str | None:
         if not (candidate / ".git").exists():
             continue
         try:
-            return (
-                subprocess.check_output(
-                    ["git", "-C", str(candidate), "rev-parse", "HEAD"],
-                    stderr=subprocess.DEVNULL,
-                    text=True,
-                )
-                .strip()
-            )
+            return subprocess.check_output(
+                ["git", "-C", str(candidate), "rev-parse", "HEAD"],
+                stderr=subprocess.DEVNULL,
+                text=True,
+            ).strip()
         except Exception:
             return None
     return None
