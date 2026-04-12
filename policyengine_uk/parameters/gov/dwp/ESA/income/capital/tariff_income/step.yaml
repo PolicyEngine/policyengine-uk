@@ -3,8 +3,8 @@ metadata:
   label: Income-related ESA tariff income step
   period: year
   reference:
-    - title: Benefit and pension rates 2026 to 2027
-      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: Employment and Support Allowance Regulations 2008 reg. 118
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/118
   unit: GBP
 
 values:

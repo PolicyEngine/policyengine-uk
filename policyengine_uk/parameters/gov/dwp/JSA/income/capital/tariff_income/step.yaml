@@ -3,8 +3,8 @@ metadata:
   label: Income-based JSA tariff income step
   period: year
   reference:
-    - title: Benefit and pension rates 2026 to 2027
-      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: Jobseeker's Allowance Regulations 1996 reg. 116
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/116
   unit: GBP
 
 values:
