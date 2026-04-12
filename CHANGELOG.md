@@ -1,3 +1,10 @@
+## [2.79.2] - 2026-04-12
+
+### Fixed
+
+- Fixed `corporate_land_value` to allocate aggregate corporate land using the current weighted distribution of `corporate_wealth`, and refreshed the aggregate land parameters to the 2024 ONS land totals used by `policyengine-uk-data`.
+
+
 ## [2.79.1] - 2026-04-12
 
 ### Changed
