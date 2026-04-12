@@ -31,11 +31,12 @@ def test_corporate_land_value_matches_aggregate_for_weighted_dataset():
     corporate_land_value = sim.calculate(
         "corporate_land_value", map_to="household", period=2025
     )
-    household_weight = sim.calculate("household_weight", map_to="household", period=2025)
-    aggregate = (
-        sim.tax_benefit_system.parameters("2025")
-        .household.wealth.land.value.aggregate_corporate_land_value
+    household_weight = sim.calculate(
+        "household_weight", map_to="household", period=2025
     )
+    aggregate = sim.tax_benefit_system.parameters(
+        "2025"
+    ).household.wealth.land.value.aggregate_corporate_land_value
 
     assert corporate_land_value[0] == pytest.approx(aggregate * 0.2)
     assert corporate_land_value[1] == pytest.approx(aggregate * 0.6)

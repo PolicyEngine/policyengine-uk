@@ -17,9 +17,9 @@ class corporate_land_value(Variable):
         if total_weighted_corporate_wealth == 0:
             return corporate_wealth * 0
 
-        aggregate_corporate_land_value = (
-            parameters(period).household.wealth.land.value.aggregate_corporate_land_value
-        )
+        aggregate_corporate_land_value = parameters(
+            period
+        ).household.wealth.land.value.aggregate_corporate_land_value
         return (
             corporate_wealth
             / total_weighted_corporate_wealth
