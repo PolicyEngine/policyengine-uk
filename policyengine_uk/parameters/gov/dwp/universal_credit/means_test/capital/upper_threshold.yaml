@@ -1,8 +1,8 @@
-description: Universal Credit upper capital threshold.
+description: Universal Credit capital limit.
 values:
   2013-04-29: 16_000
 metadata:
-  label: Universal Credit upper capital threshold
+  label: Universal Credit capital limit
   period: year
   unit: currency-GBP
   reference:

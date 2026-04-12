@@ -1,6 +1,6 @@
-description: Standard working-age Housing Benefit upper capital threshold.
+description: Standard working-age Housing Benefit capital limit.
 metadata:
-  label: Working-age Housing Benefit upper capital threshold
+  label: Working-age Housing Benefit capital limit
   period: year
   unit: currency-GBP
   reference:

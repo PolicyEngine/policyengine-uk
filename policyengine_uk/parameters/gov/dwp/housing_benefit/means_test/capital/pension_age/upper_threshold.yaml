@@ -1,6 +1,6 @@
-description: Pension-age Housing Benefit upper capital threshold.
+description: Pension-age Housing Benefit capital limit.
 metadata:
-  label: Pension-age Housing Benefit upper capital threshold
+  label: Pension-age Housing Benefit capital limit
   period: year
   unit: currency-GBP
   reference:

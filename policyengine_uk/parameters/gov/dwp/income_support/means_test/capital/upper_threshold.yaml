@@ -1,6 +1,6 @@
-description: Upper capital threshold for Income Support eligibility.
+description: Capital limit for Income Support eligibility.
 metadata:
-  label: Income Support upper capital threshold
+  label: Income Support capital limit
   period: year
   reference:
     - title: Income Support (General) Regulations 1987 reg. 45
