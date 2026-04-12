@@ -8,6 +8,7 @@ class income_support_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
+        IS = parameters(period).gov.dwp.income_support
         youngest_child_5_or_under = benunit("youngest_child_age", period) <= 5
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_with_young_child = lone_parent & youngest_child_5_or_under
@@ -15,9 +16,12 @@ class income_support_eligible(Variable):
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_esa_income = benunit("esa_income", period) > 0
         already_claiming = add(benunit, period, ["income_support_reported"]) > 0
+        capital = benunit("income_support_assessable_capital", period)
+        capital_limit = IS.means_test.capital.upper_threshold
         return (
             (has_carers | lone_parent_with_young_child)
             & none_SP_age
             & ~has_esa_income
             & already_claiming
+            & (capital <= capital_limit)
         )

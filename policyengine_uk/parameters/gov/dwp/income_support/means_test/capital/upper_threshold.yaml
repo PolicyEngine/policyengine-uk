@@ -1,0 +1,11 @@
+description: Upper capital threshold for Income Support eligibility.
+metadata:
+  label: Income Support upper capital threshold
+  period: year
+  reference:
+    - title: Income Support (General) Regulations 1987 reg. 45
+      href: https://www.legislation.gov.uk/uksi/1987/1967/data.pdf#page=70
+  unit: GBP
+
+values:
+  2010-01-01: 16000
