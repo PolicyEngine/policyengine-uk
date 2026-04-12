@@ -1,0 +1,11 @@
+description: Capital limit for income-related ESA eligibility.
+metadata:
+  label: Income-related ESA capital limit
+  period: year
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 110
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/110
+  unit: GBP
+
+values:
+  2015-04-01: 16000

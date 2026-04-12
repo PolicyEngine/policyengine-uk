@@ -1,0 +1,11 @@
+description: Capital threshold for income-based JSA tariff income.
+metadata:
+  label: Income-based JSA tariff income threshold
+  period: year
+  reference:
+    - title: Jobseeker's Allowance Regulations 1996 reg. 116
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/116
+  unit: GBP
+
+values:
+  2015-04-01: 6000

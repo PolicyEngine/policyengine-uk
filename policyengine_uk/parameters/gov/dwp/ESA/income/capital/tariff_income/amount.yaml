@@ -1,0 +1,11 @@
+description: Weekly amount of income-related ESA tariff income per capital step.
+metadata:
+  label: Income-related ESA tariff income amount
+  period: year
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 118
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/118
+  unit: GBP
+
+values:
+  2015-04-01: 1
