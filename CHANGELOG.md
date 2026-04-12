@@ -1,3 +1,14 @@
+## [2.79.0] - 2026-04-12
+
+### Added
+
+- Add named economic-assumption parameters for the local-authority ONS income target uprating factors used by `policyengine-uk-data`.
+
+### Fixed
+
+- Corrected Universal Credit rebalancing so existing health-element claimants keep their combined standard allowance and health element award CPI-protected.
+
+
 ## [2.78.0] - 2026-04-07
 
 ### Added
