@@ -16,8 +16,8 @@ class housing_benefit_tariff_income(Variable):
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         lower_threshold = where(
             any_over_SP_age,
-            p.pension_age.lower_threshold,
-            p.working_age.lower_threshold,
+            p.pension_age.tariff_income.lower_threshold,
+            p.working_age.tariff_income.lower_threshold,
         )
         step = where(
             any_over_SP_age,
