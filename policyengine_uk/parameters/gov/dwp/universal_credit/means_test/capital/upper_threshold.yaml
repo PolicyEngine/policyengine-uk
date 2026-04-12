@@ -1,0 +1,10 @@
+description: Universal Credit upper capital threshold.
+values:
+  2013-04-29: 16_000
+metadata:
+  label: Universal Credit upper capital threshold
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 18
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/18

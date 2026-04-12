@@ -1,0 +1,39 @@
+description: >
+  Model variables currently mapped to countable Universal Credit capital.
+  Regulation 46 takes the whole of a person's capital into account unless it is
+  treated as income or disregarded under regulation 48 and Schedule 10. The
+  current mappings are `savings` for liquid capital,
+  `other_residential_property_value` for residential property other than the
+  home, `non_residential_property_value` for other land and premises, and
+  `corporate_wealth` for shares and similar investment assets. `main_residence_value`
+  is excluded because Schedule 10 paragraph 1 disregards premises occupied as
+  the person's home. Other Schedule 10 disregards within these broad asset
+  classes are not yet split out separately. Where only household-level capital
+  is available for a multi-benunit household, the model uses a household-wide
+  adult-share proxy for residual capital because the dataset does not identify
+  which adults hold the beneficial interest in each capital asset. The
+  denominator is all unreported adults in the household, including adults in
+  benunits that are not themselves UC claimants. That proxy is a data
+  approximation, not a legislated allocation rule. Regulation 47 is cited only
+  as related context on jointly held capital. If some benunits provide
+  `uc_reported_capital`, the proxy is applied only to the residual household
+  capital for benunits that remain unreported.
+metadata:
+  label: Universal Credit countable capital sources
+  period: year
+  unit: list
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 46(1)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/46/1
+    - title: The Universal Credit Regulations 2013 reg. 47
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/47
+    - title: The Universal Credit Regulations 2013 reg. 48(1)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/48/1
+    - title: The Universal Credit Regulations 2013 Schedule 10 para. 1
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/1
+values:
+  2013-04-29:
+    - savings
+    - other_residential_property_value
+    - non_residential_property_value
+    - corporate_wealth

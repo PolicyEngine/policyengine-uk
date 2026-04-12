@@ -1,0 +1,10 @@
+description: Capital step used to calculate Universal Credit tariff income.
+values:
+  2013-04-29: 250
+metadata:
+  label: Universal Credit capital step for tariff income
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 72
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/72

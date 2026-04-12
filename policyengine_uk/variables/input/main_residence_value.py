@@ -3,7 +3,10 @@ from policyengine_uk.model_api import *
 
 class main_residence_value(Variable):
     label = "main residence value"
-    documentation = "Total value of the main residence"
+    documentation = (
+        "Total value of the main residence, which is excluded from Universal "
+        "Credit capital under Schedule 10 paragraph 1"
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
