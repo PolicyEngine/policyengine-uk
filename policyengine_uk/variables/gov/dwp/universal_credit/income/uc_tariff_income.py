@@ -13,6 +13,6 @@ class uc_tariff_income(Variable):
     def formula(benunit, period, parameters):
         capital = benunit("uc_assessable_capital", period)
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
-        excess_capital = max_(0, capital - p.lower_threshold)
+        excess_capital = max_(0, capital - p.tariff_income.threshold)
         steps = np.ceil(excess_capital / p.tariff_income.step)
         return steps * p.tariff_income.amount * MONTHS_IN_YEAR

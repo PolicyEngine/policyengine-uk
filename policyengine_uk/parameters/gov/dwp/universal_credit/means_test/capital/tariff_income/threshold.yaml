@@ -1,8 +1,8 @@
-description: Universal Credit lower capital threshold.
+description: Universal Credit tariff income threshold.
 values:
   2013-04-29: 6_000
 metadata:
-  label: Universal Credit lower capital threshold
+  label: Universal Credit tariff income threshold
   period: year
   unit: currency-GBP
   reference:
