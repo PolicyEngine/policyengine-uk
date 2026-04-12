@@ -1,6 +1,6 @@
-description: Standard working-age Housing Benefit lower capital threshold.
+description: Standard working-age Housing Benefit tariff income threshold.
 metadata:
-  label: Working-age Housing Benefit lower capital threshold
+  label: Working-age Housing Benefit tariff income threshold
   period: year
   unit: currency-GBP
   reference:

@@ -1,6 +1,6 @@
-description: Standard pension-age Housing Benefit lower capital threshold.
+description: Standard pension-age Housing Benefit tariff income threshold.
 metadata:
-  label: Pension-age Housing Benefit lower capital threshold
+  label: Pension-age Housing Benefit tariff income threshold
   period: year
   unit: currency-GBP
   reference:

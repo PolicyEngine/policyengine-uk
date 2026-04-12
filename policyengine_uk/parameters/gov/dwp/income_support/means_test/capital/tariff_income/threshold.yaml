@@ -1,6 +1,6 @@
-description: Lower capital threshold for Income Support tariff income.
+description: Capital threshold for Income Support tariff income.
 metadata:
-  label: Income Support lower capital threshold
+  label: Income Support tariff income threshold
   period: year
   reference:
     - title: Income Support (General) Regulations 1987 reg. 53(1)
