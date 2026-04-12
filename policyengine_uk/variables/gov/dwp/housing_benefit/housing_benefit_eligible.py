@@ -12,4 +12,17 @@ class housing_benefit_eligible(Variable):
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("would_claim_uc", period)
         lha_eligible = benunit("LHA_eligible", period)
-        return already_claiming & (social | lha_eligible) & ~claiming_uc
+        any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        capital = benunit("housing_benefit_assessable_capital", period)
+        hb_capital = parameters(period).gov.dwp.housing_benefit.means_test.capital
+        upper_threshold = where(
+            any_over_SP_age,
+            hb_capital.pension_age.upper_threshold,
+            hb_capital.working_age.upper_threshold,
+        )
+        return (
+            already_claiming
+            & (social | lha_eligible)
+            & ~claiming_uc
+            & (capital <= upper_threshold)
+        )

@@ -1,0 +1,12 @@
+description: Standard working-age Housing Benefit upper capital threshold.
+metadata:
+  label: Working-age Housing Benefit upper capital threshold
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 43
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/43
+    - title: Explanatory Memorandum to the Social Security (Miscellaneous Amendments) Regulations 2005 para. 7.2
+      href: https://www.legislation.gov.uk/uksi/2005/2465/pdfs/uksiem_20052465_en.pdf
+values:
+  2006-04-10: 16000

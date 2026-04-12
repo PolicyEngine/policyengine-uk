@@ -1,0 +1,10 @@
+description: Standard pension-age Housing Benefit lower capital threshold.
+metadata:
+  label: Pension-age Housing Benefit lower capital threshold
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 29(2)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/29
+values:
+  2006-04-10: 10000
