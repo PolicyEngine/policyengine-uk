@@ -17,7 +17,7 @@ class income_support_eligible(Variable):
         has_esa_income = benunit("esa_income", period) > 0
         already_claiming = add(benunit, period, ["income_support_reported"]) > 0
         capital = benunit("income_support_assessable_capital", period)
-        capital_limit = IS.means_test.capital.upper_threshold
+        capital_limit = IS.means_test.capital.capital_limit
         return (
             (has_carers | lone_parent_with_young_child)
             & none_SP_age

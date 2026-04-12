@@ -10,8 +10,8 @@ class is_uc_eligible(Variable):
 
     def formula(benunit, period, parameters):
         capital = benunit("uc_assessable_capital", period)
-        upper_threshold = parameters(
+        capital_limit = parameters(
             period
-        ).gov.dwp.universal_credit.means_test.capital.upper_threshold
+        ).gov.dwp.universal_credit.means_test.capital.capital_limit
         has_working_age_adult = benunit.any(benunit.members("is_WA_adult", period))
-        return has_working_age_adult & (capital <= upper_threshold)
+        return has_working_age_adult & (capital <= capital_limit)
