@@ -1,6 +1,6 @@
-description: Upper capital threshold for income-related ESA eligibility.
+description: Capital limit for income-related ESA eligibility.
 metadata:
-  label: Income-related ESA upper capital threshold
+  label: Income-related ESA capital limit
   period: year
   reference:
     - title: Employment and Support Allowance Regulations 2008 reg. 110
