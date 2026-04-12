@@ -1,3 +1,10 @@
+## [2.79.1] - 2026-04-12
+
+### Changed
+
+- Expose build metadata helpers for UK data artifacts, including a stable data-build fingerprint and build provenance metadata.
+
+
 ## [2.79.0] - 2026-04-12
 
 ### Added
