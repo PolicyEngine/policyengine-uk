@@ -28,8 +28,7 @@ class esa_income_assessable_capital(Variable):
         benunit_adults = add(benunit, period, ["is_adult"])
         household_reporting_claimants = benunit.max(
             person.household.sum(
-                person("is_adult", period)
-                & (person("esa_income_reported", period) > 0)
+                person("is_adult", period) & (person("esa_income_reported", period) > 0)
             )
         )
         household_adults = benunit.max(
