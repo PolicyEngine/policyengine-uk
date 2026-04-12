@@ -1,0 +1,16 @@
+description: Default minimum age for income-based Jobseeker's Allowance
+metadata:
+  unit: year
+  period: year
+  label: Income-based JSA default minimum age
+  economy: false
+  reference:
+    - title: The Jobseeker's Allowance Regulations 1996, regulation 57
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/57
+    - title: The Jobseeker's Allowance Regulations 1996, Schedule 1
+      href: https://www.legislation.gov.uk/uksi/1996/207/schedule/1
+notes: >
+  This is the standard age threshold used for legacy JSA modelling and proxying.
+  Some 16 and 17 year olds can qualify under special cases in regulation 57.
+values:
+  2015-04-01: 18
