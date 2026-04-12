@@ -1,6 +1,6 @@
-description: Lower capital threshold for income-based JSA tariff income.
+description: Capital threshold for income-based JSA tariff income.
 metadata:
-  label: Income-based JSA lower capital threshold
+  label: Income-based JSA tariff income threshold
   period: year
   reference:
     - title: Jobseeker's Allowance Regulations 1996 reg. 116

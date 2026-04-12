@@ -15,4 +15,4 @@ class esa_income_eligible(Variable):
         ESA = parameters(period).gov.dwp.ESA.income
         capital = benunit("esa_income_assessable_capital", period)
         reported_award = add(benunit, period, ["esa_income_reported"]) > 0
-        return reported_award & (capital <= ESA.capital.capital_limit)
+        return reported_award & (capital <= ESA.capital.limit)

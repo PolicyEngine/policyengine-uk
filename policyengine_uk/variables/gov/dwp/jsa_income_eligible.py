@@ -15,4 +15,4 @@ class jsa_income_eligible(Variable):
         JSA = parameters(period).gov.dwp.JSA.income
         capital = benunit("jsa_income_assessable_capital", period)
         reported_award = add(benunit, period, ["jsa_income_reported"]) > 0
-        return reported_award & (capital <= JSA.capital.capital_limit)
+        return reported_award & (capital <= JSA.capital.limit)
