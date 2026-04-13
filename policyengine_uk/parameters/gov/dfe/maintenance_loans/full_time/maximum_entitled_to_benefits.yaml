@@ -1,0 +1,43 @@
+description: Maximum full-year full-time maintenance loan amounts in England for students entitled to benefits.
+living_with_parents:
+  description: Maximum maintenance loan for students living with parents and entitled to benefits.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Full-time maintenance loan maximum while living with parents if entitled to benefits
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 10_473
+    2026-01-01: 10_757
+away_outside_london:
+  description: Maximum maintenance loan for students living away from home, studying outside London, and entitled to benefits.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Full-time maintenance loan maximum away from home outside London if entitled to benefits
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 12_019
+    2026-01-01: 12_345
+away_in_london:
+  description: Maximum maintenance loan for students living away from home, studying in London, and entitled to benefits.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Full-time maintenance loan maximum away from home in London if entitled to benefits
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 15_008
+    2026-01-01: 15_415

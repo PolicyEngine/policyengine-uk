@@ -1,0 +1,29 @@
+description: Student Finance England household income parameters for full-time maintenance loan assessment in England.
+threshold:
+  description: Household income up to this amount receives the full-rate maintenance loan.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Maintenance loan full-rate income threshold
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 25_000
+    2026-01-01: 25_000
+higher_threshold:
+  description: Higher household income threshold used in the two-stage maintenance loan taper for students entitled to benefits.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Maintenance loan higher taper threshold
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 42_875
+    2026-01-01: 42_875

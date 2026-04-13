@@ -1,0 +1,53 @@
+description: Loan for living costs parameters for higher education students aged 60 or over in England.
+max_amount:
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Maximum over-60 loan for living costs
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 4_461
+    2026-01-01: 4_582
+reduction_per_pound:
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Household income per pound reduction for over-60 loan for living costs
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 4.27
+    2026-01-01: 4.16
+maximum_income:
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Maximum household income for over-60 loan for living costs
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 43_835
+    2026-01-01: 43_835
+minimum_amount:
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Minimum positive over-60 loan for living costs
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 50
+    2026-01-01: 50

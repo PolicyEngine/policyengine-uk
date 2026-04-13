@@ -1,0 +1,40 @@
+description: Minimum share of the full-time maintenance loan that remains when the student is entitled to benefits.
+living_with_parents:
+  metadata:
+    unit: /1
+    period: year
+    label: Minimum maintenance loan share while living with parents if entitled to benefits
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 0.373
+    2026-01-01: 0.373
+away_outside_london:
+  metadata:
+    unit: /1
+    period: year
+    label: Minimum maintenance loan share away from home outside London if entitled to benefits
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 0.409
+    2026-01-01: 0.409
+away_in_london:
+  metadata:
+    unit: /1
+    period: year
+    label: Minimum maintenance loan share away from home in London if entitled to benefits
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 0.457
+    2026-01-01: 0.457
