@@ -1,3 +1,10 @@
+## [2.79.3] - 2026-04-13
+
+### Fixed
+
+- Use modelled student loan repayments in aggregates and cap them by outstanding balance when available.
+
+
 ## [2.79.2] - 2026-04-12
 
 ### Fixed
