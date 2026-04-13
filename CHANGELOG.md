@@ -1,3 +1,10 @@
+## [2.80.0] - 2026-04-13
+
+### Added
+
+- - Add an approximate England full-time maintenance loan model, with explicit override inputs for living arrangement and assessed household income.
+
+
 ## [2.79.3] - 2026-04-13
 
 ### Fixed
