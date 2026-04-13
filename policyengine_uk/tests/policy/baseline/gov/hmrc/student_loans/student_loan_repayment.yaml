@@ -128,3 +128,34 @@
         student_loan_plan: PLAN_2
   output:
     student_loan_repayment: 0
+
+- name: Student loan repayment is capped by outstanding balance
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+        student_loan_balance: 500
+  output:
+    student_loan_repayment: 500
+    student_loan_repayments: 500
+
+- name: Student loan repayments default to the modelled formula in HBAI income
+  period: 2025
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_2
+        student_loan_balance: 500
+        income_tax: 0
+        national_insurance: 0
+    households:
+      household:
+        members: person
+        council_tax: 0
+        domestic_rates: 0
+  output:
+    student_loan_repayments: 500
+    hbai_household_net_income: 39_500

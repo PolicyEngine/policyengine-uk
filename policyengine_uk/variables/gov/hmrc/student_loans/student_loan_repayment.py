@@ -11,7 +11,8 @@ class student_loan_repayment(Variable):
     documentation = (
         "Annual student loan repayment calculated from income and plan type. "
         "Repayments are 9% of income above threshold for Plans 1/2/4/5, "
-        "and 6% for Postgraduate loans."
+        "and 6% for Postgraduate loans, capped by the outstanding balance "
+        "when that balance is available."
     )
     definition_period = YEAR
     unit = GBP
@@ -19,6 +20,7 @@ class student_loan_repayment(Variable):
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
         income = person("adjusted_net_income", period)
+        balance = max_(0, person("student_loan_balance", period))
         p = parameters(period).gov.hmrc.student_loans
 
         # Get threshold based on plan type
@@ -41,7 +43,8 @@ class student_loan_repayment(Variable):
         )
 
         rate = person("student_loan_repayment_rate", period)
-        return rate * max_(0, income - threshold)
+        uncapped_repayment = rate * max_(0, income - threshold)
+        return where(balance > 0, min_(uncapped_repayment, balance), uncapped_repayment)
 
 
 class has_student_loan(Variable):
