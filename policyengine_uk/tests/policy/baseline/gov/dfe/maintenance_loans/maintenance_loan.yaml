@@ -1,0 +1,186 @@
+- name: Full-time maintenance loan - away from home outside London at full rate
+  period: 2025
+  input:
+    people:
+      student:
+        age: 19
+        current_education: TERTIARY
+        maintenance_loan_living_arrangement: AWAY_OUTSIDE_LONDON
+        maintenance_loan_household_income: 25_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    maintenance_loan: [10_544]
+
+- name: Full-time maintenance loan - living with parents tapered
+  period: 2025
+  input:
+    people:
+      student:
+        age: 19
+        current_education: TERTIARY
+        maintenance_loan_living_arrangement: LIVING_WITH_PARENTS
+        maintenance_loan_household_income: 40_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    maintenance_loan: [6_642]
+
+- name: Full-time maintenance loan - away from home in London tapered
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      student:
+        age: 20
+        current_education: TERTIARY
+        maintenance_loan_living_arrangement: AWAY_IN_LONDON
+        maintenance_loan_household_income: 45_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+        region: LONDON
+  output:
+    maintenance_loan: [10_700]
+
+- name: Full-time maintenance loan - benefits schedule
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      student:
+        age: 22
+        current_education: TERTIARY
+        maintenance_loan_living_arrangement: AWAY_OUTSIDE_LONDON
+        maintenance_loan_household_income: 35_000
+        is_parent: true
+      child:
+        age: 1
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    maintenance_loan_entitled_to_benefits: [true, false]
+    maintenance_loan: [9_688, 0]
+
+- name: Maintenance loan - over 60 schedule
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      student:
+        age: 61
+        current_education: TERTIARY
+        maintenance_loan_household_income: 40_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    maintenance_loan: [949]
+
+- name: Maintenance loan - not in England
+  period: 2025
+  input:
+    people:
+      student:
+        age: 19
+        current_education: TERTIARY
+        maintenance_loan_household_income: 25_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: SCOTLAND
+  output:
+    maintenance_loan: [0]
+
+- name: Maintenance loan - not in higher education
+  period: 2025
+  input:
+    people:
+      student:
+        age: 19
+        current_education: POST_SECONDARY
+        maintenance_loan_household_income: 25_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    maintenance_loan: [0]
+
+- name: Maintenance loan living arrangement proxy detects parental household
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 52
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 30_000
+        is_household_head: true
+      student:
+        age: 20
+        current_education: TERTIARY
+        adjusted_net_income: 2_000
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["parent", "student"]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    maintenance_loan_living_arrangement: [AWAY_OUTSIDE_LONDON, LIVING_WITH_PARENTS]
+    maintenance_loan_household_income: [30_000, 32_000]
+
+- name: Full-time maintenance loan - 2026 full rate uprates to latest published schedule
+  period: 2026
+  input:
+    people:
+      student:
+        age: 19
+        current_education: TERTIARY
+        maintenance_loan_living_arrangement: AWAY_IN_LONDON
+        maintenance_loan_household_income: 25_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+        region: LONDON
+  output:
+    maintenance_loan: [14_135]
