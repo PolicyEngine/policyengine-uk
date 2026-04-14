@@ -37,5 +37,6 @@ class hbai_benefits(Variable):
         "winter_fuel_allowance",
         "tax_free_childcare",
         "childcare_grant",
+        "bursary_fund_16_to_19",
         "healthy_start_vouchers",
     ]

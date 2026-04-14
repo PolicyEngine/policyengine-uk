@@ -360,6 +360,18 @@ programs:
     verified_start_year: 2025
     notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; childcare_expenses are treated as out-of-pocket spend net of free hours
 
+  - id: bursary_fund_16_to_19
+    name: 16 to 19 Bursary Fund
+    full_name: 16 to 19 Bursary Fund
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: bursary_fund_16_to_19
+    parameter_prefix: gov.dfe.bursary_fund_16_to_19
+    verified_start_year: 2025
+    notes: First-pass model of the defined vulnerable-group bursary only, using explicit care, self-supporting, and participation-cost inputs plus person-level reported-benefit proxies
+
   # --- DCMS programs ---
   - id: tv_licence
     name: TV Licence
