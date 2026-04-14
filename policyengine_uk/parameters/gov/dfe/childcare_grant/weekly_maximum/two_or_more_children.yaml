@@ -1,0 +1,11 @@
+description: Maximum weekly Childcare Grant amount for two or more children.
+values:
+  2025-01-01: 342.24
+  2026-01-01: 342.24
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Childcare Grant weekly maximum for two or more children
+  reference:
+    - title: Childcare Grant - What you'll get
+      href: https://www.gov.uk/childcare-grant/what-youll-get

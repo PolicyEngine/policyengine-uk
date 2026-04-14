@@ -1,0 +1,299 @@
+- name: Childcare Grant reimburses 85 percent below one-child cap
+  period: 2025
+  input:
+    people:
+      student:
+        age: 21
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 5_000
+      child:
+        age: 4
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [true, false]
+    childcare_grant: [4_250, 0]
+
+- name: Childcare Grant is capped at the one-child weekly maximum
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      student:
+        age: 20
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 20_000
+      child:
+        age: 3
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant: [10_380.24, 0]
+
+- name: Childcare Grant uses the two-or-more-children cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      student:
+        age: 23
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 25_000
+      child_1:
+        age: 6
+        is_child: true
+      child_2:
+        age: 8
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child_1", "child_2"]
+    households:
+      household:
+        members: ["student", "child_1", "child_2"]
+        country: ENGLAND
+  output:
+    childcare_grant: [17_796.48, 0, 0]
+
+- name: Childcare Grant income limit is strict for one child
+  period: 2025
+  input:
+    people:
+      student:
+        age: 19
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 5_000
+        childcare_grant_household_income: 20_107.23
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant permits children under 17 with special educational needs
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 4_000
+      child:
+        age: 16
+        is_child: true
+        childcare_grant_child_has_special_educational_needs: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_child_eligible: [false, true]
+    childcare_grant: [3_400, 0]
+
+- name: Childcare Grant excludes 16 year olds without special educational needs
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 4_000
+      child:
+        age: 16
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant is incompatible with UC childcare element
+  period: 2025
+  input:
+    people:
+      student:
+        age: 21
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 6_000
+      child:
+        age: 4
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+        uc_childcare_work_condition: true
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    uc_childcare_element: [5_100]
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant is incompatible with Postgraduate Loan support
+  period: 2025
+  input:
+    people:
+      student:
+        age: 25
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 6_000
+        childcare_grant_receives_postgraduate_loan: true
+      child:
+        age: 5
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant is incompatible with NHS childcare support
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 6_000
+        childcare_grant_receives_nhs_childcare_support: true
+      child:
+        age: 5
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant excludes part-time students by default
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_expenses: 6_000
+      child:
+        age: 5
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant is incompatible with Tax-Free Childcare
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 6_000
+      child:
+        age: 5
+        is_child: true
+        tax_free_childcare: 1_000
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant is incompatible with WTC childcare element
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 6_000
+        employment_income: 10_000
+        hours_worked: 1_040
+        working_tax_credit_reported: 1
+      child:
+        age: 5
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    WTC_childcare_element: [4_200]
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
