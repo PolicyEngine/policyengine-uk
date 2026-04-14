@@ -15,9 +15,10 @@ class childcare_grant_eligible(Variable):
     def formula(person, period, parameters):
         p = parameters(period).gov.dfe.childcare_grant
 
-        in_england = person.household("country", period) == person.household(
-            "country", period
-        ).possible_values.ENGLAND
+        in_england = (
+            person.household("country", period)
+            == person.household("country", period).possible_values.ENGLAND
+        )
         is_parent = person("is_parent", period)
         is_full_time_student = person("childcare_grant_full_time_student", period)
         student_finance_eligible = person(
