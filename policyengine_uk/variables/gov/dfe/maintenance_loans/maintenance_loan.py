@@ -1,9 +1,6 @@
 import numpy as np
 
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.highest_education import (
-    EducationType,
-)
 from policyengine_uk.variables.gov.dfe.maintenance_loans.maintenance_loan_living_arrangement import (
     MaintenanceLoanLivingArrangement,
 )
@@ -17,18 +14,15 @@ class maintenance_loan(Variable):
         "Approximate full-time England maintenance loan. "
         "This models the 2025/26 and 2026/27 full-year schedules, including the special-support schedule "
         "and the separate loan-for-living-costs schedule for students aged 60 or over. "
-        "It relies on proxy variables for living arrangement and assessed household income when those are not provided explicitly."
+        "It relies on proxy variables for eligibility, living arrangement, and assessed household income "
+        "when those are not provided explicitly."
     )
     definition_period = YEAR
     unit = GBP
 
     def formula(person, period, parameters):
-        country = person.household("country", period)
-        in_england = country == country.possible_values.ENGLAND
-        current_education = person("current_education", period)
-        in_higher_education = current_education == EducationType.TERTIARY
         age = person("age", period)
-        eligible = in_england & in_higher_education & (age >= 18)
+        eligible = person("maintenance_loan_eligible", period)
 
         income = person("maintenance_loan_household_income", period)
         living_arrangement = person("maintenance_loan_living_arrangement", period)

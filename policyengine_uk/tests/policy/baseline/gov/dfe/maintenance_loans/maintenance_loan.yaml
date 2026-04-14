@@ -137,6 +137,43 @@
   output:
     maintenance_loan: [0]
 
+- name: Maintenance loan - missing higher-education input does not use age fallback
+  period: 2025
+  input:
+    people:
+      student:
+        age: 19
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    maintenance_loan_eligible: [false]
+    maintenance_loan: [0]
+
+- name: Maintenance loan - explicit current-year non-HE overrides in_HE flag
+  period: 2025
+  input:
+    people:
+      student:
+        age: 21
+        current_education: POST_SECONDARY
+        in_HE: true
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    maintenance_loan_in_higher_education: [false]
+    maintenance_loan_eligible: [false]
+    maintenance_loan: [0]
+
 - name: Maintenance loan living arrangement proxy detects parental household
   period: 2025
   input:
@@ -164,6 +201,307 @@
   output:
     maintenance_loan_living_arrangement: [AWAY_OUTSIDE_LONDON, LIVING_WITH_PARENTS]
     maintenance_loan_household_income: [30_000, 32_000]
+
+- name: Maintenance loan proxy ignores older HE adults as sponsors
+  period: 2025
+  input:
+    people:
+      older_student:
+        age: 26
+        in_HE: true
+        adjusted_net_income: 20_000
+        is_household_head: true
+      student:
+        age: 19
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      older_student_benunit:
+        members: ["older_student"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["older_student", "student"]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    maintenance_loan_has_sponsor: [false, false]
+    maintenance_loan_sponsor_income: [0, 0]
+    maintenance_loan_household_income: [20_000, 5_000]
+
+- name: Maintenance loan proxy ignores ambiguous 25-29 adults without explicit education evidence
+  period: 2025
+  input:
+    people:
+      older_adult:
+        age: 26
+        adjusted_net_income: 20_000
+        is_household_head: true
+      student:
+        age: 19
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      older_adult_benunit:
+        members: ["older_adult"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["older_adult", "student"]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    maintenance_loan_has_sponsor: [false, false]
+    maintenance_loan_sponsor_income: [0, 0]
+    maintenance_loan_household_income: [20_000, 5_000]
+
+- name: Maintenance loan household income proxy includes younger sponsor adults
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 29
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 30_000
+        is_household_head: true
+      student:
+        age: 19
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["parent", "student"]
+        country: ENGLAND
+  output:
+    maintenance_loan_sponsor_income: [0, 30_000]
+    maintenance_loan_has_sponsor: [false, true]
+    maintenance_loan_household_income: [30_000, 35_000]
+
+- name: Maintenance loan sponsor proxy uses nearest older sponsor benunit
+  period: 2025
+  input:
+    people:
+      grandparent:
+        age: 62
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 40_000
+        is_household_head: true
+      parent:
+        age: 45
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 30_000
+        is_household_head: false
+      student:
+        age: 19
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      grandparent_benunit:
+        members: ["grandparent"]
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["grandparent", "parent", "student"]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    maintenance_loan_sponsor_income: [0, 0, 30_000]
+    maintenance_loan_household_income: [40_000, 30_000, 35_000]
+
+- name: Maintenance loan sponsor detection survives zero sponsor income
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 0
+        is_household_head: true
+      student:
+        age: 19
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["parent", "student"]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    maintenance_loan_has_sponsor: [false, true]
+    maintenance_loan_living_arrangement: [AWAY_OUTSIDE_LONDON, LIVING_WITH_PARENTS]
+    maintenance_loan_household_income: [0, 5_000]
+
+- name: Maintenance loan sponsor income sums both parents in the same sponsor benunit
+  period: 2025
+  input:
+    people:
+      parent_1:
+        age: 45
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 30_000
+        is_household_head: true
+      parent_2:
+        age: 43
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 20_000
+        is_household_head: false
+      student:
+        age: 19
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent_1", "parent_2"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["parent_1", "parent_2", "student"]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    maintenance_loan_sponsor_income: [0, 0, 50_000]
+    maintenance_loan_household_income: [50_000, 50_000, 55_000]
+
+- name: Maintenance loan household income proxy does not double count partner income
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 30_000
+        is_household_head: true
+      student:
+        age: 20
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+      partner:
+        age: 21
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 10_000
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["parent", "student", "partner"]
+        country: ENGLAND
+  output:
+    maintenance_loan_household_income: [30_000, 15_000, 15_000]
+
+- name: Maintenance loan proxy treats lone parents as independent
+  period: 2025
+  input:
+    people:
+      grandparent:
+        age: 55
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 25_000
+        is_household_head: true
+      student:
+        age: 21
+        current_education: TERTIARY
+        adjusted_net_income: 6_000
+        is_household_head: false
+        is_parent: true
+      child:
+        age: 1
+        is_child: true
+    benunits:
+      grandparent_benunit:
+        members: ["grandparent"]
+      student_benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["grandparent", "student", "child"]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    maintenance_loan_living_arrangement: [AWAY_OUTSIDE_LONDON, AWAY_OUTSIDE_LONDON, AWAY_OUTSIDE_LONDON]
+    maintenance_loan_household_income: [25_000, 6_000, 6_000]
+
+- name: Maintenance loan proxy does not treat older renters as parents
+  period: 2025
+  input:
+    people:
+      flatmate:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 25_000
+        is_household_head: true
+      student:
+        age: 20
+        current_education: TERTIARY
+        adjusted_net_income: 4_000
+        is_household_head: false
+    benunits:
+      flatmate_benunit:
+        members: ["flatmate"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["flatmate", "student"]
+        country: ENGLAND
+        region: LONDON
+        tenure_type: RENT_PRIVATELY
+  output:
+    maintenance_loan_living_arrangement: [AWAY_IN_LONDON, AWAY_IN_LONDON]
+    maintenance_loan_household_income: [25_000, 4_000]
+
+- name: Maintenance loan household income proxy keeps sponsor income when arrangement is set away from home
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 30_000
+        is_household_head: true
+      student:
+        age: 19
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        maintenance_loan_living_arrangement: AWAY_OUTSIDE_LONDON
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["parent", "student"]
+        country: ENGLAND
+  output:
+    maintenance_loan_household_income: [30_000, 35_000]
 
 - name: Full-time maintenance loan - 2026 full rate uprates to latest published schedule
   period: 2026
