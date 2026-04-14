@@ -78,6 +78,27 @@
     bursary_fund_16_to_19_vulnerable_group_eligible: [false]
     bursary_fund_16_to_19: [0]
 
+- name: 16 to 19 Bursary Fund covers self-supporting Income Support recipients
+  period: 2025
+  input:
+    people:
+      student:
+        age: 18
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_self_supporting: true
+        bursary_fund_16_to_19_participation_costs: 850
+        income_support_reported: 100
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [true]
+    bursary_fund_16_to_19: [850]
+
 - name: 16 to 19 Bursary Fund covers students with disability benefit and UC
   period: 2025
   input:
@@ -98,6 +119,32 @@
   output:
     bursary_fund_16_to_19_vulnerable_group_eligible: [true]
     bursary_fund_16_to_19: [700]
+
+- name: 16 to 19 Bursary Fund does not use a parent UC claim for the disability route
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        universal_credit_reported: 100
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_participation_costs: 700
+        pip_dl_category: STANDARD
+      sibling:
+        age: 10
+        is_child: true
+    benunits:
+      benunit:
+        members: ["parent", "student", "sibling"]
+    households:
+      household:
+        members: ["parent", "student", "sibling"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [false, false, false]
+    bursary_fund_16_to_19: [0, 0, 0]
 
 - name: 16 to 19 Bursary Fund does not cover disability benefit without UC or ESA
   period: 2025

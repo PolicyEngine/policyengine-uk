@@ -7,7 +7,8 @@ class bursary_fund_16_to_19_vulnerable_group_eligible(Variable):
     label = "Eligible for vulnerable-group 16 to 19 Bursary Fund support"
     documentation = (
         "Whether the student meets the defined vulnerable-group conditions for the 16 to 19 Bursary Fund. "
-        "This first-pass model uses explicit care/self-supporting inputs and reported-benefit proxies."
+        "This first-pass model uses explicit care/self-supporting inputs and person-level reported-benefit "
+        "proxies for own-right UC, IS, and ESA receipt."
     )
     definition_period = YEAR
     defined_for = "would_claim_bursary_fund_16_to_19"
