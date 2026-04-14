@@ -146,7 +146,7 @@
     people:
       student:
         age: 20
-        bursary_fund_16_to_19_in_qualifying_education: true
+        current_education: POST_SECONDARY
         bursary_fund_16_to_19_in_care_or_care_leaver: true
         bursary_fund_16_to_19_participation_costs: 600
     benunits:
@@ -160,13 +160,12 @@
     bursary_fund_16_to_19_age_eligible: [false]
     bursary_fund_16_to_19: [0]
 
-- name: 16 to 19 Bursary Fund allows funded-extension students up to 24
+- name: 16 to 19 Bursary Fund does not extend vulnerable-group support beyond age 18
   period: 2025
   input:
     people:
       student:
         age: 20
-        bursary_fund_16_to_19_funded_extension: true
         bursary_fund_16_to_19_in_qualifying_education: true
         bursary_fund_16_to_19_in_care_or_care_leaver: true
         bursary_fund_16_to_19_participation_costs: 500
@@ -178,8 +177,29 @@
         members: ["student"]
         country: ENGLAND
   output:
-    bursary_fund_16_to_19_age_eligible: [true]
-    bursary_fund_16_to_19: [500]
+    bursary_fund_16_to_19_age_eligible: [false]
+    bursary_fund_16_to_19: [0]
+
+- name: 16 to 19 Bursary Fund covers students with disability benefit and ESA
+  period: 2025
+  input:
+    people:
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_participation_costs: 800
+        dla_sc_category: MIDDLE
+        esa_income_reported: 100
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [true]
+    bursary_fund_16_to_19: [800]
 
 - name: 16 to 19 Bursary Fund only applies in England
   period: 2025

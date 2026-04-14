@@ -27,24 +27,12 @@ class bursary_fund_16_to_19_vulnerable_group_eligible(Variable):
         )
         self_supporting = person("bursary_fund_16_to_19_self_supporting", period)
 
-        benunit = person.benunit
-        uc = benunit("universal_credit", period) > 0
-        uc_reported = (
-            benunit.sum(benunit.members("universal_credit_reported", period)) > 0
+        receives_uc_or_is = person(
+            "bursary_fund_16_to_19_receives_uc_or_is_in_own_right", period
         )
-        is_benefit = benunit("income_support", period) > 0
-        is_reported = (
-            benunit.sum(benunit.members("income_support_reported", period)) > 0
+        receives_uc_or_esa = person(
+            "bursary_fund_16_to_19_receives_uc_or_esa_in_own_right", period
         )
-        receives_uc_or_is = uc | uc_reported | is_benefit | is_reported
-
-        esa = benunit("esa", period) > 0
-        esa_reported = (
-            benunit.sum(benunit.members("esa_income_reported", period))
-            + benunit.sum(benunit.members("esa_contrib_reported", period))
-            > 0
-        )
-        receives_uc_or_esa = uc | uc_reported | esa | esa_reported
 
         receives_disability_benefit = (person("dla", period) > 0) | (
             person("pip", period) > 0
