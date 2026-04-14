@@ -1,0 +1,11 @@
+description: Extended upper age limit for 16 to 19 Bursary Fund support when the student is funded from the 16 to 19 budget.
+metadata:
+  unit: year
+  period: year
+  label: 16 to 19 Bursary Fund extended upper age limit
+  reference:
+    - title: 16 to 19 Bursary Fund guide 2025 to 2026
+      href: https://www.gov.uk/government/publications/16-to-19-bursary-fund-guidance/16-to-19-bursary-fund-guide-2025-to-2026
+values:
+  2025-01-01: 25
+  2026-01-01: 25

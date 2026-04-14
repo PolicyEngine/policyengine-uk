@@ -1,0 +1,11 @@
+description: Maximum annual 16 to 19 Bursary Fund award for students in defined vulnerable groups.
+metadata:
+  unit: currency-GBP
+  period: year
+  label: 16 to 19 Bursary Fund vulnerable group maximum amount
+  reference:
+    - title: "16 to 19 Bursary Fund: what you'll get"
+      href: https://www.gov.uk/1619-bursary-fund/what-youll-get
+values:
+  2025-01-01: 1200
+  2026-01-01: 1200

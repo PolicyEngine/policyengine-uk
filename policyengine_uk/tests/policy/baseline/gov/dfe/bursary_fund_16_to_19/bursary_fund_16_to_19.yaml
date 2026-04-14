@@ -1,0 +1,202 @@
+- name: 16 to 19 Bursary Fund pays actual costs for care leavers below the cap
+  period: 2025
+  input:
+    people:
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_in_care_or_care_leaver: true
+        bursary_fund_16_to_19_participation_costs: 600
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [true]
+    bursary_fund_16_to_19: [600]
+
+- name: 16 to 19 Bursary Fund caps vulnerable-group support at 1200
+  period: 2025
+  input:
+    people:
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_in_care_or_care_leaver: true
+        bursary_fund_16_to_19_participation_costs: 2_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19: [1_200]
+
+- name: 16 to 19 Bursary Fund covers self-supporting UC recipients
+  period: 2025
+  input:
+    people:
+      student:
+        age: 18
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_self_supporting: true
+        bursary_fund_16_to_19_participation_costs: 900
+        universal_credit_reported: 100
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [true]
+    bursary_fund_16_to_19: [900]
+
+- name: 16 to 19 Bursary Fund does not cover UC recipients without self-supporting status
+  period: 2025
+  input:
+    people:
+      student:
+        age: 18
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_participation_costs: 900
+        universal_credit_reported: 100
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [false]
+    bursary_fund_16_to_19: [0]
+
+- name: 16 to 19 Bursary Fund covers students with disability benefit and UC
+  period: 2025
+  input:
+    people:
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_participation_costs: 700
+        pip_dl_category: STANDARD
+        universal_credit_reported: 100
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [true]
+    bursary_fund_16_to_19: [700]
+
+- name: 16 to 19 Bursary Fund does not cover disability benefit without UC or ESA
+  period: 2025
+  input:
+    people:
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_participation_costs: 700
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [false]
+    bursary_fund_16_to_19: [0]
+
+- name: 16 to 19 Bursary Fund excludes apprentices
+  period: 2025
+  input:
+    people:
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        is_apprentice: true
+        bursary_fund_16_to_19_in_care_or_care_leaver: true
+        bursary_fund_16_to_19_participation_costs: 600
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_in_qualifying_education: [false]
+    bursary_fund_16_to_19: [0]
+
+- name: 16 to 19 Bursary Fund excludes over-19 students without funded extension
+  period: 2025
+  input:
+    people:
+      student:
+        age: 20
+        bursary_fund_16_to_19_in_qualifying_education: true
+        bursary_fund_16_to_19_in_care_or_care_leaver: true
+        bursary_fund_16_to_19_participation_costs: 600
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_age_eligible: [false]
+    bursary_fund_16_to_19: [0]
+
+- name: 16 to 19 Bursary Fund allows funded-extension students up to 24
+  period: 2025
+  input:
+    people:
+      student:
+        age: 20
+        bursary_fund_16_to_19_funded_extension: true
+        bursary_fund_16_to_19_in_qualifying_education: true
+        bursary_fund_16_to_19_in_care_or_care_leaver: true
+        bursary_fund_16_to_19_participation_costs: 500
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    bursary_fund_16_to_19_age_eligible: [true]
+    bursary_fund_16_to_19: [500]
+
+- name: 16 to 19 Bursary Fund only applies in England
+  period: 2025
+  input:
+    people:
+      student:
+        age: 17
+        current_education: POST_SECONDARY
+        bursary_fund_16_to_19_in_care_or_care_leaver: true
+        bursary_fund_16_to_19_participation_costs: 600
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: WALES
+  output:
+    bursary_fund_16_to_19_vulnerable_group_eligible: [false]
+    bursary_fund_16_to_19: [0]

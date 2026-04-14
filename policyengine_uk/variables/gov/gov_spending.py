@@ -47,6 +47,7 @@ class gov_spending(Variable):
         "targeted_childcare_entitlement",
         "care_to_learn",
         "childcare_grant",
+        "bursary_fund_16_to_19",
         "dfe_education_spending",
         "dft_subsidy_spending",
         "nhs_spending",
