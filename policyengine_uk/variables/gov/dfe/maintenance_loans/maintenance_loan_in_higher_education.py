@@ -35,7 +35,9 @@ class maintenance_loan_in_higher_education(Variable):
         prior_in_he = person("in_HE", period.last_year)
 
         current_education_is_explicit = (
-            current_education != default_education if has_current_education else false_array
+            current_education != default_education
+            if has_current_education
+            else false_array
         )
         prior_current_education_is_explicit = (
             prior_current_education != default_education
