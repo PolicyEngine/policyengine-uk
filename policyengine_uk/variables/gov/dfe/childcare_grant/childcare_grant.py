@@ -7,7 +7,9 @@ class childcare_grant(Variable):
     label = "Childcare Grant"
     documentation = (
         "Student Finance England Childcare Grant for full-time undergraduates with dependent children. "
-        "The model reimburses 85% of annual childcare expenses, capped by the official weekly maxima."
+        "The model reimburses 85% of annual out-of-pocket childcare expenses, capped by the official "
+        "weekly maxima. `childcare_expenses` should therefore exclude any hours already covered by free "
+        "childcare entitlements."
     )
     definition_period = YEAR
     unit = GBP

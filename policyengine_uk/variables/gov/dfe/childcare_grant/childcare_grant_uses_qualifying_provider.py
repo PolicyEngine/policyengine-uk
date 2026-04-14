@@ -7,9 +7,13 @@ class childcare_grant_uses_qualifying_provider(Variable):
     label = "Uses a qualifying childcare provider for Childcare Grant"
     documentation = (
         "Whether the student's childcare provider satisfies Childcare Grant rules. "
-        "This can be set explicitly in simulations and should be set false where care is provided by a nanny "
-        "from academic year 2026 to 2027 onward."
+        "This can be set explicitly in simulations. By default the model excludes "
+        "nanny-provided care from 2026 onward."
     )
     definition_period = YEAR
-    default_value = True
     set_input = set_input_dispatch_by_period
+
+    def formula(person, period, parameters):
+        provider_is_nanny = person("childcare_grant_provider_is_nanny", period)
+        nanny_disallowed = period.start.year >= 2026
+        return ~(nanny_disallowed & provider_is_nanny)

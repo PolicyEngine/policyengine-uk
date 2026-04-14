@@ -146,6 +146,31 @@
   output:
     childcare_grant: [0, 0]
 
+- name: Childcare Grant does not treat disability as SEN by default
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 4_000
+      child:
+        age: 16
+        is_child: true
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_child_eligible: [false, false]
+    childcare_grant: [0, 0]
+
 - name: Childcare Grant is incompatible with UC childcare element
   period: 2025
   input:
@@ -259,6 +284,31 @@
         age: 5
         is_child: true
         tax_free_childcare: 1_000
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [false, false]
+    childcare_grant: [0, 0]
+
+- name: Childcare Grant excludes nanny-provided care from 2026 onward
+  period: 2026
+  input:
+    people:
+      student:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 6_000
+        childcare_grant_provider_is_nanny: true
+      child:
+        age: 5
+        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
