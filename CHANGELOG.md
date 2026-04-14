@@ -1,3 +1,14 @@
+## [2.81.0] - 2026-04-14
+
+### Added
+
+- - Add an approximate England full-time maintenance loan model, with explicit override inputs for living arrangement and assessed household income.
+
+### Fixed
+
+- Fix maintenance loan proxy logic to require explicit higher-education evidence and improve sponsor-income assessment.
+
+
 ## [2.80.0] - 2026-04-13
 
 ### Added
