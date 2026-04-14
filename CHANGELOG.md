@@ -1,3 +1,10 @@
+## [2.83.0] - 2026-04-14
+
+### Added
+
+- Add a first-pass 16 to 19 Bursary Fund model for vulnerable groups.
+
+
 ## [2.82.0] - 2026-04-14
 
 ### Added
