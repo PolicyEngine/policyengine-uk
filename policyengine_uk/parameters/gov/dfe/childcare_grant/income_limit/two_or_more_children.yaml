@@ -1,0 +1,11 @@
+description: Household income limit for Childcare Grant where the application covers two or more children.
+values:
+  2025-01-01: 28_914.47
+  2026-01-01: 28_914.47
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Childcare Grant income limit for two or more children
+  reference:
+    - title: Childcare Grant - Eligibility
+      href: https://www.gov.uk/childcare-grant/eligibility

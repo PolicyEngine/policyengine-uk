@@ -348,6 +348,18 @@ programs:
     verified_end_year: 2025
     notes: Universal (15h), extended (30h), and targeted entitlements; parameters need expansion for later years
 
+  - id: childcare_grant
+    name: Childcare Grant
+    full_name: Student Finance England Childcare Grant
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: childcare_grant
+    parameter_prefix: gov.dfe.childcare_grant
+    verified_start_year: 2025
+    notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; childcare_expenses are treated as out-of-pocket spend net of free hours
+
   # --- DCMS programs ---
   - id: tv_licence
     name: TV Licence
