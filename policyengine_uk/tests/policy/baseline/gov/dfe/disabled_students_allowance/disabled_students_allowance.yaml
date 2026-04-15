@@ -1,0 +1,102 @@
+- name: Disabled Students' Allowance reimburses eligible support needs below the cap
+  period: 2025
+  input:
+    people:
+      student:
+        age: 20
+        current_education: TERTIARY
+        is_disabled_for_benefits: true
+        disabled_students_allowance_eligible_expenses: 12_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    disabled_students_allowance_course_eligible: [true]
+    disabled_students_allowance_has_qualifying_condition: [true]
+    disabled_students_allowance_eligible: [true]
+    disabled_students_allowance: [12_000]
+
+- name: Disabled Students' Allowance is capped at the published annual maximum
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        current_education: TERTIARY
+        is_disabled_for_benefits: true
+        disabled_students_allowance_eligible_expenses: 30_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    disabled_students_allowance: [27_783]
+
+- name: Disabled Students' Allowance excludes equivalent support from another scheme
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        current_education: TERTIARY
+        is_disabled_for_benefits: true
+        disabled_students_allowance_eligible_expenses: 5_000
+        disabled_students_allowance_receives_equivalent_support: true
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    disabled_students_allowance_eligible: [false]
+    disabled_students_allowance: [0]
+
+- name: Disabled Students' Allowance default qualifying-condition proxy is narrow
+  period: 2025
+  input:
+    people:
+      student:
+        age: 21
+        current_education: TERTIARY
+        disabled_students_allowance_eligible_expenses: 4_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    disabled_students_allowance_has_qualifying_condition: [false]
+    disabled_students_allowance_eligible: [false]
+    disabled_students_allowance: [0]
+
+- name: Disabled Students' Allowance accepts explicit condition and course overrides
+  period: 2025
+  input:
+    people:
+      student:
+        age: 21
+        current_education: POST_SECONDARY
+        disabled_students_allowance_has_qualifying_condition: true
+        disabled_students_allowance_course_eligible: true
+        disabled_students_allowance_eligible_expenses: 4_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    disabled_students_allowance_eligible: [true]
+    disabled_students_allowance: [4_000]

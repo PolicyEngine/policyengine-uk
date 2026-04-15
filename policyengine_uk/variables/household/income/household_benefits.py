@@ -49,6 +49,7 @@ class household_benefits(Variable):
         "parents_learning_allowance",
         "adult_dependants_grant",
         "travel_grant",
+        "disabled_students_allowance",
         "bursary_fund_16_to_19",
         "nhs_spending",
         "dfe_education_spending",
