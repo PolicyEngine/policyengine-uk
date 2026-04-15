@@ -7,24 +7,29 @@ class tax_free_childcare_meets_income_requirements(Variable):
     label = "income eligible for the tax-free childcare"
     definition_period = YEAR
 
-    # Legislation: https://www.legislation.gov.uk/ukdsi/2015/9780111127063 , part 9 and 10
-    # Also, you can check here: https://www.gov.uk/tax-free-childcare
-
     def formula(person, period, parameters):
         p = parameters(period).gov.hmrc.tax_free_childcare
 
-        # Calculate eligible income by summing countable sources
-        yearly_eligible_income = add(person, period, p.income.countable_sources)
-        quarterly_income = yearly_eligible_income / 4
+        expected_income = person(
+            "tax_free_childcare_expected_declaration_period_income",
+            period,
+        )
 
         # Get minimum wage rate using existing variable
         min_wage_rate = person("minimum_wage", period)
 
-        # Calculate required threshold (weekly hours * 13 weeks (a quarter) * minimum wage)
-        # Reference for the quarterly logic: part 9.3 in https://www.legislation.gov.uk/uksi/2015/448/regulation/9
-        required_threshold = min_wage_rate * p.minimum_weekly_hours * 13
+        required_threshold = (
+            min_wage_rate * p.minimum_weekly_hours * p.income.declaration_period_weeks
+        )
+        meets_minimum_income = expected_income >= required_threshold
+        in_start_up_period = person(
+            "tax_free_childcare_self_employment_start_up_period",
+            period,
+        )
 
         # Get adjusted net income and check against max threshold
         ani = person("adjusted_net_income", period)
 
-        return (quarterly_income > required_threshold) & (ani < p.income.income_limit)
+        return (meets_minimum_income | in_start_up_period) & (
+            ani <= p.income.income_limit
+        )
