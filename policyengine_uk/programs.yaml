@@ -360,6 +360,18 @@ programs:
     verified_start_year: 2025
     notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; childcare_expenses are treated as out-of-pocket spend net of free hours
 
+  - id: parents_learning_allowance
+    name: Parents' Learning Allowance
+    full_name: Student Finance England Parents' Learning Allowance
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: parents_learning_allowance
+    parameter_prefix: gov.dfe.parents_learning_allowance
+    verified_start_year: 2025
+    notes: First-pass England model using the published maximum amount and household-income cutoff, with higher-education evidence as the default course proxy and an explicit override for edge cases such as 120-credit or teacher-training routes
+
   - id: bursary_fund_16_to_19
     name: 16 to 19 Bursary Fund
     full_name: 16 to 19 Bursary Fund

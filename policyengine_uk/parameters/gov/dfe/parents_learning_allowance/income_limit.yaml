@@ -1,0 +1,11 @@
+description: Household-income cutoff published for Parents' Learning Allowance eligibility.
+values:
+  2025-01-01: 18_957.98
+  2026-01-01: 18_957.98
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Parents' Learning Allowance household-income limit
+  reference:
+    - title: Parents' Learning Allowance eligibility
+      href: https://www.gov.uk/parents-learning-allowance/eligibility
