@@ -28,5 +28,7 @@ class tax_free_childcare_treated_as_in_work(Variable):
         return (
             person("in_work", period)
             | person("tax_free_childcare_on_qualifying_leave", period)
+            | person("tax_free_childcare_on_adoption_leave", period)
+            | person("tax_free_childcare_on_shared_parental_leave", period)
             | statutory_temporary_absence_pay
         )
