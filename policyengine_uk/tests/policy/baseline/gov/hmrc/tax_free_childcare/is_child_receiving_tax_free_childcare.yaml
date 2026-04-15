@@ -57,3 +57,13 @@
       tax_free_childcare: 900
   output:
     is_child_receiving_tax_free_childcare: true
+
+- name: Looked-after child with positive TFC amount - ineligible
+  period: 2025
+  input:
+    person:
+      tax_free_childcare_child_age_eligible: true
+      is_looked_after_by_local_authority: true
+      tax_free_childcare: 2_000
+  output:
+    is_child_receiving_tax_free_childcare: false

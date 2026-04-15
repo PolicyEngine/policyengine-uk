@@ -2,17 +2,17 @@
 - name: All conditions met
   period: 2025
   input:
-    tax_free_childcare_child_age_eligible: true
+    tax_free_childcare_qualifying_child: true
     tax_free_childcare_meets_income_requirements: true
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: true
   output:
     tax_free_childcare_eligible: true
 
-- name: Fails age condition only
+- name: Fails qualifying child condition only
   period: 2025
   input:
-    tax_free_childcare_child_age_eligible: false
+    tax_free_childcare_qualifying_child: false
     tax_free_childcare_meets_income_requirements: true
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: true
@@ -22,7 +22,7 @@
 - name: Fails income condition only
   period: 2025
   input:
-    tax_free_childcare_child_age_eligible: true
+    tax_free_childcare_qualifying_child: true
     tax_free_childcare_meets_income_requirements: false
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: true
@@ -33,7 +33,7 @@
 - name: Fails work condition only
   period: 2025
   input:
-    tax_free_childcare_child_age_eligible: true
+    tax_free_childcare_qualifying_child: true
     tax_free_childcare_meets_income_requirements: true
     tax_free_childcare_program_eligible: true
     tax_free_childcare_work_condition: false
@@ -43,9 +43,20 @@
 - name: Fails all conditions
   period: 2025
   input:
-    tax_free_childcare_child_age_eligible: false
+    tax_free_childcare_qualifying_child: false
     tax_free_childcare_meets_income_requirements: false
     tax_free_childcare_program_eligible: false
     tax_free_childcare_work_condition: false
+  output:
+    tax_free_childcare_eligible: false
+
+- name: Fails because child is looked after by a local authority
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    is_looked_after_by_local_authority: true
+    tax_free_childcare_meets_income_requirements: true
+    tax_free_childcare_program_eligible: true
+    tax_free_childcare_work_condition: true
   output:
     tax_free_childcare_eligible: false

@@ -1,0 +1,35 @@
+- name: Age-eligible non-parent child is qualifying
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    is_parent: false
+    is_looked_after_by_local_authority: false
+  output:
+    tax_free_childcare_qualifying_child: true
+
+- name: Parent is not a qualifying child
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    is_parent: true
+    is_looked_after_by_local_authority: false
+  output:
+    tax_free_childcare_qualifying_child: false
+
+- name: Looked-after child is not qualifying
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    is_parent: false
+    is_looked_after_by_local_authority: true
+  output:
+    tax_free_childcare_qualifying_child: false
+
+- name: Age-ineligible child is not qualifying
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: false
+    is_parent: false
+    is_looked_after_by_local_authority: false
+  output:
+    tax_free_childcare_qualifying_child: false
