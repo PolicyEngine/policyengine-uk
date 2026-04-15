@@ -22,10 +22,10 @@
   period: 2025
   input:
     age: 18
-    employment_income: 4_152
+    tax_free_childcare_expected_declaration_period_income: 2_080
     self_employment_income: 0
   output:
-    tax_free_childcare_meets_income_requirements: false
+    tax_free_childcare_meets_income_requirements: true
 
 # Tests for age 21+ bracket (threshold: £2,379 quarterly)
 - name: Under threshold for age 22 - ineligible
@@ -66,3 +66,21 @@
     adjusted_net_income: 217_152
   output:
     tax_free_childcare_meets_income_requirements: false
+
+- name: At income limit
+  period: 2025
+  input:
+    age: 22
+    tax_free_childcare_expected_declaration_period_income: 10_000
+    adjusted_net_income: 100_000
+  output:
+    tax_free_childcare_meets_income_requirements: true
+
+- name: Self-employment start-up period waives minimum income threshold
+  period: 2025
+  input:
+    age: 22
+    tax_free_childcare_expected_declaration_period_income: 0
+    tax_free_childcare_self_employment_start_up_period: true
+  output:
+    tax_free_childcare_meets_income_requirements: true
