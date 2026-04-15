@@ -1,0 +1,10 @@
+description: HMRC assesses Tax-Free Childcare eligibility over this many declaration periods per year.
+metadata:
+  period: year
+  unit: declaration_period
+  label: Tax-Free Childcare declaration periods per year
+  reference:
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 9(4)
+      href: https://www.legislation.gov.uk/uksi/2015/448/regulation/9
+values:
+  2015-01-01: 4

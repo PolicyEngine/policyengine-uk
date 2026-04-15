@@ -89,3 +89,25 @@
     childcare_expenses: 8_000
   output:
     tax_free_childcare: 0
+
+- name: Two eligible declaration periods halve standard child cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 2
+    is_disabled_for_benefits: false
+    childcare_expenses: 10_000
+  output:
+    tax_free_childcare: 1_000
+
+- name: One eligible declaration period quarters disabled child cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 1
+    is_disabled_for_benefits: true
+    childcare_expenses: 25_000
+  output:
+    tax_free_childcare: 1_000

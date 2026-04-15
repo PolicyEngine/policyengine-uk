@@ -1,0 +1,13 @@
+- name: Eligible benefit unit defaults to all declaration periods
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+  output:
+    tax_free_childcare_eligible_declaration_periods: 4
+
+- name: Ineligible benefit unit defaults to no declaration periods
+  period: 2025
+  input:
+    tax_free_childcare_eligible: false
+  output:
+    tax_free_childcare_eligible_declaration_periods: 0

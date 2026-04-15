@@ -12,7 +12,8 @@ class tax_free_childcare(Variable):
 
     def formula(person, period, parameters):
         # Get parameters
-        p = parameters(period).gov.hmrc.tax_free_childcare.contribution
+        tax_free_childcare = parameters(period).gov.hmrc.tax_free_childcare
+        p = tax_free_childcare.contribution
 
         # Calculate per-person amounts
         is_disabled = person("is_disabled_for_benefits", period)
@@ -33,9 +34,21 @@ class tax_free_childcare(Variable):
         contribution = (eligible_childcare_expense * p.rate) / (1 - p.rate)
 
         # Cap the contribution at the maximum amounts
+        eligible_periods = person.benunit(
+            "tax_free_childcare_eligible_declaration_periods",
+            period,
+        )
+        eligible_periods = min_(
+            max_(eligible_periods, 0),
+            tax_free_childcare.declaration_periods_per_year,
+        )
+        eligible_fraction = (
+            eligible_periods / tax_free_childcare.declaration_periods_per_year
+        )
         max_amount = (
             where(qualifies_for_higher_amount, p.disabled_child, p.standard_child)
             * is_qualifying_child
+            * eligible_fraction
         )
 
         return min_(contribution, max_amount)
