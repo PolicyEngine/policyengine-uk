@@ -13,6 +13,22 @@
   output:
     tax_free_childcare_treated_as_in_work: true
 
+- name: Person on adoption leave is treated as in work
+  period: 2025
+  input:
+    in_work: false
+    tax_free_childcare_on_adoption_leave: true
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person on shared parental leave is treated as in work
+  period: 2025
+  input:
+    in_work: false
+    tax_free_childcare_on_shared_parental_leave: true
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
 - name: Person receiving statutory sick pay is treated as in work
   period: 2025
   input:
@@ -50,5 +66,7 @@
   input:
     in_work: false
     tax_free_childcare_on_qualifying_leave: false
+    tax_free_childcare_on_adoption_leave: false
+    tax_free_childcare_on_shared_parental_leave: false
   output:
     tax_free_childcare_treated_as_in_work: false

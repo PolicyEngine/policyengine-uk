@@ -217,3 +217,41 @@
        members: [person, spouse]
   output:
    tax_free_childcare_work_condition: true
+
+- name: Couple one working one on adoption leave - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       is_parent: true
+       in_work: true
+     spouse:
+       is_adult: true
+       is_parent: true
+       in_work: false
+       tax_free_childcare_on_adoption_leave: true
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Couple one working one on shared parental leave - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       is_parent: true
+       in_work: true
+     spouse:
+       is_adult: true
+       is_parent: true
+       in_work: false
+       tax_free_childcare_on_shared_parental_leave: true
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true
