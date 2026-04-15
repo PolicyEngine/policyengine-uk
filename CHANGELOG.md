@@ -1,3 +1,11 @@
+## [2.84.0] - 2026-04-15
+
+### Added
+
+- Add a first-pass Adult Dependants' Grant model.
+- Add a first-pass Parents' Learning Allowance model.
+
+
 ## [2.83.0] - 2026-04-14
 
 ### Added
