@@ -165,3 +165,55 @@
        members: [person]
   output:
    tax_free_childcare_work_condition: false
+
+- name: Single adult on qualifying parenting leave - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       in_work: false
+       tax_free_childcare_on_qualifying_leave: true
+   benunits:
+     benunit:
+       members: [person]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Couple one working one on qualifying parenting leave - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       is_parent: true
+       in_work: true
+     spouse:
+       is_adult: true
+       is_parent: true
+       in_work: false
+       tax_free_childcare_on_qualifying_leave: true
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true
+
+- name: Couple one working one receiving statutory maternity pay - eligible
+  period: 2025
+  input:
+   people:
+     person:
+       is_adult: true
+       is_parent: true
+       in_work: true
+     spouse:
+       is_adult: true
+       is_parent: true
+       in_work: false
+       statutory_maternity_pay: 100
+   benunits:
+     benunit:
+       members: [person, spouse]
+  output:
+   tax_free_childcare_work_condition: true

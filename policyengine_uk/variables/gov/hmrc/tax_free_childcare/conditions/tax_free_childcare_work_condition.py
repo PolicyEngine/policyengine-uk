@@ -11,8 +11,10 @@ class tax_free_childcare_work_condition(Variable):
         benunit = person.benunit
         is_adult = person("is_adult", period)
 
-        # Basic work status
-        in_work = person("in_work", period)
+        treated_as_in_work = person(
+            "tax_free_childcare_treated_as_in_work",
+            period,
+        )
 
         # Get disability parameters and check eligibility
         p_gc_disability = parameters(
@@ -33,14 +35,14 @@ class tax_free_childcare_work_condition(Variable):
         # Build conditions
         # Single adult conditions
         is_single = person.benunit("is_single", period)
-        single_working = is_single & in_work
+        single_working = is_single & treated_as_in_work
 
         # Couple conditions
         is_couple = person.benunit("is_couple", period)
         benunit_has_condition = benunit.any(eligible_based_on_disability & is_adult)
-        benunit_has_worker = benunit.any(in_work & is_adult)
+        benunit_has_worker = benunit.any(treated_as_in_work & is_adult)
         couple_both_working = is_couple & benunit.all(
-            in_work | ~person("is_parent", period)
+            treated_as_in_work | ~person("is_parent", period)
         )
         couple_one_working_one_disabled = (
             is_couple & benunit_has_worker & benunit_has_condition

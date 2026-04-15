@@ -1,0 +1,54 @@
+- name: Person in work is treated as in work
+  period: 2025
+  input:
+    in_work: true
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person on qualifying leave is treated as in work
+  period: 2025
+  input:
+    in_work: false
+    tax_free_childcare_on_qualifying_leave: true
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person receiving statutory sick pay is treated as in work
+  period: 2025
+  input:
+    in_work: false
+    statutory_sick_pay: 100
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person receiving maternity allowance is treated as in work
+  period: 2025
+  input:
+    in_work: false
+    maternity_allowance: 100
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person receiving statutory maternity pay is treated as in work
+  period: 2025
+  input:
+    in_work: false
+    statutory_maternity_pay: 100
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person receiving statutory paternity pay is treated as in work
+  period: 2025
+  input:
+    in_work: false
+    statutory_paternity_pay: 100
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person with no work or temporary absence condition is not treated as in work
+  period: 2025
+  input:
+    in_work: false
+    tax_free_childcare_on_qualifying_leave: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
