@@ -1383,7 +1383,7 @@ wheels = [
 
 [[package]]
 name = "policyengine-uk"
-version = "2.86.1"
+version = "2.86.2"
 source = { editable = "." }
 dependencies = [
     { name = "microdf-python" },
