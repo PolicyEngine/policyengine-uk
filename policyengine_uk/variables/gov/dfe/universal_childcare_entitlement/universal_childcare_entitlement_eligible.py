@@ -17,7 +17,7 @@ class universal_childcare_entitlement_eligible(Variable):
 
         age = person("age", period)
         p = parameters(period).gov.dfe.universal_childcare_entitlement
-        meets_age_condition = (age >= p.min_age) & (age < p.max_age)
+        meets_age_condition = (age >= p.age.min) & (age < p.age.max)
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
 
         # Check if person has extended childcare. If so, they are not eligible. Combining extended childcare and universal childcare is not allowed.
