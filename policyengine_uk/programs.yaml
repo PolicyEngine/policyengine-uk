@@ -372,6 +372,18 @@ programs:
     verified_start_year: 2025
     notes: First-pass England model using the published maximum amount and household-income cutoff, with higher-education evidence as the default course proxy and an explicit override for edge cases such as 120-credit or teacher-training routes
 
+  - id: adult_dependants_grant
+    name: Adult Dependants' Grant
+    full_name: Student Finance England Adult Dependants' Grant
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: adult_dependants_grant
+    parameter_prefix: gov.dfe.adult_dependants_grant
+    verified_start_year: 2025
+    notes: First-pass England model using the published maximum amount and household-income tests, with automatic 25-plus couple detection and explicit inputs for under-25 spouse/civil-partner and non-partner adult dependant cases
+
   - id: bursary_fund_16_to_19
     name: 16 to 19 Bursary Fund
     full_name: 16 to 19 Bursary Fund

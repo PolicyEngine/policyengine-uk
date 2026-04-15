@@ -1,0 +1,11 @@
+description: Household income limit for Adult Dependants' Grant
+metadata:
+  label: Adult Dependants' Grant household income limit
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Adult Dependants' Grant
+      href: https://www.gov.uk/adult-dependants-grant/eligibility
+values:
+  2025-01-01: 15_835.98
+  2026-01-01: 15_835.98

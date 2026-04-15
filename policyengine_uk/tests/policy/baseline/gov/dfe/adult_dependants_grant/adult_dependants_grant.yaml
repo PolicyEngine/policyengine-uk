@@ -1,0 +1,211 @@
+- name: Adult Dependants' Grant pays the maximum for an eligible 25-plus couple student
+  period: 2025
+  input:
+    people:
+      student:
+        age: 25
+        current_education: TERTIARY
+      partner:
+        age: 29
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_adult_eligible: [true, true]
+    adult_dependants_grant_eligible: [true, false]
+    adult_dependants_grant: [3_545, 0]
+
+- name: Adult Dependants' Grant uses higher-education evidence as the default course proxy
+  period: 2025
+  input:
+    people:
+      student:
+        age: 26
+        current_education: TERTIARY
+      partner:
+        age: 30
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_course_eligible: [true, false]
+    adult_dependants_grant_eligible: [true, false]
+    adult_dependants_grant: [3_545, 0]
+
+- name: Adult Dependants' Grant is nil at the household income cutoff
+  period: 2025
+  input:
+    people:
+      student:
+        age: 30
+        current_education: TERTIARY
+        adult_dependants_grant_household_income: 15_835.98
+      partner:
+        age: 31
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_eligible: [false, false]
+    adult_dependants_grant: [0, 0]
+
+- name: Adult Dependants' Grant allows an explicit non-partner adult dependant at the income cap
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        current_education: TERTIARY
+        adult_dependants_grant_has_other_adult_dependant: true
+        adult_dependants_grant_other_adult_income: 3_796
+        adult_dependants_grant_household_income: 10_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_adult_eligible: [true]
+    adult_dependants_grant_eligible: [true]
+    adult_dependants_grant: [3_545]
+
+- name: Adult Dependants' Grant excludes non-partner adult dependants above the income cap
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        current_education: TERTIARY
+        adult_dependants_grant_has_other_adult_dependant: true
+        adult_dependants_grant_other_adult_income: 3_796.01
+        adult_dependants_grant_household_income: 10_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_adult_eligible: [false]
+    adult_dependants_grant_eligible: [false]
+    adult_dependants_grant: [0]
+
+- name: Adult Dependants' Grant is incompatible with Postgraduate Loan support
+  period: 2025
+  input:
+    people:
+      student:
+        age: 27
+        current_education: TERTIARY
+        adult_dependants_grant_receives_postgraduate_loan: true
+      partner:
+        age: 28
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_eligible: [false, false]
+    adult_dependants_grant: [0, 0]
+
+- name: Adult Dependants' Grant excludes dependant adults on student finance
+  period: 2025
+  input:
+    people:
+      student:
+        age: 27
+        current_education: TERTIARY
+      partner:
+        age: 29
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_adult_receives_student_finance: [true, true]
+    adult_dependants_grant_eligible: [false, false]
+    adult_dependants_grant: [0, 0]
+
+- name: Adult Dependants' Grant excludes under-25 couples by default
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        current_education: TERTIARY
+      partner:
+        age: 24
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_adult_eligible: [false, false]
+    adult_dependants_grant_eligible: [false, false]
+    adult_dependants_grant: [0, 0]
+
+- name: Adult Dependants' Grant allows an explicit override for under-25 spouse or civil-partner cases
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        current_education: TERTIARY
+        adult_dependants_grant_adult_eligible: true
+      partner:
+        age: 24
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: ENGLAND
+  output:
+    adult_dependants_grant_eligible: [true, false]
+    adult_dependants_grant: [3_545, 0]
+
+- name: Adult Dependants' Grant excludes households outside England
+  period: 2025
+  input:
+    people:
+      student:
+        age: 27
+        current_education: TERTIARY
+      partner:
+        age: 28
+    benunits:
+      benunit:
+        members: ["student", "partner"]
+    households:
+      household:
+        members: ["student", "partner"]
+        country: WALES
+  output:
+    adult_dependants_grant_eligible: [false, false]
+    adult_dependants_grant: [0, 0]

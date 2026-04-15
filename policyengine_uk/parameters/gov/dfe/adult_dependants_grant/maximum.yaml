@@ -1,0 +1,11 @@
+description: Maximum Adult Dependants' Grant amount
+metadata:
+  label: Adult Dependants' Grant maximum
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Adult Dependants' Grant
+      href: https://www.gov.uk/adult-dependants-grant/what-youll-get
+values:
+  2025-01-01: 3_545
+  2026-01-01: 3_545
