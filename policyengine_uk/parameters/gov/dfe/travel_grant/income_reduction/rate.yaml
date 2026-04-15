@@ -1,0 +1,11 @@
+description: Travel Grant reduction rate per pound of household income above the published threshold.
+values:
+  2025-01-01: 0.1145475372279496
+  2026-01-01: 0.1145475372279496
+metadata:
+  unit: /1
+  period: year
+  label: Travel Grant income reduction rate
+  reference:
+    - title: "Travel grants for students studying abroad or on placements (England): What you'll get"
+      href: https://www.gov.uk/travel-grants-students-england/what-youll-get

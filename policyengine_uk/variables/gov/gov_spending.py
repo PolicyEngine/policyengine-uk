@@ -49,6 +49,7 @@ class gov_spending(Variable):
         "childcare_grant",
         "parents_learning_allowance",
         "adult_dependants_grant",
+        "travel_grant",
         "bursary_fund_16_to_19",
         "dfe_education_spending",
         "dft_subsidy_spending",
