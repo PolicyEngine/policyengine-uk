@@ -3,7 +3,7 @@
   input:
     working_tax_credit: 0
     child_tax_credit: 0
-    universal_credit: 0
+    universal_credit_pre_benefit_cap: 0
   output:
     tax_free_childcare_program_eligible: True
 
@@ -12,7 +12,7 @@
   input:
     working_tax_credit: 0
     child_tax_credit: 0
-    universal_credit: 0
+    universal_credit_pre_benefit_cap: 0
     tax_free_childcare_meets_uk_connection: false
   output:
     tax_free_childcare_program_eligible: False
@@ -22,7 +22,7 @@
   input:
     working_tax_credit: 1
     child_tax_credit: 0
-    universal_credit: 0
+    universal_credit_pre_benefit_cap: 0
   output:
     tax_free_childcare_program_eligible: False
 
@@ -32,7 +32,7 @@
   input:
     working_tax_credit: 1
     child_tax_credit: 1
-    universal_credit: 0
+    universal_credit_pre_benefit_cap: 0
   output:
     tax_free_childcare_program_eligible: False
 
@@ -42,6 +42,16 @@
   input:
     working_tax_credit: 1
     child_tax_credit: 1
-    universal_credit: 1
+    universal_credit_pre_benefit_cap: 1
+  output:
+    tax_free_childcare_program_eligible: False
+
+- name: Non eligible - Universal Credit payable before reduction to nil
+  period: 2025
+  input:
+    working_tax_credit: 0
+    child_tax_credit: 0
+    universal_credit: 0
+    universal_credit_pre_benefit_cap: 1
   output:
     tax_free_childcare_program_eligible: False
