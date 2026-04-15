@@ -1,0 +1,111 @@
+- name: Working Tax Credit route qualifies before the 2018 amendment
+  period: 2017
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        guarantee_credit: 0
+        meets_working_tax_credit_criteria_for_targeted_childcare_entitlement: true
+        extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement_eligible: true
+
+- name: Ordinary Working Tax Credit no longer qualifies after the 2018 amendment
+  period: 2019
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        guarantee_credit: 0
+        meets_working_tax_credit_criteria_for_targeted_childcare_entitlement: true
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement_eligible: false
+
+- name: Working Tax Credit run-on qualifies after the 2018 amendment
+  period: 2019
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        working_tax_credit_run_on: true
+        extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement_eligible: true
+
+- name: Child Tax Credit without Working Tax Credit qualifies after the 2018 amendment
+  period: 2019
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
+        extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement_eligible: true
+
+- name: Child Tax Credit no longer qualifies from 2026
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
+        extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement_eligible: false
+
+- name: Universal Credit still qualifies from 2026
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: true
+        extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement_eligible: true

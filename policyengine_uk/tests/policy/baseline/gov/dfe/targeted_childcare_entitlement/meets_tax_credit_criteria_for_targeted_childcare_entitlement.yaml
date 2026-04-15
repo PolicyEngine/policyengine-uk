@@ -1,0 +1,38 @@
+- name: Tax credit criteria include Working Tax Credit before the 2018 amendment
+  period: 2017
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        meets_working_tax_credit_criteria_for_targeted_childcare_entitlement: true
+  output:
+    meets_tax_credit_criteria_for_targeted_childcare_entitlement: true
+
+- name: Tax credit criteria include Child Tax Credit after the 2018 amendment
+  period: 2019
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
+  output:
+    meets_tax_credit_criteria_for_targeted_childcare_entitlement: true
+
+- name: Tax credit criteria are inactive from 2026
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
+  output:
+    meets_tax_credit_criteria_for_targeted_childcare_entitlement: false
