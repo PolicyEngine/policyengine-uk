@@ -46,6 +46,7 @@ class household_benefits(Variable):
         "targeted_childcare_entitlement",
         "care_to_learn",
         "childcare_grant",
+        "parents_learning_allowance",
         "bursary_fund_16_to_19",
         "nhs_spending",
         "dfe_education_spending",
