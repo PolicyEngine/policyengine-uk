@@ -1,0 +1,11 @@
+description: Initial travel-cost contribution the student must meet before Travel Grant reimbursement begins.
+values:
+  2025-01-01: 303
+  2026-01-01: 303
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Travel Grant initial contribution
+  reference:
+    - title: "Travel grants for students studying abroad or on placements (England): What you'll get"
+      href: https://www.gov.uk/travel-grants-students-england/what-youll-get

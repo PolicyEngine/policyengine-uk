@@ -1,0 +1,120 @@
+- name: Travel Grant reimburses overseas placement expenses above the initial contribution
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      student:
+        age: 21
+        travel_grant_abroad_placement: true
+        travel_grant_eligible_expenses: 1_000
+        travel_grant_household_income: 30_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    travel_grant_eligible: [true]
+    travel_grant: [697]
+
+- name: Travel Grant applies the published household-income reduction above the threshold
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      student:
+        age: 22
+        travel_grant_abroad_placement: true
+        travel_grant_eligible_expenses: 1_000
+        travel_grant_household_income: 39_804.73
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    travel_grant: [696]
+
+- name: Travel Grant is nil when expenses do not exceed the initial contribution
+  period: 2025
+  input:
+    people:
+      student:
+        age: 20
+        travel_grant_abroad_placement: true
+        travel_grant_eligible_expenses: 303
+        travel_grant_household_income: 0
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    travel_grant_eligible: [true]
+    travel_grant: [0]
+
+- name: Travel Grant clinical placements require income-assessed support
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        travel_grant_clinical_placement: true
+        travel_grant_eligible_expenses: 800
+        travel_grant_income_assessed_support: false
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    travel_grant_eligible: [false]
+    travel_grant: [0]
+
+- name: Travel Grant excludes UK clinical placements with means-tested NHS bursaries
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        travel_grant_clinical_placement: true
+        travel_grant_eligible_expenses: 800
+        travel_grant_income_assessed_support: true
+        travel_grant_receives_means_tested_nhs_bursary: true
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: ENGLAND
+  output:
+    travel_grant_eligible: [false]
+    travel_grant: [0]
+
+- name: Travel Grant excludes households outside England
+  period: 2025
+  input:
+    people:
+      student:
+        age: 21
+        travel_grant_abroad_placement: true
+        travel_grant_eligible_expenses: 1_000
+    benunits:
+      benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["student"]
+        country: WALES
+  output:
+    travel_grant_eligible: [false]
+    travel_grant: [0]

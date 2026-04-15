@@ -39,6 +39,7 @@ class hbai_benefits(Variable):
         "childcare_grant",
         "parents_learning_allowance",
         "adult_dependants_grant",
+        "travel_grant",
         "bursary_fund_16_to_19",
         "healthy_start_vouchers",
     ]
