@@ -61,6 +61,29 @@
   output:
     extended_childcare_entitlement_work_condition: [1, 1, 0]
 
+- name: Couple with children, one working one with Carer's Allowance - eligible
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        in_work: true
+        is_parent: true
+      parent2:
+        age: 38
+        in_work: false
+        is_parent: true
+        carers_allowance: 1
+      child:
+        age: 4
+        is_parent: false
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
+  output:
+    extended_childcare_entitlement_work_condition: [1, 1, 0]
+
 - name: Couple with children one working one not - ineligible
   period: 2025
   input:
