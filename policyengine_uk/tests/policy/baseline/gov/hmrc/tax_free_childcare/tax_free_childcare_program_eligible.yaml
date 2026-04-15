@@ -7,6 +7,15 @@
   output:
     tax_free_childcare_program_eligible: True
 
+- name: Non eligible - does not meet UK connection requirement
+  period: 2025
+  input:
+    working_tax_credit: 0
+    child_tax_credit: 0
+    universal_credit: 0
+    tax_free_childcare_meets_uk_connection: false
+  output:
+    tax_free_childcare_program_eligible: False
 
 - name: Non eligible - receives benefits
   period: 2025
