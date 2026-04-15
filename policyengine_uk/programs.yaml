@@ -397,6 +397,18 @@ programs:
     verified_start_year: 2025
     notes: First-pass England model using the published initial contribution and household-income reduction formula, with explicit placement and eligible-expense inputs because the survey does not observe reimbursable travel costs
 
+  - id: disabled_students_allowance
+    name: Disabled Students' Allowance
+    full_name: Student Finance England Disabled Students' Allowance
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: disabled_students_allowance
+    parameter_prefix: gov.dfe.disabled_students_allowance
+    verified_start_year: 2025
+    notes: First-pass England model using the published annual cap, higher-education evidence as the default course proxy, a narrow qualifying-condition proxy with explicit override, and explicit disability-related study support costs
+
   - id: bursary_fund_16_to_19
     name: 16 to 19 Bursary Fund
     full_name: 16 to 19 Bursary Fund
