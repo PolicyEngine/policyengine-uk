@@ -48,6 +48,7 @@ class gov_spending(Variable):
         "care_to_learn",
         "childcare_grant",
         "parents_learning_allowance",
+        "adult_dependants_grant",
         "bursary_fund_16_to_19",
         "dfe_education_spending",
         "dft_subsidy_spending",
