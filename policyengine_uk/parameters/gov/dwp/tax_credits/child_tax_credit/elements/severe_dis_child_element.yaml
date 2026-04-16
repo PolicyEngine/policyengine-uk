@@ -17,7 +17,6 @@ values:
 metadata:
   period: year
   unit: currency-GBP
-  name: ctc_severe_dis_child
   label: "CTC severely disabled child element"
   uprating: gov.benefit_uprating_cpi
   reference:

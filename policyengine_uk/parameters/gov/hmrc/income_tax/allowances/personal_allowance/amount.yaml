@@ -14,7 +14,6 @@ values:
           href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
 metadata:
   period: year
-  name: personal_allowance
   label: Personal allowance
   unit: currency-GBP
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

@@ -3,7 +3,6 @@ description: Share of eligible Working Tax Credit recipients that participate. B
 metadata:
   economy: false
   label: Working Tax Credit take-up rate
-  name: WTC_takeup
   propagate_metadata_to_children: true
   unit: /1
 values:

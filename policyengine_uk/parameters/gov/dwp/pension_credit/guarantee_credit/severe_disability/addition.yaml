@@ -8,7 +8,6 @@ values:
 metadata:
   unit: currency-GBP
   period: week
-  name: pc_severe_disability_addition
   label: Pension Credit severe disability addition
   uprating: gov.benefit_uprating_cpi
   reference:

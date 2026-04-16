@@ -14,7 +14,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  name: sda_maximum
   label: Severe Disablement Allowance
   uprating: gov.benefit_uprating_cpi
   reference: 

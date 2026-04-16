@@ -3,7 +3,6 @@ description: Addition to the Minimum Guarantee for each severely disabled child 
 metadata:
   economy: false
   label: Pension Credit severely disabled child addition
-  name: pc_severe_dis_child_addition
   period: week
   propagate_metadata_to_children: true
   reference:

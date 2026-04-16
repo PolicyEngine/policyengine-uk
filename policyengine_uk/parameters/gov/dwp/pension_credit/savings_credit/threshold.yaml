@@ -13,7 +13,6 @@ SINGLE:
     2024-04-01: 189.8
     2025-04-01: 193.02
   metadata:
-    name: pc_sc_income_threshold_single
     label: Pension Credit Savings Credit income threshold (single)
 COUPLE:
   values:
@@ -29,7 +28,6 @@ COUPLE:
     2024-04-01: 301.22
     2025-04-01: 306.34
   metadata:
-    name: pc_sc_income_threshold_couple
     label: Pension Credit Savings Credit income threshold (couple)
 metadata:
   unit: currency-GBP

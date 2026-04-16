@@ -27,7 +27,6 @@ description: Rates applied to first-time buyers.
 metadata:
   economy: false
   label: Lbtt for first-time buyers
-  name: lbtt_first_time_buyers
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:

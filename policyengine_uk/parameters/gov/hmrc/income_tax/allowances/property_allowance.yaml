@@ -6,7 +6,6 @@ values:
       - title: Finance (No. 2) Act 2017 Sch. 3
         href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/3
 metadata:
-  name: property_allowance
   label: Property allowance
   period: year
   unit: currency-GBP

@@ -23,7 +23,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  name: dla_m_enhanced
   label: PIP (mobility) (enhanced rate)
   uprating: gov.benefit_uprating_cpi
   reference: 

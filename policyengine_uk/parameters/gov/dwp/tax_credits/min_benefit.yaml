@@ -2,7 +2,6 @@ description: Tax credit amount below which tax credits are not paid
 metadata:
   economy: false
   label: Tax credits minimum benefit
-  name: tax_credits_minimum_benefit
   period: year
   propagate_metadata_to_children: true
   reference:
