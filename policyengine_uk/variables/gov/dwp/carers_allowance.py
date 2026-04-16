@@ -9,8 +9,10 @@ class carers_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        in_scotland = person.household("country", period).decode_to_str() == "SCOTLAND"
         receives_ca = person("carers_allowance_reported", period) > 0
         ca = parameters(period).gov.dwp.carers_allowance
         weekly_care_hours = person("care_hours", period)
         meets_work_condition = weekly_care_hours >= ca.min_hours
-        return (meets_work_condition | receives_ca) * ca.rate * WEEKS_IN_YEAR
+        eligible = ~in_scotland & (meets_work_condition | receives_ca)
+        return eligible * ca.rate * WEEKS_IN_YEAR

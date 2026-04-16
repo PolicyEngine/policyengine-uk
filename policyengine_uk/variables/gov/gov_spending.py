@@ -55,4 +55,5 @@ class gov_spending(Variable):
         "dfe_education_spending",
         "dft_subsidy_spending",
         "nhs_spending",
+        "carer_support_payment",
     ]

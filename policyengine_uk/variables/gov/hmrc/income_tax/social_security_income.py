@@ -15,4 +15,5 @@ class social_security_income(Variable):
         "jsa_contrib_reported",
         "esa_contrib_reported",
         "carers_allowance",
+        "carer_support_payment",
     ]

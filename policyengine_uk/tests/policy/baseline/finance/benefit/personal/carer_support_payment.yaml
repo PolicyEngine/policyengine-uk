@@ -1,0 +1,59 @@
+- name: Carer in Scotland receives CSP, not CA
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 35
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+      carer: 4331.08
+    carers_allowance:
+      carer: 0
+
+- name: Carer in England receives CA, not CSP
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 35
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    carer_support_payment:
+      carer: 0
+    carers_allowance:
+      carer: 4331.08
+
+- name: Non-carer in Scotland gets neither
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        care_hours: 10
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    carer_support_payment:
+      person: 0
+    carers_allowance:
+      person: 0

@@ -57,6 +57,7 @@ class household_benefits(Variable):
         "healthy_start_vouchers",
         "two_child_limit_payment",
         "scottish_child_payment",
+        "carer_support_payment",
     ]
 
     def formula(household, period, parameters):

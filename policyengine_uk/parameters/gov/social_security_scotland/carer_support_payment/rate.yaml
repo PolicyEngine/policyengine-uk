@@ -1,0 +1,13 @@
+description: Weekly rate of Carer Support Payment.
+values:
+  2024-11-01: 81.9
+  2025-04-01: 83.29
+  2026-04-01: 86.45
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Carer Support Payment rate
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: Carer Support Payment - mygov.scot
+      href: https://www.mygov.scot/carer-support-payment
