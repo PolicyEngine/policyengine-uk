@@ -84,11 +84,7 @@ class TestReformImpacts:
     def test_child_benefit_reform(self):
         """Changing the eldest child benefit amount should affect child benefit."""
         assert _reform_changes_variable(
-            {
-                "gov.hmrc.child_benefit.amount.eldest": {
-                    str(YEAR): 30
-                }
-            },
+            {"gov.hmrc.child_benefit.amount.eldest": {str(YEAR): 30}},
             "child_benefit",
         )
 
@@ -148,11 +144,7 @@ class TestReformImpacts:
             },
         }
         assert _reform_changes_variable(
-            {
-                "gov.hmrc.fuel_duty.petrol_and_diesel": {
-                    str(YEAR): 1.0
-                }
-            },
+            {"gov.hmrc.fuel_duty.petrol_and_diesel": {str(YEAR): 1.0}},
             "fuel_duty",
             situation=driver_situation,
         )
