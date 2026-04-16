@@ -17,5 +17,5 @@ class minimum_wage(Variable):
         return where(
             is_apprentice,
             MW.apprentice,
-            MW.non_apprentice.calc(age, right=True),
+            MW.non_apprentice.calc(age),
         )
