@@ -36,6 +36,7 @@ class is_benefit_cap_exempt_health_disability(Variable):
         QUAL_PERSONAL_BENEFITS = [
             "attendance_allowance",
             "carers_allowance",
+            "carer_support_payment",
             "dla",  # Disability Living Allowance (includes components)
             "pip_dl",  # PIP daily living component
             "pip_m",  # PIP mobility component

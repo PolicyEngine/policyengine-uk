@@ -8,6 +8,4 @@ class is_carer_for_benefits(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        return person("receives_carers_allowance", period) | (
-            person("carer_support_payment", period) > 0
-        )
+        return person("receives_carer_benefit", period)
