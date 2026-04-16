@@ -60,8 +60,7 @@ def test_csp_counts_for_pension_credit_carer_additions_and_blocks_severe_disabil
         expected_carer_addition
     )
     assert (
-        sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[0]
-        == 0
+        sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[0] == 0
     )
 
 
@@ -69,9 +68,9 @@ def test_csp_counts_for_uc_non_dep_exemption_and_housing_benefit_income():
     sim = Simulation(situation=_situation(YEAR_2025))
 
     csp_amount = sim.calculate("carer_support_payment", YEAR_2025)[0]
-    hb_disregard = sim.calculate("housing_benefit_applicable_income_disregard", YEAR_2025)[
-        0
-    ]
+    hb_disregard = sim.calculate(
+        "housing_benefit_applicable_income_disregard", YEAR_2025
+    )[0]
     hb_income = sim.calculate("housing_benefit_applicable_income", YEAR_2025)[0]
 
     assert sim.calculate("uc_non_dep_deduction_exempt", YEAR_2025)[0]
