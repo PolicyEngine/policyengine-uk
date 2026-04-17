@@ -16,13 +16,15 @@ classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: POSIX",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
     "policyengine-core>=3.23.6",
     "microdf-python>=1.2.1",
@@ -109,6 +111,7 @@ showcontent = true
 
 [tool.ruff]
 line-length = 88
+target-version = "py39"
 extend-exclude = [
     "docs/book/programs/gov/dfe/care-to-learn.ipynb",
 ]

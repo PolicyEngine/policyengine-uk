@@ -105,7 +105,7 @@ class Simulation(CoreSimulation):
             Union[pd.DataFrame, str, UKSingleYearDataset, UKMultiYearDataset]
         ] = None,
         trace: bool = False,
-        reform: Dict | Type[Reform] = None,
+        reform: Union[Dict, Type[Reform]] = None,
     ):
         """Initialize a UK simulation.
 

@@ -1,3 +1,4 @@
+from contextlib import ExitStack
 from unittest.mock import patch
 
 from policyengine_uk.build_metadata import (
@@ -19,20 +20,25 @@ def test_data_build_fingerprint_is_stable_within_process():
 def test_get_data_build_metadata_includes_version_git_sha_and_fingerprint():
     get_data_build_fingerprint.cache_clear()
 
-    with (
-        patch(
-            "policyengine_uk.build_metadata._get_package_version",
-            return_value="2.74.0",
-        ),
-        patch(
-            "policyengine_uk.build_metadata._get_git_sha",
-            return_value="deadbeef",
-        ),
-        patch(
-            "policyengine_uk.build_metadata.get_data_build_fingerprint",
-            return_value="sha256:fingerprint",
-        ),
-    ):
+    with ExitStack() as stack:
+        stack.enter_context(
+            patch(
+                "policyengine_uk.build_metadata._get_package_version",
+                return_value="2.74.0",
+            )
+        )
+        stack.enter_context(
+            patch(
+                "policyengine_uk.build_metadata._get_git_sha",
+                return_value="deadbeef",
+            )
+        )
+        stack.enter_context(
+            patch(
+                "policyengine_uk.build_metadata.get_data_build_fingerprint",
+                return_value="sha256:fingerprint",
+            )
+        )
         metadata = get_data_build_metadata()
 
     assert metadata == {
