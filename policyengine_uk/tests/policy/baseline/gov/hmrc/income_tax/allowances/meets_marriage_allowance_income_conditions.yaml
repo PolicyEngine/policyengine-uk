@@ -18,3 +18,24 @@
     tax_band: ADDITIONAL
   output:
     meets_marriage_allowance_income_conditions: false
+
+- name: Below-PA earner (band NONE) is eligible for Marriage Allowance (regression for #395)
+  period: 2021
+  input:
+    tax_band: NONE
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Scottish starter rate band is eligible for Marriage Allowance
+  period: 2021
+  input:
+    tax_band: STARTER
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Scottish intermediate rate band is eligible for Marriage Allowance
+  period: 2021
+  input:
+    tax_band: INTERMEDIATE
+  output:
+    meets_marriage_allowance_income_conditions: true

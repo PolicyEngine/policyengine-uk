@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from numpy import ceil
+import numpy as np
 
 
 class meets_marriage_allowance_income_conditions(Variable):
@@ -10,11 +10,9 @@ class meets_marriage_allowance_income_conditions(Variable):
     value_type = bool
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
 
-    def formula(person, period):
+    def formula(person, period, parameters):
         band = person("tax_band", period)
-        bands = band.possible_values
-        return (
-            (band == bands.BASIC)
-            | (band == bands.STARTER)
-            | (band == bands.INTERMEDIATE)
-        )
+        eligible_bands = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands
+        return np.isin(band.decode_to_str(), eligible_bands)
