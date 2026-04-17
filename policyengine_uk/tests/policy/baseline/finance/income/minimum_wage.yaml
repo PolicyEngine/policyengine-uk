@@ -5,3 +5,35 @@
     age: 30
   output:
     minimum_wage: 8.91
+
+- name: Minimum wage for a person aged 18 uses the 18 to 20 bracket
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 18
+  output:
+    minimum_wage: 10
+
+- name: Minimum wage for a person aged 21 uses the 21 to 22 bracket
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 21
+  output:
+    minimum_wage: 12.21
+
+- name: Minimum wage for a person aged 23 uses the 23 to 24 bracket
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 23
+  output:
+    minimum_wage: 12.21
+
+- name: Minimum wage for a person aged 25 uses the 25 or over bracket
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    age: 25
+  output:
+    minimum_wage: 8.91
