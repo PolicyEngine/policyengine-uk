@@ -43,4 +43,5 @@ class hbai_benefits(Variable):
         "disabled_students_allowance",
         "bursary_fund_16_to_19",
         "healthy_start_vouchers",
+        "carer_support_payment",
     ]

@@ -1,0 +1,11 @@
+description: Minimum number of hours spent providing care to qualify for Carer Support Payment.
+values:
+  2024-11-01: 35
+metadata:
+  economy: false
+  period: week
+  unit: hour
+  label: Carer Support Payment minimum hours
+  reference:
+    - title: Carer Support Payment eligibility
+      href: https://www.mygov.scot/carer-support-payment/eligibility

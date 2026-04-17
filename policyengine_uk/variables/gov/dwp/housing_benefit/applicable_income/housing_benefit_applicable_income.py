@@ -18,6 +18,7 @@ class housing_benefit_applicable_income(Variable):
         ]
         PERSONAL_BENEFITS = [
             "carers_allowance",
+            "carer_support_payment",
             "esa_contrib",
             "jsa_contrib",
             "state_pension",

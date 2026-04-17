@@ -38,6 +38,7 @@ class pre_budget_change_household_benefits(Variable):
         "epg_subsidy",
         "cost_of_living_support_payment",
         "energy_bills_rebate",
+        "carer_support_payment",
     ]
 
     def formula(household, period, parameters):
