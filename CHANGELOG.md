@@ -1,3 +1,10 @@
+## [2.88.3] - 2026-04-17
+
+### Fixed
+
+- Migrate versioning workflow to GitHub App token (POLICYENGINE_GITHUB PAT expired).
+
+
 ## [2.88.2] - 2026-04-17
 
 No significant changes.
