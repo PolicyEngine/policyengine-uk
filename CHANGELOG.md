@@ -1,3 +1,10 @@
+## [2.87.0] - 2026-04-17
+
+### Added
+
+- - Add a microsimulation smoke test suite that runs against the unpinned latest enhanced FRS dataset and asserts plausibility bounds for UK population, UC aggregate, `is_parent` population, core benefit totals, and extended childcare eligibility. Catches silent model/data skew at the point the dataset is republished, not after a release.
+
+
 ## [2.86.13] - 2026-04-17
 
 No significant changes.
