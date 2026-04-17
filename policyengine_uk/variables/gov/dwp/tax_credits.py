@@ -9,9 +9,11 @@ class tax_credits(Variable):
     definition_period = YEAR
     unit = GBP
 
-    def formula(person, period, parameters):
+    def formula(benunit, period, parameters):
+        if not parameters(period).gov.dwp.tax_credits.active:
+            return benunit.empty_array()
         amount = add(
-            person,
+            benunit,
             period,
             ["working_tax_credit_pre_minimum", "child_tax_credit_pre_minimum"],
         )

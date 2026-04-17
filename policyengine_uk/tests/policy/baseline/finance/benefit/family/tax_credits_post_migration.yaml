@@ -1,0 +1,38 @@
+- name: Tax credits still paid in 2024 (scheme active until 5 April 2025)
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    age: 35
+    weekly_hours: 40
+    employment_income: 10000
+    working_tax_credit_reported: 3000
+    claims_all_entitled_benefits: true
+  output:
+    tax_credits: 2607
+
+- name: Tax credits are zero after scheme ended on 5 April 2025
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 40
+    employment_income: 10000
+    working_tax_credit_reported: 3000
+    child_tax_credit_reported: 2000
+    claims_all_entitled_benefits: true
+  output:
+    tax_credits: 0
+    working_tax_credit: 0
+    child_tax_credit: 0
+
+- name: Tax credits remain zero in all future years
+  period: 2030
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 40
+    employment_income: 10000
+    working_tax_credit_reported: 3000
+    claims_all_entitled_benefits: true
+  output:
+    tax_credits: 0
