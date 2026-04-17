@@ -7,3 +7,27 @@
     is_carer_for_benefits: true
     num_carers: 1
     carer_premium: 37.5 * 52
+
+- name: Two carers in a benefit unit receive the couple rate
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    num_carers: 2
+  output:
+    carer_premium: 37.5 * 52
+
+- name: Three carers in a benefit unit stay at the couple rate (regression for #420)
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    num_carers: 3
+  output:
+    carer_premium: 37.5 * 52
+
+- name: No carers in a benefit unit receive no premium
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    num_carers: 0
+  output:
+    carer_premium: 0
