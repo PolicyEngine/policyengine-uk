@@ -1,3 +1,10 @@
+## [2.88.0] - 2026-04-17
+
+### Added
+
+- Support Python 3.9 and 3.10 (in addition to 3.11–3.14). On Python 3.9/3.10, pip resolves `policyengine-core` to a version that has been relaxed to support older Python (3.24.0+); on 3.11+ behavior is unchanged.
+
+
 ## [2.87.1] - 2026-04-17
 
 ### Fixed
