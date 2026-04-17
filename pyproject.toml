@@ -16,18 +16,22 @@ classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: POSIX",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
     "policyengine-core>=3.23.6",
     "microdf-python>=1.2.1",
     "pydantic>=2.11.7",
-    "tables>=3.10.2",
+    "tables>=3.9.2,<3.10.2; python_version < '3.10'",
+    "tables>=3.10.0,<3.10.2; python_version == '3.10.*'",
+    "tables>=3.10.2; python_version >= '3.11'",
 ]
 
 [project.urls]
@@ -50,6 +54,16 @@ include = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["policyengine_uk"]
+
+[tool.uv]
+# Until policyengine-core ships 3.9/3.10 support (3.24.0+), restrict
+# uv.lock resolution to >=3.11. `requires-python` above still declares
+# 3.9 is supported — pip users on 3.9/3.10 will resolve against PyPI
+# once core 3.24+ is published. Remove this block once the lockfile
+# can cleanly resolve across 3.9-3.14.
+environments = [
+    "python_version >= '3.11'",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -109,6 +123,7 @@ showcontent = true
 
 [tool.ruff]
 line-length = 88
+target-version = "py39"
 extend-exclude = [
     "docs/book/programs/gov/dfe/care-to-learn.ipynb",
 ]
