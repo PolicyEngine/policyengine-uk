@@ -29,7 +29,9 @@ dependencies = [
     "policyengine-core>=3.23.6",
     "microdf-python>=1.2.1",
     "pydantic>=2.11.7",
-    "tables>=3.10.2",
+    "tables>=3.9.2,<3.10.2; python_version < '3.10'",
+    "tables>=3.10.0,<3.10.2; python_version == '3.10.*'",
+    "tables>=3.10.2; python_version >= '3.11'",
 ]
 
 [project.urls]
