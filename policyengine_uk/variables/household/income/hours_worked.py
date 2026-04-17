@@ -6,6 +6,6 @@ import numpy as np
 class hours_worked(Variable):
     value_type = float
     entity = Person
-    label = "Hours worked per week"
+    label = "Annual hours worked"
     definition_period = YEAR
     unit = "hour"
