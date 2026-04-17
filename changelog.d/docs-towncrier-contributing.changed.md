@@ -1,1 +1,0 @@
-- Update `.github/CONTRIBUTING.md` to document the towncrier `changelog.d/` workflow. The old `changelog_entry.yaml` + `make changelog` flow was deprecated some time ago; the CONTRIBUTING guide still instructed new contributors to use it, causing CI round-trips on PRs that created a `changelog_entry.yaml` no fragment step was looking for.
