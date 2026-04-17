@@ -1,3 +1,11 @@
+## [2.87.1] - 2026-04-17
+
+### Fixed
+
+- - Fix `state_pension_type` incorrectly classifying every pensioner as receiving the pre-2016 basic State Pension. The formula used `values_list[0]` to find when the New State Pension activated, but policyengine-core auto-extrapolates the parameter into the far future, so `[0]` was returning a 2040s entry instead of the 2016 activation date. Walks the list oldest-first to find the real activation instant, so post-2016 retirees are now correctly classified as `NEW`. Raises the modelled 2025 state pension aggregate from about £116bn to about £127bn.
+- - Fix Working Tax Credit and Child Tax Credit continuing to pay out from the 2025-26 tax year onward. Working Tax Credit and Child Tax Credit ended on 5 April 2025 (HMRC/DWP). Adds a `gov.dwp.tax_credits.active` parameter that flips to `false` on 2025-04-06 and gates `tax_credits` on it. Removes about £1.9bn of phantom Tax Credit spending per year from 2025-26 onward while preserving the legitimate 2024-25 baseline.
+
+
 ## [2.87.0] - 2026-04-17
 
 ### Added
