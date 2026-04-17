@@ -4,12 +4,12 @@ from policyengine_uk.model_api import *
 class employment_income_behavioral_response(Variable):
     value_type = float
     entity = Person
-    label = "income-related labor supply change"
+    label = "income-related labour supply change"
     unit = GBP
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        lsr = parameters(period).gov.simulation.labor_supply_responses
+        lsr = parameters(period).gov.simulation.labour_supply_responses
         simulation = person.simulation
         if simulation.baseline is None:
             return 0  # No reform, no impact

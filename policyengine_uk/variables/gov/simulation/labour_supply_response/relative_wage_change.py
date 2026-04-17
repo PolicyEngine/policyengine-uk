@@ -32,5 +32,5 @@ class relative_wage_change(Variable):
         relative_change = (wage_rate_c - baseline_wage_c) / baseline_wage_c
         wage_change_bound = parameters(
             period
-        ).gov.simulation.labor_supply_responses.bounds.effective_wage_rate_change
+        ).gov.simulation.labour_supply_responses.bounds.effective_wage_rate_change
         return np.clip(relative_change, -wage_change_bound, wage_change_bound)
