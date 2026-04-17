@@ -1,0 +1,1 @@
+- Fix Working Tax Credit and Child Tax Credit continuing to pay out in 2025 and later simulation years despite DWP's managed migration to Universal Credit completing on 5 April 2024. Adds a `gov.dwp.tax_credits.active` parameter that flips to `false` on 2024-04-06, and gates `tax_credits` on it. Removes about £1.9bn of phantom Tax Credit spending from the 2025 baseline.

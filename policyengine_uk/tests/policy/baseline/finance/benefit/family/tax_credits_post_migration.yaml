@@ -1,0 +1,26 @@
+- name: Tax credits are zero after managed migration completed (2024-04-06)
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 40
+    employment_income: 10000
+    working_tax_credit_reported: 3000
+    child_tax_credit_reported: 2000
+    claims_all_entitled_benefits: true
+  output:
+    tax_credits: 0
+    working_tax_credit: 0
+    child_tax_credit: 0
+
+- name: Tax credits remain zero in all future years
+  period: 2030
+  absolute_error_margin: 0
+  input:
+    age: 35
+    weekly_hours: 40
+    employment_income: 10000
+    working_tax_credit_reported: 3000
+    claims_all_entitled_benefits: true
+  output:
+    tax_credits: 0

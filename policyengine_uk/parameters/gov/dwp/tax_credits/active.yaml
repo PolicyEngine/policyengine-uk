@@ -1,0 +1,13 @@
+description: Whether the Tax Credits scheme is actively paying awards. Managed migration to Universal Credit completed on 5 April 2024; no new or continuing tax credit awards have been paid since.
+values:
+  2003-04-06: true
+  2024-04-06: false
+metadata:
+  label: Tax Credits scheme active
+  unit: bool
+  period: year
+  reference:
+    - title: "DWP: Move to Universal Credit - managed migration completion"
+      href: https://www.gov.uk/government/publications/completing-the-move-to-universal-credit
+    - title: Tax Credits Act 2002
+      href: https://www.legislation.gov.uk/ukpga/2002/21/contents
