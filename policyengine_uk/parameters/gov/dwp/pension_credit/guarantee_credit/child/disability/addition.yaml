@@ -3,7 +3,6 @@ description: Addition to the Minimum Guarantee for each disabled child (above th
 metadata:
   economy: false
   label: Pension Credit disabled child addition
-  name: pc_dis_child_addition
   period: week
   propagate_metadata_to_children: true
   reference:

@@ -52,7 +52,6 @@ values:
         href: https://researchbriefings.files.parliament.uk/documents/CBP-10105/CBP-10105.pdf
 metadata:
   label: Child Benefit (additional)
-  name: CB_additional
   period: week
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi

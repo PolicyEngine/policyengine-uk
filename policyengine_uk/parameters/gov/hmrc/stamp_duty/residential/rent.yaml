@@ -16,7 +16,6 @@ description: Stamp Duty Land Tax progressive rates for cumulative rents on resid
 metadata:
   economy: false
   label: Stamp Duty on cumulative rent
-  name: sdlt_on_rent
   propagate_metadata_to_children: true
   rate_unit: currency-GBP
   reference:

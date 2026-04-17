@@ -2,7 +2,6 @@ description: Addition to the Minimum Guarantee for each child.
 metadata:
   economy: false
   label: Pension Credit child addition
-  name: pc_child_addition
   period: week
   propagate_metadata_to_children: true
   reference:

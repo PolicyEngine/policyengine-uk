@@ -12,7 +12,6 @@ metadata:
   period: year
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
-  name: ctc_income_threshold
   label: "CTC income threshold"
   reference:
     - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28

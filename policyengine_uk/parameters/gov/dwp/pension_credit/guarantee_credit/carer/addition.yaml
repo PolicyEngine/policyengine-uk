@@ -10,7 +10,6 @@ values:
 metadata:
   unit: currency-GBP
   period: week
-  name: pc_carer_addition
   label: Pension Credit carer addition
   uprating: gov.benefit_uprating_cpi
   reference:

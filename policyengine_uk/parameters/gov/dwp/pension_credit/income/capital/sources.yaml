@@ -3,7 +3,6 @@ description: >
   toward deemed income from capital, excluding the claimant's main home.
 metadata:
   label: Pension Credit capital sources
-  name: pension_credit_capital_sources
   unit: list
   reference:
     - href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/15

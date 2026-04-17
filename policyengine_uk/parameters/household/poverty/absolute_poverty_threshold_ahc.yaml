@@ -5,7 +5,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  name: abs_poverty_threshold_bhc
   label: Absolute poverty threshold, after housing costs
   reference:
     - title: Households Below Average income, 2010/11

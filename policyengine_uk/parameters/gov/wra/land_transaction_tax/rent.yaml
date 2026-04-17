@@ -16,7 +16,6 @@ description: Progressive tax scale for cumulative rent
 metadata:
   economy: false
   label: Ltt on cumulative rent
-  name: ltt_on_cumulative_rent
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:
