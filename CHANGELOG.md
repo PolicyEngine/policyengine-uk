@@ -1,3 +1,10 @@
+## [2.88.5] - 2026-04-18
+
+### Fixed
+
+- Zero out Income Support and income-based Jobseeker's Allowance after DWP managed migration completed on 31 March 2026. New parameters `gov.dwp.income_support.active` and `gov.dwp.JSA.income.active` flip to `false` from 2026-04-01, matching the Tax Credits treatment. Contribution-based JSA remains active.
+
+
 ## [2.88.4] - 2026-04-18
 
 ### Fixed
