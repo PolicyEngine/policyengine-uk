@@ -1,3 +1,10 @@
+## [2.88.4] - 2026-04-18
+
+### Fixed
+
+- Bump `policyengine-core` minimum to `>=3.25.0` to pick up the cache-invalidation and `set_input` preservation fixes (PolicyEngine/policyengine-core#475). The 3.24.0–3.24.3 cascade left UK model tests returning zero for income_tax, UC, and other formula-driven variables when a reform is applied during simulation construction; 3.25.0 includes the regression fix.
+
+
 ## [2.88.3] - 2026-04-17
 
 ### Fixed
