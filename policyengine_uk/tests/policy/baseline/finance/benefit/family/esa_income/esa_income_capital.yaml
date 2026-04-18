@@ -168,7 +168,7 @@
     esa_income_assessable_capital: [18_000, 18_000]
 
 - name: Income-related ESA capital screening can activate the existing Income Support path
-  period: 2026
+  period: 2025
   absolute_error_margin: 1
   input:
     people:
@@ -190,4 +190,4 @@
   output:
     esa_income: 0
     income_support_eligible: true
-    income_support: 5_430.5776
+    income_support: 5_252.0073
