@@ -22,7 +22,7 @@
     jsa_income_assessable_capital: 10_500
 
 - name: Income-based JSA has no tariff income at the lower capital threshold
-  period: 2026
+  period: 2025
   absolute_error_margin: 0
   input:
     people:
@@ -41,7 +41,7 @@
     jsa_income: 1_000
 
 - name: Income-based JSA tariff income rounds incomplete capital steps up
-  period: 2026
+  period: 2025
   absolute_error_margin: 0
   input:
     people:
@@ -60,7 +60,7 @@
     jsa_income: 948
 
 - name: Income-based JSA remains eligible at the upper capital limit
-  period: 2026
+  period: 2025
   absolute_error_margin: 0
   input:
     people:

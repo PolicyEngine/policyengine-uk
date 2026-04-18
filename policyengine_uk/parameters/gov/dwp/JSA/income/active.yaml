@@ -1,0 +1,14 @@
+description: Whether income-based Jobseeker's Allowance is actively paying awards. Income-based JSA closed to new claims with Universal Credit's rollout, and the remaining legacy caseload was migrated to UC under DWP's managed-migration programme; last payments were made on 31 March 2026. Contribution-based JSA is a separate scheme and remains active.
+values:
+  1996-10-07: true
+  2026-04-01: false
+metadata:
+  label: Income-based JSA scheme active
+  unit: bool
+  reference:
+    - title: "House of Commons Library: Completing Universal Credit rollout (CBP-9984)"
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-9984/
+    - title: "DWP: Successful DWP campaign leads to closure of historical benefits"
+      href: https://www.gov.uk/government/news/successful-dwp-campaign-leads-to-closure-of-historical-benefits
+    - title: "Jobseekers Act 1995"
+      href: https://www.legislation.gov.uk/ukpga/1995/18/contents
