@@ -1,3 +1,10 @@
+## [2.88.6] - 2026-04-19
+
+### Fixed
+
+- Replace `new_state_pension`'s flat-max payout with a `min(reported, max) / max * period_max` formula mirroring `basic_state_pension`, and extend `additional_state_pension` to NEW-type retirees so any pre-2016 SERPS/S2P Protected Payment flows through as an add-on instead of being silently dropped. Partial-NI-record retirees now receive their actual pro-rated rate rather than the full flat max. Closes part of the ~£12 bn residual state-pension gap vs the OBR target tracked in #1632.
+
+
 ## [2.88.5] - 2026-04-18
 
 ### Fixed
