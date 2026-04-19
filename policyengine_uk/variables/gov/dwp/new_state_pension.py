@@ -28,14 +28,15 @@ class new_state_pension(Variable):
         max_new_data_year = p.amount(data_year)
         max_new_period = p.amount(period)
 
-        # Pro-rate by reported amount rather than flat max:
-        #   share < 1 → under-35-year NI records get their actual partial rate
-        #   share > 1 → pre-2016 SERPS/S2P Protected Payment adds on top
-        # The previous ``eligible * p.amount`` overstated partial-record
-        # retirees and dropped the Protected Payment tail entirely.
+        # Pro-rate by reported amount, capped at the flat max so a partial
+        # NI record gets the appropriate partial rate. Any reported amount
+        # above the flat max is Protected Payment (pre-2016 SERPS/S2P) and
+        # flows through ``additional_state_pension`` — mirrors the
+        # BASIC / ASP split so ``new_state_pension`` is always the headline
+        # flat-rate component.
         share = where(
             max_new_data_year > 0,
-            reported_weekly / max_new_data_year,
+            min_(reported_weekly, max_new_data_year) / max_new_data_year,
             0,
         )
         return eligible * share * max_new_period * WEEKS_IN_YEAR

@@ -4,7 +4,7 @@
   input:
     people:
       person1:
-        state_pension_reported: 7000  # Below max (9627.80 = 185.15 * 52)
+        state_pension_reported: 7000  # Below max (9339.20 = 179.60 * 52)
         state_pension_type: NEW
         age: 67
   output:
@@ -15,15 +15,16 @@
   input:
     people:
       person1:
-        state_pension_reported: 9627.80  # Exactly the max
+        state_pension_reported: 9339.20  # Exactly the 2021 max
         state_pension_type: NEW
         age: 67
   output:
-    new_state_pension: 9627.80
+    new_state_pension: 9339.20
 
-- name: New State Pension captures Protected Payment above max rate
-  # Pre-2016 SERPS/S2P accrual — reported exceeds flat max; the excess is
-  # the Protected Payment component of NSP and must flow through.
+- name: New State Pension caps at max; Protected Payment flows to additional_state_pension
+  # Pre-2016 SERPS/S2P accrual — reported exceeds flat max. The flat-rate
+  # component stays capped at the max, and the excess is treated as a
+  # Protected Payment top-up tracked via additional_state_pension.
   period: 2021
   input:
     people:
@@ -32,7 +33,34 @@
         state_pension_type: NEW
         age: 67
   output:
-    new_state_pension: 12000
+    new_state_pension: 9339.20
+    additional_state_pension: 2660.80  # 12000 − 9339.20
+
+- name: Additional State Pension captures SERPS/S2P for BASIC retirees
+  period: 2021
+  input:
+    people:
+      person1:
+        state_pension_reported: 9000  # Above basic max (7155.20)
+        state_pension_type: BASIC
+        age: 70
+  output:
+    additional_state_pension: 1844.80  # 9000 − 7155.20
+
+- name: NEW-type retiree with zero reported pension gets zero NSP
+  # Deferral or FRS non-report. Matches reality — a deferred NSP claimant
+  # genuinely receives nothing until they start drawing. This differs from
+  # the old formula, which paid the flat max regardless of reported.
+  period: 2021
+  input:
+    people:
+      person1:
+        state_pension_reported: 0
+        state_pension_type: NEW
+        age: 67
+  output:
+    new_state_pension: 0
+    additional_state_pension: 0
 
 - name: Basic type returns zero for new_state_pension
   period: 2021
