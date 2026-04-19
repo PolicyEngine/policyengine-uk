@@ -1,0 +1,58 @@
+- name: New State Pension uses reported amount, not flat max
+  # Under 35 NI years — partial rate should be preserved, not paid at max.
+  period: 2021
+  input:
+    people:
+      person1:
+        state_pension_reported: 7000  # Below max (9627.80 = 185.15 * 52)
+        state_pension_type: NEW
+        age: 67
+  output:
+    new_state_pension: 7000
+
+- name: New State Pension equals max for full-rate retirees
+  period: 2021
+  input:
+    people:
+      person1:
+        state_pension_reported: 9627.80  # Exactly the max
+        state_pension_type: NEW
+        age: 67
+  output:
+    new_state_pension: 9627.80
+
+- name: New State Pension captures Protected Payment above max rate
+  # Pre-2016 SERPS/S2P accrual — reported exceeds flat max; the excess is
+  # the Protected Payment component of NSP and must flow through.
+  period: 2021
+  input:
+    people:
+      person1:
+        state_pension_reported: 12000  # Above max — Protected Payment
+        state_pension_type: NEW
+        age: 67
+  output:
+    new_state_pension: 12000
+
+- name: Basic type returns zero for new_state_pension
+  period: 2021
+  input:
+    people:
+      person1:
+        state_pension_reported: 5000
+        state_pension_type: BASIC
+        age: 70
+  output:
+    new_state_pension: 0
+
+- name: New State Pension is zero when max is zero
+  period: 2021
+  input:
+    gov.dwp.state_pension.new_state_pension.amount: 0
+    people:
+      person1:
+        state_pension_reported: 9000
+        state_pension_type: NEW
+        age: 67
+  output:
+    new_state_pension: 0
