@@ -19,7 +19,7 @@ def create_expanded_ma_reform(
                 child_meets_age_condition = person("age", period) <= max_child_age
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
-                child_meets_education_condition = np.is_in(
+                child_meets_education_condition = np.isin(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )
@@ -110,7 +110,7 @@ def create_marriage_neutral_income_tax_reform(
                 child_meets_age_condition = person("age", period) <= max_child_age
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
-                child_meets_education_condition = np.is_in(
+                child_meets_education_condition = np.isin(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )
