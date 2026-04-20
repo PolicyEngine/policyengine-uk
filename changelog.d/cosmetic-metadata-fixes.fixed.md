@@ -1,0 +1,2 @@
+- Fix `gov.dwp.tax_credits.min_benefit` parameter unit from `currency-USD` to `currency-GBP` — the parameter is a UK statutory threshold in pounds.
+- Correct `benunit_weekly_hours` label from "Average weekly hours worked by adults in the benefit unit" to "Total weekly hours worked by adults in the benefit unit" — the formula is `adds = ["weekly_hours"]`, which sums rather than averages.
