@@ -1,0 +1,21 @@
+description: Published triple lock uprating rates (outturn or DWP-announced). Used in preference to the max-of(earnings, CPI, minimum) formula because the formula relies on calendar-year OBR averages, while the actual uprating uses May-July AWE growth.
+values:
+  2022-01-01: 0.031
+  2023-01-01: 0.101
+  2024-01-01: 0.085
+  2025-01-01: 0.041
+  2026-01-01: 0.048
+metadata:
+  unit: /1
+  label: Triple lock outturn rate
+  reference:
+    - title: DWP benefit and pension rates 2022 to 2023
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2022-to-2023
+    - title: DWP benefit and pension rates 2023 to 2024
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024
+    - title: DWP benefit and pension rates 2024 to 2025
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025
+    - title: DWP benefit and pension rates 2025 to 2026
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026
+    - title: DWP benefit and pension rates 2026 to 2027
+      href: https://www.gov.uk/government/news/over-12-million-pensioners-to-receive-575-state-pension-boost

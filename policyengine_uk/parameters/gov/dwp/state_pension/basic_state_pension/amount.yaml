@@ -23,7 +23,8 @@ values:
   2022-01-01: 141.85
   2023-01-01: 156.2
   2024-01-01: 169.5
-  2025-04-01: 172.38
+  2025-04-01: 176.45
+  2026-04-01: 184.9
 metadata:
   unit: currency-GBP
   label: Basic State Pension amount
