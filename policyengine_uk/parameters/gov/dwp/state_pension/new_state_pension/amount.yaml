@@ -9,7 +9,8 @@ values:
   2022-01-01: 185.15
   2023-01-01: 203.85
   2024-01-01: 221.2
-  2025-04-01: 224.96
+  2025-04-01: 230.25
+  2026-04-01: 241.3
 metadata:
   unit: currency-GBP
   label: New State Pension amount
