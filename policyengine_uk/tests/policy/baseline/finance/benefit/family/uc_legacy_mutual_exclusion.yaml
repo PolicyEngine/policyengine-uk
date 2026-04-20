@@ -1,0 +1,27 @@
+# Regression tests for issue #201: UC and legacy benefit `claims_*` consistency.
+#
+# `housing_benefit_eligible` explicitly includes `& ~claiming_uc` so a benunit
+# claiming Universal Credit cannot also be eligible for Housing Benefit. These
+# tests pin that contract so a future refactor can't quietly break it.
+
+- name: HB eligibility excludes benunits claiming Universal Credit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    in_social_housing: true
+    housing_benefit_reported: 4_000
+    would_claim_uc: true
+    LHA_eligible: false
+  output:
+    housing_benefit_eligible: false
+
+- name: HB eligibility holds when benunit is not claiming Universal Credit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    in_social_housing: true
+    housing_benefit_reported: 4_000
+    would_claim_uc: false
+    LHA_eligible: false
+  output:
+    housing_benefit_eligible: true
