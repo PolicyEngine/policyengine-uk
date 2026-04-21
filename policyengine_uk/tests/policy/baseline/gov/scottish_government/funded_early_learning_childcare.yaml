@@ -1,0 +1,82 @@
+# Scottish funded early learning and childcare — universal age-based strand.
+# 1,140 hours/year for all 3- and 4-year-olds in Scotland from August 2021.
+
+- name: Scottish 3-year-old is eligible
+  period: 2024
+  input:
+    people:
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: SCOTLAND
+  output:
+    scottish_funded_early_learning_childcare_eligible: true
+
+- name: Scottish 4-year-old is eligible
+  period: 2024
+  input:
+    people:
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: SCOTLAND
+  output:
+    scottish_funded_early_learning_childcare_eligible: true
+
+- name: English 3-year-old is not eligible for the Scottish programme
+  period: 2024
+  input:
+    people:
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: LONDON
+  output:
+    scottish_funded_early_learning_childcare_eligible: false
+
+- name: Scottish 2-year-old is not eligible under the universal strand
+  period: 2024
+  input:
+    people:
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: SCOTLAND
+  output:
+    scottish_funded_early_learning_childcare_eligible: false
+
+- name: Scottish 5-year-old is no longer eligible (has reached school age)
+  period: 2024
+  input:
+    people:
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: SCOTLAND
+  output:
+    scottish_funded_early_learning_childcare_eligible: false

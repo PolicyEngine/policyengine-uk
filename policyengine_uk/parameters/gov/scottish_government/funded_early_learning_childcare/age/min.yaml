@@ -1,0 +1,11 @@
+description: The Scottish Government provides funded early learning and childcare to children this age or older.
+metadata:
+  unit: year
+  label: Funded early learning and childcare child's minimum age
+  reference:
+    - title: Children and Young People (Scotland) Act 2014 - Section 48 (Duty to secure early learning and childcare)
+      href: https://www.legislation.gov.uk/asp/2014/8/section/48
+    - title: "Scottish Government — Funded early learning and childcare: eligibility"
+      href: https://www.mygov.scot/childcare-costs-help/three-four-year-olds-and-eligible-two-year-olds
+values:
+  2021-08-01: 3
