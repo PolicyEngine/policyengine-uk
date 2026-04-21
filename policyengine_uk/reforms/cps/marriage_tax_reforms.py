@@ -227,3 +227,10 @@ def create_marriage_tax_reform(parameters, period):
             return it_reform
         else:
             return None
+
+
+# Module-level reform instances for use in YAML tests (reference by dotted import path).
+# These build the reform classes with no child-age / education conditions, so the reform
+# applies to every married couple regardless of child presence.
+expanded_ma_reform = create_expanded_ma_reform()
+marriage_neutral_it_reform = create_marriage_neutral_income_tax_reform()

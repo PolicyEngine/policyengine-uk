@@ -1,0 +1,79 @@
+# CPS Marriage Tax Reforms (Centre for Policy Studies)
+# Covers two structural reforms:
+#   - expanded_ma_reform: extends Marriage Allowance eligibility to higher/additional
+#     band earners (normally ineligible under ITA 2007 s. 55B).
+#   - marriage_neutral_it_reform: allows married couples to have income tax computed
+#     on equally split income if that yields a lower combined liability.
+#
+# The module-level reform instances are built with no child-age / education filters,
+# so they apply to every married couple in these tests.
+
+- name: Expanded MA — single higher-rate earner still has no Marriage Allowance
+  period: 2024
+  absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.expanded_ma_reform
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.takeup_rate: 1.0
+    people:
+      adult:
+        age: 35
+        employment_income: 60_000
+    benunits:
+      benunit:
+        members: [adult]
+        is_married: false
+    households:
+      household:
+        members: [adult]
+  output:
+    marriage_allowance: 0
+
+- name: Expanded MA — married higher-rate earner gets Marriage Allowance from low-earner spouse
+  period: 2024
+  absolute_error_margin: 10
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.expanded_ma_reform
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.takeup_rate: 1.0
+    people:
+      high_earner:
+        age: 35
+        employment_income: 60_000
+      low_earner:
+        age: 33
+        employment_income: 10_000
+    benunits:
+      benunit:
+        members: [high_earner, low_earner]
+        is_married: true
+    households:
+      household:
+        members: [high_earner, low_earner]
+  output:
+    # Low earner's unused PA (12,570 − 10,000 = 2,570) is capped at PA × ma_rate
+    # = 12,570 × 0.1 = 1,257, then rounded up to the nearest £10 → 1,260.
+    # Low earner's partner has no unused PA to transfer, so low_earner's MA is 0.
+    marriage_allowance: [1260, 0]
+
+- name: Marriage-neutral IT — single person's adjusted net income is unchanged by the reform
+  period: 2024
+  absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.marriage_neutral_it_reform
+  input:
+    people:
+      adult:
+        age: 35
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: [adult]
+        is_married: false
+    households:
+      household:
+        members: [adult]
+  output:
+    # has_spouse is False → split_income == original income → reform returns the
+    # unadjusted net income (taxable_employment_income ≈ employment_income here).
+    adjusted_net_income: 50_000
