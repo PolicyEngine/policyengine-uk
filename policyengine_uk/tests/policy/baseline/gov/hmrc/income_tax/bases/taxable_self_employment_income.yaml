@@ -31,7 +31,7 @@
     self_employment_income: 0
     loss_relief: 0
     capital_allowances: 0
-    trading_allowance: 0
+    gov.hmrc.income_tax.allowances.trading_allowance: 0
   output:
     taxable_self_employment_income: 0
 
@@ -41,7 +41,7 @@
     self_employment_income: 50000
     loss_relief: 0
     capital_allowances: 0
-    trading_allowance: 0
+    gov.hmrc.income_tax.allowances.trading_allowance: 0
   output:
     taxable_self_employment_income: 50000
 
@@ -51,7 +51,7 @@
     self_employment_income: 30000
     loss_relief: 10000
     capital_allowances: 15000
-    trading_allowance: 5000
+    gov.hmrc.income_tax.allowances.trading_allowance: 5000
   output:
     taxable_self_employment_income: 0
 
@@ -61,7 +61,7 @@
     self_employment_income: 50000
     loss_relief: 5000
     capital_allowances: 10000
-    trading_allowance: 1000
+    gov.hmrc.income_tax.allowances.trading_allowance: 1000
   output:
     taxable_self_employment_income: 34000
 
@@ -71,7 +71,7 @@
     self_employment_income: 200000
     loss_relief: 20000
     capital_allowances: 30000
-    trading_allowance: 1000
+    gov.hmrc.income_tax.allowances.trading_allowance: 1000
   output:
     taxable_self_employment_income: 149000
 
@@ -81,7 +81,7 @@
     self_employment_income: 1000
     loss_relief: 100
     capital_allowances: 200
-    trading_allowance: 300
+    gov.hmrc.income_tax.allowances.trading_allowance: 300
   output:
     taxable_self_employment_income: 400
 
@@ -91,7 +91,7 @@
     self_employment_income: 50000
     loss_relief: 30000
     capital_allowances: 25000
-    trading_allowance: 1000
+    gov.hmrc.income_tax.allowances.trading_allowance: 1000
   output:
     taxable_self_employment_income: 0
 
@@ -101,7 +101,7 @@
     self_employment_income: 1000000
     loss_relief: 200000
     capital_allowances: 300000
-    trading_allowance: 1000
+    gov.hmrc.income_tax.allowances.trading_allowance: 1000
   output:
     taxable_self_employment_income: 499000
 
@@ -111,6 +111,6 @@
     self_employment_income: 50000.50
     loss_relief: 10000.25
     capital_allowances: 5000.75
-    trading_allowance: 1000.00
+    gov.hmrc.income_tax.allowances.trading_allowance: 1000.00
   output:
     taxable_self_employment_income: 33999.50

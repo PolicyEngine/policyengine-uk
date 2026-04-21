@@ -2,7 +2,7 @@
   period: 2024
   input:
     property_income: 0
-    property_allowance: 0
+    gov.hmrc.income_tax.allowances.property_allowance: 0
   output:
     taxable_property_income: 0
 
@@ -10,7 +10,7 @@
   period: 2024
   input:
     property_income: 1000
-    property_allowance: 1000
+    gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:
     taxable_property_income: 0
 
@@ -18,7 +18,7 @@
   period: 2024
   input:
     property_income: 10000
-    property_allowance: 1000
+    gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:
     taxable_property_income: 9000
 
@@ -26,7 +26,7 @@
   period: 2024
   input:
     property_income: 50000
-    property_allowance: 1000
+    gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:
     taxable_property_income: 49000
 
@@ -34,7 +34,7 @@
   period: 2024
   input:
     property_income: 5000
-    property_allowance: 0
+    gov.hmrc.income_tax.allowances.property_allowance: 0
   output:
     taxable_property_income: 5000
 
@@ -42,7 +42,7 @@
   period: 2024
   input:
     property_income: 1
-    property_allowance: 0
+    gov.hmrc.income_tax.allowances.property_allowance: 0
   output:
     taxable_property_income: 1
 
@@ -50,7 +50,7 @@
   period: 2024
   input:
     property_income: 500
-    property_allowance: 1000
+    gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:
     taxable_property_income: 0
 
@@ -58,7 +58,7 @@
   period: 2024
   input:
     property_income: 100000
-    property_allowance: 50000
+    gov.hmrc.income_tax.allowances.property_allowance: 50000
   output:
     taxable_property_income: 50000
 
@@ -66,6 +66,6 @@
   period: 2024
   input:
     property_income: 1234.56
-    property_allowance: 1000.00
+    gov.hmrc.income_tax.allowances.property_allowance: 1000.00
   output:
     taxable_property_income: 234.56

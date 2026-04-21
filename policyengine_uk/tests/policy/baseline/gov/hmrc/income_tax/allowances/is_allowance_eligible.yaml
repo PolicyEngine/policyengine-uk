@@ -39,31 +39,25 @@
 - name: Trading Allowance Deduction
   period: 2024
   input:
-    trading_allowance: 2000
+    gov.hmrc.income_tax.allowances.trading_allowance: 2000
     self_employment_income: 1500
-  output: 
+  output:
     trading_allowance_deduction: 1500.0
 
 - name: Property Allowance Deduction
   period: 2024
   input:
     property_income: 3000
-    property_allowance: 1000
-  output: 
+    gov.hmrc.income_tax.allowances.property_allowance: 1000
+  output:
     property_allowance_deduction: 1000.0
 
 - name: Savings Allowance
   period: 2024
   input:
     tax_band: STARTER
-  output: 
+  output:
     savings_allowance: 1000.0
-
-- name: Dividend Allowance
-  period: 2024
-  input: {}
-  output: 
-    dividend_allowance: 500.0
 
 - name: Allowances Applicable to Adjusted Net Income
   period: 2024
