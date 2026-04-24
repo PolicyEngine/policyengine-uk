@@ -29,7 +29,7 @@ class winter_fuel_allowance(Variable):
         taxable_income = household.members("total_income", period)
         is_SP_age = household.members("is_SP_age", period)
         country = household("country", period).decode_to_str()
-        in_england_or_wales = (country == "ENGLAND") | (country == "WALES")
+        in_england_or_wales = np.isin(country, ["ENGLAND", "WALES"])
         meets_income_passport = (
             household.any(
                 is_SP_age
