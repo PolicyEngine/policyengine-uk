@@ -174,32 +174,10 @@ def uprate_rent(
             "Rent uprating is not supported for years before 2022. Not applying uprating."
         )
         pass
-    elif year < 2025:
-        # We have regional growth rates for private rent.
-        regional_growth_rate = growth.ons.private_rental_prices(year)[
+    else:
+        private_rent_growth = growth.ons.private_rental_prices(year)[
             np.array(region.values.astype(str))
         ]
-        current_year.household["rent"] = np.where(
-            is_private_rented,
-            prev_rent * (1 + regional_growth_rate),
-            prev_rent * (1 + social_rent_growth),
-        )
-    elif year >= 2025:
-        # Back out private rent growth from the aggregate
-        # from latest English Housing Survey data
-        PRIVATE_RENTAL_HOUSEHOLDS = 0.188
-        SOCIAL_RENTAL_HOUSEHOLDS = 0.164
-
-        total_rental_households = PRIVATE_RENTAL_HOUSEHOLDS + SOCIAL_RENTAL_HOUSEHOLDS
-
-        private_weight = PRIVATE_RENTAL_HOUSEHOLDS / total_rental_households
-        social_weight = SOCIAL_RENTAL_HOUSEHOLDS / total_rental_households
-
-        aggregate_growth = growth.obr.rent(year)
-        private_rent_growth = (
-            aggregate_growth - social_weight * social_rent_growth
-        ) / private_weight
-
         current_year.household["rent"] = np.where(
             is_private_rented,
             prev_rent * (1 + private_rent_growth),
