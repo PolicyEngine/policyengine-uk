@@ -42,9 +42,7 @@ def test_forecast_private_rent_preserves_obr_aggregate_growth():
     growth = parameters.gov.economic_assumptions.yoy_growth
 
     for year in range(2026, 2031):
-        private_rent_growth = growth.ons.private_rental_prices(year)[
-            "UNITED_KINGDOM"
-        ]
+        private_rent_growth = growth.ons.private_rental_prices(year)["UNITED_KINGDOM"]
         social_rent_growth = growth.obr.social_rent(year)
         aggregate_rent_growth = growth.obr.rent(year)
 
