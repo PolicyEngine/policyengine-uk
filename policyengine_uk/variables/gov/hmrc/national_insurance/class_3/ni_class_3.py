@@ -8,5 +8,4 @@ class ni_class_3(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    defined_for = "ni_liable"
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/13"
