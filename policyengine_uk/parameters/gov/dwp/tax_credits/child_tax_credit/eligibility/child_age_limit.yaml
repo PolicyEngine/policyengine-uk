@@ -1,0 +1,9 @@
+description: Age limit below which a person is a child for Child Tax Credit rules.
+values:
+  0001-01-01: 16
+metadata:
+  unit: year
+  label: Child Tax Credit child age limit
+  reference:
+    - title: Tax Credits Act 2002 s. 8
+      href: https://www.legislation.gov.uk/ukpga/2002/21/section/8

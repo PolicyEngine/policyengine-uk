@@ -1,0 +1,9 @@
+description: Age before which current education or training must have started, been enrolled on, or been accepted for a 19-year-old to be a Child Tax Credit qualifying young person.
+values:
+  0001-01-01: 19
+metadata:
+  unit: year
+  label: Child Tax Credit qualifying young person education or training start age limit
+  reference:
+    - title: Tax Credits Technical Manual TCTM02220
+      href: https://www.gov.uk/hmrc-internal-manuals/tax-credits-technical-manual/tctm02220

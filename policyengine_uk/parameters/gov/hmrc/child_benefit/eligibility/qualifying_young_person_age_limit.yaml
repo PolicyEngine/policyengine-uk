@@ -1,0 +1,11 @@
+description: Age limit below which a person may be a qualifying young person for Child Benefit rules.
+values:
+  0001-01-01: 20
+metadata:
+  unit: year
+  label: Child Benefit qualifying young person age limit
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s. 142
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/142
+    - title: Child Benefit (General) Regulations 2006
+      href: https://www.legislation.gov.uk/uksi/2006/223

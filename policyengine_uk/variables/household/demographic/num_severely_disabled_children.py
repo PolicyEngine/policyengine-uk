@@ -8,6 +8,6 @@ class num_severely_disabled_children(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        child = benunit.members("is_child_or_QYP", period)
+        child = benunit.members("is_child", period)
         severely_disabled = benunit.members("is_severely_disabled_for_benefits", period)
         return benunit.sum(child & severely_disabled)

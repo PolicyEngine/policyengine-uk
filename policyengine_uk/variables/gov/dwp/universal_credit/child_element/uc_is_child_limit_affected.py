@@ -11,6 +11,6 @@ class uc_is_child_limit_affected(Variable):
     def formula(person, period, parameters):
         return (
             (person("uc_individual_child_element", period) == 0)
-            & person("is_child", period)
+            & person("is_child_or_qualifying_young_person_for_universal_credit", period)
             & (person.benunit("universal_credit", period) > 0)
         )
