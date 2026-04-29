@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction schedule under the Gateshead Local Council Tax Support scheme.
+brackets:
+  - threshold:
+      2025-04-01: 0
+    amount:
+      2025-04-01: 4.9
+  - threshold:
+      2025-04-01: 256
+    amount:
+      2025-04-01: 10.05
+  - threshold:
+      2025-04-01: 445
+    amount:
+      2025-04-01: 12.6
+  - threshold:
+      2025-04-01: 554
+    amount:
+      2025-04-01: 15.1
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Gateshead Local Council Tax Support non-dependant deduction schedule
+  reference:
+    - title: Gateshead Council Local Council Tax Support Scheme 2025 to 26
+      href: https://www.gateshead.gov.uk/article/27582/Part-7-Maximum-council-tax-reduction-for-the-purposes-of-calculating-eligibility-for-a-reduction-under-this-scheme-and-the-amount-of-reduction

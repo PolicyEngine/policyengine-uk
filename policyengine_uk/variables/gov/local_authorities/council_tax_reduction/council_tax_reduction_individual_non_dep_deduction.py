@@ -4,6 +4,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_darlington_working_age,
     is_east_hertfordshire_working_age,
     is_dudley_working_age,
+    is_gateshead_working_age,
     is_merton_working_age,
     is_southwark_working_age,
     is_stevenage_working_age,
@@ -30,6 +31,9 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         east_herts_params = parameters(
             period
         ).gov.local_authorities.east_hertfordshire.council_tax_reduction
+        gateshead_params = parameters(
+            period
+        ).gov.local_authorities.gateshead.council_tax_reduction
         stevenage_params = parameters(
             period
         ).gov.local_authorities.stevenage.council_tax_reduction
@@ -75,6 +79,11 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             country,
             has_pensioner,
         )
+        gateshead_working_age = is_gateshead_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         stevenage_working_age = is_stevenage_working_age(
             local_authority,
             country,
@@ -116,6 +125,10 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             stevenage_params.non_dep_deduction.amount.calc(weekly_earned_income)
             * WEEKS_IN_YEAR
         )
+        gateshead_deduction = (
+            gateshead_params.non_dep_deduction.amount.calc(weekly_earned_income)
+            * WEEKS_IN_YEAR
+        )
         merton_deduction = (
             merton_params.non_dep_deduction.amount.calc(weekly_earned_income)
             * WEEKS_IN_YEAR
@@ -137,6 +150,7 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
                 chesterfield_working_age,
                 darlington_working_age,
                 east_herts_working_age,
+                gateshead_working_age,
                 stevenage_working_age,
                 merton_working_age,
                 southwark_working_age,
@@ -147,6 +161,7 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
                 chesterfield_deduction,
                 darlington_deduction,
                 east_herts_deduction,
+                gateshead_deduction,
                 stevenage_deduction,
                 merton_deduction,
                 southwark_deduction,
@@ -159,6 +174,7 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             chesterfield_working_age
             | darlington_working_age
             | east_herts_working_age
+            | gateshead_working_age
             | stevenage_working_age
             | merton_working_age
             | southwark_working_age
