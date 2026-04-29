@@ -26,7 +26,6 @@ values:
 metadata:
   period: year
   unit: currency-GBP
-  name: wtc_couple
   label: "WTC couple element"
   uprating: gov.benefit_uprating_cpi
   reference:

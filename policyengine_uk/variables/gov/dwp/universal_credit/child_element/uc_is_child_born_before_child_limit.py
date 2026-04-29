@@ -12,4 +12,7 @@ class uc_is_child_born_before_child_limit(Variable):
         start_year = p.start_year
         birth_year = person("birth_year", period)
         born_before_limit = birth_year < start_year
-        return person("is_child", period) & born_before_limit
+        return (
+            person("is_child_or_qualifying_young_person_for_universal_credit", period)
+            & born_before_limit
+        )

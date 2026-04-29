@@ -26,7 +26,6 @@ values:
 metadata:
   period: year
   unit: currency-GBP
-  name: wtc_basic
   label: WTC basic element
   uprating: gov.benefit_uprating_cpi
   reference:

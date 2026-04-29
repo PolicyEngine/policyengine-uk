@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class corporate_wealth(Variable):
     label = "corporate wealth"
-    documentation = "Total owned wealth in corporations"
+    documentation = "Total owned wealth in corporations, including stocks, mutual funds, private pensions, and corporate bonds"
     entity = Household
     definition_period = YEAR
     value_type = float

@@ -16,7 +16,6 @@ description: Stamp Duty Land Tax progressive rates for cumulative rents on non-r
 metadata:
   economy: false
   label: Stamp Duty on non-residential cumulative rent
-  name: sdlt_on_non_residential_cumulative_rent
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:

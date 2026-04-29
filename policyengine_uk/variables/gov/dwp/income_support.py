@@ -8,4 +8,8 @@ class income_support(Variable):
     definition_period = YEAR
     unit = GBP
     defined_for = "would_claim_IS"
-    adds = ["income_support_entitlement"]
+
+    def formula(benunit, period, parameters):
+        if not parameters(period).gov.dwp.income_support.active:
+            return benunit.empty_array()
+        return benunit("income_support_entitlement", period)

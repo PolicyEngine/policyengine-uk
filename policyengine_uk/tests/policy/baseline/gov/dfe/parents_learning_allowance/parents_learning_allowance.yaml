@@ -1,0 +1,165 @@
+- name: Parents' Learning Allowance pays the maximum at zero assessed income
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_parent: true
+        parents_learning_allowance_course_eligible: true
+        parents_learning_allowance_household_income: 0
+      child:
+        age: 4
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    parents_learning_allowance_eligible: [true, false]
+    parents_learning_allowance: [2_024, 0]
+
+- name: Parents' Learning Allowance still pays the maximum just below the cutoff
+  period: 2025
+  input:
+    people:
+      student:
+        age: 24
+        is_parent: true
+        parents_learning_allowance_course_eligible: true
+        parents_learning_allowance_household_income: 18_957.97
+      child:
+        age: 7
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    parents_learning_allowance_eligible: [true, false]
+    parents_learning_allowance: [2_024, 0]
+
+- name: Parents' Learning Allowance is nil at the published cutoff
+  period: 2025
+  input:
+    people:
+      student:
+        age: 21
+        is_parent: true
+        parents_learning_allowance_course_eligible: true
+        parents_learning_allowance_household_income: 18_957.98
+      child:
+        age: 3
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    parents_learning_allowance_eligible: [false, false]
+    parents_learning_allowance: [0, 0]
+
+- name: Parents' Learning Allowance uses the maintenance-loan income proxy by default
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      student:
+        age: 20
+        is_parent: true
+        current_education: TERTIARY
+      child:
+        age: 2
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    maintenance_loan_in_higher_education: [true, false]
+    maintenance_loan_eligible: [true, false]
+    parents_learning_allowance_course_eligible: [true, false]
+    parents_learning_allowance_household_income: [0, 0]
+    parents_learning_allowance_eligible: [true, false]
+    parents_learning_allowance: [2_024, 0]
+
+- name: Parents' Learning Allowance allows an explicit course-eligibility override
+  period: 2025
+  input:
+    people:
+      student:
+        age: 30
+        is_parent: true
+        parents_learning_allowance_course_eligible: true
+        parents_learning_allowance_household_income: 10_000
+      child:
+        age: 5
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    maintenance_loan_eligible: [false, false]
+    parents_learning_allowance_eligible: [true, false]
+    parents_learning_allowance: [2_024, 0]
+
+- name: Parents' Learning Allowance excludes non-parents even with children present
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_parent: false
+        parents_learning_allowance_course_eligible: true
+        parents_learning_allowance_household_income: 0
+      child:
+        age: 4
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: ENGLAND
+  output:
+    parents_learning_allowance_eligible: [false, false]
+    parents_learning_allowance: [0, 0]
+
+- name: Parents' Learning Allowance excludes households outside England
+  period: 2025
+  input:
+    people:
+      student:
+        age: 23
+        is_parent: true
+        parents_learning_allowance_course_eligible: true
+        parents_learning_allowance_household_income: 0
+      child:
+        age: 1
+        is_child: true
+    benunits:
+      benunit:
+        members: ["student", "child"]
+    households:
+      household:
+        members: ["student", "child"]
+        country: WALES
+  output:
+    parents_learning_allowance_eligible: [false, false]
+    parents_learning_allowance: [0, 0]

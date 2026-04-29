@@ -2,7 +2,6 @@ description: Reduction rate for the Personal Allowance
 values:
   2009-07-21: 0.5
 metadata:
-  name: PA_reduction_rate
   unit: /1
   label: Personal allowance phase-out rate
   reference:

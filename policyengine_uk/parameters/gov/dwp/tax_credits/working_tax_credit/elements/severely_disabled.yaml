@@ -26,7 +26,6 @@ values:
 metadata:
   period: year
   unit: currency-GBP
-  name: wtc_severe_dis
   label: "WTC severe disability element"
   uprating: gov.benefit_uprating_cpi
   reference:

@@ -1,0 +1,34 @@
+- name: is_parent is not inferred from family composition
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 35
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [adult, child]
+    households:
+      household:
+        members: [adult, child]
+  output:
+    is_parent: [false, false]
+
+- name: is_parent can be provided as an input
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 35
+        is_parent: true
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [adult, child]
+    households:
+      household:
+        members: [adult, child]
+  output:
+    is_parent: [true, false]

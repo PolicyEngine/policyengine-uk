@@ -9,8 +9,8 @@ class tax_free_childcare_eligible(Variable):
     defined_for = "would_claim_tfc"
 
     def formula(benunit, period, parameters):
-        meets_age_condition = benunit.any(
-            benunit.members("tax_free_childcare_child_age_eligible", period),
+        has_qualifying_child = benunit.any(
+            benunit.members("tax_free_childcare_qualifying_child", period),
         )
 
         meets_income_condition = benunit.all(
@@ -24,7 +24,7 @@ class tax_free_childcare_eligible(Variable):
 
         return np.logical_and.reduce(
             [
-                meets_age_condition,
+                has_qualifying_child,
                 meets_income_condition,
                 childcare_eligible,
                 work_eligible,

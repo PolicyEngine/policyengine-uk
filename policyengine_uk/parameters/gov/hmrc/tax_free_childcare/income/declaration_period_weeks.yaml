@@ -1,0 +1,10 @@
+description: The expected income test for Tax-Free Childcare uses this many weeks in a declaration period.
+metadata:
+  period: year
+  unit: week
+  label: Tax-Free Childcare declaration period weeks
+  reference:
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 9(4)
+      href: https://www.legislation.gov.uk/uksi/2015/448/regulation/9
+values:
+  2015-01-01: 13

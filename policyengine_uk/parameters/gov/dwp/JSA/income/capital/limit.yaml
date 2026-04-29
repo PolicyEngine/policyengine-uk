@@ -1,0 +1,11 @@
+description: Capital limit for income-based JSA eligibility.
+metadata:
+  label: Income-based JSA capital limit
+  period: year
+  reference:
+    - title: Jobseeker's Allowance Regulations 1996 reg. 107
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/107
+  unit: GBP
+
+values:
+  2015-04-01: 16000

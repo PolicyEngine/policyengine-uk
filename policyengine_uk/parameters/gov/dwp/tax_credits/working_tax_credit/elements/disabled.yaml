@@ -25,7 +25,6 @@ values:
   2025-04-01: 4_001
 metadata:
   period: year
-  name: wtc_dis
   label: "WTC disability element"
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi

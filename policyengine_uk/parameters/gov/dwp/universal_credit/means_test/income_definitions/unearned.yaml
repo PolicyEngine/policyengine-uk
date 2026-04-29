@@ -6,15 +6,18 @@ metadata:
   period: year
   unit: list
   reference:
-    - title: The Universal Credit Regulations 2013 sec. 66.
-      href: https://www.legislation.gov.uk/uksi/2013/376/data.pdf#page=64
+    - title: The Universal Credit Regulations 2013 reg. 66
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 72
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/72
 
 
 values:
-  2010-01-01:
+  2013-04-29:
   - carers_allowance
   - jsa_contrib
   - private_pension_income
+  - uc_tariff_income
   - savings_interest_income
   - dividend_income
   - property_income

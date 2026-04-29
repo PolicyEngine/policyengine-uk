@@ -6,7 +6,6 @@ metadata:
   unit: currency-GBP
   period: year
   label: Energy bills credit
-  name: ebr_energy_bills_credit
   reference:
     - title: GOV.UK Press release
       href: https://www.gov.uk/government/news/millions-to-receive-350-boost-to-help-with-rising-energy-costs

@@ -1,0 +1,11 @@
+description: Capital amount that generates one unit of income-related ESA tariff income.
+metadata:
+  label: Income-related ESA tariff income step
+  period: year
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 118
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/118
+  unit: GBP
+
+values:
+  2015-04-01: 250

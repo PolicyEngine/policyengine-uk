@@ -1,0 +1,42 @@
+- name: Child Tax Credit without Working Tax Credit qualifies from the 2018 amendment
+  period: 2019
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        child_tax_credit: 1
+        tax_credits_applicable_income: 16_190
+  output:
+    meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
+
+- name: Child Tax Credit with Working Tax Credit does not meet the 2018 criterion
+  period: 2019
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        child_tax_credit: 1
+        working_tax_credit: 1
+        tax_credits_applicable_income: 16_190
+  output:
+    meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
+
+- name: Child Tax Credit over the income limit does not qualify
+  period: 2019
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        child_tax_credit: 1
+        tax_credits_applicable_income: 16_191
+  output:
+    meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false

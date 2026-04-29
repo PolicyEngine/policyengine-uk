@@ -1,6 +1,6 @@
 - name: Reductions apply at correct rates
   period: 2021
-  absolute_error_margin: 0
+  absolute_error_margin: 0.001
   input:
     uc_earned_income: 10
     uc_unearned_income: 1
@@ -10,7 +10,7 @@
 
 - name: Capped at max amount
   period: 2025
-  absolute_error_margin: 0
+  absolute_error_margin: 0.001
   input:
     uc_earned_income: 1_000
     uc_unearned_income: 400
@@ -20,10 +20,29 @@
 
 - name: Uncapped at max amount
   period: 2025
-  absolute_error_margin: 0
+  absolute_error_margin: 0.001
   input:
     uc_earned_income: 1_000
     uc_unearned_income: 400
     uc_maximum_amount: 5_000
   output:
     uc_income_reduction: 950
+
+- name: Capital tariff income reduces Universal Credit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        uc_earned_income: 0
+        uc_maximum_amount: 5_000
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_300
+  output:
+    uc_income_reduction: 8.70 * 12

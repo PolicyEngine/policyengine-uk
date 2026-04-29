@@ -22,7 +22,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  name: aa_lower
   label: Attendance Allowance (lower rate)
   uprating: gov.benefit_uprating_cpi
   reference: 

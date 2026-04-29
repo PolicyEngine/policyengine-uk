@@ -14,4 +14,8 @@ class tax_free_childcare_program_eligible(Variable):
             period,
             p.disqualifying_benefits,
         )
-        return countable_programs == 0
+        meets_uk_connection = person.benunit(
+            "tax_free_childcare_meets_uk_connection",
+            period,
+        )
+        return (countable_programs == 0) & meets_uk_connection

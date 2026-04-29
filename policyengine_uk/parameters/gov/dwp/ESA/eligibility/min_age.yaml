@@ -1,0 +1,11 @@
+description: Minimum age for Employment and Support Allowance
+metadata:
+  unit: year
+  period: year
+  label: Employment and Support Allowance minimum age
+  economy: false
+  reference:
+    - title: Welfare Reform Act 2007, section 1(3)(b)
+      href: https://www.legislation.gov.uk/ukpga/2007/5/section/1
+values:
+  2015-04-01: 16

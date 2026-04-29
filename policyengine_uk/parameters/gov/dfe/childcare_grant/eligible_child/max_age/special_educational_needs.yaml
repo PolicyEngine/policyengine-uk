@@ -1,0 +1,11 @@
+description: Maximum child age for Childcare Grant where the child has special educational needs.
+values:
+  2025-01-01: 17
+  2026-01-01: 17
+metadata:
+  unit: year
+  period: year
+  label: Childcare Grant child maximum age with special educational needs
+  reference:
+    - title: Childcare Grant - Eligibility
+      href: https://www.gov.uk/childcare-grant/eligibility

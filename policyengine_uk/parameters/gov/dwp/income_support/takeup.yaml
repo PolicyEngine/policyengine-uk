@@ -3,7 +3,6 @@ description: Share of eligible Income Support recipients that participate. By de
 metadata:
   economy: false
   label: Income support take-up rate
-  name: IS_takeup
   propagate_metadata_to_children: true
   unit: /1
 values:

@@ -1,0 +1,7 @@
+- name: Expected declaration-period income defaults to annual countable income prorated by declaration weeks
+  period: 2025
+  input:
+    employment_income: 8_000
+    self_employment_income: 4_000
+  output:
+    tax_free_childcare_expected_declaration_period_income: 3_000

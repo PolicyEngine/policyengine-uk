@@ -154,6 +154,39 @@ class TestExplicitOverrides:
         assert result[0] == False
 
 
+class TestDefaultDatasetUrl:
+    """Test explicit handling of the default dataset URL."""
+
+    def test_simulation_requires_explicit_default_dataset(self, monkeypatch):
+        monkeypatch.delenv("POLICYENGINE_UK_DEFAULT_DATASET", raising=False)
+
+        with pytest.raises(ValueError, match="requires an explicit dataset"):
+            Simulation()
+
+    def test_simulation_uses_opt_in_default_dataset(self, monkeypatch):
+        captured = {}
+
+        class _StopDefaultDatasetLoad(Exception):
+            pass
+
+        def fake_build_from_url(self, url):
+            captured["url"] = url
+            raise _StopDefaultDatasetLoad
+
+        monkeypatch.setattr(Simulation, "build_from_url", fake_build_from_url)
+        monkeypatch.setenv(
+            "POLICYENGINE_UK_DEFAULT_DATASET",
+            "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5",
+        )
+
+        with pytest.raises(_StopDefaultDatasetLoad):
+            Simulation()
+
+        assert captured["url"] == (
+            "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
+        )
+
+
 class TestIsHigherEarner:
     """Test deterministic tie-breaking for is_higher_earner."""
 
@@ -282,3 +315,55 @@ class TestDeterminism:
             results.append(tuple(sim.calculate("marriage_allowance", 2024)))
 
         assert results[0] == results[1] == results[2]
+
+
+class TestHeadOrdering:
+    """Test deterministic ordering for household and benefit unit heads."""
+
+    def test_oldest_person_is_head_and_gets_rent(self):
+        sim = Simulation(
+            situation={
+                "people": {
+                    "older": {"age": {2024: 40}},
+                    "younger": {"age": {2024: 30}},
+                },
+                "benunits": {"benunit": {"members": ["older", "younger"]}},
+                "households": {
+                    "household": {
+                        "members": ["older", "younger"],
+                        "rent": {2024: 1200},
+                    }
+                },
+            }
+        )
+
+        assert sim.calculate("is_household_head", 2024).tolist() == [True, False]
+        assert sim.calculate("is_benunit_head", 2024).tolist() == [True, False]
+        assert sim.calculate("personal_rent", 2024).tolist() == [1200.0, 0.0]
+
+    def test_equal_age_ties_follow_input_order(self):
+        first = Simulation(
+            situation={
+                "people": {
+                    "alice": {"age": {2024: 40}},
+                    "bob": {"age": {2024: 40}},
+                },
+                "benunits": {"benunit": {"members": ["alice", "bob"]}},
+                "households": {"household": {"members": ["alice", "bob"]}},
+            }
+        )
+        second = Simulation(
+            situation={
+                "people": {
+                    "bob": {"age": {2024: 40}},
+                    "alice": {"age": {2024: 40}},
+                },
+                "benunits": {"benunit": {"members": ["bob", "alice"]}},
+                "households": {"household": {"members": ["bob", "alice"]}},
+            }
+        )
+
+        assert first.calculate("is_household_head", 2024).tolist() == [True, False]
+        assert second.calculate("is_household_head", 2024).tolist() == [True, False]
+        assert first.calculate("adult_index", 2024).tolist() == [1, 2]
+        assert second.calculate("adult_index", 2024).tolist() == [1, 2]

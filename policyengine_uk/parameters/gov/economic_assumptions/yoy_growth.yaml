@@ -531,15 +531,19 @@ obr:
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
 
   social_rent:
-    description: Rent year-on-year growth (CPI+1%, one year lagged).
+    description: >
+      Average social rent year-on-year growth across the stock. Historical
+      values use observed Regulator of Social Housing stock-average general
+      needs social rent growth in England. Forecast values use the England
+      social rent policy cap with no additional composition multiplier.
     values:
-      # Outturn (2022-2024)
-      2022-01-01: 0.05
-      2023-01-01: 0.07
-      2024-01-01: 0.083
-      # Forecast (2025-2030): Derived from CPI+1%, one year lagged
-      2025-01-01: 0.035
-      2026-01-01: 0.044
+      # Observed RSH stock-average growth (2022-2025)
+      2022-01-01: 0.016
+      2023-01-01: 0.041
+      2024-01-01: 0.072
+      2025-01-01: 0.080
+      # Forecast (2026-2030): policy cap with composition multiplier set to 1.
+      2026-01-01: 0.048
       2027-01-01: 0.033
       2028-01-01: 0.030
       2029-01-01: 0.030
@@ -548,7 +552,17 @@ obr:
       unit: /1
       label: Social rent growth
       reference:
-        - title: OBR EFO March 2026 (derived from CPI+1%, one year lagged)
+        - title: Registered provider social housing stock and rents in England, 2021 to 2022
+          href: https://www.gov.uk/government/statistics/registered-provider-social-housing-stock-and-rents-in-england-2021-to-2022
+        - title: Registered provider social housing stock and rents in England, 2022 to 2023
+          href: https://www.gov.uk/government/statistics/registered-provider-social-housing-stock-and-rents-in-england-2022-to-2023
+        - title: Registered provider social housing stock and rents in England, 2023 to 2024
+          href: https://www.gov.uk/government/statistics/registered-provider-social-housing-stock-and-rents-in-england-2023-to-2024
+        - title: Registered provider social housing stock and rents in England, 2024 to 2025
+          href: https://www.gov.uk/government/statistics/registered-provider-social-housing-stock-and-rents-in-england-2024-to-2025
+        - title: Policy statement on rents for social housing
+          href: https://www.gov.uk/government/publications/direction-on-the-rent-standard-2026/policy-statement-on-rents-for-social-housing
+        - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
   rent:
     description: Rent year-on-year growth, private and social (ONS series D7GQ).
@@ -661,176 +675,292 @@ ons:
         - title: OBR EFO March 2026 - Non-labour income growth used as proxy for 2025+ (Table 1.12)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
   private_rental_prices:
+    # Historical values are calendar-year averages from ONS PIPR. Forecast
+    # values back out private-rent growth from the OBR aggregate rent forecast
+    # after applying social-rent growth, because no public region-specific
+    # private-rent forecast is available.
     UNITED_KINGDOM:
       description: Private rental prices year-on-year growth in United Kingdom.
       values:
-        2022-01-01: 0.050398
-        2023-01-01: 0.080953
-        2024-01-01: 0.086137
+        2022-01-01: 0.042818
+        2023-01-01: 0.073824
+        2024-01-01: 0.087127
+        2025-01-01: 0.063279
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: United kingdom private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     ENGLAND:
       description: Private rental prices year-on-year growth in England.
       values:
-        2022-01-01: 0.048965
-        2023-01-01: 0.078981
-        2024-01-01: 0.08694
+        2022-01-01: 0.041519
+        2023-01-01: 0.071723
+        2024-01-01: 0.087245
+        2025-01-01: 0.063996
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: England private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     WALES:
       description: Private rental prices year-on-year growth in Wales.
       values:
-        2022-01-01: 0.049352
-        2023-01-01: 0.090369
-        2024-01-01: 0.082778
+        2022-01-01: 0.040081
+        2023-01-01: 0.083841
+        2024-01-01: 0.084642
+        2025-01-01: 0.077081
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: Wales private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     SCOTLAND:
       description: Private rental prices year-on-year growth in Scotland.
       values:
-        2022-01-01: 0.062296
-        2023-01-01: 0.107356
-        2024-01-01: 0.073967
+        2022-01-01: 0.051426
+        2023-01-01: 0.100690
+        2024-01-01: 0.084690
+        2025-01-01: 0.042929
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: Scotland private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     NORTHERN_IRELAND:
       description: Private rental prices year-on-year growth in Northern Ireland.
       values:
-        2022-01-01: 0.08965
-        2023-01-01: 0.089197
-        2024-01-01: 0.090822
+        2022-01-01: 0.087615
+        2023-01-01: 0.087019
+        2024-01-01: 0.092217
+        2025-01-01: 0.068702
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: Northern Ireland private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     NORTH_EAST:
       description: Private rental prices year-on-year growth in North East.
       values:
-        2022-01-01: 0.042495
-        2023-01-01: 0.055804
-        2024-01-01: 0.073116
+        2022-01-01: 0.034651
+        2023-01-01: 0.054987
+        2024-01-01: 0.067069
+        2025-01-01: 0.090155
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: North east private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     NORTH_WEST:
       description: Private rental prices year-on-year growth in North West.
       values:
-        2022-01-01: 0.062822
-        2023-01-01: 0.07947
-        2024-01-01: 0.094498
+        2022-01-01: 0.057118
+        2023-01-01: 0.075098
+        2024-01-01: 0.092231
+        2025-01-01: 0.077692
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: North west private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     YORKSHIRE:
       description:
         Private rental prices year-on-year growth in Yorkshire and The
         Humber.
       values:
-        2022-01-01: 0.05625
-        2023-01-01: 0.072295
-        2024-01-01: 0.063506
+        2022-01-01: 0.054138
+        2023-01-01: 0.067502
+        2024-01-01: 0.069094
+        2025-01-01: 0.040862
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: Yorkshire and the humber private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     EAST_MIDLANDS:
       description: Private rental prices year-on-year growth in East Midlands.
       values:
-        2022-01-01: 0.053405
-        2023-01-01: 0.067085
-        2024-01-01: 0.087371
+        2022-01-01: 0.050733
+        2023-01-01: 0.060960
+        2024-01-01: 0.086271
+        2025-01-01: 0.069478
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: East midlands private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     WEST_MIDLANDS:
       description: Private rental prices year-on-year growth in West Midlands.
       values:
-        2022-01-01: 0.043415
-        2023-01-01: 0.077504
-        2024-01-01: 0.084456
+        2022-01-01: 0.043043
+        2023-01-01: 0.066340
+        2024-01-01: 0.087831
+        2025-01-01: 0.061272
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: West midlands private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     EAST_OF_ENGLAND:
       description: Private rental prices year-on-year growth in East of England.
       values:
-        2022-01-01: 0.044759
-        2023-01-01: 0.058668
-        2024-01-01: 0.077271
+        2022-01-01: 0.045095
+        2023-01-01: 0.052949
+        2024-01-01: 0.073996
+        2025-01-01: 0.071305
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: East of England private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     LONDON:
       description: Private rental prices year-on-year growth in London.
       values:
-        2022-01-01: 0.042829
-        2023-01-01: 0.095307
-        2024-01-01: 0.103031
+        2022-01-01: 0.027583
+        2023-01-01: 0.084473
+        2024-01-01: 0.103216
+        2025-01-01: 0.066484
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: London private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     SOUTH_EAST:
       description: Private rental prices year-on-year growth in South East.
       values:
-        2022-01-01: 0.050307
-        2023-01-01: 0.071938
-        2024-01-01: 0.077617
+        2022-01-01: 0.045856
+        2023-01-01: 0.065655
+        2024-01-01: 0.079285
+        2025-01-01: 0.057820
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: South east private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
     SOUTH_WEST:
       description: Private rental prices year-on-year growth in South West.
       values:
-        2022-01-01: 0.059055
-        2023-01-01: 0.069351
-        2024-01-01: 0.06671
+        2022-01-01: 0.056862
+        2023-01-01: 0.067635
+        2024-01-01: 0.068267
+        2025-01-01: 0.053907
+        2026-01-01: 0.020663830
+        2027-01-01: 0.027757447
+        2028-01-01: 0.016893617
+        2029-01-01: 0.018391489
+        2030-01-01: 0.022136170
       metadata:
         unit: /1
         label: South west private rental prices growth
         reference:
-          - title: ONS Index of Private Housing Rental Prices, UK monthly estimates
-            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/indexofprivatehousingrentalpricesreferencetables
+          - title: "ONS Price Index of Private Rents, UK: monthly price statistics"
+            href: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+          - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
 ofwat:
   water_bills:
     description: Water and sewerage bills year-on-year growth.

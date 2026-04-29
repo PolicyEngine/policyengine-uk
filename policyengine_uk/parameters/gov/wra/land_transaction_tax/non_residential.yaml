@@ -20,7 +20,6 @@ description: Non-residential property progressive tax scale
 metadata:
   economy: false
   label: Ltt on non-residential property
-  name: ltt_on_non_residential_property
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:

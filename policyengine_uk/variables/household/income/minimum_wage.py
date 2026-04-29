@@ -12,4 +12,10 @@ class minimum_wage(Variable):
 
     def formula(person, period, parameters):
         MW = parameters(period).gov.hmrc.minimum_wage
-        return MW[person("minimum_wage_category", period)]
+        is_apprentice = person("is_apprentice", period)
+        age = person("age", period)
+        return where(
+            is_apprentice,
+            MW.apprentice,
+            MW.non_apprentice.calc(age),
+        )

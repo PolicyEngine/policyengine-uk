@@ -33,7 +33,6 @@ description: Higher residential property progressive tax scale for non-primary r
 metadata:
   economy: false
   label: Ltt on secondary residences
-  name: ltt_on_secondary_residences
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:

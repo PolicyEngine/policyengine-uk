@@ -1,0 +1,119 @@
+- name: Income Support still paid in 2025 (scheme active until 31 March 2026)
+  period: 2025
+  absolute_error_margin: 5
+  input:
+    people:
+      p1:
+        age: 26
+        income_support_reported: 3000
+      c1:
+        age: 4
+        is_child: true
+    benunits:
+      b1:
+        members: [p1, c1]
+        would_claim_IS: true
+    households:
+      household:
+        members: [p1, c1]
+        savings: 1000
+  output:
+    income_support: 5252.0073
+
+- name: Income Support is zero after scheme ended on 31 March 2026
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      p1:
+        age: 26
+        income_support_reported: 3000
+      c1:
+        age: 4
+        is_child: true
+    benunits:
+      b1:
+        members: [p1, c1]
+        would_claim_IS: true
+    households:
+      household:
+        members: [p1, c1]
+        savings: 1000
+  output:
+    income_support: 0
+
+- name: Income Support remains zero in future years
+  period: 2030
+  absolute_error_margin: 0
+  input:
+    people:
+      p1:
+        age: 26
+        income_support_reported: 3000
+      c1:
+        age: 4
+        is_child: true
+    benunits:
+      b1:
+        members: [p1, c1]
+        would_claim_IS: true
+    households:
+      household:
+        members: [p1, c1]
+        savings: 1000
+  output:
+    income_support: 0
+
+- name: Income-based JSA still paid in 2025 (scheme active until 31 March 2026)
+  period: 2025
+  absolute_error_margin: 5
+  input:
+    people:
+      p1:
+        age: 26
+        jsa_income_reported: 3000
+    benunits:
+      b1:
+        members: [p1]
+    households:
+      household:
+        members: [p1]
+        savings: 1000
+  output:
+    jsa_income: 3000
+
+- name: Income-based JSA is zero after scheme ended on 31 March 2026
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      p1:
+        age: 26
+        jsa_income_reported: 3000
+    benunits:
+      b1:
+        members: [p1]
+    households:
+      household:
+        members: [p1]
+        savings: 1000
+  output:
+    jsa_income: 0
+
+- name: Contribution-based JSA remains active after income-based JSA ends
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      p1:
+        age: 26
+        jsa_contrib_reported: 2500
+    benunits:
+      b1:
+        members: [p1]
+    households:
+      household:
+        members: [p1]
+  output:
+    jsa_contrib: 2500
+    jsa_income: 0

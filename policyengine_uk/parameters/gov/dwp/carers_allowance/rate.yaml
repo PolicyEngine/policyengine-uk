@@ -18,7 +18,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  name: carers_allowance_rate
   label: "Carer's Allowance rate"
   uprating: gov.benefit_uprating_cpi
   reference: 

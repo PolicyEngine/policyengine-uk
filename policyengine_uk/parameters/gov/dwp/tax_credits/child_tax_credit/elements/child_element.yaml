@@ -13,7 +13,6 @@ values:
   2025-04-01: 3_513
 metadata:
   period: year
-  name: ctc_child
   label: "CTC child element"
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi

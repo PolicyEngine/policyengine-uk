@@ -1,0 +1,11 @@
+description: Household-income threshold above which Travel Grant is reduced.
+values:
+  2025-01-01: 39_796
+  2026-01-01: 39_796
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Travel Grant income reduction threshold
+  reference:
+    - title: "Travel grants for students studying abroad or on placements (England): What you'll get"
+      href: https://www.gov.uk/travel-grants-students-england/what-youll-get

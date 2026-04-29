@@ -7,4 +7,6 @@ class student_loan_repayments(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.economic_assumptions.indices.obr.average_earnings"
+
+    def formula(person, period, parameters):
+        return person("student_loan_repayment", period)

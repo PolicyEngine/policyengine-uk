@@ -13,5 +13,5 @@ class uc_non_dep_deduction_exempt(Variable):
             | person("dla_sc_middle_plus", period)
             | (person("pip_dl", period) > 0)
             | (person("attendance_allowance", period) > 0)
-            | person("receives_carers_allowance", period)
+            | person("receives_carer_benefit", period)
         )

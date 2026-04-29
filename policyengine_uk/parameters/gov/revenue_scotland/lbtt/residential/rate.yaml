@@ -27,7 +27,6 @@ description: Rates on Scotland's residential property purchases
 metadata:
   economy: false
   label: Lbtt on residential property
-  name: lbtt_on_residential_property
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:

@@ -1,0 +1,43 @@
+description: Maximum full-year full-time maintenance loan amounts in England.
+living_with_parents:
+  description: Maximum maintenance loan for students living with parents.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Full-time maintenance loan maximum while living with parents
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 8_877
+    2026-01-01: 9_118
+away_outside_london:
+  description: Maximum maintenance loan for students living away from home and studying outside London.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Full-time maintenance loan maximum away from home outside London
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 10_544
+    2026-01-01: 10_830
+away_in_london:
+  description: Maximum maintenance loan for students living away from home and studying in London.
+  metadata:
+    unit: currency-GBP
+    period: year
+    label: Full-time maintenance loan maximum away from home in London
+    reference:
+      - title: "Student finance: how you're assessed and paid 2025 to 2026"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2025-to-2026
+      - title: "Student finance: how you're assessed and paid 2026 to 2027"
+        href: https://www.gov.uk/government/publications/student-finance-how-youre-assessed-and-paid/student-finance-how-youre-assessed-and-paid-2026-to-2027
+  values:
+    2025-01-01: 13_762
+    2026-01-01: 14_135

@@ -1,0 +1,11 @@
+description: Maximum child age for Childcare Grant under the standard rule.
+values:
+  2025-01-01: 15
+  2026-01-01: 15
+metadata:
+  unit: year
+  period: year
+  label: Childcare Grant child maximum age
+  reference:
+    - title: Childcare Grant - Eligibility
+      href: https://www.gov.uk/childcare-grant/eligibility

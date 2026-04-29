@@ -1,0 +1,11 @@
+description: Income limit for a non-partner adult dependant in the Adult Dependants' Grant assessment
+metadata:
+  label: Adult Dependants' Grant other adult income limit
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Adult Dependants' Grant
+      href: https://www.gov.uk/adult-dependants-grant/eligibility
+values:
+  2025-01-01: 3_796
+  2026-01-01: 3_796

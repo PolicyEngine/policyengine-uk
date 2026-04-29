@@ -1,0 +1,11 @@
+description: Capital threshold for income-related ESA tariff income.
+metadata:
+  label: Income-related ESA tariff income threshold
+  period: year
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 118
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/118
+  unit: GBP
+
+values:
+  2015-04-01: 6000

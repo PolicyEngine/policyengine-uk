@@ -1,63 +1,46 @@
-Thank you for wanting to contribute to PolicyEngine! :smiley:
+# Contributing to policyengine-uk
 
-TL;DR: [GitHub Flow](https://guides.github.com/introduction/flow/), [SemVer](http://semver.org/).
+See the [shared PolicyEngine contribution guide](https://github.com/PolicyEngine/.github/blob/main/CONTRIBUTING.md) for cross-repo conventions (towncrier changelog fragments, `uv run`, PR description format, anti-patterns). This file covers policyengine-uk specifics.
 
-## Pull requests
+## Commands
 
-We follow the [GitHub Flow](https://guides.github.com/introduction/flow/): all code contributions are submitted via a pull request towards the `master` branch.
-
-Opening a Pull Request means you want that code to be merged. If you want to only discuss it, send a link to your branch along with your questions through whichever communication channel you prefer.
-
-Please make sure (if you're changing the package; you don't have to for documentation or package health changes) to add to changelog_entry.yaml and run 'make changelog', then commit the results.
-
-### Peer reviews
-
-All pull requests must be reviewed by someone else than their original author.
-
-> In case of a lack of available reviewers, one may review oneself, but only after at least 24 hours have passed without working on the code to review.
-
-To help reviewers, make sure to add to your PR a **clear text explanation** of your changes.
-
-In case of breaking changes, you **must** give details about what features were deprecated.
-
-> You must also provide guidelines to help users adapt their code to be compatible with the new version of the package.
-
-## Advertising changes
-
-Our versioning is currently done manually. You should:
-
-* Add a new entry to the changelog_entry.yaml file. See below for an example.
-* Run 'make changelog' to update the changelog.md file.
-* Commit and push your changes (this will have changed `CHANGELOG.md`, `changelog.yaml` and `setup.py`).
-
-### Example of a changelog entry
-
-```yaml
-- bump: minor
-  changes:
-    added:
-    - Added this thing.
-    changed:
-    - Changed that thing.
-    fixed:
-    - Bug you fixed.
+```bash
+make install           # install deps (uv)
+make format            # format (required — CI enforces)
+make test              # full test suite
+uv run policyengine-core test policyengine_uk/tests/path/to/test.yaml -c policyengine_uk
+uv run pytest policyengine_uk/tests/path/to/test_file.py::test_name -v
 ```
 
-### Version number
+Python 3.11–3.14. Default branch: `main`.
 
-We follow the [semantic versioning](http://semver.org/) spec: any change impacts the version number, and the version number conveys API compatibility information **only**.
+## Writing variables and reforms
 
-Examples:
+Four types of files usually change together:
 
-#### Patch bump
+| Type                  | Location                                                   |
+| --------------------- | ---------------------------------------------------------- |
+| YAML unit tests       | `policyengine_uk/tests/policy/...`                         |
+| Parameter (`.yaml`)   | `policyengine_uk/parameters/gov/<agency>/...` (DWP, HMRC, DfE, …) |
+| Variable (`.py`)      | `policyengine_uk/variables/gov/<agency>/...`               |
+| Changelog fragment    | `changelog.d/<branch>.<type>.md`                           |
 
-- Fixing or improving an already existing calculation.
+Conventions:
 
-#### Minor bump
+- Write YAML tests **first** (TDD). They fail until the variable formula is in place.
+- Use `where(...)`, `max_(...)`, `min_(...)` inside formulas — never Python `if` / `max` / `min`. Vectorisation requires numpy.
+- Match the variable file name to the class name (e.g. `pip_dl.py` defines `class pip_dl(Variable)`).
+- For devolved programs, use the correct agency:
+  - England default → `gov/dwp/` or `gov/hmrc/` or `gov/dfe/`
+  - Scotland → `gov/social_security_scotland/` or `gov/revenue_scotland/`
+  - Wales → `gov/senedd/` / `gov/welsh_revenue_authority/` as appropriate
+- Cite UK legislation in the variable's `reference` field (gov.uk, legislation.gov.uk).
 
-- Adding a variable to the tax and benefit system.
+## Program registry
 
-#### Major bump
+`policyengine_uk/programs.yaml` is the single source of truth for program coverage metadata and drives the `/uk/metadata` API. When adding a program, add an entry with `id`, `name`, `full_name`, `category`, `agency`, `status`, `coverage`, `variable`, `parameter_prefix`. When extending year coverage, bump `verified_years` after verifying parameters and tests cover the new year.
 
-- Renaming or removing a variable from the tax and benefit system.
+## Repo-specific anti-patterns
 
+- **Don't change HF upload destinations** in the `policyengine-uk-data` upload pipeline without explicit authorisation — the private/public split exists to respect the UK Data Service licence.
+- **Don't hardcode FRS-year logic** in variable formulas; defer to `policyengine-uk-data` for dataset semantics.

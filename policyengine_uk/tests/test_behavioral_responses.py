@@ -16,8 +16,11 @@ from pathlib import Path
 from policyengine_uk import Microsimulation
 from policyengine_uk.model_api import Scenario
 
-# Check if HF token is available for data-dependent tests
-HF_TOKEN_AVAILABLE = bool(os.environ.get("HUGGING_FACE_TOKEN"))
+# Check if a default dataset is available for data-dependent tests
+HF_TOKEN_AVAILABLE = bool(
+    os.environ.get("HUGGING_FACE_TOKEN")
+    or os.environ.get("POLICYENGINE_UK_DEFAULT_DATASET")
+)
 requires_hf_data = pytest.mark.skipif(
     not HF_TOKEN_AVAILABLE,
     reason="Requires HUGGING_FACE_TOKEN for private data access",

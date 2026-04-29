@@ -26,7 +26,6 @@ values:
 metadata:
   period: year
   unit: currency-GBP
-  name: wtc_lone_parent
   label: "WTC lone parent element"
   uprating: gov.benefit_uprating_cpi
   reference:

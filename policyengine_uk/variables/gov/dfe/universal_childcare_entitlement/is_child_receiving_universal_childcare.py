@@ -15,7 +15,7 @@ class is_child_receiving_universal_childcare(Variable):
         p = parameters(period).gov.dfe.universal_childcare_entitlement
 
         # Check if age is within eligible range
-        meets_age_condition = (age >= p.min_age) & (age < p.max_age)
+        meets_age_condition = (age >= p.age.min) & (age < p.age.max)
 
         # Get the universal childcare entitlement amount
         entitlement_amount = person("universal_childcare_entitlement", period)

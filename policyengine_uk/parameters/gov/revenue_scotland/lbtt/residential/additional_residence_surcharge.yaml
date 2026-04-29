@@ -5,7 +5,6 @@ values:
   2022-12-16: 0.06
 metadata:
   unit: /1
-  name: lbtt_rate_increase_for_secondary_residences
   label: Lbtt fixed rate increase for secondary residences
   reference:
     - title: Land and Buildings Transaction Tax (Scotland) Act 2013 Schedule 2A(4)(2)

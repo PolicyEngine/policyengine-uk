@@ -1,0 +1,39 @@
+- name: Below State Pension age is NONE
+  period: 2025
+  input:
+    age: 60
+    is_male: true
+  output:
+    state_pension_type: NONE
+
+- name: Male reaching SPA after NSP activation (age 70 in 2025, born 1955) gets NEW
+  period: 2025
+  input:
+    age: 70
+    is_male: true
+  output:
+    state_pension_type: NEW
+
+- name: Male reaching SPA before NSP activation (age 80 in 2025, born 1945) gets BASIC
+  period: 2025
+  input:
+    age: 80
+    is_male: true
+  output:
+    state_pension_type: BASIC
+
+- name: Female reaching SPA after NSP activation (age 70 in 2025, born 1955) gets NEW
+  period: 2025
+  input:
+    age: 70
+    is_male: false
+  output:
+    state_pension_type: NEW
+
+- name: Female reaching SPA before NSP activation (age 80 in 2025, born 1945) gets BASIC
+  period: 2025
+  input:
+    age: 80
+    is_male: false
+  output:
+    state_pension_type: BASIC

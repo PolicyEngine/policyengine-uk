@@ -1,0 +1,9 @@
+description: Factor used to uprate ONS FYE 2020 local-authority net income before housing costs targets to the 2025 calibration year.
+values:
+  2025-01-01: 1.3526165167620605
+metadata:
+  unit: /1
+  label: Local-authority ONS net income BHC uprating factor
+  reference:
+    - title: OBR EFO November 2025 (economy detailed forecast tables, real household disposable income index)
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/

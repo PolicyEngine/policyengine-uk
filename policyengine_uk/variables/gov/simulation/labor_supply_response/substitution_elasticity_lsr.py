@@ -11,7 +11,7 @@ class substitution_elasticity_lsr(Variable):
 
     def formula(person, period, parameters):
         lsr = parameters(period).gov.simulation.labor_supply_responses
-        employment_income = person("employment_income_before_lsr", period)
+        employment_income = max_(person("employment_income_before_lsr", period), 0)
         wage_change = person("relative_wage_change", period)
 
         return employment_income * wage_change * lsr.substitution_elasticity

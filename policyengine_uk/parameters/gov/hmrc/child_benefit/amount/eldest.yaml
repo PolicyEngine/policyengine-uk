@@ -49,7 +49,6 @@ values:
         href: https://researchbriefings.files.parliament.uk/documents/CBP-10105/CBP-10105.pdf
 metadata:
   label: Child Benefit (eldest)
-  name: CB_eldest
   unit: currency-GBP
   period: week
   uprating: gov.benefit_uprating_cpi

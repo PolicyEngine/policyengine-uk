@@ -13,13 +13,31 @@ class extended_childcare_entitlement_work_condition(Variable):
         benunit = person.benunit
         in_work = person("in_work", period)
 
-        # Get disability status
         p = parameters(period).gov.dfe.extended_childcare_entitlement
-        eligible_based_on_disability = add(person, period, p.disability_criteria) > 0
+        disability_criteria = list(p.disability_criteria)
+        person_disability_criteria = [
+            variable
+            for variable in disability_criteria
+            if person.entity.get_variable(variable).entity.is_person
+        ]
+        group_disability_criteria = [
+            variable
+            for variable in disability_criteria
+            if not person.entity.get_variable(variable).entity.is_person
+        ]
 
-        # Adjust eligibility based on the summed UC Carer Element: 11A(1)(c)
-        eligible_based_on_disability_or_carer = eligible_based_on_disability | (
-            benunit("uc_carer_element", period) > 0
+        eligible_based_on_person_disability = (
+            add(person, period, person_disability_criteria) > 0
+            if person_disability_criteria
+            else False
+        )
+        eligible_based_on_group_disability = (
+            add(benunit, period, group_disability_criteria) > 0
+            if group_disability_criteria
+            else False
+        )
+        eligible_based_on_disability = (
+            eligible_based_on_person_disability | eligible_based_on_group_disability
         )
 
         # Count parents in benefit unit
@@ -32,7 +50,7 @@ class extended_childcare_entitlement_work_condition(Variable):
         all_parents_working = benunit.all(in_work | ~person("is_parent", period))
         some_parents_working = benunit.any(in_work & person("is_parent", period))
         any_parent_disability_eligible = benunit.any(
-            eligible_based_on_disability_or_carer & person("is_parent", period)
+            eligible_based_on_disability & person("is_parent", period)
         )
 
         # Work condition for couples - either both working or one working with other disabled or receiving UC Carer Element

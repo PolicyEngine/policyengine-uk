@@ -1,0 +1,13 @@
+description: Maximum Parents' Learning Allowance for full-time undergraduate students with dependent children.
+values:
+  2025-01-01: 2_024
+  2026-01-01: 2_024
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Parents' Learning Allowance maximum amount
+  reference:
+    - title: Support with living and other costs 2026 to 2027 academic year
+      href: https://www.gov.uk/government/publications/tuition-fees-and-student-support-2026-to-2027-academic-year/support-with-living-and-other-costs-2026-to-2027-academic-year
+    - title: Explanatory Memorandum to the Education (Student Support) (Amendment) Regulations 2025
+      href: https://www.legislation.gov.uk/uksi/2025/162/pdfs/uksiem_20250162_en_001.pdf

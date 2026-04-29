@@ -22,7 +22,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  name: pip_dl_standard
   label: PIP (daily living) (standard rate)
   uprating: gov.benefit_uprating_cpi
   reference: 

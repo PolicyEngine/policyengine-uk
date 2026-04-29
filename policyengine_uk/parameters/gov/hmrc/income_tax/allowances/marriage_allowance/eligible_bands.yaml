@@ -1,0 +1,14 @@
+description: Tax bands whose members may transfer personal allowance under the Marriage Allowance election (ITA 2007 s.55B). A transferor is eligible if they are not liable at the higher rate or above; the Scottish intermediate rate is treated as within the basic-rate envelope for this purpose.
+values:
+  0000-01-01:
+    - NONE
+    - STARTER
+    - BASIC
+    - INTERMEDIATE
+metadata:
+  unit: list
+  label: Marriage Allowance eligible tax bands
+  period: year
+  reference:
+    - title: "Income Tax Act 2007, s. 55B"
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/55B

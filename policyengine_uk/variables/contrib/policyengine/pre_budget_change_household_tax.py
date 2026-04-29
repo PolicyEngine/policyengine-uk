@@ -29,7 +29,8 @@ class pre_budget_change_household_tax(Variable):
     ]
 
     def formula(household, period, parameters):
-        if parameters(period).gov.contrib.abolish_council_tax:
+        abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
+        if abolish_council_tax:
             return add(
                 household,
                 period,

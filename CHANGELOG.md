@@ -1,3 +1,310 @@
+## [2.88.10] - 2026-04-29
+
+No significant changes.
+
+
+## [2.88.9] - 2026-04-20
+
+No significant changes.
+
+
+## [2.88.8] - 2026-04-20
+
+### Fixed
+
+- - Fix `gov.dwp.tax_credits.min_benefit` parameter unit from `currency-USD` to `currency-GBP` — the parameter is a UK statutory threshold in pounds.
+  - Correct `benunit_weekly_hours` label from "Average weekly hours worked by adults in the benefit unit" to "Total weekly hours worked by adults in the benefit unit" — the formula is `adds = ["weekly_hours"]`, which sums rather than averages.
+
+
+## [2.88.7] - 2026-04-20
+
+No significant changes.
+
+
+## [2.88.6] - 2026-04-19
+
+### Fixed
+
+- Replace `new_state_pension`'s flat-max payout with a `min(reported, max) / max * period_max` formula mirroring `basic_state_pension`, and extend `additional_state_pension` to NEW-type retirees so any pre-2016 SERPS/S2P Protected Payment flows through as an add-on instead of being silently dropped. Partial-NI-record retirees now receive their actual pro-rated rate rather than the full flat max. Closes part of the ~£12 bn residual state-pension gap vs the OBR target tracked in #1632.
+
+
+## [2.88.5] - 2026-04-18
+
+### Fixed
+
+- Zero out Income Support and income-based Jobseeker's Allowance after DWP managed migration completed on 31 March 2026. New parameters `gov.dwp.income_support.active` and `gov.dwp.JSA.income.active` flip to `false` from 2026-04-01, matching the Tax Credits treatment. Contribution-based JSA remains active.
+
+
+## [2.88.4] - 2026-04-18
+
+### Fixed
+
+- Bump `policyengine-core` minimum to `>=3.25.0` to pick up the cache-invalidation and `set_input` preservation fixes (PolicyEngine/policyengine-core#475). The 3.24.0–3.24.3 cascade left UK model tests returning zero for income_tax, UC, and other formula-driven variables when a reform is applied during simulation construction; 3.25.0 includes the regression fix.
+
+
+## [2.88.3] - 2026-04-17
+
+### Fixed
+
+- Migrate versioning workflow to GitHub App token (POLICYENGINE_GITHUB PAT expired).
+
+
+## [2.88.2] - 2026-04-17
+
+No significant changes.
+
+
+## [2.88.1] - 2026-04-17
+
+### Changed
+
+- - Update `.github/CONTRIBUTING.md` to document the towncrier `changelog.d/` workflow. The old `changelog_entry.yaml` + `make changelog` flow was deprecated some time ago; the CONTRIBUTING guide still instructed new contributors to use it, causing CI round-trips on PRs that created a `changelog_entry.yaml` no fragment step was looking for.
+
+
+## [2.88.0] - 2026-04-17
+
+### Added
+
+- Support Python 3.9 and 3.10 (in addition to 3.11–3.14). On Python 3.9/3.10, pip resolves `policyengine-core` to a version that has been relaxed to support older Python (3.24.0+); on 3.11+ behavior is unchanged.
+
+
+## [2.87.1] - 2026-04-17
+
+### Fixed
+
+- - Fix `state_pension_type` incorrectly classifying every pensioner as receiving the pre-2016 basic State Pension. The formula used `values_list[0]` to find when the New State Pension activated, but policyengine-core auto-extrapolates the parameter into the far future, so `[0]` was returning a 2040s entry instead of the 2016 activation date. Walks the list oldest-first to find the real activation instant, so post-2016 retirees are now correctly classified as `NEW`. Raises the modelled 2025 state pension aggregate from about £116bn to about £127bn.
+- - Fix Working Tax Credit and Child Tax Credit continuing to pay out from the 2025-26 tax year onward. Working Tax Credit and Child Tax Credit ended on 5 April 2025 (HMRC/DWP). Adds a `gov.dwp.tax_credits.active` parameter that flips to `false` on 2025-04-06 and gates `tax_credits` on it. Removes about £1.9bn of phantom Tax Credit spending per year from 2025-26 onward while preserving the legitimate 2024-25 baseline.
+
+
+## [2.87.0] - 2026-04-17
+
+### Added
+
+- - Add a microsimulation smoke test suite that runs against the unpinned latest enhanced FRS dataset and asserts plausibility bounds for UK population, UC aggregate, `is_parent` population, core benefit totals, and extended childcare eligibility. Catches silent model/data skew at the point the dataset is republished, not after a release.
+
+
+## [2.86.13] - 2026-04-17
+
+No significant changes.
+
+
+## [2.86.12] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.11] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.10] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.9] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.8] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.7] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.6] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.5] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.4] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.3] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.2] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.1] - 2026-04-15
+
+No significant changes.
+
+
+## [2.86.0] - 2026-04-15
+
+### Added
+
+- Add a first-pass Disabled Students' Allowance model for England higher-education students.
+
+
+## [2.85.0] - 2026-04-15
+
+### Added
+
+- Add a first-pass Travel Grant model.
+
+
+## [2.84.0] - 2026-04-15
+
+### Added
+
+- Add a first-pass Adult Dependants' Grant model.
+- Add a first-pass Parents' Learning Allowance model.
+
+
+## [2.83.0] - 2026-04-14
+
+### Added
+
+- Add a first-pass 16 to 19 Bursary Fund model for vulnerable groups.
+
+
+## [2.82.0] - 2026-04-14
+
+### Added
+
+- - Add a first-pass Childcare Grant model for England full-time undergraduates.
+
+
+## [2.81.0] - 2026-04-14
+
+### Added
+
+- - Add an approximate England full-time maintenance loan model, with explicit override inputs for living arrangement and assessed household income.
+
+### Fixed
+
+- Fix maintenance loan proxy logic to require explicit higher-education evidence and improve sponsor-income assessment.
+
+
+## [2.80.0] - 2026-04-13
+
+### Added
+
+- - Add an approximate England full-time maintenance loan model, with explicit override inputs for living arrangement and assessed household income.
+
+
+## [2.79.3] - 2026-04-13
+
+### Fixed
+
+- Use modelled student loan repayments in aggregates and cap them by outstanding balance when available.
+
+
+## [2.79.2] - 2026-04-12
+
+### Fixed
+
+- Fixed `corporate_land_value` to allocate aggregate corporate land using the current weighted distribution of `corporate_wealth`, and refreshed the aggregate land parameters to the 2024 ONS land totals used by `policyengine-uk-data`.
+
+
+## [2.79.1] - 2026-04-12
+
+### Changed
+
+- Expose build metadata helpers for UK data artifacts, including a stable data-build fingerprint and build provenance metadata.
+
+
+## [2.79.0] - 2026-04-12
+
+### Added
+
+- Add named economic-assumption parameters for the local-authority ONS income target uprating factors used by `policyengine-uk-data`.
+
+### Fixed
+
+- Corrected Universal Credit rebalancing so existing health-element claimants keep their combined standard allowance and health element award CPI-protected.
+
+
+## [2.78.0] - 2026-04-07
+
+### Added
+
+- Added the England-only High Value Council Tax Surcharge from April 2028, including its 2026-price valuation bands and CPI uprating from 2029-30 onward.
+
+
+## [2.77.5] - 2026-04-07
+
+### Fixed
+
+- Prevent labor supply response formulas and progression dynamics from
+  flipping sign when baseline employment income is negative.
+
+
+## [2.77.4] - 2026-04-07
+
+### Fixed
+
+- Add regression coverage to keep income decile outputs in `-1` or `1..10`.
+
+
+## [2.77.3] - 2026-04-07
+
+### Fixed
+
+- Fixed `gov.contrib.cec.state_pension_increase` so state pension reforms affect microsimulation outputs and budget impacts.
+
+
+## [2.77.2] - 2026-04-07
+
+### Fixed
+
+- Documented how to request access to restricted UK datasets before setting `HUGGING_FACE_TOKEN`.
+
+
+## [2.77.1] - 2026-04-07
+
+### Fixed
+
+- Tax-Free Childcare now requires childcare expenses to be paid to a qualifying provider when that input is supplied.
+
+
+## [2.77.0] - 2026-04-07
+
+### Added
+
+- Added an `abolish_benefit_cap` scenario for benefit-cap removal analysis.
+
+
+## [2.76.0] - 2026-04-07
+
+### Added
+
+- Added an OBR detailed forecast table importer script for updating economic forecast values in `yoy_growth.yaml`.
+
+
+## [2.75.4] - 2026-04-05
+
+### Fixed
+
+- - Ensure `uprate_rent` passes a NumPy array into vectorial parameter lookup for regional private rent growth.
+
+
+## [2.75.3] - 2026-03-26
+
+### Changed
+
+- Replace flat national land intensity ratio (0.673) with region-specific ratios from MHCLG 2023 land value estimates, so household_land_value reflects the much higher land share in London (0.85) vs the North East (0.42).
+
+
 ## [2.75.2] - 2026-03-17
 
 ### Changed

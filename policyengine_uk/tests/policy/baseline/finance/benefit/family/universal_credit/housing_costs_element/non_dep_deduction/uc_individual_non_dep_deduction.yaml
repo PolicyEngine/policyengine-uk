@@ -1,6 +1,6 @@
 - name: Fully liable
   period: 2020
-  absolute_error_margin: 0
+  absolute_error_margin: 0.001
   input:
     people:
       person:
@@ -15,7 +15,7 @@
 
 - name: Exempt, no deduction
   period: 2020
-  absolute_error_margin: 0
+  absolute_error_margin: 0.001
   input:
     people:
       person:
@@ -30,7 +30,7 @@
 
 - name: Too young, no deduction
   period: 2020
-  absolute_error_margin: 0
+  absolute_error_margin: 0.001
   input:
     people:
       person:

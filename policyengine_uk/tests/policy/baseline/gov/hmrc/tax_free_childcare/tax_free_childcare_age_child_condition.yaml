@@ -6,7 +6,7 @@
   output:
     tax_free_childcare_child_age_eligible: true
 
-- name: Over standard age limit and not disabled - ineligible
+- name: At standard age limit and not disabled - ineligible
   period: 2025
   input:
     age: 12
@@ -22,7 +22,7 @@
   output:
     tax_free_childcare_child_age_eligible: true
 
-- name: Over disability age limit and disabled - ineligible
+- name: At disability age limit and disabled - ineligible
   period: 2025
   input:
     age: 17

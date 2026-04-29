@@ -1,0 +1,9 @@
+description: Factor used to uprate ONS FYE 2020 local-authority housing costs targets to the 2025 calibration year, using the OBR house price index as the calibration proxy.
+values:
+  2025-01-01: 1.2190812720848057
+metadata:
+  unit: /1
+  label: Local-authority ONS housing costs uprating factor
+  reference:
+    - title: OBR EFO November 2025 (economy detailed forecast tables, house price index)
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/

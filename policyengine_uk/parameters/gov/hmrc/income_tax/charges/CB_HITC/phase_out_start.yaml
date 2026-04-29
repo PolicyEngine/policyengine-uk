@@ -4,7 +4,6 @@ values:
   2024-01-01: 60_000
 metadata:
   period: year
-  name: CB_HITC_reduction_threshold
   label: Child Benefit tax charge phase-out threshold
   unit: currency-GBP
   reference:

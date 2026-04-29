@@ -36,5 +36,12 @@ class hbai_benefits(Variable):
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
         "tax_free_childcare",
+        "childcare_grant",
+        "parents_learning_allowance",
+        "adult_dependants_grant",
+        "travel_grant",
+        "disabled_students_allowance",
+        "bursary_fund_16_to_19",
         "healthy_start_vouchers",
+        "carer_support_payment",
     ]

@@ -10,7 +10,6 @@ values:
   2026-04-06: 50_270
 metadata:
   label: NI upper profits limit
-  name: NI_UPL
   unit: currency-GBP
   period: year
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

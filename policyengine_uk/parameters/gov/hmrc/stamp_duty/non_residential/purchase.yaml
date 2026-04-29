@@ -19,11 +19,10 @@ brackets:
   threshold:
     2003-07-10: 500000
     2016-09-15: null
-description: Stamp Duty Land Tax progressive rates for residential property transfers
+description: Stamp Duty Land Tax progressive rates for non-residential property transfers
 metadata:
   economy: false
   label: Stamp Duty on non-residential property
-  name: sdlt_on_non_residential_property
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:

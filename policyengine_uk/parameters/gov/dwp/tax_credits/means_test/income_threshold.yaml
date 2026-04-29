@@ -10,7 +10,6 @@ values:
   2025-04-01: 8_080
 metadata:
   period: year
-  name: tc_income_threshold
   label: "Tax credits income threshold"
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi

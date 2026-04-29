@@ -1,0 +1,35 @@
+description: High Value Council Tax Surcharge on owners of residential property in England worth £2 million or more in 2026 prices.
+
+brackets:
+  - threshold:
+      2028-01-01: 0
+    amount:
+      2028-01-01: 0
+  - threshold:
+      2028-01-01: 2_000_000
+    amount:
+      2028-01-01: 2_500
+  - threshold:
+      2028-01-01: 2_500_000
+    amount:
+      2028-01-01: 3_500
+  - threshold:
+      2028-01-01: 3_500_000
+    amount:
+      2028-01-01: 5_000
+  - threshold:
+      2028-01-01: 5_000_000
+    amount:
+      2028-01-01: 7_500
+
+metadata:
+  type: single_amount
+  threshold_unit: currency-GBP
+  amount_unit: currency-GBP
+  uprating: gov.benefit_uprating_cpi
+  label: High Value Council Tax Surcharge
+  reference:
+    - title: High Value Council Tax Surcharge
+      href: https://www.gov.uk/government/publications/high-value-council-tax-surcharge/high-value-council-tax-surcharge
+    - title: Budget 2025
+      href: https://www.gov.uk/government/publications/budget-2025-document/budget-2025-html

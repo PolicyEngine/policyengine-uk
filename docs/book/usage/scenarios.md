@@ -268,6 +268,42 @@ reformed_cap = reformed_sim.calculate("benefit_cap", 2026).mean()
 print(f"Benefit cap - frozen: £{baseline_cap:.0f}/year, indexed: £{reformed_cap:.0f}/year")
 ```
 
+If you want to remove the cap entirely for a poverty-analysis package, PolicyEngine
+UK also exposes a reusable scenario:
+
+```python
+from policyengine_uk import Simulation
+from policyengine_uk.scenarios import abolish_benefit_cap
+
+sim = Simulation(situation=benefit_cap_family, scenario=abolish_benefit_cap)
+benefit_cap_reduction = sim.calculate("benefit_cap_reduction", 2026).mean()
+print(f"Benefit cap reduction after abolition: £{benefit_cap_reduction:.0f}")
+```
+
+### Removing economic assumptions
+
+If you want to isolate policy effects from forecast-driven uprating, use the
+`no_economic_assumptions` scenario. It applies before data load, so it freezes
+both parameter uprating and any dataset extension that depends on forecast
+growth rates.
+
+```python
+from policyengine_uk import Simulation
+from policyengine_uk.scenarios import no_economic_assumptions
+
+situation = {
+    "people": {"person": {"age": {2025: 40}, "employment_income": {2025: 30_000}}},
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+
+baseline = Simulation(situation=situation)
+static = Simulation(situation=situation, scenario=no_economic_assumptions)
+
+print(float(baseline.calculate("employment_income", 2026)[0]))
+print(float(static.calculate("employment_income", 2026)[0]))
+```
+
 ## Advanced scenario techniques
 
 ### Time-varying parameters
@@ -379,14 +415,14 @@ for year in [2025, 2027, 2029]:
 
 ### Building Universal Credit scenarios with dynamic changes
 
-Some scenarios need to make changes that depend on the simulation's own data. Here's how to create a UC scenario that adjusts payments based on claimant characteristics:
+Some scenarios need to make changes that depend on the simulation's own data. Here's how to create a UC scenario that adjusts health-element payments based on claimant characteristics:
 
 ```python
 from policyengine_uk import Scenario, Microsimulation
 import numpy as np
 
 def modify_uc_for_new_claimants(sim: Microsimulation):
-    """Reduce health elements for new UC claimants while increasing standard allowances"""
+    """Reduce health elements for new UC claimants while preserving claimant protections"""
     # Access the parameter system to check if reforms are active
     rebalancing_params = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
     
@@ -422,11 +458,9 @@ def modify_uc_for_new_claimants(sim: Microsimulation):
         
         sim.set_input("uc_LCWRA_element", year, current_health_element)
         
-        # Increase standard allowances for everyone
-        uplift_rate = rebalancing_params.standard_allowance_uplift(year)
-        previous_allowance = sim.calculate("uc_standard_allowance", year - 1)
-        new_allowance = previous_allowance * (1 + uplift_rate)
-        sim.set_input("uc_standard_allowance", year, new_allowance)
+        # General standard allowance uplifts are already handled in the
+        # uc_standard_allowance formula. Scenario modifiers only need to add
+        # claimant-specific overrides such as protected health elements.
 
 # Create the UC rebalancing scenario
 uc_rebalancing = Scenario(simulation_modifier=modify_uc_for_new_claimants)

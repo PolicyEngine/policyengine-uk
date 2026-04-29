@@ -21,7 +21,6 @@ values:
       - title: Finance Act 2023 s. 5
         href: https://www.legislation.gov.uk/ukpga/2023/1/section/5
 metadata:
-  name: dividend_allowance
   label: Dividend allowance
   period: year
   unit: currency-GBP

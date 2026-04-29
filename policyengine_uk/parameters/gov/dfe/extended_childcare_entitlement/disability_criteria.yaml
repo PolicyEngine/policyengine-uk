@@ -1,4 +1,4 @@
-description: The Department for Education exempts participants in these programs from work requirements of extended childcare entitlement. 
+description: The Department for Education exempts participants in these programs from work requirements of extended childcare entitlement.
 metadata:
   reference:
     - title: The Childcare Regulations 2022 - Regulation 11A
@@ -9,6 +9,7 @@ metadata:
 values:
   2015-09-01:
     - carers_allowance  # 11A(1)(a): Carer's allowance under Section 70 of Social Security Contributions and Benefits Act 1992
+    - uc_carer_element  # 11A(1)(c): Universal Credit carer element under Regulation 29 of the Universal Credit Regulations 2013
     - esa_contrib  # 11A(1)(e): Employment and support allowance under Welfare Reform Act 2007
     - incapacity_benefit  # 11A(1)(g): Long-term or short-term incapacity benefit under Social Security Contributions and Benefits Act
     - sda  # 11A(1)(h): Severe disablement allowance under Section 68 of Social Security Contributions and Benefits Act

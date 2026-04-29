@@ -11,7 +11,6 @@ description: Stamp Duty Land Tax progressive rates for residential property tran
 metadata:
   economy: false
   label: Stamp Duty on first homes
-  name: sdlt_on_first_time_buyer_homes
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:

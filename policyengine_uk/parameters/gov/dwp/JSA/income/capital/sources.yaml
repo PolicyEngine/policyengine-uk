@@ -1,0 +1,34 @@
+description: >
+  Model variables currently mapped to countable income-based Jobseeker's
+  Allowance capital. The Jobseeker's Allowance Regulations 1996 treat capital
+  as assessable unless it is disregarded under Schedule 8. The current
+  mappings are `savings` for liquid capital, `owned_land` for land held
+  directly, `corporate_wealth` as the broad available proxy for share-like
+  financial assets, `other_residential_property_value` for residential
+  property other than the home, and `non_residential_property_value` for other
+  land and premises. `main_residence_value` is excluded because Schedule 8
+  paragraph 1 disregards premises occupied as the claimant's home. Other
+  Schedule 8 disregards, the higher residential-care capital disregard, and
+  the separate child-capital disregard are not yet modeled because the current
+  dataset does not isolate those states or asset holdings. Because the dataset
+  only provides household-level capital stocks, the model allocates the full
+  household total to benunits with a reported income-based JSA award and only
+  falls back to an adult-share proxy when nobody in the household is on that
+  reported claim path. That allocation is a data approximation, not a
+  legislated ownership rule.
+metadata:
+  label: Income-based JSA countable capital sources
+  period: year
+  unit: list
+  reference:
+    - title: Jobseeker's Allowance Regulations 1996 reg. 108
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/108
+    - title: Jobseeker's Allowance Regulations 1996 Schedule 8 para. 1
+      href: https://www.legislation.gov.uk/uksi/1996/207/schedule/8/paragraph/1
+values:
+  1996-10-07:
+    - savings
+    - owned_land
+    - corporate_wealth
+    - other_residential_property_value
+    - non_residential_property_value

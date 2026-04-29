@@ -347,23 +347,25 @@ def calculate_employment_income_change(
     Returns:
         Array of employment income changes due to labour supply responses
     """
+    earnings_base = np.maximum(employment_income, 0)
+
     # Calculate substitution effect: response to changes in marginal rates
     substitution_response = (
-        employment_income
+        earnings_base
         * derivative_changes["wage_rel_change"]
         * substitution_elasticities
     )
 
     # Calculate income effect: response to changes in unearned income
     income_response = (
-        employment_income * income_changes["income_rel_change"] * income_elasticities
+        earnings_base * income_changes["income_rel_change"] * income_elasticities
     )
 
     # Total labour supply response is sum of substitution and income effects
     total_response = substitution_response + income_response
 
-    # No response for people with zero employment income
-    total_response[employment_income == 0] = 0
+    # No response for people with non-positive employment income
+    total_response[earnings_base == 0] = 0
 
     df = pd.DataFrame(
         {

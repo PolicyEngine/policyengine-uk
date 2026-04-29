@@ -174,32 +174,10 @@ def uprate_rent(
             "Rent uprating is not supported for years before 2022. Not applying uprating."
         )
         pass
-    elif year < 2025:
-        # We have regional growth rates for private rent.
-        regional_growth_rate = growth.ons.private_rental_prices(year)[
-            region.values.astype(str)
+    else:
+        private_rent_growth = growth.ons.private_rental_prices(year)[
+            np.array(region.values.astype(str))
         ]
-        current_year.household["rent"] = np.where(
-            is_private_rented,
-            prev_rent * (1 + regional_growth_rate),
-            prev_rent * (1 + social_rent_growth),
-        )
-    elif year >= 2025:
-        # Back out private rent growth from the aggregate
-        # from latest English Housing Survey data
-        PRIVATE_RENTAL_HOUSEHOLDS = 0.188
-        SOCIAL_RENTAL_HOUSEHOLDS = 0.164
-
-        total_rental_households = PRIVATE_RENTAL_HOUSEHOLDS + SOCIAL_RENTAL_HOUSEHOLDS
-
-        private_weight = PRIVATE_RENTAL_HOUSEHOLDS / total_rental_households
-        social_weight = SOCIAL_RENTAL_HOUSEHOLDS / total_rental_households
-
-        aggregate_growth = growth.obr.rent(year)
-        private_rent_growth = (
-            aggregate_growth - social_weight * social_rent_growth
-        ) / private_weight
-
         current_year.household["rent"] = np.where(
             is_private_rented,
             prev_rent * (1 + private_rent_growth),
@@ -355,5 +333,33 @@ def reset_uprating(
         if year != first_year:
             dataset.datasets[year] = dataset.datasets[first_year].copy()
             dataset.datasets[year].time_period = str(year)
+
+    return dataset
+
+
+def reset_growthfactor_uprating(
+    dataset: UKMultiYearDataset,
+):
+    with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
+        uprating = yaml.safe_load(f)
+
+    growthfactor_uprated_variables = {
+        variable for variables in uprating.values() for variable in variables
+    }
+    growthfactor_uprated_variables.update({"council_tax", "rent"})
+
+    first_year = min(dataset.datasets.keys())
+    base_year_dataset = dataset.datasets[first_year]
+
+    for year in dataset.datasets:
+        if year == first_year:
+            continue
+        current_year_dataset = dataset.datasets[year]
+        for table_name in current_year_dataset.table_names:
+            base_table = getattr(base_year_dataset, table_name)
+            current_table = getattr(current_year_dataset, table_name)
+            for variable in growthfactor_uprated_variables:
+                if variable in current_table.columns and variable in base_table.columns:
+                    current_table[variable] = base_table[variable].values
 
     return dataset

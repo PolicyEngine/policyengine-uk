@@ -55,6 +55,7 @@ class hbai_household_net_income(Variable):
         "tax_free_childcare",
         "healthy_start_vouchers",
         "scottish_child_payment",
+        "carer_support_payment",
         # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
     ]
     subtracts = [
@@ -71,7 +72,8 @@ class hbai_household_net_income(Variable):
     ]
 
     def formula(household, period, parameters):
-        if parameters(period).gov.contrib.abolish_council_tax:
+        abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
+        if abolish_council_tax:
             return add(
                 household,
                 period,

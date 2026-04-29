@@ -3,7 +3,6 @@ values:
   2018-03-15: 500_000
 metadata:
   unit: currency-GBP
-  name: sdlt_first_time_buyer_value_limit
   label: Stamp Duty first home value limit
   reference:
     - title: Finance Act 2003 schedule 6ZA(1)(3)

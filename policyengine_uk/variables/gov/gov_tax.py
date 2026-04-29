@@ -15,6 +15,7 @@ class gov_tax(Variable):
         "corporate_sdlt",
         "business_rates",
         "council_tax",
+        "high_value_council_tax_surcharge",
         "domestic_rates",
         "fuel_duty",
         "tv_licence",
@@ -35,7 +36,8 @@ class gov_tax(Variable):
 
     def formula(household, period, parameters):
         variables = list(gov_tax.adds)
-        if parameters(period).gov.contrib.abolish_council_tax:
+        abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
+        if abolish_council_tax:
             variables = [
                 variable for variable in variables if variable != "council_tax"
             ]

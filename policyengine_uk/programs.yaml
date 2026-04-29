@@ -348,6 +348,79 @@ programs:
     verified_end_year: 2025
     notes: Universal (15h), extended (30h), and targeted entitlements; parameters need expansion for later years
 
+  - id: childcare_grant
+    name: Childcare Grant
+    full_name: Student Finance England Childcare Grant
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: childcare_grant
+    parameter_prefix: gov.dfe.childcare_grant
+    verified_start_year: 2025
+    notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; childcare_expenses are treated as out-of-pocket spend net of free hours
+
+  - id: parents_learning_allowance
+    name: Parents' Learning Allowance
+    full_name: Student Finance England Parents' Learning Allowance
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: parents_learning_allowance
+    parameter_prefix: gov.dfe.parents_learning_allowance
+    verified_start_year: 2025
+    notes: First-pass England model using the published maximum amount and household-income cutoff, with higher-education evidence as the default course proxy and an explicit override for edge cases such as 120-credit or teacher-training routes
+
+  - id: adult_dependants_grant
+    name: Adult Dependants' Grant
+    full_name: Student Finance England Adult Dependants' Grant
+
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: adult_dependants_grant
+    parameter_prefix: gov.dfe.adult_dependants_grant
+    verified_start_year: 2025
+    notes: First-pass England model using the published maximum amount and household-income tests, with automatic 25-plus couple detection and explicit inputs for under-25 spouse/civil-partner and non-partner adult dependant cases
+
+  - id: travel_grant
+    name: Travel Grant
+    full_name: Student Finance England Travel Grant
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: travel_grant
+    parameter_prefix: gov.dfe.travel_grant
+    verified_start_year: 2025
+    notes: First-pass England model using the published initial contribution and household-income reduction formula, with explicit placement and eligible-expense inputs because the survey does not observe reimbursable travel costs
+
+  - id: disabled_students_allowance
+    name: Disabled Students' Allowance
+    full_name: Student Finance England Disabled Students' Allowance
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: disabled_students_allowance
+    parameter_prefix: gov.dfe.disabled_students_allowance
+    verified_start_year: 2025
+    notes: First-pass England model using the published annual cap, higher-education evidence as the default course proxy, a narrow qualifying-condition proxy with explicit override, and explicit disability-related study support costs
+
+  - id: bursary_fund_16_to_19
+    name: 16 to 19 Bursary Fund
+    full_name: 16 to 19 Bursary Fund
+    category: Benefits
+    agency: DfE
+    status: partial
+    coverage: England
+    variable: bursary_fund_16_to_19
+    parameter_prefix: gov.dfe.bursary_fund_16_to_19
+    verified_start_year: 2025
+    notes: First-pass model of the defined vulnerable-group bursary only, using explicit care, self-supporting, and participation-cost inputs plus person-level reported-benefit proxies
+
   # --- DCMS programs ---
   - id: tv_licence
     name: TV Licence

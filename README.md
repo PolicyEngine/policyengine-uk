@@ -20,12 +20,11 @@ PolicyEngine UK enhances this dataset by fusing it to other surveys and reweight
 [^1]: Department for Work and Pensions, Office for National Statistics, NatCen Social Research. (2021). Family Resources Survey, 2019-2020. [data collection]. UK Data Service. SN: 8802, http://doi.org/10.5255/UKDA-SN-8802-1
 
 
-## Fast setup instructions
+## Fast setup instructions (Linux / macOS)
 
 1. Run `pip install policyengine-uk`
 
 2. Run `policyengine-uk` and go through the prompt to setup microdata.
-
 
 ## Contact
 

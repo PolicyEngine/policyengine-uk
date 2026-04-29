@@ -1,39 +1,63 @@
-description: Carbon intensity by consumption type (where microsimulation data is not available)
+description: Carbon intensity by consumption type (where microsimulation data is not available). 2019 and 2022 values are sourced from the DEFRA UK Carbon Footprint dataset; 2020 and 2021 are linear-interpolated between those two points (DEFRA publishes the underlying COICOP figures, but we lack the LCFS-weighted aggregation methodology used to produce the 2-digit values for 2019 and 2022). Years after 2022 are forward-projected at -4.9%/year via `gov.economic_assumptions.indices.carbon_intensity`.
 alcohol_and_tobacco_consumption:
   2019-01-01: 7.7e-05
+  2020-01-01: 7.092333e-05
+  2021-01-01: 6.484667e-05
   2022-01-01: 0.00005877
 clothing_and_footwear_consumption:
   2019-01-01: 0.000262
+  2020-01-01: 0.00025086
+  2021-01-01: 0.00023972
   2022-01-01: 0.00022858
 communication_consumption:
   2019-01-01: 0.000404
+  2020-01-01: 0.00039425
+  2021-01-01: 0.00038449
   2022-01-01: 0.00037474
 education_consumption:
   2019-01-01: 0.000241
+  2020-01-01: 0.00028874
+  2021-01-01: 0.00033648
   2022-01-01: 0.00038422
 food_and_non_alcoholic_beverages_consumption:
   2019-01-01: 0.000689
+  2020-01-01: 0.00062852
+  2021-01-01: 0.00056804
   2022-01-01: 0.00050756
 health_consumption:
   2019-01-01: 0.000656
+  2020-01-01: 0.00065116
+  2021-01-01: 0.00064633
   2022-01-01: 0.00064149
 household_furnishings_consumption:
   2019-01-01: 0.000212
+  2020-01-01: 0.00021016
+  2021-01-01: 0.00020833
   2022-01-01: 0.00020649
 housing_water_and_electricity_consumption:
   2019-01-01: 0.0012
+  2020-01-01: 0.00111799
+  2021-01-01: 0.00103598
   2022-01-01: 0.00095397
 miscellaneous_consumption:
   2019-01-01: 0.000203
+  2020-01-01: 0.00020843
+  2021-01-01: 0.00021385
   2022-01-01: 0.00021928
 recreation_consumption:
   2019-01-01: 0.000185
+  2020-01-01: 0.00018347
+  2021-01-01: 0.00018193
   2022-01-01: 0.0001804
 restaurants_and_hotels_consumption:
   2019-01-01: 0.000311
+  2020-01-01: 0.00030431
+  2021-01-01: 0.00029761
   2022-01-01: 0.00029092
 transport_consumption:
   2019-01-01: 0.00107
+  2020-01-01: 0.00107055
+  2021-01-01: 0.00107109
   2022-01-01: 0.00107164
 metadata:
   unit: tonnes per gbp

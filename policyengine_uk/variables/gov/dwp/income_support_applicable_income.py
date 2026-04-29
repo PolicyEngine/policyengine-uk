@@ -26,6 +26,7 @@ class income_support_applicable_income(Variable):
             ["income_tax", "national_insurance"],
         )
         income += add(benunit, period, ["social_security_income"])
+        income += benunit("income_support_tariff_income", period)
         income -= tax
         income -= add(benunit, period, ["pension_contributions"]) * 0.5
         family_type = benunit("family_type", period)

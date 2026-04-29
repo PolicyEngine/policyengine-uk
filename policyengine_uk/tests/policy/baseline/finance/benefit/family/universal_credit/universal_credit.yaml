@@ -8,3 +8,21 @@
     is_uc_eligible: true
   output:
     universal_credit: 1000 - 100
+
+- name: Capital above the upper limit removes Universal Credit entitlement
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 16_001
+  output:
+    universal_credit_pre_benefit_cap: 0
+    universal_credit: 0

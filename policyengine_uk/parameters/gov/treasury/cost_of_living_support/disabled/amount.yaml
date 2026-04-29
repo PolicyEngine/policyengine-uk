@@ -5,7 +5,6 @@ values:
 metadata:
   unit: currency-GBP
   period: year
-  name: col_disability_payment_amount
   label: Payment to households on disability benefits
   reference:
     - title: Cost-of-living support announcement | GOV.UK

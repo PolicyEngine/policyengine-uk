@@ -45,12 +45,19 @@ class household_benefits(Variable):
         "universal_childcare_entitlement",
         "targeted_childcare_entitlement",
         "care_to_learn",
+        "childcare_grant",
+        "parents_learning_allowance",
+        "adult_dependants_grant",
+        "travel_grant",
+        "disabled_students_allowance",
+        "bursary_fund_16_to_19",
         "nhs_spending",
         "dfe_education_spending",
         "dft_subsidy_spending",
         "healthy_start_vouchers",
         "two_child_limit_payment",
         "scottish_child_payment",
+        "carer_support_payment",
     ]
 
     def formula(household, period, parameters):

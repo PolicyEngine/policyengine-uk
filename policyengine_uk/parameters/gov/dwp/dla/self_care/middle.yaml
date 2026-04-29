@@ -22,7 +22,6 @@ values:
 metadata:
   period: week
   unit: currency-GBP
-  name: dla_sc_middle
   label: DLA (self-care) (middle rate)
   uprating: gov.benefit_uprating_cpi
   reference: 

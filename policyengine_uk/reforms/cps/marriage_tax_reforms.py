@@ -19,7 +19,7 @@ def create_expanded_ma_reform(
                 child_meets_age_condition = person("age", period) <= max_child_age
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
-                child_meets_education_condition = np.is_in(
+                child_meets_education_condition = np.isin(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )
@@ -34,18 +34,18 @@ def create_expanded_ma_reform(
         value_type = bool
         reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
 
-        def formula(person, period):
+        def formula(person, period, parameters):
             band = person("tax_band", period)
+            eligible_bands = parameters(
+                period
+            ).gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands
+            base_eligible = np.isin(band.decode_to_str(), eligible_bands)
+            # Expand to higher bands if the reform's expansion conditions are met.
             bands = band.possible_values
-            return (
-                (band == bands.BASIC)
-                | (band == bands.STARTER)
-                | (band == bands.INTERMEDIATE)
-                | (  # Expand to higher bands if reform conditions are met.
-                    person("meets_expanded_ma_conditions", period)
-                    & ((band == bands.HIGHER) | (band == bands.ADDITIONAL))
-                )
+            expansion = person("meets_expanded_ma_conditions", period) & (
+                (band == bands.HIGHER) | (band == bands.ADDITIONAL)
             )
+            return base_eligible | expansion
 
     class marriage_allowance(Variable):
         value_type = float
@@ -110,7 +110,7 @@ def create_marriage_neutral_income_tax_reform(
                 child_meets_age_condition = person("age", period) <= max_child_age
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
-                child_meets_education_condition = np.is_in(
+                child_meets_education_condition = np.isin(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )

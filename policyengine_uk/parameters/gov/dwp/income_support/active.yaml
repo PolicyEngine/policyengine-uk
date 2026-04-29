@@ -1,0 +1,16 @@
+description: Whether Income Support is actively paying awards. Income Support closed to new claims with Universal Credit's rollout, and the remaining legacy caseload was migrated to UC (or to Pension Credit for over-State-Pension-age claimants) under DWP's managed-migration programme; last payments were made on 31 March 2026.
+values:
+  1988-04-11: true
+  2026-04-01: false
+metadata:
+  label: Income Support scheme active
+  unit: bool
+  reference:
+    - title: "House of Commons Library: Completing Universal Credit rollout (CBP-9984)"
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-9984/
+    - title: "DWP: Successful DWP campaign leads to closure of historical benefits"
+      href: https://www.gov.uk/government/news/successful-dwp-campaign-leads-to-closure-of-historical-benefits
+    - title: "DWP: Move to Universal Credit — insight on Income Support and Housing Benefit"
+      href: https://www.gov.uk/government/publications/move-to-universal-credit-insight-on-income-support-and-housing-benefit-and-initial-esa-cohort-activity/move-to-universal-credit-insight-on-income-support-and-housing-benefit-and-initial-esa-cohort-activity
+    - title: "Social Security Contributions and Benefits Act 1992, Part VII (Income Support)"
+      href: https://www.legislation.gov.uk/ukpga/1992/4/part/VII

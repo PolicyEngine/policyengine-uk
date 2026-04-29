@@ -52,14 +52,12 @@ brackets:
                 href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
     threshold:
       metadata:
-        name: dividend_higher_threshold
         label: Dividends higher rate threshold
       values:
         2015-04-01: 37_500
   - rate:
       metadata:
         label: Dividends additional rate
-        name: dividend_additional_rate
         unit: /1
         reference:
           - title: Finance Act 2022 s. 4

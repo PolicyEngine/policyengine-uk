@@ -1,0 +1,11 @@
+description: Proportion of eligible childcare costs covered by Childcare Grant.
+values:
+  2025-01-01: 0.85
+  2026-01-01: 0.85
+metadata:
+  unit: /1
+  period: year
+  label: Childcare Grant coverage rate
+  reference:
+    - title: Childcare Grant - What you'll get
+      href: https://www.gov.uk/childcare-grant/what-youll-get

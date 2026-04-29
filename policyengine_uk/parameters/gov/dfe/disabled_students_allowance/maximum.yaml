@@ -1,0 +1,11 @@
+description: Maximum Disabled Students' Allowance for higher-education students in England.
+values:
+  2025-01-01: 27_783
+  2026-01-01: 27_783
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Disabled Students' Allowance maximum amount
+  reference:
+    - title: Help if you're a student with a learning difficulty, health problem or disability
+      href: https://www.gov.uk/disabled-students-allowance-dsa

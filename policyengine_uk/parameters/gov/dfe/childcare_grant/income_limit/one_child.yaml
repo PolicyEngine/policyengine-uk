@@ -1,0 +1,11 @@
+description: Household income limit for Childcare Grant where the application covers one child.
+values:
+  2025-01-01: 20_107.23
+  2026-01-01: 20_107.23
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Childcare Grant income limit for one child
+  reference:
+    - title: Childcare Grant - Eligibility
+      href: https://www.gov.uk/childcare-grant/eligibility

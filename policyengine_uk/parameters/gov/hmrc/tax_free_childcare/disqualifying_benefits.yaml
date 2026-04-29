@@ -1,8 +1,10 @@
-description: HMRC limits Tax-Free Childcare to benefit units that do not receive any of these programs.
+description: HMRC limits Tax-Free Childcare to benefit units without these tax credit awards or Universal Credit payable amounts.
 metadata:
-  reference: 
-  - title: The Childcare Payments (Eligibility) Regulations 2015 - Part 16 and 18
-    href: https://www.legislation.gov.uk/ukdsi/2015/9780111127063
+  reference:
+  - title: Childcare Payments Act 2014 - Section 11
+    href: https://www.legislation.gov.uk/ukpga/2014/28/section/11
+  - title: Childcare Payments Act 2014 - Section 30
+    href: https://www.legislation.gov.uk/ukpga/2014/28/section/30
   period: year
   unit: program
   label: Tax-free childcare disqualifying benefits
@@ -10,4 +12,4 @@ values:
   2015-01-01:
     - working_tax_credit
     - child_tax_credit
-    - universal_credit
+    - universal_credit_pre_benefit_cap

@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 class esa(Variable):
     label = "ESA"
-    entity = Person
+    entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP

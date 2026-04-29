@@ -1,0 +1,14 @@
+description: Whether the Tax Credits scheme is actively paying awards. Working Tax Credit and Child Tax Credit ended on 5 April 2025; final finalisation and overpayment recovery may continue, but no ongoing awards are paid after that date.
+values:
+  2003-04-06: true
+  2025-04-06: false
+metadata:
+  label: Tax Credits scheme active
+  unit: bool
+  reference:
+    - title: "HMRC/DWP: Tax credits ended on 5 April 2025"
+      href: https://www.gov.uk/tax-credits-have-ended
+    - title: "House of Commons Library: Completing Universal Credit rollout (CBP-9984)"
+      href: https://commonslibrary.parliament.uk/research-briefings/cbp-9984/
+    - title: Tax Credits Act 2002
+      href: https://www.legislation.gov.uk/ukpga/2002/21/contents

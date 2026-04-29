@@ -4,7 +4,6 @@ consumer_incidence:
     profitability).
   metadata:
     label: Carbon tax consumer incidence
-    name: carbon_tax_consumer_incidence
     unit: /1
   values:
     2010-01-01: 1

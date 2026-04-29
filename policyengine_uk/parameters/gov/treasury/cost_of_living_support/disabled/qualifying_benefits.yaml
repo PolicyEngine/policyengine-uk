@@ -3,7 +3,6 @@ description: Benefits which confer eligibility to the household payment to disab
 metadata:
   economy: false
   label: Qualifying benefits for support for disabled households
-  name: col_disability_payment_benefits
   propagate_metadata_to_children: true
   reference:
   - href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
