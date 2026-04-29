@@ -9,26 +9,26 @@ The companion app PR (PolicyEngine/policyengine-app#2829) migrates to the
 new path; remove this alias once that ships.
 """
 
-from policyengine_core.parameters import Parameter, ParameterNode
+from policyengine_core.parameters import ParameterNode
 
 
-_ALIASED_PARAMETERS = ("income_elasticity", "substitution_elasticity")
+_LEGACY_LSR_PATH = "gov.simulation.labor_supply_responses"
+_CANONICAL_LSR_PATH = "gov.simulation.labour_supply_responses"
+
+
+def canonicalize_lsr_parameter_path(path: str) -> str:
+    if path == _LEGACY_LSR_PATH:
+        return _CANONICAL_LSR_PATH
+    if path.startswith(f"{_LEGACY_LSR_PATH}."):
+        return path.replace(_LEGACY_LSR_PATH, _CANONICAL_LSR_PATH, 1)
+    return path
 
 
 def add_lsr_deprecation_aliases(parameters: ParameterNode) -> ParameterNode:
     simulation = parameters.gov.simulation
     canonical = simulation.labour_supply_responses
 
-    legacy_node = ParameterNode(
-        name="gov.simulation.labor_supply_responses",
-        data={},
-    )
-
-    for child_name in _ALIASED_PARAMETERS:
-        canonical_child: Parameter = getattr(canonical, child_name)
-        legacy_child = canonical_child.clone()
-        legacy_child.name = f"gov.simulation.labor_supply_responses.{child_name}"
-        legacy_node.add_child(child_name, legacy_child)
-
+    legacy_node = canonical.clone()
+    legacy_node.name = _LEGACY_LSR_PATH
     simulation.add_child("labor_supply_responses", legacy_node)
     return parameters

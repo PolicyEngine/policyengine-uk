@@ -28,6 +28,9 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
+from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+    canonicalize_lsr_parameter_path,
+)
 
 from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
 
@@ -221,7 +224,10 @@ class Simulation(CoreSimulation):
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:
-            p: Parameter = self.tax_benefit_system.parameters.get_child(parameter)
+            canonical_parameter = canonicalize_lsr_parameter_path(parameter)
+            p: Parameter = self.tax_benefit_system.parameters.get_child(
+                canonical_parameter
+            )
             if isinstance(changes[parameter], dict):
                 # Time-period specific changes
                 for time_period in changes[parameter]:

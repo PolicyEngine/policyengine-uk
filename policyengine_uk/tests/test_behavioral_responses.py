@@ -39,6 +39,31 @@ with open(yaml_file, "r") as f:
 class TestBehavioralResponses:
     """Test behavioral labour supply responses functionality"""
 
+    @pytest.mark.parametrize(
+        "parameter_path",
+        [
+            "gov.simulation.labour_supply_responses.income_elasticity",
+            "gov.simulation.labor_supply_responses.income_elasticity",
+        ],
+    )
+    def test_lsr_parameter_changes_accept_canonical_and_legacy_paths(
+        self, parameter_path
+    ):
+        """Test that renamed LSR parameters still accept legacy reform paths."""
+        scenario = Scenario(parameter_changes={parameter_path: {"2025": 0.123}})
+        sim = Microsimulation(
+            situation={
+                "people": {"person": {"age": 30, "employment_income": 25_000}},
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {"household": {"members": ["person"]}},
+            },
+            scenario=scenario,
+        )
+
+        lsr = sim.tax_benefit_system.parameters.gov.simulation
+        assert lsr.labour_supply_responses.income_elasticity("2025") == 0.123
+        assert lsr.labor_supply_responses.income_elasticity("2025") == 0.123
+
     def test_yaml_file_structure(self):
         """Test that YAML file loads correctly and has expected structure"""
         assert len(test_cases) == 6, f"Expected 6 test cases, got {len(test_cases)}"
