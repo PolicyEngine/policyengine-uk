@@ -5,7 +5,7 @@ This implementation currently simulates:
 - The statutory CTR scheme for pensioner households in England.
 - The national CTR scheme in Wales.
 - The national CTR scheme in Scotland.
-- Working-age local schemes for Chesterfield, Dudley, East Hertfordshire, Stevenage, Stroud, and Warrington.
+- Working-age local schemes for Chesterfield, Dudley, East Hertfordshire, Merton, Southwark, Stevenage, Stroud, and Warrington.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
@@ -41,6 +41,8 @@ Spot checks against public calculators and scheme sources currently show:
 - Stevenage (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Chesterfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Warrington (`WA1 1UH`, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA): entitledto returns `GBP 26.69` per week of Council Tax Support and `GBP 2.48` per week left to pay on a displayed bill of `GBP 29.17` per week, which is a `91.5%` maximum award on the displayed weekly bill. PolicyEngine UK applies the same rule structure.
+- Merton (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published calculation guide says maximum Council Tax Support is usually `100%` of eligible Council Tax after discounts and non-dependant deductions, with a `20%` taper and a `GBP 16,000` capital limit, so PolicyEngine UK returns `council_tax_reduction = GBP 1,800` and `council_tax_less_benefit = GBP 0`.
+- Southwark (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published 2025/26 policy summary says working-age applicants can receive up to `85%` of annual council tax liability, with a `20%` taper and a `GBP 16,000` capital limit, so PolicyEngine UK returns `council_tax_reduction = GBP 1,530` and `council_tax_less_benefit = GBP 270`.
 - Policy in Practice Better Off Calculator (`SG13 8EQ`, East Hertfordshire, band `D`, single working-age owner-occupier, no children, no savings, income-based JSA, monthly council tax liability `GBP 150`): the public calculator resolves East Hertfordshire from postcode and returns `GBP 137.25` per month of Council Tax Support. That is exactly a `91.5%` award on the entered liability, matching the scheme structure and the PolicyEngine UK rule.
 - Policy in Practice Better Off Calculator (`DY1 1HF`, Dudley, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA, monthly council tax liability `GBP 113.25` with single-person discount): the public calculator resolves Dudley from postcode and returns `GBP 45.30` per month of Council Tax Support. That is exactly a `40%` award on the entered liability, matching Dudley's published scheme structure and the PolicyEngine UK rule.
 - Policy in Practice Better Off Calculator (`WA1 1UH`, Warrington, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA, monthly council tax liability `GBP 126.74` with single-person discount): the public calculator resolves Warrington from postcode and returns `GBP 95.06` per month of Council Tax Support. That is a `75%` award on the entered liability, which does not match Warrington's published 2025/26 Class D passported-JSA scheme, entitledto's `91.5%` result for the same scenario, or the current PolicyEngine UK encoding.
@@ -77,3 +79,14 @@ Warrington references:
 - https://www.warrington.gov.uk/income-and-capital
 - https://www.warrington.gov.uk/non-dependants
 - https://www.warrington.gov.uk/sites/default/files/2025-04/CTS%20Scheme%202025-26.pdf
+
+Merton references:
+
+- https://www.merton.gov.uk/council-tax-benefits-and-housing/benefits/council-tax-support/calculating-council-tax-support
+- https://www.merton.gov.uk/council-tax-benefits-and-housing/benefits/council-tax-support/council-tax-support-scheme-consultations-and-official-text
+
+Southwark references:
+
+- https://www.southwark.gov.uk/council-tax/get-money-your-council-tax-bill/council-tax-reduction/how-much-your-bill-can-be-reduced
+- https://www.southwark.gov.uk/sites/default/files/2025-03/Southwark%20Council%20Tax%20Reduction%20Policy%202025-26.pdf
+- https://www.southwark.gov.uk/sites/default/files/2025-03/Southwark%20Council%20Tax%20Reducation%20Policy%202025-26%20shorter%20version.pdf

@@ -4,7 +4,9 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_east_hertfordshire_working_age,
     is_england_pensioner_scheme,
     is_dudley_working_age,
+    is_merton_working_age,
     is_scotland_scheme,
+    is_southwark_working_age,
     is_stevenage_working_age,
     is_stroud_working_age,
     is_warrington_working_age,
@@ -33,6 +35,8 @@ class simulated_council_tax_reduction_benunit(Variable):
         )
         stevenage_ctr = local_authority_parameters.stevenage.council_tax_reduction
         stroud_ctr = local_authority_parameters.stroud.council_tax_reduction
+        merton_ctr = local_authority_parameters.merton.council_tax_reduction
+        southwark_ctr = local_authority_parameters.southwark.council_tax_reduction
         warrington_ctr = local_authority_parameters.warrington.council_tax_reduction
         dudley_ctr = local_authority_parameters.dudley.council_tax_reduction
         supported = benunit.household("council_tax_reduction_scheme_supported", period)
@@ -78,6 +82,16 @@ class simulated_council_tax_reduction_benunit(Variable):
             country,
             has_pensioner,
         )
+        merton_working_age = is_merton_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        southwark_working_age = is_southwark_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         warrington_working_age = is_warrington_working_age(
             local_authority,
             country,
@@ -94,6 +108,8 @@ class simulated_council_tax_reduction_benunit(Variable):
             | east_herts_working_age
             | stevenage_working_age
             | stroud_working_age
+            | merton_working_age
+            | southwark_working_age
             | warrington_working_age
             | dudley_working_age
         )
@@ -126,6 +142,8 @@ class simulated_council_tax_reduction_benunit(Variable):
                 east_herts_working_age,
                 stevenage_working_age,
                 stroud_working_age,
+                merton_working_age,
+                southwark_working_age,
                 warrington_working_age,
                 dudley_working_age,
             ],
@@ -137,6 +155,8 @@ class simulated_council_tax_reduction_benunit(Variable):
                 east_herts_ctr.maximum_support_rate,
                 stevenage_ctr.maximum_support_rate,
                 stroud_ctr.maximum_support_rate,
+                merton_ctr.maximum_support_rate,
+                southwark_ctr.maximum_support_rate,
                 warrington_max_support,
                 dudley_ctr.maximum_support_rate,
             ],
@@ -155,6 +175,8 @@ class simulated_council_tax_reduction_benunit(Variable):
                 east_herts_working_age,
                 stevenage_working_age,
                 stroud_working_age,
+                merton_working_age,
+                southwark_working_age,
                 warrington_working_age,
                 dudley_working_age,
             ],
@@ -166,6 +188,8 @@ class simulated_council_tax_reduction_benunit(Variable):
                 east_herts_ctr.means_test.withdrawal_rate,
                 stevenage_ctr.means_test.withdrawal_rate,
                 stroud_ctr.means_test.withdrawal_rate,
+                merton_ctr.means_test.withdrawal_rate,
+                southwark_ctr.means_test.withdrawal_rate,
                 warrington_ctr.means_test.withdrawal_rate,
                 dudley_ctr.means_test.withdrawal_rate,
             ],
@@ -180,6 +204,8 @@ class simulated_council_tax_reduction_benunit(Variable):
                 east_herts_working_age,
                 stevenage_working_age,
                 stroud_working_age,
+                merton_working_age,
+                southwark_working_age,
                 warrington_working_age,
                 dudley_working_age,
             ],
@@ -191,6 +217,8 @@ class simulated_council_tax_reduction_benunit(Variable):
                 east_herts_ctr.means_test.capital_limit,
                 stevenage_ctr.means_test.capital_limit,
                 stroud_ctr.means_test.capital_limit,
+                merton_ctr.means_test.capital_limit,
+                southwark_ctr.means_test.capital_limit,
                 warrington_ctr.means_test.capital_limit,
                 dudley_ctr.means_test.capital_limit,
             ],

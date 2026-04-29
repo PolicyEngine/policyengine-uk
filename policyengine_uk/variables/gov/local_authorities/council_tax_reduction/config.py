@@ -26,6 +26,14 @@ def is_stroud(local_authority):
     return local_authority == LocalAuthority.STROUD
 
 
+def is_merton(local_authority):
+    return local_authority == LocalAuthority.MERTON
+
+
+def is_southwark(local_authority):
+    return local_authority == LocalAuthority.SOUTHWARK
+
+
 def is_warrington(local_authority):
     return local_authority == LocalAuthority.WARRINGTON
 
@@ -70,6 +78,16 @@ def is_stroud_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_stroud(local_authority)
 
 
+def is_merton_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
+
+
+def is_southwark_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_southwark(
+        local_authority
+    )
+
+
 def is_warrington_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_warrington(local_authority)
@@ -89,6 +107,8 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         )
         | is_stevenage_working_age(local_authority, country, has_pensioner)
         | is_stroud_working_age(local_authority, country, has_pensioner)
+        | is_merton_working_age(local_authority, country, has_pensioner)
+        | is_southwark_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)
     )

@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Merton Council Tax Support scheme.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Merton Council Tax Support capital limit
+  reference:
+    - title: Calculating Council Tax Support
+      href: https://www.merton.gov.uk/council-tax-benefits-and-housing/benefits/council-tax-support/calculating-council-tax-support

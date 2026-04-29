@@ -3,6 +3,8 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_chesterfield_working_age,
     is_east_hertfordshire_working_age,
     is_dudley_working_age,
+    is_merton_working_age,
+    is_southwark_working_age,
     is_stevenage_working_age,
     is_warrington_working_age,
 )
@@ -27,6 +29,12 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         stevenage_params = parameters(
             period
         ).gov.local_authorities.stevenage.council_tax_reduction
+        merton_params = parameters(
+            period
+        ).gov.local_authorities.merton.council_tax_reduction
+        southwark_params = parameters(
+            period
+        ).gov.local_authorities.southwark.council_tax_reduction
         dudley_params = parameters(
             period
         ).gov.local_authorities.dudley.council_tax_reduction
@@ -63,6 +71,16 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             country,
             has_pensioner,
         )
+        merton_working_age = is_merton_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        southwark_working_age = is_southwark_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         dudley_working_age = is_dudley_working_age(
             local_authority,
             country,
@@ -85,6 +103,14 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             stevenage_params.non_dep_deduction.amount.calc(weekly_earned_income)
             * WEEKS_IN_YEAR
         )
+        merton_deduction = (
+            merton_params.non_dep_deduction.amount.calc(weekly_earned_income)
+            * WEEKS_IN_YEAR
+        )
+        southwark_deduction = (
+            southwark_params.non_dep_deduction.amount.calc(weekly_earned_income)
+            * WEEKS_IN_YEAR
+        )
         dudley_deduction = dudley_params.non_dep_deduction.amount * WEEKS_IN_YEAR
         warrington_deduction = (
             warrington_params.non_dep_deduction.amount.calc(weekly_earned_income)
@@ -98,6 +124,8 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
                 chesterfield_working_age,
                 east_herts_working_age,
                 stevenage_working_age,
+                merton_working_age,
+                southwark_working_age,
                 warrington_working_age,
                 dudley_working_age,
             ],
@@ -105,6 +133,8 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
                 chesterfield_deduction,
                 east_herts_deduction,
                 stevenage_deduction,
+                merton_deduction,
+                southwark_deduction,
                 warrington_deduction,
                 dudley_deduction,
             ],
@@ -114,6 +144,8 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             chesterfield_working_age
             | east_herts_working_age
             | stevenage_working_age
+            | merton_working_age
+            | southwark_working_age
             | warrington_working_age
             | dudley_working_age
         )

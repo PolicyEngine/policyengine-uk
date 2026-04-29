@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Southwark Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Southwark Council Tax Reduction withdrawal rate
+  reference:
+    - title: Southwark Council Tax Reduction Policy 2025-26, shorter version
+      href: https://www.southwark.gov.uk/sites/default/files/2025-03/Southwark%20Council%20Tax%20Reducation%20Policy%202025-26%20shorter%20version.pdf
