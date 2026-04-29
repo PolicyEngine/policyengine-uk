@@ -77,3 +77,26 @@
     # has_spouse is False → split_income == original income → reform returns the
     # unadjusted net income (taxable_employment_income ≈ employment_income here).
     adjusted_net_income: 50_000
+
+- name: Marriage-neutral IT — married couple splits unequal income
+  period: 2024
+  absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.marriage_neutral_it_reform
+  input:
+    people:
+      high_earner:
+        age: 35
+        employment_income: 60_000
+      low_earner:
+        age: 33
+        employment_income: 10_000
+    benunits:
+      benunit:
+        members: [high_earner, low_earner]
+        is_married: true
+    households:
+      household:
+        members: [high_earner, low_earner]
+  output:
+    adjusted_net_income: [35_000, 35_000]
