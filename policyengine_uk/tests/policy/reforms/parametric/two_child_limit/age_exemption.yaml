@@ -7,16 +7,16 @@
         age: 30
       child_1:
         age: 5
-        child_index: 1
+        uc_child_index: 1
       child_2:
         age: 4
-        child_index: 2
+        uc_child_index: 2
       child_3:
         age: 2
-        child_index: 3
+        uc_child_index: 3
       child_4:
         age: 1
-        child_index: 4
+        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -34,16 +34,16 @@
         age: 30
       child_1:
         age: 5
-        child_index: 1
+        uc_child_index: 1
       child_2:
         age: 4
-        child_index: 2
+        uc_child_index: 2
       child_3:
         age: 2  # This child is under the threshold
-        child_index: 3
+        uc_child_index: 3
       child_4:
         age: 1
-        child_index: 4
+        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -61,16 +61,16 @@
         age: 30
       child_1:
         age: 5
-        child_index: 1
+        uc_child_index: 1
       child_2:
         age: 4
-        child_index: 2
+        uc_child_index: 2
       child_3:
         age: 3  # No child below threshold
-        child_index: 3  
+        uc_child_index: 3
       child_4:
         age: 3
-        child_index: 4
+        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -87,16 +87,16 @@
         age: 30
       child_1:
         age: 5
-        child_index: 1
+        uc_child_index: 1
       child_2:
         age: 4
-        child_index: 2
+        uc_child_index: 2
       child_3:
         age: 2  # This child is under the threshold
-        child_index: 3
+        uc_child_index: 3
       child_4:
         age: 1  # This child is under the threshold
-        child_index: 4
+        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -114,16 +114,16 @@
         age: 30
       child_1:
         age: 5
-        child_index: 1
+        uc_child_index: 1
       child_2:
         age: 4
-        child_index: 2
+        uc_child_index: 2
       child_3:
         age: 2  # This child is under the threshold
-        child_index: 3
+        uc_child_index: 3
       child_4:
         age: 1  # This child is under the threshold
-        child_index: 4
+        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]

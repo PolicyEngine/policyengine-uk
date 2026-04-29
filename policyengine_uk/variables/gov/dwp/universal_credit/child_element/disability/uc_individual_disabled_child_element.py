@@ -11,5 +11,7 @@ class uc_individual_disabled_child_element(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.elements.child.disabled
-        child = person("is_child", period)
+        child = person(
+            "is_child_or_qualifying_young_person_for_universal_credit", period
+        )
         return (child * p.amount) * MONTHS_IN_YEAR

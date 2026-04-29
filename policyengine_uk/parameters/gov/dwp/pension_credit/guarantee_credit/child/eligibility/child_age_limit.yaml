@@ -1,0 +1,9 @@
+description: Age limit below which a person is a child for Pension Credit child addition rules.
+values:
+  0001-01-01: 16
+metadata:
+  unit: year
+  label: Pension Credit child age limit
+  reference:
+    - title: The State Pension Credit Regulations 2002 schedule IIA
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA

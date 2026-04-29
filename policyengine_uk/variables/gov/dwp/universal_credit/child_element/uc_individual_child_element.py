@@ -11,7 +11,7 @@ class uc_individual_child_element(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.elements.child
-        child_index = person("child_index", period)
+        child_index = person("uc_child_index", period)
         born_before_limit = person("uc_is_child_born_before_child_limit", period)
         child_limit_applying = where(~born_before_limit, p.limit.child_count, inf)
         is_eligible = (child_index != -1) & (child_index <= child_limit_applying)
