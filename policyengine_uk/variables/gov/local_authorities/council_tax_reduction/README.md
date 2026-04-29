@@ -84,6 +84,7 @@ Warrington references:
 
 Merton references:
 
+- https://www.merton.gov.uk/sites/default/files/2025-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202025-26.pdf
 - https://www.merton.gov.uk/council-tax-benefits-and-housing/benefits/council-tax-support/calculating-council-tax-support
 - https://www.merton.gov.uk/council-tax-benefits-and-housing/benefits/council-tax-support/council-tax-support-scheme-consultations-and-official-text
 
