@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Darlington Council Tax Support scheme.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Darlington Council Tax Support capital limit
+  reference:
+    - title: Darlington Council Tax Support scheme 2025-26
+      href: https://www.darlington.gov.uk/media/czqfj5rz/council-tax-support-scheme-25-26-final.pdf

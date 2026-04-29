@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_chesterfield_working_age,
+    is_darlington_working_age,
     is_east_hertfordshire_working_age,
     is_dudley_working_age,
     is_merton_working_age,
@@ -23,6 +24,9 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         chesterfield_params = parameters(
             period
         ).gov.local_authorities.chesterfield.council_tax_reduction
+        darlington_params = parameters(
+            period
+        ).gov.local_authorities.darlington.council_tax_reduction
         east_herts_params = parameters(
             period
         ).gov.local_authorities.east_hertfordshire.council_tax_reduction
@@ -57,6 +61,11 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             "council_tax_reduction_household_has_pensioner", period
         )
         chesterfield_working_age = is_chesterfield_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        darlington_working_age = is_darlington_working_age(
             local_authority,
             country,
             has_pensioner,
@@ -99,6 +108,10 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             chesterfield_params.non_dep_deduction.amount.calc(weekly_earned_income)
             * WEEKS_IN_YEAR
         )
+        darlington_deduction = (
+            darlington_params.non_dep_deduction.amount.calc(weekly_earned_income)
+            * WEEKS_IN_YEAR
+        )
         stevenage_deduction = (
             stevenage_params.non_dep_deduction.amount.calc(weekly_earned_income)
             * WEEKS_IN_YEAR
@@ -122,6 +135,7 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         local_deduction = select(
             [
                 chesterfield_working_age,
+                darlington_working_age,
                 east_herts_working_age,
                 stevenage_working_age,
                 merton_working_age,
@@ -131,6 +145,7 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             ],
             [
                 chesterfield_deduction,
+                darlington_deduction,
                 east_herts_deduction,
                 stevenage_deduction,
                 merton_deduction,
@@ -142,6 +157,7 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         )
         local_exemption_applies = (
             chesterfield_working_age
+            | darlington_working_age
             | east_herts_working_age
             | stevenage_working_age
             | merton_working_age

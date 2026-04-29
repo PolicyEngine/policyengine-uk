@@ -1,9 +1,11 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_chesterfield_working_age,
+    is_darlington_working_age,
     is_east_hertfordshire_working_age,
     is_england_pensioner_scheme,
     is_dudley_working_age,
+    is_gateshead_working_age,
     is_merton_working_age,
     is_scotland_scheme,
     is_southwark_working_age,
@@ -30,9 +32,11 @@ class simulated_council_tax_reduction_benunit(Variable):
         wales_ctr = local_authority_parameters.wales.council_tax_reduction
         scotland_ctr = local_authority_parameters.scotland.council_tax_reduction
         chesterfield_ctr = local_authority_parameters.chesterfield.council_tax_reduction
+        darlington_ctr = local_authority_parameters.darlington.council_tax_reduction
         east_herts_ctr = (
             local_authority_parameters.east_hertfordshire.council_tax_reduction
         )
+        gateshead_ctr = local_authority_parameters.gateshead.council_tax_reduction
         stevenage_ctr = local_authority_parameters.stevenage.council_tax_reduction
         stroud_ctr = local_authority_parameters.stroud.council_tax_reduction
         merton_ctr = local_authority_parameters.merton.council_tax_reduction
@@ -67,7 +71,17 @@ class simulated_council_tax_reduction_benunit(Variable):
             country,
             has_pensioner,
         )
+        darlington_working_age = is_darlington_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         east_herts_working_age = is_east_hertfordshire_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        gateshead_working_age = is_gateshead_working_age(
             local_authority,
             country,
             has_pensioner,
@@ -105,7 +119,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         warrington_band_a = council_tax_band == CouncilTaxBand.A
         warrants_like_legacy_scheme = (
             chesterfield_working_age
+            | darlington_working_age
             | east_herts_working_age
+            | gateshead_working_age
             | stevenage_working_age
             | stroud_working_age
             | merton_working_age
@@ -139,7 +155,9 @@ class simulated_council_tax_reduction_benunit(Variable):
                 wales,
                 scotland,
                 chesterfield_working_age,
+                darlington_working_age,
                 east_herts_working_age,
+                gateshead_working_age,
                 stevenage_working_age,
                 stroud_working_age,
                 merton_working_age,
@@ -152,7 +170,9 @@ class simulated_council_tax_reduction_benunit(Variable):
                 wales_ctr.maximum_support_rate,
                 scotland_ctr.maximum_support_rate,
                 chesterfield_ctr.maximum_support_rate,
+                darlington_ctr.maximum_support_rate,
                 east_herts_ctr.maximum_support_rate,
+                gateshead_ctr.maximum_support_rate,
                 stevenage_ctr.maximum_support_rate,
                 stroud_ctr.maximum_support_rate,
                 merton_ctr.maximum_support_rate,
@@ -172,7 +192,9 @@ class simulated_council_tax_reduction_benunit(Variable):
                 wales,
                 scotland,
                 chesterfield_working_age,
+                darlington_working_age,
                 east_herts_working_age,
+                gateshead_working_age,
                 stevenage_working_age,
                 stroud_working_age,
                 merton_working_age,
@@ -185,7 +207,9 @@ class simulated_council_tax_reduction_benunit(Variable):
                 wales_ctr.means_test.withdrawal_rate,
                 scotland_ctr.means_test.withdrawal_rate,
                 chesterfield_ctr.means_test.withdrawal_rate,
+                darlington_ctr.means_test.withdrawal_rate,
                 east_herts_ctr.means_test.withdrawal_rate,
+                gateshead_ctr.means_test.withdrawal_rate,
                 stevenage_ctr.means_test.withdrawal_rate,
                 stroud_ctr.means_test.withdrawal_rate,
                 merton_ctr.means_test.withdrawal_rate,
@@ -201,7 +225,9 @@ class simulated_council_tax_reduction_benunit(Variable):
                 wales,
                 scotland,
                 chesterfield_working_age,
+                darlington_working_age,
                 east_herts_working_age,
+                gateshead_working_age,
                 stevenage_working_age,
                 stroud_working_age,
                 merton_working_age,
@@ -214,7 +240,9 @@ class simulated_council_tax_reduction_benunit(Variable):
                 wales_ctr.means_test.capital_limit,
                 scotland_ctr.means_test.capital_limit,
                 chesterfield_ctr.means_test.capital_limit,
+                darlington_ctr.means_test.capital_limit,
                 east_herts_ctr.means_test.capital_limit,
+                gateshead_ctr.means_test.capital_limit,
                 stevenage_ctr.means_test.capital_limit,
                 stroud_ctr.means_test.capital_limit,
                 merton_ctr.means_test.capital_limit,
