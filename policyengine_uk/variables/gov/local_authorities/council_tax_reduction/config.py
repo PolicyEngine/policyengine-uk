@@ -34,8 +34,16 @@ def is_gateshead(local_authority):
     return local_authority == LocalAuthority.GATESHEAD
 
 
+def is_kings_lynn_and_west_norfolk(local_authority):
+    return local_authority == LocalAuthority.KINGS_LYNN_AND_WEST_NORFOLK
+
+
 def is_merton(local_authority):
     return local_authority == LocalAuthority.MERTON
+
+
+def is_norwich(local_authority):
+    return local_authority == LocalAuthority.NORWICH
 
 
 def is_southwark(local_authority):
@@ -98,8 +106,22 @@ def is_gateshead_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_kings_lynn_and_west_norfolk_working_age(
+    local_authority, country, has_pensioner
+):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_kings_lynn_and_west_norfolk(local_authority)
+    )
+
+
 def is_merton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
+
+
+def is_norwich_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_norwich(local_authority)
 
 
 def is_southwark_working_age(local_authority, country, has_pensioner):
@@ -129,7 +151,13 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_stroud_working_age(local_authority, country, has_pensioner)
         | is_darlington_working_age(local_authority, country, has_pensioner)
         | is_gateshead_working_age(local_authority, country, has_pensioner)
+        | is_kings_lynn_and_west_norfolk_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         | is_merton_working_age(local_authority, country, has_pensioner)
+        | is_norwich_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)

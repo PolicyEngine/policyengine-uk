@@ -1,0 +1,39 @@
+description: Weekly non-dependant deduction schedule under the King's Lynn and West Norfolk Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2025-04-01: 0
+      2026-04-01: 0
+    amount:
+      2025-04-01: 5
+      2026-04-01: 5.2
+  - threshold:
+      2025-04-01: 266
+      2026-04-01: 279
+    amount:
+      2025-04-01: 10.2
+      2026-04-01: 10.6
+  - threshold:
+      2025-04-01: 463
+      2026-04-01: 485
+    amount:
+      2025-04-01: 12.8
+      2026-04-01: 13.3
+  - threshold:
+      2025-04-01: 577
+      2026-04-01: 605
+    amount:
+      2025-04-01: 15.35
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: King's Lynn and West Norfolk Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Borough Council of King's Lynn & West Norfolk Council Tax Reduction Scheme 2025 to 2026
+      href: https://www.west-norfolk.gov.uk/download/downloads/id/9853/council_tax_reduction_scheme_2025_to_2026.pdf
+    - title: Borough Council of King's Lynn & West Norfolk Council Tax Reduction Scheme 2026 to 2027
+      href: https://www.west-norfolk.gov.uk/download/downloads/id/3330/council_tax_support_regulations.pdf
+    - title: Borough Council of King's Lynn & West Norfolk Council Tax Support - Non-dependants
+      href: https://www.west-norfolk.gov.uk/info/20019/council_tax_support/29/council_tax_support_-_non-dependants

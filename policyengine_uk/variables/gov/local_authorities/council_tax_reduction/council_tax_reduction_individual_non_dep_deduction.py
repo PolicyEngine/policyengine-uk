@@ -5,7 +5,9 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_east_hertfordshire_working_age,
     is_dudley_working_age,
     is_gateshead_working_age,
+    is_kings_lynn_and_west_norfolk_working_age,
     is_merton_working_age,
+    is_norwich_working_age,
     is_southwark_working_age,
     is_stevenage_working_age,
     is_warrington_working_age,
@@ -34,12 +36,18 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
         gateshead_params = parameters(
             period
         ).gov.local_authorities.gateshead.council_tax_reduction
+        kings_lynn_params = parameters(
+            period
+        ).gov.local_authorities.kings_lynn_and_west_norfolk.council_tax_reduction
         stevenage_params = parameters(
             period
         ).gov.local_authorities.stevenage.council_tax_reduction
         merton_params = parameters(
             period
         ).gov.local_authorities.merton.council_tax_reduction
+        norwich_params = parameters(
+            period
+        ).gov.local_authorities.norwich.council_tax_reduction
         southwark_params = parameters(
             period
         ).gov.local_authorities.southwark.council_tax_reduction
@@ -84,12 +92,22 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             country,
             has_pensioner,
         )
+        kings_lynn_working_age = is_kings_lynn_and_west_norfolk_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         stevenage_working_age = is_stevenage_working_age(
             local_authority,
             country,
             has_pensioner,
         )
         merton_working_age = is_merton_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        norwich_working_age = is_norwich_working_age(
             local_authority,
             country,
             has_pensioner,
@@ -129,8 +147,16 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             gateshead_params.non_dep_deduction.amount.calc(weekly_earned_income)
             * WEEKS_IN_YEAR
         )
+        kings_lynn_deduction = (
+            kings_lynn_params.non_dep_deduction.amount.calc(weekly_earned_income)
+            * WEEKS_IN_YEAR
+        )
         merton_deduction = (
             merton_params.non_dep_deduction.amount.calc(weekly_earned_income)
+            * WEEKS_IN_YEAR
+        )
+        norwich_deduction = (
+            norwich_params.non_dep_deduction.amount.calc(weekly_earned_income)
             * WEEKS_IN_YEAR
         )
         southwark_deduction = (
@@ -151,8 +177,10 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
                 darlington_working_age,
                 east_herts_working_age,
                 gateshead_working_age,
+                kings_lynn_working_age,
                 stevenage_working_age,
                 merton_working_age,
+                norwich_working_age,
                 southwark_working_age,
                 warrington_working_age,
                 dudley_working_age,
@@ -162,8 +190,10 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
                 darlington_deduction,
                 east_herts_deduction,
                 gateshead_deduction,
+                kings_lynn_deduction,
                 stevenage_deduction,
                 merton_deduction,
+                norwich_deduction,
                 southwark_deduction,
                 warrington_deduction,
                 dudley_deduction,
@@ -175,8 +205,10 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             | darlington_working_age
             | east_herts_working_age
             | gateshead_working_age
+            | kings_lynn_working_age
             | stevenage_working_age
             | merton_working_age
+            | norwich_working_age
             | southwark_working_age
             | warrington_working_age
             | dudley_working_age

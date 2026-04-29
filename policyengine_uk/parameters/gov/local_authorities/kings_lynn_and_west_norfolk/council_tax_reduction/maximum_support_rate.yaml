@@ -1,0 +1,13 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the King's Lynn and West Norfolk Council Tax Reduction scheme.
+values:
+  2025-04-01: 1
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: King's Lynn and West Norfolk Council Tax Reduction maximum support rate
+  reference:
+    - title: Borough Council of King's Lynn & West Norfolk Council Tax Reduction Scheme 2025 to 2026
+      href: https://www.west-norfolk.gov.uk/download/downloads/id/9853/council_tax_reduction_scheme_2025_to_2026.pdf
+    - title: Borough Council of King's Lynn & West Norfolk Council Tax Reduction Scheme 2026 to 2027
+      href: https://www.west-norfolk.gov.uk/download/downloads/id/3330/council_tax_support_regulations.pdf
