@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction schedule under the Crawley Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2025-04-01: 0
+    amount:
+      2025-04-01: 5
+  - threshold:
+      2025-04-01: 100
+    amount:
+      2025-04-01: 10
+  - threshold:
+      2025-04-01: 200
+    amount:
+      2025-04-01: 15
+  - threshold:
+      2025-04-01: 300
+    amount:
+      2025-04-01: 20
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Crawley Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Crawley Council Tax Reduction Scheme 2025/26
+      href: https://crawley.gov.uk/sites/default/files/2025-02/Council%20Tax%20Reduction%20scheme%202025%20to%202026.pdf

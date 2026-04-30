@@ -49,11 +49,27 @@ def legacy_council_tax_reduction(
     )
 
 
-def local_non_dep_deductions(benunit, period, individual_deduction_variable):
+def local_non_dep_deductions(
+    benunit,
+    period,
+    individual_deduction_variable,
+    one_deduction_for_uc_couples=True,
+):
     deductions = benunit.members(individual_deduction_variable, period)
-    deductions_in_household = benunit.max(benunit.members.household.sum(deductions))
-    deductions_in_benunit = benunit.sum(deductions)
-    return deductions_in_household - deductions_in_benunit
+    deduction_for_benunit = benunit.max(deductions)
+    if not one_deduction_for_uc_couples:
+        has_uc = benunit("universal_credit", period) > 0
+        deduction_for_benunit = where(
+            has_uc,
+            benunit.sum(deductions),
+            deduction_for_benunit,
+        )
+    is_benunit_head = benunit.members("is_benunit_head", period)
+    deductions_to_count = is_benunit_head * benunit.project(deduction_for_benunit)
+    deductions_in_household = benunit.max(
+        benunit.members.household.sum(deductions_to_count)
+    )
+    return deductions_in_household - deduction_for_benunit
 
 
 def earned_income_non_dep_deduction(
@@ -61,12 +77,14 @@ def earned_income_non_dep_deduction(
     period,
     ctr,
     working_age,
+    exempt_income_based_benefits=True,
     exempt_uc_no_earned_income=False,
     exempt_under_25_uc_no_earned_income=False,
 ):
-    weekly_earned_income = (
-        person("employment_income", period) + person("self_employment_income", period)
-    ) / WEEKS_IN_YEAR
+    earned_income = person("employment_income", period) + person(
+        "self_employment_income", period
+    )
+    weekly_earned_income = person.benunit.sum(earned_income) / WEEKS_IN_YEAR
     deduction = ctr.non_dep_deduction.amount.calc(weekly_earned_income) * WEEKS_IN_YEAR
     claimant_exempt = person.household(
         "council_tax_reduction_household_has_non_dep_exemption", period
@@ -87,7 +105,11 @@ def earned_income_non_dep_deduction(
             | (exempt_under_25_uc_no_earned_income & (person("age", period) < 25))
         )
     )
-    exempt = claimant_exempt | income_based_benefit | uc_exempt
+    exempt = (
+        claimant_exempt
+        | (exempt_income_based_benefits & income_based_benefit)
+        | uc_exempt
+    )
     return working_age * where(exempt, 0.0, deduction)
 
 

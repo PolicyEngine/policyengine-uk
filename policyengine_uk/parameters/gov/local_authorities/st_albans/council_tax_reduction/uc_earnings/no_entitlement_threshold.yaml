@@ -1,0 +1,13 @@
+description: Monthly earnings threshold above which Universal Credit claimants have no entitlement under the St Albans Council Tax Reduction scheme.
+values:
+  2025-04-01: 3_415
+  2026-04-01: 3_600
+metadata:
+  unit: currency-GBP
+  period: month
+  label: St Albans Council Tax Reduction Universal Credit no-entitlement earnings threshold
+  reference:
+    - title: St Albans Council Tax Reduction Scheme 2025/26
+      href: https://www.stalbans.gov.uk/sites/default/files/attachments/St%20Albans%20S13A%20202526%20Final.pdf
+    - title: St Albans Council Tax Support
+      href: https://www.stalbans.gov.uk/council-tax-support

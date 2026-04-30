@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Basingstoke and Deane Council Tax Support scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Basingstoke and Deane Council Tax Support withdrawal rate
+  reference:
+    - title: Basingstoke and Deane Council Tax Support Scheme 2026/27
+      href: https://www.basingstoke.gov.uk/content/page/77332/Basingstoke%20S13A%202026%20Scheme%20Final.pdf

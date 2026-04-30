@@ -6,6 +6,14 @@ from policyengine_uk.variables.household.demographic.locations import (
 from policyengine_uk.variables.input.council_tax_band import CouncilTaxBand
 
 
+def is_adur(local_authority):
+    return local_authority == LocalAuthority.ADUR
+
+
+def is_basingstoke_and_deane(local_authority):
+    return local_authority == LocalAuthority.BASINGSTOKE_AND_DEANE
+
+
 def is_dudley(local_authority):
     return local_authority == LocalAuthority.DUDLEY
 
@@ -24,6 +32,10 @@ def is_broadland(local_authority):
 
 def is_chesterfield(local_authority):
     return local_authority == LocalAuthority.CHESTERFIELD
+
+
+def is_crawley(local_authority):
+    return local_authority == LocalAuthority.CRAWLEY
 
 
 def is_east_hertfordshire(local_authority):
@@ -90,12 +102,20 @@ def is_south_norfolk(local_authority):
     return local_authority == LocalAuthority.SOUTH_NORFOLK
 
 
+def is_st_albans(local_authority):
+    return local_authority == LocalAuthority.ST_ALBANS
+
+
 def is_warrington(local_authority):
     return local_authority == LocalAuthority.WARRINGTON
 
 
 def is_west_suffolk(local_authority):
     return local_authority == LocalAuthority.WEST_SUFFOLK
+
+
+def is_worthing(local_authority):
+    return local_authority == LocalAuthority.WORTHING
 
 
 def is_england_pensioner_scheme(country, has_pensioner):
@@ -132,6 +152,18 @@ def is_east_suffolk_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_adur_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_adur(local_authority)
+
+
+def is_basingstoke_and_deane_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_basingstoke_and_deane(local_authority)
+    )
+
+
 def is_breckland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_breckland(local_authority)
 
@@ -148,6 +180,10 @@ def is_chesterfield_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_chesterfield(local_authority)
     )
+
+
+def is_crawley_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_crawley(local_authority)
 
 
 def is_stevenage_working_age(local_authority, country, has_pensioner):
@@ -216,6 +252,10 @@ def is_south_norfolk_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_st_albans_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_st_albans(local_authority)
+
+
 def is_warrington_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_warrington(local_authority)
@@ -228,15 +268,26 @@ def is_west_suffolk_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_worthing_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_worthing(local_authority)
+
+
 def is_supported_scheme(local_authority, country, has_pensioner):
     return (
         is_england_pensioner_scheme(country, has_pensioner)
         | is_scotland_scheme(country)
         | is_wales_scheme(country)
+        | is_adur_working_age(local_authority, country, has_pensioner)
+        | is_basingstoke_and_deane_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         | is_bolton_working_age(local_authority, country, has_pensioner)
         | is_breckland_working_age(local_authority, country, has_pensioner)
         | is_broadland_working_age(local_authority, country, has_pensioner)
         | is_chesterfield_working_age(local_authority, country, has_pensioner)
+        | is_crawley_working_age(local_authority, country, has_pensioner)
         | is_east_cambridgeshire_working_age(
             local_authority,
             country,
@@ -265,8 +316,10 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_north_norfolk_working_age(local_authority, country, has_pensioner)
         | is_south_norfolk_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)
+        | is_st_albans_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_west_suffolk_working_age(local_authority, country, has_pensioner)
+        | is_worthing_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)
     )
 

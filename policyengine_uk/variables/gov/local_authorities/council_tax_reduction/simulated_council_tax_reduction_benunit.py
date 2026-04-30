@@ -7,10 +7,13 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
 
 
 LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
+    "adur_council_tax_reduction",
+    "basingstoke_and_deane_council_tax_reduction",
     "bolton_council_tax_reduction",
     "breckland_council_tax_reduction",
     "broadland_council_tax_reduction",
     "chesterfield_council_tax_reduction",
+    "crawley_council_tax_reduction",
     "darlington_council_tax_reduction",
     "dudley_council_tax_reduction",
     "east_cambridgeshire_council_tax_reduction",
@@ -26,10 +29,12 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "norwich_council_tax_reduction",
     "south_norfolk_council_tax_reduction",
     "southwark_council_tax_reduction",
+    "st_albans_council_tax_reduction",
     "stevenage_council_tax_reduction",
     "stroud_council_tax_reduction",
     "warrington_council_tax_reduction",
     "west_suffolk_council_tax_reduction",
+    "worthing_council_tax_reduction",
 ]
 
 

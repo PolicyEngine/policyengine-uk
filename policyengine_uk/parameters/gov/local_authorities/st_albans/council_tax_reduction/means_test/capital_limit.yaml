@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the St Albans Council Tax Reduction scheme.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: St Albans Council Tax Reduction capital limit
+  reference:
+    - title: St Albans Council Tax Reduction Scheme 2025/26
+      href: https://www.stalbans.gov.uk/sites/default/files/attachments/St%20Albans%20S13A%20202526%20Final.pdf

@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered under the Adur Council Tax Support scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Adur Council Tax Support maximum support rate
+  reference:
+    - title: Adur Council Tax Support 2026-27
+      href: https://www.adur-worthing.gov.uk/media/Media,174007,smxx.pdf
