@@ -224,7 +224,9 @@ def run_case(council_name: str, scenario_name: str) -> dict:
         "description": scenario.description,
         "council_tax_band": council.council_tax_band,
         "council_tax": council.council_tax,
-        "council_tax_reduction": float(sim.calculate("council_tax_reduction", period)[0]),
+        "council_tax_reduction": float(
+            sim.calculate("council_tax_reduction", period)[0]
+        ),
         "council_tax_less_benefit": float(
             sim.calculate("council_tax_less_benefit", period)[0]
         ),

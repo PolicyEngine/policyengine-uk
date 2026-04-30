@@ -392,7 +392,12 @@ def bootstrap_calculation(
         if "CalcIdent" in payload:
             break
         response = follow_post(session, action, payload)
-    if response is None or action is None or payload is None or "CalcIdent" not in payload:
+    if (
+        response is None
+        or action is None
+        or payload is None
+        or "CalcIdent" not in payload
+    ):
         raise RuntimeError(
             "entitledto did not return the calculator start page with a CalcIdent"
         )
@@ -443,7 +448,9 @@ def require_page(response: requests.Response, fragment: str) -> None:
 
 
 def normalize_text(html: str) -> str:
-    return " ".join(BeautifulSoup(html, "html.parser").get_text(" ", strip=True).split())
+    return " ".join(
+        BeautifulSoup(html, "html.parser").get_text(" ", strip=True).split()
+    )
 
 
 def extract_money(pattern: str, text: str) -> Optional[str]:
@@ -486,7 +493,9 @@ def parse_results(html: str) -> Dict[str, Optional[str]]:
         if bill_match
         else None,
         "council_tax_bill_after_period": bill_match.group(4) if bill_match else None,
-        "total_benefits": total_match.group(1).replace(" ", "") if total_match else None,
+        "total_benefits": total_match.group(1).replace(" ", "")
+        if total_match
+        else None,
         "total_benefits_period": total_match.group(2) if total_match else None,
     }
 
@@ -550,8 +559,10 @@ def run_scenario(
                 session,
                 response,
                 child_overrides,
-                lambda resp: "/BenefitsYouCurrentlyReceive" in resp.url
-                or "/Children" in resp.url,
+                lambda resp: (
+                    "/BenefitsYouCurrentlyReceive" in resp.url
+                    or "/Children" in resp.url
+                ),
             )
 
     if "/DisabilityBenefits" in response.url:

@@ -4,9 +4,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._lega
 )
 
 
-class kings_lynn_and_west_norfolk_council_tax_reduction_non_dep_deductions(
-    Variable
-):
+class kings_lynn_and_west_norfolk_council_tax_reduction_non_dep_deductions(Variable):
     value_type = float
     entity = BenUnit
     label = "King's Lynn and West Norfolk CTR non-dependent deductions"

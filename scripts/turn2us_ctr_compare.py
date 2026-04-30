@@ -97,7 +97,7 @@ def build_couple_jsa_steps(postcode_payload: dict[str, Any]) -> list[dict[str, A
 
 
 def build_lone_parent_one_child_jsa_steps(
-    postcode_payload: dict[str, Any]
+    postcode_payload: dict[str, Any],
 ) -> list[dict[str, Any]]:
     steps = build_single_jsa_steps(postcode_payload)
     steps[12] = {
@@ -115,7 +115,7 @@ def build_lone_parent_one_child_jsa_steps(
 
 
 def build_single_pension_credit_steps(
-    postcode_payload: dict[str, Any]
+    postcode_payload: dict[str, Any],
 ) -> list[dict[str, Any]]:
     steps = build_single_jsa_steps(postcode_payload)
     steps[2] = {**steps[2], "ClientDob": "01/01/1956"}
@@ -204,7 +204,9 @@ def advance_survey(
     return response.json()
 
 
-def fetch_results(session: requests.Session, survey_state: dict[str, Any]) -> dict[str, Any]:
+def fetch_results(
+    session: requests.Session, survey_state: dict[str, Any]
+) -> dict[str, Any]:
     response = session.get(
         f"{BASE_URL}/api/data/result/?session={survey_state['session']}",
         timeout=30,

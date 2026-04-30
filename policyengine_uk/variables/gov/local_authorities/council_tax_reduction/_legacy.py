@@ -37,7 +37,9 @@ def legacy_council_tax_reduction(
         - excess_income * ctr.means_test.withdrawal_rate
         - non_dep_deductions,
     )
-    capital_eligible = benunit.household("savings", period) <= ctr.means_test.capital_limit
+    capital_eligible = (
+        benunit.household("savings", period) <= ctr.means_test.capital_limit
+    )
     return (
         working_age
         * is_household_head_benunit

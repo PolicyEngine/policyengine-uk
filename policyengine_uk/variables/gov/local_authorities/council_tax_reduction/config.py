@@ -90,18 +90,12 @@ def is_east_suffolk_working_age(local_authority, country, has_pensioner):
 
 def is_chesterfield_working_age(local_authority, country, has_pensioner):
     return (
-        (country == Country.ENGLAND)
-        & ~has_pensioner
-        & is_chesterfield(local_authority)
+        (country == Country.ENGLAND) & ~has_pensioner & is_chesterfield(local_authority)
     )
 
 
 def is_stevenage_working_age(local_authority, country, has_pensioner):
-    return (
-        (country == Country.ENGLAND)
-        & ~has_pensioner
-        & is_stevenage(local_authority)
-    )
+    return (country == Country.ENGLAND) & ~has_pensioner & is_stevenage(local_authority)
 
 
 def is_stroud_working_age(local_authority, country, has_pensioner):
@@ -109,20 +103,16 @@ def is_stroud_working_age(local_authority, country, has_pensioner):
 
 
 def is_darlington_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_darlington(
-        local_authority
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_darlington(local_authority)
     )
 
 
 def is_gateshead_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_gateshead(
-        local_authority
-    )
+    return (country == Country.ENGLAND) & ~has_pensioner & is_gateshead(local_authority)
 
 
-def is_kings_lynn_and_west_norfolk_working_age(
-    local_authority, country, has_pensioner
-):
+def is_kings_lynn_and_west_norfolk_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND)
         & ~has_pensioner
@@ -139,15 +129,15 @@ def is_norwich_working_age(local_authority, country, has_pensioner):
 
 
 def is_north_norfolk_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_north_norfolk(
-        local_authority
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_north_norfolk(local_authority)
     )
 
 
 def is_southwark_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_southwark(
-        local_authority
-    )
+    return (country == Country.ENGLAND) & ~has_pensioner & is_southwark(local_authority)
 
 
 def is_warrington_working_age(local_authority, country, has_pensioner):

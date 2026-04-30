@@ -16,10 +16,9 @@ class east_suffolk_council_tax_reduction_individual_non_dep_deduction(Variable):
     defined_for = "council_tax_reduction_individual_non_dep_deduction_eligible"
 
     def formula(person, period, parameters):
-        ctr = (
-            parameters(period)
-            .gov.local_authorities.east_suffolk.council_tax_reduction
-        )
+        ctr = parameters(
+            period
+        ).gov.local_authorities.east_suffolk.council_tax_reduction
         household = person.household
         working_age = is_east_suffolk_working_age(
             household("local_authority", period),

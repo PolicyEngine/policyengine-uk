@@ -31,9 +31,7 @@ class warrington_council_tax_reduction(Variable):
             "council_tax_reduction_relevant_income_based_benefit",
             period,
         )
-        working_age = is_warrington_working_age(
-            local_authority, country, has_pensioner
-        )
+        working_age = is_warrington_working_age(local_authority, country, has_pensioner)
         class_d = working_age & (
             income_below_applicable_amount | relevant_income_based_benefit
         )

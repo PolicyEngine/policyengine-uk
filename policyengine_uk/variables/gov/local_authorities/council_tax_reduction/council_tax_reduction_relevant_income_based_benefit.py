@@ -8,6 +8,4 @@ class council_tax_reduction_relevant_income_based_benefit(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return (
-            add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
-        )
+        return add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
