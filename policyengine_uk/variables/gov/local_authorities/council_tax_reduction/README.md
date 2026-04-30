@@ -5,7 +5,7 @@ This implementation currently simulates:
 - The statutory CTR scheme for pensioner households in England.
 - The national CTR scheme in Wales.
 - The national CTR scheme in Scotland.
-- Working-age local schemes for Breckland, Chesterfield, Darlington, Dudley, East Cambridgeshire, East Hertfordshire, East Suffolk, Fenland, Gateshead, King's Lynn and West Norfolk, Merton, North Norfolk, Norwich, Southwark, Stevenage, Stroud, Warrington, and West Suffolk.
+- Working-age local schemes for Breckland, Broadland, Chesterfield, Darlington, Dudley, East Cambridgeshire, East Hertfordshire, East Suffolk, Fenland, Gateshead, King's Lynn and West Norfolk, Merton, North Norfolk, Norwich, South Norfolk, Southwark, Stevenage, Stroud, Warrington, and West Suffolk.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
@@ -45,6 +45,8 @@ Spot checks against public calculators and scheme sources currently show:
 - Breckland (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says maximum Council Tax Reduction is `91.5%` of eligible Council Tax after discounts and non-dependant deductions, with the standard `2 6/7%` daily excess-income percentage and the ARP flat working-age non-dependant deduction. PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153` before non-dependant deductions.
 - Fenland (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says maximum Council Tax Reduction is `100%` of eligible Council Tax after discounts and non-dependant deductions, with the standard `2 6/7%` daily excess-income percentage and the ARP flat working-age non-dependant deduction. PolicyEngine UK returns `council_tax_reduction = GBP 1,800` and `council_tax_less_benefit = GBP 0` before non-dependant deductions.
 - West Suffolk (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says maximum Council Tax Reduction is `100%` for the period from `1 April 2023` through `31 March 2026`, then `91.5%` after `31 March 2026`, with the standard `2 6/7%` daily excess-income percentage and the ARP flat working-age non-dependant deduction. PolicyEngine UK returns `GBP 1,800` in 2025 and `GBP 1,647` in 2026 before non-dependant deductions.
+- Broadland (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says working-age applicants who are not receiving a war pension can receive up to `87%` of eligible Council Tax, with a `20%` taper, a `GBP 16,000` capital limit, and a flat `GBP 7` weekly working-age non-dependant deduction. The council's 2026/27 papers say the existing scheme continues with no changes. PolicyEngine UK returns `council_tax_reduction = GBP 1,566` and `council_tax_less_benefit = GBP 234` before non-dependant deductions.
+- South Norfolk (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says working-age applicants who are not receiving a war pension can receive up to `87%` of eligible Council Tax, with a `20%` taper, a `GBP 16,000` capital limit, and a flat `GBP 7` weekly working-age non-dependant deduction. The council's 2026/27 papers say the existing scheme continues with no changes. PolicyEngine UK returns `council_tax_reduction = GBP 1,566` and `council_tax_less_benefit = GBP 234` before non-dependant deductions.
 - Stevenage (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Chesterfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Warrington (`WA1 1UH`, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA): entitledto returns `GBP 26.69` per week of Council Tax Support and `GBP 2.48` per week left to pay on a displayed bill of `GBP 29.17` per week, which is a `91.5%` maximum award on the displayed weekly bill. PolicyEngine UK applies the same rule structure.
@@ -93,6 +95,11 @@ Breckland references:
 - https://www.angliarevenues.gov.uk/services/housing-benefits/apply/
 - https://www.angliarevenues.gov.uk/services/housing-benefits/non-dependant-deductions-ctrs.cfm
 
+Broadland references:
+
+- https://www.southnorfolkandbroadland.gov.uk/asset-library/broadland-ctr-scheme-2025-26.pdf
+- https://southnorfolkandbroadland.moderngov.co.uk/documents/s12491/CTAX%20Reduction%20Scheme.pdf
+
 Fenland references:
 
 - https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/Fenland-District-Council-Council-Tax-Reduction-Scheme-2025-26.pdf
@@ -104,6 +111,11 @@ West Suffolk references:
 - https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/West-Suffolk-Council-Council-Tax-Reduction-Scheme-2025-26.pdf
 - https://www.angliarevenues.gov.uk/services/housing-benefits/apply/
 - https://www.angliarevenues.gov.uk/services/housing-benefits/non-dependant-deductions-ctrs.cfm
+
+South Norfolk references:
+
+- https://www.southnorfolkandbroadland.gov.uk/asset-library/south-norfolk-ctr-scheme-2025-26.pdf
+- https://southnorfolkandbroadland.moderngov.co.uk/documents/g1058/Printed%20minutes%2024th-Nov-2025%2009.00%20South%20Norfolk%20Cabinet.pdf?T=1
 
 Stevenage references:
 

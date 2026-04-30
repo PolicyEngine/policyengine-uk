@@ -8,6 +8,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
 
 LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "breckland_council_tax_reduction",
+    "broadland_council_tax_reduction",
     "chesterfield_council_tax_reduction",
     "darlington_council_tax_reduction",
     "dudley_council_tax_reduction",
@@ -20,6 +21,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "merton_council_tax_reduction",
     "north_norfolk_council_tax_reduction",
     "norwich_council_tax_reduction",
+    "south_norfolk_council_tax_reduction",
     "southwark_council_tax_reduction",
     "stevenage_council_tax_reduction",
     "stroud_council_tax_reduction",

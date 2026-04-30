@@ -1,0 +1,13 @@
+description: Withdrawal rate for working-age households under the Broadland Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.2
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Broadland Council Tax Reduction withdrawal rate
+  reference:
+    - title: Broadland District Council Council Tax Reduction Scheme 2025/26
+      href: https://www.southnorfolkandbroadland.gov.uk/asset-library/broadland-ctr-scheme-2025-26.pdf
+    - title: Broadland Council Tax Reduction Scheme 2026/27 report
+      href: https://southnorfolkandbroadland.moderngov.co.uk/documents/s12491/CTAX%20Reduction%20Scheme.pdf

@@ -14,6 +14,10 @@ def is_breckland(local_authority):
     return local_authority == LocalAuthority.BRECKLAND
 
 
+def is_broadland(local_authority):
+    return local_authority == LocalAuthority.BROADLAND
+
+
 def is_chesterfield(local_authority):
     return local_authority == LocalAuthority.CHESTERFIELD
 
@@ -70,6 +74,10 @@ def is_southwark(local_authority):
     return local_authority == LocalAuthority.SOUTHWARK
 
 
+def is_south_norfolk(local_authority):
+    return local_authority == LocalAuthority.SOUTH_NORFOLK
+
+
 def is_warrington(local_authority):
     return local_authority == LocalAuthority.WARRINGTON
 
@@ -114,6 +122,10 @@ def is_east_suffolk_working_age(local_authority, country, has_pensioner):
 
 def is_breckland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_breckland(local_authority)
+
+
+def is_broadland_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_broadland(local_authority)
 
 
 def is_chesterfield_working_age(local_authority, country, has_pensioner):
@@ -172,6 +184,14 @@ def is_southwark_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_southwark(local_authority)
 
 
+def is_south_norfolk_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_south_norfolk(local_authority)
+    )
+
+
 def is_warrington_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_warrington(local_authority)
@@ -190,6 +210,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_scotland_scheme(country)
         | is_wales_scheme(country)
         | is_breckland_working_age(local_authority, country, has_pensioner)
+        | is_broadland_working_age(local_authority, country, has_pensioner)
         | is_chesterfield_working_age(local_authority, country, has_pensioner)
         | is_east_cambridgeshire_working_age(
             local_authority,
@@ -215,6 +236,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_merton_working_age(local_authority, country, has_pensioner)
         | is_norwich_working_age(local_authority, country, has_pensioner)
         | is_north_norfolk_working_age(local_authority, country, has_pensioner)
+        | is_south_norfolk_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_west_suffolk_working_age(local_authority, country, has_pensioner)

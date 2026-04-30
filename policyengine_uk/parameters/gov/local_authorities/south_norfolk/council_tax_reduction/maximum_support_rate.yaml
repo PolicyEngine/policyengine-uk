@@ -1,0 +1,13 @@
+description: Maximum share of eligible Council Tax liability covered under the South Norfolk Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.87
+  2026-04-01: 0.87
+metadata:
+  unit: /1
+  period: year
+  label: South Norfolk Council Tax Reduction maximum support rate
+  reference:
+    - title: South Norfolk Council Council Tax Reduction Scheme 2025/26
+      href: https://www.southnorfolkandbroadland.gov.uk/asset-library/south-norfolk-ctr-scheme-2025-26.pdf
+    - title: South Norfolk Cabinet Council Tax Reduction Scheme 2026/27 minutes
+      href: https://southnorfolkandbroadland.moderngov.co.uk/documents/g1058/Printed%20minutes%2024th-Nov-2025%2009.00%20South%20Norfolk%20Cabinet.pdf?T=1
