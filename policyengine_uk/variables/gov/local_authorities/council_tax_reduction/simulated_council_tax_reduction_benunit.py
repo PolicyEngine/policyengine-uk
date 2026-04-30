@@ -14,6 +14,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "gateshead_council_tax_reduction",
     "kings_lynn_and_west_norfolk_council_tax_reduction",
     "merton_council_tax_reduction",
+    "north_norfolk_council_tax_reduction",
     "norwich_council_tax_reduction",
     "southwark_council_tax_reduction",
     "stevenage_council_tax_reduction",

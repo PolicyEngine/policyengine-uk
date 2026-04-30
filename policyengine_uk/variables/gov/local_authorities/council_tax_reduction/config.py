@@ -46,6 +46,10 @@ def is_norwich(local_authority):
     return local_authority == LocalAuthority.NORWICH
 
 
+def is_north_norfolk(local_authority):
+    return local_authority == LocalAuthority.NORTH_NORFOLK
+
+
 def is_southwark(local_authority):
     return local_authority == LocalAuthority.SOUTHWARK
 
@@ -124,6 +128,12 @@ def is_norwich_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_norwich(local_authority)
 
 
+def is_north_norfolk_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_north_norfolk(
+        local_authority
+    )
+
+
 def is_southwark_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_southwark(
         local_authority
@@ -158,6 +168,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         )
         | is_merton_working_age(local_authority, country, has_pensioner)
         | is_norwich_working_age(local_authority, country, has_pensioner)
+        | is_north_norfolk_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)
