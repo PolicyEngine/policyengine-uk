@@ -11,6 +11,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "chesterfield_council_tax_reduction",
     "darlington_council_tax_reduction",
     "dudley_council_tax_reduction",
+    "east_cambridgeshire_council_tax_reduction",
     "east_hertfordshire_council_tax_reduction",
     "east_suffolk_council_tax_reduction",
     "fenland_council_tax_reduction",
@@ -23,6 +24,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "stevenage_council_tax_reduction",
     "stroud_council_tax_reduction",
     "warrington_council_tax_reduction",
+    "west_suffolk_council_tax_reduction",
 ]
 
 

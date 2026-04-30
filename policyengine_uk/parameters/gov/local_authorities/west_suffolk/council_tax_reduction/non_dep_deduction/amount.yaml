@@ -1,0 +1,13 @@
+description: Weekly non-dependant deduction under the West Suffolk Council Tax Reduction scheme for working-age households.
+values:
+  2025-04-01: 8.03
+  2026-04-01: 8.34
+metadata:
+  unit: currency-GBP
+  period: week
+  label: West Suffolk Council Tax Reduction working-age non-dependant deduction amount
+  reference:
+    - title: West Suffolk Council Council Tax Reduction Scheme 2025/26
+      href: https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/West-Suffolk-Council-Council-Tax-Reduction-Scheme-2025-26.pdf
+    - title: Anglia Revenues Partnership Council Tax Reduction non-dependant deductions
+      href: https://www.angliarevenues.gov.uk/services/housing-benefits/non-dependant-deductions-ctrs.cfm

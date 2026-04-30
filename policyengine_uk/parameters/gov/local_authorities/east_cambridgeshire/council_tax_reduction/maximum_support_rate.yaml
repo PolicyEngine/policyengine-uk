@@ -1,0 +1,11 @@
+description: Maximum share of eligible Council Tax liability covered under the East Cambridgeshire Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.915
+  2026-04-01: 0.915
+metadata:
+  unit: /1
+  period: year
+  label: East Cambridgeshire Council Tax Reduction maximum support rate
+  reference:
+    - title: East Cambridgeshire District Council Council Tax Reduction Schemes 2025/26
+      href: https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/East-Cambridgeshire-District-Council-Council-Tax-Reduction-Schemes-2025-26.pdf

@@ -1,0 +1,11 @@
+description: Maximum share of eligible Council Tax liability covered under the West Suffolk Council Tax Reduction scheme.
+values:
+  2025-04-01: 1
+  2026-04-01: 0.915
+metadata:
+  unit: /1
+  period: year
+  label: West Suffolk Council Tax Reduction maximum support rate
+  reference:
+    - title: West Suffolk Council Council Tax Reduction Scheme 2025/26
+      href: https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/West-Suffolk-Council-Council-Tax-Reduction-Scheme-2025-26.pdf
