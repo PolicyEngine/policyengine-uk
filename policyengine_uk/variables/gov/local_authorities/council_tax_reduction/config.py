@@ -10,6 +10,10 @@ def is_dudley(local_authority):
     return local_authority == LocalAuthority.DUDLEY
 
 
+def is_breckland(local_authority):
+    return local_authority == LocalAuthority.BRECKLAND
+
+
 def is_chesterfield(local_authority):
     return local_authority == LocalAuthority.CHESTERFIELD
 
@@ -36,6 +40,10 @@ def is_darlington(local_authority):
 
 def is_gateshead(local_authority):
     return local_authority == LocalAuthority.GATESHEAD
+
+
+def is_fenland(local_authority):
+    return local_authority == LocalAuthority.FENLAND
 
 
 def is_kings_lynn_and_west_norfolk(local_authority):
@@ -88,6 +96,10 @@ def is_east_suffolk_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_breckland_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_breckland(local_authority)
+
+
 def is_chesterfield_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_chesterfield(local_authority)
@@ -110,6 +122,10 @@ def is_darlington_working_age(local_authority, country, has_pensioner):
 
 def is_gateshead_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_gateshead(local_authority)
+
+
+def is_fenland_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_fenland(local_authority)
 
 
 def is_kings_lynn_and_west_norfolk_working_age(local_authority, country, has_pensioner):
@@ -151,6 +167,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         is_england_pensioner_scheme(country, has_pensioner)
         | is_scotland_scheme(country)
         | is_wales_scheme(country)
+        | is_breckland_working_age(local_authority, country, has_pensioner)
         | is_chesterfield_working_age(local_authority, country, has_pensioner)
         | is_east_hertfordshire_working_age(
             local_authority,
@@ -158,6 +175,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             has_pensioner,
         )
         | is_east_suffolk_working_age(local_authority, country, has_pensioner)
+        | is_fenland_working_age(local_authority, country, has_pensioner)
         | is_stevenage_working_age(local_authority, country, has_pensioner)
         | is_stroud_working_age(local_authority, country, has_pensioner)
         | is_darlington_working_age(local_authority, country, has_pensioner)

@@ -1,0 +1,13 @@
+description: Capital limit for working-age households under the Breckland Council Tax Reduction scheme.
+values:
+  2025-04-01: 10_000
+  2026-04-01: 10_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Breckland Council Tax Reduction capital limit
+  reference:
+    - title: Breckland Council Tax Reduction Scheme 2025/26
+      href: https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/Breckland-Council-Tax-Reduction-Scheme-2025-26.pdf
+    - title: Anglia Revenues Partnership Apply for Council Tax Reduction and or Housing Benefit
+      href: https://www.angliarevenues.gov.uk/services/housing-benefits/apply/
