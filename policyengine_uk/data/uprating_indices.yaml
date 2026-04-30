@@ -41,8 +41,6 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - miscellaneous_consumption
 - pension_credit_reported
 - petrol_spending
-- pip_dl_reported
-- pip_m_reported
 - recreation_consumption
 - restaurants_and_hotels_consumption
 - sda_reported
