@@ -56,7 +56,14 @@ def local_non_dep_deductions(benunit, period, individual_deduction_variable):
     return deductions_in_household - deductions_in_benunit
 
 
-def earned_income_non_dep_deduction(person, period, ctr, working_age):
+def earned_income_non_dep_deduction(
+    person,
+    period,
+    ctr,
+    working_age,
+    exempt_uc_no_earned_income=False,
+    exempt_under_25_uc_no_earned_income=False,
+):
     weekly_earned_income = (
         person("employment_income", period) + person("self_employment_income", period)
     ) / WEEKS_IN_YEAR
@@ -64,7 +71,24 @@ def earned_income_non_dep_deduction(person, period, ctr, working_age):
     claimant_exempt = person.household(
         "council_tax_reduction_household_has_non_dep_exemption", period
     )
-    return working_age * where(claimant_exempt, 0.0, deduction)
+    income_based_benefit = (
+        (person.benunit("income_support", period) > 0)
+        | (person.benunit("jsa_income", period) > 0)
+        | (person.benunit("esa_income", period) > 0)
+        | (person.benunit("pension_credit", period) > 0)
+    )
+    has_uc = person.benunit("universal_credit", period) > 0
+    no_earned_income = weekly_earned_income <= 0
+    uc_exempt = (
+        has_uc
+        & no_earned_income
+        & (
+            exempt_uc_no_earned_income
+            | (exempt_under_25_uc_no_earned_income & (person("age", period) < 25))
+        )
+    )
+    exempt = claimant_exempt | income_based_benefit | uc_exempt
+    return working_age * where(exempt, 0.0, deduction)
 
 
 def flat_non_dep_deduction(person, period, ctr, working_age):

@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Oldham Council Tax Reduction scheme.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Oldham Council Tax Reduction capital limit
+  reference:
+    - title: Oldham Council Tax Reduction Scheme 2025/26
+      href: https://www.oldham.gov.uk/download/downloads/id/2632/council_tax_reduction_scheme_2025-26.pdf

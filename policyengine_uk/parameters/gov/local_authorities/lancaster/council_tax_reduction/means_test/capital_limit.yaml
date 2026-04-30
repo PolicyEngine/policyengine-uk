@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Lancaster Council Tax Reduction scheme.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Lancaster Council Tax Reduction capital limit
+  reference:
+    - title: Lancaster City Council Council Tax Support Scheme 2025/26
+      href: https://www.lancaster.gov.uk/assets/attach/14831/lancaster-city-council-2025-26-council-tax-support-scheme.pdf

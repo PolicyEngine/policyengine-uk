@@ -5,7 +5,7 @@ This implementation currently simulates:
 - The statutory CTR scheme for pensioner households in England.
 - The national CTR scheme in Wales.
 - The national CTR scheme in Scotland.
-- Working-age local schemes for Breckland, Broadland, Chesterfield, Darlington, Dudley, East Cambridgeshire, East Hertfordshire, East Suffolk, Fenland, Gateshead, King's Lynn and West Norfolk, Merton, North Norfolk, Norwich, South Norfolk, Southwark, Stevenage, Stroud, Warrington, and West Suffolk.
+- Working-age local schemes for Bolton, Breckland, Broadland, Chesterfield, Darlington, Dudley, East Cambridgeshire, East Hertfordshire, East Suffolk, Fenland, Gateshead, King's Lynn and West Norfolk, Lancaster, Merton, North Norfolk, Norwich, Oldham, South Norfolk, Southwark, Stevenage, Stroud, Warrington, and West Suffolk.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
@@ -16,6 +16,9 @@ The current implementation does not yet model:
 - Authority-specific income-banded English schemes.
 - Alternative maximum / second adult rebate cases.
 - Universal Credit-specific CTR adjustments beyond the standard income treatment used here.
+- One-deduction aggregation for non-dependant couples and polygamous households.
+
+For batched implementation status and next candidates, see `scheme_work_queue.md`.
 
 There is also a requests-based entitledto comparison harness at `scripts/entitledto_ctr_compare.py`. It replays the calculator from a saved browser storage state and currently covers three single-adult claimant variants:
 
@@ -47,6 +50,9 @@ Spot checks against public calculators and scheme sources currently show:
 - West Suffolk (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says maximum Council Tax Reduction is `100%` for the period from `1 April 2023` through `31 March 2026`, then `91.5%` after `31 March 2026`, with the standard `2 6/7%` daily excess-income percentage and the ARP flat working-age non-dependant deduction. PolicyEngine UK returns `GBP 1,800` in 2025 and `GBP 1,647` in 2026 before non-dependant deductions.
 - Broadland (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says working-age applicants who are not receiving a war pension can receive up to `87%` of eligible Council Tax, with a `20%` taper, a `GBP 16,000` capital limit, and a flat `GBP 7` weekly working-age non-dependant deduction. The council's 2026/27 papers say the existing scheme continues with no changes. PolicyEngine UK returns `council_tax_reduction = GBP 1,566` and `council_tax_less_benefit = GBP 234` before non-dependant deductions.
 - South Norfolk (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says working-age applicants who are not receiving a war pension can receive up to `87%` of eligible Council Tax, with a `20%` taper, a `GBP 16,000` capital limit, and a flat `GBP 7` weekly working-age non-dependant deduction. The council's 2026/27 papers say the existing scheme continues with no changes. PolicyEngine UK returns `council_tax_reduction = GBP 1,566` and `council_tax_less_benefit = GBP 234` before non-dependant deductions.
+- Lancaster (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says maximum Council Tax Reduction is `100%` of eligible Council Tax after discounts and non-dependant deductions, with the `2 6/7%` daily excess-income percentage, equivalent to a `20%` weekly taper, and a `GBP 16,000` capital limit. PolicyEngine UK returns `council_tax_reduction = GBP 1,800` and `council_tax_less_benefit = GBP 0` before non-dependant deductions.
+- Oldham (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme caps working-age eligible liability at Band A and applies a `15%` reduction in award, with the `2 6/7%` daily excess-income percentage and a `GBP 16,000` capital limit. PolicyEngine UK returns `council_tax_reduction = GBP 1,020` and `council_tax_less_benefit = GBP 780` before non-dependant deductions.
+- Bolton (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 scheme says maximum Council Tax Support is `82.5%` of eligible Council Tax after discounts and non-dependant deductions, with the `2 6/7%` daily excess-income percentage and a `GBP 16,000` capital limit. PolicyEngine UK returns `council_tax_reduction = GBP 1,485` and `council_tax_less_benefit = GBP 315` before non-dependant deductions.
 - Stevenage (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Chesterfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Warrington (`WA1 1UH`, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA): entitledto returns `GBP 26.69` per week of Council Tax Support and `GBP 2.48` per week left to pay on a displayed bill of `GBP 29.17` per week, which is a `91.5%` maximum award on the displayed weekly bill. PolicyEngine UK applies the same rule structure.
@@ -116,6 +122,18 @@ South Norfolk references:
 
 - https://www.southnorfolkandbroadland.gov.uk/asset-library/south-norfolk-ctr-scheme-2025-26.pdf
 - https://southnorfolkandbroadland.moderngov.co.uk/documents/g1058/Printed%20minutes%2024th-Nov-2025%2009.00%20South%20Norfolk%20Cabinet.pdf?T=1
+
+Lancaster references:
+
+- https://www.lancaster.gov.uk/assets/attach/14831/lancaster-city-council-2025-26-council-tax-support-scheme.pdf
+
+Oldham references:
+
+- https://www.oldham.gov.uk/download/downloads/id/2632/council_tax_reduction_scheme_2025-26.pdf
+
+Bolton references:
+
+- https://www.bolton.gov.uk/downloads/file/745/bolton-council-tax-reduction-scheme
 
 Stevenage references:
 

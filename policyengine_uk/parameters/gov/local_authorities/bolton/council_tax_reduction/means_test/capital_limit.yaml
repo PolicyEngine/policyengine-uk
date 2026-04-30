@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Bolton Council Tax Reduction scheme.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bolton Council Tax Reduction capital limit
+  reference:
+    - title: Bolton Council Tax Reduction Scheme 2026/27
+      href: https://www.bolton.gov.uk/downloads/file/745/bolton-council-tax-reduction-scheme

@@ -7,6 +7,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
 
 
 LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
+    "bolton_council_tax_reduction",
     "breckland_council_tax_reduction",
     "broadland_council_tax_reduction",
     "chesterfield_council_tax_reduction",
@@ -18,7 +19,9 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "fenland_council_tax_reduction",
     "gateshead_council_tax_reduction",
     "kings_lynn_and_west_norfolk_council_tax_reduction",
+    "lancaster_council_tax_reduction",
     "merton_council_tax_reduction",
+    "oldham_council_tax_reduction",
     "north_norfolk_council_tax_reduction",
     "norwich_council_tax_reduction",
     "south_norfolk_council_tax_reduction",

@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Lancaster Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Lancaster Council Tax Reduction withdrawal rate
+  reference:
+    - title: Lancaster City Council Council Tax Support Scheme 2025/26
+      href: https://www.lancaster.gov.uk/assets/attach/14831/lancaster-city-council-2025-26-council-tax-support-scheme.pdf

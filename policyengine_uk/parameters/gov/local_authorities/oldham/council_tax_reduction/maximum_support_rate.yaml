@@ -1,0 +1,10 @@
+description: Maximum share of Band A-capped eligible Council Tax liability covered under the Oldham Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.85
+metadata:
+  unit: /1
+  period: year
+  label: Oldham Council Tax Reduction maximum support rate
+  reference:
+    - title: Oldham Council Tax Reduction Scheme 2025/26
+      href: https://www.oldham.gov.uk/download/downloads/id/2632/council_tax_reduction_scheme_2025-26.pdf

@@ -14,6 +14,10 @@ def is_breckland(local_authority):
     return local_authority == LocalAuthority.BRECKLAND
 
 
+def is_bolton(local_authority):
+    return local_authority == LocalAuthority.BOLTON
+
+
 def is_broadland(local_authority):
     return local_authority == LocalAuthority.BROADLAND
 
@@ -58,8 +62,16 @@ def is_kings_lynn_and_west_norfolk(local_authority):
     return local_authority == LocalAuthority.KINGS_LYNN_AND_WEST_NORFOLK
 
 
+def is_lancaster(local_authority):
+    return local_authority == LocalAuthority.LANCASTER
+
+
 def is_merton(local_authority):
     return local_authority == LocalAuthority.MERTON
+
+
+def is_oldham(local_authority):
+    return local_authority == LocalAuthority.OLDHAM
 
 
 def is_norwich(local_authority):
@@ -124,6 +136,10 @@ def is_breckland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_breckland(local_authority)
 
 
+def is_bolton_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_bolton(local_authority)
+
+
 def is_broadland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_broadland(local_authority)
 
@@ -164,8 +180,16 @@ def is_kings_lynn_and_west_norfolk_working_age(local_authority, country, has_pen
     )
 
 
+def is_lancaster_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_lancaster(local_authority)
+
+
 def is_merton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
+
+
+def is_oldham_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_oldham(local_authority)
 
 
 def is_norwich_working_age(local_authority, country, has_pensioner):
@@ -209,6 +233,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         is_england_pensioner_scheme(country, has_pensioner)
         | is_scotland_scheme(country)
         | is_wales_scheme(country)
+        | is_bolton_working_age(local_authority, country, has_pensioner)
         | is_breckland_working_age(local_authority, country, has_pensioner)
         | is_broadland_working_age(local_authority, country, has_pensioner)
         | is_chesterfield_working_age(local_authority, country, has_pensioner)
@@ -233,7 +258,9 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             country,
             has_pensioner,
         )
+        | is_lancaster_working_age(local_authority, country, has_pensioner)
         | is_merton_working_age(local_authority, country, has_pensioner)
+        | is_oldham_working_age(local_authority, country, has_pensioner)
         | is_norwich_working_age(local_authority, country, has_pensioner)
         | is_north_norfolk_working_age(local_authority, country, has_pensioner)
         | is_south_norfolk_working_age(local_authority, country, has_pensioner)
