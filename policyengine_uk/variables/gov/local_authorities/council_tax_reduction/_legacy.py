@@ -1,0 +1,73 @@
+from policyengine_uk.model_api import *
+
+
+def legacy_council_tax_reduction(
+    benunit,
+    period,
+    ctr,
+    working_age,
+    non_dep_deductions_variable,
+    maximum_support_rate=None,
+    maximum_eligible_liability_variable=None,
+):
+    is_household_head_benunit = benunit("benunit_contains_household_head", period)
+    would_claim = benunit("would_claim_council_tax_reduction", period)
+    applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
+    applicable_income = benunit("council_tax_reduction_applicable_income", period)
+    relevant_income_based_benefit = benunit(
+        "council_tax_reduction_relevant_income_based_benefit",
+        period,
+    )
+    liability = (
+        benunit.household(maximum_eligible_liability_variable, period)
+        if maximum_eligible_liability_variable
+        else benunit.household("council_tax", period)
+    )
+    non_dep_deductions = benunit(non_dep_deductions_variable, period)
+    max_support = (
+        maximum_support_rate
+        if maximum_support_rate is not None
+        else ctr.maximum_support_rate
+    )
+    excess_income = max_(0, applicable_income - applicable_amount)
+    excess_income = where(working_age & relevant_income_based_benefit, 0, excess_income)
+    preliminary_award = max_(
+        0,
+        liability * max_support
+        - excess_income * ctr.means_test.withdrawal_rate
+        - non_dep_deductions,
+    )
+    capital_eligible = benunit.household("savings", period) <= ctr.means_test.capital_limit
+    return (
+        working_age
+        * is_household_head_benunit
+        * would_claim
+        * capital_eligible
+        * preliminary_award
+    )
+
+
+def local_non_dep_deductions(benunit, period, individual_deduction_variable):
+    deductions = benunit.members(individual_deduction_variable, period)
+    deductions_in_household = benunit.max(benunit.members.household.sum(deductions))
+    deductions_in_benunit = benunit.sum(deductions)
+    return deductions_in_household - deductions_in_benunit
+
+
+def earned_income_non_dep_deduction(person, period, ctr, working_age):
+    weekly_earned_income = (
+        person("employment_income", period) + person("self_employment_income", period)
+    ) / WEEKS_IN_YEAR
+    deduction = ctr.non_dep_deduction.amount.calc(weekly_earned_income) * WEEKS_IN_YEAR
+    claimant_exempt = person.household(
+        "council_tax_reduction_household_has_non_dep_exemption", period
+    )
+    return working_age * where(claimant_exempt, 0.0, deduction)
+
+
+def flat_non_dep_deduction(person, period, ctr, working_age):
+    deduction = ctr.non_dep_deduction.amount * WEEKS_IN_YEAR
+    claimant_exempt = person.household(
+        "council_tax_reduction_household_has_non_dep_exemption", period
+    )
+    return working_age * where(claimant_exempt, 0.0, deduction)

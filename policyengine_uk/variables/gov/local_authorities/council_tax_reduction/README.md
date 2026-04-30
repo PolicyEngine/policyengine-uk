@@ -9,6 +9,8 @@ This implementation currently simulates:
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
+The top-level `simulated_council_tax_reduction_benunit` variable aggregates implemented jurisdiction-specific CTR variables. Working-age local authority rules live under `policyengine_uk/variables/gov/local_authorities/<authority>/council_tax_reduction/`, matching the parameter tree and keeping each council's policy in its own jurisdiction folder.
+
 The current implementation does not yet model:
 
 - Authority-specific income-banded English schemes.

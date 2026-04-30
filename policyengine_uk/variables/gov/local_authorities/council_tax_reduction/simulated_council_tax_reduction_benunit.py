@@ -1,22 +1,25 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
-    is_chesterfield_working_age,
-    is_darlington_working_age,
-    is_east_hertfordshire_working_age,
     is_england_pensioner_scheme,
-    is_dudley_working_age,
-    is_gateshead_working_age,
-    is_kings_lynn_and_west_norfolk_working_age,
-    is_merton_working_age,
-    is_norwich_working_age,
     is_scotland_scheme,
-    is_southwark_working_age,
-    is_stevenage_working_age,
-    is_stroud_working_age,
-    is_warrington_working_age,
     is_wales_scheme,
 )
-from policyengine_uk.variables.input.council_tax_band import CouncilTaxBand
+
+
+LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
+    "chesterfield_council_tax_reduction",
+    "darlington_council_tax_reduction",
+    "dudley_council_tax_reduction",
+    "east_hertfordshire_council_tax_reduction",
+    "gateshead_council_tax_reduction",
+    "kings_lynn_and_west_norfolk_council_tax_reduction",
+    "merton_council_tax_reduction",
+    "norwich_council_tax_reduction",
+    "southwark_council_tax_reduction",
+    "stevenage_council_tax_reduction",
+    "stroud_council_tax_reduction",
+    "warrington_council_tax_reduction",
+]
 
 
 class simulated_council_tax_reduction_benunit(Variable):
@@ -33,174 +36,30 @@ class simulated_council_tax_reduction_benunit(Variable):
         )
         wales_ctr = local_authority_parameters.wales.council_tax_reduction
         scotland_ctr = local_authority_parameters.scotland.council_tax_reduction
-        chesterfield_ctr = local_authority_parameters.chesterfield.council_tax_reduction
-        darlington_ctr = local_authority_parameters.darlington.council_tax_reduction
-        east_herts_ctr = (
-            local_authority_parameters.east_hertfordshire.council_tax_reduction
-        )
-        gateshead_ctr = local_authority_parameters.gateshead.council_tax_reduction
-        kings_lynn_ctr = (
-            local_authority_parameters.kings_lynn_and_west_norfolk.council_tax_reduction
-        )
-        stevenage_ctr = local_authority_parameters.stevenage.council_tax_reduction
-        stroud_ctr = local_authority_parameters.stroud.council_tax_reduction
-        merton_ctr = local_authority_parameters.merton.council_tax_reduction
-        norwich_ctr = local_authority_parameters.norwich.council_tax_reduction
-        southwark_ctr = local_authority_parameters.southwark.council_tax_reduction
-        warrington_ctr = local_authority_parameters.warrington.council_tax_reduction
-        dudley_ctr = local_authority_parameters.dudley.council_tax_reduction
-        supported = benunit.household("council_tax_reduction_scheme_supported", period)
+        local_ctr = add(benunit, period, LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES)
         is_household_head_benunit = benunit("benunit_contains_household_head", period)
         would_claim = benunit("would_claim_council_tax_reduction", period)
-        local_authority = benunit.household("local_authority", period)
         country = benunit.household("country", period)
-        council_tax_band = benunit.household("council_tax_band", period)
         has_pensioner = benunit.household(
             "council_tax_reduction_household_has_pensioner", period
         )
         applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
         applicable_income = benunit("council_tax_reduction_applicable_income", period)
-        income_below_applicable_amount = benunit(
-            "council_tax_reduction_income_below_applicable_amount",
-            period,
-        )
-        relevant_income_based_benefit = benunit(
-            "council_tax_reduction_relevant_income_based_benefit",
-            period,
-        )
 
         england_pensioners = is_england_pensioner_scheme(country, has_pensioner)
         wales = is_wales_scheme(country)
         scotland = is_scotland_scheme(country)
-        chesterfield_working_age = is_chesterfield_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        darlington_working_age = is_darlington_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        east_herts_working_age = is_east_hertfordshire_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        gateshead_working_age = is_gateshead_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        kings_lynn_working_age = is_kings_lynn_and_west_norfolk_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        stevenage_working_age = is_stevenage_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        stroud_working_age = is_stroud_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        merton_working_age = is_merton_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        norwich_working_age = is_norwich_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        southwark_working_age = is_southwark_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        warrington_working_age = is_warrington_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        dudley_working_age = is_dudley_working_age(
-            local_authority,
-            country,
-            has_pensioner,
-        )
-        warrington_band_a = council_tax_band == CouncilTaxBand.A
-        warrants_like_legacy_scheme = (
-            chesterfield_working_age
-            | darlington_working_age
-            | east_herts_working_age
-            | gateshead_working_age
-            | kings_lynn_working_age
-            | stevenage_working_age
-            | stroud_working_age
-            | merton_working_age
-            | norwich_working_age
-            | southwark_working_age
-            | warrington_working_age
-            | dudley_working_age
-        )
-        legacy_passported_claimant = (
-            warrants_like_legacy_scheme & relevant_income_based_benefit
-        )
-        warrington_class_d = warrington_working_age & (
-            income_below_applicable_amount | relevant_income_based_benefit
-        )
-        east_herts_class_d = east_herts_working_age & (
-            income_below_applicable_amount | relevant_income_based_benefit
-        )
-        warrington_max_support = select(
-            [
-                warrington_class_d & warrington_band_a,
-                warrington_class_d,
-            ],
-            [
-                warrington_ctr.maximum_support_rate.class_d.band_a,
-                warrington_ctr.maximum_support_rate.class_d.other_bands,
-            ],
-            default=warrington_ctr.maximum_support_rate.class_e,
-        )
+        national_scheme = england_pensioners | wales | scotland
         max_support = select(
             [
                 england_pensioners,
                 wales,
                 scotland,
-                chesterfield_working_age,
-                darlington_working_age,
-                east_herts_working_age,
-                gateshead_working_age,
-                kings_lynn_working_age,
-                stevenage_working_age,
-                stroud_working_age,
-                merton_working_age,
-                norwich_working_age,
-                southwark_working_age,
-                warrington_working_age,
-                dudley_working_age,
             ],
             [
                 england_pensioners_ctr.maximum_support_rate,
                 wales_ctr.maximum_support_rate,
                 scotland_ctr.maximum_support_rate,
-                chesterfield_ctr.maximum_support_rate,
-                darlington_ctr.maximum_support_rate,
-                east_herts_ctr.maximum_support_rate,
-                gateshead_ctr.maximum_support_rate,
-                kings_lynn_ctr.maximum_support_rate,
-                stevenage_ctr.maximum_support_rate,
-                stroud_ctr.maximum_support_rate,
-                merton_ctr.maximum_support_rate,
-                norwich_ctr.maximum_support_rate,
-                southwark_ctr.maximum_support_rate,
-                warrington_max_support,
-                dudley_ctr.maximum_support_rate,
             ],
             default=0.0,
         )
@@ -213,35 +72,11 @@ class simulated_council_tax_reduction_benunit(Variable):
                 england_pensioners,
                 wales,
                 scotland,
-                chesterfield_working_age,
-                darlington_working_age,
-                east_herts_working_age,
-                gateshead_working_age,
-                kings_lynn_working_age,
-                stevenage_working_age,
-                stroud_working_age,
-                merton_working_age,
-                norwich_working_age,
-                southwark_working_age,
-                warrington_working_age,
-                dudley_working_age,
             ],
             [
                 england_pensioners_ctr.means_test.withdrawal_rate,
                 wales_ctr.means_test.withdrawal_rate,
                 scotland_ctr.means_test.withdrawal_rate,
-                chesterfield_ctr.means_test.withdrawal_rate,
-                darlington_ctr.means_test.withdrawal_rate,
-                east_herts_ctr.means_test.withdrawal_rate,
-                gateshead_ctr.means_test.withdrawal_rate,
-                kings_lynn_ctr.means_test.withdrawal_rate,
-                stevenage_ctr.means_test.withdrawal_rate,
-                stroud_ctr.means_test.withdrawal_rate,
-                merton_ctr.means_test.withdrawal_rate,
-                norwich_ctr.means_test.withdrawal_rate,
-                southwark_ctr.means_test.withdrawal_rate,
-                warrington_ctr.means_test.withdrawal_rate,
-                dudley_ctr.means_test.withdrawal_rate,
             ],
             default=0.0,
         )
@@ -250,44 +85,15 @@ class simulated_council_tax_reduction_benunit(Variable):
                 england_pensioners,
                 wales,
                 scotland,
-                chesterfield_working_age,
-                darlington_working_age,
-                east_herts_working_age,
-                gateshead_working_age,
-                kings_lynn_working_age,
-                stevenage_working_age,
-                stroud_working_age,
-                merton_working_age,
-                norwich_working_age,
-                southwark_working_age,
-                warrington_working_age,
-                dudley_working_age,
             ],
             [
                 england_pensioners_ctr.means_test.capital_limit,
                 wales_ctr.means_test.capital_limit,
                 scotland_ctr.means_test.capital_limit,
-                chesterfield_ctr.means_test.capital_limit,
-                darlington_ctr.means_test.capital_limit,
-                east_herts_ctr.means_test.capital_limit,
-                gateshead_ctr.means_test.capital_limit,
-                kings_lynn_ctr.means_test.capital_limit,
-                stevenage_ctr.means_test.capital_limit,
-                stroud_ctr.means_test.capital_limit,
-                merton_ctr.means_test.capital_limit,
-                norwich_ctr.means_test.capital_limit,
-                southwark_ctr.means_test.capital_limit,
-                warrington_ctr.means_test.capital_limit,
-                dudley_ctr.means_test.capital_limit,
             ],
             default=0.0,
         )
         excess_income = max_(0, applicable_income - applicable_amount)
-        # The currently encoded English working-age schemes follow the legacy
-        # CTB-style treatment of income-based JSA, income support, and
-        # income-related ESA claimants. Those cases keep the maximum local
-        # award instead of entering the taper.
-        excess_income = where(legacy_passported_claimant, 0, excess_income)
         preliminary_award = max_(
             0,
             liability * max_support
@@ -295,10 +101,11 @@ class simulated_council_tax_reduction_benunit(Variable):
             - non_dep_deductions,
         )
         capital_eligible = benunit.household("savings", period) <= capital_limit
-        return (
-            supported
+        national_ctr = (
+            national_scheme
             * is_household_head_benunit
             * would_claim
             * capital_eligible
             * preliminary_award
         )
+        return national_ctr + local_ctr
