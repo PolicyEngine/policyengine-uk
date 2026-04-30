@@ -18,6 +18,10 @@ def is_east_hertfordshire(local_authority):
     return local_authority == LocalAuthority.EAST_HERTFORDSHIRE
 
 
+def is_east_suffolk(local_authority):
+    return local_authority == LocalAuthority.EAST_SUFFOLK
+
+
 def is_stevenage(local_authority):
     return local_authority == LocalAuthority.STEVENAGE
 
@@ -75,6 +79,12 @@ def is_east_hertfordshire_working_age(local_authority, country, has_pensioner):
         (country == Country.ENGLAND)
         & ~has_pensioner
         & is_east_hertfordshire(local_authority)
+    )
+
+
+def is_east_suffolk_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_east_suffolk(local_authority)
     )
 
 
@@ -157,6 +167,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             country,
             has_pensioner,
         )
+        | is_east_suffolk_working_age(local_authority, country, has_pensioner)
         | is_stevenage_working_age(local_authority, country, has_pensioner)
         | is_stroud_working_age(local_authority, country, has_pensioner)
         | is_darlington_working_age(local_authority, country, has_pensioner)

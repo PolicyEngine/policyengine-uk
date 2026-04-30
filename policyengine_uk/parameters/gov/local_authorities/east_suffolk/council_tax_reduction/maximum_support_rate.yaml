@@ -1,0 +1,11 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the East Suffolk Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.915
+  2026-04-01: 0.915
+metadata:
+  unit: /1
+  period: year
+  label: East Suffolk Council Tax Reduction maximum support rate
+  reference:
+    - title: East Suffolk Council Council Tax Reduction Scheme 2025/2026
+      href: https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/East-Suffolk-Council-Council-Tax-Reduction-Scheme-2025-26.pdf
