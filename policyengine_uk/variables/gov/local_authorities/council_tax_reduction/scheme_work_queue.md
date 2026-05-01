@@ -11,6 +11,24 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 - Defer broad income-banded and discount-grid schemes until they have separate helpers.
 - Non-dependant couple/polygamous one-deduction aggregation is supported for benefit-unit couples by counting the highest deduction for the non-dependant benefit unit, based on joint benefit-unit earnings where the scheme uses earnings brackets. Where the source excludes Universal Credit awards from that one-deduction rule, set `one_deduction_for_uc_couples=False`.
 
+## Batch Agent Workflow
+
+Use three separate passes for large batches:
+
+- Scout: find official sources, extract page/paragraph-cited facts, and classify the scheme archetype. Do not code in this pass.
+- Implementer: write failing YAML tests first, then jurisdiction-scoped parameters and variables. Work from the Scout dossier rather than re-interpreting the whole source.
+- Reviewer: compare source wording to tests/code and report only source-fidelity, missing-test, or maintainability findings.
+
+Each council dossier should capture:
+
+| Field | Notes |
+| --- | --- |
+| Source | Official council PDF/webpage or legislation, scheme year, retrieved date, paragraph/page refs. |
+| Archetype | Legacy means test, percent/minimum-payment, income banded, UC earnings banded, band cap, or custom. |
+| Core rules | Maximum support, taper, capital limit, band cap, UC treatment, non-dependant table, pensioner carve-out. |
+| Tests | No-income maximum award, capital cutoff, non-dep case, UC case if relevant, and one local edge. |
+| Review traps | Weekly vs annual units, gross vs earned income, positive earnings vs remunerative work, UC couple exceptions. |
+
 ## Current Batch
 
 | Authority | Status | Type | Primary source |
