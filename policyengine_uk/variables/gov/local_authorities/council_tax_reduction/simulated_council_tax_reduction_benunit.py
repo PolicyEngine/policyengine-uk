@@ -8,6 +8,8 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
 
 LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "adur_council_tax_reduction",
+    "barking_and_dagenham_council_tax_reduction",
+    "barnet_council_tax_reduction",
     "basingstoke_and_deane_council_tax_reduction",
     "bolton_council_tax_reduction",
     "breckland_council_tax_reduction",

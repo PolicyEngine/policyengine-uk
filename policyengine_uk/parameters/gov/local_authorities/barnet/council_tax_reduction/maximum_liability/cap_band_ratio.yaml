@@ -1,0 +1,11 @@
+description: Maximum English council tax band ratio eligible for ordinary working-age Barnet Council Tax Support.
+values:
+  2026-04-01: 0.8888888889
+metadata:
+  unit: /1
+  label: Barnet CTR Band C liability cap ratio
+  reference:
+    - title: Barnet Council Tax Reduction Scheme 2026-2027, paragraphs 11 and 34-35
+      href: https://barnet.moderngov.co.uk/documents/s94210/Appendix%20O%20-%20202627%20Council%20Tax%20Support%20Scheme.pdf
+    - title: Barnet Council Tax Support public summary
+      href: https://www.barnet.gov.uk/council-tax/discounts-exemptions-and-refunds/council-tax-support-low-income-benefits

@@ -1,0 +1,35 @@
+description: Council Tax Support rate by weekly net income band for Barking and Dagenham couple working-age households.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.63
+  - threshold:
+      2026-04-01: 174.01
+    amount:
+      2026-04-01: 0.48
+  - threshold:
+      2026-04-01: 219.01
+    amount:
+      2026-04-01: 0.33
+  - threshold:
+      2026-04-01: 261.01
+    amount:
+      2026-04-01: 0.18
+  - threshold:
+      2026-04-01: 289.01
+    amount:
+      2026-04-01: 0.10
+  - threshold:
+      2026-04-01: 308.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Barking and Dagenham couple weekly net-income CTR rate
+  reference:
+    - title: Barking and Dagenham CTSS 2026/27 Appendix 2, Table 1
+      href: https://lbbd.moderngov.co.uk/documents/s178487/CTSS%202026-27%20-%20App%202.pdf

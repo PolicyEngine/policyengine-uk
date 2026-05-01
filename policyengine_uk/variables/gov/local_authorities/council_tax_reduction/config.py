@@ -14,6 +14,14 @@ def is_basingstoke_and_deane(local_authority):
     return local_authority == LocalAuthority.BASINGSTOKE_AND_DEANE
 
 
+def is_barking_and_dagenham(local_authority):
+    return local_authority == LocalAuthority.BARKING_AND_DAGENHAM
+
+
+def is_barnet(local_authority):
+    return local_authority == LocalAuthority.BARNET
+
+
 def is_dudley(local_authority):
     return local_authority == LocalAuthority.DUDLEY
 
@@ -224,6 +232,18 @@ def is_basingstoke_and_deane_working_age(local_authority, country, has_pensioner
     )
 
 
+def is_barking_and_dagenham_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_barking_and_dagenham(local_authority)
+    )
+
+
+def is_barnet_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_barnet(local_authority)
+
+
 def is_breckland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_breckland(local_authority)
 
@@ -413,6 +433,12 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             country,
             has_pensioner,
         )
+        | is_barking_and_dagenham_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        | is_barnet_working_age(local_authority, country, has_pensioner)
         | is_bolton_working_age(local_authority, country, has_pensioner)
         | is_breckland_working_age(local_authority, country, has_pensioner)
         | is_broadland_working_age(local_authority, country, has_pensioner)

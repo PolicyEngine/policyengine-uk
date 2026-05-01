@@ -1,0 +1,12 @@
+description: Flat weekly working-age non-dependant deduction for Barking and Dagenham Council Tax Support.
+values:
+  2026-04-01: 15
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Barking and Dagenham working-age CTS non-dependant deduction
+  reference:
+    - title: Barking and Dagenham Council Tax Reduction Scheme 2025/26, paragraph 53 and Appendix 3
+      href: https://www.lbbd.gov.uk/sites/default/files/2025-09/Barking%20and%20Dagenham%20CTS%20scheme%202025-26.pdf
+    - title: Barking and Dagenham CTSS 2026/27 Appendix 2
+      href: https://lbbd.moderngov.co.uk/documents/s178487/CTSS%202026-27%20-%20App%202.pdf

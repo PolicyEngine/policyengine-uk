@@ -6539,3 +6539,415 @@
   output:
     council_tax_reduction_scheme_supported: false
     council_tax_reduction: 500
+
+- name: Barking and Dagenham zero-income working-age claimant receives 63 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARKING_AND_DAGENHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barking_and_dagenham_council_tax_reduction: 1134
+    simulated_council_tax_reduction_benunit: 1134
+    council_tax_reduction: 1134
+    council_tax_less_benefit: 666
+
+- name: Barking and Dagenham counts weekly unearned income for income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 7_800
+        income_tax: 0
+        national_insurance: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARKING_AND_DAGENHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barking_and_dagenham_council_tax_reduction_weekly_income: 150
+    barking_and_dagenham_council_tax_reduction: 864
+    council_tax_reduction: 864
+
+- name: Barking and Dagenham deducts non-dependants before applying the support percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BARKING_AND_DAGENHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barking_and_dagenham_council_tax_reduction_non_dep_deductions: [780, 0]
+    barking_and_dagenham_council_tax_reduction: [642.6, 0]
+    council_tax_reduction: 642.6
+
+- name: Barking and Dagenham excludes working-age claimants above the 6,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARKING_AND_DAGENHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_001
+  output:
+    barking_and_dagenham_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Barking and Dagenham only counts allowed Universal Credit elements as income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 15_600
+        uc_standard_allowance: 5_200
+        uc_child_element: 0
+        uc_income_reduction: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARKING_AND_DAGENHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barking_and_dagenham_council_tax_reduction_countable_universal_credit: 5_200
+    barking_and_dagenham_council_tax_reduction_weekly_income: 100
+    barking_and_dagenham_council_tax_reduction: 1134
+    council_tax_reduction: 1134
+
+- name: Barnet zero-earnings working-age claimant receives 70 percent of Band C-capped liability
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARNET
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barnet_council_tax_reduction_maximum_eligible_liability: 1600
+    barnet_council_tax_reduction: 1120
+    simulated_council_tax_reduction_benunit: 1120
+    council_tax_reduction: 1120
+    council_tax_less_benefit: 680
+
+- name: Barnet applies monthly earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 7_200
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARNET
+        council_tax_band: C
+        council_tax: 1800
+        savings: 0
+  output:
+    barnet_council_tax_reduction_monthly_earnings: 600
+    barnet_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Barnet ignores non-earnings income for working-age bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 30_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARNET
+        council_tax_band: C
+        council_tax: 1800
+        savings: 0
+  output:
+    barnet_council_tax_reduction_monthly_earnings: 0
+    barnet_council_tax_reduction: 1260
+    council_tax_reduction: 1260
+
+- name: Barnet excludes working-age claimants above the 6,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARNET
+        council_tax_band: C
+        council_tax: 1800
+        savings: 6_001
+  output:
+    barnet_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Barnet applies the higher non-dependant deduction at 200 pounds of weekly gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BARNET
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barnet_council_tax_reduction_non_dep_deductions: [572, 0]
+    barnet_council_tax_reduction: [548, 0]
+    council_tax_reduction: 548
+
+- name: Barnet makes one non-dependant deduction for a couple using the highest single-person amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 25
+        employment_income: 7_800
+      non_dep_2:
+        age: 25
+        employment_income: 7_800
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep_1, non_dep_2]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: BARNET
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barnet_council_tax_reduction_non_dep_deductions: [260, 0]
+    barnet_council_tax_reduction: [860, 0]
+    council_tax_reduction: 860
+
+- name: Barnet protected working-age claimants receive full uncapped support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        afcs_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BARNET
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    barnet_council_tax_reduction_protected_group: true
+    barnet_council_tax_reduction_maximum_eligible_liability: 1800
+    barnet_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
