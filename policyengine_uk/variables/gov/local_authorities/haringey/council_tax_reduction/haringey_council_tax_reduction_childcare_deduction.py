@@ -1,21 +1,22 @@
 from policyengine_uk.model_api import *
 
 
-class enfield_council_tax_reduction_childcare_deduction(Variable):
+class haringey_council_tax_reduction_childcare_deduction(Variable):
     value_type = float
     entity = BenUnit
-    label = "Enfield CTR childcare deduction from earnings"
+    label = "Haringey CTR childcare deduction from earnings"
     definition_period = YEAR
     unit = GBP
 
     def formula(benunit, period, parameters):
-        childcare = parameters(period).gov.dwp.tax_credits.working_tax_credit.elements
+        ctr = parameters(period).gov.local_authorities.haringey.council_tax_reduction
+        childcare = ctr.childcare
         person = benunit.members
         child_or_young_person = person(
             "is_child_or_qualifying_young_person_for_child_benefit", period
         )
         claimant_or_partner = person("is_adult", period) & ~child_or_young_person
-        works_enough_hours = person("weekly_hours", period) >= 16
+        works_enough_hours = person("weekly_hours", period) >= childcare.work_hours
         lone_parent_working = benunit("is_lone_parent", period) & benunit.any(
             claimant_or_partner & works_enough_hours
         )
@@ -52,8 +53,8 @@ class enfield_council_tax_reduction_childcare_deduction(Variable):
                 eligible_children == 1,
             ],
             [
-                childcare.childcare_2,
-                childcare.childcare_1,
+                childcare.weekly_maximum.two_or_more_children,
+                childcare.weekly_maximum.one_child,
             ],
             default=0,
         )

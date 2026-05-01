@@ -1,0 +1,10 @@
+description: Capital step for Haringey working-age Council Tax Reduction tariff income.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Haringey CTR tariff income capital step
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, Schedule 7
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

@@ -1,0 +1,9 @@
+description: Maximum Council Tax Reduction rate for Haringey working-age applicants outside the protected groups.
+values:
+  2026-04-01: 0.802
+metadata:
+  unit: /1
+  label: Haringey non-protected maximum CTR rate
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraph 29
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

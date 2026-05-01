@@ -7703,6 +7703,46 @@
     enfield_council_tax_reduction: 640
     council_tax_reduction: 640
 
+- name: Enfield routes Universal Credit couples with qualifying young people to the family earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 9_360
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      partner:
+        age: 35
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+    benunits:
+      benunit:
+        members: [claimant, partner, young_person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, young_person]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_uc_weekly_earnings: 180
+    enfield_council_tax_reduction: 640
+    council_tax_reduction: 640
+
 - name: Enfield Universal Credit earnings ignore dependent child earnings
   period: 2026
   absolute_error_margin: 0.5
@@ -7764,6 +7804,37 @@
   output:
     enfield_council_tax_reduction: 0
     council_tax_reduction: 0
+
+- name: Enfield Universal Credit capital uses the DWP assessable capital figure
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 20_000
+  output:
+    uc_assessable_capital: 0
+    enfield_council_tax_reduction: 800
+    council_tax_reduction: 800
 
 - name: Enfield assumes tariff income above 6,000 pounds of capital
   period: 2026
@@ -7860,6 +7931,42 @@
     enfield_council_tax_reduction_childcare_deduction: 2600
     enfield_council_tax_reduction_applicable_income: 7800
 
+- name: Enfield deducts childcare for one-worker couples with an incapacitated partner
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 10_400
+        hours_worked: 832
+        childcare_expenses: 2_600
+      partner:
+        age: 35
+        incapacity_benefit_reported: 1_000
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_childcare_deduction: 2600
+
 - name: Enfield applies the working-age non-dependant earnings deduction
   period: 2026
   absolute_error_margin: 0.5
@@ -7944,3 +8051,442 @@
     enfield_council_tax_reduction_non_dep_deductions: [736.32, 0]
     enfield_council_tax_reduction: [63.68, 0]
     council_tax_reduction: 63.68
+
+- name: Haringey working-age claimant receives 80.2 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction: 1443.6
+    simulated_council_tax_reduction_benunit: 1443.6
+    council_tax_reduction: 1443.6
+
+- name: Haringey protects working-age households with children from the 80.2 percent cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_protected_group: true
+    haringey_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+
+- name: Haringey does not protect premium-only working-age households without a child or disability benefit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_protected_group: false
+    haringey_council_tax_reduction: 1443.6
+
+- name: Haringey protects working-age households receiving adult disability benefits
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_protected_group: true
+    haringey_council_tax_reduction: 1800
+
+- name: Haringey applies a 20 percent taper to excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 2600
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_applicable_income: 2600
+    haringey_council_tax_reduction: 923.6
+    council_tax_reduction: 923.6
+
+- name: Haringey excludes working-age claimants above the 10,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 10_001
+  output:
+    haringey_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Haringey assumes tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_001
+  output:
+    haringey_council_tax_reduction_tariff_income: 52
+    haringey_council_tax_reduction: 1433.2
+
+- name: Haringey Universal Credit path uses UC maximum amount and assessed income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 5_200
+        uc_unearned_income: 0
+        universal_credit: 7_540
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_uc_applicable_income: 12_740
+    haringey_council_tax_reduction: 975.6
+    council_tax_reduction: 975.6
+
+- name: Haringey ignores dependent child earnings in applicable income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 6
+        employment_income: 20_000
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_applicable_income: 0
+    haringey_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+
+- name: Haringey caps eligible childcare costs at 175 pounds per week for one child
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 20_000
+        hours_worked: 832
+        childcare_expenses: 20_000
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_childcare_deduction: 9100
+
+- name: Haringey applies the working-age non-dependant earnings deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_non_dep_deductions: [691.6, 0]
+    haringey_council_tax_reduction: [752, 0]
+    council_tax_reduction: 752
+
+- name: Haringey applies the lower non-dependant deduction below remunerative work hours
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_non_dep_deductions: [270.4, 0]
+    haringey_council_tax_reduction: [1173.2, 0]
+
+- name: Haringey exempts non-dependants when the claimant receives PIP daily living
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1_000
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HARINGEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    haringey_council_tax_reduction_non_dep_deductions: [0, 0]
+    haringey_council_tax_reduction: [1800, 0]

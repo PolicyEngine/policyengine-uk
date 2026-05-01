@@ -1,0 +1,9 @@
+description: Excess-income withdrawal rate for Haringey working-age Council Tax Reduction.
+values:
+  2026-04-01: 0.20
+metadata:
+  unit: /1
+  label: Haringey working-age CTR withdrawal rate
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraphs 29 and 37
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

@@ -1,0 +1,9 @@
+description: Maximum weekly childcare costs deducted from earnings for Haringey Council Tax Reduction with two or more children.
+values:
+  2026-04-01: 300
+metadata:
+  unit: currency-GBP
+  label: Haringey CTR two-or-more-child weekly childcare deduction cap
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraph 57(3)
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

@@ -28,6 +28,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "fenland_council_tax_reduction",
     "gateshead_council_tax_reduction",
     "greenwich_council_tax_reduction",
+    "haringey_council_tax_reduction",
     "hackney_council_tax_reduction",
     "hammersmith_and_fulham_council_tax_reduction",
     "hillingdon_council_tax_reduction",

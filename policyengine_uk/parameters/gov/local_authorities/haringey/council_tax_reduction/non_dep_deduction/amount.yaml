@@ -1,0 +1,27 @@
+description: Haringey working-age non-dependant deduction by weekly gross income.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Haringey working-age CTR non-dependant deduction
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraphs 30 and 30A
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

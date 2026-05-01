@@ -94,6 +94,10 @@ def is_greenwich(local_authority):
     return local_authority == LocalAuthority.GREENWICH
 
 
+def is_haringey(local_authority):
+    return local_authority == LocalAuthority.HARINGEY
+
+
 def is_hackney(local_authority):
     return local_authority == LocalAuthority.HACKNEY
 
@@ -316,6 +320,10 @@ def is_greenwich_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_greenwich(local_authority)
 
 
+def is_haringey_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_haringey(local_authority)
+
+
 def is_hackney_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_hackney(local_authority)
 
@@ -491,6 +499,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_darlington_working_age(local_authority, country, has_pensioner)
         | is_gateshead_working_age(local_authority, country, has_pensioner)
         | is_greenwich_working_age(local_authority, country, has_pensioner)
+        | is_haringey_working_age(local_authority, country, has_pensioner)
         | is_hackney_working_age(local_authority, country, has_pensioner)
         | is_hammersmith_and_fulham_working_age(
             local_authority,

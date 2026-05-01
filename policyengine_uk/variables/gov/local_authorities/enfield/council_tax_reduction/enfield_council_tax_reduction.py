@@ -50,7 +50,11 @@ class enfield_council_tax_reduction(Variable):
         weekly_earnings = benunit(
             "enfield_council_tax_reduction_uc_weekly_earnings", period
         )
-        num_children = benunit("num_children", period)
+        person = benunit.members
+        child_or_young_person = person(
+            "is_child_or_qualifying_young_person_for_child_benefit", period
+        )
+        num_children = benunit.sum(child_or_young_person)
         is_couple = benunit("is_couple", period)
         uc_bands = ctr.uc_income_band
         uc_rate = select(
@@ -80,8 +84,14 @@ class enfield_council_tax_reduction(Variable):
         has_uc_award = benunit("universal_credit", period) > 0
         award = where(has_uc_award, uc_award, non_uc_award)
         award = where(award < ctr.minimum_award * WEEKS_IN_YEAR, 0, award)
-        capital_eligible = (
+        non_uc_capital_eligible = (
             benunit.household("savings", period) <= ctr.means_test.capital_limit
+        )
+        uc_capital_eligible = (
+            benunit("uc_assessable_capital", period) <= ctr.means_test.capital_limit
+        )
+        capital_eligible = where(
+            has_uc_award, uc_capital_eligible, non_uc_capital_eligible
         )
         return (
             working_age
