@@ -1,0 +1,10 @@
+description: Minimum weekly Redbridge Council Tax Reduction award for working-age applicants.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Redbridge minimum weekly CTR award
+  reference:
+    - title: Redbridge Council Tax Reduction Scheme 2026-2027, paragraph 32A
+      href: https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf

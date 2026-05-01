@@ -1,0 +1,10 @@
+description: Redbridge weekly net earnings threshold for the working-age class without dependants.
+values:
+  2026-04-01: 234
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Redbridge without-dependants weekly net earnings threshold
+  reference:
+    - title: Redbridge Council Tax Reduction Scheme 2026-2027, Schedule 3
+      href: https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf

@@ -11708,3 +11708,497 @@
     lewisham_council_tax_reduction_non_dep_deductions: [777.40, 0]
     lewisham_council_tax_reduction: [900.60, 0]
     council_tax_reduction: 900.60
+
+- name: Redbridge disability class receives 73 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_disability_class: true
+    redbridge_council_tax_reduction: 1_675.04
+    simulated_council_tax_reduction_benunit: 1_675.04
+    council_tax_reduction: 1_675.04
+
+- name: Redbridge UC not-working claimant with a child receives 60 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: C
+        council_tax: 2_039.63
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_weekly_net_earnings: 0
+    redbridge_council_tax_reduction: 1_223.78
+    council_tax_reduction: 1_223.78
+
+- name: Redbridge working claimant with a child receives 46 percent support below the earnings threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 16_275.48
+        income_tax: 0
+        national_insurance: 0
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: C
+        council_tax: 2_039.63
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_weekly_net_earnings: 312.99
+    redbridge_council_tax_reduction: 938.23
+    council_tax_reduction: 938.23
+
+- name: Redbridge UC working claimant with a child uses the working earnings class
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 16_275.48
+        income_tax: 0
+        national_insurance: 0
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: C
+        council_tax: 2_039.63
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_weekly_net_earnings: 312.99
+    redbridge_council_tax_reduction: 938.23
+    council_tax_reduction: 938.23
+
+- name: Redbridge UC claimant with gross work and no net earnings uses the working class
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+        income_tax: 5_200
+        national_insurance: 0
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: C
+        council_tax: 2_039.63
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_claimant_in_remunerative_work: true
+    redbridge_council_tax_reduction_weekly_net_earnings: 0
+    redbridge_council_tax_reduction: 938.23
+    council_tax_reduction: 938.23
+
+- name: Redbridge excludes working claimants with children at the strict 313 pound earnings threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 16_276
+        income_tax: 0
+        national_insurance: 0
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: C
+        council_tax: 2_039.63
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_weekly_net_earnings: 313
+    redbridge_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Redbridge excludes working-age claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 16_000.01
+  output:
+    redbridge_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Redbridge contribution-based JSA claimant without work receives 50 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        jsa_contrib_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_claimant_in_remunerative_work: false
+    redbridge_council_tax_reduction: 1_147.29
+    council_tax_reduction: 1_147.29
+
+- name: Redbridge applies the 10 pound weekly minimum award after non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 5
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child, non_dep]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_non_dep_deductions: [1_101.36, 0]
+    redbridge_council_tax_reduction: [0, 0]
+    council_tax_reduction: 0
+
+- name: Redbridge disability class has no non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl_category: STANDARD
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_non_dep_deductions: [0, 0]
+    redbridge_council_tax_reduction: [1_675.04, 0]
+    council_tax_reduction: 1_675.04
+
+- name: Redbridge charges the non-working deduction for an adult student non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_non_dep_deductions: [550.68, 0]
+    redbridge_council_tax_reduction: [596.61, 0]
+    council_tax_reduction: 596.61
+
+- name: Redbridge counts both members of a non-dependant couple where the couple has Universal Credit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_non_dep_deductions: [2_202.72, 0]
+    redbridge_council_tax_reduction: [0, 0]
+    council_tax_reduction: 0
+
+- name: Redbridge makes one deduction for an ordinary non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: REDBRIDGE
+        council_tax_band: D
+        council_tax: 2_294.58
+        savings: 0
+  output:
+    redbridge_council_tax_reduction_non_dep_deductions: [1_101.36, 0]
+    redbridge_council_tax_reduction: [0, 0]
+    council_tax_reduction: 0

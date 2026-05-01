@@ -1,0 +1,9 @@
+description: Redbridge capital limit for working-age Council Tax Reduction.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  label: Redbridge working-age CTR capital limit
+  reference:
+    - title: Redbridge Council Tax Reduction Scheme 2026-2027, paragraph 23
+      href: https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf

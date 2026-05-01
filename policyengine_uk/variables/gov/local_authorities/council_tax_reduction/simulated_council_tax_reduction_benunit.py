@@ -50,6 +50,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "north_norfolk_council_tax_reduction",
     "norwich_council_tax_reduction",
     "oxford_council_tax_reduction",
+    "redbridge_council_tax_reduction",
     "sefton_council_tax_reduction",
     "south_norfolk_council_tax_reduction",
     "southwark_council_tax_reduction",
