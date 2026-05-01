@@ -29,4 +29,3 @@ class newham_council_tax_reduction(Variable):
             working_age,
             "newham_council_tax_reduction_non_dep_deductions",
         )
-

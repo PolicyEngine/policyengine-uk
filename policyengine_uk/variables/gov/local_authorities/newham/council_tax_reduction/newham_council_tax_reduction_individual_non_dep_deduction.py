@@ -23,6 +23,4 @@ class newham_council_tax_reduction_individual_non_dep_deduction(Variable):
             household("country", period),
             household("council_tax_reduction_household_has_pensioner", period),
         )
-        return normal_gross_income_non_dep_deduction(
-            person, period, ctr, working_age
-        )
+        return normal_gross_income_non_dep_deduction(person, period, ctr, working_age)

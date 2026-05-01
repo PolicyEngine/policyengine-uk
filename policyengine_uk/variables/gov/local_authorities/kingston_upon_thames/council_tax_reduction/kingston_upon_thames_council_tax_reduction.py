@@ -16,10 +16,9 @@ class kingston_upon_thames_council_tax_reduction(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        ctr = (
-            parameters(period)
-            .gov.local_authorities.kingston_upon_thames.council_tax_reduction
-        )
+        ctr = parameters(
+            period
+        ).gov.local_authorities.kingston_upon_thames.council_tax_reduction
         local_authority = benunit.household("local_authority", period)
         country = benunit.household("country", period)
         has_pensioner = benunit.household(

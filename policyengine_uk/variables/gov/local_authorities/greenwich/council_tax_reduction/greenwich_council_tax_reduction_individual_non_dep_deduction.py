@@ -24,4 +24,3 @@ class greenwich_council_tax_reduction_individual_non_dep_deduction(Variable):
             household("council_tax_reduction_household_has_pensioner", period),
         )
         return flat_non_dep_deduction(person, period, ctr, working_age)
-

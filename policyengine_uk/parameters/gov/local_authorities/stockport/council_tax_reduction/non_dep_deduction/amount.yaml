@@ -1,0 +1,19 @@
+description: Weekly non-dependant deduction schedule under the Stockport Council Tax Support scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5
+  - threshold:
+      2026-04-01: 188
+    amount:
+      2026-04-01: 10
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Stockport Council Tax Support non-dependant deduction schedule
+  reference:
+    - title: Stockport Council Tax Support Scheme 2026 to 2027
+      href: https://www.stockport.gov.uk/council-tax-support-scheme

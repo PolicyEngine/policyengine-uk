@@ -134,8 +134,16 @@ def is_st_albans(local_authority):
     return local_authority == LocalAuthority.ST_ALBANS
 
 
+def is_stockport(local_authority):
+    return local_authority == LocalAuthority.STOCKPORT
+
+
 def is_warrington(local_authority):
     return local_authority == LocalAuthority.WARRINGTON
+
+
+def is_wakefield(local_authority):
+    return local_authority == LocalAuthority.WAKEFIELD
 
 
 def is_west_suffolk(local_authority):
@@ -237,9 +245,7 @@ def is_gateshead_working_age(local_authority, country, has_pensioner):
 
 
 def is_greenwich_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_greenwich(
-        local_authority
-    )
+    return (country == Country.ENGLAND) & ~has_pensioner & is_greenwich(local_authority)
 
 
 def is_hackney_working_age(local_authority, country, has_pensioner):
@@ -326,10 +332,18 @@ def is_st_albans_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_st_albans(local_authority)
 
 
+def is_stockport_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_stockport(local_authority)
+
+
 def is_warrington_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_warrington(local_authority)
     )
+
+
+def is_wakefield_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_wakefield(local_authority)
 
 
 def is_west_suffolk_working_age(local_authority, country, has_pensioner):
@@ -408,7 +422,9 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_south_norfolk_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)
         | is_st_albans_working_age(local_authority, country, has_pensioner)
+        | is_stockport_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
+        | is_wakefield_working_age(local_authority, country, has_pensioner)
         | is_west_suffolk_working_age(local_authority, country, has_pensioner)
         | is_westminster_working_age(local_authority, country, has_pensioner)
         | is_worthing_working_age(local_authority, country, has_pensioner)

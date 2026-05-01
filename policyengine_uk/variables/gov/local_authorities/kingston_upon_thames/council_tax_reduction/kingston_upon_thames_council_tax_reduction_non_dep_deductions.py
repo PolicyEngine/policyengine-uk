@@ -18,4 +18,3 @@ class kingston_upon_thames_council_tax_reduction_non_dep_deductions(Variable):
             "kingston_upon_thames_council_tax_reduction_individual_non_dep_deduction",
             one_deduction_for_uc_couples=False,
         )
-

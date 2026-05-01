@@ -4,10 +4,10 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._lega
 )
 
 
-class newham_council_tax_reduction_non_dep_deductions(Variable):
+class wakefield_council_tax_reduction_non_dep_deductions(Variable):
     value_type = float
     entity = BenUnit
-    label = "Newham CTR non-dependent deductions"
+    label = "Wakefield CTR non-dependent deductions"
     definition_period = YEAR
     unit = GBP
 
@@ -15,5 +15,5 @@ class newham_council_tax_reduction_non_dep_deductions(Variable):
         return local_non_dep_deductions(
             benunit,
             period,
-            "newham_council_tax_reduction_individual_non_dep_deduction",
+            "wakefield_council_tax_reduction_individual_non_dep_deduction",
         )

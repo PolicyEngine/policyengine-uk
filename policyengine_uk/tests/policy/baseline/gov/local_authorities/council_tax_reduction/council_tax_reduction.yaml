@@ -3678,6 +3678,381 @@
     council_tax_reduction: 970.6
     council_tax_less_benefit: 829.4
 
+- name: Stockport caps a single claimant's eligible liability at Band A
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: STOCKPORT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    stockport_council_tax_reduction: 1200
+    simulated_council_tax_reduction_benunit: 1200
+    council_tax_reduction: 1200
+    council_tax_less_benefit: 600
+
+- name: Stockport caps a three-bedroom household's eligible liability at Band B
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child_1:
+        age: 12
+        is_male: true
+      child_2:
+        age: 12
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant, child_1, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child_1, child_2]
+        country: ENGLAND
+        local_authority: STOCKPORT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    stockport_council_tax_reduction_maximum_eligible_liability: 1400
+    stockport_council_tax_reduction: 1400
+    council_tax_reduction: 1400
+    council_tax_less_benefit: 400
+
+- name: Stockport does not cap households with Disabled Persons Relief
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: STOCKPORT
+        council_tax_band: D
+        council_tax: 1800
+        stockport_council_tax_reduction_disabled_persons_relief: true
+        savings: 0
+  output:
+    stockport_council_tax_reduction_maximum_eligible_liability: 1800
+    stockport_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Stockport excludes working-age claimants above the 8,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: STOCKPORT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 8_001
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Stockport adds non-UC tariff income from capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: STOCKPORT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 7_000
+  output:
+    stockport_council_tax_reduction: 1158.4
+    simulated_council_tax_reduction_benunit: 1158.4
+    council_tax_reduction: 1158.4
+    council_tax_less_benefit: 641.6
+
+- name: Stockport applies its higher gross-income non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: STOCKPORT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    stockport_council_tax_reduction_non_dep_deductions: [520, 0]
+    council_tax_reduction: 680
+    council_tax_less_benefit: 1120
+
+- name: Wakefield working-age claimant with only DWP income receives 70 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 5_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WAKEFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    wakefield_council_tax_reduction: 1260
+    simulated_council_tax_reduction_benunit: 1260
+    council_tax_reduction: 1260
+    council_tax_less_benefit: 540
+
+- name: Wakefield applies its non-DWP weekly income bands to net earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 11_960
+        income_tax: 1_560
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WAKEFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    wakefield_council_tax_reduction: 720
+    simulated_council_tax_reduction_benunit: 720
+    council_tax_reduction: 720
+    council_tax_less_benefit: 1080
+
+- name: Wakefield includes other non-DWP income in its income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WAKEFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    wakefield_council_tax_reduction: 720
+    simulated_council_tax_reduction_benunit: 720
+    council_tax_reduction: 720
+    council_tax_less_benefit: 1080
+
+- name: Wakefield excludes working-age claimants above the 6,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WAKEFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_001
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Wakefield applies its flat working-age non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WAKEFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    wakefield_council_tax_reduction_non_dep_deductions: [390, 0]
+    council_tax_reduction: 870
+    council_tax_less_benefit: 930
+
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025
   absolute_error_margin: 0.5

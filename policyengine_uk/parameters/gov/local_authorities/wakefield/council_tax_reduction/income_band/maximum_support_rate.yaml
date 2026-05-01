@@ -1,0 +1,31 @@
+description: Maximum Council Tax Support rate by assessed weekly non-DWP income band under the Wakefield working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.70
+  - threshold:
+      2026-04-01: 55.01
+    amount:
+      2026-04-01: 0.55
+  - threshold:
+      2026-04-01: 165.01
+    amount:
+      2026-04-01: 0.40
+  - threshold:
+      2026-04-01: 220.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 285.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Wakefield Council Tax Support assessed weekly income-band maximum support rate
+  reference:
+    - title: Working Age Council Tax Support Scheme
+      href: https://www.wakefield.gov.uk/council-tax/help-with-your-council-tax/working-age-council-tax-support-scheme

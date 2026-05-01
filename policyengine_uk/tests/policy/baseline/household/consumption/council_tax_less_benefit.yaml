@@ -19,7 +19,7 @@
       household:
         members: [claimant]
         country: ENGLAND
-        local_authority: WESTMINSTER
+        local_authority: MAIDSTONE
         council_tax_band: D
         council_tax: 1800
         savings: 0

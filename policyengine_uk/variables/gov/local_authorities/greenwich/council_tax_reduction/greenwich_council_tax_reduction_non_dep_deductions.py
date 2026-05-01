@@ -17,4 +17,3 @@ class greenwich_council_tax_reduction_non_dep_deductions(Variable):
             period,
             "greenwich_council_tax_reduction_individual_non_dep_deduction",
         )
-

@@ -1,0 +1,10 @@
+description: Capital threshold above which tariff income is added under the Stockport Council Tax Support scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Stockport Council Tax Support tariff income threshold
+  reference:
+    - title: Stockport Council Tax Support Scheme 2026 to 2027
+      href: https://www.stockport.gov.uk/council-tax-support-scheme

@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Wakefield Council Tax Support scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Wakefield Council Tax Support capital limit
+  reference:
+    - title: Working Age Council Tax Support Scheme
+      href: https://www.wakefield.gov.uk/council-tax/help-with-your-council-tax/working-age-council-tax-support-scheme
