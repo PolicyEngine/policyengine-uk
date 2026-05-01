@@ -4869,6 +4869,417 @@
     council_tax_reduction: 1323
     council_tax_less_benefit: 477
 
+- name: Camden zero-earnings working-age claimant receives full support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    camden_council_tax_reduction: 1800
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Camden uses gross earnings for no-child income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_600
+        income_tax: 5_000
+        national_insurance: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    camden_council_tax_reduction: 630
+    simulated_council_tax_reduction_benunit: 630
+    council_tax_reduction: 630
+    council_tax_less_benefit: 1170
+
+- name: Camden applies child household earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 31_200
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    camden_council_tax_reduction: 270
+    simulated_council_tax_reduction_benunit: 270
+    council_tax_reduction: 270
+    council_tax_less_benefit: 1530
+
+- name: Camden deducts eligible childcare costs before earnings banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 13_000
+        hours_worked: 832
+        childcare_expenses: 2_600
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    camden_council_tax_reduction_childcare_deduction: 2600
+    camden_council_tax_reduction: 1170
+    simulated_council_tax_reduction_benunit: 1170
+    council_tax_reduction: 1170
+    council_tax_less_benefit: 630
+
+- name: Camden applies disabled or carer earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_600
+        pip_dl: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    camden_council_tax_reduction: 990
+    simulated_council_tax_reduction_benunit: 990
+    council_tax_reduction: 990
+    council_tax_less_benefit: 810
+
+- name: Camden counts partner earnings and disability benefits
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 35
+        employment_income: 15_600
+        pip_dl: 1
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    camden_council_tax_reduction: 990
+    simulated_council_tax_reduction_benunit: 990
+    council_tax_reduction: 990
+    council_tax_less_benefit: 810
+
+- name: Camden includes working-age claimants just below the capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 15_999
+  output:
+    camden_council_tax_reduction_assessable_capital: 15_999
+    camden_council_tax_reduction: 1800
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Camden excludes working-age claimants with 16,000 pounds of savings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 16_000
+  output:
+    council_tax_reduction_scheme_supported: true
+    camden_council_tax_reduction_assessable_capital: 16_000
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Camden applies thirty percent liability non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 26
+        employment_income: 6_240
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 26
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    camden_council_tax_reduction_non_dep_deductions: [540, 0]
+    camden_council_tax_reduction: [1260, 0]
+    simulated_council_tax_reduction_benunit: [1260, 0]
+    council_tax_reduction: 1260
+    council_tax_less_benefit: 540
+
+- name: Camden treats non-dependant couples as one deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      first_non_dep:
+        age: 26
+        employment_income: 6_240
+      second_non_dep:
+        age: 26
+        employment_income: 6_240
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [first_non_dep, second_non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 26
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, first_non_dep, second_non_dep]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 3600
+        savings: 0
+  output:
+    camden_council_tax_reduction_non_dep_deductions: [1080, 0]
+    camden_council_tax_reduction: [2520, 0]
+    simulated_council_tax_reduction_benunit: [2520, 0]
+    council_tax_reduction: 2520
+    council_tax_less_benefit: 1080
+
+- name: Camden does not deduct for non-dependants aged 25 or at the earnings threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      age_25_non_dep:
+        age: 25
+        employment_income: 6_240
+      threshold_non_dep:
+        age: 26
+        employment_income: 5_761.60
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      age_25_benunit:
+        members: [age_25_non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+      threshold_benunit:
+        members: [threshold_non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 26
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, age_25_non_dep, threshold_non_dep]
+        country: ENGLAND
+        local_authority: CAMDEN
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    camden_council_tax_reduction_non_dep_deductions: [0, 0, 0]
+    camden_council_tax_reduction: [1800, 0, 0]
+    simulated_council_tax_reduction_benunit: [1800, 0, 0]
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025
   absolute_error_margin: 0.5

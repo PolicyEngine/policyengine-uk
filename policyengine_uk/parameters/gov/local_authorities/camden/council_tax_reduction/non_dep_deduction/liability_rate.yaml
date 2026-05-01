@@ -1,0 +1,9 @@
+description: Share of Council Tax liability deducted for each Camden non-dependant above the weekly earned income threshold.
+values:
+  2026-04-01: 0.30
+metadata:
+  unit: /1
+  label: Camden Council Tax Support non-dependant liability deduction rate
+  reference:
+    - title: Camden Council, Council Tax Support
+      href: https://www.camden.gov.uk/council-tax-support

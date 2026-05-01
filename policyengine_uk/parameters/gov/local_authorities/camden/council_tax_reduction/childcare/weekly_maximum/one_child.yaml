@@ -1,0 +1,9 @@
+description: Maximum weekly childcare costs deducted from earnings for working-age Camden Council Tax Support with one child.
+values:
+  2026-04-01: 175
+metadata:
+  unit: currency-GBP
+  label: Camden Council Tax Support one-child weekly childcare deduction cap
+  reference:
+    - title: Camden Council, Council Tax Support
+      href: https://www.camden.gov.uk/council-tax-support

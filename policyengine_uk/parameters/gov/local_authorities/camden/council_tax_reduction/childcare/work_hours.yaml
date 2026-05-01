@@ -1,0 +1,9 @@
+description: Minimum weekly work hours for Camden Council Tax Support childcare costs to be deducted from earnings.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Camden Council Tax Support childcare deduction weekly work-hours threshold
+  reference:
+    - title: Camden Council, Council Tax Support
+      href: https://www.camden.gov.uk/council-tax-support
