@@ -38,6 +38,8 @@ non_single:
       2024-04-01: 22_020
       2025-04-01: 22_020
 metadata:
-  reference: 
+  reference:
+    - title: The Benefit Cap (Housing Benefit and Universal Credit) (Amendment) Regulations 2016 reg. 2
+      href: https://www.legislation.gov.uk/uksi/2016/909/regulation/2/made
     - title: The Universal Credit Regulations 2013 reg. 80A
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/80A
