@@ -1,0 +1,10 @@
+description: Working-age capital limit for Ealing Council Tax Reduction.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Ealing working-age CTR capital limit
+  reference:
+    - title: Ealing Council Tax Reduction Scheme Effective April 2026, Classes of persons
+      href: https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf

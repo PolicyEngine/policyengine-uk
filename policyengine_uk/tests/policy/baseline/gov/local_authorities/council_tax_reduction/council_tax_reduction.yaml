@@ -7150,3 +7150,392 @@
   output:
     hillingdon_council_tax_reduction: 1350
     council_tax_reduction: 1350
+
+- name: Ealing zero-income non-protected working-age claimant receives 80 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction: 1440
+    simulated_council_tax_reduction_benunit: 1440
+    council_tax_reduction: 1440
+    council_tax_less_benefit: 360
+
+- name: Ealing protected working-age claimant receives full support in Band 1
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_protected: true
+    ealing_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+
+- name: Ealing treats Employment and Support Allowance as protected
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        esa_contrib_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_protected: true
+    ealing_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+
+- name: Ealing treats care leavers under 25 as protected
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 24
+        ealing_council_tax_reduction_care_leaver: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 24
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_protected: true
+    ealing_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+
+- name: Ealing treats underlying Carer's Allowance entitlement as protected
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        ealing_council_tax_reduction_underlying_carers_allowance_entitlement: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_protected: true
+    ealing_council_tax_reduction: 1800
+    council_tax_reduction: 1800
+
+- name: Ealing applies non-protected weekly income contribution bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 9_360
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_weekly_income: 180
+    ealing_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Ealing counts maintenance payments as unearned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        maintenance_income: 9_360
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_weekly_income: 180
+    ealing_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Ealing uses Universal Credit assessed income rather than the UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_weekly_income: 0
+    ealing_council_tax_reduction: 1440
+    council_tax_reduction: 1440
+
+- name: Ealing applies the self-employed minimum income floor outside the startup period
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        self_employment_income: 1
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_weekly_income: 427.35
+    ealing_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Ealing applies the couple earnings disregard outside Universal Credit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 10_012.08
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      partner:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_weekly_income: 154
+    ealing_council_tax_reduction: 1440
+    council_tax_reduction: 1440
+
+- name: Ealing excludes working-age claimants with capital equal to 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_000
+  output:
+    ealing_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Ealing applies the high working non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 13_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: EALING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    ealing_council_tax_reduction_non_dep_deductions: [1202.76, 0]
+    ealing_council_tax_reduction: [237.24, 0]
+    council_tax_reduction: 237.24

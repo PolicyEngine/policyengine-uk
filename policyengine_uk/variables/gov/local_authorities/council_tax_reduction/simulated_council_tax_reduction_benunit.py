@@ -20,6 +20,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "crawley_council_tax_reduction",
     "darlington_council_tax_reduction",
     "dudley_council_tax_reduction",
+    "ealing_council_tax_reduction",
     "east_cambridgeshire_council_tax_reduction",
     "east_hertfordshire_council_tax_reduction",
     "east_suffolk_council_tax_reduction",

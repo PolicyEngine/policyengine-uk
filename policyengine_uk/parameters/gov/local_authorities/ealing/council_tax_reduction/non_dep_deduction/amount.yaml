@@ -1,0 +1,23 @@
+description: Ealing working-age non-dependant deduction by weekly gross earned income.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 8.35
+  - threshold:
+      2026-04-01: 0.01
+    amount:
+      2026-04-01: 15.42
+  - threshold:
+      2026-04-01: 235.16
+    amount:
+      2026-04-01: 23.13
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Ealing working-age CTR non-dependant deduction
+  reference:
+    - title: Ealing Council Tax Reduction Scheme Effective April 2026, Non-dependant deductions
+      href: https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf

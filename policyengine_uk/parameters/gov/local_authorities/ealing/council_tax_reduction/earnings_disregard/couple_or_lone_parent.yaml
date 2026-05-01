@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for Ealing Council Tax Reduction claimants who are not single and not receiving Universal Credit.
+values:
+  2026-04-01: 38.54
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Ealing CTR couple or lone-parent earnings disregard
+  reference:
+    - title: Ealing Council Tax Reduction Scheme Effective April 2026, Income
+      href: https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf
