@@ -1,0 +1,9 @@
+description: Capital limit for Croydon disabled non-working Council Tax Support claimants.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  label: Croydon disabled non-working Council Tax Support capital limit
+  reference:
+    - title: Croydon Council, Your capital - savings, investments and property
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/your-capital-savings-investments-and-property

@@ -1,0 +1,9 @@
+description: Share of the Universal Credit carer element ignored when calculating Croydon Council Tax Support income.
+values:
+  2026-04-01: 0.5
+metadata:
+  unit: /1
+  label: Croydon Council Tax Support ignored Universal Credit carer element rate
+  reference:
+    - title: London Borough of Croydon, Council Tax support scheme booklet
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/how-we-work-out-amount-council-tax-support

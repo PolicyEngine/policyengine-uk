@@ -10655,3 +10655,619 @@
   output:
     bromley_council_tax_reduction: 0
     council_tax_reduction: 0
+
+- name: Croydon standard working-age claimant receives 75 percent support in the lowest income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: C
+        council_tax: 2_311.03
+        savings: 0
+  output:
+    croydon_council_tax_reduction_weekly_income: 0
+    croydon_council_tax_reduction_maximum_eligible_liability: 2_311.03
+    croydon_council_tax_reduction: 1_733.27
+    simulated_council_tax_reduction_benunit: 1_733.27
+    council_tax_reduction: 1_733.27
+    council_tax_less_benefit: 577.76
+
+- name: Croydon caps standard working-age eligible liability at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: E
+        council_tax: 3_177.67
+        savings: 0
+  output:
+    croydon_council_tax_reduction_maximum_eligible_liability: 2_599.91
+    croydon_council_tax_reduction: 1_949.93
+    council_tax_reduction: 1_949.93
+    council_tax_less_benefit: 1_227.74
+
+- name: Croydon disabled non-working claimant receives full support without the Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: E
+        council_tax: 3_177.67
+        savings: 0
+  output:
+    croydon_council_tax_reduction_disabled_not_working: true
+    croydon_council_tax_reduction_maximum_eligible_liability: 3_177.67
+    croydon_council_tax_reduction: 3_177.67
+    council_tax_reduction: 3_177.67
+
+- name: Croydon lone parent with child under 5 moves to the 70 percent band at 158 pounds weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_216
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: B
+        council_tax: 2_022.15
+        savings: 0
+  output:
+    croydon_council_tax_reduction_weekly_income: 158
+    croydon_council_tax_reduction_lone_parent_child_under_5: true
+    croydon_council_tax_reduction: 1_415.50
+    council_tax_reduction: 1_415.50
+
+- name: Croydon ignores the Universal Credit housing element when applying income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 16_800
+        uc_housing_costs_element: 5_984
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: B
+        council_tax: 2_022.15
+        savings: 0
+  output:
+    croydon_council_tax_reduction_countable_universal_credit: 10_816
+    croydon_council_tax_reduction_weekly_income: 208
+    croydon_council_tax_reduction: 808.86
+    council_tax_reduction: 808.86
+
+- name: Croydon excludes standard working-age claimants with capital of at least 8,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: C
+        council_tax: 2_311.03
+        savings: 8_000
+  output:
+    croydon_council_tax_reduction_assessable_capital: 8_000
+    croydon_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Croydon uses UC-assessed capital instead of household savings for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_200
+        uc_housing_costs_element: 5_200
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: C
+        council_tax: 2_311.03
+        savings: 20_000
+  output:
+    croydon_council_tax_reduction_assessable_capital: 1_000
+    croydon_council_tax_reduction: 1_733.27
+    council_tax_reduction: 1_733.27
+
+- name: Croydon excludes UC claimants at the UC-assessed capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_200
+        uc_housing_costs_element: 5_200
+        uc_reported_capital: 8_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: C
+        council_tax: 2_311.03
+        savings: 0
+  output:
+    croydon_council_tax_reduction_assessable_capital: 8_000
+    croydon_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Croydon subtracts high non-dependant deductions from the final award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 25_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: D
+        council_tax: 2_599.91
+        savings: 0
+  output:
+    croydon_council_tax_reduction_non_dep_deductions: [1_560, 0]
+    croydon_council_tax_reduction: [389.93, 0]
+    council_tax_reduction: 389.93
+
+- name: Croydon makes one non-dependant deduction for ordinary couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 12_500
+      non_dep_partner:
+        age: 25
+        employment_income: 12_500
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: D
+        council_tax: 2_599.91
+        savings: 0
+  output:
+    croydon_council_tax_reduction_non_dep_deductions: [1_560, 0]
+    croydon_council_tax_reduction: [389.93, 0]
+    council_tax_reduction: 389.93
+
+- name: Croydon counts both members of a non-dependant couple where the couple has Universal Credit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 12_500
+      non_dep_partner:
+        age: 25
+        employment_income: 12_500
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: D
+        council_tax: 2_599.91
+        savings: 0
+  output:
+    croydon_council_tax_reduction_non_dep_deductions: [3_120, 0]
+    croydon_council_tax_reduction: [0, 0]
+    council_tax_reduction: 0
+
+- name: Croydon ignores the first 50 pounds of weekly income for working disabled households
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl_category: STANDARD
+      partner:
+        age: 35
+        employment_income: 13_520
+        income_tax: 0
+        national_insurance: 0
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: D
+        council_tax: 2_599.91
+        savings: 0
+  output:
+    croydon_council_tax_reduction_disabled_not_working: false
+    croydon_council_tax_reduction_weekly_income: 210
+    croydon_council_tax_reduction: 1_039.96
+    council_tax_reduction: 1_039.96
+
+- name: Croydon applies the not-working deduction to UC non-dependants with no earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: D
+        council_tax: 2_599.91
+        savings: 0
+  output:
+    croydon_council_tax_reduction_non_dep_deductions: [260, 0]
+    croydon_council_tax_reduction: [1_689.93, 0]
+    council_tax_reduction: 1_689.93
+
+- name: Croydon does not let a disabled non-dependant remove the claimant's Band D cap or non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: E
+        council_tax: 3_177.67
+        savings: 0
+  output:
+    croydon_council_tax_reduction_maximum_eligible_liability: 2_599.91
+    croydon_council_tax_reduction_non_dep_deductions: [260, 0]
+    croydon_council_tax_reduction: [1_689.93, 0]
+    council_tax_reduction: 1_689.93
+
+- name: Croydon deducts half of pension contributions when calculating weekly net income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 11_336
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 1_040
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: D
+        council_tax: 2_599.91
+        savings: 0
+  output:
+    croydon_council_tax_reduction_weekly_income: 208
+    croydon_council_tax_reduction: 1_039.96
+    council_tax_reduction: 1_039.96
+
+- name: Croydon includes UC assessed earned and unearned income while ignoring named UC elements
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 10_400
+        uc_earned_income: 2_600
+        uc_unearned_income: 1_300
+        uc_LCWRA_element: 5_200
+        uc_carer_element: 1_040
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: D
+        council_tax: 2_599.91
+        savings: 0
+  output:
+    croydon_council_tax_reduction_countable_universal_credit: 4_680
+    croydon_council_tax_reduction_weekly_income: 165
+    croydon_council_tax_reduction: 1_559.95
+    council_tax_reduction: 1_559.95
+
+- name: Croydon treats Armed Forces Independence Payment as a disabled non-working route
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        armed_forces_independence_payment: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CROYDON
+        council_tax_band: E
+        council_tax: 3_177.67
+        savings: 10_000
+  output:
+    croydon_council_tax_reduction_disabled_not_working: true
+    croydon_council_tax_reduction_assessable_capital: 10_000
+    croydon_council_tax_reduction_maximum_eligible_liability: 3_177.67
+    croydon_council_tax_reduction: 3_177.67
+    council_tax_reduction: 3_177.67

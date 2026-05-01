@@ -1,0 +1,19 @@
+description: Weekly non-dependant deduction by annualised earned income for Croydon Council Tax Support where the non-dependant is working.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 10
+  - threshold:
+      2026-04-01: 24_000
+    amount:
+      2026-04-01: 30
+metadata:
+  amount_unit: currency-GBP
+  period: year
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Croydon Council Tax Support working non-dependant deduction
+  reference:
+    - title: Croydon Council, Other people who live with you
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/other-people-who-live-you

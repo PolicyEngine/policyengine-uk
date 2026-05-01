@@ -1,0 +1,11 @@
+description: Weekly income disregard for Croydon disability claims where the claimant or partner is working.
+values:
+  2026-04-01: 50
+metadata:
+  unit: currency-GBP
+  label: Croydon Council Tax Support disabled working weekly income disregard
+  reference:
+    - title: Croydon Council, How we work out the amount of Council Tax support
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/how-we-work-out-amount-council-tax-support
+    - title: Croydon Council, Example support calculations
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/example-support-calculations

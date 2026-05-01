@@ -1,0 +1,9 @@
+description: Highest Council Tax band ratio eligible for standard working-age Croydon Council Tax Support.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  label: Croydon Council Tax Support maximum eligible Band D ratio
+  reference:
+    - title: Croydon Council, How we work out the amount of Council Tax support
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/how-we-work-out-amount-council-tax-support

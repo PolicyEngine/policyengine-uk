@@ -1,0 +1,15 @@
+description: Council Tax Support rate by weekly household income for Croydon disabled non-working claimants.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Croydon disabled non-working weekly household income CTS rate
+  reference:
+    - title: Croydon Council, How we work out the amount of Council Tax support
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/how-we-work-out-amount-council-tax-support

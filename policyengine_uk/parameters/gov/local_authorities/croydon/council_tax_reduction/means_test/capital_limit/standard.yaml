@@ -1,0 +1,9 @@
+description: Capital limit for standard working-age Croydon Council Tax Support claimants.
+values:
+  2026-04-01: 8_000
+metadata:
+  unit: currency-GBP
+  label: Croydon standard Council Tax Support capital limit
+  reference:
+    - title: Croydon Council, Your capital - savings, investments and property
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/your-capital-savings-investments-and-property
