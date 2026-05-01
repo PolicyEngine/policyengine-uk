@@ -9,11 +9,23 @@ def legacy_council_tax_reduction(
     non_dep_deductions_variable,
     maximum_support_rate=None,
     maximum_eligible_liability_variable=None,
+    applicable_amount=None,
+    applicable_income=None,
+    additional_applicable_income=0,
 ):
     is_household_head_benunit = benunit("benunit_contains_household_head", period)
     would_claim = benunit("would_claim_council_tax_reduction", period)
-    applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
-    applicable_income = benunit("council_tax_reduction_applicable_income", period)
+    applicable_amount = (
+        benunit("council_tax_reduction_applicable_amount", period)
+        if applicable_amount is None
+        else applicable_amount
+    )
+    applicable_income = (
+        benunit("council_tax_reduction_applicable_income", period)
+        if applicable_income is None
+        else applicable_income
+    )
+    applicable_income += additional_applicable_income
     relevant_income_based_benefit = benunit(
         "council_tax_reduction_relevant_income_based_benefit",
         period,
@@ -70,6 +82,57 @@ def local_non_dep_deductions(
         benunit.members.household.sum(deductions_to_count)
     )
     return deductions_in_household - deduction_for_benunit
+
+
+def normal_gross_income_non_dep_deduction(
+    person,
+    period,
+    ctr,
+    working_age,
+    exempt_income_based_benefits=True,
+    exempt_uc_no_earned_income=True,
+):
+    gross_income_components = [
+        "employment_income",
+        "self_employment_income",
+        "property_income",
+        "private_pension_income",
+        "savings_interest_income",
+        "dividend_income",
+        "state_pension",
+    ]
+    gross_income = add(person, period, gross_income_components)
+    earned_income = person("employment_income", period) + person(
+        "self_employment_income", period
+    )
+    weekly_benunit_gross_income = person.benunit.sum(gross_income) / WEEKS_IN_YEAR
+    weekly_benunit_earned_income = person.benunit.sum(earned_income) / WEEKS_IN_YEAR
+    benunit_weekly_hours = person.benunit.max(person("weekly_hours", period))
+    in_remunerative_work = (
+        benunit_weekly_hours >= ctr.non_dep_deduction.remunerative_work_hours
+    )
+    weekly_deduction = where(
+        in_remunerative_work,
+        ctr.non_dep_deduction.amount.calc(weekly_benunit_gross_income),
+        ctr.non_dep_deduction.amount.calc(0),
+    )
+    claimant_exempt = person.household(
+        "council_tax_reduction_household_has_non_dep_exemption", period
+    )
+    income_based_benefit = (
+        (person.benunit("income_support", period) > 0)
+        | (person.benunit("jsa_income", period) > 0)
+        | (person.benunit("esa_income", period) > 0)
+        | (person.benunit("pension_credit", period) > 0)
+    )
+    has_uc = person.benunit("universal_credit", period) > 0
+    no_earned_income = weekly_benunit_earned_income <= 0
+    exempt = (
+        claimant_exempt
+        | (exempt_income_based_benefits & income_based_benefit)
+        | (exempt_uc_no_earned_income & has_uc & no_earned_income)
+    )
+    return working_age * where(exempt, 0.0, weekly_deduction * WEEKS_IN_YEAR)
 
 
 def earned_income_non_dep_deduction(

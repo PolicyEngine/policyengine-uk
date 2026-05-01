@@ -1,0 +1,11 @@
+description: Capital threshold above which tariff income is added for working-age non-Universal Credit claimants under the Kingston upon Thames Council Tax Reduction scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Kingston upon Thames Council Tax Reduction tariff income threshold
+  reference:
+    - title: Council Tax Reduction Scheme 2026 - 2027
+      href: https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf
+

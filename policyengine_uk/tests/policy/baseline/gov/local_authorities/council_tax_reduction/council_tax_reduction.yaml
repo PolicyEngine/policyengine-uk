@@ -2468,6 +2468,128 @@
     council_tax_reduction: 899.88
     council_tax_less_benefit: 900.12
 
+- name: Kingston upon Thames adds non-UC tariff income from capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    council_tax_reduction_applicable_amount: 0
+    council_tax_reduction_applicable_income: 0
+    kingston_upon_thames_council_tax_reduction: 1675.2
+    simulated_council_tax_reduction_benunit: 1675.2
+    council_tax_reduction: 1675.2
+    council_tax_less_benefit: 124.8
+
+- name: Kingston upon Thames uses UC maximum amount as the UC applicable amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 12_000
+        uc_maximum_amount: 12_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 12_000
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    uc_maximum_amount: 12_000
+    council_tax_reduction_applicable_amount: 0
+    council_tax_reduction_applicable_income: 12_000
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Kingston upon Thames counts both members of a UC non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_730
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_730
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 1
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    kingston_upon_thames_council_tax_reduction_non_dep_deductions: [1800.24, 0]
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
 - name: Newham working-age claimant receives 70 percent maximum support
   period: 2026
   absolute_error_margin: 0.5
@@ -2537,7 +2659,8 @@
         age: 35
       non_dep:
         age: 25
-        employment_income: 16_432
+        employment_income: 5_200
+        private_pension_income: 11_232
         hours_worked: 832
     benunits:
       benunit:
@@ -2569,6 +2692,82 @@
     newham_council_tax_reduction_non_dep_deductions: [979.68, 0]
     council_tax_reduction: 280.32
     council_tax_less_benefit: 1519.68
+
+- name: Newham uses a 25 percent excess-income taper
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 11_000
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_applicable_amount: 10_000
+    council_tax_reduction_applicable_income: 11_000
+    council_tax_reduction: 1010
+    council_tax_less_benefit: 790
+
+- name: Newham uses the not-in-remunerative-work non-dependant deduction below 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_460
+        hours_worked: 780
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    newham_council_tax_reduction_non_dep_deductions: [392.08, 0]
+    council_tax_reduction: 867.92
+    council_tax_less_benefit: 932.08
 
 - name: Westminster working-age claimant receives full support
   period: 2026
@@ -2639,7 +2838,8 @@
         age: 35
       non_dep:
         age: 25
-        employment_income: 31_460
+        employment_income: 5_200
+        private_pension_income: 26_260
         hours_worked: 832
     benunits:
       benunit:
@@ -2671,6 +2871,123 @@
     westminster_council_tax_reduction_non_dep_deductions: [829.4, 0]
     council_tax_reduction: 970.6
     council_tax_less_benefit: 829.4
+
+- name: Westminster adds non-UC tariff income from capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    council_tax_reduction_applicable_amount: 0
+    council_tax_reduction_applicable_income: 0
+    westminster_council_tax_reduction: 1675.2
+    simulated_council_tax_reduction_benunit: 1675.2
+    council_tax_reduction: 1675.2
+    council_tax_less_benefit: 124.8
+
+- name: Westminster uses UC maximum amount as the UC applicable amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 12_000
+        uc_maximum_amount: 12_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 12_000
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    uc_maximum_amount: 12_000
+    council_tax_reduction_applicable_amount: 0
+    council_tax_reduction_applicable_income: 12_000
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Westminster exempts Universal Credit non-dependants with no earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        universal_credit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    westminster_council_tax_reduction_non_dep_deductions: [0, 0]
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
 
 - name: Greenwich working-age claimant receives 80 percent maximum support
   period: 2026
