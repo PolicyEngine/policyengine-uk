@@ -30,6 +30,9 @@ from policyengine_uk.parameters.gov.economic_assumptions.lag_average_earnings im
 from policyengine_uk.parameters.gov.economic_assumptions.lag_cpi import (
     add_lagged_cpi,
 )
+from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+    add_lsr_deprecation_aliases,
+)
 from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
@@ -93,6 +96,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters = add_lagged_cpi(self.parameters)
         self.parameters = add_triple_lock(self.parameters)
         self.parameters = create_economic_assumption_indices(self.parameters)
+        self.parameters = add_lsr_deprecation_aliases(self.parameters)
 
         # Create baseline parameters for reform comparisons
         self.parameters.add_child("baseline", self.parameters.clone())

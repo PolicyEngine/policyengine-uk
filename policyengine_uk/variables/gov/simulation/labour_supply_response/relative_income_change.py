@@ -26,7 +26,7 @@ class relative_income_change(Variable):
         net_income = measurement_person.household("household_net_income", period)
         income_change_bound = parameters(
             period
-        ).gov.simulation.labor_supply_responses.bounds.income_change
+        ).gov.simulation.labour_supply_responses.bounds.income_change
         # _c suffix for "clipped"
         baseline_net_income_c = np.clip(baseline_net_income, 1, None)
         net_income_c = np.clip(net_income, 1, None)
