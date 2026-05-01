@@ -70,6 +70,10 @@ def is_croydon(local_authority):
     return local_authority == LocalAuthority.CROYDON
 
 
+def is_cumberland(local_authority):
+    return local_authority == LocalAuthority.CUMBERLAND
+
+
 def is_ealing(local_authority):
     return local_authority == LocalAuthority.EALING
 
@@ -342,6 +346,12 @@ def is_croydon_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_croydon(local_authority)
 
 
+def is_cumberland_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_cumberland(local_authority)
+    )
+
+
 def is_ealing_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_ealing(local_authority)
 
@@ -556,6 +566,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_chesterfield_working_age(local_authority, country, has_pensioner)
         | is_crawley_working_age(local_authority, country, has_pensioner)
         | is_croydon_working_age(local_authority, country, has_pensioner)
+        | is_cumberland_working_age(local_authority, country, has_pensioner)
         | is_ealing_working_age(local_authority, country, has_pensioner)
         | is_enfield_working_age(local_authority, country, has_pensioner)
         | is_east_cambridgeshire_working_age(

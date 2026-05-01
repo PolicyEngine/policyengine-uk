@@ -1,0 +1,10 @@
+description: Capital limit for Cumberland working-age Council Tax Reduction.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Cumberland working-age Council Tax Reduction capital limit
+  reference:
+    - title: Cumberland Council Tax Reduction Scheme 2026/27, section 4.1(g)
+      href: https://www.cumberland.gov.uk/sites/default/files/2026-04/cumberland_council_final_council_tax_reduction_ctr_scheme_for_2026_to_2027.pdf

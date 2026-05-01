@@ -12706,3 +12706,426 @@
     bristol_council_tax_reduction_non_dep_deductions: [691.60, 0]
     bristol_council_tax_reduction: [2_022.08, 0]
     council_tax_reduction: 2_022.08
+
+- name: Cumberland working-age claimant receives full support with no excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 0
+  output:
+    cumberland_council_tax_reduction: 2_444.72
+    simulated_council_tax_reduction_benunit: 2_444.72
+    council_tax_reduction: 2_444.72
+    council_tax_less_benefit: 0
+
+- name: Cumberland applies a 20 percent taper to annual excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 5_826.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 0
+  output:
+    cumberland_council_tax_reduction: 2_236.72
+    council_tax_reduction: 2_236.72
+
+- name: Cumberland adds working-age tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 6_250
+  output:
+    cumberland_council_tax_reduction_tariff_income: 52
+    cumberland_council_tax_reduction: 2_434.32
+    council_tax_reduction: 2_434.32
+
+- name: Cumberland tariff income only counts complete 250 pound capital blocks
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 6_000.01
+  output:
+    cumberland_council_tax_reduction_tariff_income: 0
+    cumberland_council_tax_reduction: 2_444.72
+    council_tax_reduction: 2_444.72
+
+- name: Cumberland applies the capital limit to income-based benefit claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 16_000.01
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    cumberland_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Cumberland uses UC assessed income and UC capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 2_400
+        uc_earned_income: 12_000
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 20_000
+  output:
+    cumberland_council_tax_reduction_uc_applicable_income: 14_400
+    cumberland_council_tax_reduction: 1_964.72
+    council_tax_reduction: 1_964.72
+
+- name: Cumberland applies the remunerative-work non-dependant deduction table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 0
+  output:
+    cumberland_council_tax_reduction_non_dep_deductions: [551.20, 0]
+    cumberland_council_tax_reduction: [1_893.52, 0]
+    council_tax_reduction: 1_893.52
+
+- name: Cumberland treats low-hours positive earnings as not remunerative work
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 520
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 0
+  output:
+    cumberland_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    cumberland_council_tax_reduction: [2_174.32, 0]
+    council_tax_reduction: 2_174.32
+
+- name: Cumberland keeps a working-age claimant in local rules with a pension-age non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      pensioner_non_dep:
+        age: 75
+    benunits:
+      benunit:
+        members: [claimant]
+        benunit_contains_household_head: true
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [pensioner_non_dep]
+        benunit_contains_household_head: false
+        claims_all_entitled_benefits: false
+        would_claim_pc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 75
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, pensioner_non_dep]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: false
+    cumberland_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    cumberland_council_tax_reduction: [2_174.32, 0]
+    council_tax_reduction: 2_174.32
+
+- name: Cumberland waives deductions for source-listed non-dependant exemptions not otherwise modeled
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_200
+        hours_worked: 832
+        cumberland_council_tax_reduction_non_dep_source_exemption: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 0
+  output:
+    cumberland_council_tax_reduction_non_dep_deductions: [0, 0]
+    cumberland_council_tax_reduction: [2_444.72, 0]
+    council_tax_reduction: 2_444.72
+
+- name: Cumberland includes countable benefits in a non-dependant couple's gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 12_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: CUMBERLAND
+        council_tax_band: D
+        council_tax: 2_444.72
+        savings: 0
+  output:
+    cumberland_council_tax_reduction_non_dep_deductions: [691.60, 0]
+    cumberland_council_tax_reduction: [1_753.12, 0]
+    council_tax_reduction: 1_753.12

@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `58` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `59` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -69,6 +69,7 @@ Each council dossier should capture:
 | Bromley | Implemented | Legacy means test with `50%` maximum support, Band D cap, tariff income, UC assessed income/capital branch, and gross-income non-dependant deductions | https://cds.bromley.gov.uk/documents/s50125675/Council%20Tax%20Support%20Scheme%202026-27.pdf |
 | Bristol | Implemented | Legacy full support with `20%` taper, tariff income, UC assessed income/capital branch, single/couple non-dependant income tests, and source-exemption inputs | https://www.bristol.gov.uk/files/documents/10754-bristol-council-tax-reduction-scheme-2026/file |
 | Croydon | Implemented | Weekly household-income bands with protected disabled non-working and lone-parent-under-5 tables, Band D cap exceptions, strict capital cutoffs, UC element exclusions, and final-award non-dependant deductions. Current 2026 pages are paired with 2026/27 no-change decision papers because the linked detailed booklet is older. | https://www.croydon.gov.uk/benefits/changes-council-tax-support/how-we-work-out-amount-council-tax-support |
+| Cumberland | Implemented | Legacy full support with `20%` taper, tariff income, UC assessed income/capital branch, remunerative-work non-dependant deductions, and source-exemption inputs | https://www.cumberland.gov.uk/sites/default/files/2026-04/cumberland_council_final_council_tax_reduction_ctr_scheme_for_2026_to_2027.pdf |
 | Ealing | Implemented | Weekly income-banded support with protected and non-protected tables, strict `GBP 6,000` capital cutoff, and local non-dependant deductions | https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf |
 | Enfield | Implemented | Non-UC legacy means test with `50%` cap, Band C liability cap and `22.5%` taper, plus UC net-earnings bands and protected groups | https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf |
 | Haringey | Implemented | Legacy means test with `80.2%` ordinary maximum, protected `100%` classes, `20%` taper, `GBP 10,000` capital limit, and gross-income non-dependant deductions | https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf |
