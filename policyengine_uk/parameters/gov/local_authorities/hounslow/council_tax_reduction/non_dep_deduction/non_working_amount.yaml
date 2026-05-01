@@ -1,0 +1,10 @@
+description: Weekly non-dependant deduction for Hounslow working-age Council Tax Support when the non-dependant is not in remunerative work.
+values:
+  2026-04-01: 5
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hounslow non-working non-dependant weekly CTS deduction
+  reference:
+    - title: Hounslow Council Tax Reduction Scheme 2025 to 2026, paragraph 27
+      href: https://www.hounslow.gov.uk/downloads/file/11485/hounslow-council-tax-reduction-scheme-2025-to-2026

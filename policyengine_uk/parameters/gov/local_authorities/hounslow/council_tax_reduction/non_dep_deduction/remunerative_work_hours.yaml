@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Hounslow working-age Council Tax Support non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Hounslow CTS non-dependant remunerative-work hours
+  reference:
+    - title: Hounslow Council Tax Reduction Scheme 2025 to 2026, paragraphs 10 and 27
+      href: https://www.hounslow.gov.uk/downloads/file/11485/hounslow-council-tax-reduction-scheme-2025-to-2026

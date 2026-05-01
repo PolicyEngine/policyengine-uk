@@ -5,7 +5,7 @@ This implementation currently simulates:
 - The statutory CTR scheme for pensioner households in England.
 - The national CTR scheme in Wales.
 - The national CTR scheme in Scotland.
-- Working-age local schemes for Adur, Barking and Dagenham, Barnet, Basingstoke and Deane, Bolton, Breckland, Broadland, Bury, Camden, Chesterfield, Crawley, Darlington, Dudley, Ealing, East Cambridgeshire, East Hertfordshire, East Suffolk, Enfield, Fenland, Gateshead, Greenwich, Haringey, Hackney, Hammersmith and Fulham, Hillingdon, Islington, King's Lynn and West Norfolk, Kingston upon Thames, Lambeth, Lancaster, Merton, Newham, North Norfolk, Norwich, Oldham, Oxford, Sefton, South Norfolk, Southwark, St Albans, Stevenage, Stockport, Stroud, Tameside, Wakefield, Warrington, West Suffolk, Westminster, and Worthing.
+- Working-age local schemes for Adur, Barking and Dagenham, Barnet, Basingstoke and Deane, Bolton, Breckland, Broadland, Bury, Camden, Chesterfield, Crawley, Darlington, Dudley, Ealing, East Cambridgeshire, East Hertfordshire, East Suffolk, Enfield, Fenland, Gateshead, Greenwich, Haringey, Hackney, Hammersmith and Fulham, Hillingdon, Hounslow, Islington, King's Lynn and West Norfolk, Kingston upon Thames, Lambeth, Lancaster, Merton, Newham, North Norfolk, Norwich, Oldham, Oxford, Sefton, South Norfolk, Southwark, St Albans, Stevenage, Stockport, Stroud, Tameside, Wakefield, Warrington, West Suffolk, Westminster, and Worthing.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
@@ -15,7 +15,7 @@ The current implementation does not yet model:
 
 - Additional authority-specific income-banded and discount-grid English schemes not yet implemented in this PR.
 - Alternative maximum / second adult rebate cases.
-- Universal Credit-specific CTR adjustments beyond the St Albans earnings-band path and standard income treatment used here.
+- Universal Credit-specific CTR adjustments beyond the implemented local earnings-band paths and standard income treatment used here.
 - National/statutory non-dependant couple aggregation beyond the local working-age scheme helper.
 - Non-dependant deduction apportionment across multiple jointly liable Council Tax payers.
 
@@ -77,6 +77,7 @@ Spot checks against public calculators and scheme sources currently show:
 - Ealing (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's April 2026 scheme uses protected and non-protected weekly income bands, excludes working-age applicants with capital equal to or above `GBP 6,000`, applies a `GBP 38.54` weekly earnings disregard outside Universal Credit for non-single claimants, and has local non-dependant deductions from `GBP 8.35` to `GBP 23.13` per week. PolicyEngine UK returns `council_tax_reduction = GBP 1,440` for a non-protected no-income claimant and `GBP 1,800` for a protected no-income claimant.
 - Enfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 scheme caps working-age eligible liability at Band `C`, gives non-Universal Credit non-protected claimants up to `50%` support with a `22.5%` taper, protects single claimants under `25` and war widows, and uses Universal Credit net-earnings bands from `50%` to `10%` support. PolicyEngine UK returns `council_tax_reduction = GBP 800` for a non-protected no-income claimant and `GBP 1,600` for a protected no-income claimant.
 - Haringey (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 scheme gives ordinary working-age claimants up to `80.2%` support, protects working-age households with children or qualifying disability from that cap, applies a `20%` taper, and has a `GBP 10,000` working-age capital limit. PolicyEngine UK returns `council_tax_reduction = GBP 1,443.60` for an ordinary no-income claimant and `GBP 1,800` for a protected no-income claimant.
+- Hounslow (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's live 2026 page and formal 2025/26 scheme use weekly net-earnings bands for working-age households, with ordinary support of up to `75%`, `90%` support for households where the claimant or partner receives Carer's Allowance or the Universal Credit carer element, and a `GBP 6,000` working-age capital limit. PolicyEngine UK uses household liquid savings as the available proxy for claimant/partner capital, and returns `council_tax_reduction = GBP 1,350` for a no-earnings ordinary claimant and `GBP 1,620` for a carer household.
 - Stevenage (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Chesterfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Warrington (`WA1 1UH`, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA): entitledto returns `GBP 26.69` per week of Council Tax Support and `GBP 2.48` per week left to pay on a displayed bill of `GBP 29.17` per week, which is a `91.5%` maximum award on the displayed weekly bill. PolicyEngine UK applies the same rule structure.
@@ -246,3 +247,9 @@ North Norfolk references:
 
 - https://www.north-norfolk.gov.uk/media/10894/north-norfolk-council-tax-reduction-scheme-for-2025-to-2026.pdf
 - https://www.north-norfolk.gov.uk/tasks/benefits/housing-benefit-and-council-tax-support-rates-from-april-2026/
+
+Hounslow references:
+
+- https://www.hounslow.gov.uk/council-tax-support
+- https://www.hounslow.gov.uk/downloads/file/11485/hounslow-council-tax-reduction-scheme-2025-to-2026
+- https://democraticservices.hounslow.gov.uk/documents/s205995/Budget%20Report%202026.pdf

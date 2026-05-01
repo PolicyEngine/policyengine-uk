@@ -8490,3 +8490,287 @@
   output:
     haringey_council_tax_reduction_non_dep_deductions: [0, 0]
     haringey_council_tax_reduction: [1800, 0]
+
+- name: Hounslow working-age claimant receives 75 percent support in the lowest earnings band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hounslow_council_tax_reduction_weekly_net_earnings: 0
+    hounslow_council_tax_reduction: 1350
+    simulated_council_tax_reduction_benunit: 1350
+    council_tax_reduction: 1350
+
+- name: Hounslow single claimant with 100 pounds weekly earnings receives 60 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hounslow_council_tax_reduction_weekly_net_earnings: 100
+    hounslow_council_tax_reduction: 1080
+    council_tax_reduction: 1080
+
+- name: Hounslow Universal Credit earnings bands ignore the UC award and unearned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        private_pension_income: 50_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 10_000
+        uc_earned_income: 5_200
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hounslow_council_tax_reduction_weekly_net_earnings: 100
+    hounslow_council_tax_reduction: 1080
+    council_tax_reduction: 1080
+
+- name: Hounslow carers receive 90 percent support regardless of earnings band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 20_000
+        carers_allowance_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hounslow_council_tax_reduction_carer: true
+    hounslow_council_tax_reduction: 1620
+    council_tax_reduction: 1620
+
+- name: Hounslow excludes working-age claimants above the 6,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_001
+  output:
+    hounslow_council_tax_reduction_assessable_capital: 6_001
+    hounslow_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Hounslow applies the working-age remunerative-work non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 20_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hounslow_council_tax_reduction_non_dep_deductions: [520, 0]
+    hounslow_council_tax_reduction: [830, 0]
+    council_tax_reduction: 830
+
+- name: Hounslow applies the lower non-dependant deduction below remunerative work hours
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 20_000
+        hours_worked: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hounslow_council_tax_reduction_non_dep_deductions: [260, 0]
+    hounslow_council_tax_reduction: [1090, 0]
+
+- name: Hounslow makes one non-dependant deduction for non-dependant couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 20_000
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        hours_worked: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: HOUNSLOW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hounslow_council_tax_reduction_non_dep_deductions: [520, 0]
+    hounslow_council_tax_reduction: [830, 0]

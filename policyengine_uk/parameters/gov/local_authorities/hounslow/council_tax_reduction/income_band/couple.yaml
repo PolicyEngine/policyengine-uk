@@ -1,0 +1,37 @@
+description: Council Tax Support rate by weekly net earnings band for working-age Hounslow couples without children.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 101
+    amount:
+      2026-04-01: 0.60
+  - threshold:
+      2026-04-01: 141
+    amount:
+      2026-04-01: 0.45
+  - threshold:
+      2026-04-01: 181
+    amount:
+      2026-04-01: 0.30
+  - threshold:
+      2026-04-01: 221
+    amount:
+      2026-04-01: 0.15
+  - threshold:
+      2026-04-01: 261
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Hounslow couple weekly net earnings CTS rate
+  reference:
+    - title: Hounslow Council Tax Reduction Scheme 2025 to 2026, paragraph 16
+      href: https://www.hounslow.gov.uk/downloads/file/11485/hounslow-council-tax-reduction-scheme-2025-to-2026
+    - title: Hounslow Council Tax Support
+      href: https://www.hounslow.gov.uk/council-tax-support
