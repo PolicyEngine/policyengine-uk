@@ -1,0 +1,10 @@
+description: Council Tax band ratio used to cap eligible liability for working-age households under the Tameside Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.666666667
+metadata:
+  unit: /1
+  period: year
+  label: Tameside Council Tax Reduction Band A cap ratio
+  reference:
+    - title: Tameside Council Tax Reduction Scheme 2026/27
+      href: https://tameside.moderngov.co.uk/documents/s200335/Appendix.%202%20for%20Council%20Tax%20Support%20Scheme%202026-2027.pdf

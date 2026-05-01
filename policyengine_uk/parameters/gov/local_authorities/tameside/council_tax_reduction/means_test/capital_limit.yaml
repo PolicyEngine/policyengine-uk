@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Tameside Council Tax Reduction scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Tameside Council Tax Reduction capital cutoff
+  reference:
+    - title: Tameside Council Tax Reduction Scheme 2026/27
+      href: https://tameside.moderngov.co.uk/documents/s200335/Appendix.%202%20for%20Council%20Tax%20Support%20Scheme%202026-2027.pdf

@@ -40,6 +40,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "stockport_council_tax_reduction",
     "stevenage_council_tax_reduction",
     "stroud_council_tax_reduction",
+    "tameside_council_tax_reduction",
     "wakefield_council_tax_reduction",
     "warrington_council_tax_reduction",
     "west_suffolk_council_tax_reduction",

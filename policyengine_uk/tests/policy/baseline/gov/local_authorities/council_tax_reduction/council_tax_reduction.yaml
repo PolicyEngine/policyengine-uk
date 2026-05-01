@@ -4053,6 +4053,172 @@
     council_tax_reduction: 870
     council_tax_less_benefit: 930
 
+- name: Tameside working-age single claimant receives 75 percent of Band A-capped liability
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TAMESIDE
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    tameside_council_tax_reduction_maximum_eligible_liability: 1200
+    tameside_council_tax_reduction: 900
+    simulated_council_tax_reduction_benunit: 900
+    council_tax_reduction: 900
+    council_tax_less_benefit: 900
+
+- name: Tameside applies single-person weekly net-income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 7_800
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TAMESIDE
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    tameside_council_tax_reduction: 600
+    simulated_council_tax_reduction_benunit: 600
+    council_tax_reduction: 600
+    council_tax_less_benefit: 1200
+
+- name: Tameside applies family weekly net-income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 22_360
+      partner:
+        age: 35
+      child_1:
+        age: 10
+      child_2:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, partner, child_1, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child_1, child_2]
+        country: ENGLAND
+        local_authority: TAMESIDE
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    tameside_council_tax_reduction: 300
+    simulated_council_tax_reduction_benunit: 300
+    council_tax_reduction: 300
+    council_tax_less_benefit: 1500
+
+- name: Tameside excludes working-age claimants with 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TAMESIDE
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_000
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Tameside passported benefit claimants are awarded at Band 1
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 20_800
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TAMESIDE
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    tameside_council_tax_reduction: 900
+    simulated_council_tax_reduction_benunit: 900
+    council_tax_reduction: 900
+    council_tax_less_benefit: 900
+
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025
   absolute_error_margin: 0.5
