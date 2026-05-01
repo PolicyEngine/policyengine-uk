@@ -154,6 +154,12 @@ def is_kings_lynn_and_west_norfolk(local_authority):
     return local_authority == LocalAuthority.KINGS_LYNN_AND_WEST_NORFOLK
 
 
+def is_kingston_upon_hull(local_authority):
+    return (local_authority == LocalAuthority.KINGSTON_UPON_HULL) | (
+        local_authority == LocalAuthority.KINGSTON_UPON_HULL_CITY_OF
+    )
+
+
 def is_kingston_upon_thames(local_authority):
     return local_authority == LocalAuthority.KINGSTON_UPON_THAMES
 
@@ -444,6 +450,14 @@ def is_kings_lynn_and_west_norfolk_working_age(local_authority, country, has_pen
     )
 
 
+def is_kingston_upon_hull_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_kingston_upon_hull(local_authority)
+    )
+
+
 def is_kingston_upon_thames_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND)
@@ -623,6 +637,11 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_hillingdon_working_age(local_authority, country, has_pensioner)
         | is_hounslow_working_age(local_authority, country, has_pensioner)
         | is_kings_lynn_and_west_norfolk_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        | is_kingston_upon_hull_working_age(
             local_authority,
             country,
             has_pensioner,

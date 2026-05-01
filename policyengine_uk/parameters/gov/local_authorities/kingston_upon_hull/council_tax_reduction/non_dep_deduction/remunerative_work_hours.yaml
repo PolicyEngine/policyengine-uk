@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Kingston upon Hull working-age Council Tax Reduction non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Kingston upon Hull Council Tax Reduction non-dependant remunerative-work hours
+  reference:
+    - title: Hull Council Tax Reduction Scheme 2025/26, paragraph 10
+      href: https://www.hull.gov.uk/downloads/file/239/council-tax-reduction-scheme-2025-to-2026

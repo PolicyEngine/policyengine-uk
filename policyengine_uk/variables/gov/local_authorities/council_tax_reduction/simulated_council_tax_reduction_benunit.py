@@ -42,6 +42,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "hillingdon_council_tax_reduction",
     "hounslow_council_tax_reduction",
     "kings_lynn_and_west_norfolk_council_tax_reduction",
+    "kingston_upon_hull_council_tax_reduction",
     "kingston_upon_thames_council_tax_reduction",
     "islington_council_tax_reduction",
     "lambeth_council_tax_reduction",
@@ -95,6 +96,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         herefordshire_local_scheme = benunit(
             "herefordshire_council_tax_reduction_is_local_scheme", period
         )
+        kingston_upon_hull_local_scheme = benunit(
+            "kingston_upon_hull_council_tax_reduction_is_local_scheme", period
+        )
         westmorland_and_furness_local_scheme = benunit(
             "westmorland_and_furness_council_tax_reduction_is_local_scheme",
             period,
@@ -105,6 +109,7 @@ class simulated_council_tax_reduction_benunit(Variable):
         england_pensioners = (
             is_england_pensioner_scheme(country, has_pensioner)
             & ~herefordshire_local_scheme
+            & ~kingston_upon_hull_local_scheme
             & ~westmorland_and_furness_local_scheme
         )
         wales = is_wales_scheme(country)
