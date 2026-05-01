@@ -14217,6 +14217,522 @@
     westmorland_and_furness_council_tax_reduction: [2_500, 0]
     council_tax_reduction: 2_500
 
+- name: North Yorkshire gives Band A full support to a single working-age claimant with no income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    north_yorkshire_council_tax_reduction_weekly_income: 0
+    north_yorkshire_council_tax_reduction: 2_500
+    simulated_council_tax_reduction_benunit: 2_500
+    council_tax_reduction: 2_500
+
+- name: North Yorkshire does not apply a working-age non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    north_yorkshire_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: North Yorkshire disregards Housing Benefit when calculating weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        housing_benefit: 12_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    north_yorkshire_council_tax_reduction_weekly_income: 0
+    north_yorkshire_council_tax_reduction: 2_500
+    council_tax_reduction: 2_500
+
+- name: North Yorkshire places a single claimant with 180 pounds weekly income in Band B
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        private_pension_income: 9_360
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    north_yorkshire_council_tax_reduction_weekly_income: 180
+    north_yorkshire_council_tax_reduction: 1_875
+    council_tax_reduction: 1_875
+
+- name: North Yorkshire applies the single earnings disregard before selecting the income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 14_560
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    north_yorkshire_council_tax_reduction_weekly_income: 255
+    north_yorkshire_council_tax_reduction: 1_250
+    council_tax_reduction: 1_250
+
+- name: North Yorkshire uses the formal two-child family boundary at 441.01 pounds weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        private_pension_income: 22_932.52
+      child_1:
+        age: 8
+      child_2:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, child_1, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child_1, child_2]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    north_yorkshire_council_tax_reduction_weekly_income: 441.01
+    north_yorkshire_council_tax_reduction: 625
+    council_tax_reduction: 625
+
+- name: North Yorkshire family bands count qualifying young people as dependants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        private_pension_income: 22_932.52
+      child:
+        age: 8
+      qualifying_young_person:
+        age: 18
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members: [claimant, child, qualifying_young_person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child, qualifying_young_person]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false, true]
+    north_yorkshire_council_tax_reduction_weekly_income: 441.01
+    north_yorkshire_council_tax_reduction: 625
+    council_tax_reduction: 625
+
+- name: North Yorkshire excludes ordinary claimants with exactly 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 6_000
+  output:
+    north_yorkshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: North Yorkshire disregards passported capital up to 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 10_000
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    north_yorkshire_council_tax_reduction: 2_500
+    council_tax_reduction: 2_500
+
+- name: North Yorkshire excludes passported claimants above the 16,000 pound capital disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 16_000.01
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    north_yorkshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: North Yorkshire uses UC assessed income and capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 2_400
+        uc_earned_income: 12_000
+        uc_unearned_income: 0
+        uc_housing_costs_element: 0
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 20_000
+  output:
+    north_yorkshire_council_tax_reduction_uc_weekly_income: 276.923
+    north_yorkshire_council_tax_reduction_weekly_income: 276.923
+    north_yorkshire_council_tax_reduction: 625
+    council_tax_reduction: 625
+
+- name: North Yorkshire proportionally disregards the UC housing element where UC is below maximum
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 3_000
+        uc_maximum_amount: 12_000
+        uc_earned_income: 14_000
+        uc_unearned_income: 0
+        uc_housing_costs_element: 5_200
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    north_yorkshire_council_tax_reduction_uc_weekly_income: 301.923
+    north_yorkshire_council_tax_reduction_weekly_income: 301.92
+    north_yorkshire_council_tax_reduction: 625
+    council_tax_reduction: 625
+
+- name: North Yorkshire excludes UC claimants with UC-assessed capital of exactly 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    uc_assessable_capital: 6_000
+    north_yorkshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: North Yorkshire local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 1_000
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    north_yorkshire_council_tax_reduction_is_local_scheme: true
+    north_yorkshire_council_tax_reduction: 2_500
+    simulated_council_tax_reduction_benunit: 2_500
+    council_tax_reduction: 2_500
+
+- name: North Yorkshire keeps relevant-period pension-age UC claimants in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 1_000
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        north_yorkshire_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    north_yorkshire_council_tax_reduction_is_local_scheme: false
+    north_yorkshire_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 2_500
+    council_tax_reduction: 2_500
+
 - name: Kingston upon Hull provides 80 percent working-age CTR when income does not exceed the applicable amount
   period: 2026
   absolute_error_margin: 0.5

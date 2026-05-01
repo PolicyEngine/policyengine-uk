@@ -1,0 +1,31 @@
+description: Council Tax Reduction rate by weekly income band for single North Yorkshire applicants.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 151.01
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 201.01
+    amount:
+      2026-04-01: 0.50
+  - threshold:
+      2026-04-01: 263.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 331.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: North Yorkshire single weekly income-band CTR rate
+  reference:
+    - title: North Yorkshire Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.northyorks.gov.uk/sites/default/files/2026-03/North%20Yorkshire%20Council%27s%20Council%20Tax%20Reduction%20Scheme%202026%20to%202027.pdf

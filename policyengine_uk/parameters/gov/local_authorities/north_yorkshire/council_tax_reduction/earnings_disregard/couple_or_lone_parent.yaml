@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for North Yorkshire Council Tax Reduction couple and lone-parent applicants.
+values:
+  2026-04-01: 50
+metadata:
+  unit: currency-GBP
+  period: week
+  label: North Yorkshire couple or lone-parent CTR weekly earnings disregard
+  reference:
+    - title: North Yorkshire Council Tax Reduction Scheme 2026/27, section 22.2
+      href: https://www.northyorks.gov.uk/sites/default/files/2026-03/North%20Yorkshire%20Council%27s%20Council%20Tax%20Reduction%20Scheme%202026%20to%202027.pdf
