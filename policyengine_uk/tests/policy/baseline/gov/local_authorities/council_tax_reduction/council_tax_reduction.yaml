@@ -8690,6 +8690,441 @@
     hounslow_council_tax_reduction: [830, 0]
     council_tax_reduction: 830
 
+- name: Havering working-age claimant receives 75 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    havering_council_tax_reduction: 1350
+    simulated_council_tax_reduction_benunit: 1350
+    council_tax_reduction: 1350
+
+- name: Havering disabled working-age claimant receives 80 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    havering_council_tax_reduction_disabled: true
+    havering_council_tax_reduction: 1440
+    council_tax_reduction: 1440
+
+- name: Havering caps ordinary working-age eligible liability at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: E
+        council_tax: 2200
+        savings: 0
+  output:
+    havering_council_tax_reduction_maximum_eligible_liability: 1800
+    havering_council_tax_reduction: 1350
+    council_tax_reduction: 1350
+
+- name: Havering care leavers receive 100 percent support without the ordinary Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 22
+        havering_council_tax_reduction_care_leaver: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 22
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: E
+        council_tax: 2200
+        savings: 0
+  output:
+    havering_council_tax_reduction_full_support_group: true
+    havering_council_tax_reduction_maximum_eligible_liability: 1800
+    havering_council_tax_reduction: 2200
+    council_tax_reduction: 2200
+
+- name: Havering Universal Credit capital uses the DWP assessable capital figure
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        universal_credit: 10_400
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 20_000
+  output:
+    uc_assessable_capital: 0
+    havering_council_tax_reduction: 1350
+    council_tax_reduction: 1350
+
+- name: Havering Universal Credit applicable income includes DWP income and the UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 1_500
+        uc_unearned_income: 500
+        universal_credit: 10_000
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 20_000
+  output:
+    havering_council_tax_reduction_uc_applicable_income: 12_000
+    havering_council_tax_reduction: 1030
+    council_tax_reduction: 1030
+
+- name: Havering excludes Universal Credit claimants above the DWP capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        universal_credit: 10_400
+        uc_reported_capital: 6_001
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    uc_assessable_capital: 6_001
+    havering_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Havering excludes non-UC working-age claimants above the local capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_001
+  output:
+    havering_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Havering applies the working-age non-dependant gross-income deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    havering_council_tax_reduction_non_dep_deductions: [1040, 0]
+    havering_council_tax_reduction: [310, 0]
+    council_tax_reduction: 310
+
+- name: Havering applies the lower non-dependant deduction below remunerative work hours
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    havering_council_tax_reduction_non_dep_deductions: [312, 0]
+    havering_council_tax_reduction: [1038, 0]
+    council_tax_reduction: 1038
+
+- name: Havering makes one non-dependant deduction for a non-UC couple using joint gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 13_000
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 13_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    havering_council_tax_reduction_non_dep_deductions: [1040, 0]
+    havering_council_tax_reduction: [310, 0]
+    council_tax_reduction: 310
+
+- name: Havering counts both members of a UC non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 13_000
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 13_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 1
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: HAVERING
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    havering_council_tax_reduction_non_dep_deductions: [2080, 0]
+    havering_council_tax_reduction: [0, 0]
+    council_tax_reduction: 0
+
 - name: Hounslow applies the lower non-dependant deduction below remunerative work hours
   period: 2026
   absolute_error_margin: 0.5

@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `50` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `51` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -68,6 +68,7 @@ Each council dossier should capture:
 | Ealing | Implemented | Weekly income-banded support with protected and non-protected tables, strict `GBP 6,000` capital cutoff, and local non-dependant deductions | https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf |
 | Enfield | Implemented | Non-UC legacy means test with `50%` cap, Band C liability cap and `22.5%` taper, plus UC net-earnings bands and protected groups | https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf |
 | Haringey | Implemented | Legacy means test with `80.2%` ordinary maximum, protected `100%` classes, `20%` taper, `GBP 10,000` capital limit, and gross-income non-dependant deductions | https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf |
+| Havering | Implemented | Legacy means test with `75%` ordinary maximum, `80%` disabled maximum, `100%` care-leaver/war-pension classes, Band D cap, `20%` taper, `GBP 6,000` capital limit, and gross-income non-dependant deductions | https://democracy.havering.gov.uk/documents/s83106/12%20-%20Appendix%20I%20%20Summary%20of%20the%20Council%20Tax%20Support%20Scheme%202026-27.pdf |
 | Hillingdon | Implemented | Weekly net-income bands with vulnerable Band 2, Band D cap for Bands 3-6, `GBP 6,000` capital limit, and flat non-dependant deductions | https://pre.hillingdon.gov.uk/benefits/working-age-bands |
 | Hounslow | Implemented | Weekly net-earnings bands with `75%` ordinary maximum, `90%` carer support, `GBP 6,000` capital limit, and flat working/non-working non-dependant deductions | https://www.hounslow.gov.uk/council-tax-support |
 
