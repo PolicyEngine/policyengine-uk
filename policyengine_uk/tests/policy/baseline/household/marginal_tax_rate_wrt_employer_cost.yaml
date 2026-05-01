@@ -1,0 +1,16 @@
+- name: Single employee marginal tax rate with respect to employer cost
+  period: 2024
+  absolute_error_margin: 0.001
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+  output:
+    marginal_tax_rate_wrt_employer_cost: 0.457
