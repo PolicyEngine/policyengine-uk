@@ -9792,3 +9792,414 @@
   output:
     hounslow_council_tax_reduction_non_dep_deductions: [520, 0]
     hounslow_council_tax_reduction: [830, 0]
+
+- name: Brent zero-earnings working-age claimant receives 65 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_weekly_earnings: 0
+    brent_council_tax_reduction: 1170
+    simulated_council_tax_reduction_benunit: 1170
+    council_tax_reduction: 1170
+    council_tax_less_benefit: 630
+
+- name: Brent weekly earnings bands reduce support to 30 percent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_240
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_weekly_earnings: 120
+    brent_council_tax_reduction: 540
+    council_tax_reduction: 540
+
+- name: Brent ignores DWP and HMRC benefits for the weekly earnings band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 8_000
+        child_benefit: 2_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_weekly_earnings: 0
+    brent_council_tax_reduction: 1170
+    council_tax_reduction: 1170
+
+- name: Brent uses gross earnings rather than net earnings for the weekly earnings band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_240
+        income_tax: 1_040
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_weekly_earnings: 120
+    brent_council_tax_reduction: 540
+    council_tax_reduction: 540
+
+- name: Brent uses Universal Credit assessed earnings rather than the UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 2_600
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 8_000
+        uc_earned_income: 6_240
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_weekly_earnings: 120
+    brent_council_tax_reduction: 540
+    council_tax_reduction: 540
+
+- name: Brent applies the published weekly earnings band boundaries
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      band_80:
+        age: 35
+        employment_income: 4_160
+      band_81:
+        age: 35
+        employment_income: 4_212
+      band_110:
+        age: 35
+        employment_income: 5_720
+      band_151:
+        age: 35
+        employment_income: 7_852
+      band_250:
+        age: 35
+        employment_income: 13_000
+    benunits:
+      bu_80:
+        members: [band_80]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      bu_81:
+        members: [band_81]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      bu_110:
+        members: [band_110]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      bu_151:
+        members: [band_151]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      bu_250:
+        members: [band_250]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      hh_80:
+        members: [band_80]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+      hh_81:
+        members: [band_81]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+      hh_110:
+        members: [band_110]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+      hh_151:
+        members: [band_151]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+      hh_250:
+        members: [band_250]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_weekly_earnings: [80, 81, 110, 151, 250]
+    brent_council_tax_reduction: [1170, 900, 900, 360, 360]
+    council_tax_reduction: [1170, 900, 900, 360, 360]
+
+- name: Brent applies no Band D cap to high-liability working-age claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    brent_council_tax_reduction: 2340
+    council_tax_reduction: 2340
+
+- name: Brent excludes working-age claimants at the 6,000 pound savings limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_000
+  output:
+    brent_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Brent applies the 20 pound weekly working non-dependant deduction after the maximum entitlement
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 10_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_non_dep_deductions: [1040, 0]
+    brent_council_tax_reduction: [130, 0]
+    council_tax_reduction: 130
+
+- name: Brent applies the 8 pound weekly non-working non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BRENT
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    brent_council_tax_reduction_non_dep_deductions: [416, 0]
+    brent_council_tax_reduction: [754, 0]
+    council_tax_reduction: 754

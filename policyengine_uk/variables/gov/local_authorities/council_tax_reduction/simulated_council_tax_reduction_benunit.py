@@ -13,6 +13,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "basingstoke_and_deane_council_tax_reduction",
     "bolton_council_tax_reduction",
     "breckland_council_tax_reduction",
+    "brent_council_tax_reduction",
     "broadland_council_tax_reduction",
     "bury_council_tax_reduction",
     "camden_council_tax_reduction",
