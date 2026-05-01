@@ -94,6 +94,10 @@ def is_hammersmith_and_fulham(local_authority):
     return local_authority == LocalAuthority.HAMMERSMITH_AND_FULHAM
 
 
+def is_hillingdon(local_authority):
+    return local_authority == LocalAuthority.HILLINGDON
+
+
 def is_fenland(local_authority):
     return local_authority == LocalAuthority.FENLAND
 
@@ -308,6 +312,12 @@ def is_hammersmith_and_fulham_working_age(local_authority, country, has_pensione
     )
 
 
+def is_hillingdon_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_hillingdon(local_authority)
+    )
+
+
 def is_fenland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_fenland(local_authority)
 
@@ -469,6 +479,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             country,
             has_pensioner,
         )
+        | is_hillingdon_working_age(local_authority, country, has_pensioner)
         | is_kings_lynn_and_west_norfolk_working_age(
             local_authority,
             country,

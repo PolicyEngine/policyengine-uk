@@ -1,0 +1,10 @@
+description: Hillingdon vulnerable Band 2 weekly net income upper limit for working-age families with one child or qualifying young person.
+values:
+  2026-04-01: 330
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hillingdon one-child vulnerable Band 2 upper income limit
+  reference:
+    - title: Hillingdon working age bands from 1 April 2026
+      href: https://pre.hillingdon.gov.uk/benefits/working-age-bands

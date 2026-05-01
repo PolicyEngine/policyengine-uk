@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `45` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `46` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -65,6 +65,7 @@ Each council dossier should capture:
 | Islington | Implemented | Weekly net-earnings bands with protected zero-earnings rules and flat non-dependant deductions | https://www.islington.gov.uk/benefits-and-support/council-tax-support |
 | Barking and Dagenham | Implemented | Weekly net-income bands by household type with `GBP 6,000` capital limit and pre-percentage flat non-dependant deductions | https://lbbd.moderngov.co.uk/documents/s178487/CTSS%202026-27%20-%20App%202.pdf |
 | Barnet | Implemented | Monthly earnings-banded discount with Band C cap, `GBP 6,000` capital limit, and two-rate non-dependant deductions | https://barnet.moderngov.co.uk/documents/s94210/Appendix%20O%20-%20202627%20Council%20Tax%20Support%20Scheme.pdf |
+| Hillingdon | Implemented | Weekly net-income bands with vulnerable Band 2, Band D cap for Bands 3-6, `GBP 6,000` capital limit, and flat non-dependant deductions | https://pre.hillingdon.gov.uk/benefits/working-age-bands |
 
 ## Reviewed Candidate Queue
 

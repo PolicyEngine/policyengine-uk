@@ -1,0 +1,12 @@
+description: Weekly earnings disregard for Hillingdon Council Tax Reduction where earnings are included and the claimant is not on Universal Credit.
+values:
+  2026-04-01: 25
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hillingdon CTR earnings disregard
+  reference:
+    - title: Hillingdon working age bands from 1 April 2026
+      href: https://pre.hillingdon.gov.uk/benefits/working-age-bands
+    - title: Hillingdon Council Tax Reduction Scheme Working Age 2026, point 88
+      href: https://pre.hillingdon.gov.uk/downloads/file/8/working-age-scheme-rules

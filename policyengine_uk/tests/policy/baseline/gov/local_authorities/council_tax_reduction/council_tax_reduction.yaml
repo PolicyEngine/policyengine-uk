@@ -6951,3 +6951,202 @@
     barnet_council_tax_reduction: 1800
     council_tax_reduction: 1800
     council_tax_less_benefit: 0
+
+- name: Hillingdon zero-income working-age claimant receives 75 percent support with Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HILLINGDON
+        council_tax_band: E
+        council_tax: 2200
+        savings: 0
+  output:
+    hillingdon_council_tax_reduction_maximum_eligible_liability: 1800
+    hillingdon_council_tax_reduction: 1350
+    simulated_council_tax_reduction_benunit: 1350
+    council_tax_reduction: 1350
+    council_tax_less_benefit: 850
+
+- name: Hillingdon applies the 25 pound weekly earnings disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_980
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HILLINGDON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hillingdon_council_tax_reduction_weekly_income: 90
+    hillingdon_council_tax_reduction: 1350
+    council_tax_reduction: 1350
+
+- name: Hillingdon vulnerable claimants use Band 2 without the Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl_category: STANDARD
+        property_income: 8_840
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HILLINGDON
+        council_tax_band: E
+        council_tax: 2200
+        savings: 0
+  output:
+    hillingdon_council_tax_reduction_vulnerable: true
+    hillingdon_council_tax_reduction_weekly_income: 170
+    hillingdon_council_tax_reduction_maximum_eligible_liability: 2200
+    hillingdon_council_tax_reduction: 1650
+    council_tax_reduction: 1650
+
+- name: Hillingdon excludes working-age claimants above the 6,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HILLINGDON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_001
+  output:
+    hillingdon_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Hillingdon deducts 12 pounds weekly for working-age non-dependants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HILLINGDON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hillingdon_council_tax_reduction_non_dep_deductions: [624, 0]
+    hillingdon_council_tax_reduction: [726, 0]
+    council_tax_reduction: 726
+
+- name: Hillingdon places Universal Credit claimants with no earnings or other income in Band 3
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 15_600
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HILLINGDON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hillingdon_council_tax_reduction: 1350
+    council_tax_reduction: 1350
