@@ -53,8 +53,9 @@ Each council dossier should capture:
 | Kingston upon Thames | Implemented | Legacy full support with 2026/27 remunerative-work non-dependant deductions | https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf |
 | Newham | Implemented | Legacy 70 percent with `25%` taper, `GBP 6,000` capital limit, and local non-dependant deductions | https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026 |
 | Westminster | Implemented | Legacy full support with 2026/27 remunerative-work non-dependant deductions | https://www.westminster.gov.uk/sites/default/files/media/documents/council-tax-support-scheme-for-2026-27.pdf |
-| Greenwich | Implemented | Legacy 80 percent with `25%` taper and flat working-age non-dependant deduction | https://www.royalgreenwich.gov.uk/help-money/get-help-paying-your-housing-costs-and-council-tax/apply-help-pay-your-council-tax/how-much |
-| Hackney | Implemented | Legacy 90 percent with 2026/27 remunerative-work non-dependant deductions | https://www.hackney.gov.uk/council-tax-and-benefits/benefits/benefits-explained/housing-benefit-and-council-tax-reduction-explained |
+| Greenwich | Implemented | Legacy 80 percent with `25%` taper, tariff income, and flat working-age non-dependant deduction | https://www.royalgreenwich.gov.uk/help-money/get-help-paying-your-housing-costs-and-council-tax/apply-help-pay-your-council-tax/how-much |
+| Hackney | Implemented | Legacy 90 percent with tariff income and 2026/27 remunerative-work non-dependant deductions | https://www.hackney.gov.uk/council-tax-and-benefits/benefits/benefits-explained/housing-benefit-and-council-tax-reduction-explained |
+| Hammersmith and Fulham | Implemented | Legacy full support with tariff income and 2026/27 uprated non-dependant deductions | https://democracy.lbhf.gov.uk/documents/s133438/Council%20Tax%20Support%20Scheme%202026-27.pdf |
 
 ## Reviewed Candidate Queue
 

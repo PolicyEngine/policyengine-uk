@@ -2244,6 +2244,8 @@
         council_tax: 1800
         savings: 9_000
   output:
+    oxford_council_tax_reduction: 1350
+    simulated_council_tax_reduction_benunit: 1350
     council_tax_reduction: 1350
     council_tax_less_benefit: 450
 
@@ -2541,6 +2543,43 @@
     council_tax_reduction_applicable_income: 12_000
     council_tax_reduction: 1800
     council_tax_less_benefit: 0
+
+- name: Kingston upon Thames does not use UC rules where simulated UC is zero
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 0
+        uc_maximum_amount: 12_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    kingston_upon_thames_council_tax_reduction: 1675.2
+    simulated_council_tax_reduction_benunit: 1675.2
+    council_tax_reduction: 1675.2
+    council_tax_less_benefit: 124.8
 
 - name: Kingston upon Thames counts both members of a UC non-dependant couple
   period: 2026
@@ -2946,6 +2985,43 @@
     council_tax_reduction: 1800
     council_tax_less_benefit: 0
 
+- name: Westminster does not use UC rules where simulated UC is zero
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 0
+        uc_maximum_amount: 12_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    westminster_council_tax_reduction: 1675.2
+    simulated_council_tax_reduction_benunit: 1675.2
+    council_tax_reduction: 1675.2
+    council_tax_less_benefit: 124.8
+
 - name: Westminster exempts Universal Credit non-dependants with no earned income
   period: 2026
   absolute_error_margin: 0.5
@@ -2971,6 +3047,49 @@
         claims_all_entitled_benefits: false
         would_claim_uc: true
         universal_credit: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    westminster_council_tax_reduction_non_dep_deductions: [0, 0]
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Westminster exempts full-time student non-dependants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        current_education: TERTIARY
+        employment_income: 31_460
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
         is_single_person: true
         is_couple: false
         is_lone_parent: false
@@ -3089,6 +3208,82 @@
     council_tax_reduction: 920
     council_tax_less_benefit: 880
 
+- name: Greenwich adds non-UC tariff income from capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GREENWICH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    greenwich_council_tax_reduction: 1284
+    simulated_council_tax_reduction_benunit: 1284
+    council_tax_reduction: 1284
+    council_tax_less_benefit: 516
+
+- name: Greenwich exempts full-time student non-dependants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: GREENWICH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    greenwich_council_tax_reduction_non_dep_deductions: [0, 0]
+    council_tax_reduction: 1440
+    council_tax_less_benefit: 360
+
 - name: Hackney working-age claimant receives 90 percent maximum support
   period: 2026
   absolute_error_margin: 0.5
@@ -3148,6 +3343,41 @@
     council_tax_reduction_scheme_supported: true
     council_tax_reduction: 0
     council_tax_less_benefit: 1800
+
+- name: Hackney adds non-UC tariff income from capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HACKNEY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    hackney_council_tax_reduction: 1495.2
+    simulated_council_tax_reduction_benunit: 1495.2
+    council_tax_reduction: 1495.2
+    council_tax_less_benefit: 304.8
 
 - name: Hackney applies its working-age non-dependant deduction table
   period: 2026
@@ -3233,6 +3463,220 @@
     hackney_council_tax_reduction_non_dep_deductions: [0, 0]
     council_tax_reduction: 1620
     council_tax_less_benefit: 180
+
+- name: Hammersmith and Fulham working-age claimant receives full support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAMMERSMITH_AND_FULHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Hammersmith and Fulham excludes working-age claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAMMERSMITH_AND_FULHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 16_001
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Hammersmith and Fulham adds non-UC tariff income from capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAMMERSMITH_AND_FULHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    council_tax_reduction_applicable_amount: 0
+    council_tax_reduction_applicable_income: 0
+    hammersmith_and_fulham_council_tax_reduction: 1675.2
+    simulated_council_tax_reduction_benunit: 1675.2
+    council_tax_reduction: 1675.2
+    council_tax_less_benefit: 124.8
+
+- name: Hammersmith and Fulham uses UC maximum amount as the UC applicable amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 12_000
+        uc_maximum_amount: 12_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 12_000
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAMMERSMITH_AND_FULHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    uc_maximum_amount: 12_000
+    council_tax_reduction_applicable_amount: 0
+    council_tax_reduction_applicable_income: 12_000
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Hammersmith and Fulham does not use UC rules where simulated UC is zero
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 0
+        uc_maximum_amount: 12_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HAMMERSMITH_AND_FULHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    hammersmith_and_fulham_council_tax_reduction: 1675.2
+    simulated_council_tax_reduction_benunit: 1675.2
+    council_tax_reduction: 1675.2
+    council_tax_less_benefit: 124.8
+
+- name: Hammersmith and Fulham applies its working-age non-dependant deduction table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 5_200
+        private_pension_income: 26_260
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HAMMERSMITH_AND_FULHAM
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    hammersmith_and_fulham_council_tax_reduction_non_dep_deductions: [829.4, 0]
+    council_tax_reduction: 970.6
+    council_tax_less_benefit: 829.4
 
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025

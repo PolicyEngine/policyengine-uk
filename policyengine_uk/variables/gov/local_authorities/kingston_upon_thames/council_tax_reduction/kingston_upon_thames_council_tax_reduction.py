@@ -28,9 +28,7 @@ class kingston_upon_thames_council_tax_reduction(Variable):
         working_age = is_kingston_upon_thames_working_age(
             local_authority, country, has_pensioner
         )
-        has_uc = (benunit("universal_credit", period) > 0) | benunit(
-            "would_claim_uc", period
-        )
+        has_uc = benunit("universal_credit", period) > 0
         applicable_amount = where(
             has_uc,
             benunit("uc_maximum_amount", period),

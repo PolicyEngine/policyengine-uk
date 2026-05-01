@@ -1,0 +1,11 @@
+description: Capital step above which one pound of weekly tariff income is added for working-age non-Universal Credit claimants under the Greenwich Local Council Tax Support scheme.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Greenwich Local Council Tax Support tariff income step
+  reference:
+    - title: Who can claim Local Council Tax Support
+      href: https://www.royalgreenwich.gov.uk/help-money/get-help-paying-your-housing-costs-and-council-tax/apply-help-pay-your-council-tax/who
+

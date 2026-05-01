@@ -27,9 +27,7 @@ class oxford_council_tax_reduction(Variable):
         )
         weekly_income = benunit("council_tax_reduction_applicable_income", period) / 52
         capital = benunit.household("savings", period)
-        has_uc = (benunit("universal_credit", period) > 0) | benunit(
-            "would_claim_uc", period
-        )
+        has_uc = benunit("universal_credit", period) > 0
         weekly_tariff_income = np.ceil(
             max_(0, capital - ctr.means_test.tariff_income_threshold)
             / ctr.means_test.tariff_income_step

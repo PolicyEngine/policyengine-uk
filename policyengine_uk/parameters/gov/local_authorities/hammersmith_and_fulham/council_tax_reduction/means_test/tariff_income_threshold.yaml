@@ -1,0 +1,11 @@
+description: Capital threshold above which tariff income is added for working-age non-Universal Credit claimants under the Hammersmith and Fulham Council Tax Support scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Hammersmith and Fulham Council Tax Support tariff income threshold
+  reference:
+    - title: Appendix 1 Council Tax Support Scheme 2025-26
+      href: https://democracy.lbhf.gov.uk/documents/s133439/Appendix%201%20Council%20Tax%20Support%20Scheme%202025-26.pdf
+

@@ -1,4 +1,13 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.highest_education import (
+    EducationType,
+)
+
+
+def is_full_time_student_non_dep(person, period):
+    return (person("current_education", period) != EducationType.NOT_IN_EDUCATION) | (
+        person("in_HE", period)
+    )
 
 
 def legacy_council_tax_reduction(
@@ -119,6 +128,7 @@ def normal_gross_income_non_dep_deduction(
     claimant_exempt = person.household(
         "council_tax_reduction_household_has_non_dep_exemption", period
     )
+    full_time_student = is_full_time_student_non_dep(person, period)
     income_based_benefit = (
         (person.benunit("income_support", period) > 0)
         | (person.benunit("jsa_income", period) > 0)
@@ -129,6 +139,7 @@ def normal_gross_income_non_dep_deduction(
     no_earned_income = weekly_benunit_earned_income <= 0
     exempt = (
         claimant_exempt
+        | full_time_student
         | (exempt_income_based_benefits & income_based_benefit)
         | (exempt_uc_no_earned_income & has_uc & no_earned_income)
     )
@@ -152,6 +163,7 @@ def earned_income_non_dep_deduction(
     claimant_exempt = person.household(
         "council_tax_reduction_household_has_non_dep_exemption", period
     )
+    full_time_student = is_full_time_student_non_dep(person, period)
     income_based_benefit = (
         (person.benunit("income_support", period) > 0)
         | (person.benunit("jsa_income", period) > 0)
@@ -170,6 +182,7 @@ def earned_income_non_dep_deduction(
     )
     exempt = (
         claimant_exempt
+        | full_time_student
         | (exempt_income_based_benefits & income_based_benefit)
         | uc_exempt
     )
@@ -181,4 +194,5 @@ def flat_non_dep_deduction(person, period, ctr, working_age):
     claimant_exempt = person.household(
         "council_tax_reduction_household_has_non_dep_exemption", period
     )
-    return working_age * where(claimant_exempt, 0.0, deduction)
+    full_time_student = is_full_time_student_non_dep(person, period)
+    return working_age * where(claimant_exempt | full_time_student, 0.0, deduction)
