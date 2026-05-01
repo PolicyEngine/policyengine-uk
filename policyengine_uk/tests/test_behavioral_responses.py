@@ -1,5 +1,5 @@
 """
-Tests for behavioral labor supply responses.
+Tests for behavioral labour supply responses.
 
 This test module validates that the behavioral response system works correctly
 and that all the critical fixes are functioning:
@@ -29,7 +29,7 @@ requires_hf_data = pytest.mark.skipif(
 
 # Load YAML test cases
 yaml_file = (
-    Path(__file__).parent / "behavioral_responses" / "test_labor_supply_responses.yaml"
+    Path(__file__).parent / "behavioral_responses" / "test_labour_supply_responses.yaml"
 )
 with open(yaml_file, "r") as f:
     yaml_content = f.read()
@@ -37,7 +37,32 @@ with open(yaml_file, "r") as f:
 
 
 class TestBehavioralResponses:
-    """Test behavioral labor supply responses functionality"""
+    """Test behavioral labour supply responses functionality"""
+
+    @pytest.mark.parametrize(
+        "parameter_path",
+        [
+            "gov.simulation.labour_supply_responses.income_elasticity",
+            "gov.simulation.labor_supply_responses.income_elasticity",
+        ],
+    )
+    def test_lsr_parameter_changes_accept_canonical_and_legacy_paths(
+        self, parameter_path
+    ):
+        """Test that renamed LSR parameters still accept legacy reform paths."""
+        scenario = Scenario(parameter_changes={parameter_path: {"2025": 0.123}})
+        sim = Microsimulation(
+            situation={
+                "people": {"person": {"age": 30, "employment_income": 25_000}},
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {"household": {"members": ["person"]}},
+            },
+            scenario=scenario,
+        )
+
+        lsr = sim.tax_benefit_system.parameters.gov.simulation
+        assert lsr.labour_supply_responses.income_elasticity("2025") == 0.123
+        assert lsr.labor_supply_responses.income_elasticity("2025") == 0.123
 
     def test_yaml_file_structure(self):
         """Test that YAML file loads correctly and has expected structure"""

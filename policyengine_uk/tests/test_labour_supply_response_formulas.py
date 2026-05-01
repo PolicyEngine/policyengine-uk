@@ -6,10 +6,10 @@ import pandas as pd
 from policyengine_uk.dynamics.progression import (
     calculate_employment_income_change,
 )
-from policyengine_uk.variables.gov.simulation.labor_supply_response.income_elasticity_lsr import (
+from policyengine_uk.variables.gov.simulation.labour_supply_response.income_elasticity_lsr import (
     income_elasticity_lsr,
 )
-from policyengine_uk.variables.gov.simulation.labor_supply_response.substitution_elasticity_lsr import (
+from policyengine_uk.variables.gov.simulation.labour_supply_response.substitution_elasticity_lsr import (
     substitution_elasticity_lsr,
 )
 
@@ -26,7 +26,7 @@ class FakeParameters:
     def __init__(self, income_elasticity=0.1, substitution_elasticity=0.2):
         self.gov = SimpleNamespace(
             simulation=SimpleNamespace(
-                labor_supply_responses=SimpleNamespace(
+                labour_supply_responses=SimpleNamespace(
                     income_elasticity=income_elasticity,
                     substitution_elasticity=substitution_elasticity,
                 )
@@ -67,7 +67,7 @@ def test_substitution_elasticity_lsr_clips_negative_earnings():
     assert np.allclose(result, np.array([0.0, 0.0, 40.0]))
 
 
-def test_progression_labor_supply_response_clips_negative_earnings():
+def test_progression_labour_supply_response_clips_negative_earnings():
     result = calculate_employment_income_change(
         employment_income=np.array([-1_000.0, 0.0, 1_000.0]),
         derivative_changes=pd.DataFrame({"wage_rel_change": [0.1, 0.1, 0.1]}),
