@@ -8491,6 +8491,589 @@
     haringey_council_tax_reduction_non_dep_deductions: [0, 0]
     haringey_council_tax_reduction: [1800, 0]
 
+- name: Harrow non-UC working-age claimant receives 50 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    harrow_council_tax_reduction: 900
+    simulated_council_tax_reduction_benunit: 900
+    council_tax_reduction: 900
+
+- name: Harrow non-UC disabled claimant receives 86 percent support without the Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: E
+        council_tax: 2200
+        savings: 0
+  output:
+    harrow_council_tax_reduction_disabled: true
+    harrow_council_tax_reduction_maximum_eligible_liability: 1800
+    harrow_council_tax_reduction: 1892
+    council_tax_reduction: 1892
+
+- name: Harrow caps non-UC ordinary eligible liability at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: E
+        council_tax: 2200
+        savings: 0
+  output:
+    harrow_council_tax_reduction_maximum_eligible_liability: 1800
+    harrow_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Harrow applies a 30 percent taper to non-UC excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 3000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 2600
+    harrow_council_tax_reduction: 120
+    council_tax_reduction: 120
+
+- name: Harrow excludes non-UC awards below the 2 pound weekly minimum
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 3200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    harrow_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Harrow excludes non-UC working-age claimants above the capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 16_001
+  output:
+    harrow_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Harrow Universal Credit single claimant with no earnings receives 50 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 0
+        universal_credit: 10_400
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 20_000
+  output:
+    harrow_council_tax_reduction_uc_support_rate: 0.5
+    harrow_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Harrow Universal Credit single claimant with 100 pounds weekly net earnings receives 40 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 5_200
+        universal_credit: 7_000
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 20_000
+  output:
+    harrow_council_tax_reduction_uc_weekly_earnings: 100
+    harrow_council_tax_reduction_uc_support_rate: 0.4
+    harrow_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Harrow Universal Credit couples with three children use the larger family earnings table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 35
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+    benunits:
+      benunit:
+        members: [claimant, partner, child_1, child_2, child_3]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 20_000
+        uc_earned_income: 9_100
+        universal_credit: 12_000
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant, partner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 20_000
+  output:
+    harrow_council_tax_reduction_uc_weekly_earnings: 175
+    harrow_council_tax_reduction_uc_support_rate: 0.4
+    harrow_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Harrow Universal Credit disabled claimant receives 86 percent support without the Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 5_200
+        universal_credit: 7_000
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: E
+        council_tax: 2200
+        savings: 20_000
+  output:
+    harrow_council_tax_reduction_disabled: true
+    harrow_council_tax_reduction_uc_support_rate: 0.86
+    harrow_council_tax_reduction: 1892
+    council_tax_reduction: 1892
+
+- name: Harrow excludes Universal Credit claimants above the DWP capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 0
+        universal_credit: 10_400
+        uc_reported_capital: 16_001
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    uc_assessable_capital: 16_001
+    harrow_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Harrow disabled protection stops when claimant and partner earnings reach 440 pounds weekly
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1_000
+        employment_income: 22_880
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 5_200
+        universal_credit: 7_000
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    harrow_council_tax_reduction_disabled: false
+    harrow_council_tax_reduction_uc_support_rate: 0.4
+    harrow_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Harrow applies the non-UC non-dependant gross-income table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 3000
+        savings: 0
+  output:
+    harrow_council_tax_reduction_non_dep_deductions: [1222, 0]
+    harrow_council_tax_reduction: [278, 0]
+    council_tax_reduction: 278
+
+- name: Harrow makes one non-dependant deduction for a non-UC couple using joint gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 13_000
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 13_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 3000
+        savings: 0
+  output:
+    harrow_council_tax_reduction_non_dep_deductions: [1222, 0]
+    harrow_council_tax_reduction: [278, 0]
+    council_tax_reduction: 278
+
+- name: Harrow applies the UC non-dependant low deduction without waiving no-earnings cases
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 0
+        universal_credit: 10_400
+        uc_reported_capital: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        universal_credit: 1_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        uc_maximum_amount: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 3000
+        savings: 0
+  output:
+    harrow_council_tax_reduction_non_dep_deductions: [247, 0]
+    harrow_council_tax_reduction: [1253, 0]
+    council_tax_reduction: 1253
+
+- name: Harrow applies the UC non-dependant high deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 10_400
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_400
+        uc_earned_income: 0
+        universal_credit: 10_400
+        uc_reported_capital: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HARROW
+        council_tax_band: D
+        council_tax: 3000
+        savings: 0
+  output:
+    harrow_council_tax_reduction_non_dep_deductions: [975, 0]
+    harrow_council_tax_reduction: [525, 0]
+    council_tax_reduction: 525
+
 - name: Hounslow working-age claimant receives 75 percent support in the lowest earnings band
   period: 2026
   absolute_error_margin: 0.5

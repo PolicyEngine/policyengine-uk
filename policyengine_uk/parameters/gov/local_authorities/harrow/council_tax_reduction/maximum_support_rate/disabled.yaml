@@ -1,0 +1,9 @@
+description: Maximum Council Tax Support rate for Harrow working-age disabled claimants.
+values:
+  2026-04-01: 0.86
+metadata:
+  unit: /1
+  label: Harrow disabled working-age CTS maximum rate
+  reference:
+    - title: Harrow Council Tax Support Scheme 2026/27, Section 2 rule 2.1 and Section 3 paragraph 25B
+      href: https://www.harrow.gov.uk/downloads/file/33606/council-tax-support-scheme-2026-27

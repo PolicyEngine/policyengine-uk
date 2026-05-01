@@ -1,0 +1,9 @@
+description: Maximum English council tax band ratio eligible for ordinary Harrow working-age Council Tax Support.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  label: Harrow CTS Band D liability cap ratio
+  reference:
+    - title: Harrow Council Tax Support Scheme 2026/27, Section 2 rule 2 and Section 3 paragraph 25A
+      href: https://www.harrow.gov.uk/downloads/file/33606/council-tax-support-scheme-2026-27

@@ -1,0 +1,10 @@
+description: Minimum weekly Harrow Council Tax Support award.
+values:
+  2026-04-01: 2
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Harrow CTS minimum award
+  reference:
+    - title: Harrow Council Tax Support Scheme 2026/27, Section 2 rule 1.3 and Section 3 summary
+      href: https://www.harrow.gov.uk/downloads/file/33606/council-tax-support-scheme-2026-27

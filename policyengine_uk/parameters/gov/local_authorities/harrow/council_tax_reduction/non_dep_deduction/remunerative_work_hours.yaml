@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Harrow working-age Council Tax Support non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Harrow CTS non-dependant remunerative-work hours
+  reference:
+    - title: Harrow Council Tax Support Scheme 2026/27, Section 3 rule 10
+      href: https://www.harrow.gov.uk/downloads/file/33606/council-tax-support-scheme-2026-27
