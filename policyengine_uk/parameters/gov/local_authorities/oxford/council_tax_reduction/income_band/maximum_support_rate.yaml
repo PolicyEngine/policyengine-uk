@@ -1,0 +1,31 @@
+description: Maximum Council Tax Reduction rate by weekly income band under the Oxford working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 480.01
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 530.01
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 580.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 660.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Oxford Council Tax Reduction weekly income-band maximum support rate
+  reference:
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27

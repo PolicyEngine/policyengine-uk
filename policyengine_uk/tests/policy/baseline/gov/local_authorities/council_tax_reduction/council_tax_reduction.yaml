@@ -2127,6 +2127,245 @@
     council_tax_reduction: 992
     council_tax_less_benefit: 808
 
+- name: Oxford working-age claimant receives full support in the lowest income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Oxford excludes working-age claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 16_001
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Oxford applies its weekly income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 26_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction: 1350
+    council_tax_less_benefit: 450
+
+- name: Oxford adds working-age tariff income from capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 24_500
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    council_tax_reduction: 1350
+    council_tax_less_benefit: 450
+
+- name: Oxford does not add separate tariff income where Universal Credit has assessed capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        universal_credit_reported: 24_500
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 24_500
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 24_500
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 9_000
+  output:
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Oxford applies its working-age non-dependant deduction table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_460
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    oxford_council_tax_reduction_non_dep_deductions: [829.4, 0]
+    council_tax_reduction: 970.6
+    council_tax_less_benefit: 829.4
+
+- name: Oxford bands a non-dependant couple on combined gross earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_730
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_730
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    oxford_council_tax_reduction_non_dep_deductions: [829.4, 0]
+    council_tax_reduction: 970.6
+    council_tax_less_benefit: 829.4
+
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025
   absolute_error_margin: 0.5

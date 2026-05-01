@@ -2,6 +2,13 @@
 
 Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 
+## Coverage Target
+
+- England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
+- This PR currently supports `30` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
+- Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
+
 ## Batch Rules
 
 - Each council keeps variables under `policyengine_uk/variables/gov/local_authorities/<authority>/council_tax_reduction/`.
@@ -42,6 +49,7 @@ Each council dossier should capture:
 | Adur | Implemented | Legacy full support with 2026/27 earnings-bracket non-dependant deductions | https://www.adur-worthing.gov.uk/media/Media,174007,smxx.pdf |
 | Worthing | Implemented | Legacy full support with 2026/27 earnings-bracket non-dependant deductions | https://www.adur-worthing.gov.uk/media/Media,174008,smxx.pdf |
 | Sefton | Implemented | Legacy 84 percent with `GBP 6,000` capital limit and remunerative-work non-dependant table | https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf |
+| Oxford | Implemented | Weekly income-banded support with local non-dependant table | https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27 |
 
 ## Reviewed Candidate Queue
 
