@@ -1,0 +1,11 @@
+description: Withdrawal rate for working-age households under the Westminster Council Tax Support scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Westminster Council Tax Support withdrawal rate
+  reference:
+    - title: Council Tax Support scheme for 2026/27
+      href: https://www.westminster.gov.uk/sites/default/files/media/documents/council-tax-support-scheme-for-2026-27.pdf
+

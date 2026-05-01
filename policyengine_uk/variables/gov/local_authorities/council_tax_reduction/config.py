@@ -74,12 +74,20 @@ def is_kings_lynn_and_west_norfolk(local_authority):
     return local_authority == LocalAuthority.KINGS_LYNN_AND_WEST_NORFOLK
 
 
+def is_kingston_upon_thames(local_authority):
+    return local_authority == LocalAuthority.KINGSTON_UPON_THAMES
+
+
 def is_lancaster(local_authority):
     return local_authority == LocalAuthority.LANCASTER
 
 
 def is_merton(local_authority):
     return local_authority == LocalAuthority.MERTON
+
+
+def is_newham(local_authority):
+    return local_authority == LocalAuthority.NEWHAM
 
 
 def is_oldham(local_authority):
@@ -120,6 +128,10 @@ def is_warrington(local_authority):
 
 def is_west_suffolk(local_authority):
     return local_authority == LocalAuthority.WEST_SUFFOLK
+
+
+def is_westminster(local_authority):
+    return local_authority == LocalAuthority.WESTMINSTER
 
 
 def is_worthing(local_authority):
@@ -224,12 +236,24 @@ def is_kings_lynn_and_west_norfolk_working_age(local_authority, country, has_pen
     )
 
 
+def is_kingston_upon_thames_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_kingston_upon_thames(local_authority)
+    )
+
+
 def is_lancaster_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_lancaster(local_authority)
 
 
 def is_merton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
+
+
+def is_newham_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_newham(local_authority)
 
 
 def is_oldham_working_age(local_authority, country, has_pensioner):
@@ -284,6 +308,12 @@ def is_west_suffolk_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_westminster_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_westminster(local_authority)
+    )
+
+
 def is_worthing_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_worthing(local_authority)
 
@@ -325,8 +355,14 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             country,
             has_pensioner,
         )
+        | is_kingston_upon_thames_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
         | is_lancaster_working_age(local_authority, country, has_pensioner)
         | is_merton_working_age(local_authority, country, has_pensioner)
+        | is_newham_working_age(local_authority, country, has_pensioner)
         | is_oldham_working_age(local_authority, country, has_pensioner)
         | is_norwich_working_age(local_authority, country, has_pensioner)
         | is_north_norfolk_working_age(local_authority, country, has_pensioner)
@@ -337,6 +373,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_st_albans_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_west_suffolk_working_age(local_authority, country, has_pensioner)
+        | is_westminster_working_age(local_authority, country, has_pensioner)
         | is_worthing_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)
     )

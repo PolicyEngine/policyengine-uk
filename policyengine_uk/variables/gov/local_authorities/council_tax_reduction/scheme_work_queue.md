@@ -50,6 +50,9 @@ Each council dossier should capture:
 | Worthing | Implemented | Legacy full support with 2026/27 earnings-bracket non-dependant deductions | https://www.adur-worthing.gov.uk/media/Media,174008,smxx.pdf |
 | Sefton | Implemented | Legacy 84 percent with `GBP 6,000` capital limit and remunerative-work non-dependant table | https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf |
 | Oxford | Implemented | Weekly income-banded support with local non-dependant table | https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27 |
+| Kingston upon Thames | Implemented | Legacy full support with 2026/27 remunerative-work non-dependant deductions | https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf |
+| Newham | Implemented | Legacy 70 percent with `GBP 6,000` capital limit and local non-dependant deductions | https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026 |
+| Westminster | Implemented | Legacy full support with 2026/27 remunerative-work non-dependant deductions | https://www.westminster.gov.uk/sites/default/files/media/documents/council-tax-support-scheme-for-2026-27.pdf |
 
 ## Reviewed Candidate Queue
 

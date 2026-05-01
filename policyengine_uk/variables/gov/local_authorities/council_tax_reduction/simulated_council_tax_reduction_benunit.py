@@ -22,8 +22,10 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "fenland_council_tax_reduction",
     "gateshead_council_tax_reduction",
     "kings_lynn_and_west_norfolk_council_tax_reduction",
+    "kingston_upon_thames_council_tax_reduction",
     "lancaster_council_tax_reduction",
     "merton_council_tax_reduction",
+    "newham_council_tax_reduction",
     "oldham_council_tax_reduction",
     "north_norfolk_council_tax_reduction",
     "norwich_council_tax_reduction",
@@ -36,6 +38,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "stroud_council_tax_reduction",
     "warrington_council_tax_reduction",
     "west_suffolk_council_tax_reduction",
+    "westminster_council_tax_reduction",
     "worthing_council_tax_reduction",
 ]
 
