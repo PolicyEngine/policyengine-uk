@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `47` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `48` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -66,6 +66,7 @@ Each council dossier should capture:
 | Barking and Dagenham | Implemented | Weekly net-income bands by household type with `GBP 6,000` capital limit and pre-percentage flat non-dependant deductions | https://lbbd.moderngov.co.uk/documents/s178487/CTSS%202026-27%20-%20App%202.pdf |
 | Barnet | Implemented | Monthly earnings-banded discount with Band C cap, `GBP 6,000` capital limit, and two-rate non-dependant deductions | https://barnet.moderngov.co.uk/documents/s94210/Appendix%20O%20-%20202627%20Council%20Tax%20Support%20Scheme.pdf |
 | Ealing | Implemented | Weekly income-banded support with protected and non-protected tables, strict `GBP 6,000` capital cutoff, and local non-dependant deductions | https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf |
+| Enfield | Implemented | Non-UC legacy means test with `50%` cap, Band C liability cap and `22.5%` taper, plus UC net-earnings bands and protected groups | https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf |
 | Hillingdon | Implemented | Weekly net-income bands with vulnerable Band 2, Band D cap for Bands 3-6, `GBP 6,000` capital limit, and flat non-dependant deductions | https://pre.hillingdon.gov.uk/benefits/working-age-bands |
 
 ## Reviewed Candidate Queue

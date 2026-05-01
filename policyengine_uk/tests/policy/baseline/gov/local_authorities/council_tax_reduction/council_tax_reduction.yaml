@@ -7539,3 +7539,408 @@
     ealing_council_tax_reduction_non_dep_deductions: [1202.76, 0]
     ealing_council_tax_reduction: [237.24, 0]
     council_tax_reduction: 237.24
+
+- name: Enfield non-UC working-age claimant receives 50 percent support with Band C cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_maximum_eligible_liability: 1600
+    enfield_council_tax_reduction: 800
+    simulated_council_tax_reduction_benunit: 800
+    council_tax_reduction: 800
+
+- name: Enfield single claimants under 25 are protected from the 50 percent cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 24
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 24
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_protected_group: true
+    enfield_council_tax_reduction: 1600
+    council_tax_reduction: 1600
+
+- name: Enfield applies the 22.5 percent non-UC income taper until support is exhausted
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 20_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Enfield applies Universal Credit net earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_240
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_uc_weekly_earnings: 120
+    enfield_council_tax_reduction: 480
+    council_tax_reduction: 480
+
+- name: Enfield routes Universal Credit couples with children to the family earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 9_360
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      partner:
+        age: 35
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_uc_weekly_earnings: 180
+    enfield_council_tax_reduction: 640
+    council_tax_reduction: 640
+
+- name: Enfield Universal Credit earnings ignore dependent child earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 6
+        employment_income: 9_360
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_uc_weekly_earnings: 0
+    enfield_council_tax_reduction: 800
+    council_tax_reduction: 800
+
+- name: Enfield excludes working-age claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 16_001
+  output:
+    enfield_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Enfield assumes tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 6_001
+  output:
+    enfield_council_tax_reduction_tariff_income: 52
+
+- name: Enfield non-UC income ignores dependent child earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 6
+        employment_income: 20_000
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_applicable_income: 0
+    enfield_council_tax_reduction: 800
+    council_tax_reduction: 800
+
+- name: Enfield deducts eligible childcare costs from non-UC applicable income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 10_400
+        hours_worked: 832
+        childcare_expenses: 2_600
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_childcare_deduction: 2600
+    enfield_council_tax_reduction_applicable_income: 7800
+
+- name: Enfield applies the working-age non-dependant earnings deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 13_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_non_dep_deductions: [586.56, 0]
+    enfield_council_tax_reduction: [213.44, 0]
+    council_tax_reduction: 213.44
+
+- name: Enfield combines non-dependant couple earnings for one deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 25
+        employment_income: 13_000
+      non_dep_2:
+        age: 25
+        employment_income: 13_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep_1, non_dep_2]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: ENFIELD
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    enfield_council_tax_reduction_non_dep_deductions: [736.32, 0]
+    enfield_council_tax_reduction: [63.68, 0]
+    council_tax_reduction: 63.68

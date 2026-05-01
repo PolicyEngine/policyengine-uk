@@ -1,0 +1,31 @@
+description: Enfield Universal Credit weekly net-earnings CTR rate for single working-age households outside the protected group.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.50
+  - threshold:
+      2026-04-01: 55.01
+    amount:
+      2026-04-01: 0.40
+  - threshold:
+      2026-04-01: 104.61
+    amount:
+      2026-04-01: 0.30
+  - threshold:
+      2026-04-01: 159.66
+    amount:
+      2026-04-01: 0.20
+  - threshold:
+      2026-04-01: 214.71
+    amount:
+      2026-04-01: 0.10
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Enfield UC single non-protected CTR rate
+  reference:
+    - title: Enfield Council Tax Reduction Scheme 2026-2027, paragraph 10 and Appendix 3 earnings bands
+      href: https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf
