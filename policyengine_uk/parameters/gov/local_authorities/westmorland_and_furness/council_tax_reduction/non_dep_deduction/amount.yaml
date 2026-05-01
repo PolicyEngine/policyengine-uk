@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction by gross weekly income for Westmorland and Furness working-age Council Tax Reduction.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Westmorland and Furness Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: Westmorland and Furness Council Tax Reduction Scheme 2026/27, sections 30.1 and 30.2
+      href: https://www.westmorlandandfurness.gov.uk/sites/default/files/2026-03/Westmorland%20%26%20Furness%20Council%20%20CTR%20Scheme%20202627%20%28accessible%20March%202026%29.pdf

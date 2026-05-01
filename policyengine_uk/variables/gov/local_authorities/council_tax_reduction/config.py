@@ -238,6 +238,10 @@ def is_west_suffolk(local_authority):
     return local_authority == LocalAuthority.WEST_SUFFOLK
 
 
+def is_westmorland_and_furness(local_authority):
+    return local_authority == LocalAuthority.WESTMORLAND_AND_FURNESS
+
+
 def is_westminster(local_authority):
     return local_authority == LocalAuthority.WESTMINSTER
 
@@ -540,6 +544,14 @@ def is_west_suffolk_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_westmorland_and_furness_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_westmorland_and_furness(local_authority)
+    )
+
+
 def is_westminster_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_westminster(local_authority)
@@ -640,6 +652,9 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_wakefield_working_age(local_authority, country, has_pensioner)
         | is_west_suffolk_working_age(local_authority, country, has_pensioner)
+        | is_westmorland_and_furness_working_age(
+            local_authority, country, has_pensioner
+        )
         | is_westminster_working_age(local_authority, country, has_pensioner)
         | is_worthing_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)

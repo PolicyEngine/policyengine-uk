@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Westmorland and Furness working-age Council Tax Reduction non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Westmorland and Furness Council Tax Reduction non-dependant remunerative-work hours
+  reference:
+    - title: Westmorland and Furness Council Tax Reduction Scheme 2026/27, interpretation of remunerative work
+      href: https://www.westmorlandandfurness.gov.uk/sites/default/files/2026-03/Westmorland%20%26%20Furness%20Council%20%20CTR%20Scheme%20202627%20%28accessible%20March%202026%29.pdf

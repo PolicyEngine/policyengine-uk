@@ -1,0 +1,10 @@
+description: Weekly assumed income per capital step for Westmorland and Furness working-age Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Westmorland and Furness Council Tax Reduction tariff income per step
+  reference:
+    - title: Westmorland and Furness Council Tax Reduction Scheme 2026/27, section 72
+      href: https://www.westmorlandandfurness.gov.uk/sites/default/files/2026-03/Westmorland%20%26%20Furness%20Council%20%20CTR%20Scheme%20202627%20%28accessible%20March%202026%29.pdf

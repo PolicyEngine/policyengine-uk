@@ -65,6 +65,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "wakefield_council_tax_reduction",
     "warrington_council_tax_reduction",
     "west_suffolk_council_tax_reduction",
+    "westmorland_and_furness_council_tax_reduction",
     "westminster_council_tax_reduction",
     "worthing_council_tax_reduction",
 ]
@@ -94,12 +95,17 @@ class simulated_council_tax_reduction_benunit(Variable):
         herefordshire_local_scheme = benunit(
             "herefordshire_council_tax_reduction_is_local_scheme", period
         )
+        westmorland_and_furness_local_scheme = benunit(
+            "westmorland_and_furness_council_tax_reduction_is_local_scheme",
+            period,
+        )
         applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
         applicable_income = benunit("council_tax_reduction_applicable_income", period)
 
         england_pensioners = (
             is_england_pensioner_scheme(country, has_pensioner)
             & ~herefordshire_local_scheme
+            & ~westmorland_and_furness_local_scheme
         )
         wales = is_wales_scheme(country)
         scotland = is_scotland_scheme(country)

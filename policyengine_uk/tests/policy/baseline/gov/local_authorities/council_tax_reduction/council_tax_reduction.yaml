@@ -13770,3 +13770,636 @@
     herefordshire_council_tax_reduction_non_dep_deductions: [655.20, 0]
     herefordshire_council_tax_reduction: [1_844.80, 0]
     council_tax_reduction: 1_844.80
+
+- name: Westmorland and Furness provides full working-age CTR when income does not exceed the applicable amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction: 2_500
+    simulated_council_tax_reduction_benunit: 2_500
+    council_tax_reduction: 2_500
+
+- name: Westmorland and Furness applies a 20 percent taper to excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 5_826.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction: 2_292
+    council_tax_reduction: 2_292
+
+- name: Westmorland and Furness rounds partial capital tariff blocks up
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 6_000.01
+  output:
+    westmorland_and_furness_council_tax_reduction_tariff_income: 52
+    westmorland_and_furness_council_tax_reduction: 2_489.60
+    council_tax_reduction: 2_489.60
+
+- name: Westmorland and Furness excludes working-age claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 16_000.01
+  output:
+    westmorland_and_furness_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Westmorland and Furness disregards capital for income-based benefit claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 20_000
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    westmorland_and_furness_council_tax_reduction_tariff_income: 0
+    westmorland_and_furness_council_tax_reduction: 2_500
+    council_tax_reduction: 2_500
+
+- name: Westmorland and Furness uses UC assessed income and UC capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 2_400
+        uc_earned_income: 12_000
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 20_000
+  output:
+    westmorland_and_furness_council_tax_reduction_uc_applicable_income: 14_400
+    westmorland_and_furness_council_tax_reduction: 2_020
+    council_tax_reduction: 2_020
+
+- name: Westmorland and Furness excludes UC claimants over the UC-assessed capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 16_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    uc_assessable_capital: 16_000.01
+    westmorland_and_furness_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Westmorland and Furness local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    westmorland_and_furness_council_tax_reduction_is_local_scheme: true
+    westmorland_and_furness_council_tax_reduction: 2_500
+    simulated_council_tax_reduction_benunit: 2_500
+    council_tax_reduction: 2_500
+
+- name: Westmorland and Furness applies the remunerative-work non-dependant deduction table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [551.20, 0]
+    westmorland_and_furness_council_tax_reduction: [1_948.80, 0]
+    council_tax_reduction: 1_948.80
+
+- name: Westmorland and Furness treats low-hours positive earnings as not remunerative work
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 520
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    westmorland_and_furness_council_tax_reduction: [2_229.60, 0]
+    council_tax_reduction: 2_229.60
+
+- name: Westmorland and Furness applies the top non-dependant deduction band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [829.40, 0]
+    westmorland_and_furness_council_tax_reduction: [1_670.60, 0]
+    council_tax_reduction: 1_670.60
+
+- name: Westmorland and Furness waives non-dependant deductions when the claimant receives PIP daily living
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [0, 0]
+    westmorland_and_furness_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: Westmorland and Furness waives deductions for source-listed non-dependant exemptions not otherwise modeled
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+        westmorland_and_furness_council_tax_reduction_non_dep_source_exemption: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [0, 0]
+    westmorland_and_furness_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: Westmorland and Furness uses all gross income for a non-dependant couple's single deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        tax_credits: 12_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [691.60, 0]
+    westmorland_and_furness_council_tax_reduction: [1_808.40, 0]
+    council_tax_reduction: 1_808.40
+
+- name: Westmorland and Furness applies separate non-dependant deductions to UC couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 12_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [1_383.20, 0]
+    westmorland_and_furness_council_tax_reduction: [1_116.80, 0]
+    council_tax_reduction: 1_116.80
+
+- name: Westmorland and Furness uses UC assessed earnings for the non-dependant no-earned-income exemption
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 6_000
+        uc_earned_income: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMORLAND_AND_FURNESS
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    westmorland_and_furness_council_tax_reduction_non_dep_deductions: [0, 0]
+    westmorland_and_furness_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500

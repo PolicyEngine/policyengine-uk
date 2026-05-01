@@ -1,0 +1,10 @@
+description: Capital step for Westmorland and Furness working-age Council Tax Reduction tariff income.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Westmorland and Furness Council Tax Reduction tariff income capital step
+  reference:
+    - title: Westmorland and Furness Council Tax Reduction Scheme 2026/27, section 72
+      href: https://www.westmorlandandfurness.gov.uk/sites/default/files/2026-03/Westmorland%20%26%20Furness%20Council%20%20CTR%20Scheme%20202627%20%28accessible%20March%202026%29.pdf
