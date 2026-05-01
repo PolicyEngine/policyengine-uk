@@ -1,0 +1,10 @@
+description: Capital step for Bromley working-age Council Tax Support tariff income.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bromley Council Tax Support tariff income capital step
+  reference:
+    - title: Bromley Local Council Tax Reduction Scheme from 1 April 2025, paragraph 72
+      href: https://www.bromley.gov.uk/downloads/file/3849/local-council-tax-reduction-scheme-from-1-april-2025

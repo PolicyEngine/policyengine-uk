@@ -1,0 +1,9 @@
+description: Maximum English council tax band ratio eligible for Bromley working-age Council Tax Support.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  label: Bromley Council Tax Support Band D liability cap ratio
+  reference:
+    - title: Bromley Local Council Tax Reduction Scheme from 1 April 2025, paragraph 29
+      href: https://www.bromley.gov.uk/downloads/file/3849/local-council-tax-reduction-scheme-from-1-april-2025

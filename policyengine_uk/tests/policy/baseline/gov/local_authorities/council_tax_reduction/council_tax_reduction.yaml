@@ -10203,3 +10203,455 @@
     brent_council_tax_reduction_non_dep_deductions: [416, 0]
     brent_council_tax_reduction: [754, 0]
     council_tax_reduction: 754
+
+- name: Bromley working-age claimant receives 50 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+  output:
+    bromley_council_tax_reduction_maximum_eligible_liability: 2_140.04
+    bromley_council_tax_reduction: 1_070.02
+    simulated_council_tax_reduction_benunit: 1_070.02
+    council_tax_reduction: 1_070.02
+    council_tax_less_benefit: 1_070.02
+
+- name: Bromley caps working-age eligible liability at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: H
+        council_tax: 4_280.08
+        savings: 0
+  output:
+    bromley_council_tax_reduction_maximum_eligible_liability: 2_140.04
+    bromley_council_tax_reduction: 1_070.02
+    council_tax_reduction: 1_070.02
+    council_tax_less_benefit: 3_210.06
+
+- name: Bromley applies a 20 percent taper to annual excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 7_386.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+  output:
+    bromley_council_tax_reduction: 550.02
+    council_tax_reduction: 550.02
+
+- name: Bromley adds working-age tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 6_250
+  output:
+    bromley_council_tax_reduction_tariff_income: 52
+    bromley_council_tax_reduction: 1_059.62
+    council_tax_reduction: 1_059.62
+
+- name: Bromley excludes non-UC working-age claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 16_001
+  output:
+    bromley_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Bromley applies the gross-income non-dependant deduction table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant_low:
+        age: 35
+      claimant_mid:
+        age: 35
+      claimant_high:
+        age: 35
+      claimant_not_working:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_mid:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 832
+      non_dep_high:
+        age: 25
+        employment_income: 31_200
+        hours_worked: 832
+      non_dep_not_working:
+        age: 25
+        employment_income: 26_000
+        hours_worked: 0
+    benunits:
+      low_benunit:
+        members: [claimant_low]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      low_other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+      mid_benunit:
+        members: [claimant_mid]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      mid_other_benunit:
+        members: [non_dep_mid]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+      high_benunit:
+        members: [claimant_high]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      high_other_benunit:
+        members: [non_dep_high]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+      not_working_benunit:
+        members: [claimant_not_working]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      not_working_other_benunit:
+        members: [non_dep_not_working]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      low_household:
+        members: [claimant_low, non_dep]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+      mid_household:
+        members: [claimant_mid, non_dep_mid]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+      high_household:
+        members: [claimant_high, non_dep_high]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+      not_working_household:
+        members: [claimant_not_working, non_dep_not_working]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+  output:
+    bromley_council_tax_reduction_non_dep_deductions:
+      [530.40, 0, 665.60, 0, 798.20, 0, 260, 0]
+    bromley_council_tax_reduction:
+      [539.62, 0, 404.42, 0, 271.82, 0, 810.02, 0]
+    council_tax_reduction: [539.62, 404.42, 271.82, 810.02]
+
+- name: Bromley makes one non-dependant deduction for ordinary couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+  output:
+    bromley_council_tax_reduction_non_dep_deductions: [798.20, 0]
+    bromley_council_tax_reduction: [271.82, 0]
+    council_tax_reduction: 271.82
+
+- name: Bromley counts both members of a non-dependant couple where the couple has Universal Credit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+  output:
+    bromley_council_tax_reduction_non_dep_deductions: [1_596.40, 0]
+    bromley_council_tax_reduction: [0, 0]
+    council_tax_reduction: 0
+
+- name: Bromley uses UC assessed income and UC capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 2_400
+        uc_earned_income: 12_000
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 20_000
+  output:
+    bromley_council_tax_reduction_uc_applicable_income: 14_400
+    bromley_council_tax_reduction: 590.02
+    council_tax_reduction: 590.02
+
+- name: Bromley excludes UC claimants above the UC-assessed capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 2_400
+        uc_earned_income: 12_000
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 16_001
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BROMLEY
+        council_tax_band: D
+        council_tax: 2_140.04
+        savings: 0
+  output:
+    bromley_council_tax_reduction: 0
+    council_tax_reduction: 0
