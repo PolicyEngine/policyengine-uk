@@ -1,0 +1,9 @@
+description: Capital step used to calculate Lewisham Council Tax Reduction tariff income.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  label: Lewisham Council Tax Reduction tariff income capital step
+  reference:
+    - title: Lewisham Council Tax Reduction Scheme 2024-2025
+      href: https://lewisham.gov.uk/-/media/services/council-tax/lewisham-council-tax-reduction-scheme-2024-2025.pdf

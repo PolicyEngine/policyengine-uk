@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `55` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `56` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -75,6 +75,7 @@ Each council dossier should capture:
 | Havering | Implemented | Legacy means test with `75%` ordinary maximum, `80%` disabled maximum, `100%` care-leaver/war-pension classes, Band D cap, `20%` taper, `GBP 6,000` capital limit, and gross-income non-dependant deductions | https://democracy.havering.gov.uk/documents/s83106/12%20-%20Appendix%20I%20%20Summary%20of%20the%20Council%20Tax%20Support%20Scheme%202026-27.pdf |
 | Hillingdon | Implemented | Weekly net-income bands with vulnerable Band 2, Band D cap for Bands 3-6, `GBP 6,000` capital limit, and flat non-dependant deductions | https://pre.hillingdon.gov.uk/benefits/working-age-bands |
 | Hounslow | Implemented | Weekly net-earnings bands with `75%` ordinary maximum, `90%` carer support, `GBP 6,000` capital limit, and flat working/non-working non-dependant deductions | https://www.hounslow.gov.uk/council-tax-support |
+| Lewisham | Implemented | Legacy means test with `75%` maximum support, no Band D cap, `20%` taper, tariff income, UC assessed income/capital branch with weekly earnings disregard, and gross-income non-dependant deductions. Current 2026/27 papers confirm no change from the older detailed scheme. | https://lewisham.gov.uk/myservices/benefits/council-tax-reduction-scheme |
 
 ## Reviewed Candidate Queue
 

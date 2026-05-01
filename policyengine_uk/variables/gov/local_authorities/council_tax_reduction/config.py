@@ -158,6 +158,10 @@ def is_lancaster(local_authority):
     return local_authority == LocalAuthority.LANCASTER
 
 
+def is_lewisham(local_authority):
+    return local_authority == LocalAuthority.LEWISHAM
+
+
 def is_merton(local_authority):
     return local_authority == LocalAuthority.MERTON
 
@@ -422,6 +426,10 @@ def is_lancaster_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_lancaster(local_authority)
 
 
+def is_lewisham_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_lewisham(local_authority)
+
+
 def is_merton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
 
@@ -574,6 +582,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_islington_working_age(local_authority, country, has_pensioner)
         | is_lambeth_working_age(local_authority, country, has_pensioner)
         | is_lancaster_working_age(local_authority, country, has_pensioner)
+        | is_lewisham_working_age(local_authority, country, has_pensioner)
         | is_merton_working_age(local_authority, country, has_pensioner)
         | is_newham_working_age(local_authority, country, has_pensioner)
         | is_oldham_working_age(local_authority, country, has_pensioner)

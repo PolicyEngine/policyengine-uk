@@ -5,7 +5,7 @@ This implementation currently simulates:
 - The statutory CTR scheme for pensioner households in England.
 - The national CTR scheme in Wales.
 - The national CTR scheme in Scotland.
-- Working-age local schemes for Adur, Barking and Dagenham, Barnet, Basingstoke and Deane, Bolton, Breckland, Brent, Bromley, Broadland, Bury, Camden, Chesterfield, Crawley, Croydon, Darlington, Dudley, Ealing, East Cambridgeshire, East Hertfordshire, East Suffolk, Enfield, Fenland, Gateshead, Greenwich, Haringey, Harrow, Havering, Hackney, Hammersmith and Fulham, Hillingdon, Hounslow, Islington, King's Lynn and West Norfolk, Kingston upon Thames, Lambeth, Lancaster, Merton, Newham, North Norfolk, Norwich, Oldham, Oxford, Sefton, South Norfolk, Southwark, St Albans, Stevenage, Stockport, Stroud, Tameside, Wakefield, Warrington, West Suffolk, Westminster, and Worthing.
+- Working-age local schemes for Adur, Barking and Dagenham, Barnet, Basingstoke and Deane, Bolton, Breckland, Brent, Bromley, Broadland, Bury, Camden, Chesterfield, Crawley, Croydon, Darlington, Dudley, Ealing, East Cambridgeshire, East Hertfordshire, East Suffolk, Enfield, Fenland, Gateshead, Greenwich, Haringey, Harrow, Havering, Hackney, Hammersmith and Fulham, Hillingdon, Hounslow, Islington, King's Lynn and West Norfolk, Kingston upon Thames, Lambeth, Lancaster, Lewisham, Merton, Newham, North Norfolk, Norwich, Oldham, Oxford, Sefton, South Norfolk, Southwark, St Albans, Stevenage, Stockport, Stroud, Tameside, Wakefield, Warrington, West Suffolk, Westminster, and Worthing.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
@@ -83,6 +83,7 @@ Spot checks against public calculators and scheme sources currently show:
 - Harrow (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 scheme uses a split design: non-Universal Credit applicants receive up to `50%` ordinary support or `86%` disabled support with a `30%` taper, while Universal Credit applicants use household-type weekly net-earnings bands. PolicyEngine UK returns `council_tax_reduction = GBP 900` for an ordinary non-UC no-income claimant, `GBP 720` for a UC single claimant with `GBP 100` weekly net earnings, and `GBP 1,892` for a disabled claimant on a `GBP 2,200` Band `E` liability.
 - Havering (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 summary continues a legacy means-tested scheme with `75%` ordinary maximum support, `80%` disabled maximum support, a Band `D` cap, a `20%` taper, and a `GBP 6,000` working-age capital limit. PolicyEngine UK returns `council_tax_reduction = GBP 1,350` for an ordinary no-income claimant and `GBP 1,440` for a disabled no-income claimant; a Band `E` liability of `GBP 2,200` is capped to a `GBP 1,350` ordinary award.
 - Hounslow (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's live 2026 page and formal 2025/26 scheme use weekly net-earnings bands for working-age households, with ordinary support of up to `75%`, `90%` support for households where the claimant or partner receives Carer's Allowance or the Universal Credit carer element, and a `GBP 6,000` working-age capital limit. PolicyEngine UK uses household liquid savings as the available proxy for claimant/partner capital, and returns `council_tax_reduction = GBP 1,350` for a no-earnings ordinary claimant and `GBP 1,620` for a carer household.
+- Lewisham (working-age, band `D`, annual liability `GBP 2,237.33`, no children, no savings): the council's 2026/27 budget papers continue its existing scheme with `75%` maximum working-age support, a `20%` taper, a `GBP 16,000` capital limit, tariff income above `GBP 6,000`, and gross-income non-dependant deductions. PolicyEngine UK returns `council_tax_reduction = GBP 1,678.00` for a no-income claimant, `GBP 3,356.00` on a Band `H` liability with no Band D cap, and `GBP 1,458.00` for a UC claimant with monthly earnings of `GBP 1,200` after the weekly UC earnings disregard. The detailed scheme source is labelled 2024/25; 2026/27 papers confirm the no-change continuation.
 - Stevenage (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Chesterfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Warrington (`WA1 1UH`, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA): entitledto returns `GBP 26.69` per week of Council Tax Support and `GBP 2.48` per week left to pay on a displayed bill of `GBP 29.17` per week, which is a `91.5%` maximum award on the displayed weekly bill. PolicyEngine UK applies the same rule structure.
@@ -275,6 +276,13 @@ Hounslow references:
 - https://www.hounslow.gov.uk/council-tax-support
 - https://www.hounslow.gov.uk/downloads/file/11485/hounslow-council-tax-reduction-scheme-2025-to-2026
 - https://democraticservices.hounslow.gov.uk/documents/s205995/Budget%20Report%202026.pdf
+
+Lewisham references:
+
+- https://lewisham.gov.uk/myservices/benefits/council-tax-reduction-scheme
+- https://lewisham.gov.uk/-/media/services/council-tax/lewisham-council-tax-reduction-scheme-2024-2025.pdf
+- https://lewisham.moderngov.co.uk/documents/s123568/2026-27%20PASC%20Draft%20Budget%20Report.pdf
+- https://lewisham.moderngov.co.uk/documents/s123572/2026-27%20PASC%20Budget%20Report%20Y%20GF%20Appendices.pdf
 
 Harrow references:
 

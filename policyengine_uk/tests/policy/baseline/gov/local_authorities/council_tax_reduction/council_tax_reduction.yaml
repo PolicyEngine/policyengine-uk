@@ -11271,3 +11271,440 @@
     croydon_council_tax_reduction_maximum_eligible_liability: 3_177.67
     croydon_council_tax_reduction: 3_177.67
     council_tax_reduction: 3_177.67
+
+- name: Lewisham working-age claimant receives 75 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 0
+  output:
+    lewisham_council_tax_reduction: 1_678.00
+    simulated_council_tax_reduction_benunit: 1_678.00
+    council_tax_reduction: 1_678.00
+    council_tax_less_benefit: 559.33
+
+- name: Lewisham applies support to the full liability without a Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: H
+        council_tax: 4_474.67
+        savings: 0
+  output:
+    lewisham_council_tax_reduction: 3_356.00
+    council_tax_reduction: 3_356.00
+
+- name: Lewisham applies a 20 percent taper to annual excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 5_306.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 0
+  output:
+    lewisham_council_tax_reduction: 1_574.00
+    council_tax_reduction: 1_574.00
+
+- name: Lewisham excludes non-UC working-age claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 16_000.01
+  output:
+    lewisham_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Lewisham uses UC assessed income, a weekly UC earnings disregard, and UC capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_earned_income: 14_400
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_001
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 20_000
+  output:
+    lewisham_council_tax_reduction_uc_applicable_income: 13_101
+    lewisham_council_tax_reduction: 1_458.00
+    council_tax_reduction: 1_458.00
+
+- name: Lewisham excludes UC claimants above the UC-assessed capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_earned_income: 14_400
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_001
+        uc_reported_capital: 16_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 0
+  output:
+    lewisham_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Lewisham does not use UC assessed capital where there is no UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 0
+        uc_earned_income: 14_400
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 20_000
+  output:
+    lewisham_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Lewisham adds working-age tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 6_250
+  output:
+    lewisham_council_tax_reduction_tariff_income: 52
+    lewisham_council_tax_reduction: 1_667.60
+    council_tax_reduction: 1_667.60
+
+- name: Lewisham applies the gross-income non-dependant deduction table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 0
+  output:
+    lewisham_council_tax_reduction_non_dep_deductions: [522.60, 0]
+    lewisham_council_tax_reduction: [1_155.40, 0]
+    council_tax_reduction: 1_155.40
+
+- name: Lewisham makes one non-dependant deduction for ordinary couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 0
+  output:
+    lewisham_council_tax_reduction_non_dep_deductions: [785.20, 0]
+    lewisham_council_tax_reduction: [892.80, 0]
+    council_tax_reduction: 892.80
+
+- name: Lewisham counts both members of a non-dependant couple where the couple has Universal Credit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 0
+  output:
+    lewisham_council_tax_reduction_non_dep_deductions: [1_045.20, 0]
+    lewisham_council_tax_reduction: [632.80, 0]
+    council_tax_reduction: 632.80
+
+- name: Lewisham applies person-level work status to UC non-dependant couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: LEWISHAM
+        council_tax_band: D
+        council_tax: 2_237.33
+        savings: 0
+  output:
+    lewisham_council_tax_reduction_non_dep_deductions: [777.40, 0]
+    lewisham_council_tax_reduction: [900.60, 0]
+    council_tax_reduction: 900.60

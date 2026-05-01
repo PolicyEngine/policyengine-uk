@@ -43,6 +43,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "islington_council_tax_reduction",
     "lambeth_council_tax_reduction",
     "lancaster_council_tax_reduction",
+    "lewisham_council_tax_reduction",
     "merton_council_tax_reduction",
     "newham_council_tax_reduction",
     "oldham_council_tax_reduction",

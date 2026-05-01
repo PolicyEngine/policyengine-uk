@@ -1,0 +1,9 @@
+description: Annual excess-income withdrawal rate for working-age Lewisham Council Tax Reduction.
+values:
+  2026-04-01: 0.20
+metadata:
+  unit: /1
+  label: Lewisham Council Tax Reduction excess-income withdrawal rate
+  reference:
+    - title: Lewisham Council Tax Reduction Scheme 2024-2025
+      href: https://lewisham.gov.uk/-/media/services/council-tax/lewisham-council-tax-reduction-scheme-2024-2025.pdf
