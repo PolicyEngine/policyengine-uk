@@ -1,0 +1,13 @@
+description: The minimum age at which Scottish funded early learning and childcare can start, subject to the statutory term-start condition.
+metadata:
+  unit: year
+  label: Funded early learning and childcare child's minimum age
+  reference:
+    - title: Children and Young People (Scotland) Act 2014 - Section 48 (Duty to secure early learning and childcare)
+      href: https://www.legislation.gov.uk/asp/2014/8/section/48
+    - title: "Scottish Government — Funded early learning and childcare: eligibility"
+      href: https://www.mygov.scot/childcare-costs-help/three-four-year-olds-and-eligible-two-year-olds
+    - title: "Scottish Government — Early learning and childcare statutory guidance: starting dates"
+      href: https://www.gov.scot/publications/early-learning-childcare-statutory-guidance-july-2021/pages/8/
+values:
+  2021-08-01: 3
