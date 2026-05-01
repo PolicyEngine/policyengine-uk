@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `40` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `41` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -60,6 +60,7 @@ Each council dossier should capture:
 | Wakefield | Implemented | Working-age non-DWP income bands with flat non-dependant deductions | https://www.wakefield.gov.uk/council-tax/help-with-your-council-tax/working-age-council-tax-support-scheme |
 | Tameside | Implemented | Weekly net-income bands with Band A cap and no non-dependant deductions | https://tameside.moderngov.co.uk/documents/s200335/Appendix.%202%20for%20Council%20Tax%20Support%20Scheme%202026-2027.pdf |
 | Bury | Implemented | Monthly earnings-banded discount with Band B cap and flat non-dependant deductions | https://www.bury.gov.uk/asset-library/bury-cts-scheme-policy-2026-27.pdf |
+| Lambeth | Implemented | Weekly net-earnings bands with working-age savings limit and working/non-working non-dependant deductions | https://www.lambeth.gov.uk/about-housing-benefit-council-tax-support/council-tax-support/how-much-council-tax-support-you-can-get |
 
 ## Reviewed Candidate Queue
 
@@ -67,4 +68,3 @@ Each council dossier should capture:
 | --- | --- | --- | --- |
 | Camden | Scouted | Gross-earnings income bands | Current council page gives 2026/27 income bands, `GBP 16,000` capital limit, and 30 percent liability non-dependant deduction above `GBP 110.80` weekly earnings |
 | Islington | Scouted | Net-earnings income bands | Current web page and 2026/27 PDF are available; watch CPI-uprated bands and non-dependant values |
-| Lambeth | Scouted | Net-earnings income bands | 2026/27 scheme page has new banded scheme, `GBP 10,000` working-age capital limit, and `GBP 10`/`GBP 16` weekly non-dependant deductions |

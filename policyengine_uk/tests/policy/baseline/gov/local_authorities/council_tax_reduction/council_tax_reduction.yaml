@@ -4537,6 +4537,338 @@
     council_tax_reduction: 1120
     council_tax_less_benefit: 680
 
+- name: Lambeth zero-earnings working-age claimant receives 73.5 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    lambeth_council_tax_reduction: 1323
+    simulated_council_tax_reduction_benunit: 1323
+    council_tax_reduction: 1323
+    council_tax_less_benefit: 477
+
+- name: Lambeth applies no-child weekly net-earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 13_000
+        income_tax: 0
+        national_insurance: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    lambeth_council_tax_reduction: 540
+    simulated_council_tax_reduction_benunit: 540
+    council_tax_reduction: 540
+    council_tax_less_benefit: 1260
+
+- name: Lambeth applies two-child weekly net-earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_600
+        income_tax: 0
+        national_insurance: 0
+      child_1:
+        age: 10
+      child_2:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, child_1, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child_1, child_2]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    lambeth_council_tax_reduction: 540
+    simulated_council_tax_reduction_benunit: 540
+    council_tax_reduction: 540
+    council_tax_less_benefit: 1260
+
+- name: Lambeth ignores child earnings for claimant earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 16
+        employment_income: 30_000
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    lambeth_council_tax_reduction: 1323
+    simulated_council_tax_reduction_benunit: 1323
+    council_tax_reduction: 1323
+    council_tax_less_benefit: 477
+
+- name: Lambeth ignores non-earnings income for working-age bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 30_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    lambeth_council_tax_reduction: 1323
+    simulated_council_tax_reduction_benunit: 1323
+    council_tax_reduction: 1323
+    council_tax_less_benefit: 477
+
+- name: Lambeth excludes working-age claimants with 10,000 pounds of savings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 10_000
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Lambeth applies working non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    lambeth_council_tax_reduction_non_dep_deductions: [832, 0]
+    lambeth_council_tax_reduction: [491, 0]
+    simulated_council_tax_reduction_benunit: [491, 0]
+    council_tax_reduction: 491
+    council_tax_less_benefit: 1309
+
+- name: Lambeth applies person-level work status for non-dependant couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      working_non_dep:
+        age: 25
+        employment_income: 10_400
+      non_working_non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [working_non_dep, non_working_non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, working_non_dep, non_working_non_dep]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 3600
+        savings: 0
+  output:
+    lambeth_council_tax_reduction_non_dep_deductions: [1352, 0]
+    lambeth_council_tax_reduction: [1294, 0]
+    simulated_council_tax_reduction_benunit: [1294, 0]
+    council_tax_reduction: 1294
+    council_tax_less_benefit: 2306
+
+- name: Lambeth waives non-dependant deductions for PIP daily living claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+      non_dep:
+        age: 25
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: LAMBETH
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    lambeth_council_tax_reduction_non_dep_deductions: [0, 0]
+    lambeth_council_tax_reduction: [1323, 0]
+    simulated_council_tax_reduction_benunit: [1323, 0]
+    council_tax_reduction: 1323
+    council_tax_less_benefit: 477
+
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025
   absolute_error_margin: 0.5
