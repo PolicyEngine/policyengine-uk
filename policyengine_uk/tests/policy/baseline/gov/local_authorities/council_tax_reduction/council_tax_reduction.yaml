@@ -13129,3 +13129,644 @@
     cumberland_council_tax_reduction_non_dep_deductions: [691.60, 0]
     cumberland_council_tax_reduction: [1_753.12, 0]
     council_tax_reduction: 1_753.12
+
+- name: Herefordshire provides full working-age CTR when income does not exceed the applicable amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction: 2_500
+    simulated_council_tax_reduction_benunit: 2_500
+    council_tax_reduction: 2_500
+    council_tax_less_benefit: 0
+
+- name: Herefordshire applies a 20 percent taper to excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 5_826.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction: 2_292
+    council_tax_reduction: 2_292
+
+- name: Herefordshire allows exactly 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 6_000
+  output:
+    herefordshire_council_tax_reduction: 2_500
+    council_tax_reduction: 2_500
+
+- name: Herefordshire applies the strict 6,000 pound capital limit to income-based benefit claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 6_000.01
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    herefordshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Herefordshire uses UC assessed income and UC capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 2_400
+        uc_earned_income: 12_000
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 20_000
+  output:
+    herefordshire_council_tax_reduction_uc_applicable_income: 14_400
+    herefordshire_council_tax_reduction: 2_020
+    council_tax_reduction: 2_020
+
+- name: Herefordshire local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    herefordshire_council_tax_reduction_is_local_scheme: true
+    herefordshire_council_tax_reduction: 2_500
+    simulated_council_tax_reduction_benunit: 2_500
+    council_tax_reduction: 2_500
+
+- name: Herefordshire applies the 6,000 pound capital limit to UC-assessed capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 6_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    uc_assessable_capital: 6_000.01
+    herefordshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Herefordshire applies the remunerative-work non-dependant deduction table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [522.60, 0]
+    herefordshire_council_tax_reduction: [1_977.40, 0]
+    council_tax_reduction: 1_977.40
+
+- name: Herefordshire treats low-hours positive earnings as not remunerative work
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 520
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [254.80, 0]
+    herefordshire_council_tax_reduction: [2_245.20, 0]
+    council_tax_reduction: 2_245.20
+
+- name: Herefordshire applies the top non-dependant deduction band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_200
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [785.20, 0]
+    herefordshire_council_tax_reduction: [1_714.80, 0]
+    council_tax_reduction: 1_714.80
+
+- name: Herefordshire waives non-dependant deductions when the claimant receives PIP daily living
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+      non_dep:
+        age: 25
+        employment_income: 31_200
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    herefordshire_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: Herefordshire exempts non-dependants on income-based benefits
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_200
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        jsa_income: 1
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    herefordshire_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: Herefordshire exempts UC non-dependants with no earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 6_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    herefordshire_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: Herefordshire exempts full-time student non-dependants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_200
+        hours_worked: 832
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    herefordshire_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: Herefordshire waives deductions for source-listed non-dependant exemptions not otherwise modeled
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_200
+        hours_worked: 832
+        herefordshire_council_tax_reduction_non_dep_source_exemption: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    herefordshire_council_tax_reduction: [2_500, 0]
+    council_tax_reduction: 2_500
+
+- name: Herefordshire includes countable benefits in a non-dependant couple's gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 12_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: HEREFORDSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    herefordshire_council_tax_reduction_non_dep_deductions: [655.20, 0]
+    herefordshire_council_tax_reduction: [1_844.80, 0]
+    council_tax_reduction: 1_844.80

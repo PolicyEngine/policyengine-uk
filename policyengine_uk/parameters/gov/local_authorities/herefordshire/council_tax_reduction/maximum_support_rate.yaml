@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered by Herefordshire working-age Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Herefordshire working-age Council Tax Reduction maximum support rate
+  reference:
+    - title: Herefordshire 2026/27 Council Tax Reduction Scheme report
+      href: https://councillors.herefordshire.gov.uk/documents/s50131817/202627%20Council%20Tax%20Reduction%20Scheme.pdf
+    - title: Herefordshire approved Council Tax Reduction Scheme, section 57.1
+      href: https://councillors.herefordshire.gov.uk/documents/s50131582/Approved%20202526%20Council%20Tax%20Reduction%20Scheme.pdf

@@ -1,0 +1,29 @@
+description: Weekly non-dependant deduction by gross weekly income for Herefordshire working-age Council Tax Reduction.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 4.90
+  - threshold:
+      2026-04-01: 256
+    amount:
+      2026-04-01: 10.05
+  - threshold:
+      2026-04-01: 445
+    amount:
+      2026-04-01: 12.60
+  - threshold:
+      2026-04-01: 554
+    amount:
+      2026-04-01: 15.10
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Herefordshire Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: Herefordshire 2026/27 Council Tax Reduction Scheme report
+      href: https://councillors.herefordshire.gov.uk/documents/s50131817/202627%20Council%20Tax%20Reduction%20Scheme.pdf
+    - title: Herefordshire approved Council Tax Reduction Scheme, sections 58.1 and 58.2
+      href: https://councillors.herefordshire.gov.uk/documents/s50131582/Approved%20202526%20Council%20Tax%20Reduction%20Scheme.pdf

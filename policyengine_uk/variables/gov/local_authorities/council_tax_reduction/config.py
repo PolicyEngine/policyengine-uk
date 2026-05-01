@@ -126,6 +126,10 @@ def is_havering(local_authority):
     return local_authority == LocalAuthority.HAVERING
 
 
+def is_herefordshire(local_authority):
+    return local_authority == LocalAuthority.HEREFORDSHIRE
+
+
 def is_hackney(local_authority):
     return local_authority == LocalAuthority.HACKNEY
 
@@ -394,6 +398,14 @@ def is_havering_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_havering(local_authority)
 
 
+def is_herefordshire_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_herefordshire(local_authority)
+    )
+
+
 def is_hackney_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_hackney(local_authority)
 
@@ -589,6 +601,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_haringey_working_age(local_authority, country, has_pensioner)
         | is_harrow_working_age(local_authority, country, has_pensioner)
         | is_havering_working_age(local_authority, country, has_pensioner)
+        | is_herefordshire_working_age(local_authority, country, has_pensioner)
         | is_hackney_working_age(local_authority, country, has_pensioner)
         | is_hammersmith_and_fulham_working_age(
             local_authority,

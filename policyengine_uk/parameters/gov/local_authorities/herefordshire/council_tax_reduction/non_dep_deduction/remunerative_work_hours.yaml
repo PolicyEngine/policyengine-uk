@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Herefordshire working-age Council Tax Reduction non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Herefordshire Council Tax Reduction non-dependant remunerative-work hours
+  reference:
+    - title: Herefordshire approved Council Tax Reduction Scheme, sections 2.1 and 6.1
+      href: https://councillors.herefordshire.gov.uk/documents/s50131582/Approved%20202526%20Council%20Tax%20Reduction%20Scheme.pdf

@@ -36,6 +36,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "haringey_council_tax_reduction",
     "harrow_council_tax_reduction",
     "havering_council_tax_reduction",
+    "herefordshire_council_tax_reduction",
     "hackney_council_tax_reduction",
     "hammersmith_and_fulham_council_tax_reduction",
     "hillingdon_council_tax_reduction",
@@ -90,10 +91,16 @@ class simulated_council_tax_reduction_benunit(Variable):
         has_pensioner = benunit.household(
             "council_tax_reduction_household_has_pensioner", period
         )
+        herefordshire_local_scheme = benunit(
+            "herefordshire_council_tax_reduction_is_local_scheme", period
+        )
         applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
         applicable_income = benunit("council_tax_reduction_applicable_income", period)
 
-        england_pensioners = is_england_pensioner_scheme(country, has_pensioner)
+        england_pensioners = (
+            is_england_pensioner_scheme(country, has_pensioner)
+            & ~herefordshire_local_scheme
+        )
         wales = is_wales_scheme(country)
         scotland = is_scotland_scheme(country)
         national_scheme = england_pensioners | wales | scotland
