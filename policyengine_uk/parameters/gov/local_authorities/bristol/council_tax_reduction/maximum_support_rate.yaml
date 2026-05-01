@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered by Bristol working-age Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Bristol working-age Council Tax Reduction maximum support rate
+  reference:
+    - title: Bristol Council Tax Reduction Scheme 2026-27, paragraph 33
+      href: https://www.bristol.gov.uk/files/documents/10754-bristol-council-tax-reduction-scheme-2026/file

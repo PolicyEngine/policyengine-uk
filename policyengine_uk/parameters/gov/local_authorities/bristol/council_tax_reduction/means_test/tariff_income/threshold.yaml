@@ -1,0 +1,10 @@
+description: Capital threshold above which Bristol assumes tariff income for working-age Council Tax Reduction.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bristol Council Tax Reduction tariff income threshold
+  reference:
+    - title: Bristol Council Tax Reduction Scheme 2026-27, paragraph 32
+      href: https://www.bristol.gov.uk/files/documents/10754-bristol-council-tax-reduction-scheme-2026/file

@@ -1,0 +1,10 @@
+description: Withdrawal rate on excess income for Bristol working-age Council Tax Reduction.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Bristol Council Tax Reduction excess-income withdrawal rate
+  reference:
+    - title: Bristol Council Tax Reduction Scheme 2026-27, paragraph 35
+      href: https://www.bristol.gov.uk/files/documents/10754-bristol-council-tax-reduction-scheme-2026/file

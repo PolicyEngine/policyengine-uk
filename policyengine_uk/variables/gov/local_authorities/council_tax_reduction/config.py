@@ -38,6 +38,10 @@ def is_bromley(local_authority):
     return local_authority == LocalAuthority.BROMLEY
 
 
+def is_bristol(local_authority):
+    return local_authority == LocalAuthority.BRISTOL
+
+
 def is_bolton(local_authority):
     return local_authority == LocalAuthority.BOLTON
 
@@ -304,6 +308,10 @@ def is_bromley_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_bromley(local_authority)
 
 
+def is_bristol_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_bristol(local_authority)
+
+
 def is_bolton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_bolton(local_authority)
 
@@ -541,6 +549,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_breckland_working_age(local_authority, country, has_pensioner)
         | is_brent_working_age(local_authority, country, has_pensioner)
         | is_bromley_working_age(local_authority, country, has_pensioner)
+        | is_bristol_working_age(local_authority, country, has_pensioner)
         | is_broadland_working_age(local_authority, country, has_pensioner)
         | is_bury_working_age(local_authority, country, has_pensioner)
         | is_camden_working_age(local_authority, country, has_pensioner)
