@@ -98,6 +98,10 @@ def is_kingston_upon_thames(local_authority):
     return local_authority == LocalAuthority.KINGSTON_UPON_THAMES
 
 
+def is_islington(local_authority):
+    return local_authority == LocalAuthority.ISLINGTON
+
+
 def is_lambeth(local_authority):
     return local_authority == LocalAuthority.LAMBETH
 
@@ -304,6 +308,10 @@ def is_kingston_upon_thames_working_age(local_authority, country, has_pensioner)
     )
 
 
+def is_islington_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_islington(local_authority)
+
+
 def is_lambeth_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_lambeth(local_authority)
 
@@ -445,6 +453,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             country,
             has_pensioner,
         )
+        | is_islington_working_age(local_authority, country, has_pensioner)
         | is_lambeth_working_age(local_authority, country, has_pensioner)
         | is_lancaster_working_age(local_authority, country, has_pensioner)
         | is_merton_working_age(local_authority, country, has_pensioner)

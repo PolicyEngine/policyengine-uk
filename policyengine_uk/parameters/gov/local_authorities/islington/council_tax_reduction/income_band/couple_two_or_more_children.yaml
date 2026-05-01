@@ -1,0 +1,35 @@
+description: Council Tax Support rate by weekly net earnings band for working-age Islington couples with two or more children.
+brackets:
+  - threshold:
+      2026-04-01: 0.01
+    amount:
+      2026-04-01: 0.85
+  - threshold:
+      2026-04-01: 153.08
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 211.14
+    amount:
+      2026-04-01: 0.65
+  - threshold:
+      2026-04-01: 253.37
+    amount:
+      2026-04-01: 0.50
+  - threshold:
+      2026-04-01: 295.58
+    amount:
+      2026-04-01: 0.35
+  - threshold:
+      2026-04-01: 337.82
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Islington couple two-or-more-child weekly net earnings CTR rate
+  reference:
+    - title: Islington Council, Council Tax support
+      href: https://www.islington.gov.uk/benefits-and-support/council-tax-support

@@ -28,6 +28,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "hammersmith_and_fulham_council_tax_reduction",
     "kings_lynn_and_west_norfolk_council_tax_reduction",
     "kingston_upon_thames_council_tax_reduction",
+    "islington_council_tax_reduction",
     "lambeth_council_tax_reduction",
     "lancaster_council_tax_reduction",
     "merton_council_tax_reduction",

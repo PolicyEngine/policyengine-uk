@@ -1,0 +1,9 @@
+description: Council Tax Support rate for working-age Islington claimants who are not working and not in a protected zero-earnings group.
+values:
+  2026-04-01: 0.95
+metadata:
+  unit: /1
+  label: Islington non-working default Council Tax Support rate
+  reference:
+    - title: Islington Council, Council Tax support
+      href: https://www.islington.gov.uk/benefits-and-support/council-tax-support

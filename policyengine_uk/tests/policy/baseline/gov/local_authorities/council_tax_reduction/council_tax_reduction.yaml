@@ -5280,6 +5280,398 @@
     council_tax_reduction: 1800
     council_tax_less_benefit: 0
 
+- name: Islington zero-earnings working-age claimant receives 95 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    islington_council_tax_reduction: 1710
+    simulated_council_tax_reduction_benunit: 1710
+    council_tax_reduction: 1710
+    council_tax_less_benefit: 90
+
+- name: Islington protected zero-earnings claimant receives full support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction_non_working_protected: true
+    islington_council_tax_reduction: 1800
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Islington requires Universal Credit receipt for LCW zero-earnings protection
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        universal_credit: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction_non_working_protected: false
+    islington_council_tax_reduction: 1710
+    simulated_council_tax_reduction_benunit: 1710
+    council_tax_reduction: 1710
+    council_tax_less_benefit: 90
+
+- name: Islington gives full support to Universal Credit LCW claimants with no earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction_non_working_protected: true
+    islington_council_tax_reduction: 1800
+    simulated_council_tax_reduction_benunit: 1800
+    council_tax_reduction: 1800
+    council_tax_less_benefit: 0
+
+- name: Islington applies single no-child weekly net-pay bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction: 1170
+    simulated_council_tax_reduction_benunit: 1170
+    council_tax_reduction: 1170
+    council_tax_less_benefit: 630
+
+- name: Islington uses Universal Credit earned income for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction_weekly_net_earnings: 100
+    islington_council_tax_reduction: 1170
+    simulated_council_tax_reduction_benunit: 1170
+    council_tax_reduction: 1170
+    council_tax_less_benefit: 630
+
+- name: Islington treats qualifying young people as child-band members not earners
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+      young_person:
+        age: 18
+        current_education: POST_SECONDARY
+        employment_income: 30_000
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, young_person]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction_weekly_net_earnings: 100
+    islington_council_tax_reduction: 1350
+    simulated_council_tax_reduction_benunit: 1350
+    council_tax_reduction: 1350
+    council_tax_less_benefit: 450
+
+- name: Islington applies couple two-child weekly net-pay bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 16_000
+        income_tax: 0
+        national_insurance: 0
+      partner:
+        age: 35
+      child_1:
+        age: 8
+      child_2:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, partner, child_1, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child_1, child_2]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction: 630
+    simulated_council_tax_reduction_benunit: 630
+    council_tax_reduction: 630
+    council_tax_less_benefit: 1170
+
+- name: Islington excludes working-age claimants with 16,000 pounds of savings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 16_000
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Islington applies flat non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        universal_credit: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction_non_dep_deductions: [411.84, 0]
+    islington_council_tax_reduction: [1298.16, 0]
+    simulated_council_tax_reduction_benunit: [1298.16, 0]
+    council_tax_reduction: 1298.16
+    council_tax_less_benefit: 501.84
+
+- name: Islington exempts non-dependants on Universal Credit with no earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: ISLINGTON
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    islington_council_tax_reduction_non_dep_deductions: [0, 0]
+    islington_council_tax_reduction: [1710, 0]
+    simulated_council_tax_reduction_benunit: [1710, 0]
+    council_tax_reduction: 1710
+    council_tax_less_benefit: 90
+
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025
   absolute_error_margin: 0.5
