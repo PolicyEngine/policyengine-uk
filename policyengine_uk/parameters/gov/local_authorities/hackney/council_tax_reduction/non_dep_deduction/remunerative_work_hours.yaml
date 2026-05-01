@@ -1,0 +1,11 @@
+description: Weekly hours threshold for remunerative work in the Hackney Council Tax Reduction non-dependant deduction schedule.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Hackney Council Tax Reduction remunerative work hours
+  reference:
+    - title: Non-dependant deductions explained
+      href: https://www.hackney.gov.uk/council-tax-and-benefits/benefits/how-we-assess-your-benefits-claim/non-dependant-deductions-explained
+

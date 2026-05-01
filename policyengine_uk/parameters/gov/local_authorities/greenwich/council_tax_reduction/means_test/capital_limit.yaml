@@ -1,0 +1,11 @@
+description: Capital limit under the Royal Greenwich Local Council Tax Support scheme.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Greenwich Local Council Tax Support capital limit
+  reference:
+    - title: Who can claim Local Council Tax Support
+      href: https://www.royalgreenwich.gov.uk/help-money/get-help-paying-your-housing-costs-and-council-tax/apply-help-pay-your-council-tax/who
+

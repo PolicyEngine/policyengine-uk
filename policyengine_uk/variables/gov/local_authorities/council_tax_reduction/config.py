@@ -66,6 +66,14 @@ def is_gateshead(local_authority):
     return local_authority == LocalAuthority.GATESHEAD
 
 
+def is_greenwich(local_authority):
+    return local_authority == LocalAuthority.GREENWICH
+
+
+def is_hackney(local_authority):
+    return local_authority == LocalAuthority.HACKNEY
+
+
 def is_fenland(local_authority):
     return local_authority == LocalAuthority.FENLAND
 
@@ -224,6 +232,16 @@ def is_gateshead_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_gateshead(local_authority)
 
 
+def is_greenwich_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_greenwich(
+        local_authority
+    )
+
+
+def is_hackney_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_hackney(local_authority)
+
+
 def is_fenland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_fenland(local_authority)
 
@@ -350,6 +368,8 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_stroud_working_age(local_authority, country, has_pensioner)
         | is_darlington_working_age(local_authority, country, has_pensioner)
         | is_gateshead_working_age(local_authority, country, has_pensioner)
+        | is_greenwich_working_age(local_authority, country, has_pensioner)
+        | is_hackney_working_age(local_authority, country, has_pensioner)
         | is_kings_lynn_and_west_norfolk_working_age(
             local_authority,
             country,

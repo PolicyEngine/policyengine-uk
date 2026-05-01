@@ -1,0 +1,11 @@
+description: Withdrawal rate for working-age households under the Hackney Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Hackney Council Tax Reduction withdrawal rate
+  reference:
+    - title: Applicable amounts
+      href: https://www.hackney.gov.uk/applicable-amounts/
+

@@ -21,6 +21,8 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "east_suffolk_council_tax_reduction",
     "fenland_council_tax_reduction",
     "gateshead_council_tax_reduction",
+    "greenwich_council_tax_reduction",
+    "hackney_council_tax_reduction",
     "kings_lynn_and_west_norfolk_council_tax_reduction",
     "kingston_upon_thames_council_tax_reduction",
     "lancaster_council_tax_reduction",
