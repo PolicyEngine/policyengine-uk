@@ -1,0 +1,19 @@
+description: Weekly working-age non-dependant deduction schedule under the Sefton Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 2
+  - threshold:
+      2026-04-01: 195
+    amount:
+      2026-04-01: 5
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Sefton Council Tax Reduction working-age non-dependant deduction schedule
+  reference:
+    - title: Sefton Council Tax Reduction Scheme 2026/27
+      href: https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf

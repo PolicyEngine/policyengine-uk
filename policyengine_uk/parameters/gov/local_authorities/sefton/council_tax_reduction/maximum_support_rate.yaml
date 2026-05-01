@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered under the Sefton Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.84
+metadata:
+  unit: /1
+  period: year
+  label: Sefton Council Tax Reduction maximum support rate
+  reference:
+    - title: Sefton Council Tax Reduction Scheme 2026/27
+      href: https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf

@@ -5,7 +5,7 @@ This implementation currently simulates:
 - The statutory CTR scheme for pensioner households in England.
 - The national CTR scheme in Wales.
 - The national CTR scheme in Scotland.
-- Working-age local schemes for Adur, Basingstoke and Deane, Bolton, Breckland, Broadland, Chesterfield, Crawley, Darlington, Dudley, East Cambridgeshire, East Hertfordshire, East Suffolk, Fenland, Gateshead, King's Lynn and West Norfolk, Lancaster, Merton, North Norfolk, Norwich, Oldham, South Norfolk, Southwark, St Albans, Stevenage, Stroud, Warrington, West Suffolk, and Worthing.
+- Working-age local schemes for Adur, Basingstoke and Deane, Bolton, Breckland, Broadland, Chesterfield, Crawley, Darlington, Dudley, East Cambridgeshire, East Hertfordshire, East Suffolk, Fenland, Gateshead, King's Lynn and West Norfolk, Lancaster, Merton, North Norfolk, Norwich, Oldham, Sefton, South Norfolk, Southwark, St Albans, Stevenage, Stroud, Warrington, West Suffolk, and Worthing.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
@@ -59,6 +59,7 @@ Spot checks against public calculators and scheme sources currently show:
 - St Albans (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2025/26 scheme says non-Universal Credit claimants can receive `100%` of eligible Council Tax with the standard `20%` weekly taper and a `GBP 16,000` capital limit. For Universal Credit claimants, St Albans uses an earnings-band contribution table. PolicyEngine UK returns `GBP 1,800` for the non-UC no-income case, and `GBP 660` where monthly earnings of `GBP 1,000` imply a `GBP 95` monthly contribution in 2025. The scheme excludes Universal Credit awards from its one-deduction non-dependant couple rule; PolicyEngine UK counts both members in that case.
 - Adur (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 scheme says maximum Council Tax Support is `100%` of eligible Council Tax after discounts and non-dependant deductions, with the `2 6/7%` daily excess-income percentage and a `GBP 16,000` capital limit. PolicyEngine UK returns `council_tax_reduction = GBP 1,800` and `council_tax_less_benefit = GBP 0` before non-dependant deductions. The scheme excludes Universal Credit awards from its one-deduction non-dependant couple rule; PolicyEngine UK counts both members in that case.
 - Worthing (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 scheme says maximum Council Tax Support is `100%` of eligible Council Tax after discounts and non-dependant deductions, with the `2 6/7%` daily excess-income percentage and a `GBP 16,000` capital limit. PolicyEngine UK returns `council_tax_reduction = GBP 1,800` and `council_tax_less_benefit = GBP 0` before non-dependant deductions. The scheme excludes Universal Credit awards from its one-deduction non-dependant couple rule; PolicyEngine UK counts both members in that case.
+- Sefton (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's 2026/27 scheme says maximum Council Tax Reduction is `84%` of eligible Council Tax after discounts and non-dependant deductions, with the `2 6/7%` daily excess-income percentage, a `GBP 6,000` capital limit, and a working-age non-dependant deduction table of `GBP 2` or `GBP 5` per week when the non-dependant is in remunerative work. PolicyEngine UK returns `council_tax_reduction = GBP 1,512` and `council_tax_less_benefit = GBP 288` before non-dependant deductions. The scheme excludes Universal Credit awards from its one-deduction non-dependant couple rule; PolicyEngine UK counts both members in that case.
 - Stevenage (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Chesterfield (working-age, band `D`, annual liability `GBP 1,800`, no children, no savings): the council's published scheme says working-age claimants receive `91.5%` of net liability, so PolicyEngine UK returns `council_tax_reduction = GBP 1,647` and `council_tax_less_benefit = GBP 153`.
 - Warrington (`WA1 1UH`, band `C`, single working-age owner-occupier, no children, no savings, income-based JSA): entitledto returns `GBP 26.69` per week of Council Tax Support and `GBP 2.48` per week left to pay on a displayed bill of `GBP 29.17` per week, which is a `91.5%` maximum award on the displayed weekly bill. PolicyEngine UK applies the same rule structure.
@@ -163,6 +164,11 @@ Worthing references:
 
 - https://www.adur-worthing.gov.uk/media/Media,174008,smxx.pdf
 - https://www.adur-worthing.gov.uk/benefits/council-tax-support/
+
+Sefton references:
+
+- https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf
+- https://www.sefton.gov.uk/advice-benefits/help-with-council-tax/
 
 Stevenage references:
 

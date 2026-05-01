@@ -23,9 +23,9 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 | St Albans | Implemented | Legacy full support plus Universal Credit earnings-band contribution table | https://www.stalbans.gov.uk/sites/default/files/attachments/St%20Albans%20S13A%20202526%20Final.pdf |
 | Adur | Implemented | Legacy full support with 2026/27 earnings-bracket non-dependant deductions | https://www.adur-worthing.gov.uk/media/Media,174007,smxx.pdf |
 | Worthing | Implemented | Legacy full support with 2026/27 earnings-bracket non-dependant deductions | https://www.adur-worthing.gov.uk/media/Media,174008,smxx.pdf |
+| Sefton | Implemented | Legacy 84 percent with `GBP 6,000` capital limit and remunerative-work non-dependant table | https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf |
 
 ## Reviewed Candidate Queue
 
 | Authority | Status | Type | Notes |
 | --- | --- | --- | --- |
-| Sefton | Needs helper check | Percent after reduction / working-age non-dep table | 2026/27 official PDF found. |

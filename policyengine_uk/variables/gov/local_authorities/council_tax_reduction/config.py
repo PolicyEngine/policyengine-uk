@@ -102,6 +102,10 @@ def is_south_norfolk(local_authority):
     return local_authority == LocalAuthority.SOUTH_NORFOLK
 
 
+def is_sefton(local_authority):
+    return local_authority == LocalAuthority.SEFTON
+
+
 def is_st_albans(local_authority):
     return local_authority == LocalAuthority.ST_ALBANS
 
@@ -252,6 +256,10 @@ def is_south_norfolk_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_sefton_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_sefton(local_authority)
+
+
 def is_st_albans_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_st_albans(local_authority)
 
@@ -314,6 +322,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_oldham_working_age(local_authority, country, has_pensioner)
         | is_norwich_working_age(local_authority, country, has_pensioner)
         | is_north_norfolk_working_age(local_authority, country, has_pensioner)
+        | is_sefton_working_age(local_authority, country, has_pensioner)
         | is_south_norfolk_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)
         | is_st_albans_working_age(local_authority, country, has_pensioner)
