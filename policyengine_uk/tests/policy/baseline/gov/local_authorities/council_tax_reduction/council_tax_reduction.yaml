@@ -4219,6 +4219,324 @@
     council_tax_reduction: 900
     council_tax_less_benefit: 900
 
+- name: Bury working-age claimant receives 80 percent of Band B-capped liability
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    bury_council_tax_reduction_maximum_eligible_liability: 1400
+    bury_council_tax_reduction: 1120
+    simulated_council_tax_reduction_benunit: 1120
+    council_tax_reduction: 1120
+    council_tax_less_benefit: 680
+
+- name: Bury applies single-person monthly net-earnings bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 7_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    bury_council_tax_reduction: 280
+    simulated_council_tax_reduction_benunit: 280
+    council_tax_reduction: 280
+    council_tax_less_benefit: 1520
+
+- name: Bury uses Universal Credit assessed earnings for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 12_000
+        pension_contributions: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    bury_council_tax_reduction: 560
+    simulated_council_tax_reduction_benunit: 560
+    council_tax_reduction: 560
+    council_tax_less_benefit: 1240
+
+- name: Bury excludes working-age claimants above the 8,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 8_001
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 0
+    council_tax_less_benefit: 1800
+
+- name: Bury ignores non-earnings income for working-age income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        property_income: 20_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    bury_council_tax_reduction: 1120
+    simulated_council_tax_reduction_benunit: 1120
+    council_tax_reduction: 1120
+    council_tax_less_benefit: 680
+
+- name: Bury protects disability benefit claimants from the Band B cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    bury_council_tax_reduction_protected_group: true
+    bury_council_tax_reduction_maximum_eligible_liability: 1800
+    bury_council_tax_reduction: 1440
+    simulated_council_tax_reduction_benunit: 1440
+    council_tax_reduction: 1440
+    council_tax_less_benefit: 360
+
+- name: Bury does not treat disabled children as Band B cap protected adults
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 10
+        pip_dl: 1
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    bury_council_tax_reduction_protected_group: false
+    bury_council_tax_reduction_maximum_eligible_liability: 1400
+    bury_council_tax_reduction: 1120
+    simulated_council_tax_reduction_benunit: 1120
+    council_tax_reduction: 1120
+    council_tax_less_benefit: 680
+
+- name: Bury applies flat monthly working-age non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    bury_council_tax_reduction_non_dep_deductions: [480, 0]
+    bury_council_tax_reduction: [640, 0]
+    simulated_council_tax_reduction_benunit: [640, 0]
+    council_tax_reduction: 640
+    council_tax_less_benefit: 1160
+
+- name: Bury waives non-dependant deductions for Armed Forces Independence Payment claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        armed_forces_independence_payment: 1
+      non_dep:
+        age: 25
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BURY
+        council_tax_band: D
+        council_tax: 1800
+        savings: 0
+  output:
+    bury_council_tax_reduction_non_dep_deductions: [0, 0]
+    bury_council_tax_reduction: [1120, 0]
+    simulated_council_tax_reduction_benunit: [1120, 0]
+    council_tax_reduction: 1120
+    council_tax_less_benefit: 680
+
 - name: West Suffolk working-age claimant keeps full temporary support in 2025
   period: 2025
   absolute_error_margin: 0.5

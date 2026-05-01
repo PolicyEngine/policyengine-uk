@@ -1,0 +1,9 @@
+description: Maximum English council tax band ratio eligible for ordinary working-age Bury Council Tax Support before protected-group exemptions.
+values:
+  2026-04-01: 0.7777777778
+metadata:
+  unit: /1
+  label: Bury CTR Band B liability cap ratio
+  reference:
+    - title: Bury Council Tax Support Scheme Policy 2026/27, paragraphs 11 and 35-37
+      href: https://www.bury.gov.uk/asset-library/bury-cts-scheme-policy-2026-27.pdf

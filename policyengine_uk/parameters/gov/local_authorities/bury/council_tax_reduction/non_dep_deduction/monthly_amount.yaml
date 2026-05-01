@@ -1,0 +1,10 @@
+description: Monthly non-dependant deduction for working-age Bury Council Tax Support.
+values:
+  2026-04-01: 40
+metadata:
+  unit: currency-GBP
+  period: month
+  label: Bury working-age CTR monthly non-dependant deduction
+  reference:
+    - title: Bury Council Tax Support Scheme Policy 2026/27, paragraph 51
+      href: https://www.bury.gov.uk/asset-library/bury-cts-scheme-policy-2026-27.pdf
