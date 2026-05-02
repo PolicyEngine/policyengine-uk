@@ -52,6 +52,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "newham_council_tax_reduction",
     "oldham_council_tax_reduction",
     "north_norfolk_council_tax_reduction",
+    "north_northamptonshire_council_tax_reduction",
     "north_yorkshire_council_tax_reduction",
     "norwich_council_tax_reduction",
     "oxford_council_tax_reduction",

@@ -1,0 +1,12 @@
+description: Withdrawal rate on excess income under the North Northamptonshire Council Tax Support scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: North Northamptonshire Council Tax Support withdrawal rate
+  reference:
+    - title: North Northamptonshire Local Council Tax Support Scheme 2026/27 report, section 3.1
+      href: https://northnorthants.moderngov.co.uk/documents/s34359/Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf
+    - title: North Northamptonshire Council Tax Reduction Scheme 2023/24, legacy means-test rules
+      href: https://cms.northnorthants.gov.uk/media/4157/download

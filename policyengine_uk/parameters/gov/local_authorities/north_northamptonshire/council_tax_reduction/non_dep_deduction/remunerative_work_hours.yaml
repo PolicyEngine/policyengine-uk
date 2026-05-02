@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work in North Northamptonshire Council Tax Support non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  period: week
+  label: North Northamptonshire Council Tax Support non-dependant remunerative-work hours
+  reference:
+    - title: North Northamptonshire Council Tax Reduction Scheme 2023/24, paragraphs 10 and 30
+      href: https://cms.northnorthants.gov.uk/media/4157/download

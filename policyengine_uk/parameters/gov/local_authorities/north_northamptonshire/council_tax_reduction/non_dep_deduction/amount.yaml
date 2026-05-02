@@ -1,0 +1,31 @@
+description: Weekly non-dependant deduction schedule under the North Northamptonshire Council Tax Support scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.2
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.6
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.3
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: North Northamptonshire Council Tax Support non-dependant deduction amount
+  reference:
+    - title: North Northamptonshire Local Council Tax Support Scheme 2026/27 report, section 3.1
+      href: https://northnorthants.moderngov.co.uk/documents/s34359/Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf
+    - title: North Northamptonshire Council Tax Reduction Scheme 2023/24, paragraph 30
+      href: https://cms.northnorthants.gov.uk/media/4157/download
+    - title: Council Tax Reduction Schemes (Prescribed Requirements) (England) (Amendment) Regulations 2026, regulation 5(3)
+      href: https://www.legislation.gov.uk/uksi/2026/27/contents/made

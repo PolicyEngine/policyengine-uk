@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered under the North Northamptonshire Council Tax Support scheme for working-age claimants.
+values:
+  2026-04-01: 0.75
+metadata:
+  unit: /1
+  period: year
+  label: North Northamptonshire Council Tax Support maximum support rate
+  reference:
+    - title: North Northamptonshire Local Council Tax Support Scheme 2026/27 report, sections 3.1 and 4.4
+      href: https://northnorthants.moderngov.co.uk/documents/s34359/Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf
+    - title: North Northamptonshire Council Tax Reduction Scheme 2023/24, paragraph 29.2
+      href: https://cms.northnorthants.gov.uk/media/4157/download

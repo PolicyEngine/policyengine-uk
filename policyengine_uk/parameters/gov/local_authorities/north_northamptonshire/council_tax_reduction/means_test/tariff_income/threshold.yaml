@@ -1,0 +1,10 @@
+description: Capital threshold above which tariff income is imputed under the North Northamptonshire Council Tax Support scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: North Northamptonshire Council Tax Support tariff income threshold
+  reference:
+    - title: North Northamptonshire Council Tax Reduction Scheme 2023/24, paragraph 72
+      href: https://cms.northnorthants.gov.uk/media/4157/download
