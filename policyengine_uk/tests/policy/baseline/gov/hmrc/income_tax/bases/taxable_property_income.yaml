@@ -69,3 +69,11 @@
     gov.hmrc.income_tax.allowances.property_allowance: 1000.00
   output:
     taxable_property_income: 234.56
+
+- name: Pre-net property income can override allowance deduction
+  period: 2024
+  input:
+    property_income: 1234.56
+    property_allowance_deduction: 0
+  output:
+    taxable_property_income: 1234.56

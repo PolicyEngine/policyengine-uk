@@ -13,10 +13,8 @@ class taxable_property_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        property_allowance = parameters(
-            period
-        ).gov.hmrc.income_tax.allowances.property_allowance
         return max_(
             0,
-            person("property_income", period) - property_allowance,
+            person("property_income", period)
+            - person("property_allowance_deduction", period),
         )

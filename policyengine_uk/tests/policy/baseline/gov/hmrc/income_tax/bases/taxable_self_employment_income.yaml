@@ -114,3 +114,13 @@
     gov.hmrc.income_tax.allowances.trading_allowance: 1000.00
   output:
     taxable_self_employment_income: 33999.50
+
+- name: Pre-net self-employment income can override trading allowance deduction
+  period: 2024
+  input:
+    self_employment_income: 1234.56
+    loss_relief: 0
+    capital_allowances: 0
+    trading_allowance_deduction: 0
+  output:
+    taxable_self_employment_income: 1234.56
