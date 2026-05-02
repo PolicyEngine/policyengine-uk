@@ -63,6 +63,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "redbridge_council_tax_reduction",
     "sefton_council_tax_reduction",
     "somerset_council_tax_reduction",
+    "slough_council_tax_reduction",
     "south_norfolk_council_tax_reduction",
     "southwark_council_tax_reduction",
     "st_albans_council_tax_reduction",
@@ -125,6 +126,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         somerset_local_scheme = benunit(
             "somerset_council_tax_reduction_is_local_scheme", period
         )
+        slough_local_scheme = benunit(
+            "slough_council_tax_reduction_is_local_scheme", period
+        )
         west_northamptonshire_local_scheme = benunit(
             "west_northamptonshire_council_tax_reduction_is_local_scheme",
             period,
@@ -146,6 +150,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~mid_suffolk_local_scheme
             & ~north_yorkshire_local_scheme
             & ~somerset_local_scheme
+            & ~slough_local_scheme
             & ~west_northamptonshire_local_scheme
             & ~westmorland_and_furness_local_scheme
         )

@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `70` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `71` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -90,6 +90,7 @@ Each council dossier should capture:
 | Lewisham | Implemented | Legacy means test with `75%` maximum support, no Band D cap, `20%` taper, tariff income, UC assessed income/capital branch with weekly earnings disregard, and gross-income non-dependant deductions. Current 2026/27 papers confirm no change from the older detailed scheme. | https://lewisham.gov.uk/myservices/benefits/council-tax-reduction-scheme |
 | Mid Suffolk | Implemented | Hybrid scheme matching Babergh's structure: non-UC legacy full support with `20%` taper, part-block tariff income, and prescribed non-dependant deductions; UC cases use Mid Suffolk monthly DWP-notified earnings contribution bands. The Mid Suffolk-hosted 2026/27 PDF appears to contain an Ipswich template reference in paragraph 1.1, but the Mid Suffolk live page identifies this as Mid Suffolk's scheme. The separate Section 13A Council Tax Support top-up of up to `GBP 50` is noted but not modeled as CTR. | https://www.midsuffolk.gov.uk/documents/d/asset-library-54706/msdc-ctr-scheme-2026_27-v4-pdf |
 | Redbridge | Implemented | Categorical percentage-of-liability scheme with `73%` disability support, `60%`/`50%` not-working support, `46%`/`36%` working support under local earnings thresholds, `GBP 16,000` capital limit, `GBP 10` weekly minimum award, and a UC exception to the non-dependant couple rule | https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf |
+| Slough | Implemented | Weekly earned-income banded discount scheme with `70%` support for no earned income or passported no-earnings cases, positive-earnings rates from `50%` to `0%`, Band C liability cap, strict `GBP 6,000` capital cutoff, and `GBP 5`/`GBP 11` weekly non-dependant deductions. | https://www.slough.gov.uk/downloads/file/5730/council-tax-support-scheme-2026-27 |
 
 ## Reviewed Candidate Queue
 

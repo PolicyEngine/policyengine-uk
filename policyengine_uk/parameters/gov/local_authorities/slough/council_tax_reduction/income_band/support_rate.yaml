@@ -1,0 +1,41 @@
+description: Council Tax Support rate by weekly earned income band under the Slough working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 115.39
+    amount:
+      2026-04-01: 0.32
+  - threshold:
+      2026-04-01: 184.62
+    amount:
+      2026-04-01: 0.2
+  - threshold:
+      2026-04-01: 253.85
+    amount:
+      2026-04-01: 0.15
+  - threshold:
+      2026-04-01: 323.08
+    amount:
+      2026-04-01: 0.1
+  - threshold:
+      2026-04-01: 392.31
+    amount:
+      2026-04-01: 0.05
+  - threshold:
+      2026-04-01: 461.54
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Slough Council Tax Support weekly earnings band support rate
+  reference:
+    - title: Slough Borough Council Council Tax Support Scheme 2026/27, Schedule 1
+      href: https://www.slough.gov.uk/downloads/file/5730/council-tax-support-scheme-2026-27
+    - title: Slough Borough Council, income bands for Council Tax Support 2026-27
+      href: https://www.slough.gov.uk/council-tax-support/calculate-council-tax-support-2026-27/2

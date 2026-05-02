@@ -1,0 +1,11 @@
+description: Council Tax Support rate when a Slough working-age claimant has no earned income.
+values:
+  2026-04-01: 0.7
+metadata:
+  unit: /1
+  label: Slough Council Tax Support no-earned-income support rate
+  reference:
+    - title: Slough Borough Council Council Tax Support Scheme 2026/27, Schedule 1 paragraphs 3 and 9
+      href: https://www.slough.gov.uk/downloads/file/5730/council-tax-support-scheme-2026-27
+    - title: Slough Borough Council, key features of the Council Tax Support Scheme
+      href: https://www.slough.gov.uk/council-tax-support/calculate-council-tax-support-2026-27

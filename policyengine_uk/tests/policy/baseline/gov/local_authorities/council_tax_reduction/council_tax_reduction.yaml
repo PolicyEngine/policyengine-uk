@@ -19764,3 +19764,326 @@
     ipswich_council_tax_reduction_is_local_scheme: true
     ipswich_council_tax_reduction: 1_800
     council_tax_reduction: 1_800
+
+- name: Slough gives 70 percent support to a no-earned-income working-age claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    slough_council_tax_reduction_support_rate: 0.7
+    slough_council_tax_reduction: 1_120
+    council_tax_reduction: 1_120
+
+- name: Slough gives 50 percent support for positive earned income below 115.38 pounds per week
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    slough_council_tax_reduction_weekly_earnings: 100
+    slough_council_tax_reduction_support_rate: 0.5
+    slough_council_tax_reduction: 800
+    council_tax_reduction: 800
+
+- name: Slough applies the Band C liability cap before the earnings discount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    slough_council_tax_reduction_maximum_eligible_liability: 1_600
+    slough_council_tax_reduction: 1_120
+    council_tax_reduction: 1_120
+
+- name: Slough excludes working-age claimants with capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 6_001
+  output:
+    slough_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Slough uses DWP-notified UC earnings before the UC work allowance for income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    uc_earned_income: 0
+    slough_council_tax_reduction_weekly_earnings: 100
+    slough_council_tax_reduction_support_rate: 0.5
+    slough_council_tax_reduction: 800
+    council_tax_reduction: 800
+
+- name: Slough applies the high weekly non-dependant deduction after the support rate
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    slough_council_tax_reduction_non_dep_deductions: [572, 0]
+    slough_council_tax_reduction: [548, 0]
+    council_tax_reduction: 548
+
+- name: Slough gives the low deduction for UC non-dependants with no UC earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+        slough_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    slough_council_tax_reduction_non_dep_deductions: [260, 0]
+    slough_council_tax_reduction: [860, 0]
+    council_tax_reduction: 860
+
+- name: Slough applies one deduction for a non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+      non_dep_partner:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    slough_council_tax_reduction_non_dep_deductions: [572, 0]
+    slough_council_tax_reduction: [548, 0]
+    council_tax_reduction: 548
+
+- name: Slough local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SLOUGH
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    slough_council_tax_reduction_is_local_scheme: true
+    slough_council_tax_reduction: 1_120
+    council_tax_reduction: 1_120
