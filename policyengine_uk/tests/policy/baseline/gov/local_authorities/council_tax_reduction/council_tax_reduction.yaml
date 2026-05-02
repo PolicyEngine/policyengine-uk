@@ -20570,6 +20570,122 @@
     basildon_council_tax_reduction: 900
     council_tax_reduction: 900
 
+- name: Basildon deducts eligible childcare costs from UC-assessed earnings before income banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        childcare_expenses: 5_200
+        weekly_hours: 30
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_earned_income: 16_640
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: BASILDON
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    basildon_council_tax_reduction_childcare_deduction: 5_200
+    basildon_council_tax_reduction_weekly_income: 200
+    basildon_council_tax_reduction_support_rate: 0.5
+    basildon_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Basildon treats statutory sick pay as work for childcare deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        statutory_sick_pay: 16_640
+        income_tax: 0
+        national_insurance: 0
+        childcare_expenses: 5_200
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: BASILDON
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    basildon_council_tax_reduction_childcare_deduction: 5_200
+    basildon_council_tax_reduction_weekly_income: 200
+    basildon_council_tax_reduction_support_rate: 0.5
+    basildon_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Basildon applies the two-or-more-dependants top income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 19_240
+        income_tax: 0
+        national_insurance: 0
+      child:
+        age: 6
+      child_2:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, child, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child, child_2]
+        country: ENGLAND
+        local_authority: BASILDON
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    basildon_council_tax_reduction_weekly_income: 350
+    basildon_council_tax_reduction_support_rate: 0.25
+    basildon_council_tax_reduction: 450
+    council_tax_reduction: 450
+
 - name: Basildon follows the adopted PDF and allows exactly 6000 pounds of capital
   period: 2026
   absolute_error_margin: 0.5
@@ -20624,6 +20740,72 @@
         council_tax_band: D
         council_tax: 1_800
         savings: 6_001
+  output:
+    basildon_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Basildon uses UC-assessed capital at the 6000 pound boundary
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_assessable_capital: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASILDON
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    basildon_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Basildon excludes UC-assessed capital above 6000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_assessable_capital: 6_001
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASILDON
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
   output:
     basildon_council_tax_reduction: 0
     council_tax_reduction: 0

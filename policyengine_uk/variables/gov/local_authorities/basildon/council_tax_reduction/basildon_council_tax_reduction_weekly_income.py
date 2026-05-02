@@ -26,6 +26,9 @@ class basildon_council_tax_reduction_weekly_income(Variable):
             * (
                 person("employment_income", period)
                 + person("self_employment_income", period)
+                + person("statutory_sick_pay", period)
+                + person("statutory_maternity_pay", period)
+                + person("statutory_paternity_pay", period)
             )
         )
         earnings_deductions = benunit.sum(
@@ -42,7 +45,9 @@ class basildon_council_tax_reduction_weekly_income(Variable):
         non_uc_net_earnings = max_(
             0, gross_earnings - earnings_deductions - childcare_deduction
         )
-        uc_net_earnings = benunit("uc_earned_income", period)
+        uc_net_earnings = max_(
+            0, benunit("uc_earned_income", period) - childcare_deduction
+        )
         net_earnings = where(has_uc_award, uc_net_earnings, non_uc_net_earnings)
         has_earnings = where(has_uc_award, uc_net_earnings > 0, gross_earnings > 0)
         countable_earnings = max_(

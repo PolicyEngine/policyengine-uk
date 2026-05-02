@@ -21,7 +21,22 @@ class basildon_council_tax_reduction_childcare_deduction(Variable):
         earned_income = person("employment_income", period) + person(
             "self_employment_income", period
         )
-        engaged_in_work = (person("weekly_hours", period) > 0) | (earned_income > 0)
+        treated_as_working = (
+            add(
+                person,
+                period,
+                [
+                    "statutory_sick_pay",
+                    "statutory_maternity_pay",
+                ],
+            )
+            > 0
+        )
+        engaged_in_work = (
+            (person("weekly_hours", period) > 0)
+            | (earned_income > 0)
+            | treated_as_working
+        )
         lone_parent_working = benunit("is_lone_parent", period) & benunit.any(
             claimant_or_partner & engaged_in_work
         )
