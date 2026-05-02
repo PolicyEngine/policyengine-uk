@@ -2,7 +2,7 @@
   period: 2024
   input:
     taxable_dividend_income: 0
-    dividend_allowance: 1000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 1000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -12,7 +12,7 @@
   period: 2024
   input:
     taxable_dividend_income: 500
-    dividend_allowance: 1000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 1000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -22,7 +22,7 @@
   period: 2024
   input:
     taxable_dividend_income: 1000
-    dividend_allowance: 1000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 1000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -32,7 +32,7 @@
   period: 2024
   input:
     taxable_dividend_income: 1100
-    dividend_allowance: 1000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 1000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -42,7 +42,7 @@
   period: 2024
   input:
     taxable_dividend_income: 50000
-    dividend_allowance: 2000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 2000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -52,7 +52,7 @@
   period: 2024
   input:
     taxable_dividend_income: 1000000
-    dividend_allowance: 2000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 2000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -62,7 +62,7 @@
   period: 2024
   input:
     taxable_dividend_income: 5000
-    dividend_allowance: 0
+    gov.hmrc.income_tax.allowances.dividend_allowance: 0
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -72,7 +72,7 @@
   period: 2024
   input:
     taxable_dividend_income: 2500.50
-    dividend_allowance: 2000.00
+    gov.hmrc.income_tax.allowances.dividend_allowance: 2000.00
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -82,7 +82,7 @@
   period: 2024
   input:
     taxable_dividend_income: 1000
-    dividend_allowance: 2000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 2000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
@@ -92,7 +92,7 @@
   period: 2024
   input:
     taxable_dividend_income: 1000.01
-    dividend_allowance: 1000
+    gov.hmrc.income_tax.allowances.dividend_allowance: 1000
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:

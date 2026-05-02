@@ -10,7 +10,10 @@ class trading_allowance_deduction(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        trading_allowance = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.trading_allowance
         return min_(
-            person("trading_allowance", period),
+            trading_allowance,
             person("self_employment_income", period),
         )

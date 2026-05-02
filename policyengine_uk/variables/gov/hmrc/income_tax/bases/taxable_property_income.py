@@ -15,5 +15,6 @@ class taxable_property_income(Variable):
     def formula(person, period, parameters):
         return max_(
             0,
-            person("property_income", period) - person("property_allowance", period),
+            person("property_income", period)
+            - person("property_allowance_deduction", period),
         )
