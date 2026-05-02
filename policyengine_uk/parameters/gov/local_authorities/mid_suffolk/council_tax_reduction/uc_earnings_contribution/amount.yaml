@@ -1,0 +1,37 @@
+description: Weekly Council Tax Reduction contribution by monthly Universal Credit assessed earnings under the Mid Suffolk working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0
+  - threshold:
+      2026-04-01: 326
+    amount:
+      2026-04-01: 12
+  - threshold:
+      2026-04-01: 686
+    amount:
+      2026-04-01: 23.08
+  - threshold:
+      2026-04-01: 1_306
+    amount:
+      2026-04-01: 32.77
+  - threshold:
+      2026-04-01: 2_077
+    amount:
+      2026-04-01: 48.69
+  - threshold:
+      2026-04-01: 2_669
+    amount:
+      2026-04-01: 64.15
+metadata:
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Mid Suffolk Council Tax Reduction UC earnings contribution amount
+  reference:
+    - title: Mid Suffolk Council Tax Reduction Scheme 2026/27, Schedule 5
+      href: https://www.midsuffolk.gov.uk/documents/d/asset-library-54706/msdc-ctr-scheme-2026_27-v4-pdf
+    - title: Mid Suffolk Council Tax Reduction live page, income bands and contribution rates for 2026/27
+      href: https://www.midsuffolk.gov.uk/w/council-tax-reduction-low-income

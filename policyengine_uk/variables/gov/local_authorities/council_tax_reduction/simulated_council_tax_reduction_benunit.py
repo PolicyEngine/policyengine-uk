@@ -51,6 +51,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "lancaster_council_tax_reduction",
     "lewisham_council_tax_reduction",
     "merton_council_tax_reduction",
+    "mid_suffolk_council_tax_reduction",
     "newham_council_tax_reduction",
     "oldham_council_tax_reduction",
     "north_norfolk_council_tax_reduction",
@@ -111,6 +112,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         kingston_upon_hull_local_scheme = benunit(
             "kingston_upon_hull_council_tax_reduction_is_local_scheme", period
         )
+        mid_suffolk_local_scheme = benunit(
+            "mid_suffolk_council_tax_reduction_is_local_scheme", period
+        )
         north_yorkshire_local_scheme = benunit(
             "north_yorkshire_council_tax_reduction_is_local_scheme", period
         )
@@ -134,6 +138,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~buckinghamshire_local_scheme
             & ~herefordshire_local_scheme
             & ~kingston_upon_hull_local_scheme
+            & ~mid_suffolk_local_scheme
             & ~north_yorkshire_local_scheme
             & ~somerset_local_scheme
             & ~west_northamptonshire_local_scheme

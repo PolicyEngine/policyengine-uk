@@ -1,0 +1,10 @@
+description: Weekly minimum payable Council Tax Reduction under the Mid Suffolk working-age scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Mid Suffolk Council Tax Reduction minimum weekly award
+  reference:
+    - title: Mid Suffolk Council Tax Reduction Scheme 2026/27, paragraph 57.7
+      href: https://www.midsuffolk.gov.uk/documents/d/asset-library-54706/msdc-ctr-scheme-2026_27-v4-pdf

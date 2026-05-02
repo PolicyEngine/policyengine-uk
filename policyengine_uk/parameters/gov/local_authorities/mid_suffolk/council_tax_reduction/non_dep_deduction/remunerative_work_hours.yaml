@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work under the Mid Suffolk working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Mid Suffolk Council Tax Reduction remunerative work hours threshold
+  reference:
+    - title: Mid Suffolk Council Tax Reduction Scheme 2026/27, paragraphs 6.1 and 58.1
+      href: https://www.midsuffolk.gov.uk/documents/d/asset-library-54706/msdc-ctr-scheme-2026_27-v4-pdf

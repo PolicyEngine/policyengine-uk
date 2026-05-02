@@ -192,6 +192,10 @@ def is_merton(local_authority):
     return local_authority == LocalAuthority.MERTON
 
 
+def is_mid_suffolk(local_authority):
+    return local_authority == LocalAuthority.MID_SUFFOLK
+
+
 def is_newham(local_authority):
     return local_authority == LocalAuthority.NEWHAM
 
@@ -522,6 +526,12 @@ def is_merton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
 
 
+def is_mid_suffolk_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_mid_suffolk(local_authority)
+    )
+
+
 def is_newham_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_newham(local_authority)
 
@@ -722,6 +732,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_lancaster_working_age(local_authority, country, has_pensioner)
         | is_lewisham_working_age(local_authority, country, has_pensioner)
         | is_merton_working_age(local_authority, country, has_pensioner)
+        | is_mid_suffolk_working_age(local_authority, country, has_pensioner)
         | is_newham_working_age(local_authority, country, has_pensioner)
         | is_oldham_working_age(local_authority, country, has_pensioner)
         | is_norwich_working_age(local_authority, country, has_pensioner)
