@@ -16956,3 +16956,717 @@
     north_northamptonshire_council_tax_reduction_non_dep_deductions: [0, 0]
     north_northamptonshire_council_tax_reduction: [1_350, 0]
     council_tax_reduction: 1_350
+
+- name: West Northamptonshire gives 80 percent support to a working-age claimant with no income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: West Northamptonshire gives 100 percent support to care leavers aged up to 25
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 25
+        west_northamptonshire_council_tax_reduction_care_leaver: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 24
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: West Northamptonshire gives 100 percent support to protected war pension cases
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+        west_northamptonshire_council_tax_reduction_war_pension_protected: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: West Northamptonshire applies the 20 percent taper to excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 5_826.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction: 1_232
+    council_tax_reduction: 1_232
+
+- name: West Northamptonshire rounds partial capital tariff blocks up
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    west_northamptonshire_council_tax_reduction_tariff_income: 52
+    west_northamptonshire_council_tax_reduction: 1_429.60
+    council_tax_reduction: 1_429.60
+
+- name: West Northamptonshire excludes ordinary claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000.01
+  output:
+    west_northamptonshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: West Northamptonshire disregards capital for income-based benefit claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+        income_support: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 100_000
+  output:
+    west_northamptonshire_council_tax_reduction_tariff_income: 0
+    west_northamptonshire_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: West Northamptonshire uses the pre-deduction UC award for UC applicable income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 1_000
+        universal_credit_pre_benefit_cap: 1_200
+        benefit_cap_reduction: 200
+        uc_earned_income: 1_040
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 1_000
+    west_northamptonshire_council_tax_reduction_uc_applicable_income: 2_240
+    west_northamptonshire_council_tax_reduction: 1_192
+    council_tax_reduction: 1_192
+
+- name: West Northamptonshire uses UC-assessed capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_maximum_amount: 1_000
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 100_000
+  output:
+    west_northamptonshire_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: West Northamptonshire excludes UC claimants over the UC-assessed capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_maximum_amount: 1_000
+        uc_assessable_capital: 16_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: West Northamptonshire applies the top remunerative-work non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_non_dep_deductions: [829.40, 0]
+    west_northamptonshire_council_tax_reduction: [610.60, 0]
+    council_tax_reduction: 610.60
+
+- name: West Northamptonshire treats low-hours positive earnings as not remunerative work
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 780
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    west_northamptonshire_council_tax_reduction: [1_169.60, 0]
+    council_tax_reduction: 1_169.60
+
+- name: West Northamptonshire uses joint gross income for a non-UC non-dependant couple's single deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_non_dep_deductions: [691.60, 0]
+    west_northamptonshire_council_tax_reduction: [1_308.40, 0]
+    council_tax_reduction: 1_308.40
+
+- name: West Northamptonshire applies separate non-dependant deductions to two-earner UC couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+      non_dep_partner:
+        age: 25
+        employment_income: 15_600
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 12_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_non_dep_deductions: [1_102.40, 0]
+    west_northamptonshire_council_tax_reduction: [897.60, 0]
+    council_tax_reduction: 897.60
+
+- name: West Northamptonshire exempts the no-earned member of a mixed UC non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+        west_northamptonshire_council_tax_reduction_non_dep_uc_earned_income: 31_720
+      non_dep_partner:
+        age: 25
+        west_northamptonshire_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 12_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 2_500
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_non_dep_deductions: [829.40, 0]
+    west_northamptonshire_council_tax_reduction: [1_170.60, 0]
+    council_tax_reduction: 1_170.60
+
+- name: West Northamptonshire waives deductions for source-defined non-dependant exclusions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+        west_northamptonshire_council_tax_reduction_non_dep_source_exemption: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    west_northamptonshire_council_tax_reduction: [1_440, 0]
+    council_tax_reduction: 1_440
+
+- name: West Northamptonshire waives deductions for source-defined claimant disability exemptions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        west_northamptonshire_council_tax_reduction_claimant_source_non_dep_exemption: true
+      non_dep:
+        age: 25
+        employment_income: 31_720
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    west_northamptonshire_council_tax_reduction: [1_440, 0]
+    council_tax_reduction: 1_440
+
+- name: West Northamptonshire local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_maximum_amount: 1_000
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_is_local_scheme: true
+    west_northamptonshire_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: West Northamptonshire keeps relevant-period pension-age UC claimants in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+        west_northamptonshire_council_tax_reduction_uc_relevant_period_pensioner: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_maximum_amount: 1_000
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_NORTHAMPTONSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_northamptonshire_council_tax_reduction_is_local_scheme: false
+    west_northamptonshire_council_tax_reduction: 0

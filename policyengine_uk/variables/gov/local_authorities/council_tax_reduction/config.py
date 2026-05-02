@@ -260,6 +260,10 @@ def is_westmorland_and_furness(local_authority):
     return local_authority == LocalAuthority.WESTMORLAND_AND_FURNESS
 
 
+def is_west_northamptonshire(local_authority):
+    return local_authority == LocalAuthority.WEST_NORTHAMPTONSHIRE
+
+
 def is_westminster(local_authority):
     return local_authority == LocalAuthority.WESTMINSTER
 
@@ -598,6 +602,14 @@ def is_westmorland_and_furness_working_age(local_authority, country, has_pension
     )
 
 
+def is_west_northamptonshire_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_west_northamptonshire(local_authority)
+    )
+
+
 def is_westminster_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_westminster(local_authority)
@@ -709,6 +721,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_westmorland_and_furness_working_age(
             local_authority, country, has_pensioner
         )
+        | is_west_northamptonshire_working_age(local_authority, country, has_pensioner)
         | is_westminster_working_age(local_authority, country, has_pensioner)
         | is_worthing_working_age(local_authority, country, has_pensioner)
         | is_dudley_working_age(local_authority, country, has_pensioner)

@@ -1,0 +1,12 @@
+description: Maximum Council Tax Reduction rate for West Northamptonshire working-age applicants in the care-leaver or protected war-pension classes.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: West Northamptonshire full-support working-age CTR maximum rate
+  reference:
+    - title: West Northamptonshire Local Council Tax Reduction Scheme 2026/27 report, recommendations 3.1 and report background 5.3
+      href: https://westnorthants.moderngov.co.uk/documents/s25215/Item%2010%20-%20CTRS%2026-27.pdf
+    - title: West Northamptonshire Council CTR Scheme 2025/26, paragraphs 29(2A)-29(2B)
+      href: https://cms.westnorthants.gov.uk/media/2065/download
