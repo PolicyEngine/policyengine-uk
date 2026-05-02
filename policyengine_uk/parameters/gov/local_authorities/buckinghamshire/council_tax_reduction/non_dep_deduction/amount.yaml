@@ -1,0 +1,12 @@
+description: Flat weekly non-dependant deduction under the Buckinghamshire working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 5
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Buckinghamshire Council Tax Reduction non-dependant deduction
+  reference:
+    - title: Buckinghamshire Council Tax Reduction Scheme 2026/27, section 48.5
+      href: https://buckinghamshire.moderngov.co.uk/documents/s115727/Appendix%204%20Council%20Tax%20Reduction%20Scheme%20Policy.pdf
+    - title: Buckinghamshire Council Tax Reduction live page, non-dependants
+      href: https://www.buckinghamshire.gov.uk/council-tax/help-available-if-you-are-struggling-to-pay-your-council-tax/if-you-are-having-difficulty-paying-your-council-tax/

@@ -17670,3 +17670,653 @@
   output:
     west_northamptonshire_council_tax_reduction_is_local_scheme: false
     west_northamptonshire_council_tax_reduction: 0
+
+- name: Buckinghamshire gives 100 percent support to a no-income single working-age claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_weekly_income: 0
+    buckinghamshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Buckinghamshire applies the standard earnings disregard before placing a single claimant in Band 2
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 9_100
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_weekly_income: 150
+    buckinghamshire_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Buckinghamshire excludes working-age claimants with exactly 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    buckinghamshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Buckinghamshire passported income-based benefit claimants into Band 1
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 30_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        income_support: 500
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Buckinghamshire applies the capital cliff to passported income-based benefit claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        income_support: 500
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    buckinghamshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Buckinghamshire uses the couple with two children income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 23_000
+      partner:
+        age: 35
+      child:
+        age: 6
+      second_child:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, partner, child, second_child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child, second_child]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_weekly_income: 365.99
+    buckinghamshire_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Buckinghamshire applies the disability income disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 18_200
+        pip_dl: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_weekly_income: 244.68
+    buckinghamshire_council_tax_reduction: 450
+    council_tax_reduction: 450
+
+- name: Buckinghamshire applies the disability disregard for PIP received by a non-dependant household member
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 18_200
+      non_dep:
+        age: 25
+        pip_m: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction: [385, 0]
+    council_tax_reduction: 385
+
+- name: Buckinghamshire disregards source-listed Universal Credit elements
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 20_800
+        uc_housing_costs_element: 5_200
+        uc_carer_element: 2_600
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_weekly_income: 250
+    buckinghamshire_council_tax_reduction: 450
+    council_tax_reduction: 450
+
+- name: Buckinghamshire uses UC-assessed earnings in UC income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_earned_income: 7_800
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_weekly_income: 144.23
+    buckinghamshire_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Buckinghamshire uses UC-assessed capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 100_000
+  output:
+    buckinghamshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Buckinghamshire excludes UC claimants with exactly 6,000 pounds of UC-assessed capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_assessable_capital: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Buckinghamshire applies the flat non-dependant deduction before the income-band percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 9_100
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_non_dep_deductions: [260, 0]
+    buckinghamshire_council_tax_reduction: [1_155, 0]
+    council_tax_reduction: 1_155
+
+- name: Buckinghamshire applies one flat deduction for a non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+      non_dep_partner:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_non_dep_deductions: [260, 0]
+    buckinghamshire_council_tax_reduction: [1_540, 0]
+    council_tax_reduction: 1_540
+
+- name: Buckinghamshire exempts UC non-dependants with no UC earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        buckinghamshire_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    buckinghamshire_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Buckinghamshire subtracts source-disregarded income not otherwise modeled
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 2_600
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        buckinghamshire_council_tax_reduction_source_disregarded_income: 2_600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_weekly_income: 0
+    buckinghamshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Buckinghamshire keeps mixed-age couples in the local working-age scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_is_local_scheme: true
+    buckinghamshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Buckinghamshire local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_is_local_scheme: true
+    buckinghamshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Buckinghamshire keeps UC transitional-protection pensioners in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_assessable_capital: 0
+        buckinghamshire_council_tax_reduction_uc_transitional_protection_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BUCKINGHAMSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    buckinghamshire_council_tax_reduction_is_local_scheme: false
+    buckinghamshire_council_tax_reduction: 0

@@ -18,6 +18,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "bristol_council_tax_reduction",
     "broadland_council_tax_reduction",
     "bury_council_tax_reduction",
+    "buckinghamshire_council_tax_reduction",
     "camden_council_tax_reduction",
     "chesterfield_council_tax_reduction",
     "crawley_council_tax_reduction",
@@ -97,6 +98,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         has_pensioner = benunit.household(
             "council_tax_reduction_household_has_pensioner", period
         )
+        buckinghamshire_local_scheme = benunit(
+            "buckinghamshire_council_tax_reduction_is_local_scheme", period
+        )
         herefordshire_local_scheme = benunit(
             "herefordshire_council_tax_reduction_is_local_scheme", period
         )
@@ -122,6 +126,7 @@ class simulated_council_tax_reduction_benunit(Variable):
 
         england_pensioners = (
             is_england_pensioner_scheme(country, has_pensioner)
+            & ~buckinghamshire_local_scheme
             & ~herefordshire_local_scheme
             & ~kingston_upon_hull_local_scheme
             & ~north_yorkshire_local_scheme

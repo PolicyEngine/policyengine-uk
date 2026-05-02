@@ -1,0 +1,33 @@
+description: Council Tax Reduction rate by weekly net income band for Buckinghamshire single working-age households without children.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 125.01
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 175.01
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 225.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 275.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Buckinghamshire single weekly net-income CTR rate
+  reference:
+    - title: Buckinghamshire Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://buckinghamshire.moderngov.co.uk/documents/s115727/Appendix%204%20Council%20Tax%20Reduction%20Scheme%20Policy.pdf
+    - title: Buckinghamshire Council Tax Reduction live page, income bands for 2026 to 2027
+      href: https://www.buckinghamshire.gov.uk/council-tax/help-available-if-you-are-struggling-to-pay-your-council-tax/if-you-are-having-difficulty-paying-your-council-tax/

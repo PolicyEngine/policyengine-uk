@@ -54,6 +54,10 @@ def is_bury(local_authority):
     return local_authority == LocalAuthority.BURY
 
 
+def is_buckinghamshire(local_authority):
+    return local_authority == LocalAuthority.BUCKINGHAMSHIRE
+
+
 def is_camden(local_authority):
     return local_authority == LocalAuthority.CAMDEN
 
@@ -358,6 +362,14 @@ def is_bury_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_bury(local_authority)
 
 
+def is_buckinghamshire_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_buckinghamshire(local_authority)
+    )
+
+
 def is_camden_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_camden(local_authority)
 
@@ -644,6 +656,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_bristol_working_age(local_authority, country, has_pensioner)
         | is_broadland_working_age(local_authority, country, has_pensioner)
         | is_bury_working_age(local_authority, country, has_pensioner)
+        | is_buckinghamshire_working_age(local_authority, country, has_pensioner)
         | is_camden_working_age(local_authority, country, has_pensioner)
         | is_chesterfield_working_age(local_authority, country, has_pensioner)
         | is_crawley_working_age(local_authority, country, has_pensioner)
