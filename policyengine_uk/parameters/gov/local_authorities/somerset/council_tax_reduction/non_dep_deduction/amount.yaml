@@ -1,0 +1,13 @@
+description: Flat weekly non-dependant deduction for Somerset Council Tax Reduction.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Somerset CTR non-dependant deduction
+  reference:
+    - title: Somerset Council Tax Reduction Scheme 2026/27, Schedule 1 paragraphs 8 to 10
+      href: https://somerset.moderngov.co.uk/documents/s59784/05a%20APPENDIX%203%20Somerset%20S13A%20202627%20Scheme%20DRAFT.pdf
+    - title: Somerset Council Tax Reduction live 2026/27 non-dependant deduction
+      href: https://www.somerset.gov.uk/benefits-and-payments/council-tax-reduction/
+

@@ -14217,6 +14217,607 @@
     westmorland_and_furness_council_tax_reduction: [2_500, 0]
     council_tax_reduction: 2_500
 
+- name: Somerset gives Band D full support to a single working-age claimant with no income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    somerset_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+    council_tax_less_benefit: 0
+
+- name: Somerset caps Band H zero-income support at the Band D liability
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    somerset_council_tax_reduction_maximum_eligible_liability: 1_800
+    somerset_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset applies the 25 pound earnings disregard before selecting the income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_916
+        income_tax: 0
+        national_insurance: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_weekly_income: 108
+    somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset applies the 30 pound disability income disregard before selecting the income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+        miscellaneous_income: 10_140
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_disabled_income_disregard: true
+    somerset_council_tax_reduction_weekly_income: 165
+    somerset_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Somerset disregards Housing Benefit and Carer's Allowance from weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        carers_allowance: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        housing_benefit: 5_200
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_weekly_income: 0
+    somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset disregards Carer's Allowance from UC unearned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        carers_allowance: 6_240
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 5_200
+        uc_housing_costs_element: 5_200
+        uc_unearned_income: 6_240
+        uc_assessable_capital: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_weekly_income: 0
+    somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset disregards the source-specified ESA support component
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        esa_contrib: 6_240
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        somerset_council_tax_reduction_esa_support_component: 6_240
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_weekly_income: 0
+    somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset places a single claimant with 180 pounds weekly income in Band 3
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 9_360
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_weekly_income: 180
+    somerset_council_tax_reduction: 450
+    council_tax_reduction: 450
+
+- name: Somerset family bands count qualifying young people and exclude their earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 15_600
+      child:
+        age: 8
+      young_person:
+        age: 18
+        current_education: POST_SECONDARY
+        employment_income: 30_000
+    benunits:
+      benunit:
+        members: [claimant, child, young_person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child, young_person]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_weekly_income: 300
+    somerset_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Somerset deducts one non-dependant couple amount after applying the support percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 9_360
+      non_dep:
+        age: 25
+      non_dep_partner:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 5_000
+        savings: 0
+  output:
+    somerset_council_tax_reduction_non_dep_deductions: [520, 0]
+    somerset_council_tax_reduction: [730, 0]
+    council_tax_reduction: 730
+
+- name: Somerset waives deductions for source-defined non-dependant exclusions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        somerset_council_tax_reduction_non_dep_source_exemption: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_non_dep_deductions: [0, 0]
+    somerset_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Somerset allows ordinary claimants with exactly 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset excludes ordinary claimants with capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    somerset_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Somerset disregards passported capital up to 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        income_support: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+  output:
+    somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset uses UC assessed income and capital and disregards the UC housing element
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 6_000
+        uc_earned_income: 5_200
+        uc_unearned_income: 0
+        uc_housing_costs_element: 4_000
+        uc_assessable_capital: 5_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000
+  output:
+    somerset_council_tax_reduction_weekly_income: 113.46
+    somerset_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Somerset excludes UC claimants with UC-assessed capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        uc_assessable_capital: 6_000.01
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Somerset local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        uc_assessable_capital: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_is_local_scheme: true
+    somerset_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Somerset keeps relevant-period pension-age UC claimants in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        uc_assessable_capital: 0
+        somerset_council_tax_reduction_uc_relevant_period_pensioner: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    somerset_council_tax_reduction_is_local_scheme: false
+    somerset_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: North Yorkshire gives Band A full support to a single working-age claimant with no income
   period: 2026
   absolute_error_margin: 0.5

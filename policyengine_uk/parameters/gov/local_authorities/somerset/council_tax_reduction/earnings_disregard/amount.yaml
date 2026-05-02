@@ -1,0 +1,13 @@
+description: Weekly net earnings disregard for Somerset Council Tax Reduction.
+values:
+  2026-04-01: 25
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Somerset CTR weekly earnings disregard
+  reference:
+    - title: Somerset Council Tax Reduction Scheme 2026/27, paragraph 20.2
+      href: https://somerset.moderngov.co.uk/documents/s59784/05a%20APPENDIX%203%20Somerset%20S13A%20202627%20Scheme%20DRAFT.pdf
+    - title: Somerset Council Tax Reduction live 2026/27 income disregards
+      href: https://www.somerset.gov.uk/benefits-and-payments/council-tax-reduction/
+

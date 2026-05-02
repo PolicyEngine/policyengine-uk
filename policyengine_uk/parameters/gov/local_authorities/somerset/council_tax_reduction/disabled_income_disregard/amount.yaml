@@ -1,0 +1,13 @@
+description: Weekly income disregard for Somerset CTR households that would qualify for a disability premium or disabled child premium.
+values:
+  2026-04-01: 30
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Somerset CTR disabled household income disregard
+  reference:
+    - title: Somerset Council Tax Reduction Scheme 2026/27, Schedule 2 paragraph 72
+      href: https://somerset.moderngov.co.uk/documents/s59784/05a%20APPENDIX%203%20Somerset%20S13A%20202627%20Scheme%20DRAFT.pdf
+    - title: Somerset Council Tax Reduction live 2026/27 income disregards
+      href: https://www.somerset.gov.uk/benefits-and-payments/council-tax-reduction/
+

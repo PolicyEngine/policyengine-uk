@@ -57,6 +57,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "oxford_council_tax_reduction",
     "redbridge_council_tax_reduction",
     "sefton_council_tax_reduction",
+    "somerset_council_tax_reduction",
     "south_norfolk_council_tax_reduction",
     "southwark_council_tax_reduction",
     "st_albans_council_tax_reduction",
@@ -103,6 +104,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         north_yorkshire_local_scheme = benunit(
             "north_yorkshire_council_tax_reduction_is_local_scheme", period
         )
+        somerset_local_scheme = benunit(
+            "somerset_council_tax_reduction_is_local_scheme", period
+        )
         westmorland_and_furness_local_scheme = benunit(
             "westmorland_and_furness_council_tax_reduction_is_local_scheme",
             period,
@@ -115,6 +119,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~herefordshire_local_scheme
             & ~kingston_upon_hull_local_scheme
             & ~north_yorkshire_local_scheme
+            & ~somerset_local_scheme
             & ~westmorland_and_furness_local_scheme
         )
         wales = is_wales_scheme(country)
