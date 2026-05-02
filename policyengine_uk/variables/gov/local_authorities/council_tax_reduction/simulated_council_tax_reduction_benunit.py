@@ -9,6 +9,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
 LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "adur_council_tax_reduction",
     "babergh_council_tax_reduction",
+    "basildon_council_tax_reduction",
     "barking_and_dagenham_council_tax_reduction",
     "barnet_council_tax_reduction",
     "basingstoke_and_deane_council_tax_reduction",
@@ -106,6 +107,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         babergh_local_scheme = benunit(
             "babergh_council_tax_reduction_is_local_scheme", period
         )
+        basildon_local_scheme = benunit(
+            "basildon_council_tax_reduction_is_local_scheme", period
+        )
         buckinghamshire_local_scheme = benunit(
             "buckinghamshire_council_tax_reduction_is_local_scheme", period
         )
@@ -147,6 +151,7 @@ class simulated_council_tax_reduction_benunit(Variable):
         england_pensioners = (
             is_england_pensioner_scheme(country, has_pensioner)
             & ~babergh_local_scheme
+            & ~basildon_local_scheme
             & ~buckinghamshire_local_scheme
             & ~herefordshire_local_scheme
             & ~ipswich_local_scheme

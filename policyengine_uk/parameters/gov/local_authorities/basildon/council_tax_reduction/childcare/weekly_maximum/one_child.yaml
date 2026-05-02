@@ -1,0 +1,10 @@
+description: Maximum weekly childcare costs deducted from earnings for Basildon Council Tax Reduction with one eligible child.
+values:
+  2026-04-01: 175
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Basildon Council Tax Reduction one-child weekly childcare deduction cap
+  reference:
+    - title: Basildon Council Tax Reduction Scheme 2026/27, paragraph 14.3
+      href: https://www.basildon.gov.uk/media/11563/Basildon-Council-Council-Tax-Reduction-Scheme-2026-27/pdf/Basildon_S13A_202627_Final.pdf?m=1771316212763

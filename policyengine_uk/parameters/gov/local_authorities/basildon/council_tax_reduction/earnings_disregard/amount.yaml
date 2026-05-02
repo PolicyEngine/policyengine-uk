@@ -1,0 +1,10 @@
+description: Weekly earnings disregard under the Basildon working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Basildon Council Tax Reduction earnings disregard
+  reference:
+    - title: Basildon Council Tax Reduction Scheme 2026/27, paragraphs 12.6, 23.2, and 25.2
+      href: https://www.basildon.gov.uk/media/11563/Basildon-Council-Council-Tax-Reduction-Scheme-2026-27/pdf/Basildon_S13A_202627_Final.pdf?m=1771316212763
