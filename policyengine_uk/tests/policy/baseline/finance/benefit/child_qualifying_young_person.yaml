@@ -1,0 +1,216 @@
+- name: Universal Credit qualifying young person requires non-advanced education or approved training
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      child:
+        age: 15
+      not_in_education:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+      in_fe:
+        age: 18
+        current_education: POST_SECONDARY
+      in_he:
+        age: 18
+        current_education: TERTIARY
+      in_training:
+        age: 19
+        age_started_or_accepted_current_education_or_training: 18
+        current_education: NOT_IN_EDUCATION
+        is_in_approved_training: true
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+      too_old:
+        age: 20
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members: [child, not_in_education, in_fe, in_he, in_training, too_old]
+    households:
+      household:
+        members: [child, not_in_education, in_fe, in_he, in_training, too_old]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false, true, false, true, false]
+
+- name: Qualifying young person aged 19 requires education or training entry before the limit
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      started_before_limit:
+        age: 19
+        age_started_or_accepted_current_education_or_training: 18
+        current_education: POST_SECONDARY
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+      not_started_before_limit:
+        age: 19
+        current_education: POST_SECONDARY
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+      started_at_limit:
+        age: 19
+        age_started_or_accepted_current_education_or_training: 19
+        current_education: POST_SECONDARY
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+      under_entry_age_limit:
+        age: 18
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members:
+          [
+            started_before_limit,
+            not_started_before_limit,
+            started_at_limit,
+            under_entry_age_limit,
+          ]
+    households:
+      household:
+        members:
+          [
+            started_before_limit,
+            not_started_before_limit,
+            started_at_limit,
+            under_entry_age_limit,
+          ]
+  output:
+    is_qualifying_young_person_for_universal_credit: [true, false, false, true]
+    is_qualifying_young_person_for_child_tax_credit: [true, false, false, true]
+    is_qualifying_young_person_for_child_benefit: [true, false, false, true]
+    is_qualifying_young_person_for_pension_credit: [true, false, false, true]
+
+- name: Universal Credit qualifying young person aged 19 requires being before terminal date
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      before_terminal_date:
+        age: 19
+        age_started_or_accepted_current_education_or_training: 18
+        current_education: POST_SECONDARY
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+      after_terminal_date:
+        age: 19
+        age_started_or_accepted_current_education_or_training: 18
+        current_education: POST_SECONDARY
+      under_terminal_date_age_limit:
+        age: 18
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members:
+          [before_terminal_date, after_terminal_date, under_terminal_date_age_limit]
+    households:
+      household:
+        members:
+          [before_terminal_date, after_terminal_date, under_terminal_date_age_limit]
+  output:
+    is_qualifying_young_person_for_universal_credit: [true, false, true]
+    is_qualifying_young_person_for_child_tax_credit: [true, true, true]
+    is_qualifying_young_person_for_child_benefit: [true, true, true]
+    is_qualifying_young_person_for_pension_credit: [true, true, true]
+
+- name: Universal Credit qualifying young person excludes people receiving adult benefits in own right
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      qualifying_young_person:
+        age: 17
+        current_education: POST_SECONDARY
+      claimant:
+        age: 17
+        current_education: POST_SECONDARY
+        receives_benefits_in_own_right: true
+    benunits:
+      benunit:
+        members: [qualifying_young_person, claimant]
+    households:
+      household:
+        members: [qualifying_young_person, claimant]
+  output:
+    is_qualifying_young_person_for_universal_credit: [true, false]
+
+- name: Child age limit parameters are programme-specific
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    gov.dwp.universal_credit.elements.child.eligibility.child_age_limit: 15
+    age: 15
+    current_education: NOT_IN_EDUCATION
+  output:
+    is_child_for_universal_credit: false
+    is_child_for_child_tax_credit: true
+    is_child_for_child_benefit: true
+    is_child_for_pension_credit: true
+
+- name: Demographic child index excludes qualifying young people
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+      demographic_child:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+      qualifying_young_person:
+        age: 18
+        current_education: POST_SECONDARY
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, demographic_child, qualifying_young_person, child]
+    households:
+      household:
+        members: [parent, demographic_child, qualifying_young_person, child]
+  output:
+    child_index: [-1, 1, -1, 2]
+    is_eldest_child: [false, true, false, false]
+
+- name: Universal Credit child index uses child or qualifying young person rules
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+      looked_after_child:
+        age: 12
+        is_looked_after_by_local_authority: true
+      qualifying_young_person:
+        age: 18
+        current_education: POST_SECONDARY
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, looked_after_child, qualifying_young_person, child]
+    households:
+      household:
+        members: [parent, looked_after_child, qualifying_young_person, child]
+  output:
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false, true, true]
+    uc_child_index: [-1, -1, 1, 2]
+
+- name: Child Tax Credit and Pension Credit exclude looked-after children
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 67
+      looked_after_child:
+        age: 12
+        is_looked_after_by_local_authority: true
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, looked_after_child, child]
+    households:
+      household:
+        members: [parent, looked_after_child, child]
+  output:
+    is_child_or_qualifying_young_person_for_child_tax_credit: [false, false, true]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false, true]

@@ -10,15 +10,13 @@ class child_index(Variable):
 
     def formula(person, period, parameters):
         # The child index, by age, descending (e.g. "first child" = 1)
+        is_child = person("is_child", period)
         child_ranking = (
             person.get_rank(
                 person.benunit,
                 -person("age", period),
+                condition=is_child,
             )
             + 1
         )
-        # Fill in adult values
-        values = where(person("is_child", period), child_ranking, 100)
-        # Base to 0
-        values = values - person.benunit.min(values) + 1
-        return where(person("is_child", period), values, -1)
+        return where(is_child, child_ranking, -1)

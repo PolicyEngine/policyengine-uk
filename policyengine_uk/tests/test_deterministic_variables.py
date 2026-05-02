@@ -7,7 +7,7 @@ These tests verify that variables which previously used random() now:
 """
 
 import pytest
-from policyengine_uk import Simulation
+from policyengine_uk import CountryTaxBenefitSystem, Simulation
 
 
 class TestDefaultValues:
@@ -78,6 +78,77 @@ class TestDefaultValues:
         )
         result = sim.calculate("is_disabled_for_benefits", 2024)
         assert result[0] == False
+
+    def test_pip_categories_default_to_none(self):
+        sim = Simulation(
+            situation={
+                "people": {"person": {"age": {2024: 30}}},
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {"household": {"members": ["person"]}},
+            }
+        )
+
+        assert sim.calculate("pip", 2024)[0] == 0
+
+    def test_pip_categories_can_be_set_directly(self):
+        sim = Simulation(
+            situation={
+                "people": {
+                    "person": {
+                        "age": {2024: 30},
+                        "pip_dl_category": {2024: "ENHANCED"},
+                        "pip_m_category": {2024: "STANDARD"},
+                    }
+                },
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {"household": {"members": ["person"]}},
+            }
+        )
+        pip_parameters = sim.tax_benefit_system.parameters(2024).gov.dwp.pip
+        expected = (
+            pip_parameters.daily_living.enhanced + pip_parameters.mobility.standard
+        ) * 52
+
+        assert sim.calculate("pip", 2024)[0] == pytest.approx(expected)
+
+    def test_pip_reported_amounts_are_not_model_inputs(self):
+        system = CountryTaxBenefitSystem()
+
+        assert "pip_dl_reported" not in system.variables
+        assert "pip_m_reported" not in system.variables
+
+    def test_disability_categories_can_be_set_directly(self):
+        sim = Simulation(
+            situation={
+                "people": {
+                    "person": {
+                        "age": {2024: 30},
+                        "dla_sc_category": {2024: "MIDDLE"},
+                        "dla_m_category": {2024: "HIGHER"},
+                        "aa_category": {2024: "LOWER"},
+                    }
+                },
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {"household": {"members": ["person"]}},
+            }
+        )
+        parameters = sim.tax_benefit_system.parameters(2024).gov.dwp
+        expected_dla = (
+            parameters.dla.self_care.middle + parameters.dla.mobility.higher
+        ) * 52
+        expected_aa = parameters.attendance_allowance.lower * 52
+
+        assert sim.calculate("dla", 2024)[0] == pytest.approx(expected_dla)
+        assert sim.calculate("attendance_allowance", 2024)[0] == pytest.approx(
+            expected_aa
+        )
+
+    def test_disability_reported_amounts_are_not_model_inputs(self):
+        system = CountryTaxBenefitSystem()
+
+        assert "attendance_allowance_reported" not in system.variables
+        assert "dla_sc_reported" not in system.variables
+        assert "dla_m_reported" not in system.variables
 
     def test_would_claim_marriage_allowance_defaults_true(self):
         sim = Simulation(

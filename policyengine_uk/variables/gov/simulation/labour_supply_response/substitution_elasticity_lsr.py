@@ -1,0 +1,17 @@
+from policyengine_uk.model_api import *
+
+
+class substitution_elasticity_lsr(Variable):
+    value_type = float
+    entity = Person
+    label = "substitution elasticity of labour supply response"
+    unit = GBP
+    definition_period = YEAR
+    requires_computation_after = "employment_income_behavioral_response"
+
+    def formula(person, period, parameters):
+        lsr = parameters(period).gov.simulation.labour_supply_responses
+        employment_income = max_(person("employment_income_before_lsr", period), 0)
+        wage_change = person("relative_wage_change", period)
+
+        return employment_income * wage_change * lsr.substitution_elasticity

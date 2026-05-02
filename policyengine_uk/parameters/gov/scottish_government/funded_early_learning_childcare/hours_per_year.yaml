@@ -1,0 +1,12 @@
+description: Annual hours of funded early learning and childcare available to eligible children in Scotland. Scotland's expansion to 1,140 hours per year (equivalent to around 30 hours per week over 38 weeks of term time) was fully rolled out from August 2021.
+metadata:
+  unit: hour
+  label: Funded early learning and childcare annual hours
+  reference:
+    - title: "Scottish Government — Funded early learning and childcare"
+      href: https://www.gov.scot/policies/early-education-and-care/early-learning-and-childcare/
+    - title: "Education (Scotland) Act 1980 — Section 1 as amended by Children and Young People (Scotland) Act 2014"
+      href: https://www.legislation.gov.uk/ukpga/1980/44/section/1
+values:
+  2014-08-01: 600
+  2021-08-01: 1140

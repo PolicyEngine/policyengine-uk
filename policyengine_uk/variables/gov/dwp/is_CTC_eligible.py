@@ -13,5 +13,10 @@ class is_CTC_eligible(Variable):
             ~add(benunit, period, ["would_claim_uc"]) > 0
         )
         return (
-            benunit.any(benunit.members("is_child_for_CTC", period)) & already_claiming
+            benunit.any(
+                benunit.members(
+                    "is_child_or_qualifying_young_person_for_child_tax_credit", period
+                )
+            )
+            & already_claiming
         )

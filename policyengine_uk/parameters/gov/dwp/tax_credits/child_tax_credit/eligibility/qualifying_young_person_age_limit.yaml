@@ -1,0 +1,9 @@
+description: Age limit below which a person may be a qualifying young person for Child Tax Credit rules.
+values:
+  0001-01-01: 20
+metadata:
+  unit: year
+  label: Child Tax Credit qualifying young person age limit
+  reference:
+    - title: The Child Tax Credit Regulations 2002 reg. 5
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/5

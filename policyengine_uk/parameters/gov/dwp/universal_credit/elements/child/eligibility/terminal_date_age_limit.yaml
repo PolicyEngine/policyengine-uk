@@ -1,0 +1,9 @@
+description: Age from which Universal Credit qualifying young person entitlement is limited to the period before the terminal date.
+values:
+  0001-01-01: 19
+metadata:
+  unit: year
+  label: Universal Credit qualifying young person terminal date age limit
+  reference:
+    - title: Universal Credit and families with more than 2 children information for stakeholders
+      href: https://www.gov.uk/government/publications/universal-credit-and-families-with-more-than-2-children-information-for-stakeholders/universal-credit-and-families-with-more-than-2-children-information-for-stakeholders
