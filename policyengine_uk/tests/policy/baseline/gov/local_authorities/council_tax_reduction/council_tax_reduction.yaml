@@ -20087,3 +20087,344 @@
     slough_council_tax_reduction_is_local_scheme: true
     slough_council_tax_reduction: 1_120
     council_tax_reduction: 1_120
+
+- name: Plymouth awards 80 percent support to a no-income working-age single claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_support_rate: 0.8
+    plymouth_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Plymouth caps eligible liability at Band E under the adopted 2026-27 scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: F
+        council_tax: 2_600
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_maximum_eligible_liability: 2_200
+    plymouth_council_tax_reduction: 1_760
+    council_tax_reduction: 1_760
+
+- name: Plymouth applies the single earnings disregard before weekly income banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_720
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_weekly_income: 105
+    plymouth_council_tax_reduction_support_rate: 0.6
+    plymouth_council_tax_reduction: 1_080
+    council_tax_reduction: 1_080
+
+- name: Plymouth deducts eligible childcare costs from earnings before income banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_080
+        income_tax: 0
+        national_insurance: 0
+        childcare_expenses: 1_300
+        weekly_hours: 30
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_childcare_deduction: 1_300
+    plymouth_council_tax_reduction_weekly_income: 240
+    plymouth_council_tax_reduction_support_rate: 0.8
+    plymouth_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Plymouth follows the adopted PDF and allows exactly 6000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    plymouth_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Plymouth excludes capital above 6000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_001
+  output:
+    plymouth_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Plymouth applies the adopted PDF weekly non-dependant deduction after the support rate
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_non_dep_deductions: [270.4, 0]
+    plymouth_council_tax_reduction: [1_169.6, 0]
+    council_tax_reduction: 1_169.6
+
+- name: Plymouth exempts UC non-dependants whose UC calculation has no earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        plymouth_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_non_dep_deductions: [0, 0]
+    plymouth_council_tax_reduction: [1_440, 0]
+    council_tax_reduction: 1_440
+
+- name: Plymouth local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_is_local_scheme: true
+    plymouth_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Plymouth disregards UC housing costs and Carer's Allowance from weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        carers_allowance: 4_160
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_200
+        universal_credit_pre_benefit_cap: 5_200
+        uc_unearned_income: 4_160
+        uc_housing_costs_element: 5_200
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: PLYMOUTH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    plymouth_council_tax_reduction_weekly_income: 0
+    plymouth_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440

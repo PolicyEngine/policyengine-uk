@@ -228,6 +228,10 @@ def is_oxford(local_authority):
     return local_authority == LocalAuthority.OXFORD
 
 
+def is_plymouth(local_authority):
+    return local_authority == LocalAuthority.PLYMOUTH
+
+
 def is_redbridge(local_authority):
     return local_authority == LocalAuthority.REDBRIDGE
 
@@ -584,6 +588,10 @@ def is_oxford_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_oxford(local_authority)
 
 
+def is_plymouth_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_plymouth(local_authority)
+
+
 def is_redbridge_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_redbridge(local_authority)
 
@@ -757,6 +765,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_north_northamptonshire_working_age(local_authority, country, has_pensioner)
         | is_north_yorkshire_working_age(local_authority, country, has_pensioner)
         | is_oxford_working_age(local_authority, country, has_pensioner)
+        | is_plymouth_working_age(local_authority, country, has_pensioner)
         | is_redbridge_working_age(local_authority, country, has_pensioner)
         | is_sefton_working_age(local_authority, country, has_pensioner)
         | is_somerset_working_age(local_authority, country, has_pensioner)
