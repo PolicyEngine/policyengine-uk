@@ -1,0 +1,10 @@
+description: Withdrawal rate applied to excess income under the Ipswich working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Ipswich Council Tax Reduction excess income withdrawal rate
+  reference:
+    - title: Ipswich Council Tax Reduction Scheme 2026/27, paragraph 59.1
+      href: https://www.ipswich.gov.uk/sites/ipswich/files/2026-03/Council%20Tax%20Reduction%20scheme%202026_0.pdf

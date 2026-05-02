@@ -43,6 +43,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "hammersmith_and_fulham_council_tax_reduction",
     "hillingdon_council_tax_reduction",
     "hounslow_council_tax_reduction",
+    "ipswich_council_tax_reduction",
     "kings_lynn_and_west_norfolk_council_tax_reduction",
     "kingston_upon_hull_council_tax_reduction",
     "kingston_upon_thames_council_tax_reduction",
@@ -112,6 +113,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         kingston_upon_hull_local_scheme = benunit(
             "kingston_upon_hull_council_tax_reduction_is_local_scheme", period
         )
+        ipswich_local_scheme = benunit(
+            "ipswich_council_tax_reduction_is_local_scheme", period
+        )
         mid_suffolk_local_scheme = benunit(
             "mid_suffolk_council_tax_reduction_is_local_scheme", period
         )
@@ -137,6 +141,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~babergh_local_scheme
             & ~buckinghamshire_local_scheme
             & ~herefordshire_local_scheme
+            & ~ipswich_local_scheme
             & ~kingston_upon_hull_local_scheme
             & ~mid_suffolk_local_scheme
             & ~north_yorkshire_local_scheme

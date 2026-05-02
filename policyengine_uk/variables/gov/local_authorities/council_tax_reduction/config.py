@@ -154,6 +154,10 @@ def is_hounslow(local_authority):
     return local_authority == LocalAuthority.HOUNSLOW
 
 
+def is_ipswich(local_authority):
+    return local_authority == LocalAuthority.IPSWICH
+
+
 def is_fenland(local_authority):
     return local_authority == LocalAuthority.FENLAND
 
@@ -478,6 +482,10 @@ def is_hounslow_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_hounslow(local_authority)
 
 
+def is_ipswich_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_ipswich(local_authority)
+
+
 def is_fenland_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_fenland(local_authority)
 
@@ -712,6 +720,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         )
         | is_hillingdon_working_age(local_authority, country, has_pensioner)
         | is_hounslow_working_age(local_authority, country, has_pensioner)
+        | is_ipswich_working_age(local_authority, country, has_pensioner)
         | is_kings_lynn_and_west_norfolk_working_age(
             local_authority,
             country,

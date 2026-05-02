@@ -1,0 +1,12 @@
+description: Monthly Universal Credit assessed earnings threshold at which the Ipswich working-age scheme gives no Council Tax Reduction.
+values:
+  2026-04-01: 3_000
+metadata:
+  unit: currency-GBP
+  period: month
+  label: Ipswich Council Tax Reduction UC no-entitlement earnings threshold
+  reference:
+    - title: Ipswich Council Tax Reduction Scheme 2026/27, Schedule 5
+      href: https://www.ipswich.gov.uk/sites/ipswich/files/2026-03/Council%20Tax%20Reduction%20scheme%202026_0.pdf
+    - title: Ipswich Council Tax Reduction live page, income bands and contribution rates for 2026/27
+      href: https://www.ipswich.gov.uk/benefits/council-tax-reduction-low-income
