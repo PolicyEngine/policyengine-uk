@@ -1,0 +1,37 @@
+description: Weekly Council Tax Reduction contribution by monthly Universal Credit assessed earnings under the Babergh working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0
+  - threshold:
+      2026-04-01: 326
+    amount:
+      2026-04-01: 12.46
+  - threshold:
+      2026-04-01: 686
+    amount:
+      2026-04-01: 23.54
+  - threshold:
+      2026-04-01: 1_306
+    amount:
+      2026-04-01: 33.46
+  - threshold:
+      2026-04-01: 2_077
+    amount:
+      2026-04-01: 49.85
+  - threshold:
+      2026-04-01: 2_669
+    amount:
+      2026-04-01: 65.31
+metadata:
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Babergh Council Tax Reduction UC earnings contribution amount
+  reference:
+    - title: Babergh Council Tax Reduction Scheme 2026/27, Schedule 5
+      href: https://www.babergh.gov.uk/documents/d/babergh/bdc-ctr-scheme-2026_27-v4-pdf
+    - title: Babergh Council Tax Reduction live page, income bands and contribution rates for 2026/27
+      href: https://www.babergh.gov.uk/w/council-tax-reduction-low-income

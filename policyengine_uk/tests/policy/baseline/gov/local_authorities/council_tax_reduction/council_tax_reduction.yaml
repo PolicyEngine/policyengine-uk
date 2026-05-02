@@ -18320,3 +18320,535 @@
   output:
     buckinghamshire_council_tax_reduction_is_local_scheme: false
     buckinghamshire_council_tax_reduction: 0
+
+- name: Babergh gives full support to a no-income non-UC working-age claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Babergh applies the non-UC 20 percent excess income taper
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 10_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction: 789.76
+    council_tax_reduction: 789.76
+
+- name: Babergh adds non-UC tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_250
+  output:
+    babergh_council_tax_reduction_tariff_income: 52
+    babergh_council_tax_reduction: 1_579.76
+    council_tax_reduction: 1_579.76
+
+- name: Babergh excludes non-UC claimants with capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_001
+  output:
+    babergh_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Babergh UC claimants with no UC earned income get full support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_uc_weekly_contribution: 0
+    babergh_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Babergh UC monthly earnings at 326 pounds enter the first contribution band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 3_912
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_earned_income: 0
+    babergh_council_tax_reduction_uc_monthly_earnings: 326
+    babergh_council_tax_reduction_uc_weekly_contribution: 12.46
+    babergh_council_tax_reduction: 1_152.08
+    council_tax_reduction: 1_152.08
+
+- name: Babergh UC monthly earnings at 1,306 pounds leave a small award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_mif_capped_earned_income: 15_672
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_uc_monthly_earnings: 1_306
+    babergh_council_tax_reduction_uc_weekly_contribution: 33.46
+    babergh_council_tax_reduction: 60.08
+    council_tax_reduction: 60.08
+
+- name: Babergh UC monthly earnings of 3,000 pounds have no entitlement
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_mif_capped_earned_income: 36_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_uc_monthly_earnings: 3_000
+    babergh_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Babergh uses UC-assessed capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 100_000
+  output:
+    babergh_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Babergh excludes UC claimants with UC-assessed capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_assessable_capital: 16_001
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Babergh applies a working non-dependant deduction before the non-UC taper
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_non_dep_deductions: [691.6, 0]
+    babergh_council_tax_reduction: [1_108.4, 0]
+    council_tax_reduction: 1_108.4
+
+- name: Babergh applies one deduction for a non-UC non-dependant couple based on joint gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 13_000
+        weekly_hours: 35
+      non_dep_partner:
+        age: 30
+        employment_income: 13_000
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_non_dep_deductions: [691.6, 0]
+    babergh_council_tax_reduction: [1_108.4, 0]
+    council_tax_reduction: 1_108.4
+
+- name: Babergh applies separate deductions for a UC non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 13_000
+        weekly_hours: 35
+      non_dep_partner:
+        age: 30
+        employment_income: 13_000
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_non_dep_deductions: [540.8, 0]
+    babergh_council_tax_reduction: [1_259.2, 0]
+    council_tax_reduction: 1_259.2
+
+- name: Babergh exempts UC non-dependants with no UC earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        babergh_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_non_dep_deductions: [0, 0]
+    babergh_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Babergh local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BABERGH
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    babergh_council_tax_reduction_is_local_scheme: true
+    babergh_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800

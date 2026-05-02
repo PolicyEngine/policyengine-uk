@@ -1,0 +1,31 @@
+description: Weekly non-dependant deduction schedule under the Babergh working-age Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.2
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.6
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.3
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Babergh Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: Babergh Council Tax Reduction Scheme 2026/27, paragraph 58.1
+      href: https://www.babergh.gov.uk/documents/d/babergh/bdc-ctr-scheme-2026_27-v4-pdf
+    - title: Babergh Council Tax Reduction live page, non-dependant deductions for 2026/27
+      href: https://www.babergh.gov.uk/w/council-tax-reduction-low-income
+    - title: Council Tax Reduction Schemes (Prescribed Requirements) (England) (Amendment) Regulations 2026, regulation 5(3)
+      href: https://www.legislation.gov.uk/uksi/2026/27/contents/made

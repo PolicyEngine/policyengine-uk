@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `67` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `68` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -63,6 +63,7 @@ Each council dossier should capture:
 | Lambeth | Implemented | Weekly net-earnings bands with working-age savings limit and working/non-working non-dependant deductions | https://www.lambeth.gov.uk/about-housing-benefit-council-tax-support/council-tax-support/how-much-council-tax-support-you-can-get |
 | Camden | Implemented | Weekly gross-earnings bands after eligible childcare costs, with protected group table and liability-share non-dependant deductions | https://www.camden.gov.uk/council-tax-support |
 | Islington | Implemented | Weekly net-earnings bands with protected zero-earnings rules and flat non-dependant deductions | https://www.islington.gov.uk/benefits-and-support/council-tax-support |
+| Babergh | Implemented | Hybrid scheme: non-UC legacy full support with `20%` taper, part-block tariff income, and prescribed non-dependant deductions; UC cases use monthly DWP-notified earnings contribution bands. The Babergh-hosted 2026/27 PDF appears to contain an Ipswich template reference in paragraph 1.1, but the Babergh live page, URL, and budget papers identify this as Babergh's scheme. | https://www.babergh.gov.uk/documents/d/babergh/bdc-ctr-scheme-2026_27-v4-pdf |
 | Barking and Dagenham | Implemented | Weekly net-income bands by household type with `GBP 6,000` capital limit and pre-percentage flat non-dependant deductions | https://lbbd.moderngov.co.uk/documents/s178487/CTSS%202026-27%20-%20App%202.pdf |
 | Barnet | Implemented | Monthly earnings-banded discount with Band C cap, `GBP 6,000` capital limit, and two-rate non-dependant deductions | https://barnet.moderngov.co.uk/documents/s94210/Appendix%20O%20-%20202627%20Council%20Tax%20Support%20Scheme.pdf |
 | Buckinghamshire | Implemented | Weekly net-income banded scheme with `100%`/`75%`/`50%`/`25%`/`0%` rates by family type, strict `GBP 6,000` capital cutoff, passported income-based benefits in Band 1, pension-age UC local cases with transitional-protection flag, source-listed earnings/disability/UC-element/income disregards, and `GBP 5` weekly non-dependant deductions applied before the band percentage. Transitional Relief is source-described but deferred because it depends on prior-scheme awards. | https://buckinghamshire.moderngov.co.uk/documents/s115727/Appendix%204%20Council%20Tax%20Reduction%20Scheme%20Policy.pdf |
