@@ -21243,3 +21243,484 @@
     southend_on_sea_council_tax_reduction_is_local_scheme: true
     southend_on_sea_council_tax_reduction: 1_350
     council_tax_reduction: 1_350
+
+- name: Colchester awards 80 percent support to a no-income working-age single claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_support_rate: 0.8
+    colchester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Colchester caps working-age eligible liability at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    colchester_council_tax_reduction_maximum_eligible_liability: 1_800
+    colchester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Colchester keeps a no-child couple at the 60 percent band through 225 pounds weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 13_000
+        income_tax: 0
+        national_insurance: 0
+      partner:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_weekly_income: 225
+    colchester_council_tax_reduction_support_rate: 0.6
+    colchester_council_tax_reduction: 1_080
+    council_tax_reduction: 1_080
+
+- name: Colchester moves a no-child couple to the 40 percent band above 225 pounds weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 13_001
+        income_tax: 0
+        national_insurance: 0
+      partner:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_weekly_income: 225.02
+    colchester_council_tax_reduction_support_rate: 0.4
+    colchester_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Colchester applies the two-or-more-children top income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 23_400.52
+        income_tax: 0
+        national_insurance: 0
+      child:
+        age: 6
+      child_2:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, child, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child, child_2]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_weekly_income: 425.01
+    colchester_council_tax_reduction_support_rate: 0.2
+    colchester_council_tax_reduction: 360
+    council_tax_reduction: 360
+
+- name: Colchester deducts eligible childcare costs after the 16 hour work gate is met
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 16_640
+        income_tax: 0
+        national_insurance: 0
+        childcare_expenses: 5_200
+        weekly_hours: 16
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_childcare_deduction: 5_200
+    colchester_council_tax_reduction_weekly_income: 195
+    colchester_council_tax_reduction_support_rate: 0.8
+    colchester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Colchester protected applicants receive 80 percent support in the listed income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 24_700
+        income_tax: 0
+        national_insurance: 0
+        pip_dl_category: ENHANCED
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_weekly_income: 450
+    colchester_council_tax_reduction_protected_group: true
+    colchester_council_tax_reduction_support_rate: 0.8
+    colchester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Colchester excludes capital at the 6000 pound threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    colchester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Colchester uses UC-assessed capital and disregards source-listed Universal Credit elements
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 15_600
+        uc_housing_costs_element: 5_200
+        uc_carer_element: 5_200
+        uc_childcare_element: 5_200
+        uc_assessable_capital: 5_999
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    colchester_council_tax_reduction_weekly_income: 0
+    colchester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Colchester does not apply the local earnings disregard to Universal Credit earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_earned_income: 7_800
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_weekly_income: 150
+    colchester_council_tax_reduction_support_rate: 0.6
+    colchester_council_tax_reduction: 1_080
+    council_tax_reduction: 1_080
+
+- name: Colchester excludes UC-assessed capital at the 6000 pound threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_assessable_capital: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Colchester requires an actual Universal Credit award for UC-assessed capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 0
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    colchester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Colchester does not apply working-age non-dependant deductions or non-dependant capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    colchester_council_tax_reduction_assessable_capital: [0, 0]
+    colchester_council_tax_reduction: [1_440, 0]
+    council_tax_reduction: 1_440
+
+- name: Colchester local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COLCHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    colchester_council_tax_reduction_is_local_scheme: true
+    colchester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440

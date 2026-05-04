@@ -23,6 +23,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "buckinghamshire_council_tax_reduction",
     "camden_council_tax_reduction",
     "chesterfield_council_tax_reduction",
+    "colchester_council_tax_reduction",
     "crawley_council_tax_reduction",
     "croydon_council_tax_reduction",
     "cumberland_council_tax_reduction",
@@ -114,6 +115,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         buckinghamshire_local_scheme = benunit(
             "buckinghamshire_council_tax_reduction_is_local_scheme", period
         )
+        colchester_local_scheme = benunit(
+            "colchester_council_tax_reduction_is_local_scheme", period
+        )
         herefordshire_local_scheme = benunit(
             "herefordshire_council_tax_reduction_is_local_scheme", period
         )
@@ -157,6 +161,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~babergh_local_scheme
             & ~basildon_local_scheme
             & ~buckinghamshire_local_scheme
+            & ~colchester_local_scheme
             & ~herefordshire_local_scheme
             & ~ipswich_local_scheme
             & ~kingston_upon_hull_local_scheme

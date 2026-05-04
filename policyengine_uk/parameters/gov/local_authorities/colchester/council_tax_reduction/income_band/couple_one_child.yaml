@@ -1,0 +1,38 @@
+description: Council Tax Reduction rate by weekly income band for Colchester working-age couple households with one child.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.8
+  - threshold:
+      2026-04-01: 125.01
+    amount:
+      2026-04-01: 0.8
+  - threshold:
+      2026-04-01: 225.01
+    amount:
+      2026-04-01: 0.6
+  - threshold:
+      2026-04-01: 300.01
+    amount:
+      2026-04-01: 0.4
+  - threshold:
+      2026-04-01: 375.01
+    amount:
+      2026-04-01: 0.2
+  - threshold:
+      2026-04-01: 425.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Colchester couple one-child weekly income-band CTR rate
+  reference:
+    - title: Colchester City Council Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://cbccrmdata.blob.core.windows.net/noteattachment/CBC-null-Local-council-tax-support-policy-updated-01-04-26-Local%20Council%20Tax%20support%20policy.pdf
+    - title: Colchester City Council Local Council Tax Support working-age page, reviewed 1 April 2026
+      href: https://www.colchester.gov.uk/housing-benefit-local-council-tax-support/lcts-working-age/
+
