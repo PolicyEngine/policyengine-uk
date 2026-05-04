@@ -9,17 +9,18 @@ PolicyEngine/policyengine-uk#1534.
 - `council_tax` is the household dataset's gross annual Council Tax
   liability. It is an input, not yet recomputed from local authority
   schedules.
-- `council_tax_reduction` is the modelled annual CTR award.
-- `council_tax_less_benefit` is gross Council Tax minus modelled CTR,
-  floored at zero. It is the right household signal for net Council Tax
-  receipts targets.
+- `council_tax_reduction` is currently hybrid: it uses modelled CTR for
+  supported local schemes and reported CTB/CTR for unsupported schemes.
+- `council_tax_less_benefit` is gross Council Tax minus that hybrid
+  reduction amount, floored at zero. It is the right household signal for
+  net Council Tax receipts targets during the transition.
 
 ## Dependency boundary
 
 Until #1534 is complete, downstream pipeline changes should stay
 compare-only. They may add variables, targets, diagnostics, or tests, but
 should not switch household net income or calibration production outputs
-from FRS-reported Council Tax/CTB onto modelled CTR.
+from FRS-reported or hybrid Council Tax/CTB onto fully modelled CTR.
 
 ## Draft PR sequence
 

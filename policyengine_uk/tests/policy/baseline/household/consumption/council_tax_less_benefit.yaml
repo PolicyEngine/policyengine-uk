@@ -27,7 +27,7 @@
     council_tax_less_benefit: 1300
     hbai_household_net_income: 8700
 
-- name: Council Tax after CTR is floored at zero
+- name: Council Tax after reported fallback CTR is floored at zero
   period: 2025
   absolute_error_margin: 0.5
   input:
@@ -53,4 +53,5 @@
         council_tax: 1_800
         savings: 0
   output:
+    council_tax_reduction: 2_500
     council_tax_less_benefit: 0
