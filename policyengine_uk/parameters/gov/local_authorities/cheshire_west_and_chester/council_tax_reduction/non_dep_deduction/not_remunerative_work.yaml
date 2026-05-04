@@ -1,0 +1,12 @@
+description: Weekly non-dependant deduction for Cheshire West and Chester non-dependants who are not in remunerative work.
+values:
+  2026-04-01: 5
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Cheshire West and Chester CTR non-working non-dependant deduction
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraph 10.2
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, paragraph 33.1
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf

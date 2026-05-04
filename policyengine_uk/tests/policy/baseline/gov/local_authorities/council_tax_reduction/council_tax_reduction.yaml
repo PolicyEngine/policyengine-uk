@@ -22776,3 +22776,326 @@
     chelmsford_council_tax_reduction: 0
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
+
+- name: Cheshire West and Chester awards 75 percent support to an ordinary no-income claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction: 1_350
+    simulated_council_tax_reduction_benunit: 1_350
+    council_tax_reduction: 1_350
+
+- name: Cheshire West and Chester caps ordinary support at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction_maximum_eligible_liability: 1_800
+    cheshire_west_and_chester_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Cheshire West and Chester applies the 20 percent taper to excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 5_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction: 1_150
+    council_tax_reduction: 1_150
+
+- name: Cheshire West and Chester gives protected classes full support with the Band D cap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        cheshire_west_and_chester_council_tax_reduction_source_protected_group: true
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction_maximum_eligible_liability: 1_800
+    cheshire_west_and_chester_council_tax_reduction_protected_group: true
+    cheshire_west_and_chester_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheshire West and Chester does not apply the Band D cap to war pensioners
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        cheshire_west_and_chester_council_tax_reduction_war_pensioner: true
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction_maximum_eligible_liability: 3_600
+    cheshire_west_and_chester_council_tax_reduction: 3_600
+    council_tax_reduction: 3_600
+
+- name: Cheshire West and Chester allows exactly 6,000 pounds of ordinary capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    cheshire_west_and_chester_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Cheshire West and Chester excludes ordinary claimants just above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    cheshire_west_and_chester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Cheshire West and Chester uses UC award income and UC-assessed capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 2_400
+        uc_earned_income: 12_000
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    cheshire_west_and_chester_council_tax_reduction_uc_applicable_income: 12_840
+    cheshire_west_and_chester_council_tax_reduction: 1_182
+    council_tax_reduction: 1_182
+
+- name: Cheshire West and Chester applies the non-working non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        weekly_hours: 0
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      non_dep_benunit:
+        members: [non_dep]
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction_non_dep_deductions: [260, 0]
+    cheshire_west_and_chester_council_tax_reduction: [1_090, 0]
+    council_tax_reduction: 1_090
+
+- name: Cheshire West and Chester makes one non-dependant deduction for a working couple using joint gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 30
+        employment_income: 10_000
+        weekly_hours: 16
+      non_dep_2:
+        age: 30
+        employment_income: 5_000
+        weekly_hours: 0
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      non_dep_benunit:
+        members: [non_dep_1, non_dep_2]
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction_non_dep_deductions: [520, 0]
+    cheshire_west_and_chester_council_tax_reduction: [830, 0]
+    council_tax_reduction: 830
+
+- name: Cheshire West and Chester still deducts for non-dependants on income-based benefits
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        weekly_hours: 0
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+      non_dep_benunit:
+        members: [non_dep]
+        jsa_income: 1
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CHESHIRE_WEST_AND_CHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheshire_west_and_chester_council_tax_reduction_non_dep_deductions: [260, 0]
+    cheshire_west_and_chester_council_tax_reduction: [1_090, 0]
+    council_tax_reduction: 1_090

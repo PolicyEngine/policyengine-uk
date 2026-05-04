@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for Cheshire West and Chester working-age Council Tax Reduction.
+values:
+  2026-04-01: 30
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Cheshire West and Chester working-age CTR earnings disregard
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraph 6.5
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf

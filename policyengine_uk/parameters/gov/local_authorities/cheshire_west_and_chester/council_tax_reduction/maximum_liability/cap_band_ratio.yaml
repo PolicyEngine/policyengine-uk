@@ -1,0 +1,11 @@
+description: Maximum English council tax band ratio eligible for ordinary and protected Cheshire West and Chester working-age Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  label: Cheshire West and Chester CTR Band D liability cap ratio
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraph 9.0
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, paragraphs 5.1 and 6.3
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf
