@@ -26,3 +26,31 @@
   output:
     council_tax_less_benefit: 1300
     hbai_household_net_income: 8700
+
+- name: Council Tax after CTR is floored at zero
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 2_500
+        employment_income: 10_000
+    benunits:
+      benunit:
+        members: [claimant]
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_less_benefit: 0

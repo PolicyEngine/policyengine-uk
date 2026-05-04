@@ -2,8 +2,11 @@ from policyengine_uk.model_api import *
 
 
 class council_tax_less_benefit(Variable):
-    label = "Council Tax (less CTB)"
-    documentation = "Council Tax minus Council Tax Reduction"
+    label = "Council Tax after Council Tax Reduction"
+    documentation = (
+        "Gross Council Tax liability minus modelled Council Tax Reduction, "
+        "floored at zero."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
