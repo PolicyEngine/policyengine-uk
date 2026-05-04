@@ -2,6 +2,8 @@
 
 Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 
+For a minimal autonomous Codex handoff prompt, see `agent_handoff.md`.
+
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.

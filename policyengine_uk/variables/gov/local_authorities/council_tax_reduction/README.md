@@ -19,7 +19,7 @@ The current implementation does not yet model:
 - National/statutory non-dependant couple aggregation beyond the local working-age scheme helper.
 - Non-dependant deduction apportionment across multiple jointly liable Council Tax payers.
 
-For batched implementation status and next candidates, see `scheme_work_queue.md`.
+For batched implementation status and next candidates, see `scheme_work_queue.md`. For a drop-in autonomous handoff prompt, see `agent_handoff.md`.
 
 There is also a requests-based entitledto comparison harness at `scripts/entitledto_ctr_compare.py`. It replays the calculator from a saved browser storage state and currently covers three single-adult claimant variants:
 
