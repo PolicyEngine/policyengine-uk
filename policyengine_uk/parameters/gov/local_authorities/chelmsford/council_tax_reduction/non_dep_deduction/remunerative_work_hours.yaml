@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Chelmsford working-age Local Council Tax Support non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Chelmsford Local Council Tax Support non-dependant remunerative-work hours
+  reference:
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, section 6.1
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933

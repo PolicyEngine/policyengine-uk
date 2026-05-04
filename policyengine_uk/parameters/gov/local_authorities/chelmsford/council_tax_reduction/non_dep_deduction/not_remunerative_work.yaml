@@ -1,0 +1,10 @@
+description: Weekly non-dependant deduction for Chelmsford non-dependants who are not in remunerative work.
+values:
+  2026-04-01: 6.60
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Chelmsford Local Council Tax Support non-working non-dependant deduction
+  reference:
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, section 58.1
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933

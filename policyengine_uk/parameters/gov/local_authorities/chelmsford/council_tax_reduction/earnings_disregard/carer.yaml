@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for Chelmsford working-age Local Council Tax Support applicants with a carer premium.
+values:
+  2026-04-01: 30
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Chelmsford carer LCTS earnings disregard
+  reference:
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, Schedule 3 paragraphs 5 and 6
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933

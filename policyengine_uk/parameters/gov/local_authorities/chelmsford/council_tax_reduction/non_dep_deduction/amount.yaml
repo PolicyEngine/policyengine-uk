@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction by gross weekly income for Chelmsford remunerative-work non-dependants.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 4.95
+  - threshold:
+      2026-04-01: 266
+    amount:
+      2026-04-01: 9.83
+  - threshold:
+      2026-04-01: 463
+    amount:
+      2026-04-01: 12.38
+  - threshold:
+      2026-04-01: 577
+    amount:
+      2026-04-01: 14.85
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Chelmsford Local Council Tax Support remunerative-work non-dependant deduction amount
+  reference:
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, sections 58.1 and 58.2
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933

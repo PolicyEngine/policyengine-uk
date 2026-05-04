@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered by Chelmsford working-age Local Council Tax Support.
+values:
+  2026-04-01: 0.77
+metadata:
+  unit: /1
+  period: year
+  label: Chelmsford working-age Local Council Tax Support maximum support rate
+  reference:
+    - title: Chelmsford Local Council Tax Support Scheme 2026/27 report, paragraphs 2.1 and 6.1
+      href: https://www.chelmsford.gov.uk/media/g2nbyt31/62-local-council-tax-support-lcts-scheme-2026-27.pdf
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, section 57.1
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933
