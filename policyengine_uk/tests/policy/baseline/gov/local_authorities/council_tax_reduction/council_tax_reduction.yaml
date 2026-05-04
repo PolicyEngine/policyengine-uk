@@ -20875,3 +20875,371 @@
     basildon_council_tax_reduction_is_local_scheme: true
     basildon_council_tax_reduction: 1_350
     council_tax_reduction: 1_350
+
+- name: Southend-on-Sea awards 75 percent support to a no-income working-age single claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction_support_rate: 0.75
+    southend_on_sea_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Southend-on-Sea applies the 20 pound weekly earnings disregard before income banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 7_800
+        income_tax: 0
+        national_insurance: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction_weekly_income: 130
+    southend_on_sea_council_tax_reduction_support_rate: 0.5
+    southend_on_sea_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Southend-on-Sea uses the one-child income row
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_080
+        income_tax: 0
+        national_insurance: 0
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction_weekly_income: 270
+    southend_on_sea_council_tax_reduction_support_rate: 0.25
+    southend_on_sea_council_tax_reduction: 450
+    council_tax_reduction: 450
+
+- name: Southend-on-Sea applies the two-or-more-children top income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 22_360
+        income_tax: 0
+        national_insurance: 0
+      child:
+        age: 6
+      child_2:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, child, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child, child_2]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction_weekly_income: 410
+    southend_on_sea_council_tax_reduction_support_rate: 0.25
+    southend_on_sea_council_tax_reduction: 450
+    council_tax_reduction: 450
+
+- name: Southend-on-Sea deducts eligible childcare costs only after the 16 hour work gate is met
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 16_640
+        income_tax: 0
+        national_insurance: 0
+        childcare_expenses: 5_200
+        weekly_hours: 16
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction_childcare_deduction: 5_200
+    southend_on_sea_council_tax_reduction_weekly_income: 200
+    southend_on_sea_council_tax_reduction_support_rate: 0.5
+    southend_on_sea_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Southend-on-Sea excludes capital at the 6000 pound threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    southend_on_sea_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Southend-on-Sea allows capital below the 6000 pound threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 5_999
+  output:
+    southend_on_sea_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Southend-on-Sea uses UC-assessed capital for Universal Credit claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_assessable_capital: 5_999
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    southend_on_sea_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Southend-on-Sea excludes UC-assessed capital at the 6000 pound threshold
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 5_200
+        uc_housing_costs_element: 5_200
+        uc_assessable_capital: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Southend-on-Sea disregards source-listed Universal Credit elements from weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 15_600
+        uc_housing_costs_element: 5_200
+        uc_carer_element: 5_200
+        uc_childcare_element: 5_200
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction_weekly_income: 0
+    southend_on_sea_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Southend-on-Sea local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTHEND_ON_SEA
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    southend_on_sea_council_tax_reduction_is_local_scheme: true
+    southend_on_sea_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350

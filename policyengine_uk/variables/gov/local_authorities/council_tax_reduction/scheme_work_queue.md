@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `73` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `74` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -93,6 +93,7 @@ Each council dossier should capture:
 | Plymouth | Implemented | Weekly income-banded discount scheme with `80%` maximum support, Band E liability cap, applicant-and-partner weekly income after source disregards and eligible childcare costs, `GBP 6,000` capital limit under the adopted PDF's "greater than" wording, and `GBP 5.20` weekly non-dependant deductions with source exemptions. The live page says `GBP 6,000 or more` capital is excluded and uses a `GBP 4.90` non-dependant summary amount, but the adopted 2026/27 PDF controls the modeled `> GBP 6,000` cutoff and `GBP 5.20` deduction. | https://www.plymouth.gov.uk/sites/default/files/2026-03/Plymouth-CTR-Scheme-2026-2027.pdf |
 | Redbridge | Implemented | Categorical percentage-of-liability scheme with `73%` disability support, `60%`/`50%` not-working support, `46%`/`36%` working support under local earnings thresholds, `GBP 16,000` capital limit, `GBP 10` weekly minimum award, and a UC exception to the non-dependant couple rule | https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf |
 | Slough | Implemented | Weekly earned-income banded discount scheme with `70%` support for no earned income or passported no-earnings cases, positive-earnings rates from `50%` to `0%`, Band C liability cap, strict `GBP 6,000` capital cutoff, and `GBP 5`/`GBP 11` weekly non-dependant deductions. | https://www.slough.gov.uk/downloads/file/5730/council-tax-support-scheme-2026-27 |
+| Southend-on-Sea | Implemented | Weekly income-banded discount scheme with `75%` maximum support, `GBP 20` weekly earnings disregard, eligible childcare deductions with a `16` hour work gate, strict `GBP 6,000` capital cutoff under the adopted PDF's "GBP 6,000 or above" wording, source-listed Universal Credit element disregards, and no working-age non-dependant deductions found in the formal scheme. | https://www.southend.gov.uk/downloads/file/3527/southend-on-sea-borough-council-ctax-reduction-s13a-scheme |
 
 ## Reviewed Candidate Queue
 

@@ -1,0 +1,11 @@
+description: Weekly earnings disregard under the Southend-on-Sea working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Southend-on-Sea Council Tax Reduction earnings disregard
+  reference:
+    - title: Southend-on-Sea Borough Council Council Tax Reduction S13A Scheme 2026/27, Schedule 4
+      href: https://www.southend.gov.uk/downloads/file/3527/southend-on-sea-borough-council-ctax-reduction-s13a-scheme
+
