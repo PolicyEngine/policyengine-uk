@@ -37,6 +37,10 @@ class cheshire_west_and_chester_council_tax_reduction(Variable):
         applicable_income = where(
             has_uc_award, uc_applicable_income, non_uc_applicable_income
         )
+        applicable_income += benunit(
+            "cheshire_west_and_chester_council_tax_reduction_war_pensioner_tariff_income",
+            period,
+        )
         relevant_income_based_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit", period
         )
@@ -70,6 +74,7 @@ class cheshire_west_and_chester_council_tax_reduction(Variable):
             - excess_income * ctr.means_test.withdrawal_rate
             - non_dep_deductions,
         )
+        award = where(award < ctr.minimum_award * WEEKS_IN_YEAR, 0, award)
         capital = where(
             has_uc_award,
             benunit("uc_assessable_capital", period),
