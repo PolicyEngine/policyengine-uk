@@ -280,6 +280,10 @@ def is_tameside(local_authority):
     return local_authority == LocalAuthority.TAMESIDE
 
 
+def is_thurrock(local_authority):
+    return local_authority == LocalAuthority.THURROCK
+
+
 def is_warrington(local_authority):
     return local_authority == LocalAuthority.WARRINGTON
 
@@ -662,6 +666,10 @@ def is_tameside_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_tameside(local_authority)
 
 
+def is_thurrock_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_thurrock(local_authority)
+
+
 def is_warrington_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND) & ~has_pensioner & is_warrington(local_authority)
@@ -808,6 +816,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_st_albans_working_age(local_authority, country, has_pensioner)
         | is_stockport_working_age(local_authority, country, has_pensioner)
         | is_tameside_working_age(local_authority, country, has_pensioner)
+        | is_thurrock_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_wakefield_working_age(local_authority, country, has_pensioner)
         | is_west_suffolk_working_age(local_authority, country, has_pensioner)

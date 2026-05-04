@@ -5,7 +5,7 @@ Use this file to coordinate batched CTR implementation inside PolicyEngine UK.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `75` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `76` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -95,6 +95,7 @@ Each council dossier should capture:
 | Redbridge | Implemented | Categorical percentage-of-liability scheme with `73%` disability support, `60%`/`50%` not-working support, `46%`/`36%` working support under local earnings thresholds, `GBP 16,000` capital limit, `GBP 10` weekly minimum award, and a UC exception to the non-dependant couple rule | https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf |
 | Slough | Implemented | Weekly earned-income banded discount scheme with `70%` support for no earned income or passported no-earnings cases, positive-earnings rates from `50%` to `0%`, Band C liability cap, strict `GBP 6,000` capital cutoff, and `GBP 5`/`GBP 11` weekly non-dependant deductions. | https://www.slough.gov.uk/downloads/file/5730/council-tax-support-scheme-2026-27 |
 | Southend-on-Sea | Implemented | Weekly income-banded discount scheme with `75%` maximum support, `GBP 20` weekly earnings disregard, eligible childcare deductions with a `16` hour work gate, strict `GBP 6,000` capital cutoff under the adopted PDF's "GBP 6,000 or above" wording, source-listed Universal Credit element disregards, and no working-age non-dependant deductions found in the formal scheme. | https://www.southend.gov.uk/downloads/file/3527/southend-on-sea-borough-council-ctax-reduction-s13a-scheme |
+| Thurrock | Implemented | Legacy `75%` support with `20%` taper, strict `GBP 6,000` capital limit, `GBP 25` weekly earnings disregard, pension-age UC/income-based benefit local cases with relevant-period protection, UC assessed income/capital branch, remunerative-work gross-income non-dependant deductions, and source-exemption inputs. The 2026/27 report confirms no change to the scheme in place since 2017/18, so this pairs the current report with the carried-forward full scheme appendix. | https://thurrock.moderngov.co.uk/documents/s51233/Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf |
 
 ## Reviewed Candidate Queue
 

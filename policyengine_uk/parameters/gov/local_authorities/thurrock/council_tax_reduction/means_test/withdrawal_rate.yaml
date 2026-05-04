@@ -1,0 +1,10 @@
+description: Withdrawal rate on excess income for Thurrock working-age Council Tax Reduction.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Thurrock Council Tax Reduction excess-income withdrawal rate
+  reference:
+    - title: Thurrock Council Tax Reduction Scheme, sections 1.7 and 59.1
+      href: https://thurrock.moderngov.co.uk/documents/s51034/Enc.%201%20for%20Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf

@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction by gross weekly income for Thurrock working-age Council Tax Reduction.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5
+  - threshold:
+      2026-04-01: 266
+    amount:
+      2026-04-01: 10.20
+  - threshold:
+      2026-04-01: 463
+    amount:
+      2026-04-01: 12.80
+  - threshold:
+      2026-04-01: 577
+    amount:
+      2026-04-01: 15.35
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Thurrock Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: Thurrock Council Tax Reduction Scheme, sections 58.1 and 58.2
+      href: https://thurrock.moderngov.co.uk/documents/s51034/Enc.%201%20for%20Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf
