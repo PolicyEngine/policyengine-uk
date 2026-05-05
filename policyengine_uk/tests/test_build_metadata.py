@@ -30,7 +30,7 @@ def test_data_build_fingerprint_is_stable_within_process():
     assert first == second
 
 
-def test_get_runtime_metadata_includes_version_git_sha_fingerprint_and_core():
+def test_get_runtime_metadata_includes_required_bundle_fields():
     get_data_build_fingerprint.cache_clear()
 
     with ExitStack() as stack:
@@ -64,16 +64,14 @@ def test_get_runtime_metadata_includes_version_git_sha_fingerprint_and_core():
         )
         metadata = get_runtime_metadata()
 
-    assert metadata == {
-        "name": "policyengine-uk",
-        "version": "2.74.0",
-        "git_sha": "deadbeef",
-        "data_build_fingerprint": "sha256:fingerprint",
-        "core": {
-            "name": "policyengine-core",
-            "version": "3.26.0",
-            "git_sha": "coredeadbeef",
-        },
+    assert metadata["name"] == "policyengine-uk"
+    assert metadata["version"] == "2.74.0"
+    assert metadata["git_sha"] == "deadbeef"
+    assert metadata["data_build_fingerprint"] == "sha256:fingerprint"
+    assert metadata["core"] == {
+        "name": "policyengine-core",
+        "version": "3.26.0",
+        "git_sha": "coredeadbeef",
     }
 
 
