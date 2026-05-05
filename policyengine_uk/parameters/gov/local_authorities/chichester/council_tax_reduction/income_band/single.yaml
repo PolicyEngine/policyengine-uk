@@ -1,0 +1,35 @@
+description: Council Tax Reduction rate by weekly UC-assessed income band for Chichester single working-age Class F households.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 124.01
+    amount:
+      2026-04-01: 0.8
+  - threshold:
+      2026-04-01: 147.01
+    amount:
+      2026-04-01: 0.6
+  - threshold:
+      2026-04-01: 171.01
+    amount:
+      2026-04-01: 0.4
+  - threshold:
+      2026-04-01: 194.01
+    amount:
+      2026-04-01: 0.2
+  - threshold:
+      2026-04-01: 218.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Chichester single weekly UC-income CTR rate
+  reference:
+    - title: Chichester Local Council Tax Reduction Scheme Rules 2026-2027, section 5.4
+      href: https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf

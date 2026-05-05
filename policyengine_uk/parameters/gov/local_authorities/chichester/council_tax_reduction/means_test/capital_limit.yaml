@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Chichester Council Tax Reduction scheme.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Chichester Council Tax Reduction capital limit
+  reference:
+    - title: Chichester Local Council Tax Reduction Scheme Rules 2026-2027, sections 1.4 to 1.6
+      href: https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf

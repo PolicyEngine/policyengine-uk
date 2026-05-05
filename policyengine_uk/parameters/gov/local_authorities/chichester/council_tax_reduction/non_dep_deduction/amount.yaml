@@ -1,0 +1,29 @@
+description: Weekly prescribed non-dependant deduction schedule used for Chichester working-age classes D and E.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.2
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.6
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.3
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Chichester Council Tax Reduction prescribed non-dependant deduction schedule
+  reference:
+    - title: Chichester Local Council Tax Reduction Scheme Rules 2026-2027, section 5.7
+      href: https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf
+    - title: Adur Council Tax Support 2026-27
+      href: https://www.adur-worthing.gov.uk/media/Media,174007,smxx.pdf

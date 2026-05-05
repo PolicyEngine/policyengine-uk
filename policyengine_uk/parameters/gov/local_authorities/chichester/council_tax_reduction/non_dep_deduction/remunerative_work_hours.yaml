@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work under the Chichester Council Tax Reduction scheme's Class F non-dependant deduction.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Chichester Council Tax Reduction remunerative work hours threshold
+  reference:
+    - title: Chichester Local Council Tax Reduction Scheme Rules 2026-2027, section 5.7
+      href: https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf

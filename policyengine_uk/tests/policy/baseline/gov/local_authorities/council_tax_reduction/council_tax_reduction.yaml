@@ -22777,6 +22777,336 @@
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
 
+- name: Chichester awards full support to a no-income non-UC claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 4_786.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    chichester_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Chichester applies the 20 percent taper to annual excess income for non-UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_786.60
+        council_tax_reduction_applicable_income: 5_306.60
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    chichester_council_tax_reduction: 1_696
+    council_tax_reduction: 1_696
+
+- name: Chichester keeps an income-based JSA claimant eligible at exactly 16,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    chichester_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Chichester excludes non-UC claimants above the 16,000 pound capital limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 1
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000.01
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    chichester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Chichester keeps a UC single claimant in the 100 percent band at 124 pounds a week
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 6_448
+        universal_credit_pre_benefit_cap: 6_448
+        chichester_council_tax_reduction_source_uc_income: 6_448
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    chichester_council_tax_reduction_uc_applicable_income: 6_448
+    chichester_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Chichester drops a UC single claimant to the 80 percent band just above 124 pounds a week
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 6_448.52
+        universal_credit_pre_benefit_cap: 6_448.52
+        chichester_council_tax_reduction_source_uc_income: 6_448.52
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    chichester_council_tax_reduction_uc_applicable_income: 6_448.52
+    chichester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Chichester gives no support once a UC single claimant is above the final income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 11_337.04
+        universal_credit_pre_benefit_cap: 11_337.04
+        chichester_council_tax_reduction_source_uc_income: 11_337.04
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    chichester_council_tax_reduction_uc_applicable_income: 11_337.04
+    chichester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Chichester applies the Class F flat non-dependant deduction after full UC-band support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 10_400
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        chichester_council_tax_reduction_source_uc_income: 6_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    chichester_council_tax_reduction_non_dep_deductions: [202.80, 0]
+    chichester_council_tax_reduction: [1_597.20, 0]
+    council_tax_reduction: 1_597.20
+
+- name: Chichester keeps pension-age UC claimants in the local UC-banded scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 6_448
+        universal_credit_pre_benefit_cap: 6_448
+        chichester_council_tax_reduction_source_uc_income: 6_448
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    chichester_council_tax_reduction_is_local_scheme: true
+    chichester_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Cheshire West and Chester awards 75 percent support to an ordinary no-income claimant
   period: 2026
   absolute_error_margin: 0.5
