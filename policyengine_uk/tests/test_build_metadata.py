@@ -1,4 +1,3 @@
-from contextlib import ExitStack
 import importlib.util
 from pathlib import Path
 import sys
@@ -30,39 +29,27 @@ def test_data_build_fingerprint_is_stable_within_process():
     assert first == second
 
 
-def test_get_runtime_metadata_includes_required_bundle_fields():
+def test_get_runtime_metadata_includes_required_bundle_fields(monkeypatch):
     get_data_build_fingerprint.cache_clear()
 
-    with ExitStack() as stack:
-        stack.enter_context(
-            patch(
-                f"{SPEC.name}._get_package_version",
-                return_value="2.74.0",
-            )
-        )
-        stack.enter_context(
-            patch(
-                f"{SPEC.name}._get_git_sha",
-                return_value="deadbeef",
-            )
-        )
-        stack.enter_context(
-            patch(
-                f"{SPEC.name}.get_data_build_fingerprint",
-                return_value="sha256:fingerprint",
-            )
-        )
-        stack.enter_context(
-            patch(
-                f"{SPEC.name}.get_core_runtime_metadata",
-                return_value={
-                    "name": "policyengine-core",
-                    "version": "3.26.0",
-                    "git_sha": "coredeadbeef",
-                },
-            )
-        )
-        metadata = get_runtime_metadata()
+    monkeypatch.setattr(build_metadata, "_get_package_version", lambda: "2.74.0")
+    monkeypatch.setattr(build_metadata, "_get_git_sha", lambda: "deadbeef")
+    monkeypatch.setattr(
+        build_metadata,
+        "get_data_build_fingerprint",
+        lambda: "sha256:fingerprint",
+    )
+    monkeypatch.setattr(
+        build_metadata,
+        "get_core_runtime_metadata",
+        lambda: {
+            "name": "policyengine-core",
+            "version": "3.26.0",
+            "git_sha": "coredeadbeef",
+        },
+    )
+
+    metadata = get_runtime_metadata()
 
     assert metadata["name"] == "policyengine-uk"
     assert metadata["version"] == "2.74.0"
