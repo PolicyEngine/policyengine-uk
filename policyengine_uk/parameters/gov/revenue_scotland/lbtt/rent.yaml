@@ -11,7 +11,7 @@ brackets:
     2019-01-25: 0.05
   threshold:
     2019-01-25: 2000000
-description: Rates on cumulative rent
+description: Rates on cumulative rent.
 metadata:
   economy: false
   label: Lbtt on cumulative rent

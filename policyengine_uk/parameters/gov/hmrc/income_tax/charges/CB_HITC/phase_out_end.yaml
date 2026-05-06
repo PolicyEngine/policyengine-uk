@@ -1,4 +1,4 @@
-description: Income after which the Child Benefit is fully phased out
+description: Income after which the Child Benefit is fully phased out.
 values:
   2015-06-05: 60_000
   2024-01-01: 80_000

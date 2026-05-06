@@ -12,7 +12,7 @@ brackets:
   threshold:
     2016-09-15: 5000000
 description: Stamp Duty Land Tax progressive rates for cumulative rents on non-residential
-  property
+  property.
 metadata:
   economy: false
   label: Stamp Duty on non-residential cumulative rent

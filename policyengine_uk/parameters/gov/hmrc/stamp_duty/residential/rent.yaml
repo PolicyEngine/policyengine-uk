@@ -12,7 +12,7 @@ brackets:
     2020-07-08: 500000
     2021-03-31: 125000
 description: Stamp Duty Land Tax progressive rates for cumulative rents on residential
-  property
+  property.
 metadata:
   economy: false
   label: Stamp Duty on cumulative rent

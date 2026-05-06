@@ -1,4 +1,4 @@
-description: Tax credit amount below which tax credits are not paid
+description: Tax credit amount below which tax credits are not paid.
 metadata:
   economy: false
   label: Tax credits minimum benefit

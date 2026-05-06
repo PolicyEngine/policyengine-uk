@@ -7,7 +7,7 @@ brackets:
     2018-03-15: 0.05
   threshold:
     2018-03-15: 300000
-description: Stamp Duty Land Tax progressive rates for residential property transfers
+description: Stamp Duty Land Tax progressive rates for residential property transfers.
 metadata:
   economy: false
   label: Stamp Duty on first homes

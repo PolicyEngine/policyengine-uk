@@ -1,4 +1,4 @@
-description: All variables that are subtracted from the base amount to calculate total income tax
+description: All variables that are subtracted from the base amount to calculate total income tax.
 metadata:
   label: Subtractive components of total Income Tax
   unit: list

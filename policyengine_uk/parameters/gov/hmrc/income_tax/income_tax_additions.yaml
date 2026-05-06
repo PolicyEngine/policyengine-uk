@@ -1,4 +1,4 @@
-description: All variables that are added together to calculate total income tax
+description: All variables that are added together to calculate total income tax.
 metadata:
   label: Additive components of total Income Tax
   unit: list

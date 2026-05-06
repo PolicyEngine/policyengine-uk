@@ -1,4 +1,4 @@
-description: Amount of trading income untaxed per year
+description: Amount of trading income untaxed per year.
 values:
   2005-04-01:
     value: 1_000

@@ -1,4 +1,4 @@
-description: ONS National Balance Sheet statistics on wealth
+description: ONS National Balance Sheet statistics on wealth.
 household:
   metadata:
     uprating: gov.economic_assumptions.indices.obr.per_capita.gdp

@@ -1,5 +1,5 @@
 description: National Insurance contribution rate by employers on earnings above the
-  Secondary Threshold
+  Secondary Threshold.
 metadata:
   label: NI employer rate
   propagate_metadata_to_children: true

@@ -16,7 +16,7 @@ brackets:
     2018-04-01: 0.06
   threshold:
     2018-04-01: 1000000
-description: Non-residential property progressive tax scale
+description: Non-residential property progressive tax scale.
 metadata:
   economy: false
   label: Ltt on non-residential property

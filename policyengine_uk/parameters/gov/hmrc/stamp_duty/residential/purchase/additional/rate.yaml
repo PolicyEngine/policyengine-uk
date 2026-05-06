@@ -1,4 +1,4 @@
-description: Stamp Duty Land Tax progressive rates for residential property transfers that are not replacements of an individual's primary residence
+description: Stamp Duty Land Tax progressive rates for residential property transfers that are not replacements of an individual's primary residence.
 brackets:
   - rate:
       2016-09-15: 0.03

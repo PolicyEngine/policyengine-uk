@@ -1,4 +1,4 @@
-description: Share of eligible Child Benefit recipients that participate, by age
+description: Share of eligible Child Benefit recipients that participate, by age.
 brackets:
   - threshold:
       2022-01-01: 0
