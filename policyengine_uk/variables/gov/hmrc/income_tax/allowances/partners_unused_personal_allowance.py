@@ -15,4 +15,7 @@ class partners_unused_personal_allowance(Variable):
     def formula(person, period, parameters):
         is_adult = person("is_adult", period)
         pa = person("unused_personal_allowance", period)
-        return person.benunit.sum(is_adult * pa) - pa
+        # Subtract this person's own unused PA only if they are an adult, so
+        # non-adults (whose PA isn't part of the adult-summed pool) cannot
+        # produce a negative transferable amount.
+        return person.benunit.sum(is_adult * pa) - is_adult * pa
