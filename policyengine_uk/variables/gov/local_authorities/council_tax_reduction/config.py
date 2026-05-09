@@ -387,9 +387,7 @@ def is_basingstoke_and_deane_working_age(local_authority, country, has_pensioner
 
 
 def is_bassetlaw_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_bassetlaw(
-        local_authority
-    )
+    return (country == Country.ENGLAND) & ~has_pensioner & is_bassetlaw(local_authority)
 
 
 def is_basildon_working_age(local_authority, country, has_pensioner):

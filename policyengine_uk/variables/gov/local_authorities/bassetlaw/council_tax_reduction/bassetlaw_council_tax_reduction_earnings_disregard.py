@@ -57,13 +57,10 @@ class bassetlaw_council_tax_reduction_earnings_disregard(Variable):
         childcare_deduction = benunit(
             "bassetlaw_council_tax_reduction_childcare_deduction", period
         )
-        worker_addition_available = (
-            weekly_net_earnings
-            >= (
-                base_weekly
-                + childcare_deduction / WEEKS_IN_YEAR
-                + ctr.earnings_disregard.worker_addition
-            )
+        worker_addition_available = weekly_net_earnings >= (
+            base_weekly
+            + childcare_deduction / WEEKS_IN_YEAR
+            + ctr.earnings_disregard.worker_addition
         )
         works_qualifying_hours = (
             (weekly_hours >= 30)

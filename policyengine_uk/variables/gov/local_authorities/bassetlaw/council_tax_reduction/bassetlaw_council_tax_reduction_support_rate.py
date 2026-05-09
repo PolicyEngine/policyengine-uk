@@ -15,17 +15,14 @@ class bassetlaw_council_tax_reduction_support_rate(Variable):
         banded_support_rate = ctr.income_band.support_rate.calc(
             rounded_weekly_income + 1e-4
         )
-        vulnerable = (
-            (benunit("severe_disability_premium", period) > 0)
-            | benunit("bassetlaw_council_tax_reduction_sdp_transitional_award", period)
+        vulnerable = (benunit("severe_disability_premium", period) > 0) | benunit(
+            "bassetlaw_council_tax_reduction_sdp_transitional_award", period
         )
         uc_award = max_(
             benunit("universal_credit_pre_benefit_cap", period),
             benunit("universal_credit", period),
         )
-        maximum_uc = (uc_award > 0) & (
-            uc_award >= benunit("uc_maximum_amount", period)
-        )
+        maximum_uc = (uc_award > 0) & (uc_award >= benunit("uc_maximum_amount", period))
         passported_band_2 = (
             benunit("council_tax_reduction_relevant_income_based_benefit", period)
             | maximum_uc
