@@ -13130,6 +13130,531 @@
     cumberland_council_tax_reduction: [1_753.12, 0]
     council_tax_reduction: 1_753.12
 
+- name: Coventry awards 80 percent support when weekly excess income is below 15 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_779.48
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+  output:
+    coventry_council_tax_reduction_support_rate: 0.8
+    coventry_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+
+- name: Coventry awards 65 percent support at 15 pounds weekly excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_780
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_support_rate: 0.65
+    coventry_council_tax_reduction: 1_170
+    council_tax_reduction: 1_170
+
+- name: Coventry uses UC assessed income plus award for the excess-income band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_earned_income: 9_780
+        uc_unearned_income: 0
+        uc_maximum_amount: 10_000
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    coventry_council_tax_reduction_uc_applicable_income: 10_780
+    coventry_council_tax_reduction_support_rate: 0.65
+    coventry_council_tax_reduction: 1_170
+    simulated_council_tax_reduction_benunit: 1_170
+    council_tax_reduction: 1_170
+
+- name: Coventry awards 40 percent support at 40 pounds weekly excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 12_080
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_support_rate: 0.4
+    coventry_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Coventry awards 20 percent support at 70 pounds weekly excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 13_640
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_support_rate: 0.2
+    coventry_council_tax_reduction: 360
+    council_tax_reduction: 360
+
+- name: Coventry awards no support at 80 pounds weekly excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 14_160
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_support_rate: 0
+    coventry_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Coventry excludes applicants with capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000.01
+  output:
+    coventry_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Coventry deducts the non-working non-dependant amount from the award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_000
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    coventry_council_tax_reduction: [1_169.60, 0]
+    council_tax_reduction: 1_169.60
+
+- name: Coventry uses gross-income non-dependant bands without a 16-hour work gate
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_000
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_non_dep_deductions: [551.20, 0]
+    coventry_council_tax_reduction: [888.80, 0]
+    council_tax_reduction: 888.80
+
+- name: Coventry applies one non-dependant deduction for a couple using joint gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 25
+        employment_income: 10_400
+      non_dep_2:
+        age: 25
+        private_pension_income: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_000
+      other_benunit:
+        members: [non_dep_1, non_dep_2]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_non_dep_deductions: [551.20, 0]
+    coventry_council_tax_reduction: [888.80, 0]
+    council_tax_reduction: 888.80
+
+- name: Coventry exempts UC non-dependants whose UC award has no earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        coventry_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_000
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    coventry_council_tax_reduction_non_dep_deductions: [0, 0]
+    coventry_council_tax_reduction: [1_440, 0]
+    council_tax_reduction: 1_440
+
+- name: Coventry keeps pension-age UC claimants in the local excess-income scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 10_000
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    coventry_council_tax_reduction_is_local_scheme: true
+    coventry_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+
+- name: Coventry keeps mixed-age couples with a working-age applicant in the local scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 10_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    coventry_council_tax_reduction_is_local_scheme: true
+    coventry_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+
+- name: Coventry keeps pension-age income-based benefit claimants in the local excess-income scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        income_support: 1_000
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 20_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COVENTRY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    coventry_council_tax_reduction_is_local_scheme: true
+    coventry_council_tax_reduction_support_rate: 0.8
+    coventry_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+
 - name: Herefordshire provides full working-age CTR when income does not exceed the applicable amount
   period: 2026
   absolute_error_margin: 0.5

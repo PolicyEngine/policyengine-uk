@@ -14,10 +14,11 @@ Work autonomously on branch `codex/ctr-framework`: encode more remaining Council
 
 - PR: https://github.com/PolicyEngine/policyengine-uk/pull/1534
 - Branch: `codex/ctr-framework`
-- Last known pushed head from this handoff: `cd65bac2e`
-- Coverage at this checkpoint: `78` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
-- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -c policyengine_uk` passed with `646` tests.
-- Recent completed schemes: Thurrock, Chelmsford, Cheshire West and Chester.
+- Last known pushed head before the Coventry batch: `4f4690621`; pull latest before continuing.
+- Coverage at this checkpoint: `79` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n Coventry` passed with `14` tests.
+- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -c policyengine_uk` passed with `672` tests.
+- Recent completed schemes: Chelmsford, Cheshire West and Chester, Chichester, Coventry.
 
 Before continuing, pull the latest branch and inspect current status:
 
@@ -42,6 +43,8 @@ For each council:
 - If a current-year report says the scheme is unchanged, pair that current report with the carried-forward full scheme and cite both.
 - Do not implement an income-banded scheme from headline summaries alone; if thresholds are missing, mark it source incomplete in `scheme_work_queue.md`.
 - Add failing YAML tests first in `policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml`.
+- For UC branches, add at least one positive UC-income regression with no source override: include a positive UC award, UC assessed earned or unearned income, and a different legacy CTR applicable income so the test proves the implementation is not using `would_claim_uc` or the UC award alone.
+- For pension-age carve-outs, assert both the jurisdiction variable and `simulated_council_tax_reduction_benunit` so local-rule cases do not double-count the national pensioner scheme. Include a mixed-age couple test where the scheme keys off the applicant or partner rather than a household-wide pensioner flag.
 - Keep implementation jurisdiction-scoped:
   - Parameters: `policyengine_uk/parameters/gov/local_authorities/<authority>/council_tax_reduction/`
   - Variables: `policyengine_uk/variables/gov/local_authorities/<authority>/council_tax_reduction/`
@@ -59,14 +62,17 @@ For each council:
 Check these every time:
 
 - Actual UC award versus `would_claim_uc`.
-- UC assessed income and capital where the source references DWP or UC calculations.
+- UC assessed income and capital where the source references DWP or UC calculations. Do not use the UC award alone unless the source explicitly says the award is the income base.
 - Pre-deduction or pre-benefit-cap UC award where source requires it.
+- UC earnings before allowances/work allowances versus `uc_earned_income` after allowances. If the source says before allowances, use or create a source input/proxy and test a work-allowance case.
 - Capital boundary wording: `more than`, `at least`, `exceeds`, `does not exceed`, and exact threshold tests.
 - Tariff income rounding: complete blocks versus complete-or-partial blocks.
 - Minimum award cutoffs.
 - Band caps and protected exceptions.
 - Non-dependant deduction ordering, gross versus earned income, remunerative-work hours, and one-deduction couple rules.
+- Do not add a 16-hour/remunerative-work gate to non-dependant earnings tables unless the non-dependant section itself says so. Some schemes define remunerative work for childcare only while applying non-dependant gross-income bands at any hours.
 - Pension-age UC or income-based benefit local-rule carve-outs, including tests that avoid double-counting national pensioner CTR.
+- Applicant/partner pension-age wording versus household-wide pensioner flags. A working-age applicant with a pension-age partner can still be in the local scheme even though `council_tax_reduction_household_has_pensioner` is true.
 - Source conflicts between live pages, summaries, examples, and adopted scheme PDFs. Document conflicts in `scheme_work_queue.md`.
 
 ## Verification before push
@@ -96,30 +102,6 @@ gh pr checks 1534 --watch=false
 
 ## Next candidates
 
-### Chichester
-
-- Enum exists: `LocalAuthority.CHICHESTER`
-- Sources:
-  - https://chichester.moderngov.co.uk/documents/s30862/09.0%20Local%20Council%20Tax%20Reduction%20Scheme%202026-27.pdf
-  - https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf
-- Shape: hybrid legacy means test plus UC income bands.
-- Headline rules from scout:
-  - Max support `100%`.
-  - Non-UC Class D full support if income is below applicable amount, passported, or maximum UC.
-  - Non-UC Class E taper is `20%` of excess income.
-  - Capital above `GBP 16,000` excludes, so `GBP 16,000` eligible and `GBP 16,000.01` excluded.
-  - No Band cap found.
-  - UC Class F bands by household type, using DWP UC income.
-  - Class F flat `GBP 3.90` weekly deduction for each 18+ non-dependant in remunerative work.
-- Suggested tests:
-  - No-income non-UC claimant on Band D `GBP 1,800`: `GBP 1,800`.
-  - Non-UC excess income `GBP 10/week`: `GBP 1,695.71`.
-  - UC single income `GBP 124.00/week`: `GBP 1,800`; `GBP 124.01/week`: `GBP 1,440`.
-  - UC single income `GBP 218.01/week`: `GBP 0`.
-  - Capital `GBP 16,000` eligible; `GBP 16,000.01` excluded.
-  - Class F full-support band with one working non-dependant: `GBP 1,596.43`.
-- Trap: UC couple `60%` band appears typoed as `GBP 206.01-GBP 2229.00`; confirm against report or older scheme before encoding that cell.
-
 ### Cotswold
 
 - Enum exists: `LocalAuthority.COTSWOLD`
@@ -144,31 +126,6 @@ gh pr checks 1534 --watch=false
   - Capital `GBP 10,000` eligible; `GBP 10,000.01` excluded.
   - Band 1 with one non-working non-dependant: `GBP 1,528.71`.
 - Trap: protected group is not banded; it uses liability less non-dependants less `20%` of excess over applicable amount.
-
-### Coventry
-
-- Enum exists: `LocalAuthority.COVENTRY`
-- Sources:
-  - https://www.coventry.gov.uk/downloads/download/2513/council-tax-support-scheme
-  - https://www.coventry.gov.uk/downloads/file/46761/council-tax-support-scheme-2026-to-2027
-- Shape: simple excess-income banded scheme.
-- Headline rules from scout:
-  - Max support is `80%` of liability.
-  - Weekly excess-income bands: `0-14.99` 80%, `15-39.99` 65%, `40-69.99` 40%, `70-79.99` 20%, `80+` zero.
-  - Capital above `GBP 16,000` excluded, so `GBP 16,000` eligible and `GBP 16,000.01` excluded.
-  - No Band cap found.
-  - UC cases use DWP UC income estimate plus UC award, with UC capital estimate for UC cases.
-  - Non-dependants: `GBP 15.95/week` working, `GBP 5.20/week` non-working, gross-income reduced working rates, one deduction per couple, UC non-dependant with no earned income exempt.
-  - Pension-age UC local-rule carve-out with relevant-period protection.
-- Suggested tests:
-  - Excess income `GBP 0/week`: `GBP 1,440`.
-  - Excess income `GBP 15/week`: `GBP 1,170`.
-  - Excess income `GBP 40/week`: `GBP 720`.
-  - Excess income `GBP 70/week`: `GBP 360`.
-  - Excess income `GBP 80/week`: `GBP 0`.
-  - Capital `GBP 16,000` eligible; `GBP 16,000.01` excluded.
-  - Band 1 with one non-working non-dependant: `GBP 1,168.71`.
-- Trap: do not multiply the `80%` maximum by the `80%` band again; the band percentages are direct percentages of liability.
 
 ## Source-incomplete note
 
