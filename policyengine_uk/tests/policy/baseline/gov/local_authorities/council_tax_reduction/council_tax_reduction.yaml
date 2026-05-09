@@ -22980,6 +22980,83 @@
     chichester_council_tax_reduction: 1_440
     council_tax_reduction: 1_440
 
+- name: Chichester uses UC assessed earnings before the work allowance when source UC income is absent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_mif_capped_earned_income: 6_448.52
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    chichester_council_tax_reduction_uc_applicable_income: 6_449.52
+    chichester_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Chichester deducts the UC childcare element from UC income banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 6_500
+        universal_credit_pre_benefit_cap: 6_500
+        uc_childcare_element: 1_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    chichester_council_tax_reduction_uc_applicable_income: 5_500
+    chichester_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
 - name: Chichester gives no support once a UC single claimant is above the final income band
   period: 2026
   absolute_error_margin: 0.5
@@ -23066,7 +23143,50 @@
     chichester_council_tax_reduction: [1_597.20, 0]
     council_tax_reduction: 1_597.20
 
-- name: Chichester keeps pension-age UC claimants in the local UC-banded scheme
+- name: Chichester keeps mixed-age UC couples in the local UC-banded scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 6_448
+        universal_credit_pre_benefit_cap: 6_448
+        chichester_council_tax_reduction_source_uc_income: 6_448
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_maximum_amount: 12_000
+        uc_reported_capital: 1_000
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: CHICHESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    chichester_council_tax_reduction_is_local_scheme: true
+    chichester_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Chichester leaves single pension-age UC claimants in the national pensioner scheme
   period: 2026
   absolute_error_margin: 0.5
   input:
@@ -23102,8 +23222,8 @@
         savings: 0
   output:
     council_tax_reduction_household_has_pensioner: true
-    chichester_council_tax_reduction_is_local_scheme: true
-    chichester_council_tax_reduction: 1_800
+    chichester_council_tax_reduction_is_local_scheme: false
+    chichester_council_tax_reduction: 0
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
 
