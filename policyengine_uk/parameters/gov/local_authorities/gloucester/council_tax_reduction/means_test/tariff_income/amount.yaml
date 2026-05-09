@@ -1,0 +1,11 @@
+description: Weekly tariff income amount per capital block under Gloucester's working-age Local Council Tax Support scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Gloucester Local Council Tax Support tariff income amount
+  reference:
+    - title: Gloucester City Council Local Council Tax Support Policy 2026
+      href: https://www.gloucester.gov.uk/media/ruwinppa/local-council-tax-support-policy-2026-v2.pdf
+

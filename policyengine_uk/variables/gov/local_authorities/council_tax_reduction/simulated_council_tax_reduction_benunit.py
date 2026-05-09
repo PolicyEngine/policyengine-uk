@@ -48,6 +48,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "fenland_council_tax_reduction",
     "gateshead_council_tax_reduction",
     "greenwich_council_tax_reduction",
+    "gloucester_council_tax_reduction",
     "haringey_council_tax_reduction",
     "harrow_council_tax_reduction",
     "havering_council_tax_reduction",
@@ -162,6 +163,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         dartford_local_scheme = benunit(
             "dartford_council_tax_reduction_is_local_scheme", period
         )
+        gloucester_local_scheme = benunit(
+            "gloucester_council_tax_reduction_is_local_scheme", period
+        )
         herefordshire_local_scheme = benunit(
             "herefordshire_council_tax_reduction_is_local_scheme", period
         )
@@ -225,6 +229,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~cotswold_local_scheme
             & ~coventry_local_scheme
             & ~dartford_local_scheme
+            & ~gloucester_local_scheme
             & ~herefordshire_local_scheme
             & ~ipswich_local_scheme
             & ~kingston_upon_hull_local_scheme

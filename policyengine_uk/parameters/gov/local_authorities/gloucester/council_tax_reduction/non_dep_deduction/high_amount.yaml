@@ -1,0 +1,11 @@
+description: Weekly high non-dependant deduction under Gloucester's working-age Local Council Tax Support scheme.
+values:
+  2026-04-01: 12.40
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Gloucester Local Council Tax Support high non-dependant deduction
+  reference:
+    - title: Gloucester City Council Local Council Tax Support Policy 2026
+      href: https://www.gloucester.gov.uk/media/ruwinppa/local-council-tax-support-policy-2026-v2.pdf
+

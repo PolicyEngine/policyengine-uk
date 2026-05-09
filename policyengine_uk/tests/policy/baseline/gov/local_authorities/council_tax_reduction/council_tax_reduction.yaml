@@ -7961,6 +7961,581 @@
     council_tax_reduction: 1124.4
     council_tax_less_benefit: 675.6
 
+- name: Gloucester working-age claimant can receive full support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    gloucester_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+    council_tax_less_benefit: 0
+
+- name: Gloucester tapers support at 20 percent of excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_applicable_amount: 4_948.81
+    council_tax_reduction_applicable_income: 6_000
+    gloucester_council_tax_reduction: 1_590
+    council_tax_reduction: 1_590
+
+- name: Gloucester follows the exact 16,000 pound capital boundary
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+  output:
+    gloucester_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Gloucester excludes capital one penny above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000.01
+  output:
+    gloucester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Gloucester uses UC assessed income and capital for a UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 10_000
+        universal_credit: 5_200
+        uc_earned_income: 5_200
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    gloucester_council_tax_reduction_uc_applicable_income: 10_400
+    gloucester_council_tax_reduction: 1_720
+    council_tax_reduction: 1_720
+
+- name: Gloucester follows the UC assessed capital boundary
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 6_000
+        universal_credit: 5_200
+        uc_assessable_capital: 16_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    gloucester_council_tax_reduction: 1_542.40
+    council_tax_reduction: 1_542.40
+
+- name: Gloucester excludes UC assessed capital one penny above the limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        uc_maximum_amount: 5_200
+        universal_credit: 5_200
+        uc_assessable_capital: 16_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    gloucester_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Gloucester deducts six pounds for a lower-earning remunerative-work non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 15_600
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    gloucester_council_tax_reduction_non_dep_deductions: [312, 0]
+    gloucester_council_tax_reduction: [1_488, 0]
+    council_tax_reduction: 1_488
+
+- name: Gloucester deducts 12.40 pounds for a higher-earning non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 19_604
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    gloucester_council_tax_reduction_non_dep_deductions: [644.8, 0]
+    gloucester_council_tax_reduction: [1_155.2, 0]
+    council_tax_reduction: 1_155.2
+
+- name: Gloucester applies one deduction for a non-UC non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 19_604
+        weekly_hours: 35
+      non_dep_partner:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    gloucester_council_tax_reduction_non_dep_deductions: [644.8, 0]
+    gloucester_council_tax_reduction: [1_155.2, 0]
+    council_tax_reduction: 1_155.2
+
+- name: Gloucester does not collapse a Universal Credit non-dependant couple to one deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        gloucester_council_tax_reduction_non_dep_uc_earned_income: 19_604
+      non_dep_partner:
+        age: 30
+        gloucester_council_tax_reduction_non_dep_uc_earned_income: 19_604
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    gloucester_council_tax_reduction_non_dep_deductions: [1_289.6, 0]
+    gloucester_council_tax_reduction: [510.4, 0]
+    council_tax_reduction: 510.4
+
+- name: Gloucester treats zero UC earned income as the low non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 19_604
+        weekly_hours: 35
+        gloucester_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    gloucester_council_tax_reduction_non_dep_deductions: [312, 0]
+    gloucester_council_tax_reduction: [1_488, 0]
+    council_tax_reduction: 1_488
+
+- name: Gloucester keeps pension-age Universal Credit cases in the local scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        uc_maximum_amount: 5_200
+        universal_credit: 5_200
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    gloucester_council_tax_reduction_is_local_scheme: true
+    gloucester_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Gloucester keeps pension-age income-based benefit cases in the local scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        income_support: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_relevant_income_based_benefit: true
+    gloucester_council_tax_reduction_is_local_scheme: true
+    gloucester_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Gloucester leaves ordinary pensioner households to the national pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    gloucester_council_tax_reduction_is_local_scheme: false
+    gloucester_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Gloucester leaves ordinary mixed-age households to the national pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+      partner:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: GLOUCESTER
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    gloucester_council_tax_reduction_is_local_scheme: false
+    gloucester_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: King's Lynn and West Norfolk working-age claimant can receive full support
   period: 2025
   absolute_error_margin: 0.5
