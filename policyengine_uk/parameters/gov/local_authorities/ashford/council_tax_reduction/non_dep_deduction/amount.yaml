@@ -1,0 +1,10 @@
+description: Weekly working-age non-dependant deduction under Ashford's Council Tax Reduction scheme.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Ashford Council Tax Reduction non-dependant deduction
+  reference:
+    - title: Ashford Borough Council Tax Reduction Scheme 2026/27, section 58
+      href: https://www.ashford.gov.uk/media/0n4nud13/ashford-ctr-scheme-2026-final.pdf

@@ -24826,6 +24826,660 @@
     cheshire_west_and_chester_council_tax_reduction: [1_090, 0]
     council_tax_reduction: 1_090
 
+- name: Ashford awards 90 percent support in Band 1 for a single claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    ashford_council_tax_reduction_weekly_income: 0
+    ashford_council_tax_reduction_support_rate: 0.9
+    ashford_council_tax_reduction: 1_620
+    simulated_council_tax_reduction_benunit: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford uses the adopted PDF single boundary at the first penny of Band 2
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 6_610.24
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    ashford_council_tax_reduction_weekly_income: 127.12
+    ashford_council_tax_reduction_support_rate: 0.75
+    ashford_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Ashford uses the adopted PDF couple boundary at the first penny of Band 2
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 35
+        miscellaneous_income: 8_775.52
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    ashford_council_tax_reduction_weekly_income: 168.76
+    ashford_council_tax_reduction_support_rate: 0.75
+    ashford_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Ashford caps Band H liability at the Band D equivalent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    ashford_council_tax_reduction_maximum_eligible_liability: 1_800
+    ashford_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford allows exactly 10,000 pounds of capital but excludes one penny above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      claimant_over:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      over_limit:
+        members: [claimant_over]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000
+      over_limit_household:
+        members: [claimant_over]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000.01
+  output:
+    ashford_council_tax_reduction: [1_620, 0]
+    council_tax_reduction: [1_620, 0]
+
+- name: Ashford adds part-block tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 6_558.24
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    ashford_council_tax_reduction_weekly_tariff_income: 1
+    ashford_council_tax_reduction_weekly_income: 127.12
+    ashford_council_tax_reduction_support_rate: 0.75
+    ashford_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Ashford disregards the UC housing element from UC award income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 15_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_housing_costs_element: 10_000
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    ashford_council_tax_reduction_weekly_income: 96.15
+    ashford_council_tax_reduction_support_rate: 0.9
+    ashford_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford applies the earnings disregard to UC assessed earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_housing_costs_element: 1
+        uc_earned_income: 6_610.24
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    ashford_council_tax_reduction_earnings_disregard: 1_300
+    ashford_council_tax_reduction_weekly_income: 102.12
+    ashford_council_tax_reduction_support_rate: 0.9
+    ashford_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford applies the disability and carer disregard to non-UC other income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 7_910.24
+        pip_dl: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    ashford_council_tax_reduction_disability_or_carer_income_disregard: true
+    ashford_council_tax_reduction_weekly_income: 112.12
+    ashford_council_tax_reduction_support_rate: 0.9
+    ashford_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford applies the disability and carer disregard to UC other income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_housing_costs_element: 1
+        uc_earned_income: 0
+        uc_unearned_income: 7_911.24
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    ashford_council_tax_reduction_disability_or_carer_income_disregard: true
+    ashford_council_tax_reduction_weekly_income: 112.12
+    ashford_council_tax_reduction_support_rate: 0.9
+    ashford_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford requires tax credits before deducting childcare from non-UC earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 7_910.24
+        childcare_expenses: 5_200
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    ashford_council_tax_reduction_childcare_deduction: 0
+    ashford_council_tax_reduction_weekly_income: 127.12
+    ashford_council_tax_reduction_support_rate: 0.75
+    ashford_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Ashford awards Band 1 support for income-based passporting benefits
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 26_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        income_support: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    ashford_council_tax_reduction_support_rate: 0.9
+    ashford_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford excludes UC claimants whose UC-assessed capital exceeds 10,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_housing_costs_element: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 10_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    ashford_council_tax_reduction_weekly_income: 0
+    ashford_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Ashford deducts non-dependants from the award after applying the support rate
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    ashford_council_tax_reduction_non_dep_deductions: [520, 0]
+    ashford_council_tax_reduction: [1_100, 0]
+    council_tax_reduction: 1_100
+
+- name: Ashford local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 5_000
+        uc_housing_costs_element: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    ashford_council_tax_reduction_is_local_scheme: true
+    ashford_council_tax_reduction: 1_620
+    simulated_council_tax_reduction_benunit: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford local scheme covers mixed-age couples with a working-age applicant or partner
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    ashford_council_tax_reduction_is_local_scheme: true
+    ashford_council_tax_reduction: 1_620
+    simulated_council_tax_reduction_benunit: 1_620
+    council_tax_reduction: 1_620
+
+- name: Ashford keeps regulation 60A pension-age UC claimants in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 5_000
+        uc_housing_costs_element: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        ashford_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    ashford_council_tax_reduction_is_local_scheme: false
+    ashford_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Ashford keeps relevant-period pension-age UC claimants in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 5_000
+        uc_housing_costs_element: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        ashford_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ASHFORD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    ashford_council_tax_reduction_is_local_scheme: false
+    ashford_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Bassetlaw awards 88 percent support at the top of Band 2
   period: 2026
   absolute_error_margin: 0.5

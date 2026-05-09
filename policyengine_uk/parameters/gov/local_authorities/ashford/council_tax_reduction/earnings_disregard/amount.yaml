@@ -1,0 +1,10 @@
+description: Weekly earnings disregard under Ashford's working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 25
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Ashford Council Tax Reduction earnings disregard
+  reference:
+    - title: Ashford Borough Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.ashford.gov.uk/media/0n4nud13/ashford-ctr-scheme-2026-final.pdf

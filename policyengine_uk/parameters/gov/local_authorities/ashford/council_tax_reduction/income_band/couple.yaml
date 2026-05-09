@@ -1,0 +1,35 @@
+description: Council Tax Reduction support rate by weekly income band for couples under Ashford's working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.90
+  - threshold:
+      2026-04-01: 168.76
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 232.31
+    amount:
+      2026-04-01: 0.60
+  - threshold:
+      2026-04-01: 295.86
+    amount:
+      2026-04-01: 0.45
+  - threshold:
+      2026-04-01: 359.42
+    amount:
+      2026-04-01: 0.30
+  - threshold:
+      2026-04-01: 422.97
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Ashford Council Tax Reduction couple weekly income support rate
+  reference:
+    - title: Ashford Borough Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.ashford.gov.uk/media/0n4nud13/ashford-ctr-scheme-2026-final.pdf

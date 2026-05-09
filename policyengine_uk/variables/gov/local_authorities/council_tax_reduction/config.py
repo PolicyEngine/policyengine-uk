@@ -10,6 +10,10 @@ def is_adur(local_authority):
     return local_authority == LocalAuthority.ADUR
 
 
+def is_ashford(local_authority):
+    return local_authority == LocalAuthority.ASHFORD
+
+
 def is_babergh(local_authority):
     return local_authority == LocalAuthority.BABERGH
 
@@ -376,6 +380,10 @@ def is_east_suffolk_working_age(local_authority, country, has_pensioner):
 
 def is_adur_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_adur(local_authority)
+
+
+def is_ashford_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_ashford(local_authority)
 
 
 def is_basingstoke_and_deane_working_age(local_authority, country, has_pensioner):
@@ -784,6 +792,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_scotland_scheme(country)
         | is_wales_scheme(country)
         | is_adur_working_age(local_authority, country, has_pensioner)
+        | is_ashford_working_age(local_authority, country, has_pensioner)
         | is_babergh_working_age(local_authority, country, has_pensioner)
         | is_basingstoke_and_deane_working_age(
             local_authority,

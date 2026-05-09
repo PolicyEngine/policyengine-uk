@@ -1,0 +1,10 @@
+description: Capital limit under Ashford's working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 10_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Ashford Council Tax Reduction capital limit
+  reference:
+    - title: Ashford Borough Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.ashford.gov.uk/media/0n4nud13/ashford-ctr-scheme-2026-final.pdf

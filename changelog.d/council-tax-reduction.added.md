@@ -7,3 +7,5 @@ Added Chichester's 2026/27 hybrid Council Tax Reduction scheme, combining a lega
 Added Coventry's 2026/27 excess-income banded Council Tax Reduction scheme, including UC assessed income and capital treatment, pension-age UC local-scheme cases, and gross-income non-dependant deductions.
 
 Added Bassetlaw's 2026/27 weekly net-income banded Council Tax Reduction scheme, including Band C liability cap, UC assessed income and capital treatment, pension-age UC protection flags, childcare deductions, tariff income, and flat non-dependant deductions.
+
+Added Ashford's 2026/27 weekly net-income banded Council Tax Reduction scheme, including Band D liability cap, Schedule 2 and 3 income disregards, UC award element disregards, pension-age UC protection flags, tariff income, and flat final-award non-dependant deductions.

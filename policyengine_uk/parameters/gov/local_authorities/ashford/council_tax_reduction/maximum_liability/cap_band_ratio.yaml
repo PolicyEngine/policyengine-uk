@@ -1,0 +1,10 @@
+description: Maximum English council tax band ratio eligible for Ashford Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Ashford Council Tax Reduction Band D liability cap ratio
+  reference:
+    - title: Ashford Borough Council Tax Reduction Scheme 2026/27, section 57
+      href: https://www.ashford.gov.uk/media/0n4nud13/ashford-ctr-scheme-2026-final.pdf
