@@ -39,3 +39,26 @@
       is_married: true
   output:
     marriage_allowance: [0, 0]
+
+# Regression test for issue #1666: children in a married benefit unit must not
+# receive (negative) Marriage Allowance and must not be taxed on phantom income.
+- name: Children in married benunit do not transfer Marriage Allowance
+  period: 2026
+  input:
+    people:
+      adult1:
+        age: 42
+        employment_income: 55_000
+      adult2:
+        age: 40
+        employment_income: 35_000
+      child1:
+        age: 8
+      child2:
+        age: 3
+    benunit:
+      members: [adult1, adult2, child1, child2]
+      is_married: true
+  output:
+    marriage_allowance: [0, 0, 0, 0]
+    income_tax: [9_432, 4_486, 0, 0]

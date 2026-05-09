@@ -27,14 +27,17 @@ class marriage_allowance(Variable):
     def formula(person, period, parameters):
         marital = person("marital_status", period)
         married = marital == marital.possible_values.MARRIED
-        eligible = married & person(
-            "meets_marriage_allowance_income_conditions", period
+        is_adult = person("is_adult", period)
+        eligible = (
+            married
+            & is_adult
+            & person("meets_marriage_allowance_income_conditions", period)
         )
         transferable_amount = person("partners_unused_personal_allowance", period)
         allowances = parameters(period).gov.hmrc.income_tax.allowances
         capped_percentage = allowances.marriage_allowance.max
         max_amount = allowances.personal_allowance.amount * capped_percentage
-        amount_if_eligible_pre_rounding = min_(transferable_amount, max_amount)
+        amount_if_eligible_pre_rounding = max_(min_(transferable_amount, max_amount), 0)
         # Round up.
         rounding_increment = allowances.marriage_allowance.rounding_increment
         amount_if_eligible = (
