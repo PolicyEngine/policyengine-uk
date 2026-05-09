@@ -21,3 +21,5 @@ Added South Derbyshire's 2026/27 excess-income banded Council Tax Reduction sche
 Added South Gloucestershire's working-age earned-income banded Council Tax Reduction scheme, including the 77 percent to zero weekly earnings table, formal 6,000 pound capital boundary, UC assessed-earnings and capital treatment, pension-age UC protection flags, applicant/partner capital source input, and 3.50/14 pound weekly non-dependant deductions after the support percentage.
 
 Added Gloucester's 2026 Local Council Tax Support scheme, including full ordinary maximum support, the 20 percent taper, tariff income, 16,000 pound capital limit, UC assessed-income and capital treatment, pension-age UC local-scheme cases, and local working-age non-dependant deductions.
+
+Added Bath and North East Somerset's 2026/27 Council Tax Reduction scheme, including the ordinary 78 percent non-UC maximum with a Band D cap, protected 100 percent support and 16,000 pound capital limit, 20 percent taper, tariff income, UC Class F income bands with child increments, UC-assessed capital treatment, and pension-age UC local-scheme cases.

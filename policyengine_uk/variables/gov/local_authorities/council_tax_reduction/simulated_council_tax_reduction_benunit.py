@@ -15,6 +15,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "barking_and_dagenham_council_tax_reduction",
     "barnet_council_tax_reduction",
     "basingstoke_and_deane_council_tax_reduction",
+    "bath_and_north_east_somerset_council_tax_reduction",
     "bassetlaw_council_tax_reduction",
     "bolton_council_tax_reduction",
     "breckland_council_tax_reduction",
@@ -136,6 +137,10 @@ class simulated_council_tax_reduction_benunit(Variable):
         bassetlaw_local_scheme = benunit(
             "bassetlaw_council_tax_reduction_is_local_scheme", period
         )
+        bath_and_north_east_somerset_local_scheme = benunit(
+            "bath_and_north_east_somerset_council_tax_reduction_is_local_scheme",
+            period,
+        )
         buckinghamshire_local_scheme = benunit(
             "buckinghamshire_council_tax_reduction_is_local_scheme", period
         )
@@ -220,6 +225,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~babergh_local_scheme
             & ~basildon_local_scheme
             & ~bassetlaw_local_scheme
+            & ~bath_and_north_east_somerset_local_scheme
             & ~buckinghamshire_local_scheme
             & ~chelmsford_local_scheme
             & ~cheltenham_local_scheme

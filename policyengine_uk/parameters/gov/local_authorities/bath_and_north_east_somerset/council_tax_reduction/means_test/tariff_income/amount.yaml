@@ -1,0 +1,10 @@
+description: Weekly tariff income amount per complete capital block under Bath and North East Somerset's non-UC working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Bath and North East Somerset Council Tax Reduction tariff income amount
+  reference:
+    - title: Bath and North East Somerset Council Tax Reduction Scheme 2026/27
+      href: https://www.bathnes.gov.uk/sites/default/files/2026-01/Council_Tax_reduction_scheme_April_1_2026_to_March_31_2027.pdf

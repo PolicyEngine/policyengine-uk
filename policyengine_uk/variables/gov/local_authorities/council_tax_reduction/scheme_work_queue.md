@@ -7,7 +7,7 @@ For a minimal autonomous Codex handoff prompt, see `agent_handoff.md`.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `89` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `90` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -60,6 +60,7 @@ Each council dossier should capture:
 | Westminster | Implemented | Legacy full support with 2026/27 remunerative-work non-dependant deductions | https://www.westminster.gov.uk/sites/default/files/media/documents/council-tax-support-scheme-for-2026-27.pdf |
 | Greenwich | Implemented | Legacy 80 percent with `25%` taper, tariff income, and flat working-age non-dependant deduction | https://www.royalgreenwich.gov.uk/help-money/get-help-paying-your-housing-costs-and-council-tax/apply-help-pay-your-council-tax/how-much |
 | Gloucester | Implemented | Legacy full support with `20%` taper, part-block tariff income, `GBP 16,000` capital limit, UC assessed income/capital branch, pension-age UC/income-based-benefit local cases, and `GBP 6`/`GBP 12.40` weekly working-age non-dependant deductions with a UC-couple exception. | https://www.gloucester.gov.uk/media/ruwinppa/local-council-tax-support-policy-2026-v2.pdf |
+| Bath and North East Somerset | Implemented | Hybrid scheme: non-UC ordinary cases receive `78%` maximum support with a Band D cap, `20%` taper, tariff income above `GBP 6,000`, and a `GBP 10,000` capital limit; protected cases receive `100%` support with a `GBP 16,000` capital limit; UC Class F cases use PDF weekly income bands with `GBP 50` child increments and a `GBP 6,000` UC-assessed capital limit. The live page still prints older UC band starting amounts, so implementation follows the adopted 2026/27 PDF. | https://www.bathnes.gov.uk/sites/default/files/2026-01/Council_Tax_reduction_scheme_April_1_2026_to_March_31_2027.pdf |
 | Hackney | Implemented | Legacy 90 percent with tariff income and 2026/27 remunerative-work non-dependant deductions | https://www.hackney.gov.uk/council-tax-and-benefits/benefits/benefits-explained/housing-benefit-and-council-tax-reduction-explained |
 | Hammersmith and Fulham | Implemented | Legacy full support with tariff income and 2026/27 uprated non-dependant deductions | https://democracy.lbhf.gov.uk/documents/s133438/Council%20Tax%20Support%20Scheme%202026-27.pdf |
 | Stockport | Implemented | Legacy full support with Band A/B caps, tariff income, and two-rate gross-income non-dependant deductions | https://www.stockport.gov.uk/council-tax-support-scheme |

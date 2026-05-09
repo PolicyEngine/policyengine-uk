@@ -8536,6 +8536,458 @@
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
 
+- name: Bath and North East Somerset gives ordinary non-UC claimants 78 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    bath_and_north_east_somerset_council_tax_reduction: 1_404
+    council_tax_reduction: 1_404
+
+- name: Bath and North East Somerset caps ordinary non-UC support at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    bath_and_north_east_somerset_council_tax_reduction_maximum_eligible_liability: 1_800
+    bath_and_north_east_somerset_council_tax_reduction: 1_404
+    council_tax_reduction: 1_404
+
+- name: Bath and North East Somerset protected non-UC claimants get 100 percent uncapped support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        bath_and_north_east_somerset_council_tax_reduction_protected_group: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 16_000
+  output:
+    bath_and_north_east_somerset_council_tax_reduction_maximum_eligible_liability: 3_600
+    bath_and_north_east_somerset_council_tax_reduction: 3_600
+    council_tax_reduction: 3_600
+
+- name: Bath and North East Somerset tapers ordinary non-UC excess income at 20 percent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_applicable_amount: 4_948.81
+    council_tax_reduction_applicable_income: 6_000
+    bath_and_north_east_somerset_council_tax_reduction: 1_193.76
+    council_tax_reduction: 1_193.76
+
+- name: Bath and North East Somerset applies the ordinary 10,000 pound capital boundary
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000
+  output:
+    bath_and_north_east_somerset_council_tax_reduction_tariff_income: 832
+    bath_and_north_east_somerset_council_tax_reduction: 1_404
+    council_tax_reduction: 1_404
+
+- name: Bath and North East Somerset excludes ordinary capital one penny above 10,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000.01
+  output:
+    bath_and_north_east_somerset_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Bath and North East Somerset follows the PDF single UC band boundary
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_098.60
+        universal_credit_pre_benefit_cap: 5_098.60
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    bath_and_north_east_somerset_council_tax_reduction_uc_weekly_income: 98.05
+    bath_and_north_east_somerset_council_tax_reduction_support_rate: 1
+    bath_and_north_east_somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Bath and North East Somerset moves single UC claimants to 85 percent at 98.06 weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_099.12
+        universal_credit_pre_benefit_cap: 5_099.12
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    bath_and_north_east_somerset_council_tax_reduction_uc_weekly_income: 98.06
+    bath_and_north_east_somerset_council_tax_reduction_support_rate: 0.85
+    bath_and_north_east_somerset_council_tax_reduction: 1_530
+    council_tax_reduction: 1_530
+
+- name: Bath and North East Somerset adds 50 pounds per child to UC income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 7_698.60
+        universal_credit_pre_benefit_cap: 7_698.60
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    bath_and_north_east_somerset_council_tax_reduction_uc_weekly_income: 148.05
+    bath_and_north_east_somerset_council_tax_reduction_support_rate: 1
+    bath_and_north_east_somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Bath and North East Somerset uses the couple UC band table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 8_003.84
+        universal_credit_pre_benefit_cap: 8_003.84
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    bath_and_north_east_somerset_council_tax_reduction_uc_weekly_income: 153.92
+    bath_and_north_east_somerset_council_tax_reduction_support_rate: 1
+    bath_and_north_east_somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Bath and North East Somerset follows the UC assessed capital boundary
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_098.60
+        universal_credit_pre_benefit_cap: 5_098.60
+        uc_assessable_capital: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    bath_and_north_east_somerset_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Bath and North East Somerset excludes UC capital one penny above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_098.60
+        universal_credit_pre_benefit_cap: 5_098.60
+        uc_assessable_capital: 6_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    bath_and_north_east_somerset_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Bath and North East Somerset keeps pension-age Universal Credit cases local
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 5_098.60
+        universal_credit_pre_benefit_cap: 5_098.60
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    bath_and_north_east_somerset_council_tax_reduction_is_local_scheme: true
+    bath_and_north_east_somerset_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Bath and North East Somerset leaves ordinary pensioners to the national pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BATH_AND_NORTH_EAST_SOMERSET
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    bath_and_north_east_somerset_council_tax_reduction_is_local_scheme: false
+    bath_and_north_east_somerset_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: King's Lynn and West Norfolk working-age claimant can receive full support
   period: 2025
   absolute_error_margin: 0.5

@@ -26,6 +26,10 @@ def is_basingstoke_and_deane(local_authority):
     return local_authority == LocalAuthority.BASINGSTOKE_AND_DEANE
 
 
+def is_bath_and_north_east_somerset(local_authority):
+    return local_authority == LocalAuthority.BATH_AND_NORTH_EAST_SOMERSET
+
+
 def is_bassetlaw(local_authority):
     return local_authority == LocalAuthority.BASSETLAW
 
@@ -419,6 +423,16 @@ def is_basingstoke_and_deane_working_age(local_authority, country, has_pensioner
         (country == Country.ENGLAND)
         & ~has_pensioner
         & is_basingstoke_and_deane(local_authority)
+    )
+
+
+def is_bath_and_north_east_somerset_working_age(
+    local_authority, country, has_pensioner
+):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_bath_and_north_east_somerset(local_authority)
     )
 
 
@@ -854,6 +868,11 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_arun_working_age(local_authority, country, has_pensioner)
         | is_babergh_working_age(local_authority, country, has_pensioner)
         | is_basingstoke_and_deane_working_age(
+            local_authority,
+            country,
+            has_pensioner,
+        )
+        | is_bath_and_north_east_somerset_working_age(
             local_authority,
             country,
             has_pensioner,
