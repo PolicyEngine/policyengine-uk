@@ -1,0 +1,10 @@
+description: Gross weekly income threshold below which Derby applies its local low non-dependant deduction for working non-dependants.
+values:
+  2026-04-01: 100
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Derby Council Tax Support low non-dependant income threshold
+  reference:
+    - title: Derby City Council Tax Support Scheme 2026/2027, section 4
+      href: https://www.derby.gov.uk/media/derbycitycouncil/contentassets/documents/adviceandbenefits/counciltax/council-tax-support-scheme2026-27.pdf

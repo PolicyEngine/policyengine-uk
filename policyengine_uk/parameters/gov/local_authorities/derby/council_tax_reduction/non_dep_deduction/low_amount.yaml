@@ -1,0 +1,10 @@
+description: Derby weekly non-dependant deduction for non-dependants with low earnings or non-working passported or UC status.
+values:
+  2026-04-01: 4
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Derby Council Tax Support low non-dependant deduction
+  reference:
+    - title: Derby City Council Tax Support Scheme 2026/2027, section 4
+      href: https://www.derby.gov.uk/media/derbycitycouncil/contentassets/documents/adviceandbenefits/counciltax/council-tax-support-scheme2026-27.pdf

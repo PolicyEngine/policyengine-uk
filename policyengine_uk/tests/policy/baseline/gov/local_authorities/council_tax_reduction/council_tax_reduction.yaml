@@ -6705,6 +6705,449 @@
     simulated_council_tax_reduction_benunit: 1_440
     council_tax_reduction: 1_440
 
+- name: Derby caps maximum support at 80 percent of Band B liability
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    derby_council_tax_reduction_maximum_eligible_liability: 1_400
+    derby_council_tax_reduction: 1_120
+    council_tax_reduction: 1_120
+
+- name: Derby withdraws 20 percent of excess income under the default means test
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 520
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    derby_council_tax_reduction: 1_016
+    council_tax_reduction: 1_016
+
+- name: Derby allows exactly 6,000 pounds of capital but excludes one penny above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      claimant_over:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      over_limit:
+        members: [claimant_over]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+      over_limit_household:
+        members: [claimant_over]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    derby_council_tax_reduction: [1_120, 0]
+    council_tax_reduction: [1_120, 0]
+
+- name: Derby applies a 4 pound weekly non-dependant deduction below 100 pounds gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 5_148
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    derby_council_tax_reduction_non_dep_deductions: [208, 0]
+    derby_council_tax_reduction: [912, 0]
+    council_tax_reduction: 912
+
+- name: Derby applies the Housing Benefit low non-dependant deduction from 100 pounds gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 5_200
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 5_000
+        savings: 0
+  output:
+    derby_council_tax_reduction_non_dep_deductions: [1_060.8, 0]
+    derby_council_tax_reduction: [2_050.31, 0]
+    council_tax_reduction: 2_050.31
+
+- name: Derby caps Housing Benefit non-dependant deductions at the third retained income rate
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_460
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 10_000
+        savings: 0
+  output:
+    derby_council_tax_reduction_non_dep_deductions: [5_470.4, 0]
+    derby_council_tax_reduction: [751.82, 0]
+    council_tax_reduction: 751.82
+
+- name: Derby applies the non-remunerative-work non-dependant deduction below 16 hours
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_460
+        weekly_hours: 15
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 5_000
+        savings: 0
+  output:
+    derby_council_tax_reduction_non_dep_deductions: [1_060.8, 0]
+    derby_council_tax_reduction: [2_050.31, 0]
+    council_tax_reduction: 2_050.31
+
+- name: Derby charges 4 pounds weekly for a non-working UC non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: true
+        universal_credit: 1
+        uc_earned_income: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    derby_council_tax_reduction_non_dep_deductions: [208, 0]
+    derby_council_tax_reduction: [912, 0]
+    council_tax_reduction: 912
+
+- name: Derby charges 4 pounds weekly for a non-working passported non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+        income_support: 1
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    derby_council_tax_reduction_non_dep_deductions: [208, 0]
+    derby_council_tax_reduction: [912, 0]
+    council_tax_reduction: 912
+
+- name: Derby removes awards below the 4 pound weekly minimum
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: B
+        council_tax: 259
+        savings: 0
+  output:
+    derby_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Derby keeps awards at the exact 4 pound weekly minimum
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: B
+        council_tax: 260
+        savings: 0
+  output:
+    derby_council_tax_reduction: 208
+    council_tax_reduction: 208
+
+- name: Derby leaves pensioner households to the national pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: DERBY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_scheme_supported: true
+    derby_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Gateshead working-age claimant pays the 8.5 percent minimum contribution
   period: 2025
   absolute_error_margin: 0.5

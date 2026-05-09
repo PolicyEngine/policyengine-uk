@@ -1,0 +1,10 @@
+description: Maximum share of Band B-capped eligible Council Tax liability covered under Derby's Council Tax Support scheme.
+values:
+  2026-04-01: 0.8
+metadata:
+  unit: /1
+  period: year
+  label: Derby Council Tax Support maximum support rate
+  reference:
+    - title: Derby City Council Tax Support Scheme 2026/2027, section 3
+      href: https://www.derby.gov.uk/media/derbycitycouncil/contentassets/documents/adviceandbenefits/counciltax/council-tax-support-scheme2026-27.pdf

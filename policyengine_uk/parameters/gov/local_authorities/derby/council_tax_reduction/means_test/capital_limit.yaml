@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under Derby's Council Tax Support scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Derby Council Tax Support capital limit
+  reference:
+    - title: Derby City Council Tax Support Scheme 2026/2027, section 4
+      href: https://www.derby.gov.uk/media/derbycitycouncil/contentassets/documents/adviceandbenefits/counciltax/council-tax-support-scheme2026-27.pdf

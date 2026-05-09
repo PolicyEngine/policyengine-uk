@@ -13,3 +13,5 @@ Added Ashford's 2026/27 weekly net-income banded Council Tax Reduction scheme, i
 Added Arun's 2026/27 weekly net-income banded Council Tax Reduction scheme, including the live 100 percent maximum support table, UC award element disregards, UC-assessed capital treatment, Schedule 5 worker earnings disregards, eligible childcare deductions, pension-age UC protection flags, and flat pre-percentage non-dependant deductions.
 
 Added Dartford's 2026/27 weekly net-income banded Council Tax Reduction scheme, including household-type band tables, non-UC earnings disregard, UC assessed-income and capital treatment, source-listed income disregards with a local source input, minimum award, and strict capital cutoff.
+
+Added Derby's 2026/27 legacy means-tested Council Tax Support scheme, including the Band B liability cap, 80 percent maximum support, 6,000 pound capital cutoff, 4 pound weekly minimum award, and Housing Benefit-aligned non-dependant deductions.
