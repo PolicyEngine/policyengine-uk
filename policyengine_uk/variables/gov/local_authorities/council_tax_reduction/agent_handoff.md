@@ -14,11 +14,11 @@ Work autonomously on branch `codex/ctr-framework`: encode more remaining Council
 
 - PR: https://github.com/PolicyEngine/policyengine-uk/pull/1534
 - Branch: `codex/ctr-framework`
-- Last known pushed head before the Coventry batch: `4f4690621`; pull latest before continuing.
-- Coverage at this checkpoint: `79` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
-- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n Coventry` passed with `14` tests.
-- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -c policyengine_uk` passed with `672` tests.
-- Recent completed schemes: Chelmsford, Cheshire West and Chester, Chichester, Coventry.
+- Pull the latest PR branch before continuing; this checkpoint includes Bassetlaw.
+- Coverage at this checkpoint: `82` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n Bassetlaw` passed with `21` tests.
+- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `735` tests.
+- Recent completed schemes: Coventry, Cheltenham, Bassetlaw.
 
 Before continuing, pull the latest branch and inspect current status:
 
@@ -102,30 +102,7 @@ gh pr checks 1534 --watch=false
 
 ## Next candidates
 
-### Cotswold
-
-- Enum exists: `LocalAuthority.COTSWOLD`
-- Sources:
-  - https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf
-  - https://meetings.cotswold.gov.uk/ieIssueDetails.aspx?IId=6872&Opt=3
-- Shape: income-banded working-age scheme with separate protected-group fallback.
-- Headline rules from scout:
-  - Non-protected max support `100%`, then bands by family type and combined net weekly income.
-  - Single bands: `0-154.48` 100%, `154.49-204.48` 80%, `204.49-254.48` 60%, `254.49-304.48` 40%, `304.49-354.48` 20%, above top band zero.
-  - Capital must not be above `GBP 10,000`, so `GBP 10,000` eligible and `GBP 10,000.01` excluded.
-  - Band cap restricts F/G/H to Band E.
-  - UC uses DWP income calculation before UC earnings disregard, adds UC award annualised to weekly, deducts UC housing element and listed disregards.
-  - Non-dependants: `GBP 15.95/week` if in remunerative work, `GBP 5.20` otherwise, with lower working rates for gross income bands.
-  - UC non-dependant with no earned income exempt.
-- Suggested tests:
-  - Single income `GBP 154.48/week`: `GBP 1,800`.
-  - Single income `GBP 154.49/week`: `GBP 1,440`.
-  - Single income `GBP 204.49/week`: `GBP 1,080`.
-  - Single income `GBP 304.49/week`: `GBP 360`.
-  - Single income `GBP 354.49/week`: `GBP 0`.
-  - Capital `GBP 10,000` eligible; `GBP 10,000.01` excluded.
-  - Band 1 with one non-working non-dependant: `GBP 1,528.71`.
-- Trap: protected group is not banded; it uses liability less non-dependants less `20%` of excess over applicable amount.
+Use `scheme_work_queue.md` as the source of truth for remaining authorities and statuses.
 
 ## Source-incomplete note
 

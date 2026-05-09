@@ -24826,6 +24826,794 @@
     cheshire_west_and_chester_council_tax_reduction: [1_090, 0]
     council_tax_reduction: 1_090
 
+- name: Bassetlaw awards 88 percent support at the top of Band 2
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 5_397.08
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 103.79
+    bassetlaw_council_tax_reduction_support_rate: 0.88
+    bassetlaw_council_tax_reduction: 1_408
+    simulated_council_tax_reduction_benunit: 1_408
+    council_tax_reduction: 1_408
+
+- name: Bassetlaw awards 65 percent support at the first penny of Band 3
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 5_397.60
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 103.80
+    bassetlaw_council_tax_reduction_support_rate: 0.65
+    bassetlaw_council_tax_reduction: 1_040
+    council_tax_reduction: 1_040
+
+- name: Bassetlaw awards no support at the first penny above Band 5
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 21_931
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 421.75
+    bassetlaw_council_tax_reduction_support_rate: 0
+    bassetlaw_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Bassetlaw awards 45 percent support at the first penny of Band 4
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 12_101.96
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 232.73
+    bassetlaw_council_tax_reduction_support_rate: 0.45
+    bassetlaw_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Bassetlaw awards 25 percent support at the first penny of Band 5
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 16_046.16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 308.58
+    bassetlaw_council_tax_reduction_support_rate: 0.25
+    bassetlaw_council_tax_reduction: 400
+    council_tax_reduction: 400
+
+- name: Bassetlaw awards 95 percent support to the SDP transitional class
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        bassetlaw_council_tax_reduction_sdp_transitional_award: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_support_rate: 0.95
+    bassetlaw_council_tax_reduction: 1_520
+    council_tax_reduction: 1_520
+
+- name: Bassetlaw caps Band D liability at the Band C equivalent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_maximum_eligible_liability: 1_600
+    bassetlaw_council_tax_reduction: 1_408
+    council_tax_reduction: 1_408
+
+- name: Bassetlaw allows exactly 16,000 pounds of capital but excludes one penny above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      claimant_over:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      over_limit:
+        members: [claimant_over]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 16_000
+      over_limit_household:
+        members: [claimant_over]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 16_000.01
+  output:
+    bassetlaw_council_tax_reduction: [1_408, 0]
+    council_tax_reduction: [1_408, 0]
+
+- name: Bassetlaw adds part-block tariff income above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 5_345.60
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 6_000.01
+  output:
+    bassetlaw_council_tax_reduction_weekly_tariff_income: 1
+    bassetlaw_council_tax_reduction_weekly_income: 103.80
+    bassetlaw_council_tax_reduction_support_rate: 0.65
+    bassetlaw_council_tax_reduction: 1_040
+    council_tax_reduction: 1_040
+
+- name: Bassetlaw applies the earnings disregard before income banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_657.08
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        weekly_hours: 10
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_earnings_disregard: 260
+    bassetlaw_council_tax_reduction_weekly_income: 103.79
+    bassetlaw_council_tax_reduction_support_rate: 0.88
+    bassetlaw_council_tax_reduction: 1_408
+    council_tax_reduction: 1_408
+
+- name: Bassetlaw treats maximum Universal Credit as Band 2
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_maximum_amount: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 20_000
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 230.77
+    bassetlaw_council_tax_reduction_support_rate: 0.88
+    bassetlaw_council_tax_reduction: 1_408
+    council_tax_reduction: 1_408
+
+- name: Bassetlaw uses UC assessed income and capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        uc_earned_income: 10_400
+        uc_unearned_income: 0
+        uc_housing_costs_element: 0
+        uc_reported_capital: 16_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 20_000
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 219.23
+    bassetlaw_council_tax_reduction_support_rate: 0.65
+    bassetlaw_council_tax_reduction: 1_040
+    council_tax_reduction: 1_040
+
+- name: Bassetlaw uses UC assessed income net of housing plus the full UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 5_200
+        uc_maximum_amount: 10_400
+        uc_earned_income: 7_800
+        uc_unearned_income: 0
+        uc_housing_costs_element: 5_200
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_weekly_income: 250
+    bassetlaw_council_tax_reduction_support_rate: 0.45
+    bassetlaw_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: Bassetlaw deducts non-dependants before applying the support percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 5_397.60
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_non_dep_deductions: [208, 0]
+    bassetlaw_council_tax_reduction: [904.80, 0]
+    council_tax_reduction: 904.80
+
+- name: Bassetlaw applies one working non-dependant deduction for a non-UC couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 25
+        weekly_hours: 16
+      non_dep_2:
+        age: 25
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep_1, non_dep_2]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_non_dep_deductions: [520, 0]
+    bassetlaw_council_tax_reduction: [950.40, 0]
+    council_tax_reduction: 950.40
+
+- name: Bassetlaw counts both working non-dependants in a UC couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 25
+        weekly_hours: 16
+        bassetlaw_council_tax_reduction_non_dep_uc_earned_income: 1
+      non_dep_2:
+        age: 25
+        weekly_hours: 16
+        bassetlaw_council_tax_reduction_non_dep_uc_earned_income: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep_1, non_dep_2]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_non_dep_deductions: [1_040, 0]
+    bassetlaw_council_tax_reduction: [492.80, 0]
+    council_tax_reduction: 492.80
+
+- name: Bassetlaw exempts UC non-dependants whose UC calculation has no earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+        bassetlaw_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_non_dep_deductions: [0, 0]
+    bassetlaw_council_tax_reduction: [1_408, 0]
+    council_tax_reduction: 1_408
+
+- name: Bassetlaw deducts childcare from tax credits when earnings do not absorb it
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        weekly_hours: 16
+        childcare_expenses: 20_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        tax_credits: 15_000
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    bassetlaw_council_tax_reduction_childcare_deduction: 9_100
+    bassetlaw_council_tax_reduction_weekly_income: 213.46
+    bassetlaw_council_tax_reduction_support_rate: 0.65
+    bassetlaw_council_tax_reduction: 1_040
+    council_tax_reduction: 1_040
+
+- name: Bassetlaw local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_maximum_amount: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    bassetlaw_council_tax_reduction_is_local_scheme: true
+    bassetlaw_council_tax_reduction: 1_408
+    simulated_council_tax_reduction_benunit: 1_408
+    council_tax_reduction: 1_408
+
+- name: Bassetlaw keeps relevant-period pension-age UC claimants in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_maximum_amount: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        bassetlaw_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    bassetlaw_council_tax_reduction_is_local_scheme: false
+    bassetlaw_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_600
+    council_tax_reduction: 1_600
+
+- name: Bassetlaw keeps regulation 60A pension-age UC claimants in the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_maximum_amount: 12_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        bassetlaw_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BASSETLAW
+        council_tax_band: C
+        council_tax: 1_600
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    bassetlaw_council_tax_reduction_is_local_scheme: false
+    bassetlaw_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_600
+    council_tax_reduction: 1_600
+
 - name: Cheltenham awards full support at the top of the single Band 1 income range
   period: 2026
   absolute_error_margin: 0.5

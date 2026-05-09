@@ -1,0 +1,10 @@
+description: Capital increment for each pound of weekly tariff income under Bassetlaw's working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bassetlaw Council Tax Reduction tariff income increment
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, paragraph 56
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

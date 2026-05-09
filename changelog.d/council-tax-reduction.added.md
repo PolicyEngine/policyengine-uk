@@ -5,3 +5,5 @@ Added further source-linked working-age local scheme overrides, including Southe
 Added Chichester's 2026/27 hybrid Council Tax Reduction scheme, combining a legacy non-UC means test with tariff income and prescribed non-dependant deductions, plus UC household-type income bands and the local Class F flat non-dependant deduction.
 
 Added Coventry's 2026/27 excess-income banded Council Tax Reduction scheme, including UC assessed income and capital treatment, pension-age UC local-scheme cases, and gross-income non-dependant deductions.
+
+Added Bassetlaw's 2026/27 weekly net-income banded Council Tax Reduction scheme, including Band C liability cap, UC assessed income and capital treatment, pension-age UC protection flags, childcare deductions, tariff income, and flat non-dependant deductions.

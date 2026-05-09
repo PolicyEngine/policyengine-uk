@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work in Bassetlaw Council Tax Reduction.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Bassetlaw Council Tax Reduction remunerative work hours
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, paragraphs 10 and 26
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

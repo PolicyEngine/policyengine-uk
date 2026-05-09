@@ -1,0 +1,10 @@
+description: Weekly non-dependant deduction for Bassetlaw remunerative-work non-dependants.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Bassetlaw Council Tax Reduction remunerative-work non-dependant deduction
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, paragraph 26
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

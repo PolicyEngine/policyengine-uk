@@ -18,6 +18,10 @@ def is_basingstoke_and_deane(local_authority):
     return local_authority == LocalAuthority.BASINGSTOKE_AND_DEANE
 
 
+def is_bassetlaw(local_authority):
+    return local_authority == LocalAuthority.BASSETLAW
+
+
 def is_basildon(local_authority):
     return local_authority == LocalAuthority.BASILDON
 
@@ -379,6 +383,12 @@ def is_basingstoke_and_deane_working_age(local_authority, country, has_pensioner
         (country == Country.ENGLAND)
         & ~has_pensioner
         & is_basingstoke_and_deane(local_authority)
+    )
+
+
+def is_bassetlaw_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_bassetlaw(
+        local_authority
     )
 
 
@@ -782,6 +792,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
             country,
             has_pensioner,
         )
+        | is_bassetlaw_working_age(local_authority, country, has_pensioner)
         | is_basildon_working_age(local_authority, country, has_pensioner)
         | is_barking_and_dagenham_working_age(
             local_authority,

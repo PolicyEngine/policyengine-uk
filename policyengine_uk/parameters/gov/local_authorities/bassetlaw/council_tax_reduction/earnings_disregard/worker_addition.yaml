@@ -1,0 +1,10 @@
+description: Additional weekly earnings disregard for Bassetlaw qualifying worker cases.
+values:
+  2026-04-01: 17.10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Bassetlaw Council Tax Reduction qualifying worker earnings disregard addition
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, Schedule 3 paragraph 18
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for Bassetlaw disabled-premium or carer cases.
+values:
+  2026-04-01: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Bassetlaw Council Tax Reduction disabled or carer earnings disregard
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, Schedule 3
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf
