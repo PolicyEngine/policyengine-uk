@@ -1,0 +1,10 @@
+description: Capital limit under South Derbyshire's Council Tax Reduction scheme.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: South Derbyshire Council Tax Reduction capital limit
+  reference:
+    title: South Derbyshire Council Tax Reduction Scheme 2026-2027, paragraphs 11 and 29
+    href: https://www.southderbyshire.gov.uk/assets/attach/15700/South-Derbyshire-CTR-scheme-2026-2027.pdf

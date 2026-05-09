@@ -7148,6 +7148,749 @@
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
 
+- name: South Derbyshire awards full support to a no-excess-income working-age claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    south_derbyshire_council_tax_reduction_support_rate: 1
+    south_derbyshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: South Derbyshire moves from full to 90 percent support above 5 pounds weekly excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant_exact:
+        age: 35
+      claimant_above:
+        age: 35
+    benunits:
+      exact:
+        members: [claimant_exact]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 260
+      above:
+        members: [claimant_above]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 260.52
+    households:
+      exact_household:
+        members: [claimant_exact]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+      above_household:
+        members: [claimant_above]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction_support_rate: [1, 0.9]
+    south_derbyshire_council_tax_reduction: [1_800, 1_620]
+    council_tax_reduction: [1_800, 1_620]
+
+- name: South Derbyshire awards no support above 140 pounds weekly excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 7_280.52
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction_support_rate: 0
+    south_derbyshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: South Derbyshire rounds part-block tariff income up above 6,000 pounds of capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant_exact:
+        age: 35
+      claimant_above:
+        age: 35
+    benunits:
+      exact:
+        members: [claimant_exact]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 260
+      above:
+        members: [claimant_above]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 260
+    households:
+      exact_household:
+        members: [claimant_exact]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+      above_household:
+        members: [claimant_above]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    south_derbyshire_council_tax_reduction_tariff_income: [0, 52]
+    south_derbyshire_council_tax_reduction_support_rate: [1, 0.9]
+    south_derbyshire_council_tax_reduction: [1_800, 1_620]
+    council_tax_reduction: [1_800, 1_620]
+
+- name: South Derbyshire allows exactly 16,000 pounds of capital but rejects one penny above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant_exact:
+        age: 35
+      claimant_above:
+        age: 35
+    benunits:
+      exact:
+        members: [claimant_exact]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      above:
+        members: [claimant_above]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      exact_household:
+        members: [claimant_exact]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+      above_household:
+        members: [claimant_above]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000.01
+  output:
+    south_derbyshire_council_tax_reduction_support_rate: [0.66, 0.66]
+    south_derbyshire_council_tax_reduction: [1_188, 0]
+    council_tax_reduction: [1_188, 0]
+
+- name: South Derbyshire excludes child capital when applicant and partner source capital is supplied
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        south_derbyshire_council_tax_reduction_applicant_partner_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    south_derbyshire_council_tax_reduction_assessable_capital: 0
+    south_derbyshire_council_tax_reduction_tariff_income: 0
+    south_derbyshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: South Derbyshire disregards capital already assessed in income-based benefits
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        income_support: 1
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    south_derbyshire_council_tax_reduction_support_rate: 1
+    south_derbyshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: South Derbyshire deducts flat non-dependants before applying the support rate
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 260.52
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction_non_dep_deductions: [325, 0]
+    south_derbyshire_council_tax_reduction: [1_327.5, 0]
+    council_tax_reduction: 1_327.5
+
+- name: South Derbyshire charges a working-age deduction for a non-working UC non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: true
+        universal_credit: 1
+        uc_earned_income: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction_non_dep_deductions: [325, 0]
+    south_derbyshire_council_tax_reduction: [1_475, 0]
+    council_tax_reduction: 1_475
+
+- name: South Derbyshire charges a deduction for each non-dependant in a couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 25
+      non_dep_2:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_couple:
+        members: [non_dep_1, non_dep_2]
+        would_claim_uc: false
+        is_couple: true
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction_non_dep_deductions: [650, 0]
+    south_derbyshire_council_tax_reduction: [1_150, 0]
+    council_tax_reduction: 1_150
+
+- name: South Derbyshire removes non-dependant deductions when the claimant receives PIP daily living
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip_dl: 1
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction_non_dep_deductions: [0, 0]
+    south_derbyshire_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: South Derbyshire UC path uses the gross UC award before deductions against UC maximum amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit_pre_benefit_cap: 10_520
+        universal_credit: 10_000
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction_uc_applicable_income: 10_520
+    south_derbyshire_council_tax_reduction_support_rate: 0.9
+    south_derbyshire_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: South Derbyshire UC path uses UC-assessed capital instead of household savings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant_under:
+        age: 35
+      claimant_over:
+        age: 35
+    benunits:
+      under:
+        members: [claimant_under]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit_pre_benefit_cap: 10_000
+        universal_credit: 10_000
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+      over:
+        members: [claimant_over]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit_pre_benefit_cap: 10_000
+        universal_credit: 10_000
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 16_000.01
+    households:
+      under_household:
+        members: [claimant_under]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+      over_household:
+        members: [claimant_over]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: [1_800, 0]
+
+- name: South Derbyshire removes awards below the 1 pound weekly minimum
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant_below:
+        age: 35
+      claimant_exact:
+        age: 35
+    benunits:
+      below:
+        members: [claimant_below]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+      exact:
+        members: [claimant_exact]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      below_household:
+        members: [claimant_below]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 51.99
+        savings: 0
+      exact_household:
+        members: [claimant_exact]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 52
+        savings: 0
+  output:
+    south_derbyshire_council_tax_reduction: [0, 52]
+    council_tax_reduction: [0, 52]
+
+- name: South Derbyshire leaves ordinary pensioner households to the national pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_scheme_supported: true
+    south_derbyshire_council_tax_reduction_is_local_scheme: false
+    south_derbyshire_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: South Derbyshire keeps pension-age Working Tax Credit closure UC cases on the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit_pre_benefit_cap: 10_000
+        universal_credit: 10_000
+        uc_maximum_amount: 10_000
+        uc_assessable_capital: 0
+        south_derbyshire_council_tax_reduction_uc_working_tax_credit_closure_pensioner: true
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    south_derbyshire_council_tax_reduction_is_local_scheme: false
+    south_derbyshire_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: South Derbyshire treats mixed-age couples without income-based benefits as pensioners
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    south_derbyshire_council_tax_reduction_is_local_scheme: false
+    south_derbyshire_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: South Derbyshire local scheme covers mixed-age income-based benefit couples without national double-counting
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        income_support: 1
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: SOUTH_DERBYSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_relevant_income_based_benefit: true
+    south_derbyshire_council_tax_reduction_is_local_scheme: true
+    south_derbyshire_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Gateshead working-age claimant pays the 8.5 percent minimum contribution
   period: 2025
   absolute_error_margin: 0.5

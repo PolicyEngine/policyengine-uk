@@ -1,0 +1,10 @@
+description: Minimum weekly Council Tax Reduction award payable under South Derbyshire's working-age scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: South Derbyshire Council Tax Reduction minimum weekly award
+  reference:
+    title: South Derbyshire Council Tax Reduction Scheme 2026-2027, paragraph 40
+    href: https://www.southderbyshire.gov.uk/assets/attach/15700/South-Derbyshire-CTR-scheme-2026-2027.pdf

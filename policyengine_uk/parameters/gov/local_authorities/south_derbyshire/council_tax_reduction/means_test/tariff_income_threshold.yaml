@@ -1,0 +1,10 @@
+description: Capital threshold above which tariff income applies under South Derbyshire's working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: South Derbyshire Council Tax Reduction tariff income threshold
+  reference:
+    title: South Derbyshire Council Tax Reduction Scheme 2026-2027, paragraph 36
+    href: https://www.southderbyshire.gov.uk/assets/attach/15700/South-Derbyshire-CTR-scheme-2026-2027.pdf

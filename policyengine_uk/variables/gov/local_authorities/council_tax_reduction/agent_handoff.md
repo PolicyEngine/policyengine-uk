@@ -14,11 +14,11 @@ Work autonomously on branch `codex/ctr-framework`: encode more remaining Council
 
 - PR: https://github.com/PolicyEngine/policyengine-uk/pull/1534
 - Branch: `codex/ctr-framework`
-- Pull the latest PR branch before continuing; this checkpoint includes Derby.
-- Coverage at this checkpoint: `86` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
-- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n Derby` passed with `9` tests.
-- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `791` tests after Dartford; rerun before the next push if Derby is still unpushed.
-- Recent completed schemes: Arun, Dartford, Derby.
+- Pull the latest PR branch before continuing; this checkpoint includes South Derbyshire.
+- Coverage at this checkpoint: `87` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n "South Derbyshire"` passed with `18` tests.
+- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `821` tests after South Derbyshire.
+- Recent completed schemes: Dartford, Derby, South Derbyshire.
 
 Before continuing, pull the latest branch and inspect current status:
 

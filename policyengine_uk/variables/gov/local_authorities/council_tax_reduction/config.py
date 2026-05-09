@@ -300,6 +300,10 @@ def is_slough(local_authority):
     return local_authority == LocalAuthority.SLOUGH
 
 
+def is_south_derbyshire(local_authority):
+    return local_authority == LocalAuthority.SOUTH_DERBYSHIRE
+
+
 def is_south_norfolk(local_authority):
     return local_authority == LocalAuthority.SOUTH_NORFOLK
 
@@ -732,6 +736,14 @@ def is_slough_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_slough(local_authority)
 
 
+def is_south_derbyshire_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_south_derbyshire(local_authority)
+    )
+
+
 def is_south_norfolk_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND)
@@ -921,6 +933,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_sefton_working_age(local_authority, country, has_pensioner)
         | is_somerset_working_age(local_authority, country, has_pensioner)
         | is_slough_working_age(local_authority, country, has_pensioner)
+        | is_south_derbyshire_working_age(local_authority, country, has_pensioner)
         | is_south_norfolk_working_age(local_authority, country, has_pensioner)
         | is_southend_on_sea_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)

@@ -1,0 +1,51 @@
+description: Council Tax Reduction support rate by weekly excess-income band under South Derbyshire's working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 5.01
+    amount:
+      2026-04-01: 0.9
+  - threshold:
+      2026-04-01: 20.01
+    amount:
+      2026-04-01: 0.78
+  - threshold:
+      2026-04-01: 35.01
+    amount:
+      2026-04-01: 0.66
+  - threshold:
+      2026-04-01: 50.01
+    amount:
+      2026-04-01: 0.54
+  - threshold:
+      2026-04-01: 65.01
+    amount:
+      2026-04-01: 0.42
+  - threshold:
+      2026-04-01: 80.01
+    amount:
+      2026-04-01: 0.3
+  - threshold:
+      2026-04-01: 95.01
+    amount:
+      2026-04-01: 0.18
+  - threshold:
+      2026-04-01: 110.01
+    amount:
+      2026-04-01: 0.1
+  - threshold:
+      2026-04-01: 140.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: South Derbyshire Council Tax Reduction weekly excess-income support rate
+  reference:
+    title: South Derbyshire Council Tax Reduction Scheme 2026-2027, paragraph 10
+    href: https://www.southderbyshire.gov.uk/assets/attach/15700/South-Derbyshire-CTR-scheme-2026-2027.pdf
