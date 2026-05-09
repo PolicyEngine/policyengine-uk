@@ -1,0 +1,10 @@
+description: Capital limit under the Cotswold working-age Council Tax Support scheme.
+values:
+  2026-04-01: 10_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Cotswold Council Tax Support capital limit
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, section 30.1
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf

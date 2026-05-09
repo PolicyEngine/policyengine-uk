@@ -27,6 +27,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "chichester_council_tax_reduction",
     "chesterfield_council_tax_reduction",
     "colchester_council_tax_reduction",
+    "cotswold_council_tax_reduction",
     "coventry_council_tax_reduction",
     "crawley_council_tax_reduction",
     "croydon_council_tax_reduction",
@@ -132,6 +133,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         colchester_local_scheme = benunit(
             "colchester_council_tax_reduction_is_local_scheme", period
         )
+        cotswold_local_scheme = benunit(
+            "cotswold_council_tax_reduction_is_local_scheme", period
+        )
         coventry_local_scheme = benunit(
             "coventry_council_tax_reduction_is_local_scheme", period
         )
@@ -185,6 +189,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~cheshire_west_and_chester_local_scheme
             & ~chichester_local_scheme
             & ~colchester_local_scheme
+            & ~cotswold_local_scheme
             & ~coventry_local_scheme
             & ~herefordshire_local_scheme
             & ~ipswich_local_scheme

@@ -1,0 +1,11 @@
+description: Minimum weekly hours for remunerative work under the Cotswold Council Tax Support non-dependant deduction rules.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Cotswold Council Tax Support non-dependant remunerative-work hours threshold
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, sections 6 and 55
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf
+

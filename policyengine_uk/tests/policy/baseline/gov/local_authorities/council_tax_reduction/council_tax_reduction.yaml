@@ -13655,6 +13655,827 @@
     simulated_council_tax_reduction_benunit: 1_440
     council_tax_reduction: 1_440
 
+- name: Cotswold awards full support at the top of the single Band 1 income range
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 8_032.96
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_weekly_income: 154.48
+    cotswold_council_tax_reduction_support_rate: 1
+    cotswold_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cotswold awards 80 percent support at the first penny above single Band 1
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 8_033.48
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_weekly_income: 154.49
+    cotswold_council_tax_reduction_support_rate: 0.8
+    cotswold_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Cotswold awards 60 percent support at the first penny above single Band 2
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 10_633.48
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_weekly_income: 204.49
+    cotswold_council_tax_reduction_support_rate: 0.6
+    cotswold_council_tax_reduction: 1_080
+    council_tax_reduction: 1_080
+
+- name: Cotswold selects the lone parent three-child income-band column
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 13_388.96
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+    benunits:
+      benunit:
+        members: [claimant, child_1, child_2, child_3]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_weekly_income: 257.48
+    cotswold_council_tax_reduction_support_rate: 0.8
+    cotswold_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Cotswold selects the couple four-or-more-child income-band column
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 19_339.32
+      partner:
+        age: 35
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+      child_4:
+        age: 11
+    benunits:
+      benunit:
+        members: [claimant, partner, child_1, child_2, child_3, child_4]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child_1, child_2, child_3, child_4]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_weekly_income: 371.91
+    cotswold_council_tax_reduction_support_rate: 0.8
+    cotswold_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Cotswold awards no support above the single Band 5 income range
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 18_434
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_weekly_income: 354.50
+    cotswold_council_tax_reduction_support_rate: 0
+    cotswold_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Cotswold allows exactly 10,000 pounds of capital but excludes one penny above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      claimant_over:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      over_limit:
+        members: [claimant_over]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000
+      over_limit_household:
+        members: [claimant_over]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000.01
+  output:
+    cotswold_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: [1_800, 0]
+
+- name: Cotswold adds tariff income for each part 250 pounds above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_250.01
+  output:
+    cotswold_council_tax_reduction_tariff_income: 104
+    cotswold_council_tax_reduction_weekly_income: 2
+    cotswold_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cotswold caps Band H liability at the Band E equivalent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_maximum_eligible_liability: 2_200
+    cotswold_council_tax_reduction: 2_200
+    council_tax_reduction: 2_200
+
+- name: Cotswold deducts the non-working non-dependant amount before applying the support percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    cotswold_council_tax_reduction: [1_529.60, 0]
+    council_tax_reduction: 1_529.60
+
+- name: Cotswold uses the remunerative-work non-dependant gross income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_non_dep_deductions: [551.20, 0]
+    cotswold_council_tax_reduction: [1_248.80, 0]
+    council_tax_reduction: 1_248.80
+
+- name: Cotswold treats low-hours positive non-dependant earnings as not remunerative work
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 15
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    cotswold_council_tax_reduction: [1_529.60, 0]
+    council_tax_reduction: 1_529.60
+
+- name: Cotswold exempts UC non-dependants whose UC calculation has no earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+        cotswold_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_non_dep_deductions: [0, 0]
+    cotswold_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Cotswold does not let adult qualifying young people trigger claimant non-dependant exemptions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      young_person:
+        age: 18
+        current_education: POST_SECONDARY
+        pip_dl: 1_000
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, young_person, non_dep]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    cotswold_council_tax_reduction: [1_529.60, 0]
+    council_tax_reduction: 1_529.60
+
+- name: Cotswold protected group applies a 20 percent taper instead of income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 10_520
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        cotswold_council_tax_reduction_source_protected_group: true
+        council_tax_reduction_applicable_amount: 10_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_weekly_income: 202.31
+    cotswold_council_tax_reduction_support_rate: 0.8
+    cotswold_council_tax_reduction_protected_group: true
+    cotswold_council_tax_reduction: 1_696
+    council_tax_reduction: 1_696
+
+- name: Cotswold applies the source additional earnings disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 9_182.16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        cotswold_council_tax_reduction_source_additional_earnings_disregard: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_earnings_disregard: 22.10
+    cotswold_council_tax_reduction_weekly_income: 154.48
+    cotswold_council_tax_reduction_support_rate: 1
+    cotswold_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cotswold uses UC assessed income before earnings disregard plus the adjusted UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_housing_costs_element: 500
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        cotswold_council_tax_reduction_uc_earned_income_before_disregard: 7_793.48
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    cotswold_council_tax_reduction_weekly_income: 154.49
+    cotswold_council_tax_reduction_support_rate: 0.8
+    cotswold_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+
+- name: Cotswold disregards UC transitional protection from the UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_housing_costs_element: 500
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        cotswold_council_tax_reduction_uc_earned_income_before_disregard: 7_793.48
+        cotswold_council_tax_reduction_uc_transitional_protection: 500
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    cotswold_council_tax_reduction_weekly_income: 144.87
+    cotswold_council_tax_reduction_support_rate: 1
+    cotswold_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cotswold applies the UC-assessed capital limit for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_unearned_income: 0
+        uc_assessable_capital: 10_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cotswold_council_tax_reduction_support_rate: 1
+    cotswold_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Cotswold protected UC claimants use the UC maximum amount as the applicable amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 10_520
+        universal_credit_pre_benefit_cap: 10_520
+        uc_maximum_amount: 10_000
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        cotswold_council_tax_reduction_source_protected_group: true
+        council_tax_reduction_applicable_amount: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    cotswold_council_tax_reduction_weekly_income: 202.31
+    cotswold_council_tax_reduction_protected_group: true
+    cotswold_council_tax_reduction: 1_696
+    council_tax_reduction: 1_696
+
+- name: Cotswold keeps mixed-age couples with a working-age applicant in the local scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      partner:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    cotswold_council_tax_reduction_is_local_scheme: true
+    cotswold_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cotswold keeps pension-age UC claimants in the local scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: COTSWOLD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    cotswold_council_tax_reduction_is_local_scheme: true
+    cotswold_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Herefordshire provides full working-age CTR when income does not exceed the applicable amount
   period: 2026
   absolute_error_margin: 0.5

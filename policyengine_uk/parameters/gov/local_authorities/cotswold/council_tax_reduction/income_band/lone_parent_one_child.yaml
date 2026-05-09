@@ -1,0 +1,24 @@
+description: Council Tax Support rate by weekly net income band for Cotswold lone-parent households with one child.
+brackets:
+  - threshold: {2026-04-01: 0}
+    amount: {2026-04-01: 1}
+  - threshold: {2026-04-01: 211.70}
+    amount: {2026-04-01: 0.8}
+  - threshold: {2026-04-01: 246.70}
+    amount: {2026-04-01: 0.6}
+  - threshold: {2026-04-01: 296.70}
+    amount: {2026-04-01: 0.4}
+  - threshold: {2026-04-01: 346.70}
+    amount: {2026-04-01: 0.2}
+  - threshold: {2026-04-01: 396.70}
+    amount: {2026-04-01: 0}
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Cotswold lone-parent one-child weekly net-income CTS rate
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, section 1.9
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf
+

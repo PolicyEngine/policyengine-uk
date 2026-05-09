@@ -1,0 +1,28 @@
+description: Weekly non-dependant deduction under the Cotswold Council Tax Support scheme by gross weekly income where the non-dependant is in remunerative work.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Cotswold Council Tax Support weekly non-dependant deduction
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, sections 55.1 and 58
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf
+

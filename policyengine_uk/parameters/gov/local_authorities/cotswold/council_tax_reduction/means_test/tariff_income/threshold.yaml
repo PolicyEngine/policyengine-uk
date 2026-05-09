@@ -1,0 +1,10 @@
+description: Capital threshold above which Cotswold Council Tax Support tariff income applies.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Cotswold Council Tax Support tariff income threshold
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, sections 39.1-39.2
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf

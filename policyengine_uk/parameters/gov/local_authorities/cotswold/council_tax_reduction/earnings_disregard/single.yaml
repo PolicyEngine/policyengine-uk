@@ -1,0 +1,11 @@
+description: Weekly earnings disregard for Cotswold single Council Tax Support applicants.
+values:
+  2026-04-01: 5
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Cotswold single CTS earnings disregard
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, Schedule 1
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf
+
