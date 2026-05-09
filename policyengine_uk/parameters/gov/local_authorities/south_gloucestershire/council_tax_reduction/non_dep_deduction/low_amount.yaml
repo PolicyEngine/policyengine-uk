@@ -1,0 +1,10 @@
+description: Low weekly non-dependant deduction under the South Gloucestershire working-age Council Tax Reduction scheme.
+values:
+  2025-04-01: 3.50
+metadata:
+  unit: currency-GBP
+  period: week
+  label: South Gloucestershire low non-dependant deduction
+  reference:
+    - title: South Gloucestershire Council Tax Reduction Scheme Rules 2025 (working age applicants), Appendix 3 paragraph 8(4)
+      href: https://beta.southglos.gov.uk/static/edf5960dd95611c375de976f8fa529cc/Council_tax_reduction_scheme_rules_working_age_applicants.pdf

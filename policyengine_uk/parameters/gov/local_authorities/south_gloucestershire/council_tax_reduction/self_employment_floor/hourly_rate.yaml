@@ -1,0 +1,10 @@
+description: Hourly rate used in the South Gloucestershire self-employed nil-income floor.
+values:
+  2025-04-01: 5
+metadata:
+  unit: currency-GBP
+  period: hour
+  label: South Gloucestershire self-employed nil-income floor hourly rate
+  reference:
+    - title: South Gloucestershire Council Tax Reduction Scheme Rules 2025 (working age applicants), Appendix 3 paragraph 14(13)
+      href: https://beta.southglos.gov.uk/static/edf5960dd95611c375de976f8fa529cc/Council_tax_reduction_scheme_rules_working_age_applicants.pdf

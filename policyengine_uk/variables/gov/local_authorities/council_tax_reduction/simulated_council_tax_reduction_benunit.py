@@ -78,6 +78,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "sefton_council_tax_reduction",
     "somerset_council_tax_reduction",
     "slough_council_tax_reduction",
+    "south_gloucestershire_council_tax_reduction",
     "south_derbyshire_council_tax_reduction",
     "south_norfolk_council_tax_reduction",
     "southend_on_sea_council_tax_reduction",
@@ -185,6 +186,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         slough_local_scheme = benunit(
             "slough_council_tax_reduction_is_local_scheme", period
         )
+        south_gloucestershire_local_scheme = benunit(
+            "south_gloucestershire_council_tax_reduction_is_local_scheme", period
+        )
         south_derbyshire_local_scheme = benunit(
             "south_derbyshire_council_tax_reduction_is_local_scheme", period
         )
@@ -229,6 +233,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~plymouth_local_scheme
             & ~somerset_local_scheme
             & ~slough_local_scheme
+            & ~south_gloucestershire_local_scheme
             & ~south_derbyshire_local_scheme
             & ~southend_on_sea_local_scheme
             & ~thurrock_local_scheme

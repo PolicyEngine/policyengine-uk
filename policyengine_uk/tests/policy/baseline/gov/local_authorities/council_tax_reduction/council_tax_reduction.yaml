@@ -23220,6 +23220,700 @@
     slough_council_tax_reduction: 1_120
     council_tax_reduction: 1_120
 
+- name: South Gloucestershire gives 77 percent support to a no-earned-income working-age claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_weekly_earnings: 0
+    south_gloucestershire_council_tax_reduction_support_rate: 0.77
+    south_gloucestershire_council_tax_reduction: 1_386
+    council_tax_reduction: 1_386
+
+- name: South Gloucestershire moves from 60 to 40 percent support above 50 pounds weekly earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 2_600.52
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_weekly_earnings: 50.01
+    south_gloucestershire_council_tax_reduction_support_rate: 0.4
+    south_gloucestershire_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: South Gloucestershire keeps 60 percent support at exactly 50 pounds weekly earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 2_600
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_weekly_earnings: 50
+    south_gloucestershire_council_tax_reduction_support_rate: 0.6
+    south_gloucestershire_council_tax_reduction: 1_080
+    council_tax_reduction: 1_080
+
+- name: South Gloucestershire awards no support from 230.01 pounds weekly earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 12_012
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_weekly_earnings: 231
+    south_gloucestershire_council_tax_reduction_support_rate: 0
+    south_gloucestershire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: South Gloucestershire applies the self-employed nil-income floor after the initial trading year
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        south_gloucestershire_council_tax_reduction_self_employment_floor_applies: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_weekly_earnings: 150
+    south_gloucestershire_council_tax_reduction_support_rate: 0.15
+    south_gloucestershire_council_tax_reduction: 270
+    council_tax_reduction: 270
+
+- name: South Gloucestershire follows the formal scheme capital boundary
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    south_gloucestershire_council_tax_reduction: 1_386
+    council_tax_reduction: 1_386
+
+- name: South Gloucestershire excludes capital one penny above the formal scheme limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    south_gloucestershire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: South Gloucestershire excludes non-applicant capital when source applicant capital is supplied
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        south_gloucestershire_council_tax_reduction_applicant_partner_capital: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 7_000
+  output:
+    south_gloucestershire_council_tax_reduction_assessable_capital: [0, 7_000]
+    south_gloucestershire_council_tax_reduction: [1_204, 0]
+    council_tax_reduction: 1_204
+
+- name: South Gloucestershire UC path uses UC-assessed capital instead of household savings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 7_000
+  output:
+    south_gloucestershire_council_tax_reduction_assessable_capital: 0
+    south_gloucestershire_council_tax_reduction: 1_386
+    council_tax_reduction: 1_386
+
+- name: South Gloucestershire uses the UC MIF earned-income figure as total net earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_mif_capped_earned_income: 7_800
+        uc_mif_applies: true
+        income_tax: 2_600
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_weekly_earnings: 150
+    south_gloucestershire_council_tax_reduction_support_rate: 0.15
+    south_gloucestershire_council_tax_reduction: 270
+    council_tax_reduction: 270
+
+- name: South Gloucestershire uses UC assessed earnings before the UC work allowance for income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_earned_income: 0
+    south_gloucestershire_council_tax_reduction_weekly_earnings: 100
+    south_gloucestershire_council_tax_reduction_support_rate: 0.4
+    south_gloucestershire_council_tax_reduction: 720
+    council_tax_reduction: 720
+
+- name: South Gloucestershire deducts a high non-dependant amount after the support percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_non_dep_deductions: [728, 0]
+    south_gloucestershire_council_tax_reduction: [658, 0]
+    council_tax_reduction: 658
+
+- name: South Gloucestershire only gives the Pension Credit low deduction for Guarantee Credit non-dependants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      savings_credit_non_dep:
+        age: 30
+        weekly_hours: 35
+      guarantee_credit_non_dep:
+        age: 30
+        weekly_hours: 35
+        south_gloucestershire_council_tax_reduction_non_dep_guarantee_credit: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      savings_credit_benunit:
+        members: [savings_credit_non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        pension_credit: 1
+        savings_credit: 1
+      guarantee_credit_benunit:
+        members: [guarantee_credit_non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        pension_credit: 1
+    households:
+      household:
+        members: [claimant, savings_credit_non_dep, guarantee_credit_non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_individual_non_dep_deduction: [0, 728, 182]
+    south_gloucestershire_council_tax_reduction_non_dep_deductions: [910, 182, 728]
+    south_gloucestershire_council_tax_reduction: [476, 0, 0]
+    council_tax_reduction: 476
+
+- name: South Gloucestershire removes source-exempt non-dependants from deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+        south_gloucestershire_council_tax_reduction_non_dep_source_exemption: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_non_dep_deductions: [0, 0]
+    south_gloucestershire_council_tax_reduction: [1_386, 0]
+    council_tax_reduction: 1_386
+
+- name: South Gloucestershire gives the low deduction to a remunerative-work non-dependant on maximum UC
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+        universal_credit: 5_200
+        universal_credit_pre_benefit_cap: 5_200
+        uc_maximum_amount: 5_200
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_non_dep_deductions: [182, 0]
+    south_gloucestershire_council_tax_reduction: [1_204, 0]
+    council_tax_reduction: 1_204
+
+- name: South Gloucestershire applies one deduction for a non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 10_400
+        weekly_hours: 35
+      non_dep_partner:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_non_dep_deductions: [728, 0]
+    south_gloucestershire_council_tax_reduction: [658, 0]
+    council_tax_reduction: 658
+
+- name: South Gloucestershire leaves ordinary pensioner households to the national pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_is_local_scheme: false
+    south_gloucestershire_council_tax_reduction: 0
+    council_tax_reduction: 1_800
+
+- name: South Gloucestershire keeps pension-age regulation 60A UC cases on the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1
+        south_gloucestershire_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_is_local_scheme: false
+    south_gloucestershire_council_tax_reduction: 0
+    council_tax_reduction: 1_800
+
+- name: South Gloucestershire keeps pension-age UC relevant-period cases on the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1
+        south_gloucestershire_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: SOUTH_GLOUCESTERSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    south_gloucestershire_council_tax_reduction_is_local_scheme: false
+    south_gloucestershire_council_tax_reduction: 0
+    council_tax_reduction: 1_800
+
 - name: Plymouth awards 80 percent support to a no-income working-age single claimant
   period: 2026
   absolute_error_margin: 0.5
