@@ -24826,6 +24826,776 @@
     cheshire_west_and_chester_council_tax_reduction: [1_090, 0]
     council_tax_reduction: 1_090
 
+- name: Cheltenham awards full support at the top of the single Band 1 income range
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 5_980
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_weekly_income: 115
+    cheltenham_council_tax_reduction_support_rate: 1
+    cheltenham_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheltenham awards 80 percent support at the first penny above single Band 1
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 5_980.52
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_weekly_income: 115.01
+    cheltenham_council_tax_reduction_support_rate: 0.8
+    cheltenham_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Cheltenham awards no support above the single Band 5 income range
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 13_261
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_weekly_income: 255.02
+    cheltenham_council_tax_reduction_support_rate: 0
+    cheltenham_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Cheltenham selects the couple four-or-more-child income-band column
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 22_672
+      partner:
+        age: 35
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+      child_4:
+        age: 11
+    benunits:
+      benunit:
+        members: [claimant, partner, child_1, child_2, child_3, child_4]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child_1, child_2, child_3, child_4]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_weekly_income: 436
+    cheltenham_council_tax_reduction_support_rate: 1
+    cheltenham_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheltenham follows the published lone-parent three-child income-band gap
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 24_440
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+    benunits:
+      benunit:
+        members: [claimant, child_1, child_2, child_3]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_weekly_income: 470
+    cheltenham_council_tax_reduction_support_rate: 0
+    cheltenham_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Cheltenham allows exactly 6,000 pounds of capital but excludes one penny above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      claimant_over:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      over_limit:
+        members: [claimant_over]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+      over_limit_household:
+        members: [claimant_over]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    cheltenham_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: [1_800, 0]
+
+- name: Cheltenham caps Band H liability at the Band E equivalent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_maximum_eligible_liability: 2_200
+    cheltenham_council_tax_reduction: 2_200
+    council_tax_reduction: 2_200
+
+- name: Cheltenham deducts the non-working non-dependant amount before applying the support percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_500.52
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        weekly_hours: 16
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_non_dep_deductions: [260, 0]
+    cheltenham_council_tax_reduction: [1_232, 0]
+    council_tax_reduction: 1_232
+
+- name: Cheltenham uses the remunerative-work non-dependant gross income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_non_dep_deductions: [530.40, 0]
+    cheltenham_council_tax_reduction: [1_269.60, 0]
+    council_tax_reduction: 1_269.60
+
+- name: Cheltenham treats low-hours positive non-dependant earnings as not remunerative work
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 15
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_non_dep_deductions: [260, 0]
+    cheltenham_council_tax_reduction: [1_540, 0]
+    council_tax_reduction: 1_540
+
+- name: Cheltenham exempts UC non-dependants whose UC calculation has no earned income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+        cheltenham_council_tax_reduction_non_dep_uc_earned_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_non_dep_deductions: [0, 0]
+    cheltenham_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Cheltenham applies the one-child childcare cap before income banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_600
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        weekly_hours: 16
+        childcare_expenses: 20_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_childcare_deduction: 9_100
+    cheltenham_council_tax_reduction_weekly_income: 115
+    cheltenham_council_tax_reduction_support_rate: 1
+    cheltenham_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheltenham deducts childcare from tax credits when earnings do not absorb it
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 5_200
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        weekly_hours: 16
+        childcare_expenses: 20_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        tax_credits: 15_000
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_childcare_deduction: 9_100
+    cheltenham_council_tax_reduction_weekly_income: 213.46
+    cheltenham_council_tax_reduction_support_rate: 1
+    cheltenham_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheltenham applies the disabled child weekly income disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 16_380
+      child:
+        age: 5
+        cheltenham_council_tax_reduction_source_disabled_child: true
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_disabled_child_disregard: 10_400
+    cheltenham_council_tax_reduction_weekly_income: 115
+    cheltenham_council_tax_reduction_support_rate: 1
+    cheltenham_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheltenham uses UC assessed income before earnings disregard plus the adjusted UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_housing_costs_element: 500
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        cheltenham_council_tax_reduction_uc_earned_income_before_disregard: 6_000.52
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_weekly_income: 115.01
+    cheltenham_council_tax_reduction_support_rate: 0.8
+    cheltenham_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+
+- name: Cheltenham defaults UC earnings to UC income before the work allowance
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_000.52
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_LCWRA_element: 0
+        uc_housing_costs_element: 500
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_uc_earned_income_before_disregard: 6_000.52
+    cheltenham_council_tax_reduction_weekly_income: 115.01
+    cheltenham_council_tax_reduction_support_rate: 0.8
+    cheltenham_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
+
+- name: Cheltenham disregards UC transitional protection from the UC award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_housing_costs_element: 500
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        cheltenham_council_tax_reduction_uc_earned_income_before_disregard: 6_000.52
+        cheltenham_council_tax_reduction_uc_transitional_protection: 500
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_weekly_income: 105.39
+    cheltenham_council_tax_reduction_support_rate: 1
+    cheltenham_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheltenham applies the UC-assessed capital limit for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_unearned_income: 0
+        uc_assessable_capital: 6_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    cheltenham_council_tax_reduction_support_rate: 1
+    cheltenham_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Cheltenham keeps pension-age income-based benefit claimants in the local scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        income_support: 1_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    cheltenham_council_tax_reduction_is_local_scheme: true
+    cheltenham_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Cheltenham keeps pension-age Universal Credit claimants in the local scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: CHELTENHAM
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    cheltenham_council_tax_reduction_is_local_scheme: true
+    cheltenham_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Cheshire West and Chester zeros awards below the 2 pound weekly minimum
   period: 2026
   absolute_error_margin: 0.5

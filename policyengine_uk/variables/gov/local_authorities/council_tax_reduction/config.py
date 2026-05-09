@@ -74,6 +74,10 @@ def is_chelmsford(local_authority):
     return local_authority == LocalAuthority.CHELMSFORD
 
 
+def is_cheltenham(local_authority):
+    return local_authority == LocalAuthority.CHELTENHAM
+
+
 def is_cheshire_west_and_chester(local_authority):
     return local_authority == LocalAuthority.CHESHIRE_WEST_AND_CHESTER
 
@@ -444,6 +448,12 @@ def is_chelmsford_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_cheltenham_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_cheltenham(local_authority)
+    )
+
+
 def is_cheshire_west_and_chester_working_age(local_authority, country, has_pensioner):
     return (
         (country == Country.ENGLAND)
@@ -789,6 +799,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_buckinghamshire_working_age(local_authority, country, has_pensioner)
         | is_camden_working_age(local_authority, country, has_pensioner)
         | is_chelmsford_working_age(local_authority, country, has_pensioner)
+        | is_cheltenham_working_age(local_authority, country, has_pensioner)
         | is_cheshire_west_and_chester_working_age(
             local_authority, country, has_pensioner
         )

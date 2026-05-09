@@ -1,0 +1,23 @@
+description: Council Tax Support rate by weekly net income band for Cheltenham lone-parent households with up to two children.
+brackets:
+  - threshold: {2026-04-01: 0}
+    amount: {2026-04-01: 1}
+  - threshold: {2026-04-01: 235.01}
+    amount: {2026-04-01: 0.8}
+  - threshold: {2026-04-01: 286.01}
+    amount: {2026-04-01: 0.6}
+  - threshold: {2026-04-01: 340.01}
+    amount: {2026-04-01: 0.4}
+  - threshold: {2026-04-01: 392.01}
+    amount: {2026-04-01: 0.2}
+  - threshold: {2026-04-01: 455.01}
+    amount: {2026-04-01: 0}
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Cheltenham lone-parent up-to-two-child weekly net-income CTS rate
+  reference:
+    - title: Cheltenham Borough Council Tax Support Scheme 2026/27, section 1.9
+      href: https://democracy.cheltenham.gov.uk/documents/s53359/Appendix%209%20-%20Council%20270226%20Council%20Tax%20Support%20Scheme%20for%20Working%20Age%20Customers%202026-27%20Final.pdf

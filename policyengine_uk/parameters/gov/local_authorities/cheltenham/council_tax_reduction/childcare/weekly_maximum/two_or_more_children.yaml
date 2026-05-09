@@ -1,0 +1,10 @@
+description: Maximum weekly childcare costs deducted from earnings for Cheltenham Council Tax Support with two or more eligible children.
+values:
+  2026-04-01: 300
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Cheltenham Council Tax Support two-or-more-child weekly childcare deduction cap
+  reference:
+    - title: Cheltenham Borough Council Council Tax Support Scheme 2026/27, section 14.3
+      href: https://democracy.cheltenham.gov.uk/documents/s53359/Appendix%209%20-%20Council%20270226%20Council%20Tax%20Support%20Scheme%20for%20Working%20Age%20Customers%202026-27%20Final.pdf
