@@ -97,6 +97,8 @@ class cheltenham_council_tax_reduction_individual_non_dep_deduction(Variable):
             | is_full_time_student_non_dep(person, period)
             | income_based_benefit
             | uc_no_earned_income
-            | person("cheltenham_council_tax_reduction_non_dep_source_exemption", period)
+            | person(
+                "cheltenham_council_tax_reduction_non_dep_source_exemption", period
+            )
         )
         return local_scheme * where(exempt, 0.0, weekly_deduction * WEEKS_IN_YEAR)

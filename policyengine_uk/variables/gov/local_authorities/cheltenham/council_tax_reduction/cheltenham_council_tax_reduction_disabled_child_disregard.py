@@ -17,9 +17,7 @@ class cheltenham_council_tax_reduction_disabled_child_disregard(Variable):
         )
         disabled_child = child_or_young_person & (
             person("is_disabled_for_benefits", period)
-            | person(
-                "cheltenham_council_tax_reduction_source_disabled_child", period
-            )
+            | person("cheltenham_council_tax_reduction_source_disabled_child", period)
         )
         return (
             benunit.sum(disabled_child)

@@ -10,7 +10,9 @@ class cheltenham_council_tax_reduction_support_rate(Variable):
 
     def formula(benunit, period, parameters):
         ctr = parameters(period).gov.local_authorities.cheltenham.council_tax_reduction
-        weekly_income = benunit("cheltenham_council_tax_reduction_weekly_income", period)
+        weekly_income = benunit(
+            "cheltenham_council_tax_reduction_weekly_income", period
+        )
         weekly_income_for_band = weekly_income + 1e-9
         person = benunit.members
         child_or_young_person = person(
