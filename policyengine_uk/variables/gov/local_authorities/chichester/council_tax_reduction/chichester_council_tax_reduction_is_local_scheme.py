@@ -27,20 +27,14 @@ class chichester_council_tax_reduction_is_local_scheme(Variable):
         )
         has_uc_award = uc_award_before_deductions > 0
         person = benunit.members
-        working_age_adult = person("is_adult", period) & ~person(
-            "is_SP_age", period
-        )
+        working_age_adult = person("is_adult", period) & ~person("is_SP_age", period)
         mixed_age_couple = (
             benunit("is_couple", period)
             & has_pensioner
             & benunit.any(working_age_adult)
         )
-        source_working_age = (
-            ~has_pensioner
-            | (
-                mixed_age_couple
-                & (relevant_income_based_benefit | has_uc_award)
-            )
+        source_working_age = ~has_pensioner | (
+            mixed_age_couple & (relevant_income_based_benefit | has_uc_award)
         )
         return (
             (country == Country.ENGLAND)

@@ -31,8 +31,7 @@ class chichester_council_tax_reduction_uc_applicable_income(Variable):
         uc_net_earnings = max_(
             0,
             benunit.sum(
-                claimant_or_partner
-                * person("uc_mif_capped_earned_income", period)
+                claimant_or_partner * person("uc_mif_capped_earned_income", period)
             )
             - earnings_deductions,
         )
@@ -44,9 +43,7 @@ class chichester_council_tax_reduction_uc_applicable_income(Variable):
             - benunit("uc_childcare_element", period),
         )
         dwp_assessed_income = (
-            uc_net_earnings
-            + counted_uc_award
-            + benunit("uc_unearned_income", period)
+            uc_net_earnings + counted_uc_award + benunit("uc_unearned_income", period)
         )
         source_uc_income = benunit(
             "chichester_council_tax_reduction_source_uc_income", period
