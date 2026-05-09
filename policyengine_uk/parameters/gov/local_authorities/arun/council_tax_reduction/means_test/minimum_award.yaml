@@ -1,0 +1,13 @@
+description: Minimum weekly Council Tax Reduction award payable under Arun's working-age scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Arun Council Tax Reduction minimum weekly award
+  reference:
+    - title: Arun District Council Tax Reduction Scheme 2026/27, section 21.0(7)
+      href: https://www.arun.gov.uk/download.cfm?doc=docm93jijm4n20657.pdf&ver=27819
+    - title: Arun District Council, Changes are coming to the council tax reduction scheme, 16 February 2026
+      href: https://www.arun.gov.uk/news-archive/changes-are-coming-to-the-council-tax-reduction-scheme-10380/
+

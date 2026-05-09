@@ -1,0 +1,11 @@
+description: Maximum weekly childcare deduction for one child under Arun's working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 175
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Arun Council Tax Reduction one-child childcare cap
+  reference:
+    - title: Arun District Council Tax Reduction Scheme 2026/27, section 38
+      href: https://www.arun.gov.uk/download.cfm?doc=docm93jijm4n20657.pdf&ver=27819
+

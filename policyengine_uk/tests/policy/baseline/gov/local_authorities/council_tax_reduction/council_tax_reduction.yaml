@@ -25480,6 +25480,791 @@
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
 
+- name: Arun awards full support under the live 2026 working-age Band A table
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_weekly_income: 0
+    arun_council_tax_reduction_support_rate: 1
+    arun_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun uses the current web page boundary at the first pound of Band B
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 11_648
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_weekly_income: 224
+    arun_council_tax_reduction_support_rate: 0.7
+    arun_council_tax_reduction: 1_260
+    council_tax_reduction: 1_260
+
+- name: Arun awards no support above the live Band E income ceiling
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 25_480
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_weekly_income: 490
+    arun_council_tax_reduction_support_rate: 0
+    arun_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Arun allows exactly 6,000 pounds of capital but excludes one penny above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      claimant_over:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      over_limit:
+        members: [claimant_over]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+      over_limit_household:
+        members: [claimant_over]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000.01
+  output:
+    arun_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: [1_800, 0]
+
+- name: Arun disregards listed Universal Credit elements and uses UC-assessed capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 12_000
+        uc_housing_costs_element: 4_000
+        uc_carer_element: 3_000
+        uc_LCWRA_element: 3_000
+        arun_council_tax_reduction_source_uc_disregarded_elements: 2_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    arun_council_tax_reduction_weekly_income: 0
+    arun_council_tax_reduction_support_rate: 1
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun excludes UC claimants whose UC-assessed capital exceeds 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        universal_credit: 1
+        uc_housing_costs_element: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 6_000.01
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Arun deducts non-dependants before applying the income-band percentage
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 11_648
+      non_dep:
+        age: 30
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_non_dep_deductions: [260, 0]
+    arun_council_tax_reduction: [1_078, 0]
+    council_tax_reduction: 1_078
+
+- name: Arun applies one non-dependant deduction for a non-UC non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        weekly_hours: 16
+      non_dep_partner:
+        age: 30
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      non_dep_benunit:
+        members: [non_dep, non_dep_partner]
+        is_couple: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_non_dep_deductions: [260, 0]
+    arun_council_tax_reduction: [1_540, 0]
+    council_tax_reduction: 1_540
+
+- name: Arun exempts Universal Credit non-dependants from the flat deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      non_dep_benunit:
+        members: [non_dep]
+        would_claim_uc: true
+        universal_credit: 1
+        uc_earned_income: 1_000
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_non_dep_deductions: [0, 0]
+    arun_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Arun only exempts source-flagged Pension Credit Guarantee Credit non-dependants from the flat deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_guarantee_credit_non_dep:
+        age: 30
+        weekly_hours: 16
+      guarantee_credit_non_dep:
+        age: 30
+        weekly_hours: 16
+        arun_council_tax_reduction_non_dep_guarantee_credit: true
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      savings_credit_benunit:
+        members: [non_guarantee_credit_non_dep]
+        would_claim_uc: false
+        pension_credit: 1
+        savings_credit: 1
+      guarantee_credit_benunit:
+        members: [guarantee_credit_non_dep]
+        would_claim_uc: false
+        pension_credit: 1
+    households:
+      household:
+        members: [claimant, non_guarantee_credit_non_dep, guarantee_credit_non_dep]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_individual_non_dep_deduction: [0, 260, 0]
+    arun_council_tax_reduction_non_dep_deductions: [260, 0, 260]
+    arun_council_tax_reduction: [1_540, 0, 0]
+    council_tax_reduction: 1_540
+
+- name: Arun applies the one pound weekly minimum award after banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 21_944
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 500
+        savings: 0
+  output:
+    arun_council_tax_reduction_weekly_income: 422
+    arun_council_tax_reduction_support_rate: 0.1
+    arun_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Arun disregards Carer's Allowance from non-UC weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 11_647.48
+        carers_allowance: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_weekly_income: 223.99
+    arun_council_tax_reduction_support_rate: 1
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun applies the Schedule 5 additional worker earnings disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 12_948
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        weekly_hours: 16
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_earnings_disregard: 2_189.20
+    arun_council_tax_reduction_weekly_income: 206.9
+    arun_council_tax_reduction_support_rate: 1
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun applies the source Schedule 5 additional worker earnings disregard hook
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 24
+        employment_income: 12_796.68
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 24
+        benefits_premiums: 0
+        arun_council_tax_reduction_source_additional_earnings_disregard: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_earnings_disregard: 1_149.20
+    arun_council_tax_reduction_weekly_income: 223.99
+    arun_council_tax_reduction_support_rate: 1
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun deducts eligible childcare from non-UC earnings before banding
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 11_648
+        weekly_hours: 16
+        childcare_expenses: 2_600
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_childcare_deduction: 2_600
+    arun_council_tax_reduction_weekly_income: 131.9
+    arun_council_tax_reduction_support_rate: 1
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun permits childcare for source-flagged disabled children aged under 16
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 3_120
+        weekly_hours: 16
+        childcare_expenses: 2_600
+      child:
+        age: 15
+        arun_council_tax_reduction_childcare_disabled_child: true
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_childcare_deduction: 2_600
+    arun_council_tax_reduction_weekly_income: 0
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun permits childcare where one partner works and the other meets a source incapacity condition
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 3_120
+        weekly_hours: 16
+        childcare_expenses: 2_600
+      partner:
+        age: 35
+        arun_council_tax_reduction_childcare_incapacitated_partner: true
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, partner, child]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    arun_council_tax_reduction_childcare_deduction: 2_600
+    arun_council_tax_reduction_weekly_income: 0
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun passports income-based benefit claimants into Band A and disregards their capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        miscellaneous_income: 26_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        income_support: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+    arun_council_tax_reduction_support_rate: 1
+    arun_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun local scheme covers pension-age UC claimants without double-counting pensioner CTR
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 5_000
+        uc_housing_costs_element: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    arun_council_tax_reduction_is_local_scheme: true
+    arun_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun routes pension-age UC relevant-period cases to the pensioner CTR scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 5_000
+        uc_housing_costs_element: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        arun_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    arun_council_tax_reduction_is_local_scheme: false
+    arun_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Arun routes pension-age UC regulation 60A cases to the pensioner CTR scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 70
+        benefits_premiums: 0
+        universal_credit: 5_000
+        uc_housing_costs_element: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_reported_capital: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+        arun_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ARUN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: true
+    arun_council_tax_reduction_is_local_scheme: false
+    arun_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Bassetlaw awards 88 percent support at the top of Band 2
   period: 2026
   absolute_error_margin: 0.5

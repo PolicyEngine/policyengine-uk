@@ -14,11 +14,11 @@ Work autonomously on branch `codex/ctr-framework`: encode more remaining Council
 
 - PR: https://github.com/PolicyEngine/policyengine-uk/pull/1534
 - Branch: `codex/ctr-framework`
-- Pull the latest PR branch before continuing; this checkpoint includes Ashford.
-- Coverage at this checkpoint: `83` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
-- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n Ashford` passed with `18` tests.
-- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `753` tests.
-- Recent completed schemes: Cheltenham, Bassetlaw, Ashford.
+- Pull the latest PR branch before continuing; this checkpoint includes Arun.
+- Coverage at this checkpoint: `84` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n Arun` passed with `21` tests.
+- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `774` tests.
+- Recent completed schemes: Bassetlaw, Ashford, Arun.
 
 Before continuing, pull the latest branch and inspect current status:
 

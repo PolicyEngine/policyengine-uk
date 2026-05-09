@@ -1,0 +1,11 @@
+description: Working-age capital limit under Arun's Council Tax Reduction scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Arun Council Tax Reduction capital limit
+  reference:
+    - title: Arun District Council Tax Reduction Scheme 2026/27, sections 1.7 and 19.0, Schedule 3 paragraph 6
+      href: https://www.arun.gov.uk/download.cfm?doc=docm93jijm4n20657.pdf&ver=27819
+

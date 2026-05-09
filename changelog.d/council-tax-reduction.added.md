@@ -9,3 +9,5 @@ Added Coventry's 2026/27 excess-income banded Council Tax Reduction scheme, incl
 Added Bassetlaw's 2026/27 weekly net-income banded Council Tax Reduction scheme, including Band C liability cap, UC assessed income and capital treatment, pension-age UC protection flags, childcare deductions, tariff income, and flat non-dependant deductions.
 
 Added Ashford's 2026/27 weekly net-income banded Council Tax Reduction scheme, including Band D liability cap, Schedule 2 and 3 income disregards, UC award element disregards, pension-age UC protection flags, tariff income, and flat final-award non-dependant deductions.
+
+Added Arun's 2026/27 weekly net-income banded Council Tax Reduction scheme, including the live 100 percent maximum support table, UC award element disregards, UC-assessed capital treatment, Schedule 5 worker earnings disregards, eligible childcare deductions, pension-age UC protection flags, and flat pre-percentage non-dependant deductions.
