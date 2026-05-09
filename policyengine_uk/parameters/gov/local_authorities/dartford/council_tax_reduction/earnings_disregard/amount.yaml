@@ -1,0 +1,11 @@
+description: Dartford Council Tax Reduction weekly earnings disregard for non-Universal Credit claimants
+metadata:
+  unit: currency-GBP
+  period: week
+  reference:
+    - title: Dartford Borough Council Council Tax Reduction web page, working-age rules
+      href: https://www.dartford.gov.uk/benefits/council-tax-reduction-1
+    - title: Dartford Borough Council Local Council Tax Reduction Scheme 2026/27, paragraph 19.1
+      href: https://www.dartford.gov.uk/downloads/file/2814/local-council-tax-reduction-scheme-dbc-2026-2027
+values:
+  2026-04-01: 25

@@ -1,0 +1,31 @@
+description: Dartford Council Tax Reduction weekly income band support rates for couples without children
+metadata:
+  unit: /1
+  type: single_amount
+  threshold_unit: currency-GBP
+  amount_unit: /1
+  period: week
+  reference:
+    - title: Dartford Borough Council Local Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.dartford.gov.uk/downloads/file/2814/local-council-tax-reduction-scheme-dbc-2026-2027
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.8
+  - threshold:
+      2026-04-01: 155
+    amount:
+      2026-04-01: 0.6
+  - threshold:
+      2026-04-01: 219
+    amount:
+      2026-04-01: 0.4
+  - threshold:
+      2026-04-01: 284
+    amount:
+      2026-04-01: 0.2
+  - threshold:
+      2026-04-01: 385
+    amount:
+      2026-04-01: 0
