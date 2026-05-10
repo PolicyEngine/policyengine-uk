@@ -100,6 +100,7 @@ def normal_gross_income_non_dep_deduction(
     working_age,
     exempt_income_based_benefits=True,
     exempt_uc_no_earned_income=True,
+    exempt_under_25_uc_no_earned_income=False,
 ):
     gross_income_components = [
         "employment_income",
@@ -137,11 +138,19 @@ def normal_gross_income_non_dep_deduction(
     )
     has_uc = person.benunit("universal_credit", period) > 0
     no_earned_income = weekly_benunit_earned_income <= 0
+    uc_no_earned_income_exempt = (
+        has_uc
+        & no_earned_income
+        & (
+            exempt_uc_no_earned_income
+            | (exempt_under_25_uc_no_earned_income & (person("age", period) < 25))
+        )
+    )
     exempt = (
         claimant_exempt
         | full_time_student
         | (exempt_income_based_benefits & income_based_benefit)
-        | (exempt_uc_no_earned_income & has_uc & no_earned_income)
+        | uc_no_earned_income_exempt
     )
     return working_age * where(exempt, 0.0, weekly_deduction * WEEKS_IN_YEAR)
 

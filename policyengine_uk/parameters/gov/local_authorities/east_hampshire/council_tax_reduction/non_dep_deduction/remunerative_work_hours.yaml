@@ -1,0 +1,10 @@
+description: East Hampshire non-dependant remunerative work threshold
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: East Hampshire non-dependant remunerative work hours
+  reference:
+    - title: East Hampshire District Council - Council Tax Support Scheme 2026/27, paragraphs 10 and 30
+      href: https://www.easthants.gov.uk/sites/default/files/2026-03/Council%20tax%20support%20scheme%202026-27.pdf

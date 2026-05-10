@@ -7,7 +7,7 @@ For a minimal autonomous Codex handoff prompt, see `agent_handoff.md`.
 ## Coverage Target
 
 - England has `296` billing authorities in the 2026/27 MHCLG Council Tax tables. England pensioner CTR is national; the remaining implementation surface is working-age local schemes.
-- This PR currently supports `90` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- This PR currently supports `96` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
 - Current 2026/27 billing-authority enum gaps identified from MHCLG Table 9 and added in this PR: Bristol, Cumberland, Durham, Herefordshire, Kingston upon Hull, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, and Westmorland and Furness.
 - Source for the billing-authority inventory: https://www.gov.uk/government/statistics/council-tax-levels-set-by-local-authorities-in-england-2026-to-2027
 
@@ -121,6 +121,7 @@ Each council dossier should capture:
 | Maldon | Implemented | Default-style legacy means test with `80%` maximum support, Band `D` liability cap, `20%` weekly taper, strict `GBP 6,000` working-age capital cutoff, UC assessed income/capital treatment, pension-age UC/income-based-benefit local cases with relevant-period and regulation 60A source exceptions, and a flat `GBP 10` weekly non-dependant deduction. | https://democracy.maldon.gov.uk/documents/s40932/Appendix%203.pdf |
 | Hartlepool | Implemented | Banded Discount Scheme with six household-type weekly net-income tables and `90%`/`70%`/`40%`/`20%`/`0%` discount bands, `GBP 10,000` working-age capital cutoff, `GBP 25` weekly earnings disregard, half pension-contribution deduction from earnings, UC assessed income/capital treatment, pension-age UC/income-based-benefit local cases with regulation 60A source exception, and a flat `GBP 5` weekly non-dependant deduction. | https://www.hartlepool.gov.uk/downloads/file/1484/hbc-council-tax-reduction-scheme-2026-27 |
 | Hertsmere | Implemented | Hybrid scheme: Class D/E non-UC default means test with `80%` ordinary maximum support, `100%` section 57.1A protected-group support, Band `D` liability cap, `20%` weekly taper, strict `GBP 16,000` capital cutoff, and prescribed gross-income non-dependant deductions. Paragraph 1.8 routes UC applicants to the Class G Schedule 6 weekly-earnings banded scheme, with Schedule 3 earnings disregards, UC-assessed capital, protected/non-protected support-rate bands, protected/non-protected non-dependant deduction tables, and pension-age UC relevant-period and regulation 60A source exceptions. | https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf |
+| East Hampshire | Implemented | Default-style legacy means test with `100%` maximum support, no Band D liability cap, `20%` weekly taper, `GBP 16,000` capital cutoff, UC assessed income/capital treatment, pension-age UC/income-based-benefit local cases with relevant-period and regulation 60A source exceptions, and prescribed 2026/27 gross-income non-dependant deductions. The paragraph 30 body heading says "pensioners ONLY", but paragraph 29 and the table of contents apply paragraph 30 to pensioners and non-pensioners. | https://www.easthants.gov.uk/sites/default/files/2026-03/Council%20tax%20support%20scheme%202026-27.pdf |
 
 ## Reviewed Candidate Queue
 
