@@ -23,3 +23,13 @@ Added South Gloucestershire's working-age earned-income banded Council Tax Reduc
 Added Gloucester's 2026 Local Council Tax Support scheme, including full ordinary maximum support, the 20 percent taper, tariff income, 16,000 pound capital limit, UC assessed-income and capital treatment, pension-age UC local-scheme cases, and local working-age non-dependant deductions.
 
 Added Bath and North East Somerset's 2026/27 Council Tax Reduction scheme, including the ordinary 78 percent non-UC maximum with a Band D cap, protected 100 percent support and 16,000 pound capital limit, 20 percent taper, tariff income, UC Class F income bands with child increments, UC-assessed capital treatment, and pension-age UC local-scheme cases.
+
+Added Rushmoor Borough Council's 2026/27 default-style Council Tax Reduction scheme, including full support, the Band D liability cap, the 20 percent weekly taper, the strict 6,000 pound capital cutoff, UC assessed income/capital treatment, pension-age UC source exceptions, and prescribed 2026/27 gross-income non-dependant deductions.
+
+Added Hart District Council's 2026/27 default-style Council Tax Support scheme, including full support, the 20 percent weekly taper, the 16,000 pound capital cutoff, UC assessed income/capital treatment, pension-age UC source exceptions, prescribed 2026/27 gross-income non-dependant deductions, and the UC-couple exception to the one-deduction non-dependant rule.
+
+Added Maldon District Council's 2026/27 default-style Council Tax Reduction scheme, including 80 percent maximum support, the Band D liability cap, the 20 percent weekly taper, the strict 6,000 pound capital cutoff, UC assessed income/capital treatment, pension-age UC source exceptions, and a flat 10 pound weekly non-dependant deduction.
+
+Added Hartlepool Borough Council's 2026/27 banded Discount Council Tax Reduction scheme, including six household-type weekly net-income tables, 90/70/40/20/0 percent discount bands, the strict 10,000 pound capital cutoff, the 25 pound weekly earnings disregard, half pension-contribution deduction from earnings, UC assessed income/capital treatment, pension-age UC regulation 60A source exception, and a flat 5 pound weekly non-dependant deduction.
+
+Added Hertsmere Borough Council's 2026/27 hybrid Council Tax Reduction scheme, including the Class D/E non-UC default means test, the section 57.1A protected-group 100 percent maximum, the Band D liability cap, the 20 percent weekly taper, the 16,000 pound capital cutoff, the Class G Schedule 6 UC banded scheme, Schedule 3 earnings disregards, UC-assessed capital treatment, protected and non-protected non-dependant deduction tables, and pension-age UC source exceptions.

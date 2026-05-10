@@ -5,7 +5,7 @@ This implementation currently simulates:
 - The statutory CTR scheme for pensioner households in England.
 - The national CTR scheme in Wales.
 - The national CTR scheme in Scotland.
-- Working-age local schemes for Adur, Arun, Ashford, Barking and Dagenham, Barnet, Basingstoke and Deane, Bath and North East Somerset, Bassetlaw, Bolton, Breckland, Brent, Bromley, Bristol, Broadland, Bury, Camden, Chelmsford, Cheltenham, Cheshire West and Chester, Chichester, Chesterfield, Colchester, Cotswold, Coventry, Crawley, Croydon, Cumberland, Darlington, Dartford, Derby, Dudley, Ealing, East Cambridgeshire, East Hertfordshire, East Suffolk, Enfield, Fenland, Gateshead, Gloucester, Greenwich, Haringey, Harrow, Havering, Herefordshire, Hackney, Hammersmith and Fulham, Hillingdon, Hounslow, Islington, King's Lynn and West Norfolk, Kingston upon Hull, Kingston upon Thames, Lambeth, Lancaster, Lewisham, Merton, Newham, North Norfolk, North Yorkshire, Norwich, Oldham, Oxford, Redbridge, Sefton, Somerset, South Derbyshire, South Gloucestershire, South Norfolk, Southend-on-Sea, Southwark, St Albans, Stevenage, Stockport, Stroud, Tameside, Thurrock, Wakefield, Warrington, West Suffolk, Westmorland and Furness, Westminster, and Worthing.
+- Working-age local schemes for Adur, Arun, Ashford, Barking and Dagenham, Barnet, Basingstoke and Deane, Bath and North East Somerset, Bassetlaw, Bolton, Breckland, Brent, Bromley, Bristol, Broadland, Bury, Camden, Chelmsford, Cheltenham, Cheshire West and Chester, Chichester, Chesterfield, Colchester, Cotswold, Coventry, Crawley, Croydon, Cumberland, Darlington, Dartford, Derby, Dudley, Ealing, East Cambridgeshire, East Hertfordshire, East Suffolk, Enfield, Fenland, Gateshead, Gloucester, Greenwich, Haringey, Harrow, Hart, Hartlepool, Havering, Herefordshire, Hertsmere, Hackney, Hammersmith and Fulham, Hillingdon, Hounslow, Islington, King's Lynn and West Norfolk, Kingston upon Hull, Kingston upon Thames, Lambeth, Lancaster, Lewisham, Maldon, Merton, Newham, North Norfolk, North Yorkshire, Norwich, Oldham, Oxford, Redbridge, Rushmoor, Sefton, Somerset, South Derbyshire, South Gloucestershire, South Norfolk, Southend-on-Sea, Southwark, St Albans, Stevenage, Stockport, Stroud, Tameside, Thurrock, Wakefield, Warrington, West Suffolk, Westmorland and Furness, Westminster, and Worthing.
 
 For unsupported English working-age authorities, the model continues to use reported `council_tax_benefit` values in dataset mode rather than inventing scheme rules.
 
@@ -391,3 +391,29 @@ Havering references:
 - https://democracy.havering.gov.uk/documents/s83106/12%20-%20Appendix%20I%20%20Summary%20of%20the%20Council%20Tax%20Support%20Scheme%202026-27.pdf
 - https://democracy.havering.gov.uk/documents/s83059/0-1%20-%20Budget%20report%20cabinet%202026%202.pdf
 - https://www.havering.gov.uk/downloads/file/6930/council-tax-support-scheme-2025-2026
+
+Rushmoor references:
+
+- https://www.rushmoor.gov.uk/media/qvmlpekv/rushmoor-s13a-scheme-202627-final.pdf
+
+Hart references:
+
+- https://www.hart.gov.uk/sites/default/files/2026-04/Council-Tax-Reduction-Scheme-2026-27.pdf
+
+Maldon references:
+
+- https://democracy.maldon.gov.uk/documents/s40932/Appendix%203.pdf
+
+Hartlepool references:
+
+- https://www.hartlepool.gov.uk/downloads/file/1484/hbc-council-tax-reduction-scheme-2026-27
+
+Hertsmere references:
+
+- https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf
+
+- Rushmoor: default-style scheme with full support, Band D cap, 20 percent taper, strict `GBP 6,000` capital cutoff, pension-age UC/income-based-benefit local cases with source exceptions, and prescribed 2026/27 gross-income non-dependant deductions.
+- Hart: default-style scheme with full support, no Band D cap, 20 percent taper, `GBP 16,000` capital limit, UC assessed income/capital treatment, and the source's UC-couple non-dependant exception.
+- Maldon: default-style scheme with `80%` support, Band D cap, 20 percent taper, strict `GBP 6,000` capital cutoff, UC assessed income/capital treatment, and a flat `GBP 10` weekly non-dependant deduction.
+- Hartlepool: six-table weekly net-income Discount Scheme with `90%`/`70%`/`40%`/`20%`/`0%` bands, `GBP 10,000` capital limit, `GBP 25` weekly earnings disregard, UC assessed income/capital treatment, and flat `GBP 5` weekly non-dependant deductions.
+- Hertsmere: hybrid Class D/E and Class G scheme with `80%` ordinary support, `100%` protected support, Band D cap, Class G UC earnings bands, Schedule 3 earnings disregards, UC-assessed capital, and separate protected/non-protected UC non-dependant deduction tables including the source's printed `GBP 577+` protected top threshold.

@@ -1,0 +1,10 @@
+description: Maldon flat weekly non-dependant deduction
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Maldon Council Tax Reduction non-dependant deduction
+  reference:
+    - title: Maldon District Council - Council Tax Reduction Scheme 2026/27
+      href: https://democracy.maldon.gov.uk/documents/s40932/Appendix%203.pdf

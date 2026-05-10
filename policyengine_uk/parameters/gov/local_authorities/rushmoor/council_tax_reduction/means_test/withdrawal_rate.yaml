@@ -1,0 +1,10 @@
+description: Rushmoor Council Tax Reduction excess income withdrawal rate
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Rushmoor Council Tax Reduction withdrawal rate
+  reference:
+    - title: Rushmoor Borough Council - Council Tax Reduction Scheme 2026/27, paragraph 59.1
+      href: https://www.rushmoor.gov.uk/media/qvmlpekv/rushmoor-s13a-scheme-202627-final.pdf

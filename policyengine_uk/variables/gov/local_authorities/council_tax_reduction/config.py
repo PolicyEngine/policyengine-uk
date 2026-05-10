@@ -190,6 +190,18 @@ def is_harrow(local_authority):
     return local_authority == LocalAuthority.HARROW
 
 
+def is_hart(local_authority):
+    return local_authority == LocalAuthority.HART
+
+
+def is_hartlepool(local_authority):
+    return local_authority == LocalAuthority.HARTLEPOOL
+
+
+def is_hertsmere(local_authority):
+    return local_authority == LocalAuthority.HERTSMERE
+
+
 def is_havering(local_authority):
     return local_authority == LocalAuthority.HAVERING
 
@@ -252,6 +264,10 @@ def is_lewisham(local_authority):
     return local_authority == LocalAuthority.LEWISHAM
 
 
+def is_maldon(local_authority):
+    return local_authority == LocalAuthority.MALDON
+
+
 def is_merton(local_authority):
     return local_authority == LocalAuthority.MERTON
 
@@ -294,6 +310,10 @@ def is_plymouth(local_authority):
 
 def is_redbridge(local_authority):
     return local_authority == LocalAuthority.REDBRIDGE
+
+
+def is_rushmoor(local_authority):
+    return local_authority == LocalAuthority.RUSHMOOR
 
 
 def is_southwark(local_authority):
@@ -612,6 +632,20 @@ def is_harrow_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_harrow(local_authority)
 
 
+def is_hart_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_hart(local_authority)
+
+
+def is_hartlepool_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND) & ~has_pensioner & is_hartlepool(local_authority)
+    )
+
+
+def is_hertsmere_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_hertsmere(local_authority)
+
+
 def is_havering_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_havering(local_authority)
 
@@ -694,6 +728,10 @@ def is_lewisham_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_lewisham(local_authority)
 
 
+def is_maldon_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_maldon(local_authority)
+
+
 def is_merton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
 
@@ -750,6 +788,10 @@ def is_plymouth_working_age(local_authority, country, has_pensioner):
 
 def is_redbridge_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_redbridge(local_authority)
+
+
+def is_rushmoor_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_rushmoor(local_authority)
 
 
 def is_southwark_working_age(local_authority, country, has_pensioner):
@@ -931,6 +973,9 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_gloucester_working_age(local_authority, country, has_pensioner)
         | is_haringey_working_age(local_authority, country, has_pensioner)
         | is_harrow_working_age(local_authority, country, has_pensioner)
+        | is_hart_working_age(local_authority, country, has_pensioner)
+        | is_hartlepool_working_age(local_authority, country, has_pensioner)
+        | is_hertsmere_working_age(local_authority, country, has_pensioner)
         | is_havering_working_age(local_authority, country, has_pensioner)
         | is_herefordshire_working_age(local_authority, country, has_pensioner)
         | is_hackney_working_age(local_authority, country, has_pensioner)
@@ -961,6 +1006,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_lambeth_working_age(local_authority, country, has_pensioner)
         | is_lancaster_working_age(local_authority, country, has_pensioner)
         | is_lewisham_working_age(local_authority, country, has_pensioner)
+        | is_maldon_working_age(local_authority, country, has_pensioner)
         | is_merton_working_age(local_authority, country, has_pensioner)
         | is_mid_suffolk_working_age(local_authority, country, has_pensioner)
         | is_newham_working_age(local_authority, country, has_pensioner)
@@ -972,6 +1018,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_oxford_working_age(local_authority, country, has_pensioner)
         | is_plymouth_working_age(local_authority, country, has_pensioner)
         | is_redbridge_working_age(local_authority, country, has_pensioner)
+        | is_rushmoor_working_age(local_authority, country, has_pensioner)
         | is_sefton_working_age(local_authority, country, has_pensioner)
         | is_somerset_working_age(local_authority, country, has_pensioner)
         | is_slough_working_age(local_authority, country, has_pensioner)

@@ -1,0 +1,10 @@
+description: Hartlepool flat weekly non-dependant deduction
+values:
+  2026-04-01: 5
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hartlepool Council Tax Reduction non-dependant deduction
+  reference:
+    - title: Hartlepool Borough Council - Council Tax Reduction Scheme 2026/27, paragraph 48.5
+      href: https://www.hartlepool.gov.uk/downloads/file/1484/hbc-council-tax-reduction-scheme-2026-27

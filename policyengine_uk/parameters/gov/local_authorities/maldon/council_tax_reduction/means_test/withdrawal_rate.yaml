@@ -1,0 +1,10 @@
+description: Maldon Council Tax Reduction excess income withdrawal rate
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Maldon Council Tax Reduction withdrawal rate
+  reference:
+    - title: Maldon District Council - Council Tax Reduction Scheme 2026/27
+      href: https://democracy.maldon.gov.uk/documents/s40932/Appendix%203.pdf

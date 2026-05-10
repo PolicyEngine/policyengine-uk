@@ -1,0 +1,10 @@
+description: Hertsmere non-dependant remunerative work threshold
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Hertsmere non-dependant remunerative work hours
+  reference:
+    - title: Hertsmere Borough Council - Council Tax Reduction Scheme 2026/27, paragraph 58
+      href: https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf

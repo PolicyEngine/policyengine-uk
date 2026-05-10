@@ -1,0 +1,10 @@
+description: Rushmoor Council Tax Reduction maximum eligible liability band ratio
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Rushmoor Council Tax Reduction liability cap band ratio
+  reference:
+    - title: Rushmoor Borough Council - Council Tax Reduction Scheme 2026/27, paragraph 57.1(a)
+      href: https://www.rushmoor.gov.uk/media/qvmlpekv/rushmoor-s13a-scheme-202627-final.pdf

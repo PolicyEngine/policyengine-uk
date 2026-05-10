@@ -1,0 +1,10 @@
+description: Hertsmere ordinary maximum Council Tax Reduction support rate
+values:
+  2026-04-01: 0.8
+metadata:
+  unit: /1
+  period: year
+  label: Hertsmere ordinary Council Tax Reduction maximum support rate
+  reference:
+    - title: Hertsmere Borough Council - Council Tax Reduction Scheme 2026/27, paragraph 57.1
+      href: https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf

@@ -28333,6 +28333,430 @@
     cheshire_west_and_chester_council_tax_reduction: [1_090, 0]
     council_tax_reduction: 1_090
 
+- name: Rushmoor working-age claimant receives full support capped at Band D
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: RUSHMOOR
+        council_tax_band: H
+        council_tax: 3_600
+        savings: 0
+  output:
+    rushmoor_council_tax_reduction_maximum_eligible_liability: 1_800
+    rushmoor_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Rushmoor excludes capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: RUSHMOOR
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_001
+  output:
+    rushmoor_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Rushmoor applies the prescribed gross-income non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      other_benunit:
+        members: [non_dep]
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: RUSHMOOR
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    rushmoor_council_tax_reduction_non_dep_deductions: [551.20, 0]
+    rushmoor_council_tax_reduction: [1_248.80, 0]
+    council_tax_reduction: 1_248.80
+
+- name: Hart UC claimants use UC-assessed capital and income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 5_000
+        universal_credit_pre_benefit_cap: 5_000
+        uc_assessable_capital: 0
+        uc_maximum_amount: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        council_tax_reduction_applicable_income: 99_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HART
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    hart_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Hart excludes UC claimants with UC-assessed capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 5_000
+        universal_credit_pre_benefit_cap: 5_000
+        uc_assessable_capital: 16_001
+        uc_maximum_amount: 5_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HART
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    hart_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Hart counts both UC non-dependant couple deductions
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+      non_dep_2:
+        age: 25
+        employment_income: 15_600
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      other_benunit:
+        members: [non_dep_1, non_dep_2]
+        universal_credit: 1
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: HART
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    hart_council_tax_reduction_non_dep_deductions: [1_383.20, 0]
+    hart_council_tax_reduction: [416.80, 0]
+    council_tax_reduction: 416.80
+
+- name: Maldon applies strict 6,000 pound capital cutoff
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: MALDON
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    maldon_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Maldon applies flat 10 pound weekly non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      other_benunit:
+        members: [non_dep]
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: MALDON
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    maldon_council_tax_reduction_non_dep_deductions: [520, 0]
+    maldon_council_tax_reduction: [920, 0]
+    council_tax_reduction: 920
+
+- name: Hartlepool single claimant on no income receives Band 1 support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARTLEPOOL
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    hartlepool_council_tax_reduction_weekly_income: 0
+    hartlepool_council_tax_reduction: 1_620
+    council_tax_reduction: 1_620
+
+- name: Hartlepool applies earnings disregard before income bands
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 7_800
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARTLEPOOL
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    hartlepool_council_tax_reduction_weekly_income: 125
+    hartlepool_council_tax_reduction: 1_260
+    council_tax_reduction: 1_260
+
+- name: Hartlepool uses UC-assessed capital and income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 8_000
+        universal_credit_pre_benefit_cap: 8_000
+        uc_assessable_capital: 0
+        uc_earned_income: 0
+        uc_unearned_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HARTLEPOOL
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    hartlepool_council_tax_reduction_weekly_income: 153.85
+    hartlepool_council_tax_reduction: 1_260
+    council_tax_reduction: 1_260
+
+- name: Hertsmere protected and non-protected UC branches use Schedule 6 rates
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      ordinary:
+        age: 35
+      protected:
+        age: 35
+      child:
+        age: 4
+    benunits:
+      ordinary_benunit:
+        members: [ordinary]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 5_000
+        universal_credit_pre_benefit_cap: 5_000
+        uc_assessable_capital: 0
+      protected_benunit:
+        members: [protected, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_lone_parent: true
+        universal_credit: 5_000
+        universal_credit_pre_benefit_cap: 5_000
+        uc_assessable_capital: 0
+    households:
+      ordinary_household:
+        members: [ordinary]
+        country: ENGLAND
+        local_authority: HERTSMERE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+      protected_household:
+        members: [protected, child]
+        country: ENGLAND
+        local_authority: HERTSMERE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    hertsmere_council_tax_reduction_uc_support_rate: [0.8, 1]
+    hertsmere_council_tax_reduction: [1_440, 1_800]
+    council_tax_reduction: [1_440, 1_800]
+
+- name: Hertsmere UC earnings apply the additional working disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 7_384
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: HERTSMERE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    hertsmere_council_tax_reduction_uc_weekly_earnings: 119.90
+    hertsmere_council_tax_reduction_uc_support_rate: 0.6
+    hertsmere_council_tax_reduction: 1_080
+    council_tax_reduction: 1_080
+
+- name: Hertsmere protected UC non-dependant follows source 577 pound top bracket
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 4
+      non_dep:
+        age: 25
+        employment_income: 30_680
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        is_lone_parent: true
+        universal_credit: 5_000
+        universal_credit_pre_benefit_cap: 5_000
+        uc_assessable_capital: 0
+      other_benunit:
+        members: [non_dep]
+    households:
+      household:
+        members: [claimant, child, non_dep]
+        country: ENGLAND
+        local_authority: HERTSMERE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    hertsmere_council_tax_reduction_non_dep_deductions: [829.40, 0]
+    hertsmere_council_tax_reduction: [970.60, 0]
+    council_tax_reduction: 970.60
+
 - name: Ashford awards 90 percent support in Band 1 for a single claimant
   period: 2026
   absolute_error_margin: 0.5

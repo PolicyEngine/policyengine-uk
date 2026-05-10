@@ -1,0 +1,10 @@
+description: Rushmoor Council Tax Reduction working-age capital limit
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Rushmoor Council Tax Reduction capital limit
+  reference:
+    - title: Rushmoor Borough Council - Council Tax Reduction Scheme 2026/27, Classes D and E
+      href: https://www.rushmoor.gov.uk/media/qvmlpekv/rushmoor-s13a-scheme-202627-final.pdf

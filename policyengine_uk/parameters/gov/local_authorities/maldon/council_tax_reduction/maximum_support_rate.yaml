@@ -1,0 +1,10 @@
+description: Maldon maximum Council Tax Reduction support rate
+values:
+  2026-04-01: 0.8
+metadata:
+  unit: /1
+  period: year
+  label: Maldon Council Tax Reduction maximum support rate
+  reference:
+    - title: Maldon District Council - Council Tax Reduction Scheme 2026/27
+      href: https://democracy.maldon.gov.uk/documents/s40932/Appendix%203.pdf

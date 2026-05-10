@@ -1,0 +1,10 @@
+description: Rushmoor non-dependant remunerative work threshold
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Rushmoor non-dependant remunerative work hours
+  reference:
+    - title: Rushmoor Borough Council - Council Tax Reduction Scheme 2026/27, paragraph 58.1
+      href: https://www.rushmoor.gov.uk/media/qvmlpekv/rushmoor-s13a-scheme-202627-final.pdf

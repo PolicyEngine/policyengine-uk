@@ -52,7 +52,10 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "gloucester_council_tax_reduction",
     "haringey_council_tax_reduction",
     "harrow_council_tax_reduction",
+    "hart_council_tax_reduction",
+    "hartlepool_council_tax_reduction",
     "havering_council_tax_reduction",
+    "hertsmere_council_tax_reduction",
     "herefordshire_council_tax_reduction",
     "hackney_council_tax_reduction",
     "hammersmith_and_fulham_council_tax_reduction",
@@ -66,6 +69,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "lambeth_council_tax_reduction",
     "lancaster_council_tax_reduction",
     "lewisham_council_tax_reduction",
+    "maldon_council_tax_reduction",
     "merton_council_tax_reduction",
     "mid_suffolk_council_tax_reduction",
     "newham_council_tax_reduction",
@@ -77,6 +81,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "oxford_council_tax_reduction",
     "plymouth_council_tax_reduction",
     "redbridge_council_tax_reduction",
+    "rushmoor_council_tax_reduction",
     "sefton_council_tax_reduction",
     "somerset_council_tax_reduction",
     "slough_council_tax_reduction",
@@ -171,6 +176,15 @@ class simulated_council_tax_reduction_benunit(Variable):
         gloucester_local_scheme = benunit(
             "gloucester_council_tax_reduction_is_local_scheme", period
         )
+        hart_local_scheme = benunit(
+            "hart_council_tax_reduction_is_local_scheme", period
+        )
+        hartlepool_local_scheme = benunit(
+            "hartlepool_council_tax_reduction_is_local_scheme", period
+        )
+        hertsmere_local_scheme = benunit(
+            "hertsmere_council_tax_reduction_is_local_scheme", period
+        )
         herefordshire_local_scheme = benunit(
             "herefordshire_council_tax_reduction_is_local_scheme", period
         )
@@ -180,6 +194,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         ipswich_local_scheme = benunit(
             "ipswich_council_tax_reduction_is_local_scheme", period
         )
+        maldon_local_scheme = benunit(
+            "maldon_council_tax_reduction_is_local_scheme", period
+        )
         mid_suffolk_local_scheme = benunit(
             "mid_suffolk_council_tax_reduction_is_local_scheme", period
         )
@@ -188,6 +205,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         )
         plymouth_local_scheme = benunit(
             "plymouth_council_tax_reduction_is_local_scheme", period
+        )
+        rushmoor_local_scheme = benunit(
+            "rushmoor_council_tax_reduction_is_local_scheme", period
         )
         somerset_local_scheme = benunit(
             "somerset_council_tax_reduction_is_local_scheme", period
@@ -236,12 +256,17 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~coventry_local_scheme
             & ~dartford_local_scheme
             & ~gloucester_local_scheme
+            & ~hart_local_scheme
+            & ~hartlepool_local_scheme
+            & ~hertsmere_local_scheme
             & ~herefordshire_local_scheme
             & ~ipswich_local_scheme
             & ~kingston_upon_hull_local_scheme
+            & ~maldon_local_scheme
             & ~mid_suffolk_local_scheme
             & ~north_yorkshire_local_scheme
             & ~plymouth_local_scheme
+            & ~rushmoor_local_scheme
             & ~somerset_local_scheme
             & ~slough_local_scheme
             & ~south_gloucestershire_local_scheme

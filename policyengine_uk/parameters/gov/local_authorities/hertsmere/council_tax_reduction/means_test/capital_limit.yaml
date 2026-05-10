@@ -1,0 +1,10 @@
+description: Hertsmere Council Tax Reduction capital limit
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Hertsmere Council Tax Reduction capital limit
+  reference:
+    - title: Hertsmere Borough Council - Council Tax Reduction Scheme 2026/27, paragraph 33.1
+      href: https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf
